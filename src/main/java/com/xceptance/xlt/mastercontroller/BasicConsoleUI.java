@@ -15,18 +15,14 @@
  */
 package com.xceptance.xlt.mastercontroller;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Formatter;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
-import java.util.TreeMap;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -36,12 +32,14 @@ import org.apache.commons.lang3.tuple.Pair;
 import com.xceptance.common.util.ConsoleUiUtils;
 import com.xceptance.common.util.ProductInformation;
 import com.xceptance.xlt.agentcontroller.AgentController;
-import com.xceptance.xlt.agentcontroller.AgentStatus;
+import com.xceptance.xlt.agentcontroller.AgentStatusInfo;
+import com.xceptance.xlt.agentcontroller.ScenarioStatus;
 import com.xceptance.xlt.agentcontroller.TestResultAmount;
 import com.xceptance.xlt.agentcontroller.TestUserStatus;
 import com.xceptance.xlt.util.AgentControllerException;
 import com.xceptance.xlt.util.AgentControllerInfo;
 import com.xceptance.xlt.util.FailedAgentControllerCollection;
+import com.xceptance.xlt.util.StatusUtils;
 
 /**
  * The BasicConsoleUI is the base class for all master controller user interfaces.
@@ -80,7 +78,7 @@ public abstract class BasicConsoleUI implements MasterControllerUI
 
     /**
      * Creates a new BasicConsoleUI object.
-     * 
+     *
      * @param masterController
      *            the master controller to use
      */
@@ -148,7 +146,7 @@ public abstract class BasicConsoleUI implements MasterControllerUI
 
     /**
      * Triggers the master controller to download the test results from all known agent controllers.
-     * 
+     *
      * @param testResultAmount
      *            the amount of test result data to download
      * @return <code>true</code> if the operation was successful for all agent controllers; <code>false</code> otherwise
@@ -183,7 +181,7 @@ public abstract class BasicConsoleUI implements MasterControllerUI
     /**
      * Triggers the master controller to generate the test report from the downloaded results and queries the user for
      * time range option.
-     * 
+     *
      * @return <code>true</code> if the operation was successful; <code>false</code> otherwise
      */
     public boolean generateReport()
@@ -193,7 +191,7 @@ public abstract class BasicConsoleUI implements MasterControllerUI
 
     /**
      * Triggers the master controller to generate the test report from the downloaded results.
-     * 
+     *
      * @param reportCreationType
      *            time range option to generate the report from or <code>null</code> to query the user
      * @return <code>true</code> if the operation was successful; <code>false</code> otherwise
@@ -237,7 +235,7 @@ public abstract class BasicConsoleUI implements MasterControllerUI
 
     /**
      * Checks whether there is a running load test.
-     * 
+     *
      * @return <code>true</code> if there is a running load test; <code>false</code> otherwise
      */
     public boolean isLoadTestRunning()
@@ -267,18 +265,18 @@ public abstract class BasicConsoleUI implements MasterControllerUI
      */
     public void printAgentStatusList()
     {
-        final Set<AgentStatus> agentStatusList = masterController.getAgentStatusList();
+        final List<AgentControllerStatusInfo> agentControllerStatusList = masterController.getAgentControllerStatusList();
 
-        final Map<String, Set<AgentStatus>> badHostAgents = getFailedAgentStatusMap(agentStatusList);
-        final List<TestUserTypeStatus> userTypeStatusList = getTestUserTypeStatusList(agentStatusList);
+        final Map<String, List<AgentStatusInfo>> failedAgentsByHost = StatusUtils.getFailedAgentsByHost(agentControllerStatusList);
+        final List<ScenarioStatus> scenarioStatusList = StatusUtils.aggregateScenarioStatusLists(agentControllerStatusList);
 
-        if (!userTypeStatusList.isEmpty())
+        if (!scenarioStatusList.isEmpty())
         {
             // determine longest user name
             int maxNameLength = 9;
-            for (TestUserTypeStatus testUserTypeStatus : userTypeStatusList)
+            for (final ScenarioStatus scenarioStatus : scenarioStatusList)
             {
-                maxNameLength = Math.max(maxNameLength, testUserTypeStatus.getUserName().length());
+                maxNameLength = Math.max(maxNameLength, scenarioStatus.getUserName().length());
             }
 
             // format and append the header line
@@ -300,40 +298,40 @@ public abstract class BasicConsoleUI implements MasterControllerUI
             final String timeFormat = "%,7.2f s";
             final String failedFormat = "%-" + maxNameLength + "s   %-8s   %s\n";
 
-            for (final TestUserTypeStatus userTypeStatus : userTypeStatusList)
+            for (final ScenarioStatus scenarioStatus : scenarioStatusList)
             {
-                if (userTypeStatus.getState() == TestUserStatus.State.Failed)
+                if (scenarioStatus.getState() == TestUserStatus.State.Failed)
                 {
-                    formatter.format(failedFormat, userTypeStatus.getUserName(), userTypeStatus.getState(), userTypeStatus.getException());
+                    formatter.format(failedFormat, scenarioStatus.getUserName(), scenarioStatus.getState(), scenarioStatus.getException());
                 }
                 else
                 {
-                    final String elapsedTime = formatTime(userTypeStatus.getElapsedTime());
+                    final String elapsedTime = formatTime(scenarioStatus.getElapsedTime());
                     int errorRate = 0;
-                    if (userTypeStatus.getIterations() > 0)
+                    if (scenarioStatus.getIterations() > 0)
                     {
-                        errorRate = Math.round(userTypeStatus.getErrors() * 100.0f / userTypeStatus.getIterations());
+                        errorRate = Math.round(scenarioStatus.getErrors() * 100.0f / scenarioStatus.getIterations());
                     }
 
-                    final double lastRuntime = userTypeStatus.getLastRuntime() / 1000.0;
-                    final double avgRuntime = userTypeStatus.getAverageRuntime() / 1000.0;
+                    final double lastRuntime = scenarioStatus.getLastRuntime() / 1000.0;
+                    final double avgRuntime = scenarioStatus.getAverageRuntime() / 1000.0;
 
-                    formatter.format(format, userTypeStatus.getUserName(), userTypeStatus.getState(), userTypeStatus.getRunningUsers(),
-                                     userTypeStatus.getTotalUsers(), userTypeStatus.getIterations(), String.format(timeFormat, lastRuntime),
-                                     String.format(timeFormat, avgRuntime), elapsedTime, userTypeStatus.getEvents(),
-                                     userTypeStatus.getErrors(), "(" + errorRate + "%)", userTypeStatus.getPercentageComplete());
+                    formatter.format(format, scenarioStatus.getUserName(), scenarioStatus.getState(), scenarioStatus.getRunningUsers(),
+                                     scenarioStatus.getTotalUsers(), scenarioStatus.getIterations(), String.format(timeFormat, lastRuntime),
+                                     String.format(timeFormat, avgRuntime), elapsedTime, scenarioStatus.getEvents(),
+                                     scenarioStatus.getErrors(), "(" + errorRate + "%)", scenarioStatus.getPercentageComplete());
                 }
             }
 
             // format and append the total status line
-            if (userTypeStatusList.size() > 1)
+            if (scenarioStatusList.size() > 1)
             {
-                TestUserTypeStatus summaryStatus = getTotalStatus(userTypeStatusList);
+                final ScenarioStatus summaryStatus = StatusUtils.getTotalScenarioStatus(scenarioStatusList);
 
                 final String elapsedTime = formatTime(summaryStatus.getElapsedTime());
-                int iterations = summaryStatus.getIterations();
-                int errors = summaryStatus.getErrors();
-                int errorRate = (iterations > 0) ? Math.round(errors * 100.0f / iterations) : 0;
+                final int iterations = summaryStatus.getIterations();
+                final int errors = summaryStatus.getErrors();
+                final int errorRate = (iterations > 0) ? Math.round(errors * 100.0f / iterations) : 0;
 
                 formatter.format(separatorLineFormat, StringUtils.repeat("-", maxNameLength));
                 formatter.format(format, summaryStatus.getUserName(), summaryStatus.getState(), summaryStatus.getRunningUsers(),
@@ -346,225 +344,26 @@ public abstract class BasicConsoleUI implements MasterControllerUI
             System.out.println(buf);
         }
 
-        if (!badHostAgents.isEmpty())
+        if (!failedAgentsByHost.isEmpty())
         {
             final StringBuilder sb = new StringBuilder();
             int count = 0;
             sb.append("->  Agent(s) exited unexpectedly:\n");
-            for (final Entry<String, Set<AgentStatus>> badAgents : badHostAgents.entrySet())
+            for (final Entry<String, List<AgentStatusInfo>> failedAgentsEntry : failedAgentsByHost.entrySet())
             {
-                sb.append("  - ").append(badAgents.getKey()).append("\n");
-                final Set<AgentStatus> badAgentsOfHost = badAgents.getValue();
-                for (final AgentStatus badAgentStatus : badAgentsOfHost)
+                sb.append("  - ").append(failedAgentsEntry.getKey()).append("\n");
+                final List<AgentStatusInfo> failedAgents = failedAgentsEntry.getValue();
+                for (final AgentStatusInfo failedAgent : failedAgents)
                 {
-                    sb.append("        Agent '").append(badAgentStatus.getAgentID()).append("' returned with exit code '")
-                      .append(badAgentStatus.getErrorExitCode()).append("'\n");
+                    sb.append("        Agent '").append(failedAgent.getAgentID()).append("' returned with exit code '")
+                      .append(failedAgent.getExitCode()).append("'\n");
                 }
 
-                count += badAgentsOfHost.size();
+                count += failedAgents.size();
             }
             sb.insert(3, Integer.toString(count));
             System.out.println(sb.toString());
         }
-    }
-
-    /**
-     * Returns the total status calculated from the individual user-type-specific status objects.
-     * 
-     * @param userTypeStatusList
-     *            the list of user type status objects
-     * @return the total status
-     */
-    protected TestUserTypeStatus getTotalStatus(List<TestUserTypeStatus> userTypeStatusList)
-    {
-        // the initial status values
-        int errors = 0, events = 0, iterations = 0, runningUsers = 0, totalUsers = 0, percentage = 0;
-        long lastRuntime = 0, totalRuntime = 0;
-        TestUserStatus.State state = TestUserStatus.State.Waiting;
-        long elapsed = Long.MIN_VALUE;
-        long lastModified = 0;
-
-        // update the status values
-        for (final TestUserTypeStatus userTypeStatus : userTypeStatusList)
-        {
-            if (state != TestUserStatus.State.Running && userTypeStatus.getState() != TestUserStatus.State.Waiting)
-            {
-                state = userTypeStatus.getState();
-            }
-
-            if (lastModified < userTypeStatus.getLastModifiedDate())
-            {
-                lastModified = userTypeStatus.getLastModifiedDate();
-                lastRuntime = userTypeStatus.getLastRuntime();
-            }
-
-            errors += userTypeStatus.getErrors();
-            events += userTypeStatus.getEvents();
-            iterations += userTypeStatus.getIterations();
-            totalRuntime += userTypeStatus.getTotalRuntime();
-            runningUsers += userTypeStatus.getRunningUsers();
-            totalUsers += userTypeStatus.getTotalUsers();
-            percentage += userTypeStatus.getPercentageComplete();
-            elapsed = Math.max(elapsed, userTypeStatus.getElapsedTime());
-        }
-
-        // "fix" certain status values depending on the count of input status objects
-        final int count = userTypeStatusList.size();
-        if (count == 0)
-        {
-            elapsed = 0;
-        }
-        else if (count > 1)
-        {
-            percentage = percentage / count;
-        }
-
-        // finally build the total status
-        final TestUserTypeStatus summaryStatus = new TestUserTypeStatus();
-
-        summaryStatus.setUserName("Totals");
-        summaryStatus.setState(state);
-        summaryStatus.setRunningUsers(runningUsers);
-        summaryStatus.setTotalUsers(totalUsers);
-        summaryStatus.setIterations(iterations);
-        summaryStatus.setLastRuntime(lastRuntime);
-        summaryStatus.setTotalRuntime(totalRuntime);
-        summaryStatus.setEvents(events);
-        summaryStatus.setErrors(errors);
-        summaryStatus.setElapsedTime(elapsed);
-        summaryStatus.setPercentageComplete(percentage);
-
-        return summaryStatus;
-    }
-
-    /**
-     * Returns a list of user-type-specific status objects calculated from each individual user-specific status of a
-     * certain user type.
-     * 
-     * @param agentStatusList
-     *            the list of agent status objects containing the user-specific status objects
-     * @return the list of user type status objects
-     */
-    protected List<TestUserTypeStatus> getTestUserTypeStatusList(final Set<AgentStatus> agentStatusList)
-    {
-        final Map<String, TestUserTypeStatus> userTypeStatusList = new TreeMap<String, TestUserTypeStatus>();
-
-        for (final AgentStatus agentStatus : agentStatusList)
-        {
-            for (final TestUserStatus userStatus : agentStatus.getTestUserStatusList())
-            {
-                // get the base name from the user name
-                final String testCaseName = StringUtils.substringBeforeLast(userStatus.getUserName(), "-");
-
-                // maintain one global status for all users of the same type
-                TestUserTypeStatus userTypeStatus = userTypeStatusList.get(testCaseName);
-                if (userTypeStatus == null)
-                {
-                    userTypeStatus = new TestUserTypeStatus();
-                    userTypeStatus.setUserName(testCaseName);
-                    userTypeStatus.setStartDate(Long.MAX_VALUE);
-                    userTypeStatus.setElapsedTime(Long.MIN_VALUE);
-
-                    userTypeStatusList.put(testCaseName, userTypeStatus);
-                }
-
-                // maintain count of total and running users
-                userTypeStatus.setTotalUsers(userTypeStatus.getTotalUsers() + 1);
-
-                if (userStatus.getState() == TestUserStatus.State.Running)
-                {
-                    userTypeStatus.setRunningUsers(userTypeStatus.getRunningUsers() + 1);
-                }
-
-                // determine the over-all running state
-                TestUserStatus.State globalState = userTypeStatus.getState();
-                final TestUserStatus.State state = userStatus.getState();
-
-                if (globalState == TestUserStatus.State.Running)
-                {
-                    // globalState = TestUserStatus.State.Running;
-                }
-                else if (state != TestUserStatus.State.Waiting)
-                {
-                    globalState = state;
-                }
-
-                userTypeStatus.setState(globalState);
-
-                // take the last run time from the most recently updated status
-                if (userTypeStatus.getLastModifiedDate() < userStatus.getLastModifiedDate())
-                {
-                    userTypeStatus.setLastModifiedDate(userStatus.getLastModifiedDate());
-                    userTypeStatus.setLastRuntime(userStatus.getLastRuntime());
-                }
-
-                // calculate the overall percentage
-                if (userStatus.getMode() == TestUserStatus.Mode.TIME_PERIOD)
-                {
-                    // for duration-based tests take the maximum
-                    userTypeStatus.setPercentageComplete(Math.max(userTypeStatus.getPercentageComplete(),
-                                                                  userStatus.getPercentageComplete()));
-                }
-                else
-                {
-                    // for iteration-based tests take the mean
-                    final int totalUsers = userTypeStatus.getTotalUsers();
-                    if (totalUsers == 1)
-                    {
-                        // this is the initial value
-                        userTypeStatus.setPercentageComplete(userStatus.getPercentageComplete());
-                    }
-                    else
-                    {
-                        // incrementally update the mean value
-                        double mean = userTypeStatus.getPercentageComplete();
-
-                        mean = mean + (userStatus.getPercentageComplete() - mean) / totalUsers;
-
-                        userTypeStatus.setPercentageComplete((int) mean);
-                    }
-                }
-
-                // update the remaining values
-                userTypeStatus.setIterations(userTypeStatus.getIterations() + userStatus.getIterations());
-                userTypeStatus.setTotalRuntime(userTypeStatus.getTotalRuntime() + userStatus.getTotalRuntime());
-                userTypeStatus.setEvents(userTypeStatus.getEvents() + userStatus.getEvents());
-                userTypeStatus.setErrors(userTypeStatus.getErrors() + userStatus.getErrors());
-                userTypeStatus.setException(userStatus.getException());
-                userTypeStatus.setStartDate(Math.min(userTypeStatus.getStartDate(), userStatus.getStartDate()));
-                userTypeStatus.setElapsedTime(Math.max(userTypeStatus.getElapsedTime(), userStatus.getElapsedTime()));
-            }
-        }
-
-        return new ArrayList<>(userTypeStatusList.values());
-    }
-
-    /**
-     * Returns the status objects for only those agents that exited with an error.
-     * 
-     * @param agentStatusList
-     *            the list of all agent status objects
-     * @return the failed agent status objects keyed by host name
-     */
-    protected Map<String, Set<AgentStatus>> getFailedAgentStatusMap(final Set<AgentStatus> agentStatusList)
-    {
-        final Map<String, Set<AgentStatus>> failedAgentStatusListByHost = new HashMap<String, Set<AgentStatus>>();
-
-        for (final AgentStatus agentStatus : agentStatusList)
-        {
-            if (agentStatus.getErrorExitCode() != 0)
-            {
-                Set<AgentStatus> failedAgentStatusList = failedAgentStatusListByHost.get(agentStatus.getHostName());
-                if (failedAgentStatusList == null)
-                {
-                    failedAgentStatusList = new HashSet<AgentStatus>();
-                    failedAgentStatusListByHost.put(agentStatus.getHostName(), failedAgentStatusList);
-                }
-                failedAgentStatusList.add(agentStatus);
-            }
-        }
-
-        return failedAgentStatusListByHost;
     }
 
     public void printLoadTestSettings()
@@ -581,7 +380,7 @@ public abstract class BasicConsoleUI implements MasterControllerUI
 
     /**
      * This method returns a summary of the current load test settings.
-     * 
+     *
      * @param loadTestSettings
      *            The load test settings that should be analyzed.
      * @return A String containing the settings for all configured load profiles. In case no load profile is configured
@@ -629,7 +428,7 @@ public abstract class BasicConsoleUI implements MasterControllerUI
             String previousLoadFactor = "";
             boolean sameLoadFactor = true, arrivalRateOverflow = false, userOverflow = false;
 
-            for (TestCaseLoadProfileConfiguration settings : loadTestSettings.getLoadTestConfiguration())
+            for (final TestCaseLoadProfileConfiguration settings : loadTestSettings.getLoadTestConfiguration())
             {
                 // Arrival Rate
                 Pair<Integer, Integer> boundaries = getMinMaxValue(settings.getArrivalRate());
@@ -639,7 +438,7 @@ public abstract class BasicConsoleUI implements MasterControllerUI
                     {
                         arrivalRateSum = Math.addExact(arrivalRateSum, boundaries.getRight());
                     }
-                    catch (ArithmeticException e)
+                    catch (final ArithmeticException e)
                     {
                         // We exceeded the maximum integer boundaries
                         arrivalRateOverflow = true;
@@ -656,7 +455,7 @@ public abstract class BasicConsoleUI implements MasterControllerUI
                     {
                         numberOfUsersSum = Math.addExact(numberOfUsersSum, boundaries.getRight());
                     }
-                    catch (ArithmeticException e)
+                    catch (final ArithmeticException e)
                     {
                         userOverflow = true;
                     }
@@ -671,7 +470,7 @@ public abstract class BasicConsoleUI implements MasterControllerUI
                     final double minLoadFactorFraction = boundaries.getLeft() / 1000.0;
                     final double maxLoadFactorFraction = boundaries.getRight() / 1000.0;
 
-                    loadFactor = getDoubleRangeAsString(new MutablePair<Double, Double>(minLoadFactorFraction, maxLoadFactorFraction));
+                    loadFactor = getDoubleRangeAsString(new MutablePair<>(minLoadFactorFraction, maxLoadFactorFraction));
                 }
                 else
                 {
@@ -691,7 +490,7 @@ public abstract class BasicConsoleUI implements MasterControllerUI
                     }
                 }
 
-                int measurementPeriod = settings.getMeasurementPeriod();
+                final int measurementPeriod = settings.getMeasurementPeriod();
                 measurementPeriodMaximum = Math.max(measurementPeriod, measurementPeriodMaximum);
 
                 formatter.format(lineFormat, StringUtils.rightPad(settings.getUserName(), maxNameLength),
@@ -732,7 +531,7 @@ public abstract class BasicConsoleUI implements MasterControllerUI
     /**
      * Converts seconds to a more human readable time format. If the amount of seconds is negative, it will be first
      * negated.
-     * 
+     *
      * @param seconds
      *            The number of seconds which should be converted.
      * @return The returned time format follows the pattern <i>h:mm:ss</i>.
@@ -751,14 +550,14 @@ public abstract class BasicConsoleUI implements MasterControllerUI
 
     /**
      * This method searches the lowest and highest value in a 2D-array and returns them as a pair.
-     * 
+     *
      * @param pairs
      *            2D-array which follows the pattern <code>{[timestamp_1, value_1], [timestamp_2, value_2] ...}</code>.
      * @return Returns a pair, containing the lowest value in <code>Left</code> and the highest value in
      *         <code>Right</code>. <br>
      *         If <i>pairs</i> is <code>null</code>, <code>null</code> will be returned as well.
      */
-    private Pair<Integer, Integer> getMinMaxValue(int[][] pairs)
+    private Pair<Integer, Integer> getMinMaxValue(final int[][] pairs)
     {
         // Handle null objects. For example, arrivalRate and loadFactor might be null.
         // Also make sure that the array contains at least one value (pairs[0][1]).
@@ -777,7 +576,7 @@ public abstract class BasicConsoleUI implements MasterControllerUI
             max = Math.max(max, val);
         }
 
-        return new ImmutablePair<Integer, Integer>(min, max);
+        return new ImmutablePair<>(min, max);
     }
 
     /**
@@ -787,7 +586,7 @@ public abstract class BasicConsoleUI implements MasterControllerUI
      * <i>minValue..maxValue</i>.<br>
      * The maximum lengths will be stored in a map and can be accessed by referencing to the keys <i>testCases</i>,
      * <i>arrivalRate</i>, <i>users</i> and <i>loadFactor</i>.
-     * 
+     *
      * @param loadTestSettings
      *            The configured load test settings that should be analyzed.
      * @return A map which contains the String size of the longest test case name, arrival rate, number of users and
@@ -810,9 +609,9 @@ public abstract class BasicConsoleUI implements MasterControllerUI
             final Pair<Integer, Integer> loadFactorPair = getMinMaxValue(profile.getLoadFactor());
             if (loadFactorPair != null)
             {
-                double min = loadFactorPair.getLeft() / 1000.0;
-                double max = loadFactorPair.getRight() / 1000.0;
-                maxLoadFactor = Math.max(maxLoadFactor, getDoubleRangeAsString(new ImmutablePair<Double, Double>(min, max)).length());
+                final double min = loadFactorPair.getLeft() / 1000.0;
+                final double max = loadFactorPair.getRight() / 1000.0;
+                maxLoadFactor = Math.max(maxLoadFactor, getDoubleRangeAsString(new ImmutablePair<>(min, max)).length());
             }
             else
             {
@@ -830,7 +629,7 @@ public abstract class BasicConsoleUI implements MasterControllerUI
 
     /**
      * Converts the passed pair of Integers to a String.
-     * 
+     *
      * @param pair
      *            The pair that should be converted to a String.
      * @return Depending on the content, one of following Strings will be returned: <br>
@@ -853,7 +652,7 @@ public abstract class BasicConsoleUI implements MasterControllerUI
 
     /**
      * Converts the passed pair of Floats to a String. Floats will be displayed with a precision of 3.
-     * 
+     *
      * @param pair
      *            The pair that should be converted to a String.
      * @return Depending on the content, one of following Strings will be returned: <br>
@@ -952,7 +751,7 @@ public abstract class BasicConsoleUI implements MasterControllerUI
 
     /**
      * Sets the number of seconds to wait before the status list is updated again.
-     * 
+     *
      * @param statusListUpdateInterval
      *            the update interval
      */
@@ -963,7 +762,7 @@ public abstract class BasicConsoleUI implements MasterControllerUI
 
     /**
      * Triggers the master controller to start the agent on all known agent controllers.
-     * 
+     *
      * @param testCaseName
      *            the name of the test case to start the agents for, or <code>null</code> if all active test cases
      *            should be started
@@ -1012,7 +811,7 @@ public abstract class BasicConsoleUI implements MasterControllerUI
 
     /**
      * Triggers the master controller to stop the agent on all known agent controllers.
-     * 
+     *
      * @return <code>true</code> if the operation was successful for all agent controllers; <code>false</code> otherwise
      */
     public boolean stopAgents()
@@ -1052,7 +851,7 @@ public abstract class BasicConsoleUI implements MasterControllerUI
 
     /**
      * Triggers the master controller to upload the agent files to all known agent controllers.
-     * 
+     *
      * @return <code>true</code> if uploading was successful, <code>false</code> otherwise
      */
     public boolean uploadAgentFiles()
@@ -1112,7 +911,7 @@ public abstract class BasicConsoleUI implements MasterControllerUI
     /**
      * Returns the given time (difference) value in the format "hours:mins:secs". Negative values are prefixed with a
      * negative sign. The number of hours is not limited to 24.
-     * 
+     *
      * @param time
      *            the time to convert
      * @return the formatted time
@@ -1140,7 +939,7 @@ public abstract class BasicConsoleUI implements MasterControllerUI
 
     /**
      * Builds the list of failures ready for printing.
-     * 
+     *
      * @param results
      *            the list of errors
      * @return the formatted failures
@@ -1167,7 +966,7 @@ public abstract class BasicConsoleUI implements MasterControllerUI
 
     /**
      * Returns a more user-friendly message for the given exception.
-     * 
+     *
      * @param ex
      *            the exception
      * @return the user-friendly message
@@ -1187,7 +986,7 @@ public abstract class BasicConsoleUI implements MasterControllerUI
     /**
      * Prints the result of an operation at the given agent controller. If the operation was successful, the passed
      * exception is null, otherwise it may hold more information.
-     * 
+     *
      * @param ex
      *            the exception
      */

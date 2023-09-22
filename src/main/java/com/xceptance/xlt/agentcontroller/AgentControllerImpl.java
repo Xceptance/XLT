@@ -25,6 +25,7 @@ import java.io.StringWriter;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -73,6 +74,7 @@ import com.xceptance.xlt.agentcontroller.TestUserStatus.State;
 import com.xceptance.xlt.common.XltConstants;
 import com.xceptance.xlt.util.AgentControllerSystemInfo;
 import com.xceptance.xlt.util.FileReplicationIndex;
+import com.xceptance.xlt.util.StatusUtils;
 import com.xceptance.xlt.util.XltPropertiesImpl;
 
 /**
@@ -84,7 +86,11 @@ public class AgentControllerImpl implements AgentController
 {
     private enum Status
     {
-        NEW("Initialized"), UPLOADED("Uploaded"), RUNNING("Running"), FINISHED("Finished"), ABORTED("Aborted");
+        NEW("Initialized"),
+        UPLOADED("Uploaded"),
+        RUNNING("Running"),
+        FINISHED("Finished"),
+        ABORTED("Aborted");
 
         private String s;
 
@@ -278,7 +284,8 @@ public class AgentControllerImpl implements AgentController
      */
     @Override
     public void init(final String name, final URL url, final int weight, final int agentCount, final int agentBaseNumber,
-                     final boolean runsClientPerformanceTests) throws IOException
+                     final boolean runsClientPerformanceTests)
+        throws IOException
     {
         this.weight = weight;
         this.agentCount = agentCount;
@@ -659,6 +666,54 @@ public class AgentControllerImpl implements AgentController
         }
 
         return result;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public AgentControllerStatus getStatus()
+    {
+        /*
+         * At the moment we rely on the deprecated AgentStatus objects and convert them to a single
+         * AgentControllerStatus object.
+         */
+
+        final List<AgentStatusInfo> agentStatusList = new ArrayList<>();
+        final List<TestUserStatus> userStatusList = new ArrayList<>();
+
+        for (final Entry<String, AgentManager> agentManagerEntry : getAgentManagers().entrySet())
+        {
+            final String agentId = agentManagerEntry.getKey();
+            final AgentManager agentManager = agentManagerEntry.getValue();
+
+            final boolean isAgentRunning = agentManager.isAgentRunning();
+            final AgentStatus agentStatus = agentManager.getAgentStatus();
+
+            // create a new AgentStatusInfo object and fill it
+            final AgentStatusInfo agentStatusInfo;
+            if (agentStatus != null)
+            {
+                final Integer exitCode = isAgentRunning ? null : agentStatus.getErrorExitCode();
+                agentStatusInfo = new AgentStatusInfo(agentId, agentStatus.getHostName(), isAgentRunning, exitCode);
+            }
+            else
+            {
+                final Integer exitCode = isAgentRunning ? null : 0;
+                agentStatusInfo = new AgentStatusInfo(agentId, "", isAgentRunning, exitCode);
+            }
+
+            agentStatusList.add(agentStatusInfo);
+
+            // collect all user status objects for later processing
+            userStatusList.addAll(agentStatus.getTestUserStatusList());
+        }
+
+        // aggregate user statuses to scenario statuses
+        final List<ScenarioStatus> scenarioStatusList = StatusUtils.aggregateUserStatusList(userStatusList);
+
+        // return the combined status
+        return new AgentControllerStatus(agentStatusList, scenarioStatusList);
     }
 
     /**
@@ -1073,17 +1128,22 @@ public class AgentControllerImpl implements AgentController
     }
 
     /**
-     * Adds the properties files contained contained in the given config directory to the given ZIP output
-     * stream with their secret properties masked.
+     * Adds the properties files contained contained in the given config directory to the given ZIP output stream with
+     * their secret properties masked.
      *
-     * @param out The ZipOutputStream to write the data to
-     * @param configDirectory The input directory containing the configuration files
-     * @param filter The FileFilter determining which files to include in the output
-     * @param configPath The relative path inside the ZIP file
+     * @param out
+     *            The ZipOutputStream to write the data to
+     * @param configDirectory
+     *            The input directory containing the configuration files
+     * @param filter
+     *            The FileFilter determining which files to include in the output
+     * @param configPath
+     *            The relative path inside the ZIP file
      * @throws IOException
      * @throws ConfigurationException
      */
-    private void addMaskedDirectory(ZipOutputStream out, File configDirectory, IOFileFilter filter, File configPath) throws IOException, ConfigurationException
+    private void addMaskedDirectory(ZipOutputStream out, File configDirectory, IOFileFilter filter, File configPath)
+        throws IOException, ConfigurationException
     {
         final File tempDir = Files.createTempDirectory("masked").toFile();
         try
@@ -1105,12 +1165,14 @@ public class AgentControllerImpl implements AgentController
     }
 
     /**
-     * Mask all properties in the given file and write the output to the given output file.
-     * The input file is guaranteed to be closed before starting to write the output file, so that
-     * the input file can be overwritten with a masked version, if desired.
+     * Mask all properties in the given file and write the output to the given output file. The input file is guaranteed
+     * to be closed before starting to write the output file, so that the input file can be overwritten with a masked
+     * version, if desired.
      *
-     * @param inputFile The input file to mask.
-     * @param outputFile The output file to write the masked data to.
+     * @param inputFile
+     *            The input file to mask.
+     * @param outputFile
+     *            The output file to write the masked data to.
      * @throws IOException
      * @throws ConfigurationException
      */
@@ -1131,7 +1193,8 @@ public class AgentControllerImpl implements AgentController
     /**
      * Mask secret properties in the given configuration
      *
-     * @param config The configuration to mask the secret props in
+     * @param config
+     *            The configuration to mask the secret props in
      * @return A copy of the new config with the secret values replaced
      */
     private static PropertiesConfiguration mask(final PropertiesConfiguration config, boolean maskAll)

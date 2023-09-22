@@ -272,10 +272,20 @@ public class AgentControllerProxy extends AgentControllerImpl
     /**
      * {@inheritDoc}
      */
+    @Deprecated
     @Override
     public Set<AgentStatus> getAgentStatus()
     {
         return getAgentController().getAgentStatus();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public AgentControllerStatus getStatus()
+    {
+        return getAgentController().getStatus();
     }
 
     /**
