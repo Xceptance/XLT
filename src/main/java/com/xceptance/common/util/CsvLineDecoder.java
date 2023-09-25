@@ -19,15 +19,14 @@ import com.xceptance.xlt.api.util.SimpleArrayList;
 import com.xceptance.xlt.api.util.XltCharBuffer;
 
 /**
- * The {@link CsvLineDecoder} class provides helper methods to encode and decode values to/from the CSV format.
- * This is the high performance and most efficient method. It will avoid copying data at all cost and move
- * through the cache very efficiently.
- *
- * This is a very limited version that has only COMMA support. If you need more, use the old version.
+ * The {@link CsvLineDecoder} class provides helper methods to decode values from the CSV format. This is the high
+ * performance and most efficient method. It will avoid copying data at all cost and move through the cache very
+ * efficiently.
+ * <p>
+ * This is a very limited version that has only COMMA support. If you need more, use {@link CsvUtils} or {@link CsvUtilsDecode}.
  *
  * @author René Schwietzke
- *
- * @since 7.2.0
+ * @since 7.3.0
  */
 public final class CsvLineDecoder
 {
@@ -62,14 +61,15 @@ public final class CsvLineDecoder
     }
 
     /**
-     * Encodes the given fields to a CSV-encoded data record using the given field separator.
+     * Decodes the given buffer with the CSV-encoded data record and puts the plain unquoted fields into the given list.
      *
-     * @param list a list to append to, for memory efficiency, we hand one in instead of creating our own
-     * @param src the buffer to read from
-     * @param delimiter the field separator to use
-     * @return the decoded data record
-     *
-     * @throws CsvParserException in case delimiters are incorrect or mostly due to incorrect quotes or quoted quotes
+     * @param result
+     *            a list to append to, for memory efficiency, we hand one in instead of creating our own
+     * @param src
+     *            the buffer to read from
+     * @return the list passed in, filled with the plain fields
+     * @throws CsvParserException
+     *             in case delimiters are incorrect or mostly due to incorrect quotes or quoted quotes
      */
     public static SimpleArrayList<XltCharBuffer> parse(final SimpleArrayList<XltCharBuffer> result, final XltCharBuffer src)
     {
@@ -86,7 +86,7 @@ public final class CsvLineDecoder
         {
             char c = src.charAt(pos);
 
-            if (c  == QUOTE_CHAR)
+            if (c == QUOTE_CHAR)
             {
                 pos = startQuotedCol(result, src, pos);
             }
@@ -108,16 +108,16 @@ public final class CsvLineDecoder
     }
 
     /**
-     * Reads a full column of the line without support for quotes, because the started with unquoted.
-     * We end the field at a COMMA.
+     * Reads a full column of the line without support for quotes, because it started unquoted. We end the field
+     * at a COMMA.
      *
-     * @param result the final result array (holds the columns)
-     * @param src the source line to be parsed
-     * @param currentPos the position from where to read
-     *
+     * @param result
+     *            the final result array (holds the columns)
+     * @param src
+     *            the source line to be parsed
+     * @param currentPos
+     *            the position from where to read
      * @return the next position to read
-     *
-     * @throws CsvParserException in case delimiters are incorrect or mostly due to incorrect quotes or quoted quotes
      */
     private static int startCol(final SimpleArrayList<XltCharBuffer> result, final XltCharBuffer src, final int currentPos)
     {
@@ -129,7 +129,7 @@ public final class CsvLineDecoder
         {
             final char c = src.charAt(pos);
 
-            // we now read everything, even a qzote, because that is legal when the field does not
+            // we now read everything, even a quote, because that is legal when the field does not
             // start with a quote
             if (c == COMMA)
             {
@@ -148,17 +148,18 @@ public final class CsvLineDecoder
     }
 
     /**
-     * Reads a full column of the line with support for quoted quotes and such that a COMMA as delimiter will
-     * be ignored when in quotes. If a quote is not followed by another quote, the column is ended and
-     * we expect a delimiter aka COMMA.
+     * Reads a full column of the line with support for quoted quotes and such that a COMMA as delimiter will be ignored
+     * when in quotes. If a quote is not followed by another quote, the column is ended and we expect a COMMA.
      *
-     * @param result the final result array (holds the columns)
-     * @param src the source line to be parsed
-     * @param currentPos the position from where to read
-     *
+     * @param result
+     *            the final result array (holds the columns)
+     * @param src
+     *            the source line to be parsed
+     * @param currentPos
+     *            the position from where to read
      * @return the next position to read
-     *
-     * @throws CsvParserException in case delimiters are incorrect or mostly due to incorrect quotes or quoted quotes
+     * @throws CsvParserException
+     *             in case delimiters are incorrect or mostly due to incorrect quotes or quoted quotes
      */
     private static int startQuotedCol(final SimpleArrayList<XltCharBuffer> result, final XltCharBuffer src, final int currentPos)
     {
@@ -210,17 +211,18 @@ public final class CsvLineDecoder
     /**
      * If we encountered a quoted quote, we finish the rest of the data with this routine.
      *
-     * @param result the final result array (holds the columns)
-     * @param src the source line to be parsed
-     * @param currentPos the position from where to read
-     *
+     * @param result
+     *            the final result array (holds the columns)
+     * @param src
+     *            the source line to be parsed
+     * @param currentPos
+     *            the position from where to read
      * @return the next position to read
-
-     * @throws CsvParserException in case delimiters are incorrect or mostly due to incorrect quotes or quoted quotes
+     * @throws CsvParserException
+     *             in case delimiters are incorrect or mostly due to incorrect quotes or quoted quotes
      */
-    private static int endQuotedQuotesCol(
-                    final SimpleArrayList<XltCharBuffer> result, final XltCharBuffer src,
-                    final int start, final int currentPos)
+    private static int endQuotedQuotesCol(final SimpleArrayList<XltCharBuffer> result, final XltCharBuffer src, final int start,
+                                          final int currentPos)
     {
         int length = src.length();
         int pos = currentPos + 1;

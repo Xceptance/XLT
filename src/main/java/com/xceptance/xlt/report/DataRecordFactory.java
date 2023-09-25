@@ -91,7 +91,7 @@ public class DataRecordFactory
      * Creates a data record object for the given CSV line. Except for the type code character at the beginning, the CSV
      * line is not parsed yet.
      *
-     * @param data
+     * @param src
      *            the csv line
      * @return a data record object matching the type code
      * @throws Exception

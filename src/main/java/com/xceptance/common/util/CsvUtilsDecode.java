@@ -21,17 +21,15 @@ import com.xceptance.xlt.api.util.SimpleArrayList;
 import com.xceptance.xlt.api.util.XltCharBuffer;
 
 /**
- * The {@link CsvUtilsDecode} class provides helper methods to decode values from the CSV format.
- * This is the high performance and most efficient method. It will avoid copying data at all cost and move
- * through the cache very efficiently.
- *
- * This version is not the fasted one possible. It suffers from a JIT issue when it sees quoted
- * lines before regular lines. It has been replaced with {@link com.xceptance.common.util.CsvLineParser}.
- * But the new version only supported a comma as delimiter for performance reasons, hence this class
- * has still value.
+ * The {@link CsvUtilsDecode} class provides helper methods to decode values from the CSV format. This is the high
+ * performance and most efficient method. It will avoid copying data at all cost and move through the cache very
+ * efficiently.
+ * <p>
+ * Note: This version is no longer the fasted one possible. It suffers from a JIT issue when it sees quoted lines before
+ * regular lines. It has been replaced with {@link CsvLineDecoder}. But the new version only supports a comma as
+ * delimiter for performance reasons, hence this class has still value.
  *
  * @author René Schwietzke
- *
  * @since 7.0.0
  */
 public final class CsvUtilsDecode
@@ -68,24 +66,34 @@ public final class CsvUtilsDecode
     // our bit flags for the parser
     @SuppressWarnings("unused")
     private static final int NONE = 0;
+
     private static final int IN_QUOTES = 1;
+
     private static final int START_MODE = 2;
+
     @SuppressWarnings("unused")
     private static final int SEPARATOR_EXPECTED = 4;
+
     private static final int LAST_WAS_SEPARATOR = 8;
+
     private static final int JUST_LEFT_QUOTES = 16;
+
     private static final int COPY_REST = 32;
 
     /**
      * Encodes the given fields to a CSV-encoded data record using the given field separator.
      *
-     * @param list a list to append to, for memory efficiency, we hand one in instead of creating our own
-     * @param src the buffer to read from
-     * @param fieldSeparator the field separator to use
+     * @param list
+     *            a list to append to, for memory efficiency, we hand one in instead of creating our own
+     * @param src
+     *            the buffer to read from
+     * @param fieldSeparator
+     *            the field separator to use
      * @return the CSV-encoded data record
      * @throws ParseException
      */
-    public static SimpleArrayList<XltCharBuffer> parse(final SimpleArrayList<XltCharBuffer> result, final XltCharBuffer src, final char fieldSeparator)
+    public static SimpleArrayList<XltCharBuffer> parse(final SimpleArrayList<XltCharBuffer> result, final XltCharBuffer src,
+                                                       final char fieldSeparator)
     {
         final int size = src.length();
 
@@ -202,13 +210,13 @@ public final class CsvUtilsDecode
 
             // this feature is not yet supported because we are in control of our data and don't have
             // whitespaces around the separator
-//            if ((state & JUST_LEFT_QUOTES) == JUST_LEFT_QUOTES)
-//            {
-//                // we have left quotes, but not seen a separator, so we have garbage or spaces, ignore
-//                pos++;
-//
-//                continue Main;
-//            }
+            // if ((state & JUST_LEFT_QUOTES) == JUST_LEFT_QUOTES)
+            // {
+            // // we have left quotes, but not seen a separator, so we have garbage or spaces, ignore
+            // pos++;
+            //
+            // continue Main;
+            // }
 
             // move the char up if we have to
             if (pos != offset)
