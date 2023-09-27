@@ -145,7 +145,7 @@ public final class StatusUtils
         {
             for (final AgentStatusInfo agentStatus : agentControllerStatus.getAgentStatusList())
             {
-                if (agentStatus.getExitCode() != 0)
+                if (agentStatus.getExitCode() != null && agentStatus.getExitCode() != 0)
                 {
                     final List<AgentStatusInfo> failedAgentStatusList = failedAgentsByHostMap.computeIfAbsent(agentStatus.getHostName(),
                                                                                                               k -> new ArrayList<>());

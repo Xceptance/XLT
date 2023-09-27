@@ -33,14 +33,14 @@ public class AgentControllerStatusInfo extends AgentControllerStatus
      */
     private Exception exception;
 
+    public AgentControllerStatusInfo()
+    {
+        this(List.of(), List.of(), null);
+    }
+
     public AgentControllerStatusInfo(final AgentControllerStatus agentControllerStatus)
     {
         this(agentControllerStatus.getAgentStatusList(), agentControllerStatus.getScenarioStatusList(), null);
-    }
-
-    public AgentControllerStatusInfo(final Exception exception)
-    {
-        this(null, null, exception);
     }
 
     private AgentControllerStatusInfo(final List<AgentStatusInfo> status, final List<ScenarioStatus> scenarioStatusList,
@@ -58,5 +58,23 @@ public class AgentControllerStatusInfo extends AgentControllerStatus
     public void setException(final Exception e)
     {
         this.exception = e;
+    }
+
+    public boolean hasRunningAgents()
+    {
+        final List<AgentStatusInfo> agentStatusList = getAgentStatusList();
+
+        if (agentStatusList != null)
+        {
+            for (final AgentStatusInfo agentStatus : agentStatusList)
+            {
+                if (agentStatus.isRunning())
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }

@@ -40,6 +40,12 @@ import com.xceptance.xlt.util.StatusUtils;
 
 /**
  * Retrieves the status from all agent controllers and stores that internally.
+ * <p>
+ * Implementation note: The natural and simpler solution would be to use a scheduled executor service to run the update
+ * tasks periodically. However, the underlying scheduled thread pool is always fixed size. In XLT with its default
+ * settings, the default thread pool is dynamic, though. To preserve this behavior, we combine a scheduled executor
+ * service with a regular executor service. The former is only responsible for the timing and simply delegates the hard
+ * work to the latter. Hence a single-thread scheduled executor should suffice.
  */
 public class AgentControllerStatusUpdater
 {
@@ -56,14 +62,14 @@ public class AgentControllerStatusUpdater
     private final Map<String, AgentControllerStatusInfo> unmodifiableStatusMap;
 
     /**
-     * The executor service that actually runs the update tasks.
-     */
-    private final ExecutorService executor;
-
-    /**
      * The executor service that schedules the update tasks.
      */
     private ScheduledExecutorService scheduledExecutor;
+
+    /**
+     * The executor service that actually runs the update tasks.
+     */
+    private final ExecutorService executor;
 
     /**
      * The update tasks by agent controller. Used to cancel any running or queued task when status update was stopped.
@@ -72,7 +78,7 @@ public class AgentControllerStatusUpdater
 
     /**
      * Creates a new {@link AgentControllerStatusUpdater} and initializes it with the given executor service. The
-     * settings of the executor service determine the degree of parallelity when querying the status from the agent
+     * settings of the executor service determine the degree of parallelism when querying the status from the agent
      * controllers.
      *
      * @param executor
@@ -129,7 +135,7 @@ public class AgentControllerStatusUpdater
         {
             final boolean supportsNewStatusEndpoint = supported.get(agentController);
 
-            // execute task once, it will reschedule itself to become periodic
+            // execute task just once, it will reschedule itself to become periodic
             final Future<?> task = executor.submit(() -> retrieveAgentControllerStatus(agentController, supportsNewStatusEndpoint, delay));
             tasks.put(agentController, task);
         }
@@ -211,13 +217,13 @@ public class AgentControllerStatusUpdater
         {
             agentController.getStatus();
             result = true;
+
+            LOG.debug("{} supports the new status endpoint", agentController);
         }
         catch (final Exception e)
         {
-            // result stays false
+            LOG.debug("{} does not support the new status endpoint because of:", agentController, e);
         }
-
-        LOG.debug("{} supports the new status endpoint: {}", agentController, result);
 
         return result;
     }
@@ -237,21 +243,25 @@ public class AgentControllerStatusUpdater
                                                final long delay)
     {
         // perform the actual status update
-        retrieveAgentControllerStatus(agentController, supportsNewStatusEndpoint);
+        final AgentControllerStatusInfo agentControllerStatusInfo = retrieveAgentControllerStatus(agentController,
+                                                                                                  supportsNewStatusEndpoint);
 
-        // schedule this method to run again at a later time
-        final Runnable updateTask = () -> retrieveAgentControllerStatus(agentController, supportsNewStatusEndpoint, delay);
-
-        final Runnable wrapperTask = () -> {
-            final Future<?> task = executor.submit(updateTask);
-            tasks.put(agentController, task);
-        };
-
-        synchronized (this)
+        // schedule this method to run again at a later time, but only if the agent controller still has running agents
+        if (agentControllerStatusInfo != null && agentControllerStatusInfo.hasRunningAgents())
         {
-            if (scheduledExecutor != null && !scheduledExecutor.isShutdown())
+            final Runnable updateTask = () -> retrieveAgentControllerStatus(agentController, supportsNewStatusEndpoint, delay);
+
+            final Runnable wrapperTask = () -> {
+                final Future<?> task = executor.submit(updateTask);
+                tasks.put(agentController, task);
+            };
+
+            synchronized (this)
             {
-                scheduledExecutor.schedule(wrapperTask, delay, TimeUnit.MILLISECONDS);
+                if (scheduledExecutor != null && !scheduledExecutor.isShutdown())
+                {
+                    scheduledExecutor.schedule(wrapperTask, delay, TimeUnit.MILLISECONDS);
+                }
             }
         }
     }
@@ -263,13 +273,16 @@ public class AgentControllerStatusUpdater
      *            the agent controller
      * @param supportsNewStatusEndpoint
      *            whether or not the agent controller supports the new status endpoint
+     * @return the current status of the agent controller, or <code>null</code> if the thread was interrupted because
+     *         the status update was stopped
      */
-    private void retrieveAgentControllerStatus(final AgentController agentController, final boolean supportsNewStatusEndpoint)
+    private AgentControllerStatusInfo retrieveAgentControllerStatus(final AgentController agentController,
+                                                                    final boolean supportsNewStatusEndpoint)
     {
         // check whether this task was cancelled
         if (Thread.currentThread().isInterrupted())
         {
-            return;
+            return null;
         }
 
         // query the agent controller status
@@ -279,27 +292,25 @@ public class AgentControllerStatusUpdater
             final AgentControllerStatus agentControllerStatus = getStatus(agentController, supportsNewStatusEndpoint);
             final AgentControllerStatusInfo agentControllerStatusInfo = new AgentControllerStatusInfo(agentControllerStatus);
             statusMap.put(agentController.getName(), agentControllerStatusInfo);
+
+            return agentControllerStatusInfo;
         }
         catch (final Exception e)
         {
             // check once more whether this task was cancelled
             if (Thread.currentThread().isInterrupted())
             {
-                return;
+                return null;
             }
 
             LOG.error("Failed getting status from " + agentController, e);
 
             // keep any previous state if available but set the exception
-            final AgentControllerStatusInfo agentControllerStatus = statusMap.get(agentController.getName());
-            if (agentControllerStatus == null)
-            {
-                statusMap.put(agentController.getName(), new AgentControllerStatusInfo(e));
-            }
-            else
-            {
-                agentControllerStatus.setException(e);
-            }
+            final AgentControllerStatusInfo agentControllerStatusInfo = statusMap.computeIfAbsent(agentController.getName(),
+                                                                                                  acName -> new AgentControllerStatusInfo());
+            agentControllerStatusInfo.setException(e);
+
+            return agentControllerStatusInfo;
         }
     }
 

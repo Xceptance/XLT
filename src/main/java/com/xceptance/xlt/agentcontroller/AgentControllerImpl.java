@@ -696,6 +696,9 @@ public class AgentControllerImpl implements AgentController
             {
                 final Integer exitCode = isAgentRunning ? null : agentStatus.getErrorExitCode();
                 agentStatusInfo = new AgentStatusInfo(agentId, agentStatus.getHostName(), isAgentRunning, exitCode);
+
+                // collect all user status objects for later processing
+                userStatusList.addAll(agentStatus.getTestUserStatusList());
             }
             else
             {
@@ -704,9 +707,6 @@ public class AgentControllerImpl implements AgentController
             }
 
             agentStatusList.add(agentStatusInfo);
-
-            // collect all user status objects for later processing
-            userStatusList.addAll(agentStatus.getTestUserStatusList());
         }
 
         // aggregate user statuses to scenario statuses

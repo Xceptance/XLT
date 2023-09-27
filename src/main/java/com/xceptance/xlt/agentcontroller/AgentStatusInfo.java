@@ -35,7 +35,7 @@ public class AgentStatusInfo implements Serializable
      */
     private final Integer exitCode;
 
-    public AgentStatusInfo(final String agentID, final String hostName, final boolean running, final int exitCode)
+    public AgentStatusInfo(final String agentID, final String hostName, final boolean running, final Integer exitCode)
     {
         this.agentID = agentID;
         this.hostName = hostName;
