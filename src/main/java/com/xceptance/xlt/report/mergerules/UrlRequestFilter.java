@@ -45,7 +45,7 @@ public class UrlRequestFilter extends AbstractPatternRequestFilter
     {
         // we don't want to cache here due to the large variance in
         // urls, it is too costly to look things up with a lot of cache misses
-        super("u", regex, exclude, 0);
+        super("u", regex, exclude, 1000);
     }
 
     /**

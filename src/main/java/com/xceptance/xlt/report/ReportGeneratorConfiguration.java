@@ -206,8 +206,6 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
     private final List<Class<? extends ReportProvider>> reportProviderClasses;
 
-    private final List<RequestProcessingRule> requestProcessingRules;
-
     private final int[] runtimeIntervalBoundaries;
 
     private final double[] runtimePercentiles;
@@ -452,9 +450,6 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
         styleSheetFileNames = new ArrayList<>();
 
         readTransformations(outputFileNames, styleSheetFileNames);
-
-        // request processing rules
-        requestProcessingRules = readRequestProcessingRules();
 
         // Apdex settings
         readApdexThresholds();
@@ -719,11 +714,6 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     public List<Class<? extends ReportProvider>> getReportProviderClasses()
     {
         return reportProviderClasses;
-    }
-
-    public List<RequestProcessingRule> getRequestProcessingRules()
-    {
-        return requestProcessingRules;
     }
 
     public FileObject getResultsDirectory()
@@ -1412,11 +1402,11 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     }
 
     /**
-     * Reads the configured request processing rules.
+     * Reads the configured request processing rules and returns new instances
      *
      * @return the list of request processing rules
      */
-    private List<RequestProcessingRule> readRequestProcessingRules()
+    public List<RequestProcessingRule> getRequestProcessingRules()
     {
         final List<RequestProcessingRule> requestProcessingRules = new ArrayList<>();
 

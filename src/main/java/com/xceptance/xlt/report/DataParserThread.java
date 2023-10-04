@@ -111,6 +111,8 @@ class DataParserThread implements Runnable
     @Override
     public void run()
     {
+        // each parser gets its own rules. They are all identical, but don't share state, hence we can more
+        // efficiently cache and process
         final List<RequestProcessingRule> requestProcessingRules = config.getRequestProcessingRules();
         final boolean removeIndexes = config.getRemoveIndexesFromRequestNames();
 
@@ -344,6 +346,8 @@ class DataParserThread implements Runnable
             {
                 final String msg = String.format("Failed to apply request merge rule: %s\n%s", requestProcessingRule, t);
                 LOG.error(msg);
+
+                t.printStackTrace();
 
                 // restore the request's original name
                 requestData.setName(originalName);

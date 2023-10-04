@@ -731,26 +731,20 @@ public class XltCharBuffer implements CharSequence, Comparable<XltCharBuffer>
     @Override
     public boolean equals(Object obj)
     {
-        if (this == obj)
-        {
-            return true;
-        }
-        if (obj == null)
-        {
-            return false;
-        }
-        if (getClass() != obj.getClass())
+        // this test is null-safe and highly JVM optimized
+        if (!(obj instanceof XltCharBuffer))
         {
             return false;
         }
 
         final XltCharBuffer other = (XltCharBuffer) obj;
-        if (this.length == other.length)
+        if (this.length != other.length)
         {
-            return Arrays.equals(this.src, from, from + length, other.src, other.from, other.from + length);
+            return false;
         }
 
-        return false;
+        // now, we go the expensive route
+        return Arrays.equals(this.src, from, from + length, other.src, other.from, other.from + length);
     }
 
     /*

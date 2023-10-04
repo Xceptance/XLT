@@ -32,26 +32,14 @@ import com.xceptance.xlt.api.engine.RequestData;
 public abstract class AbstractPatternRequestFilter extends AbstractRequestFilter
 {
     /**
-     * Cache the expensive stuff but with little sync overhead
+     * Cache the expensive stuff, we are a per thread instance. Can be empty!
      */
-    private ThreadLocal<LRUFastHashMap<CharSequence, Matcher>> cache = new ThreadLocal<LRUFastHashMap<CharSequence, Matcher>>()
-    {
-        @Override
-        protected LRUFastHashMap<CharSequence, Matcher> initialValue()
-        {
-            return new LRUFastHashMap<>(cacheSize);
-        }
-    };
-
-    /**
-     * The size of the cache, because different filters have different demands
-     */
-    private final int cacheSize;
+    private final LRUFastHashMap<CharSequence, Matcher> cache;
 
     /**
      * Just a place holder for a NULL
      */
-    private static final Matcher NULL = Pattern.compile(".*").matcher("null");
+    public static final Matcher NULL = Pattern.compile(".*").matcher("null");
 
     /**
      * The pattern this filter uses.
@@ -100,7 +88,7 @@ public abstract class AbstractPatternRequestFilter extends AbstractRequestFilter
             pattern = RegExUtils.getPattern(regex, 0);
         }
         this.isExclude = exclude;
-        this.cacheSize = cacheSize;
+        this.cache = cacheSize > 0 ? new LRUFastHashMap<>(cacheSize) : null;
     }
 
     /**
@@ -127,7 +115,7 @@ public abstract class AbstractPatternRequestFilter extends AbstractRequestFilter
 
         // only cache if we want that, there are areas where caching does not make sense and wastes
         // a lot of time, such as urls
-        if (cacheSize == 0)
+        if (cache == null)
         {
             final Matcher matcher = pattern.matcher(text);
 
@@ -135,10 +123,7 @@ public abstract class AbstractPatternRequestFilter extends AbstractRequestFilter
         }
         else
         {
-            // get us a local reference to the cache
-            final LRUFastHashMap<CharSequence, Matcher> cache = this.cache.get();
-
-            Matcher result = cache.get(text);
+            Matcher result = this.cache.get(text);
             if (result == null)
             {
                 // not found, produce and cache
