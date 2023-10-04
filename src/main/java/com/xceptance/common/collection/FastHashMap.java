@@ -87,9 +87,13 @@ public class FastHashMap<K, V>
             ptr = (ptr + 2) & m_mask2; //that's next index
             k = m_data[ ptr ];
             if ( k == FREE_KEY )
+            {
                 return null;
-            if ( k.equals( key ) )
+            }
+            if ( k.hashCode() == key.hashCode() && k.equals( key ) )
+            {
                 return (V) m_data[ ptr + 1 ];
+            }
         }
     }
 
