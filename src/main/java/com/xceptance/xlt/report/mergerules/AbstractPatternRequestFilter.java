@@ -140,8 +140,10 @@ public abstract class AbstractPatternRequestFilter extends AbstractRequestFilter
             }
             else
             {
-                // the strange trick with a static stand in for a Matcher
-                // helps us to safe a cast here and earlier
+                // we need to make the result immutable so that we don't change the
+                // matcher and keeps its current state otherwise it wouldn't be reusable
+                // and because we already ran the expensive find on it... we wan't to
+                // keep that piece cached as well
                 return result.toMatchResult();
             }
         }
