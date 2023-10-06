@@ -21,7 +21,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.xceptance.common.collection.LRUFastHashMap;
+import com.xceptance.common.collection.LRUHashMap;
 import com.xceptance.common.lang.ThrowableUtils;
 import com.xceptance.common.util.RegExUtils;
 import com.xceptance.xlt.api.engine.RequestData;
@@ -34,7 +34,7 @@ public abstract class AbstractPatternRequestFilter extends AbstractRequestFilter
     /**
      * Cache the expensive stuff, we are a per thread instance. Can be empty!
      */
-    private final LRUFastHashMap<CharSequence, Matcher> cache;
+    private final LRUHashMap<CharSequence, Matcher> cache;
 
     /**
      * Just a place holder for a NULL
@@ -88,7 +88,7 @@ public abstract class AbstractPatternRequestFilter extends AbstractRequestFilter
             pattern = RegExUtils.getPattern(regex, 0);
         }
         this.isExclude = exclude;
-        this.cache = cacheSize > 0 ? new LRUFastHashMap<>(cacheSize) : null;
+        this.cache = cacheSize > 0 ? new LRUHashMap<>(cacheSize) : null;
     }
 
     /**
