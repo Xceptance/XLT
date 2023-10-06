@@ -191,7 +191,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
     /**
      * The JavaScript debugger
      */
-    private final XltDebugger xltDebugger;
+    private XltDebugger xltDebugger;
 
     // Initialize globally valid things.
     // This code assures, that we only do it once and reuse it all the time.
@@ -247,7 +247,21 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
      */
     public XltWebClient(final BrowserVersion browserVersion)
     {
-        super(copyAndModifyBrowserVersion(browserVersion));
+        this(null, XltProperties.getInstance().getProperty("com.xceptance.xlt.javaScriptEngineEnabled", false));
+    }
+
+    /**
+     * Creates a new XltWebClient object that emulates the specified browser. All other settings are taken from the XLT
+     * configuration.
+     *
+     * @param browserVersion
+     *            the browser version to use (may be <code>null</code>)
+     * @param fullyDisableJavaScript
+     *              avoids bringing up the JS engine entirely in the first place
+     */
+    public XltWebClient(final BrowserVersion browserVersion, final boolean fullyDisableJavaScript)
+    {
+        super(copyAndModifyBrowserVersion(browserVersion), fullyDisableJavaScript, null, 0);
 
         Session.getCurrent().addShutdownListener(this);
 
@@ -304,7 +318,6 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
         getOptions().setThrowExceptionOnScriptError(props.getProperty("com.xceptance.xlt.stopTestOnJavaScriptErrors", false));
 
         // setup JavaScript debugger
-        xltDebugger = new XltDebugger(this);
         if (props.getProperty("com.xceptance.xlt.js.debugger.enabled", false))
         {
             setJavaScriptDebuggerEnabled(true);
@@ -1755,6 +1768,10 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
      */
     public void setJavaScriptDebuggerEnabled(final boolean enabled)
     {
+        if (xltDebugger == null)
+        {
+            xltDebugger = new XltDebugger(this);
+        }
         xltDebugger.setEnabled(enabled);
     }
 
@@ -1765,7 +1782,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
      */
     public boolean isJavaScriptDebuggerEnabled()
     {
-        return xltDebugger.isEnabled();
+        return xltDebugger == null ? false : xltDebugger.isEnabled();
     }
 
     private static URL normalizeUrl(final URL url) throws MalformedURLException
