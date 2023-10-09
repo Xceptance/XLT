@@ -1596,9 +1596,16 @@ tr:hover td.n90 , tr:hover td.n91 , tr:hover td.n92 , tr:hover td.n93 , tr:hover
 tr:hover td.n100                                                                                                                                                                   { background: linear-gradient(rgb(200,120,120), rgba(0,0,0,0), rgb(200,120,120)) !important; }
 
 
-.added    { color: #888 !important;}
-.removed  { color: #888 !important;}
-.infinity { background-color: rgb(200,120,120) !important;}
+.added    { color: #888 !important; }
+.removed  { color: #888 !important; }
+
+.infinity {
+    background-color: rgb(200,120,120) !important;
+    /* The infinity symbol is rather small, so we use a larger font size for it, however, without increasing the height of the table cell. */
+    font-size: 1.3rem;
+    line-height: 0;
+}
+tr:hover .infinity { background: linear-gradient(rgb(200,120,120), rgba(0,0,0,0), rgb(200,120,120)) !important; }
 
 
 /*
