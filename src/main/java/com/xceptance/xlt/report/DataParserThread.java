@@ -347,8 +347,6 @@ class DataParserThread implements Runnable
                 final String msg = String.format("Failed to apply request merge rule: %s\n%s", requestProcessingRule, t);
                 LOG.error(msg);
 
-                t.printStackTrace();
-
                 // restore the request's original name
                 requestData.setName(originalName);
 
