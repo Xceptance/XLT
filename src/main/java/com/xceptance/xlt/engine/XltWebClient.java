@@ -247,7 +247,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
      */
     public XltWebClient(final BrowserVersion browserVersion)
     {
-        this(null, XltProperties.getInstance().getProperty("com.xceptance.xlt.javaScriptEngineEnabled", false));
+        this(browserVersion, XltProperties.getInstance().getProperty("com.xceptance.xlt.javaScriptEngineEnabled", false));
     }
 
     /**
