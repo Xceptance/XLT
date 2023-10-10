@@ -43,7 +43,7 @@ public class TransactionNameRequestFilter extends AbstractPatternRequestFilter
      */
     public TransactionNameRequestFilter(final String regex, final boolean exclude)
     {
-        super("t", regex, exclude, 50);
+        super("t", regex, exclude, 300);
     }
 
     /**

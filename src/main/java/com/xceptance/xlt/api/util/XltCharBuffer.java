@@ -240,7 +240,7 @@ public class XltCharBuffer implements CharSequence, Comparable<XltCharBuffer>
 
     /**
      * Creates a new buffer similar to a String.substring call from a position till the end
-     * 
+     *
      * @param from
      *            first position
      * @return
@@ -615,7 +615,7 @@ public class XltCharBuffer implements CharSequence, Comparable<XltCharBuffer>
 
     /**
      * Checks if the start of the buffer matches another buffer
-     * 
+     *
      * @param s
      *            the buffer to match the start against
      * @return true if the start matches, false otherwise
@@ -685,27 +685,24 @@ public class XltCharBuffer implements CharSequence, Comparable<XltCharBuffer>
     }
 
     /**
-     * Optimized hashcode calculation for large strings using all execution units of the CPU. You are not supposed to
-     * call this directly, it is rather public for testing. This is a trade off between cpu and branches. Assume we are
-     * not mutating... if we mutate, we would have to reset the hashCode Taken from JDK 19 - JDK-8282664, Code and Idea
-     * by Richard Startin https://twitter.com/richardstartin
+     * Optimized hashcode calculation for large strings using all execution units of the CPU. This is a trade off between
+     * cpu and branches. Assumes we are not mutating... if we mutate, we would have to reset the hashCode Taken from
+     * JDK 19 - JDK-8282664, Code and Idea by Richard Startin https://twitter.com/richardstartin
      *
      * @return the hash code
      */
-    @Override
     public int hashCode()
     {
         // it was cached before
-        if (hashCode != 0)
+        if (this.hashCode != 0)
         {
-            return hashCode;
+            return this.hashCode;
         }
 
         int h = 0;
         int i = from;
-        int l, l2;
-        l = length & ~(8 - 1);
-        l2 = length + from;
+        final int l = length & ~(8 - 1);
+        final int l2 = length + from;
 
         for (; i < l; i += 8)
         {
@@ -717,6 +714,8 @@ public class XltCharBuffer implements CharSequence, Comparable<XltCharBuffer>
         {
             h = 31 * h + src[i];
         }
+
+        this.hashCode = h;
 
         return h;
     }
@@ -732,26 +731,20 @@ public class XltCharBuffer implements CharSequence, Comparable<XltCharBuffer>
     @Override
     public boolean equals(Object obj)
     {
-        if (this == obj)
-        {
-            return true;
-        }
-        if (obj == null)
-        {
-            return false;
-        }
-        if (getClass() != obj.getClass())
+        // this test is null-safe and highly JVM optimized
+        if (!(obj instanceof XltCharBuffer))
         {
             return false;
         }
 
         final XltCharBuffer other = (XltCharBuffer) obj;
-        if (this.length == other.length)
+        if (this.length != other.length)
         {
-            return Arrays.equals(this.src, from, from + length, other.src, other.from, other.from + length);
+            return false;
         }
 
-        return false;
+        // now, we go the expensive route
+        return Arrays.equals(this.src, from, from + length, other.src, other.from, other.from + length);
     }
 
     /*

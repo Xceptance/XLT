@@ -18,10 +18,13 @@ package com.xceptance.xlt.api.util;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.VarHandle;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -168,7 +171,7 @@ public class XltCharBufferTest
             assertArrayEquals(s.toCharArray(), x.toCharArray());
         }
     }
-    */
+     */
 
     @Test
     public void valueof_chararray()
@@ -811,7 +814,7 @@ public class XltCharBufferTest
     }
 
     @Test
-    public void hashCode_test()
+    public void hashCode_test() throws NoSuchFieldException, IllegalAccessException
     {
         Assert.assertEquals(new String("").hashCode(), XltCharBuffer.valueOf("").hashCode());
         Assert.assertEquals(new String(" ").hashCode(), XltCharBuffer.valueOf(" ").hashCode());
@@ -860,6 +863,19 @@ public class XltCharBufferTest
         var s = XltCharBuffer.valueOf("foobar");
         Assert.assertEquals("foobar".hashCode(), s.hashCode());
         Assert.assertEquals("foobar".hashCode(), s.hashCode());
+
+        // ensure that we remember it, needs private access
+        final VarHandle handle = MethodHandles
+            .privateLookupIn(XltCharBuffer.class, MethodHandles.lookup())
+            .findVarHandle(XltCharBuffer.class, "hashCode", int.class);
+
+        var s1 = XltCharBuffer.valueOf("foobar");
+        var hashCode1 = (int) handle.get(s1);
+        assertEquals(0, hashCode1);
+        var hashCodeRead = s1.hashCode();
+        var hashCode2 = (int) handle.get(s1);
+        assertNotEquals(0, hashCode2);
+        assertEquals("We have not cached our hashcode", hashCode2, hashCodeRead);
     }
 
     @Test
@@ -1062,16 +1078,34 @@ public class XltCharBufferTest
         assertFalse(foo.equals(""));
 
         // same content
-        var s1 = XltCharBuffer.valueOf("foo");
-        var s2 = XltCharBuffer.valueOf("foo");
-        assertTrue(s1.equals(s2));
-        assertTrue(s2.equals(s1));
+        {
+            var s1 = XltCharBuffer.valueOf("foo");
+            var s2 = XltCharBuffer.valueOf("foo");
+            assertTrue(s1.equals(s2));
+            assertTrue(s2.equals(s1));
+        }
 
         // different content
         var s3 = XltCharBuffer.valueOf("foo");
         var s4 = XltCharBuffer.valueOf("FOO");
         assertFalse(s3.equals(s4));
         assertFalse(s4.equals(s3));
+
+        // different content due to length
+        {
+            var s1 = XltCharBuffer.valueOf("foo2");
+            var s2 = XltCharBuffer.valueOf("foo");
+            assertFalse(s1.equals(s2));
+            assertFalse(s2.equals(s1));
+        }
+
+        // different content due different first char
+        {
+            var s1 = XltCharBuffer.valueOf("aoo");
+            var s2 = XltCharBuffer.valueOf("boo");
+            assertFalse(s1.equals(s2));
+            assertFalse(s2.equals(s1));
+        }
 
         var s5 = XltCharBuffer.valueOf("foobar");
         var s6 = XltCharBuffer.valueOf("megapp");
@@ -1088,6 +1122,23 @@ public class XltCharBufferTest
         var c2 = XltCharBuffer.valueOf(" foobar--").viewByLength(1, 3);
         assertTrue(c1.equals(c1));
         assertTrue(c2.equals(c1));
+    }
+
+    private static class XltCharBufferSameHash extends XltCharBuffer
+    {
+        private final int hashCode;
+
+        public XltCharBufferSameHash(char[] src, final int hashCode)
+        {
+            super(src);
+            this.hashCode = hashCode;
+        }
+
+        @Override
+        public int hashCode()
+        {
+            return hashCode;
+        }
     }
 
     @Test

@@ -263,20 +263,23 @@ public class RequestProcessingRule
     {
         // try each filter and remember its state for later processing
         final int requestFiltersSize = requestFilters.length;
+        // we can allocate that here because it is small and will live on the stack,
+        // hence will not create GC pressure and will be hit in the cache
         final Object[] filterStates = new Object[requestFiltersSize];
 
         for (int i = 0; i < requestFiltersSize; i++)
         {
             final AbstractRequestFilter filter = requestFilters[i];
-            filterStates[i] = filter.appliesTo(requestData);
+            final var state = filter.appliesTo(requestData);
 
-            if (filterStates[i] == null)
+            if (state == null)
             {
                 // return early since one of the filters did *not* apply
 
                 // continue request processing with an unmodified result
                 return ReturnState.CONTINUE;
             }
+            filterStates[i] = state;
         }
 
         // all filters applied so we can process the request, but check first what to do

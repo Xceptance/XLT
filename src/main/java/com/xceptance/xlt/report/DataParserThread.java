@@ -111,6 +111,8 @@ class DataParserThread implements Runnable
     @Override
     public void run()
     {
+        // each parser gets its own rules. They are all identical, but don't share state, hence we can more
+        // efficiently cache and process
         final List<RequestProcessingRule> requestProcessingRules = config.getRequestProcessingRules();
         final boolean removeIndexes = config.getRemoveIndexesFromRequestNames();
 
