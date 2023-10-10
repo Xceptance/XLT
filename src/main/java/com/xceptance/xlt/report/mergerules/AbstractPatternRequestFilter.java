@@ -39,7 +39,7 @@ public abstract class AbstractPatternRequestFilter extends AbstractRequestFilter
     /**
      * Just a place holder for a NULL
      */
-    public static final Matcher NULL = Pattern.compile(".*").matcher("null");
+    private static final Matcher NULL = Pattern.compile(".*").matcher("null");
 
     /**
      * The pattern this filter uses.
