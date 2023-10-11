@@ -184,7 +184,7 @@ public final class StatusUtils
         }
 
         // aggregate the collected individual user status objects
-        final List<ScenarioStatus> scenarioStatusList = StatusUtils.aggregateUserStatusList(userStatusList);
+        final List<ScenarioStatus> scenarioStatusList = aggregateUserStatusList(userStatusList);
 
         // return the data as a new agent controller status object
         return new AgentControllerStatus(agentStatusInfoList, scenarioStatusList);

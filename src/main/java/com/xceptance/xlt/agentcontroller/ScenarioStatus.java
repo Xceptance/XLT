@@ -20,6 +20,8 @@ package com.xceptance.xlt.agentcontroller;
  */
 public class ScenarioStatus extends TestUserStatus
 {
+    private static final long serialVersionUID = 1L;
+
     private int runningUsers;
 
     private int totalUsers;

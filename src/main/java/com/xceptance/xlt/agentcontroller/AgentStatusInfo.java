@@ -71,7 +71,8 @@ public class AgentStatusInfo implements Serializable
     {
         final StringBuilder buf = new StringBuilder();
 
-        buf.append(agentID).append('@').append(hostName).append('\n');
+        buf.append(agentID).append('@').append(hostName).append("[running=").append(running).append(", exitCode=").append(exitCode)
+           .append("]");
 
         return buf.toString();
     }

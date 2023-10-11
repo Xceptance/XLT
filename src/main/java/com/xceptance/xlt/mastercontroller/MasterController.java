@@ -1095,8 +1095,7 @@ public class MasterController
         {
             if (testPropFile != null && testPropFile.exists())
             {
-
-                try (var w = new BufferedWriter(new OutputStreamWriter(testPropFile.getContent().getOutputStream(true))))
+                try (final BufferedWriter w = new BufferedWriter(new OutputStreamWriter(testPropFile.getContent().getOutputStream(true))))
                 {
                     w.newLine();
                     w.write("# Command line comment (AUTOMATICALLY INSERTED)\n");
@@ -1240,7 +1239,7 @@ public class MasterController
         }
 
         agentControllerStatusUpdater.clearAgentControllerStatusMap();
-        
+
         checkSuccess(failedAgentControllers, true);
     }
 

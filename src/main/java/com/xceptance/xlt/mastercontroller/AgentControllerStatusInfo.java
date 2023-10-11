@@ -28,6 +28,8 @@ import com.xceptance.xlt.agentcontroller.ScenarioStatus;
  */
 public class AgentControllerStatusInfo extends AgentControllerStatus
 {
+    private static final long serialVersionUID = 1L;
+
     /**
      * The exception that may have occurred when last requesting the status from an agent controller.
      */
