@@ -267,7 +267,7 @@ public class FireAndForgetUI extends BasicConsoleUI
         try
         {
             ThreadUtils.sleep(3000);
-            masterController.startAgentStatusList();
+            masterController.startAgentControllerStatusUpdates();
 
             while (masterController.isAnyAgentRunning_SAFE())
             {
@@ -277,7 +277,7 @@ public class FireAndForgetUI extends BasicConsoleUI
 
             printAgentStatusList();
 
-            masterController.stopAgentStatusList();
+            masterController.stopAgentControllerStatusUpdates();
         }
         catch (final Exception ex)
         {

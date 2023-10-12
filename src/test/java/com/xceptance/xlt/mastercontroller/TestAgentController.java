@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.xceptance.xlt.agentcontroller.AgentController;
+import com.xceptance.xlt.agentcontroller.AgentControllerStatus;
 import com.xceptance.xlt.agentcontroller.AgentStatus;
 import com.xceptance.xlt.agentcontroller.FileManager;
 import com.xceptance.xlt.agentcontroller.TestResultAmount;
@@ -307,4 +308,9 @@ public class TestAgentController implements AgentController
     {
     }
 
+    @Override
+    public AgentControllerStatus getStatus()
+    {
+        return null;
+    }
 }

@@ -141,8 +141,16 @@ public interface AgentController
      * Returns all agents status.
      *
      * @return all agents status
+     * @deprecated To be removed in XLT 8.0.0. Use {@link #getStatus()} instead.
      */
     public Set<AgentStatus> getAgentStatus();
+
+    /**
+     * Returns the status of this agent controller.
+     *
+     * @return the agent controller status
+     */
+    public AgentControllerStatus getStatus();
 
     /**
      * Returns the agent controller's URL.

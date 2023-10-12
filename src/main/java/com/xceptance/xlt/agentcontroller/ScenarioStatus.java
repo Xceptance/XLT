@@ -13,21 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.xceptance.xlt.mastercontroller;
-
-import com.xceptance.xlt.agentcontroller.TestUserStatus;
+package com.xceptance.xlt.agentcontroller;
 
 /**
- * Represents the status of all test users of the same type.
- * 
- * @author Jörg Werner (Xceptance Software Technologies GmbH)
+ * The status of a load testing scenario, representing the results of all test users executing this scenario.
  */
-public class TestUserTypeStatus extends TestUserStatus
+public class ScenarioStatus extends TestUserStatus
 {
-    /**
-     * serialVersionUID
-     */
-    private static final long serialVersionUID = -2846660875719786673L;
+    private static final long serialVersionUID = 1L;
 
     private int runningUsers;
 
@@ -73,5 +66,26 @@ public class TestUserTypeStatus extends TestUserStatus
     public void setTotalUsers(final int totalUsers)
     {
         this.totalUsers = totalUsers;
+    }
+
+    public String getScenarioName()
+    {
+        return getUserName();
+    }
+
+    public void setScenarioName(final String scenarioName)
+    {
+        setUserName(scenarioName);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String toString()
+    {
+        return String.format("[scenarioName=%s, state=%s, runningUsers=%d, totalUsers=%d, iterations=%d, lastRuntime=%d ms, averageRuntime=%d ms, totalRuntime=%d ms, events=%d, errors=%d, progress=%d%%]",
+                             getScenarioName(), getState(), getRunningUsers(), getTotalUsers(), getIterations(), getLastRuntime(),
+                             getAverageRuntime(), getTotalRuntime(), getEvents(), getErrors(), getPercentageComplete());
     }
 }
