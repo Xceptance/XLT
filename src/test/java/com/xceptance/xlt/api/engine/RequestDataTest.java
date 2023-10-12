@@ -135,7 +135,7 @@ public class RequestDataTest extends TimerDataTest
         // read in common CSV string (no bytesSent, bytesReceived and
         // responseCode
         // values)
-        var instance = fromCsv(commonCSV);
+        fromCsv(commonCSV);
     }
 
     /**
@@ -147,10 +147,8 @@ public class RequestDataTest extends TimerDataTest
     @Test(expected = IllegalArgumentException.class)
     public void csvMissesBytesReceivedAndResponseCode()
     {
-
-
         // read in CSV string
-        var instance = fromCsv(StringUtils.join(new Object[]
+        fromCsv(StringUtils.join(new Object[]
             {
                 commonCSV, bytesSent
             }, Data.DELIMITER));
@@ -165,10 +163,8 @@ public class RequestDataTest extends TimerDataTest
     @Test(expected = IllegalArgumentException.class)
     public void csvMissesResponseCode()
     {
-
-
         // read in CSV string
-        var instance = fromCsv(StringUtils.join(new Object[]
+        fromCsv(StringUtils.join(new Object[]
             {
                 commonCSV, bytesSent, bytesReceived
             }, Data.DELIMITER));
@@ -184,10 +180,8 @@ public class RequestDataTest extends TimerDataTest
     @Test(expected = NumberFormatException.class)
     public void bytesSentInCSVNotInt()
     {
-
-
         // read in CSV string
-        var instance = fromCsv(StringUtils.join(new Object[]
+        fromCsv(StringUtils.join(new Object[]
             {
                 commonCSV, "notanInt", bytesReceived, responseCode, url, contentType
             }, Data.DELIMITER));
@@ -203,10 +197,8 @@ public class RequestDataTest extends TimerDataTest
     @Test(expected = RuntimeException.class)
     public void bytesSentInCSVNegative()
     {
-
-
         // read in CSV string
-        var instance = fromCsv(StringUtils.join(new Object[]
+        fromCsv(StringUtils.join(new Object[]
             {
                 commonCSV, -bytesSent, bytesReceived, responseCode, url, contentType
             }, Data.DELIMITER));
@@ -222,10 +214,8 @@ public class RequestDataTest extends TimerDataTest
     @Test(expected = NumberFormatException.class)
     public void bytesReceivedInCSVNotInt()
     {
-
-
         // read in CSV string
-        var instance = fromCsv(StringUtils.join(new Object[]
+        fromCsv(StringUtils.join(new Object[]
             {
                 commonCSV, bytesSent, "NotAnInt", responseCode, url, contentType
             }, Data.DELIMITER));
@@ -240,10 +230,8 @@ public class RequestDataTest extends TimerDataTest
     @Test(expected = RuntimeException.class)
     public void bytesReceivedInCSVNegative()
     {
-
-
         // read in CSV string
-        var instance = fromCsv(StringUtils.join(new Object[]
+        fromCsv(StringUtils.join(new Object[]
             {
                 commonCSV, bytesSent, -bytesReceived, responseCode, url, contentType
             }, Data.DELIMITER));
@@ -259,10 +247,8 @@ public class RequestDataTest extends TimerDataTest
     @Test(expected = NumberFormatException.class)
     public void responseCodeInCVSNotInt()
     {
-
-
         // read in CSV string
-        var instance = fromCsv(StringUtils.join(new Object[]
+        fromCsv(StringUtils.join(new Object[]
             {
                 commonCSV, bytesSent, bytesReceived, "NotInt", url, contentType
             }, Data.DELIMITER));
@@ -277,10 +263,8 @@ public class RequestDataTest extends TimerDataTest
     @Test(expected = RuntimeException.class)
     public void responseCodeInCVSNegative()
     {
-
-
         // read in CSV string
-        var instance = fromCsv(StringUtils.join(new Object[]
+        fromCsv(StringUtils.join(new Object[]
             {
                 commonCSV, bytesSent, bytesReceived, -1, url, contentType
             }, Data.DELIMITER));

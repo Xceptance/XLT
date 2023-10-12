@@ -1036,7 +1036,7 @@ public class AgentControllerImpl implements AgentController
                         final IOFileFilter cfgFilesFilter = FileFilterUtils.suffixFileFilter(XltConstants.CFG_FILE_EXTENSION);
                         final IOFileFilter xmlFilesFilter = FileFilterUtils.suffixFileFilter(XltConstants.XML_FILE_EXTENSION);
                         final IOFileFilter extensionFilter = FileFilterUtils.or(propertiesFilesFilter, cfgFilesFilter, xmlFilesFilter);
-                        final IOFileFilter filter = FileFilterUtils.and(FileFileFilter.FILE, extensionFilter);
+                        final IOFileFilter filter = FileFilterUtils.and(FileFileFilter.INSTANCE, extensionFilter);
 
                         ZipOutputStream out = null;
                         try

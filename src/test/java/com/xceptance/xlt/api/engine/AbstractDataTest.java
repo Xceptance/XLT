@@ -24,7 +24,6 @@ import java.util.List;
 
 import org.junit.Test;
 
-import com.xceptance.common.lang.ParseNumbers;
 import com.xceptance.xlt.api.util.SimpleArrayList;
 import com.xceptance.xlt.api.util.XltCharBuffer;
 
@@ -74,37 +73,6 @@ public class AbstractDataTest
             l.add(myData.toString());
 
             return l;
-        }
-    }
-
-    private static class MoreTestData extends AbstractData
-    {
-        public XltCharBuffer myData1;
-
-        public int myData2;
-
-        public MoreTestData(String name, char typeCode)
-        {
-            super(name, typeCode);
-        }
-
-        public MoreTestData(char typeCode)
-        {
-            super(typeCode);
-        }
-
-        @Override
-        protected int getMinNoCSVElements()
-        {
-            // typeCode, name, time, myData
-            return super.getMinNoCSVElements() + 2;
-        }
-
-        @Override
-        protected void parseRemainingValues(List<XltCharBuffer> values)
-        {
-            myData1 = values.get(3);
-            myData2 = ParseNumbers.parseInt(values.get(4));
         }
     }
 

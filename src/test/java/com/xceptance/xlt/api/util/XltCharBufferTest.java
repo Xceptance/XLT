@@ -310,7 +310,7 @@ public class XltCharBufferTest
         f.accept("12345", "1234asdfasfd", "098765", "sds", "aa");
 
         // fallback to three params
-        f.accept("12345", "1234asdfasfd", "098765", null);
+        f.accept("12345", "1234asdfasfd", "098765");
         f.accept("12345", "1234asdfasfd", "098765", new String[] {});
     }
 
@@ -1122,23 +1122,6 @@ public class XltCharBufferTest
         var c2 = XltCharBuffer.valueOf(" foobar--").viewByLength(1, 3);
         assertTrue(c1.equals(c1));
         assertTrue(c2.equals(c1));
-    }
-
-    private static class XltCharBufferSameHash extends XltCharBuffer
-    {
-        private final int hashCode;
-
-        public XltCharBufferSameHash(char[] src, final int hashCode)
-        {
-            super(src);
-            this.hashCode = hashCode;
-        }
-
-        @Override
-        public int hashCode()
-        {
-            return hashCode;
-        }
     }
 
     @Test

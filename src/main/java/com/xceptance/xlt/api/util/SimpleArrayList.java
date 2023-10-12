@@ -54,6 +54,7 @@ public class SimpleArrayList<T> implements List<T>
      * @param capacity
      *            the capacity
      */
+    @SuppressWarnings("unchecked")
     public SimpleArrayList(final int capacity)
     {
         data = (T[]) new Object[capacity];
@@ -66,6 +67,7 @@ public class SimpleArrayList<T> implements List<T>
      *            the element to add
      * @return true if added and for this impl it is always true
      */
+    @SuppressWarnings("unchecked")
     public boolean add(T element)
     {
         final int length = data.length;
@@ -89,7 +91,6 @@ public class SimpleArrayList<T> implements List<T>
      *            the position
      * @return the element at this position
      */
-    @SuppressWarnings("unchecked")
     public T get(int index)
     {
         return (T) data[index];
