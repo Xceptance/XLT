@@ -56,8 +56,7 @@ public class CsvLineDecoderTest
     @Test
     public void empty()
     {
-        var r = CsvLineDecoder.parse("");
-        assertEquals(0, r.size());
+        test("", "");
     }
 
     @Test

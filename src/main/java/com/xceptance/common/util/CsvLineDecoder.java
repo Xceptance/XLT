@@ -78,6 +78,7 @@ public final class CsvLineDecoder
         // empty case is handled here
         if (length == 0)
         {
+            result.add(XltCharBuffer.EMPTY);
             return result;
         }
 
