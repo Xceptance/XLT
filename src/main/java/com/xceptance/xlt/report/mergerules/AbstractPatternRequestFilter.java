@@ -46,6 +46,12 @@ public abstract class AbstractPatternRequestFilter extends AbstractRequestFilter
      */
     private final Pattern pattern;
 
+
+    /**
+     * The matcher we use when we don't want to cache anything
+     */
+    private Matcher matcher;
+
     /**
      * Whether or not this is an exclusion rule.
      */
@@ -81,11 +87,13 @@ public abstract class AbstractPatternRequestFilter extends AbstractRequestFilter
 
         if (StringUtils.isBlank(regex))
         {
-            pattern = null;
+            this.pattern = null;
+            this.matcher = null;
         }
         else
         {
-            pattern = RegExUtils.getPattern(regex, 0);
+            this.pattern = RegExUtils.getPattern(regex, 0);
+            this.matcher = this.pattern.matcher("anything");
         }
         this.isExclude = exclude;
         this.cache = cacheSize > 0 ? new LRUFastHashMap<>(cacheSize) : null;
@@ -114,39 +122,55 @@ public abstract class AbstractPatternRequestFilter extends AbstractRequestFilter
         final CharSequence text = getText(requestData);
 
         // only cache if we want that, there are areas where caching does not make sense and wastes
-        // a lot of time, such as urls
+        // a lot of time
         if (cache == null)
         {
-            final Matcher matcher = pattern.matcher(text);
+            // reuse our matcher and save memory
+            final Matcher m = this.matcher.reset(text);
 
-            return (matcher.find() ^ isExclude) ? matcher : null;
+            // when we return the matcher, it will be evaluated instantly and
+            // hence is reuseable during the next call, this saves memory
+            // because a matcher is large
+            return (m.find() ^ isExclude) ? m : null;
         }
-        else
+
+        // ok, we have a cache, ask it
+        final Matcher result = this.cache.get(text);
+
+        // it was not cached before
+        if (result == null)
         {
-            Matcher result = this.cache.get(text);
-            if (result == null)
-            {
-                // not found, produce and cache
-                final Matcher matcher = pattern.matcher(text);
+            // not found, produce and cache
+            final Matcher m = this.matcher.reset(text);
 
-                result = (matcher.find() ^ isExclude) ? matcher : NULL;
-                cache.put(text, result);
-            }
-
-            // ok, we got one, just see if this is NULL or a match
-            if (result == NULL)
+            if ((m.find() ^ isExclude))
             {
-                return null;
+                // remember the state
+                cache.put(text, m);
+
+                // we need a new one, we just wasted our current one by
+                // putting it into the cache
+                this.matcher = pattern.matcher("anything");
+
+                return m;
             }
             else
             {
-                // we need to make the result immutable so that we don't change the
-                // matcher and keeps its current state otherwise it wouldn't be reusable
-                // and because we already ran the expensive find on it... we wan't to
-                // keep that piece cached as well
-                return result.toMatchResult();
+                // in case of the NULL state, our matcher is free to
+                // be reused
+                cache.put(text, NULL);
+                return null;
             }
         }
+
+        // ok, we found it in the cache, preserve the state by getting a matchResult from it
+
+        // result.toMatchResult()
+        // we need to make the result immutable so that we don't change the
+        // matcher when reading it and would not be able to cache and reuse.
+        // Reason: We already ran the expensive find on it, we don't want to
+        // do that again.
+        return result == NULL ? null : result.toMatchResult();
     }
 
     /**
