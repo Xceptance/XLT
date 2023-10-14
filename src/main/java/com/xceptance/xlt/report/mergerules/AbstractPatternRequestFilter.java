@@ -34,12 +34,12 @@ public abstract class AbstractPatternRequestFilter extends AbstractRequestFilter
     /**
      * Cache the expensive stuff, we are a per thread instance. Can be empty!
      */
-    private final LRUFastHashMap<CharSequence, Matcher> cache;
+    private final LRUFastHashMap<CharSequence, MatchResult> cache;
 
     /**
      * Just a place holder for a NULL
      */
-    private static final Matcher NULL = Pattern.compile(".*").matcher("null");
+    private static final MatchResult NULL = Pattern.compile(".*").matcher("null").toMatchResult();
 
     /**
      * The pattern this filter uses.
@@ -133,44 +133,34 @@ public abstract class AbstractPatternRequestFilter extends AbstractRequestFilter
             // because a matcher is large
             return (m.find() ^ isExclude) ? m : null;
         }
-
-        // ok, we have a cache, ask it
-        final Matcher result = this.cache.get(text);
-
-        // it was not cached before
-        if (result == null)
+        else
         {
-            // not found, produce and cache
-            final Matcher m = this.matcher.reset(text);
-
-            if ((m.find() ^ isExclude))
+            MatchResult result = this.cache.get(text);
+            if (result == null)
             {
-                // remember the state
-                cache.put(text, m);
+                // not found, produce and cache, recycle the matcher
+                // cache only the result, not the matcher itself
+                final Matcher m = this.matcher.reset(text);
 
-                // we need a new one, we just wasted our current one by
-                // putting it into the cache
-                this.matcher = pattern.matcher("anything");
+                if (m.find() ^ isExclude)
+                {
+                    // we don't cache the matcher but the result which is immutable
+                    result = m.toMatchResult();
+                    cache.put(text, result);
 
-                return m;
+                    return result;
+                }
+                else
+                {
+                    // remember the miss
+                    cache.put(text, NULL);
+                    return null;
+                }
             }
-            else
-            {
-                // in case of the NULL state, our matcher is free to
-                // be reused
-                cache.put(text, NULL);
-                return null;
-            }
+
+            // ok, we got one, just see if this is NULL or a match
+            return result == NULL ? null : result;
         }
-
-        // ok, we found it in the cache, preserve the state by getting a matchResult from it
-
-        // result.toMatchResult()
-        // we need to make the result immutable so that we don't change the
-        // matcher when reading it and would not be able to cache and reuse.
-        // Reason: We already ran the expensive find on it, we don't want to
-        // do that again.
-        return result == NULL ? null : result.toMatchResult();
     }
 
     /**
