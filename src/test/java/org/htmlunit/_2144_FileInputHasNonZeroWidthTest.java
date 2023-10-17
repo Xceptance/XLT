@@ -24,6 +24,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.xceptance.xlt.AbstractWebTestCase;
+import com.xceptance.xlt.engine.XltWebClient;
 
 /**
  * Tests that the bounding box of HTML file inputs have non-zero height and width.
@@ -32,6 +33,11 @@ import com.xceptance.xlt.AbstractWebTestCase;
  */
 public class _2144_FileInputHasNonZeroWidthTest extends AbstractWebTestCase
 {
+    protected XltWebClient createWebClient()
+    {
+        return new XltWebClient(null, true);
+    }
+
     @Test
     public void testNonZeroWidth() throws Throwable
     {

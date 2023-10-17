@@ -332,6 +332,10 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
                 }
             }
         }
+        else
+        {
+            getOptions().setJavaScriptEnabled(false);
+        }
 
         // default user authentication
         final String userName = props.getProperty("com.xceptance.xlt.auth.userName");
@@ -656,7 +660,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
      */
     public void loadNewStaticContent(final HtmlPage htmlPage)
     {
-        if (loadStaticContent && isJavaScriptEnabled())
+        if (loadStaticContent && isJavaScriptEngineEnabled())
         {
             final URL referrerURL = htmlPage.getWebResponse().getWebRequest().getUrl();
             URL baseURL = referrerURL;
