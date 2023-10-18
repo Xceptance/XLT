@@ -42,15 +42,9 @@ public abstract class AbstractPatternRequestFilter extends AbstractRequestFilter
     private static final MatchResult NULL = Pattern.compile(".*").matcher("null").toMatchResult();
 
     /**
-     * The pattern this filter uses.
-     */
-    private final Pattern pattern;
-
-
-    /**
      * The matcher we use when we don't want to cache anything
      */
-    private Matcher matcher;
+    private final Matcher matcher;
 
     /**
      * Whether or not this is an exclusion rule.
@@ -85,16 +79,7 @@ public abstract class AbstractPatternRequestFilter extends AbstractRequestFilter
     {
         super(typeCode);
 
-        if (StringUtils.isBlank(regex))
-        {
-            this.pattern = null;
-            this.matcher = null;
-        }
-        else
-        {
-            this.pattern = RegExUtils.getPattern(regex, 0);
-            this.matcher = this.pattern.matcher("anything");
-        }
+        this.matcher = StringUtils.isBlank(regex) ? null : RegExUtils.getPattern(regex, 0).matcher("any");
         this.isExclude = exclude;
         this.cache = cacheSize > 0 ? new LRUFastHashMap<>(cacheSize) : null;
     }
@@ -112,7 +97,7 @@ public abstract class AbstractPatternRequestFilter extends AbstractRequestFilter
     @Override
     public Object appliesTo(final RequestData requestData)
     {
-        if (pattern == null)
+        if (matcher == null)
         {
             // empty is always fine, we just want to get the full text -> return a non-null dummy object
             return Boolean.TRUE;
@@ -169,7 +154,7 @@ public abstract class AbstractPatternRequestFilter extends AbstractRequestFilter
     @Override
     public CharSequence getReplacementText(final RequestData requestData, final int capturingGroupIndex, final Object filterState)
     {
-        if (isExclude || pattern == null || capturingGroupIndex == -1)
+        if (isExclude || matcher == null || capturingGroupIndex == -1)
         {
             return getText(requestData);
         }
@@ -206,7 +191,7 @@ public abstract class AbstractPatternRequestFilter extends AbstractRequestFilter
      */
     public String getPattern()
     {
-        return (pattern == null) ? StringUtils.EMPTY : pattern.pattern();
+        return (matcher == null) ? StringUtils.EMPTY : matcher.pattern().pattern();
     }
 
     /**
@@ -214,7 +199,7 @@ public abstract class AbstractPatternRequestFilter extends AbstractRequestFilter
      */
     public boolean isEmpty()
     {
-        return pattern == null;
+        return matcher == null;
     }
 
     /**
