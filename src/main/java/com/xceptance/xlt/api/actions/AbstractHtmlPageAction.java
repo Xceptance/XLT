@@ -15,8 +15,6 @@
  */
 package com.xceptance.xlt.api.actions;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,8 +22,8 @@ import java.util.List;
 import org.htmlunit.HttpMethod;
 import org.htmlunit.Page;
 import org.htmlunit.SgmlPage;
+import org.htmlunit.WebClient;
 import org.htmlunit.WebRequest;
-import org.htmlunit.WebWindow;
 import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlHiddenInput;
@@ -540,33 +538,19 @@ public abstract class AbstractHtmlPageAction extends AbstractWebAction
      */
     protected void loadPageByFormSubmit(final HtmlForm form, final SubmittableElement element, final long waitingTime) throws Exception
     {
-        // Note that HtmlForm.submit() is not public any longer.
-        // htmlPage = waitForPageIsComplete(form.submit(element), waitingTime);
+        form.submit(element);
 
-        // HACK: Use reflection to call the method anyway.
-        final Method submitMethod = HtmlForm.class.getDeclaredMethod("submit", SubmittableElement.class);
-        submitMethod.setAccessible(true);
-
-        try
+        final WebClient wc = getWebClient();
+        if (wc.isJavaScriptEnabled())
         {
-            submitMethod.invoke(form, element);
-            final WebWindow w = getWebClient().getCurrentWindow();
-            // note, that processing postponed actions should normally play no role when javascript
-            // is disabled, but HtmlUnit doesn't really care about that so this code should work well
-            // for both cases: javascript on and javascript off
             getWebClient().getJavaScriptEngine().processPostponedActions();
-
-            htmlPage = waitForPageIsComplete(w.getEnclosedPage(), waitingTime);
         }
-        catch (final InvocationTargetException te)
+        else
         {
-            final Throwable cause = te.getCause();
-            if (cause instanceof Exception)
-            {
-                throw (Exception) cause;
-            }
-            throw new XltException("Failed to submit form", cause);
+            wc.loadDownloadedResponses();
         }
+
+        htmlPage = waitForPageIsComplete(wc.getCurrentWindow().getEnclosedPage(), waitingTime);
     }
 
     /**

@@ -18,6 +18,7 @@ package com.xceptance.xlt.engine;
 import java.util.List;
 
 import org.htmlunit.html.HtmlPage;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -36,7 +37,13 @@ public class BaseUrlHandleTest extends AbstractWebTestCase
         final XltProperties props = XltProperties.getInstance();
         props.setProperty("com.xceptance.xlt.css.download.images", "onDemand");
         props.setProperty("com.xceptance.xlt.cssEnabled", "true");
-        props.setProperty("com.xceptance.xlt.javaScriptEnabled", "true");
+        props.setProperty("com.xceptance.xlt.javaScriptEngineEnabled", "true");
+    }
+
+    @AfterClass
+    public static void reset()
+    {
+        XltEngine.reset();
     }
 
     @Test

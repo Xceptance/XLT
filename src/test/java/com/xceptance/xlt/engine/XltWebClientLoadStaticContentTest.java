@@ -81,6 +81,7 @@ public class XltWebClientLoadStaticContentTest extends AbstractXLTTestCase
         final XltProperties props = XltProperties.getInstance();
         props.setProperty("com.xceptance.xlt.loadStaticContent", "");
         props.setProperty("com.xceptance.xlt.cssEnabled", "");
+        props.setProperty("com.xceptance.xlt.javaScriptEngineEnabled", "");
         props.setProperty("com.xceptance.xlt.javaScriptEnabled", "");
         props.setProperty("com.xceptance.xlt.css.download.images", "");
     }
@@ -121,6 +122,7 @@ public class XltWebClientLoadStaticContentTest extends AbstractXLTTestCase
     {
         // set the test specific load parameter
         final XltProperties props = XltProperties.getInstance();
+        props.setProperty("com.xceptance.xlt.javaScriptEngineEnabled", "true");
         props.setProperty("com.xceptance.xlt.javaScriptEnabled", "true");
 
         // start an open page action
@@ -139,6 +141,7 @@ public class XltWebClientLoadStaticContentTest extends AbstractXLTTestCase
         final XltProperties props = XltProperties.getInstance();
         props.setProperty("com.xceptance.xlt.loadStaticContent", "true");
         props.setProperty("com.xceptance.xlt.cssEnabled", "true");
+        props.setProperty("com.xceptance.xlt.javaScriptEngineEnabled", "true");
         props.setProperty("com.xceptance.xlt.javaScriptEnabled", "true");
 
         // start an open page action
@@ -159,6 +162,7 @@ public class XltWebClientLoadStaticContentTest extends AbstractXLTTestCase
         final XltProperties props = XltProperties.getInstance();
         props.setProperty("com.xceptance.xlt.loadStaticContent", "true");
         props.setProperty("com.xceptance.xlt.cssEnabled", "false");
+        props.setProperty("com.xceptance.xlt.javaScriptEngineEnabled", "false");
         props.setProperty("com.xceptance.xlt.javaScriptEnabled", "false");
 
         // start an open page action
@@ -179,6 +183,7 @@ public class XltWebClientLoadStaticContentTest extends AbstractXLTTestCase
         final XltProperties props = XltProperties.getInstance();
         props.setProperty("com.xceptance.xlt.loadStaticContent", "true");
         props.setProperty("com.xceptance.xlt.cssEnabled", "true");
+        props.setProperty("com.xceptance.xlt.javaScriptEngineEnabled", "false");
         props.setProperty("com.xceptance.xlt.javaScriptEnabled", "false");
 
         // start an open page action
@@ -199,6 +204,7 @@ public class XltWebClientLoadStaticContentTest extends AbstractXLTTestCase
         final XltProperties props = XltProperties.getInstance();
         props.setProperty("com.xceptance.xlt.loadStaticContent", "true");
         props.setProperty("com.xceptance.xlt.cssEnabled", "false");
+        props.setProperty("com.xceptance.xlt.javaScriptEngineEnabled", "true");
         props.setProperty("com.xceptance.xlt.javaScriptEnabled", "true");
 
         // start an open page action
@@ -219,6 +225,7 @@ public class XltWebClientLoadStaticContentTest extends AbstractXLTTestCase
         final XltProperties props = XltProperties.getInstance();
         props.setProperty("com.xceptance.xlt.loadStaticContent", "false");
         props.setProperty("com.xceptance.xlt.cssEnabled", "false");
+        props.setProperty("com.xceptance.xlt.javaScriptEngineEnabled", "false");
         props.setProperty("com.xceptance.xlt.javaScriptEnabled", "false");
 
         // start an open page action
@@ -236,6 +243,7 @@ public class XltWebClientLoadStaticContentTest extends AbstractXLTTestCase
         final XltProperties props = XltProperties.getInstance();
         props.setProperty("com.xceptance.xlt.loadStaticContent", "false");
         props.setProperty("com.xceptance.xlt.cssEnabled", "true");
+        props.setProperty("com.xceptance.xlt.javaScriptEngineEnabled", "true");
         props.setProperty("com.xceptance.xlt.javaScriptEnabled", "true");
 
         // start an open page action
@@ -255,6 +263,7 @@ public class XltWebClientLoadStaticContentTest extends AbstractXLTTestCase
         final XltProperties props = XltProperties.getInstance();
         props.setProperty("com.xceptance.xlt.loadStaticContent", "false");
         props.setProperty("com.xceptance.xlt.cssEnabled", "true");
+        props.setProperty("com.xceptance.xlt.javaScriptEngineEnabled", "true"); // JS engine needed for CSS evaluation
         props.setProperty("com.xceptance.xlt.javaScriptEnabled", "false");
 
         // start an open page action
@@ -273,6 +282,7 @@ public class XltWebClientLoadStaticContentTest extends AbstractXLTTestCase
         final XltProperties props = XltProperties.getInstance();
         props.setProperty("com.xceptance.xlt.loadStaticContent", "false");
         props.setProperty("com.xceptance.xlt.cssEnabled", "false");
+        props.setProperty("com.xceptance.xlt.javaScriptEngineEnabled", "true");
         props.setProperty("com.xceptance.xlt.javaScriptEnabled", "true");
 
         // start an open page action
@@ -356,6 +366,7 @@ public class XltWebClientLoadStaticContentTest extends AbstractXLTTestCase
         props.setProperty("com.xceptance.xlt.loadStaticContent", "false");
         props.setProperty("com.xceptance.xlt.cssEnabled", "true");
         props.setProperty("com.xceptance.xlt.css.download.images", "always");
+        props.setProperty("com.xceptance.xlt.javaScriptEngineEnabled", "true");
 
         // start an open page action
         startCssLoadsImage();
@@ -378,6 +389,7 @@ public class XltWebClientLoadStaticContentTest extends AbstractXLTTestCase
         final XltProperties props = XltProperties.getInstance();
         props.setProperty("com.xceptance.xlt.loadStaticContent", "true");
         props.setProperty("com.xceptance.xlt.cssEnabled", "true");
+        props.setProperty("com.xceptance.xlt.javaScriptEngineEnabled", "true");
         props.setProperty("com.xceptance.xlt.javaScriptEnabled", "true");
 
         // start an open page action
@@ -518,6 +530,8 @@ public class XltWebClientLoadStaticContentTest extends AbstractXLTTestCase
         props.setProperty("com.xceptance.xlt.loadStaticContent", "true");
         props.setProperty("com.xceptance.xlt.cssEnabled", "true");
         props.setProperty("com.xceptance.xlt.css.download.images", "ondemand");
+        props.setProperty("com.xceptance.xlt.javaScriptEngineEnabled", "true");
+        props.setProperty("com.xceptance.xlt.javaScriptEnabled", "true");
 
         // start an open page action
         startDifferentMediaTypes("testWebSites/testWebSiteMediaTypes.html");
@@ -545,6 +559,8 @@ public class XltWebClientLoadStaticContentTest extends AbstractXLTTestCase
         props.setProperty("com.xceptance.xlt.loadStaticContent", "true");
         props.setProperty("com.xceptance.xlt.cssEnabled", "true");
         props.setProperty("com.xceptance.xlt.css.download.images", "ondemand");
+        props.setProperty("com.xceptance.xlt.javaScriptEngineEnabled", "true");
+        props.setProperty("com.xceptance.xlt.javaScriptEnabled", "true");
 
         // start an open page action
         startDifferentMediaTypes("testWebSites/testWebSiteMediaTypesCssSyntax.html");
@@ -572,6 +588,8 @@ public class XltWebClientLoadStaticContentTest extends AbstractXLTTestCase
         props.setProperty("com.xceptance.xlt.loadStaticContent", "true");
         props.setProperty("com.xceptance.xlt.cssEnabled", "true");
         props.setProperty("com.xceptance.xlt.css.download.images", "ondemand");
+        props.setProperty("com.xceptance.xlt.javaScriptEngineEnabled", "true");
+        props.setProperty("com.xceptance.xlt.javaScriptEnabled", "true");
 
         // start an open page action
         startDifferentMediaTypesAndRecursiveCss("@import url(\"print.css\") print; @import \"screen.css\" screen; " +
@@ -599,6 +617,8 @@ public class XltWebClientLoadStaticContentTest extends AbstractXLTTestCase
         props.setProperty("com.xceptance.xlt.loadStaticContent", "true");
         props.setProperty("com.xceptance.xlt.cssEnabled", "true");
         props.setProperty("com.xceptance.xlt.css.download.images", "ondemand");
+        props.setProperty("com.xceptance.xlt.javaScriptEngineEnabled", "true");
+        props.setProperty("com.xceptance.xlt.javaScriptEnabled", "true");
 
         // start an open page action
         startDifferentMediaTypesAndRecursiveCss("@media screen {#background{background-image: url(\"screen.gif\");}} " +
@@ -719,6 +739,7 @@ public class XltWebClientLoadStaticContentTest extends AbstractXLTTestCase
         props.setProperty("com.xceptance.xlt.loadStaticContent", "true");
         props.setProperty("com.xceptance.xlt.cssEnabled", "true");
         props.setProperty("com.xceptance.xlt.css.download.images", "never");
+        props.setProperty("com.xceptance.xlt.javaScriptEngineEnabled", "true");
         props.setProperty("com.xceptance.xlt.javaScriptEnabled", "true");
 
         final String html = "<html><head></head><body><h1>Foo</h1><script>" + "var e = document.createElement('link');" +
