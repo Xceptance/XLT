@@ -81,6 +81,10 @@ class GceAdminUtils
         FRIENDLY_REGION_NAMES.put("europe-west6", "Europe        - Zurich        ");
         FRIENDLY_REGION_NAMES.put("europe-west8", "Europe        - Milan         ");
         FRIENDLY_REGION_NAMES.put("europe-west9", "Europe        - Paris         ");
+        FRIENDLY_REGION_NAMES.put("europe-west10", "Europe        - Berlin        ");
+        FRIENDLY_REGION_NAMES.put("europe-west12", "Europe        - Turin         ");
+        FRIENDLY_REGION_NAMES.put("me-central1", "Middle East   - Doha          ");
+        FRIENDLY_REGION_NAMES.put("me-central2", "Middle East   - Dammam        ");
         FRIENDLY_REGION_NAMES.put("me-west1", "Middle East   - Tel Aviv      ");
         FRIENDLY_REGION_NAMES.put("northamerica-northeast1", "Canada        - Montréal      ");
         FRIENDLY_REGION_NAMES.put("northamerica-northeast2", "Canada        - Toronto       ");

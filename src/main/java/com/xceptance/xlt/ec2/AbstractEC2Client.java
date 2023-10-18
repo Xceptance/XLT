@@ -508,7 +508,7 @@ abstract public class AbstractEC2Client
     {
         final DescribeRegionsRequest describeRegionsRequest = new DescribeRegionsRequest();
         describeRegionsRequest.setRegionNames(Arrays.asList(regionNames));
-        describeRegionsRequest.setAllRegions(true);
+        describeRegionsRequest.setAllRegions(false);
 
         final DescribeRegionsResult describeRegionsResult = getClient(null).describeRegions(describeRegionsRequest);
         final List<Region> regions = describeRegionsResult.getRegions();
