@@ -34,17 +34,17 @@ public abstract class AbstractPatternRequestFilter extends AbstractRequestFilter
     /**
      * Cache the expensive stuff, we are a per thread instance. Can be empty!
      */
-    private final LRUFastHashMap<CharSequence, Matcher> cache;
+    private final LRUFastHashMap<CharSequence, MatchResult> cache;
 
     /**
      * Just a place holder for a NULL
      */
-    private static final Matcher NULL = Pattern.compile(".*").matcher("null");
+    private static final MatchResult NULL = Pattern.compile(".*").matcher("null").toMatchResult();
 
     /**
-     * The pattern this filter uses.
+     * The matcher we use when we don't want to cache anything
      */
-    private final Pattern pattern;
+    private final Matcher matcher;
 
     /**
      * Whether or not this is an exclusion rule.
@@ -79,14 +79,7 @@ public abstract class AbstractPatternRequestFilter extends AbstractRequestFilter
     {
         super(typeCode);
 
-        if (StringUtils.isBlank(regex))
-        {
-            pattern = null;
-        }
-        else
-        {
-            pattern = RegExUtils.getPattern(regex, 0);
-        }
+        this.matcher = StringUtils.isBlank(regex) ? null : RegExUtils.getPattern(regex, 0).matcher("any");
         this.isExclude = exclude;
         this.cache = cacheSize > 0 ? new LRUFastHashMap<>(cacheSize) : null;
     }
@@ -104,7 +97,7 @@ public abstract class AbstractPatternRequestFilter extends AbstractRequestFilter
     @Override
     public Object appliesTo(final RequestData requestData)
     {
-        if (pattern == null)
+        if (matcher == null)
         {
             // empty is always fine, we just want to get the full text -> return a non-null dummy object
             return Boolean.TRUE;
@@ -114,38 +107,44 @@ public abstract class AbstractPatternRequestFilter extends AbstractRequestFilter
         final CharSequence text = getText(requestData);
 
         // only cache if we want that, there are areas where caching does not make sense and wastes
-        // a lot of time, such as urls
+        // a lot of time
         if (cache == null)
         {
-            final Matcher matcher = pattern.matcher(text);
+            // reuse our matcher and save memory
+            final Matcher m = this.matcher.reset(text);
 
-            return (matcher.find() ^ isExclude) ? matcher : null;
+            // when we return the matcher, it will be evaluated instantly and
+            // hence is reuseable during the next call, this saves memory
+            // because a matcher is large
+            return (m.find() ^ isExclude) ? m : null;
         }
         else
         {
-            Matcher result = this.cache.get(text);
+            MatchResult result = this.cache.get(text);
             if (result == null)
             {
-                // not found, produce and cache
-                final Matcher matcher = pattern.matcher(text);
+                // not found, produce and cache, recycle the matcher
+                // cache only the result, not the matcher itself
+                final Matcher m = this.matcher.reset(text);
 
-                result = (matcher.find() ^ isExclude) ? matcher : NULL;
-                cache.put(text, result);
+                if (m.find() ^ isExclude)
+                {
+                    // we don't cache the matcher but the result which is immutable
+                    result = m.toMatchResult();
+                    cache.put(text, result);
+
+                    return result;
+                }
+                else
+                {
+                    // remember the miss
+                    cache.put(text, NULL);
+                    return null;
+                }
             }
 
             // ok, we got one, just see if this is NULL or a match
-            if (result == NULL)
-            {
-                return null;
-            }
-            else
-            {
-                // we need to make the result immutable so that we don't change the
-                // matcher and keeps its current state otherwise it wouldn't be reusable
-                // and because we already ran the expensive find on it... we wan't to
-                // keep that piece cached as well
-                return result.toMatchResult();
-            }
+            return result == NULL ? null : result;
         }
     }
 
@@ -155,7 +154,7 @@ public abstract class AbstractPatternRequestFilter extends AbstractRequestFilter
     @Override
     public CharSequence getReplacementText(final RequestData requestData, final int capturingGroupIndex, final Object filterState)
     {
-        if (isExclude || pattern == null || capturingGroupIndex == -1)
+        if (isExclude || matcher == null || capturingGroupIndex == -1)
         {
             return getText(requestData);
         }
@@ -192,7 +191,7 @@ public abstract class AbstractPatternRequestFilter extends AbstractRequestFilter
      */
     public String getPattern()
     {
-        return (pattern == null) ? StringUtils.EMPTY : pattern.pattern();
+        return (matcher == null) ? StringUtils.EMPTY : matcher.pattern().pattern();
     }
 
     /**
@@ -200,7 +199,7 @@ public abstract class AbstractPatternRequestFilter extends AbstractRequestFilter
      */
     public boolean isEmpty()
     {
-        return pattern == null;
+        return matcher == null;
     }
 
     /**
