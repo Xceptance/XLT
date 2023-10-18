@@ -684,6 +684,10 @@ public class SessionImpl extends Session
         {
             setFailedActionName();
         }
+        else
+        {
+            clearFailedActionName();
+        }
     }
 
     /**
@@ -1095,7 +1099,6 @@ public class SessionImpl extends Session
     {
         setFailed(false);
         setFailReason(null);
-        clearFailedActionName();
 
         transactionTimer = new TransactionTimer();
     }
@@ -1192,7 +1195,6 @@ public class SessionImpl extends Session
     @Override
     public void setNotFailed()
     {
-        failed = false;
-        clearFailedActionName();
+        setFailed(false);
     }
 }
