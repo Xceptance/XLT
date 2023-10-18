@@ -20,20 +20,32 @@
 package com.xceptance.xlt.engine.xltdriver;
 
 import org.htmlunit.MockWebConnection;
+import org.junit.After;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.InvalidElementStateException;
 
+import com.xceptance.xlt.api.util.XltProperties;
 import com.xceptance.xlt.api.webdriver.XltDriver;
+import com.xceptance.xlt.engine.XltEngine;
 
 /**
  * Test for issue 2897 (click on disabled element throws {@link InvalidElementStateException}).
  */
 public class _2897_ClickOnDisabledElementTest
 {
+    @After
+    public void resetXltEngine()
+    {
+        XltEngine.reset(); // also initializes XLT properties again
+    }
+
     @Test(expected = org.openqa.selenium.InvalidElementStateException.class)
     public void ensureInvalidElementStateException() throws Throwable
     {
+        final XltProperties props = XltProperties.getInstance();
+        props.setProperty("com.xceptance.xlt.javaScriptEngineEnabled", "true");
+
         final String html = "<form action='/foo' method='POST'><input type=hidden name=bar value=bum />" +
                             "<button disabled name=submit value=submit id=btn>Click Me</button></form>";
         final XltDriver driver = new XltDriver(false);
