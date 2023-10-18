@@ -768,7 +768,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
      */
     private void loadStaticContent(final WebResponse response)
     {
-        final boolean haveJS = getOptions().isJavaScriptEnabled();
+        final boolean haveJS = isJavaScriptEnabled();
         final boolean haveCss = getOptions().isCssEnabled();
 
         // Exit early
@@ -1252,7 +1252,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
      */
     public void waitForBackgroundThreads(final Page page, final long maximumWaitingTime)
     {
-        if (getOptions().isJavaScriptEnabled())
+        if (isJavaScriptEnabled())
         {
             if (maximumWaitingTime >= 0)
             {

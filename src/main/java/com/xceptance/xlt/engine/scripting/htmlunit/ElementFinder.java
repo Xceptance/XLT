@@ -287,7 +287,7 @@ public class ElementFinder
         @Override
         protected HtmlElement find(final HtmlPage page, final String domExpression)
         {
-            if (!page.getWebClient().getOptions().isJavaScriptEnabled())
+            if (!page.getWebClient().isJavaScriptEnabled())
             {
                 throw new ScriptException("JavaScript needs to be enabled when using DOM locator strategy");
             }
