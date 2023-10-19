@@ -21,7 +21,7 @@ import com.xceptance.xlt.api.util.XltCharBuffer;
 
 /**
  * The {@link CustomValue} can store a single 'double' value.
- *
+ * 
  * @author Matthias Ullrich (Xceptance Software Technologies GmbH)
  */
 public class CustomValue extends AbstractData
@@ -39,7 +39,7 @@ public class CustomValue extends AbstractData
     /**
      * Creates a new {@link CustomValue} object and gives it the specified name. Furthermore, the start time attribute
      * is set to the current time.
-     *
+     * 
      * @param name
      *            the statistics name
      */
@@ -59,7 +59,7 @@ public class CustomValue extends AbstractData
 
     /**
      * Sets the value.
-     *
+     * 
      * @param value
      *            the value
      */
@@ -70,7 +70,7 @@ public class CustomValue extends AbstractData
 
     /**
      * Returns the value.
-     *
+     * 
      * @return the value
      */
     public double getValue()
@@ -102,7 +102,7 @@ public class CustomValue extends AbstractData
      * {@inheritDoc}
      */
     @Override
-    protected void setupRemainingValues(final List<XltCharBuffer> values)
+    protected void parseRemainingValues(final List<XltCharBuffer> values)
     {
         value = Double.parseDouble(values.get(3).toString());
     }

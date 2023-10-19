@@ -38,7 +38,7 @@ import com.xceptance.xlt.common.XltConstants;
  * <p style="color:green">
  * Note that {@link TransactionData} objects have a "T" as their type code.
  * </p>
- *
+ * 
  * @see ActionData
  * @see RequestData
  * @see CustomData
@@ -88,7 +88,7 @@ public class TransactionData extends TimerData
     /**
      * Creates a new TransactionData object and gives it the specified name. Furthermore, the time attribute is set to
      * the current time.
-     *
+     * 
      * @param name
      *            the transaction name
      */
@@ -99,7 +99,7 @@ public class TransactionData extends TimerData
 
     /**
      * Returns the name of the directory where the result browser for this transaction is stored.
-     *
+     * 
      * @return the directory name
      */
     public String getDirectoryName()
@@ -109,7 +109,7 @@ public class TransactionData extends TimerData
 
     /**
      * Sets the name of the directory where the result browser for this transaction is stored.
-     *
+     * 
      * @param directoryName
      *            the directory name
      */
@@ -120,7 +120,7 @@ public class TransactionData extends TimerData
 
     /**
      * Returns the number (or index, [0..N]) of the test user that produced this transaction data.
-     *
+     * 
      * @return the test user number as a string
      */
     public String getTestUserNumber()
@@ -130,7 +130,7 @@ public class TransactionData extends TimerData
 
     /**
      * Sets the number (or index, [0..N]) of the test user that produced this transaction data.
-     *
+     * 
      * @param testUserNumber
      *            the test user number as a string
      */
@@ -142,7 +142,7 @@ public class TransactionData extends TimerData
     /**
      * Returns the name of the action that caused the transaction to fail. Will be empty if the transaction was
      * successful or the transaction failed outside of an action.
-     *
+     * 
      * @return the action name
      */
     public String getFailedActionName()
@@ -152,7 +152,7 @@ public class TransactionData extends TimerData
 
     /**
      * Sets the name of the action that caused the transaction to fail.
-     *
+     * 
      * @param actionName
      *            the action name
      */
@@ -165,7 +165,7 @@ public class TransactionData extends TimerData
      * Returns the path to the directory where dumped pages can be found if this transaction failed. The path is meant
      * to be relative to the results directory of the respective load test. Typically, it looks like
      * "ac1/TAuthor/1/output/1216803080255".
-     *
+     * 
      * @return the dump directory path, or <code>null</code> if this transaction did not fail or no directory
      *         information was available
      */
@@ -181,7 +181,7 @@ public class TransactionData extends TimerData
 
     /**
      * Returns the message of the throwable that caused this transaction to fail.
-     *
+     * 
      * @return the message (may be null)
      */
     public String getFailureMessage()
@@ -201,7 +201,7 @@ public class TransactionData extends TimerData
 
     /**
      * Returns the stack trace of the throwable that caused this transaction to fail.
-     *
+     * 
      * @return the trace (may be null)
      */
     public String getFailureStackTrace()
@@ -211,7 +211,7 @@ public class TransactionData extends TimerData
 
     /**
      * Sets the stack trace of the throwable that caused this transaction to fail.
-     *
+     * 
      * @param trace
      *            the trace
      */
@@ -222,7 +222,7 @@ public class TransactionData extends TimerData
 
     /**
      * Sets the stack trace attribute retrieved from the given throwable.
-     *
+     * 
      * @param throwable
      *            the throwable
      */
@@ -283,9 +283,9 @@ public class TransactionData extends TimerData
      * {@inheritDoc}
      */
     @Override
-    protected void setupRemainingValues(final List<XltCharBuffer> values)
+    protected void parseRemainingValues(final List<XltCharBuffer> values)
     {
-        super.setupRemainingValues(values);
+        super.parseRemainingValues(values);
 
         // process the stack trace
         // TODO performance

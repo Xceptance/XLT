@@ -88,51 +88,19 @@ public abstract class AbstractData implements Data
      * {@inheritDoc}
      */
     @Override
-    public final void initBaseValues(final List<XltCharBuffer> result)
-    {
-        setupBaseValues(result);
-    }
-
-    /**
-     * Mainly for testing, we can recreate the state from a list at once
-     *
-     * @param result a list of columns with the data matching this data format
-     */
-    public final void initAllValuesAtOnce(final List<XltCharBuffer> result)
-    {
-        setupBaseValues(result);
-        setupRemainingValues(result);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public final void initRemainingValues(final List<XltCharBuffer> result)
-    {
-        setupRemainingValues(result);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public final void baseValuesFromCSV(final SimpleArrayList<XltCharBuffer> result, final XltCharBuffer s)
     {
         CsvLineDecoder.parse(result, s);
-        setupBaseValues(result);
+        parseBaseValues(result);
     }
 
     /**
      * Mainly for testing, we can recreate the state from a list at once
-     *
-     * @deprecated {@link AbstractData#initAllValuesAtOnce(List)}
      */
-    @Deprecated(since = "7.4")
     public final void parseValues(final SimpleArrayList<XltCharBuffer> result)
     {
-        setupBaseValues(result);
-        setupRemainingValues(result);
+        parseBaseValues(result);
+        parseRemainingValues(result);
     }
 
     /**
@@ -141,7 +109,7 @@ public abstract class AbstractData implements Data
     @Override
     public final void remainingValuesFromCSV(final SimpleArrayList<XltCharBuffer> result)
     {
-        setupRemainingValues(result);
+        parseRemainingValues(result);
     }
 
     /**
@@ -270,7 +238,7 @@ public abstract class AbstractData implements Data
      * @param values
      *            the list of values, must have at least the length {@link #getMinNoCSVElements()}
      */
-    protected void setupBaseValues(final List<XltCharBuffer> values)
+    protected void parseBaseValues(final List<XltCharBuffer> values)
     {
         if (values.size() < getMinNoCSVElements())
         {
@@ -306,5 +274,5 @@ public abstract class AbstractData implements Data
      * @param values
      *            the list of values, must have at least the length {@link #getMinNoCSVElements()}
      */
-    protected abstract void setupRemainingValues(final List<XltCharBuffer> values);
+    protected abstract void parseRemainingValues(final List<XltCharBuffer> values);
 }

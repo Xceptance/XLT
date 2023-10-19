@@ -24,7 +24,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.vfs2.FileObject;
 
-import com.xceptance.common.util.CsvLineDecoder;
 import com.xceptance.xlt.api.engine.ActionData;
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.engine.PageLoadTimingData;
@@ -164,17 +163,14 @@ class DataParserThread implements Runnable
                     {
                         // parse the data record for minimal data
                         final XltCharBuffer line = lines.get(i);
+                        data = dataRecordFactory.createStatistics(line);
 
                         // we want to reuse that array because it is just temp transport and at the end, we will always
                         // allocate it freshly and might also either allocate too much or have to grow it
                         csvParseResultBuffer.clear();
 
-                        // parse, the buffer is modified!
-                        CsvLineDecoder.parse(csvParseResultBuffer, line);
-
                         // get us the minimal data aka type and time
-                        data = dataRecordFactory.createStatistics(line);
-                        data.initBaseValues(csvParseResultBuffer);
+                        data.baseValuesFromCSV(csvParseResultBuffer, line);
 
                         // see if we have to keep it
                         final long time = data.getTime();
@@ -212,7 +208,7 @@ class DataParserThread implements Runnable
                         }
 
                         // finish parsing
-                        data.initRemainingValues(csvParseResultBuffer);
+                        data.remainingValuesFromCSV(csvParseResultBuffer);
                     }
                     catch (final Exception ex)
                     {
@@ -360,6 +356,4 @@ class DataParserThread implements Runnable
 
         return requestData;
     }
-
-
 }

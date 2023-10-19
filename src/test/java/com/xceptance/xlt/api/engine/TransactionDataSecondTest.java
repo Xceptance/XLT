@@ -44,7 +44,7 @@ public class TransactionDataSecondTest
             {
                 "T", "noname", "123", "1", "true", stackTrace
             });
-        td.initRemainingValues(values);
+        td.parseRemainingValues(values);
 
         final String directoryName = ReflectionUtils.readField(TransactionData.class, td, "directoryName");
 
@@ -58,14 +58,14 @@ public class TransactionDataSecondTest
             {
                 "T", "noname", "123", "1", "true", ""
             });
-        td.initRemainingValues(values2);
-
+        td.parseRemainingValues(values2);
+        
         Assert.assertEquals("Wrong stack trace", null, td.getFailureStackTrace());
-
+        
         final List<XltCharBuffer> values3 = XltCharBufferUtil.toList(new String[]
             {
                 "T", "noname", "123", "1", "true", "neitherMatchingNorEmptySTackTrace"
             });
-        td.initRemainingValues(values3);
+        td.parseRemainingValues(values3);
     }
 }

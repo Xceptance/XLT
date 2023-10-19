@@ -36,7 +36,7 @@ import com.xceptance.xlt.report.util.UrlHostParser;
  * <p style="color:green">
  * Note that {@link RequestData} objects have an "R" as their type code.
  * </p>
- *
+ * 
  * @see ActionData
  * @see TransactionData
  * @see CustomData
@@ -59,7 +59,7 @@ public class RequestData extends TimerData
      * The value to show if the host could not be determined from a URL.
      */
     public final static XltCharBuffer UNKNOWN_HOST = XltCharBuffer.valueOf("(unknown)");
-
+    
     /**
      * The size of the response message in bytes.
      */
@@ -134,12 +134,12 @@ public class RequestData extends TimerData
      * The hash code of a url without fragment, needed downstream
      */
     private int hashCodeOfUrlWithoutFragment;
-
+    
     /**
      * The host, parsed from the url early in the process
      */
     private XltCharBuffer host;
-
+    
     /**
      * The HTTP-Method of this request.
      */
@@ -161,7 +161,7 @@ public class RequestData extends TimerData
      * a DNS address resolution, for example, in case of keep-alive connections.
      */
     private String ipAddresses;
-
+    
     /**
      * The target IP address of the system under test that was used when making the request. This info is useful only if
      * the target system has multiple IP addresses, for example, if it is located behind a CDN. Diverging IP address
@@ -180,7 +180,7 @@ public class RequestData extends TimerData
     /**
      * Creates a new RequestData object and gives it the specified name. Furthermore, the start time attribute is set to
      * the current time.
-     *
+     * 
      * @param name
      *            the request name
      */
@@ -191,7 +191,7 @@ public class RequestData extends TimerData
 
     /**
      * Returns the size of the response message.
-     *
+     * 
      * @return the bytes received
      */
     public int getBytesReceived()
@@ -201,7 +201,7 @@ public class RequestData extends TimerData
 
     /**
      * Returns the size of the request message.
-     *
+     * 
      * @return the bytes sent
      */
     public int getBytesSent()
@@ -211,7 +211,7 @@ public class RequestData extends TimerData
 
     /**
      * Returns the time it took to connect to the server.
-     *
+     * 
      * @return the connect time
      */
     public int getConnectTime()
@@ -221,7 +221,7 @@ public class RequestData extends TimerData
 
     /**
      * Returns the response's content type.
-     *
+     * 
      * @return the content type
      */
     public XltCharBuffer getContentType()
@@ -231,7 +231,7 @@ public class RequestData extends TimerData
 
     /**
      * Returns the time it took to receive the response from the server.
-     *
+     * 
      * @return the receive time
      */
     public int getReceiveTime()
@@ -241,7 +241,7 @@ public class RequestData extends TimerData
 
     /**
      * Returns the request's response code.
-     *
+     * 
      * @return the response code
      */
     public int getResponseCode()
@@ -251,7 +251,7 @@ public class RequestData extends TimerData
 
     /**
      * Returns the time it took to send the request to the server.
-     *
+     * 
      * @return the send time
      */
     public int getSendTime()
@@ -261,7 +261,7 @@ public class RequestData extends TimerData
 
     /**
      * Returns the time it took the server the process the request.
-     *
+     * 
      * @return the server busy time
      */
     public int getServerBusyTime()
@@ -271,7 +271,7 @@ public class RequestData extends TimerData
 
     /**
      * Returns the time until the first response bytes arrived, including connect time and server busy time.
-     *
+     * 
      * @return the time to first bytes
      */
     public int getTimeToFirstBytes()
@@ -281,7 +281,7 @@ public class RequestData extends TimerData
 
     /**
      * Returns the time needed to read all response bytes, including connect time and server busy time.
-     *
+     * 
      * @return the time to last bytes
      */
     public int getTimeToLastBytes()
@@ -291,7 +291,7 @@ public class RequestData extends TimerData
 
     /**
      * Returns the request ID that was sent to the server.
-     *
+     * 
      * @return the request ID
      */
     public String getRequestId()
@@ -301,7 +301,7 @@ public class RequestData extends TimerData
 
     /**
      * Returns the response ID that was sent back by the server.
-     *
+     * 
      * @return the response ID
      */
     public String getResponseId()
@@ -311,7 +311,7 @@ public class RequestData extends TimerData
 
     /**
      * Returns the request's URL.
-     *
+     * 
      * @return the URL
      */
     public XltCharBuffer getUrl()
@@ -321,28 +321,28 @@ public class RequestData extends TimerData
 
     /**
      * Returns the hashcode of the fragment free version of the url
-     *
-     * @return the hashcode of the fragment free url
+     * 
+     * @return the hashcode of the fragment free url 
      */
     public int hashCodeOfUrlWithoutFragment()
     {
         return hashCodeOfUrlWithoutFragment;
     }
-
+    
     /**
      * Returns the host parsed from the url or
      * UNKNOWN_HOST if it does not exist. Never null or empty.
-     *
+     * 
      * @return the host from the url
      */
     public XltCharBuffer getHost()
     {
         return host;
     }
-
+    
     /**
      * Returns the HTTP method of the request.
-     *
+     * 
      * @return the HTTP method.
      */
     public XltCharBuffer getHttpMethod()
@@ -352,7 +352,7 @@ public class RequestData extends TimerData
 
     /**
      * Returns the encoding of the form data.
-     *
+     * 
      * @return the data encoding.
      */
     public XltCharBuffer getFormDataEncoding()
@@ -362,7 +362,7 @@ public class RequestData extends TimerData
 
     /**
      * Returns the form data.
-     *
+     * 
      * @return the form data.
      */
     public XltCharBuffer getFormData()
@@ -372,7 +372,7 @@ public class RequestData extends TimerData
 
     /**
      * Returns the time it took to look up the IP address for a host name.
-     *
+     * 
      * @return the look-up time
      */
     public int getDnsTime()
@@ -382,7 +382,7 @@ public class RequestData extends TimerData
 
     /**
      * Returns the list of IP addresses reported by DNS for the host name used when making the request.
-     *
+     * 
      * @return the list of IP addresses
      */
     public String[] getIpAddresses()
@@ -392,7 +392,7 @@ public class RequestData extends TimerData
 
     /**
      * Returns the target IP address of the system under test that was used when making the request.
-     *
+     * 
      * @return the used IP address
      */
     public XltCharBuffer getUsedIpAddress()
@@ -402,7 +402,7 @@ public class RequestData extends TimerData
 
     /**
      * Sets the size of the response message
-     *
+     * 
      * @param responseSize
      *            the response size
      */
@@ -420,7 +420,7 @@ public class RequestData extends TimerData
 
     /**
      * Sets the size of the request message
-     *
+     * 
      * @param requestSize
      *            the request size
      */
@@ -438,7 +438,7 @@ public class RequestData extends TimerData
 
     /**
      * Sets The time it took to connect to the server.
-     *
+     * 
      * @param connectTime
      *            the connect time
      */
@@ -449,7 +449,7 @@ public class RequestData extends TimerData
 
     /**
      * Sets the response's content type.
-     *
+     * 
      * @param contentType
      *            the contentType
      */
@@ -460,7 +460,7 @@ public class RequestData extends TimerData
 
     /**
      * Sets the response's content type.
-     *
+     * 
      * @param contentType
      *            the contentType
      */
@@ -472,7 +472,7 @@ public class RequestData extends TimerData
 
     /**
      * Sets the time it took to receive the response from the server.
-     *
+     * 
      * @param receiveTime
      *            the receive time
      */
@@ -483,7 +483,7 @@ public class RequestData extends TimerData
 
     /**
      * Sets the request ID that was sent to the server.
-     *
+     * 
      * @param id
      *            the request ID
      */
@@ -494,7 +494,7 @@ public class RequestData extends TimerData
 
     /**
      * Sets the request ID that was sent to the server.
-     *
+     * 
      * @param id
      *            the request ID
      */
@@ -502,10 +502,10 @@ public class RequestData extends TimerData
     {
         this.requestId = XltCharBuffer.valueOf(id);
     }
-
+    
     /**
      * Sets the response ID that was sent back by the server.
-     *
+     * 
      * @param id
      *            the response ID
      */
@@ -516,7 +516,7 @@ public class RequestData extends TimerData
 
     /**
      * Sets the response ID that was sent back by the server.
-     *
+     * 
      * @param id
      *            the response ID
      */
@@ -524,10 +524,10 @@ public class RequestData extends TimerData
     {
         this.responseId = XltCharBuffer.valueOf(id);
     }
-
+    
     /**
      * Sets the request's response code.
-     *
+     * 
      * @param responseCode
      *            the response code
      */
@@ -545,7 +545,7 @@ public class RequestData extends TimerData
 
     /**
      * Sets the time it took to send the request to the server.
-     *
+     * 
      * @param sendTime
      *            the send time
      */
@@ -556,7 +556,7 @@ public class RequestData extends TimerData
 
     /**
      * Sets the time it took the server the process the request.
-     *
+     * 
      * @param serverBusyTime
      *            the server busy time
      */
@@ -567,7 +567,7 @@ public class RequestData extends TimerData
 
     /**
      * Set the timeToFirstBytes attribute
-     *
+     * 
      * @param timeToFirstBytes
      *            the new timeToFirstBytes value
      */
@@ -578,7 +578,7 @@ public class RequestData extends TimerData
 
     /**
      * Set the timeToLastBytes attribute
-     *
+     * 
      * @param timeToLastBytes
      *            the new timeToLastBytes value
      */
@@ -589,7 +589,7 @@ public class RequestData extends TimerData
 
     /**
      * Sets the request's URL. This is for encoding!
-     *
+     * 
      * @param url
      *            the URL
      */
@@ -597,13 +597,13 @@ public class RequestData extends TimerData
     {
         this.url = XltCharBuffer.valueOf(url);
     }
-
+    
     /**
-     * Sets the request's URL. Uses a char buffer for efficiency.
+     * Sets the request's URL. Uses a char buffer for efficiency. 
      * This is for decoding. We do it here because it is more efficient
      * because the data is hotter and we have more cpu available
      * than later in the providers.
-     *
+     * 
      * @param url
      *            the URL
      */
@@ -613,23 +613,23 @@ public class RequestData extends TimerData
         this.hashCodeOfUrlWithoutFragment = StringHasher.hashCodeWithLimit(url, '#');
 
         final XltCharBuffer hostName = UrlHostParser.retrieveHostFromUrl(url);
-
+        
         if (hostName.length() == 0)
         {
             host = UNKNOWN_HOST;
         }
         else
-        {
+        {   
             host = hostName;
             hostName.hashCode(); // get the hashcode while it is in the cache
         }
-
+        
         this.url = url;
     }
 
     /**
      * Set the httpMethod value
-     *
+     * 
      * @param httpMethod
      *            the new httpMethod value
      */
@@ -640,7 +640,7 @@ public class RequestData extends TimerData
 
     /**
      * Set the httpMethod value
-     *
+     * 
      * @param httpMethod
      *            the new httpMethod value
      */
@@ -648,10 +648,10 @@ public class RequestData extends TimerData
     {
         this.httpMethod = XltCharBuffer.valueOf(httpMethod);
     }
-
+    
     /**
      * Set the form data encoding.
-     *
+     * 
      * @param encoding
      *            the new encoding
      */
@@ -662,7 +662,7 @@ public class RequestData extends TimerData
 
     /**
      * Set the form data encoding.
-     *
+     * 
      * @param encoding
      *            the new encoding
      */
@@ -670,10 +670,10 @@ public class RequestData extends TimerData
     {
         this.formDataEncoding = XltCharBuffer.valueOf(encoding);
     }
-
+    
     /**
      * Set the form data.
-     *
+     * 
      * @param formData
      *            the new data
      */
@@ -684,7 +684,7 @@ public class RequestData extends TimerData
 
     /**
      * Set the form data.
-     *
+     * 
      * @param formData
      *            the new data
      */
@@ -692,10 +692,10 @@ public class RequestData extends TimerData
     {
         this.formData = XltCharBuffer.valueOf(formData);
     }
-
+    
     /**
      * Sets the time it took to look up the IP address for a host name.
-     *
+     * 
      * @param dnsTime
      *            the look-up time
      */
@@ -706,7 +706,7 @@ public class RequestData extends TimerData
 
     /**
      * Sets the list of IP addresses reported by DNS for the host name used when making the request.
-     *
+     * 
      * @param ipAddresses
      *            the list of IP addresses
      */
@@ -717,7 +717,7 @@ public class RequestData extends TimerData
 
     /**
      * Sets the target IP address of the system under test that was used when making the request.
-     *
+     * 
      * @param ipAddress
      *            the used IP address
      */
@@ -725,10 +725,10 @@ public class RequestData extends TimerData
     {
         this.usedIpAddress = ipAddress;
     }
-
+    
     /**
      * Sets the target IP address of the system under test that was used when making the request.
-     *
+     * 
      * @param ipAddress
      *            the used IP address
      */
@@ -785,9 +785,9 @@ public class RequestData extends TimerData
      * {@inheritDoc}
      */
     @Override
-    protected void setupRemainingValues(final List<XltCharBuffer> values)
+    protected void parseRemainingValues(final List<XltCharBuffer> values)
     {
-        super.setupRemainingValues(values);
+        super.parseRemainingValues(values);
 
         setBytesSent(ParseNumbers.parseInt(values.get(5)));
         setBytesReceived(ParseNumbers.parseInt(values.get(6)));
@@ -831,7 +831,7 @@ public class RequestData extends TimerData
 
     /**
      * Deal with legacy data of older version
-     *
+     * 
      * @param values
      *            parsed data
      */
