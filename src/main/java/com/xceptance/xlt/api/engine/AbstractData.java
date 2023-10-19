@@ -19,8 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.xceptance.common.lang.ParseNumbers;
+import com.xceptance.common.util.CsvLineDecoder;
 import com.xceptance.common.util.CsvUtils;
-import com.xceptance.common.util.CsvUtilsDecode;
 import com.xceptance.xlt.api.util.SimpleArrayList;
 import com.xceptance.xlt.api.util.XltCharBuffer;
 
@@ -90,7 +90,7 @@ public abstract class AbstractData implements Data
     @Override
     public final void baseValuesFromCSV(final SimpleArrayList<XltCharBuffer> result, final XltCharBuffer s)
     {
-        CsvUtilsDecode.parse(result, s, DELIMITER);
+        CsvLineDecoder.parse(result, s);
         parseBaseValues(result);
     }
 

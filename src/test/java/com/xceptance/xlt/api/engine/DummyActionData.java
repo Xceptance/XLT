@@ -32,12 +32,6 @@ import com.xceptance.xlt.api.util.XltCharBufferUtil;
  */
 public class DummyActionData extends ActionData
 {
-    @Override
-    public void parseRemainingValues(final List<XltCharBuffer> values)
-    {
-        super.parseRemainingValues(values);
-    }
-
     /**
      * Returns a freshly instantiated DummyTransactionData with the following values:
      * <ul>

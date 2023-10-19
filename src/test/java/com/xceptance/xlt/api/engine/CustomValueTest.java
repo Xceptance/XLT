@@ -63,11 +63,5 @@ public class CustomValueTest
         {
             return super.addValues();
         }
-
-        @Override
-        protected void parseRemainingValues(final List<XltCharBuffer> values)
-        {
-            super.parseRemainingValues(values);
-        }
     }
 }
