@@ -20,7 +20,6 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.xceptance.xlt.api.util.XltCharBuffer;
 import com.xceptance.xlt.api.util.XltCharBufferUtil;
 
 /**
@@ -62,12 +61,6 @@ public class CustomValueTest
         protected List<String> addValues()
         {
             return super.addValues();
-        }
-
-        @Override
-        protected void parseRemainingValues(final List<XltCharBuffer> values)
-        {
-            super.parseRemainingValues(values);
         }
     }
 }

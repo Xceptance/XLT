@@ -15,9 +15,6 @@
  */
 package com.xceptance.xlt.api.engine;
 
-import java.util.List;
-
-import com.xceptance.xlt.api.util.XltCharBuffer;
 import com.xceptance.xlt.api.util.XltCharBufferUtil;
 
 /**
@@ -32,12 +29,6 @@ import com.xceptance.xlt.api.util.XltCharBufferUtil;
  */
 public class DummyCustomData extends CustomData
 {
-    @Override
-    public void parseRemainingValues(final List<XltCharBuffer> values)
-    {
-        super.parseRemainingValues(values);
-    }
-
     /**
      * Returns a freshly instantiated DummyCustomData with the following values:
      * <ul>
