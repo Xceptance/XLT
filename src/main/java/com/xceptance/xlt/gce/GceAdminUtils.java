@@ -92,9 +92,9 @@ class GceAdminUtils
         FRIENDLY_REGION_NAMES.put("southamerica-west1", "South America - Chile         ");
         FRIENDLY_REGION_NAMES.put("us-central1", "US            - Iowa          ");
         FRIENDLY_REGION_NAMES.put("us-east1", "US            - South Carolina");
-        FRIENDLY_REGION_NAMES.put("us-east4", "US            - North Virginia");
+        FRIENDLY_REGION_NAMES.put("us-east4", "US            - Virginia      ");
         FRIENDLY_REGION_NAMES.put("us-east5", "US            - Ohio          ");
-        FRIENDLY_REGION_NAMES.put("us-south1", "US            - Dallas        ");
+        FRIENDLY_REGION_NAMES.put("us-south1", "US            - Texas         ");
         FRIENDLY_REGION_NAMES.put("us-west1", "US            - Oregon        ");
         FRIENDLY_REGION_NAMES.put("us-west2", "US            - California    ");
         FRIENDLY_REGION_NAMES.put("us-west3", "US            - Utah          ");
