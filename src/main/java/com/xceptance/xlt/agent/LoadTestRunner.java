@@ -28,7 +28,6 @@ import com.xceptance.xlt.agentcontroller.TestUserConfiguration;
 import com.xceptance.xlt.agentcontroller.TestUserStatus;
 import com.xceptance.xlt.api.engine.DataManager;
 import com.xceptance.xlt.api.engine.GlobalClock;
-import com.xceptance.xlt.api.engine.Session;
 import com.xceptance.xlt.engine.DataManagerImpl;
 import com.xceptance.xlt.engine.SessionImpl;
 import com.xceptance.xlt.engine.util.TimerUtils;

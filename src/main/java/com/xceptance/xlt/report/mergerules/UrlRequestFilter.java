@@ -43,9 +43,9 @@ public class UrlRequestFilter extends AbstractPatternRequestFilter
      */
     public UrlRequestFilter(final String regex, final boolean exclude)
     {
-        // we don't want to cache here due to the large variance in
-        // urls, it is too costly to look things up with a lot of cache misses
-        super("u", regex, exclude, 0);
+        // with the change to get split caches per thread, we can affort
+        // a lookup here and also profit from "does not apply" look ups.
+        super("u", regex, exclude, 1000);
     }
 
     /**

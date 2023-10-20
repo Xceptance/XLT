@@ -230,12 +230,12 @@ public class OkHttp3WebConnection extends AbstractWebConnection<OkHttpClient, Re
         {
             // interpret string body as binary/ISO_8859_1 content and create a binary request body
             final byte[] bytes = body.getBytes(StandardCharsets.ISO_8859_1);
-            requestBody = RequestBody.create(mediaType, bytes);
+            requestBody = RequestBody.create(bytes, mediaType);
         }
         else
         {
             // create a regular text request body
-            requestBody = RequestBody.create(mediaType, body);
+            requestBody = RequestBody.create(body, mediaType);
         }
 
         return createRequest(uri, webRequest, requestBody);
@@ -308,15 +308,15 @@ public class OkHttp3WebConnection extends AbstractWebConnection<OkHttpClient, Re
         // add form data part in the right way (depending on what was given as input)
         if (data != null)
         {
-            builder.addFormDataPart(name, filename, RequestBody.create(mediaType, data));
+            builder.addFormDataPart(name, filename, RequestBody.create(data, mediaType));
         }
         else if (file != null)
         {
-            builder.addFormDataPart(name, filename, RequestBody.create(mediaType, file));
+            builder.addFormDataPart(name, filename, RequestBody.create(file, mediaType));
         }
         else
         {
-            builder.addFormDataPart(name, filename, RequestBody.create(mediaType, new byte[0]));
+            builder.addFormDataPart(name, filename, RequestBody.create(new byte[0], mediaType));
         }
     }
 

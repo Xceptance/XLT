@@ -555,10 +555,4 @@ public class RequestHistoryTest
 
         Mockito.verify(history.getDumpManager(), Mockito.never()).dump((Page) ArgumentMatchers.any());
     }
-
-    private String getTypicalErrorMessage()
-    {
-        return "My Error Message (user: 'TMyTestcase', output: '" + System.nanoTime() + "')";
-    }
-
 }

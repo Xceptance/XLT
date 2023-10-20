@@ -28,10 +28,8 @@ import org.junit.Test;
 import com.xceptance.common.lang.ThrowableUtils;
 import com.xceptance.common.util.CsvUtils;
 import com.xceptance.common.util.ParameterCheckUtils;
-import com.xceptance.xlt.api.actions.AbstractWebAction;
 import com.xceptance.xlt.api.util.SimpleArrayList;
 import com.xceptance.xlt.api.util.XltCharBuffer;
-import com.xceptance.xlt.api.util.XltRandom;
 
 /**
  * Test the implementation of {@link TransactionData}.
@@ -314,63 +312,6 @@ public class TransactionDataTest extends TimerDataTest
         // test, if the class prefix is not empty, but the plain message
         instance.setFailureStackTrace("ClassPrefix");
         Assert.assertEquals("ClassPrefix", instance.getFailureMessage());
-    }
-
-    /**
-     * Constructs a new AbstractWebAction object and returns its reference.
-     * <p>
-     * The constructed action will fail while calling its
-     * <ul>
-     * <li>preValidate</li>
-     * <li>execute</li>
-     * <li>postValidate</li>
-     * </ul>
-     * method. The origin of the failure is randomly chosen.
-     * </p>
-     *
-     * @return AbstractWebAction object which fails on <code>run()</code>.
-     */
-    private static AbstractWebAction constructActionObject()
-    {
-        // guess a random number in interval [0,3)
-        final int random = XltRandom.nextInt(3);
-
-        // construct the action (based on the guessed random number, the action
-        // will fail by calling its pre-, postvalidation or execute method
-        // respectively)
-        return new AbstractWebAction(null)
-        {
-            @Override
-            protected void execute()
-            {
-                if (random == 1)
-                {
-                    Assert.fail(TEST_FAILURE_MSG);
-                }
-
-            }
-
-            @Override
-            protected void postValidate()
-            {
-                if (random == 2)
-                {
-                    Assert.fail(TEST_FAILURE_MSG);
-                }
-
-            }
-
-            @Override
-            public void preValidate()
-            {
-                if (random == 0)
-                {
-                    Assert.fail(TEST_FAILURE_MSG);
-                }
-
-            }
-        };
-
     }
 
     /**

@@ -17,11 +17,14 @@ package org.htmlunit;
 
 import java.net.URL;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.xceptance.xlt.api.tests.AbstractTestCase;
+import com.xceptance.xlt.api.util.XltProperties;
 import com.xceptance.xlt.api.webdriver.XltDriver;
+import com.xceptance.xlt.engine.XltEngine;
 import com.xceptance.xlt.engine.XltWebClient;
 
 /**
@@ -29,10 +32,20 @@ import com.xceptance.xlt.engine.XltWebClient;
  */
 public class _1983_IFrameLoadTest extends AbstractTestCase
 {
+    @After
+    public void resetXltEngine()
+    {
+        XltEngine.reset(); // also initializes XLT properties again 
+    }
+
     @Test
     public void test() throws Exception
     {
-        final XltDriver driver = new XltDriver(true);
+        final XltProperties props = XltProperties.getInstance();
+        props.setProperty("com.xceptance.xlt.javaScriptEngineEnabled", "true");
+        props.setProperty("com.xceptance.xlt.javaScriptEnabled", "true");
+        
+        final XltDriver driver = new XltDriver();
         ((XltWebClient) driver.getWebClient()).setLoadStaticContent(true);
 
         final MockWebConnection webConnection = new MockWebConnection();

@@ -70,8 +70,6 @@ public class MasterControllerConfiguration extends AbstractConfiguration
 
     private static final String PROP_UI_STATUS_PREFIX = PROP_PREFIX + "ui.status.";
 
-    private static final String PROP_UI_STATUS_SHOW_DETAILED = PROP_UI_STATUS_PREFIX + "detailedList";
-
     private static final String PROP_UI_STATUS_UPDATE_INTERVAL = PROP_UI_STATUS_PREFIX + "updateInterval";
 
     private static final String PROP_IGNORE_UNREACHABLE_AGENT_CONTROLLERS = PROP_PREFIX + "ignoreUnreachableAgentControllers";
@@ -115,8 +113,6 @@ public class MasterControllerConfiguration extends AbstractConfiguration
     private final File configDirectory;
 
     private final File homeDirectory;
-
-    private final boolean showDetailedStatusList;
 
     private final int statusListUpdateInterval;
 
@@ -267,7 +263,6 @@ public class MasterControllerConfiguration extends AbstractConfiguration
         httpsProxyBypassHosts = getStringProperty(PROP_HTTPS_PROXY_BYPASS_HOSTS, "");
 
         // other settings
-        showDetailedStatusList = getBooleanProperty(PROP_UI_STATUS_SHOW_DETAILED, false);
         statusListUpdateInterval = getIntProperty(PROP_UI_STATUS_UPDATE_INTERVAL, 5);
 
         isAgentControllerConnectionRelaxed = getBooleanProperty(PROP_IGNORE_UNREACHABLE_AGENT_CONTROLLERS, false);
@@ -432,17 +427,6 @@ public class MasterControllerConfiguration extends AbstractConfiguration
         }
 
         return infos;
-    }
-
-    /**
-     * Returns whether to display detailed status information for each simulated test user, or whether status
-     * information will be aggregated into one line per user type.
-     *
-     * @return whether to show detailed information
-     */
-    public boolean getShowDetailedStatusList()
-    {
-        return showDetailedStatusList;
     }
 
     /**

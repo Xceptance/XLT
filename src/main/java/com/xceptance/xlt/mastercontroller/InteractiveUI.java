@@ -214,7 +214,7 @@ public class InteractiveUI extends BasicConsoleUI
      */
     private void printInfoUntilCanceled()
     {
-        masterController.startAgentStatusList();
+        masterController.startAgentControllerStatusUpdates();
 
         printAgentStatusList();
 
@@ -228,7 +228,9 @@ public class InteractiveUI extends BasicConsoleUI
         }
         while (masterController.isAnyAgentRunning_SAFE());
 
-        masterController.stopAgentStatusList();
+        printAgentStatusList();
+
+        masterController.stopAgentControllerStatusUpdates();
     }
 
     /**

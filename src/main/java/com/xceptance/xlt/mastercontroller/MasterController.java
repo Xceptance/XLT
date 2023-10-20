@@ -25,17 +25,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -58,7 +54,6 @@ import org.slf4j.LoggerFactory;
 
 import com.xceptance.common.util.ParameterCheckUtils;
 import com.xceptance.xlt.agentcontroller.AgentController;
-import com.xceptance.xlt.agentcontroller.AgentStatus;
 import com.xceptance.xlt.agentcontroller.TestResultAmount;
 import com.xceptance.xlt.agentcontroller.TestUserConfiguration;
 import com.xceptance.xlt.api.util.XltLogger;
@@ -152,23 +147,11 @@ public class MasterController
 
     private final boolean isEmbedded;
 
-    private final ThreadPoolExecutor commonExecutor;
-
-    private final ThreadPoolExecutor defaultCommunicationExecutor;
+    private final ThreadPoolExecutor defaultExecutor;
 
     private final ThreadPoolExecutor uploadExecutor;
 
     private final ThreadPoolExecutor downloadExecutor;
-
-    /**
-     * The agent controller's statuses. The key is the agent controller's name.
-     */
-    private final Map<String, AgentControllerStatus> statuses = new ConcurrentHashMap<String, AgentControllerStatus>();
-
-    /**
-     * Running status querying jobs will not proceed if this boolean is set to <code>false</code>.
-     */
-    private final AtomicBoolean isStatusRequesting = new AtomicBoolean(false);
 
     /**
      * The root directory where new directories with test results are to be stored in.
@@ -189,6 +172,12 @@ public class MasterController
      * Keep timer files compressed after download
      */
     private boolean compressedTimerFiles = false;
+
+    /**
+     * The status update facility that periodically queries the status of all agent controllers while a load test is
+     * running.
+     */
+    private final AgentControllerStatusUpdater agentControllerStatusUpdater;
 
     /**
      * Creates a new MasterController object.
@@ -221,11 +210,9 @@ public class MasterController
         final int parallelUploadLimit = config.getParallelUploadLimit();
         final int parallelDownloadLimit = config.getParallelDownloadLimit();
 
-        commonExecutor = ConcurrencyUtils.getNewThreadPoolExecutor("MC-pool");
-        defaultCommunicationExecutor = ConcurrencyUtils.getNewThreadPoolExecutor("AC-communication-default-pool",
-                                                                                 parallelCommunicationLimit);
-        uploadExecutor = ConcurrencyUtils.getNewThreadPoolExecutor("AC-communication-upload-pool", parallelUploadLimit);
-        downloadExecutor = ConcurrencyUtils.getNewThreadPoolExecutor("AC-communication-download-pool", parallelDownloadLimit);
+        defaultExecutor = ConcurrencyUtils.getNewThreadPoolExecutor("AC-default-pool-", parallelCommunicationLimit);
+        uploadExecutor = ConcurrencyUtils.getNewThreadPoolExecutor("AC-upload-pool-", parallelUploadLimit);
+        downloadExecutor = ConcurrencyUtils.getNewThreadPoolExecutor("AC-download-pool-", parallelDownloadLimit);
 
         testResultsRootDirectory = config.getTestResultsRootDirectory();
         resultOutputDirectory = config.getResultOutputDirectory();
@@ -234,6 +221,8 @@ public class MasterController
         compressedTimerFiles = config.isCompressedTimerFiles();
 
         checkTestPropertiesFileName();
+
+        agentControllerStatusUpdater = new AgentControllerStatusUpdater(defaultExecutor);
     }
 
     /**
@@ -270,7 +259,7 @@ public class MasterController
         {
             valid = FileUtils.directoryContains(agentConfDir, testPropFile);
         }
-        catch (IOException ioe)
+        catch (final IOException ioe)
         {
         }
 
@@ -300,11 +289,11 @@ public class MasterController
         // If the test is still running we will tag the directory as "intermediate results"
         if (!stoppedByUser && isAnyAgentRunning_SAFE())
         {
-            String intermediateResultsPath = currentTestResultsDir.getPath() + "-intermediate";
+            final String intermediateResultsPath = currentTestResultsDir.getPath() + "-intermediate";
             currentTestResultsDir = new File(intermediateResultsPath);
         }
 
-        final ArrayList<AgentController> agentControllers = new ArrayList<AgentController>(agentControllerMap.values());
+        final ArrayList<AgentController> agentControllers = new ArrayList<>(agentControllerMap.values());
         final int agentControllerSize = agentControllers.size();
 
         // Progress count
@@ -331,7 +320,7 @@ public class MasterController
         // We have either no failed agentcontroller OR at least 1 agent controller succeeded in case of relaxed
         // connection
         return downloadSuccess && (failedAgentControllers.isEmpty() ||
-            (isAgentControllerConnectionRelaxed && failedAgentControllers.getMap().size() < agentControllerSize));
+                                   (isAgentControllerConnectionRelaxed && failedAgentControllers.getMap().size() < agentControllerSize));
     }
 
     /**
@@ -400,13 +389,13 @@ public class MasterController
      */
     public Map<String, PingResult> pingAgentControllers()
     {
-        final Map<String, PingResult> pingResults = Collections.synchronizedMap(new TreeMap<String, PingResult>());
+        final Map<String, PingResult> pingResults = Collections.synchronizedMap(new TreeMap<>());
 
         // ping agent controllers
         final CountDownLatch latch = new CountDownLatch(agentControllerMap.size());
         for (final AgentController agentcontroller : agentControllerMap.values())
         {
-            defaultCommunicationExecutor.execute(new Runnable()
+            defaultExecutor.execute(new Runnable()
             {
                 @Override
                 public void run()
@@ -453,7 +442,7 @@ public class MasterController
      */
     public AgentControllersInformation getAgentControllerInformation()
     {
-        return new AgentControllersInformation(agentControllerMap.values(), defaultCommunicationExecutor);
+        return new AgentControllersInformation(agentControllerMap.values(), defaultExecutor);
     }
 
     /**
@@ -471,151 +460,9 @@ public class MasterController
         return currentLoadProfile.getActiveTestCaseNames();
     }
 
-    /**
-     * Start querying agent status list from agent controllers.
-     */
-    public void startAgentStatusList()
-    {
-        // inform user
-        userInterface.receivingAgentStatus();
-        // initialize global requesting status
-        isStatusRequesting.set(true);
-        // initialize single agent controller's requesting status
-        final HashMap<String, AtomicBoolean> acRequestingStatus = getNewAgentControllerRequestingStatusMap();
-
-        commonExecutor.execute(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                // as long as requesting is desired
-                while (isStatusRequesting.get())
-                {
-                    // request status from all agent controllers
-                    for (final AgentController agentController : agentControllerMap.values())
-                    {
-                        // query agent controller if it's not still requesting only
-                        final AtomicBoolean isStillRequesting = acRequestingStatus.get(agentController.getName());
-                        if (!isStillRequesting.get())
-                        {
-                            // set requesting
-                            isStillRequesting.set(true);
-                            defaultCommunicationExecutor.execute(new Runnable()
-                            {
-                                @Override
-                                public void run()
-                                {
-                                    // check whether the executor signaled this worker thread to quit
-                                    if (Thread.currentThread().isInterrupted())
-                                    {
-                                        // yes, quit here
-                                        return;
-                                    }
-
-                                    AgentControllerStatus agentControllerStatus;
-
-                                    // query AC status
-                                    try
-                                    {
-                                        LOG.debug("Getting agent status from " + agentController);
-                                        final Set<AgentStatus> agentStatuses = agentController.getAgentStatus();
-                                        agentControllerStatus = new AgentControllerStatus(agentStatuses);
-                                        statuses.put(agentController.getName(), agentControllerStatus);
-                                    }
-                                    catch (final Exception e)
-                                    {
-                                        LOG.error("Failed getting agent status from " + agentController, e);
-                                        agentControllerStatus = statuses.get(agentController.getName());
-                                        if (agentControllerStatus == null)
-                                        {
-                                            statuses.put(agentController.getName(), new AgentControllerStatus(e));
-                                            agentControllerStatus = statuses.get(agentController.getName());
-                                        }
-                                        agentControllerStatus.setException(e);
-                                    }
-
-                                    // reset AC requesting status
-                                    isStillRequesting.set(false);
-                                }
-                            });
-                        }
-                    }
-
-                    // no, wait some time
-                    try
-                    {
-                        Thread.sleep(userInterface.getStatusListUpdateInterval() * 1000);
-                    }
-                    catch (final InterruptedException e)
-                    {
-                        // the executor signaled this worker thread to quit
-                        return;
-                    }
-                }
-            }
-        });
-    }
-
     public TestLoadProfileConfiguration getCurrentLoadProfile()
     {
         return currentLoadProfile;
-    }
-
-    private HashMap<String, AtomicBoolean> getNewAgentControllerRequestingStatusMap()
-    {
-        final HashMap<String, AtomicBoolean> acRequestingStatus = new HashMap<String, AtomicBoolean>();
-        for (final AgentController agentController : agentControllerMap.values())
-        {
-            acRequestingStatus.put(agentController.getName(), new AtomicBoolean(false));
-        }
-        return acRequestingStatus;
-    }
-
-    /**
-     * Stop querying agent status list from agent controllers.
-     */
-    public void stopAgentStatusList()
-    {
-        isStatusRequesting.set(false);
-    }
-
-    /**
-     * Returns the status objects of each known agent controller. If there are problems while communicating with an
-     * agent controller, the respective agent statuses will not be included in the list.
-     *
-     * @return the status list
-     */
-    public Set<AgentStatus> getAgentStatusList()
-    {
-        final Queue<AgentStatus> allAgentStatuses = new ConcurrentLinkedQueue<AgentStatus>();
-
-        final FailedAgentControllerCollection failedAgentcontrollers = new FailedAgentControllerCollection();
-
-        userInterface.receivingAgentStatus();
-
-        for (final AgentController agentController : agentControllerMap.values())
-        {
-            final AgentControllerStatus agentControllerStatus = statuses.get(agentController.getName());
-
-            final Exception e = agentControllerStatus.getException();
-            if (e != null)
-            {
-                failedAgentcontrollers.add(agentController, e);
-            }
-
-            final Set<AgentStatus> agentStatuses = agentControllerStatus.getAgentStatuses();
-            if (agentStatuses != null)
-            {
-                for (final AgentStatus stat : agentStatuses)
-                {
-                    allAgentStatuses.add(stat);
-                }
-            }
-        }
-
-        userInterface.agentStatusReceived(failedAgentcontrollers);
-
-        return new HashSet<AgentStatus>(allAgentStatuses);
     }
 
     /**
@@ -723,10 +570,10 @@ public class MasterController
     public Map<AgentController, Future<Boolean>> getAgentRunningState()
     {
         final CountDownLatch latch = new CountDownLatch(agentControllerMap.size());
-        final Map<AgentController, Future<Boolean>> agentFutures = new HashMap<AgentController, Future<Boolean>>();
+        final Map<AgentController, Future<Boolean>> agentFutures = new HashMap<>();
         for (final AgentController agentcontroller : agentControllerMap.values())
         {
-            agentFutures.put(agentcontroller, defaultCommunicationExecutor.submit(new Callable<Boolean>()
+            agentFutures.put(agentcontroller, defaultExecutor.submit(new Callable<Boolean>()
             {
                 @Override
                 public Boolean call() throws Exception
@@ -880,7 +727,7 @@ public class MasterController
         final ProgressBar progress = startNewProgressBar(agentControllerSize);
         for (final AgentController agentController : agentControllerMap.values())
         {
-            defaultCommunicationExecutor.execute(new Runnable()
+            defaultExecutor.execute(new Runnable()
             {
                 @Override
                 public void run()
@@ -928,8 +775,8 @@ public class MasterController
         userInterface.agentsStarted();
 
         final boolean operationCompleted = finished && (failedAgentcontrollers.isEmpty() ||
-            (isAgentControllerConnectionRelaxed &&
-                failedAgentcontrollers.getMap().size() < agentControllerSize));
+                                                        (isAgentControllerConnectionRelaxed &&
+                                                         failedAgentcontrollers.getMap().size() < agentControllerSize));
         if (operationCompleted)
         {
             stoppedByUser = false;
@@ -956,7 +803,7 @@ public class MasterController
         final ProgressBar progress = startNewProgressBar(agentControllerSize);
         for (final AgentController agentController : agentControllerMap.values())
         {
-            defaultCommunicationExecutor.execute(new Runnable()
+            defaultExecutor.execute(new Runnable()
             {
                 @Override
                 public void run()
@@ -993,8 +840,8 @@ public class MasterController
         userInterface.agentsStopped();
 
         final boolean operationCompleted = finished && (failedAgentcontrollers.isEmpty() ||
-            (isAgentControllerConnectionRelaxed &&
-                failedAgentcontrollers.getMap().size() < agentControllerSize));
+                                                        (isAgentControllerConnectionRelaxed &&
+                                                         failedAgentcontrollers.getMap().size() < agentControllerSize));
         if (operationCompleted)
         {
             stoppedByUser = true;
@@ -1155,7 +1002,7 @@ public class MasterController
         catch (final Throwable ex)
         {
             throw new RuntimeException("Load profile configuration failed using directory: '" + agentTemplateConfigDir + "'. " +
-                getDetailedMessage(ex), ex);
+                                       getDetailedMessage(ex), ex);
         }
 
         // check if test properties file is loaded if configured
@@ -1248,8 +1095,7 @@ public class MasterController
         {
             if (testPropFile != null && testPropFile.exists())
             {
-
-                try(var w = new BufferedWriter(new OutputStreamWriter(testPropFile.getContent().getOutputStream(true))))
+                try (final BufferedWriter w = new BufferedWriter(new OutputStreamWriter(testPropFile.getContent().getOutputStream(true))))
                 {
                     w.newLine();
                     w.write("# Command line comment (AUTOMATICALLY INSERTED)\n");
@@ -1257,7 +1103,7 @@ public class MasterController
                 }
             }
         }
-        catch (Exception e)
+        catch (final Exception e)
         {
             if (testPropFile != null)
             {
@@ -1282,8 +1128,7 @@ public class MasterController
             final FileSystemManager fsMgr = VFS.getManager();
             final XltProperties props = new XltPropertiesImpl(fsMgr.resolveFile(currentTestResultsDir.getAbsolutePath()),
                                                               fsMgr.resolveFile(getConfigDir(currentTestResultsDir).getAbsolutePath()),
-                                                              false,
-                                                              true);
+                                                              false, true);
 
             final String testCommentPropValue = props.getProperties().getProperty("com.xceptance.xlt.loadtests.comment");
 
@@ -1324,18 +1169,14 @@ public class MasterController
 
     public void shutdown()
     {
-        defaultCommunicationExecutor.shutdownNow();
+        defaultExecutor.shutdownNow();
         uploadExecutor.shutdownNow();
         downloadExecutor.shutdownNow();
     }
 
     public void init()
     {
-        // initialize agent controller statuses
-        for (final AgentController agentController : agentControllerMap.values())
-        {
-            statuses.put(agentController.getName(), new AgentControllerStatus((Exception) null));
-        }
+        agentControllerStatusUpdater.clearAgentControllerStatusMap();
     }
 
     /**
@@ -1369,24 +1210,20 @@ public class MasterController
         final CountDownLatch latch = new CountDownLatch(agentControllerMap.size());
         for (final AgentController agentController : agentControllerMap.values())
         {
-            defaultCommunicationExecutor.execute(new Runnable()
+            defaultExecutor.execute(new Runnable()
             {
                 @Override
                 public void run()
                 {
-                    Exception ex = null;
-
                     try
                     {
                         agentController.resetAgentsStatus();
                     }
                     catch (final Exception e)
                     {
-                        ex = e;
                         failedAgentControllers.add(agentController, e);
                     }
 
-                    statuses.put(agentController.getName(), new AgentControllerStatus(ex));
                     latch.countDown();
                 }
             });
@@ -1400,6 +1237,8 @@ public class MasterController
         {
             LOG.error("Waiting for resetting agent status to complete has failed");
         }
+
+        agentControllerStatusUpdater.clearAgentControllerStatusMap();
 
         checkSuccess(failedAgentControllers, true);
     }
@@ -1468,7 +1307,6 @@ public class MasterController
         {
             return inputDir;
         }
-
     }
 
     /**
@@ -1517,5 +1355,54 @@ public class MasterController
                 throw new IllegalArgumentException("There is at least one load/performance test configured but no agent controller capable to run load/performance tests could be found.");
             }
         }
+    }
+
+    /**
+     * Starts querying the status from all agent controllers.
+     */
+    public void startAgentControllerStatusUpdates()
+    {
+        final long interval = userInterface.getStatusListUpdateInterval() * 1000L;
+
+        agentControllerStatusUpdater.start(agentControllerMap.values(), interval);
+    }
+
+    /**
+     * Stops querying the status from all agent controllers.
+     */
+    public void stopAgentControllerStatusUpdates()
+    {
+        agentControllerStatusUpdater.stop();
+    }
+
+    /**
+     * Returns the status of each known agent controller.
+     *
+     * @return the status list
+     */
+    public List<AgentControllerStatusInfo> getAgentControllerStatusList()
+    {
+        final FailedAgentControllerCollection failedAgentcontrollers = new FailedAgentControllerCollection();
+
+        userInterface.receivingAgentStatus();
+
+        final Map<String, AgentControllerStatusInfo> agentControllerStatusMap = agentControllerStatusUpdater.getAgentControllerStatusMap();
+
+        for (final AgentController agentController : agentControllerMap.values())
+        {
+            final AgentControllerStatusInfo agentControllerStatus = agentControllerStatusMap.get(agentController.getName());
+            if (agentControllerStatus != null)
+            {
+                final Exception e = agentControllerStatus.getException();
+                if (e != null)
+                {
+                    failedAgentcontrollers.add(agentController, e);
+                }
+            }
+        }
+
+        userInterface.agentStatusReceived(failedAgentcontrollers);
+
+        return new ArrayList<>(agentControllerStatusMap.values());
     }
 }

@@ -191,7 +191,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
     /**
      * The JavaScript debugger
      */
-    private final XltDebugger xltDebugger;
+    private XltDebugger xltDebugger;
 
     // Initialize globally valid things.
     // This code assures, that we only do it once and reuse it all the time.
@@ -247,7 +247,21 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
      */
     public XltWebClient(final BrowserVersion browserVersion)
     {
-        super(copyAndModifyBrowserVersion(browserVersion));
+        this(browserVersion, XltProperties.getInstance().getProperty("com.xceptance.xlt.javaScriptEngineEnabled", false));
+    }
+
+    /**
+     * Creates a new XltWebClient object that emulates the specified browser. All other settings are taken from the XLT
+     * configuration.
+     *
+     * @param browserVersion
+     *            the browser version to use (may be <code>null</code>)
+     * @param javaScriptEngineEnabled
+     *            whether the JavaScript engine is to be started at all
+     */
+    public XltWebClient(final BrowserVersion browserVersion, final boolean javaScriptEngineEnabled)
+    {
+        super(copyAndModifyBrowserVersion(browserVersion), javaScriptEngineEnabled, null, 0);
 
         Session.getCurrent().addShutdownListener(this);
 
@@ -289,31 +303,38 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
 
         cssMode = CssMode.getMode(props.getProperty("com.xceptance.xlt.css.download.images"));
 
-        // setup JavaScript engine
-        int optimizationLevel = props.getProperty("com.xceptance.xlt.js.compiler.optimizationLevel", -1);
-        if (optimizationLevel < -1 || optimizationLevel > 9)
+        // JavaScript
+        if (javaScriptEngineEnabled)
         {
-            XltLogger.runTimeLogger.warn("Property 'com.xceptance.xlt.js.compiler.optimizationLevel' is set to an invalid value. Will use -1 instead.");
-            optimizationLevel = -1;
-        }
-
-        final boolean takeMeasurements = props.getProperty("com.xceptance.xlt.js.takeMeasurements", false);
-
-        setJavaScriptEngine(new XltJavaScriptEngine(this, optimizationLevel, takeMeasurements));
-        getOptions().setJavaScriptEnabled(props.getProperty("com.xceptance.xlt.javaScriptEnabled", false));
-        getOptions().setThrowExceptionOnScriptError(props.getProperty("com.xceptance.xlt.stopTestOnJavaScriptErrors", false));
-
-        // setup JavaScript debugger
-        xltDebugger = new XltDebugger(this);
-        if (props.getProperty("com.xceptance.xlt.js.debugger.enabled", false))
-        {
-            setJavaScriptDebuggerEnabled(true);
-
-            // create JS beautifying response processor only when needed
-            if (props.getProperty("com.xceptance.xlt.js.debugger.beautifyDownloadedJavaScript", true))
+            // setup JavaScript engine
+            int optimizationLevel = props.getProperty("com.xceptance.xlt.js.compiler.optimizationLevel", -1);
+            if (optimizationLevel < -1 || optimizationLevel > 9)
             {
-                jsBeautifier = new JSBeautifingResponseProcessor();
+                XltLogger.runTimeLogger.warn("Property 'com.xceptance.xlt.js.compiler.optimizationLevel' is set to an invalid value. Will use -1 instead.");
+                optimizationLevel = -1;
             }
+
+            final boolean takeMeasurements = props.getProperty("com.xceptance.xlt.js.takeMeasurements", false);
+
+            setJavaScriptEngine(new XltJavaScriptEngine(this, optimizationLevel, takeMeasurements));
+            getOptions().setJavaScriptEnabled(props.getProperty("com.xceptance.xlt.javaScriptEnabled", false));
+            getOptions().setThrowExceptionOnScriptError(props.getProperty("com.xceptance.xlt.stopTestOnJavaScriptErrors", false));
+
+            // setup JavaScript debugger
+            if (props.getProperty("com.xceptance.xlt.js.debugger.enabled", false))
+            {
+                setJavaScriptDebuggerEnabled(true);
+
+                // create JS beautifying response processor only when needed
+                if (props.getProperty("com.xceptance.xlt.js.debugger.beautifyDownloadedJavaScript", true))
+                {
+                    jsBeautifier = new JSBeautifingResponseProcessor();
+                }
+            }
+        }
+        else
+        {
+            getOptions().setJavaScriptEnabled(false);
         }
 
         // default user authentication
@@ -639,7 +660,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
      */
     public void loadNewStaticContent(final HtmlPage htmlPage)
     {
-        if (loadStaticContent)
+        if (loadStaticContent && isJavaScriptEngineEnabled())
         {
             final URL referrerURL = htmlPage.getWebResponse().getWebRequest().getUrl();
             URL baseURL = referrerURL;
@@ -747,7 +768,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
      */
     private void loadStaticContent(final WebResponse response)
     {
-        final boolean haveJS = getOptions().isJavaScriptEnabled();
+        final boolean haveJS = isJavaScriptEnabled();
         final boolean haveCss = getOptions().isCssEnabled();
 
         // Exit early
@@ -850,7 +871,6 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
                 urlStrings.addAll(CssUtils.getUrlStrings(inlineCss));
                 urlStrings.addAll(CssUtils.getUrlStrings(StringUtils.join(LWPageUtilities.getAllInlineCssStatements(page), ' ')));
             }
-
         }
 
         // image resources (not referenced by CSS)
@@ -1232,7 +1252,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
      */
     public void waitForBackgroundThreads(final Page page, final long maximumWaitingTime)
     {
-        if (getOptions().isJavaScriptEnabled())
+        if (isJavaScriptEnabled())
         {
             if (maximumWaitingTime >= 0)
             {
@@ -1561,15 +1581,18 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
     {
         final List<CSSStyleRuleImpl> cssRules = new ArrayList<CSSStyleRuleImpl>();
 
-        final Window window = ((Window) page.getEnclosingWindow().getScriptableObject());
-        final HTMLDocument document = ((HTMLDocument) window.getDocument());
-
-        // check all style sheets
-        final StyleSheetList sheets = document.getStyleSheets();
-        for (int i = 0; i < sheets.getLength(); i++)
+        if (isJavaScriptEnabled())
         {
-            final CSSStyleSheet sheet = (CSSStyleSheet) sheets.item(i);
-            addCssStyleRulesWithUrls(sheet, cssRules);
+            final Window window = ((Window) page.getEnclosingWindow().getScriptableObject());
+            final HTMLDocument document = ((HTMLDocument) window.getDocument());
+
+            // check all style sheets
+            final StyleSheetList sheets = document.getStyleSheets();
+            for (int i = 0; i < sheets.getLength(); i++)
+            {
+                final CSSStyleSheet sheet = (CSSStyleSheet) sheets.item(i);
+                addCssStyleRulesWithUrls(sheet, cssRules);
+            }
         }
 
         return cssRules;
@@ -1755,6 +1778,10 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
      */
     public void setJavaScriptDebuggerEnabled(final boolean enabled)
     {
+        if (xltDebugger == null)
+        {
+            xltDebugger = new XltDebugger(this);
+        }
         xltDebugger.setEnabled(enabled);
     }
 
@@ -1765,7 +1792,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
      */
     public boolean isJavaScriptDebuggerEnabled()
     {
-        return xltDebugger.isEnabled();
+        return xltDebugger == null ? false : xltDebugger.isEnabled();
     }
 
     private static URL normalizeUrl(final URL url) throws MalformedURLException

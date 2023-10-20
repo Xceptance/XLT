@@ -111,6 +111,8 @@ class DataParserThread implements Runnable
     @Override
     public void run()
     {
+        // each parser gets its own rules. They are all identical, but don't share state, hence we can more
+        // efficiently cache and process
         final List<RequestProcessingRule> requestProcessingRules = config.getRequestProcessingRules();
         final boolean removeIndexes = config.getRemoveIndexesFromRequestNames();
 
@@ -124,7 +126,8 @@ class DataParserThread implements Runnable
         final SparseBitSet allTimeIndex = new SparseBitSet();
         final SparseBitSet actionTimeIndex = new SparseBitSet();
 
-        final SimpleArrayList<XltCharBuffer> csvParseResultBuffer = new SimpleArrayList<>(32);
+        // make the list large enough so it does not grow, we reuse it anyway
+        final SimpleArrayList<XltCharBuffer> csvParseResultBuffer = new SimpleArrayList<>(50);
 
         while (true)
         {
@@ -218,26 +221,23 @@ class DataParserThread implements Runnable
                     }
 
                     // let's see if this data requires post processing aka filtering/merging
-                    if (data != null)
-                    {
-                        data = applyDataAdjustments(data, agentName, testCaseName, userNumber, collectActionNames, chunk, adjustTimerName);
+                    data = applyDataAdjustments(data, agentName, testCaseName, userNumber, collectActionNames, chunk, adjustTimerName);
 
-                        // if this is request, filter it aka apply merge rules
-                        if (data instanceof RequestData)
+                    // if this is request, filter it aka apply merge rules
+                    if (data instanceof RequestData)
+                    {
+                        final RequestData result = postprocess((RequestData) data, requestProcessingRules, removeIndexes);
+                        if (result != null)
                         {
-                            final RequestData result = postprocess((RequestData) data, requestProcessingRules, removeIndexes);
-                            if (result != null)
-                            {
-                                postProcessedData.add(result);
-                            }
+                            postProcessedData.add(result);
                         }
-                        else
-                        {
-                            // get us a hashcode for later while the cache is warm
-                            // for RequestData, we did that already
-                            data.getName().hashCode();
-                            postProcessedData.add(data);
-                        }
+                    }
+                    else
+                    {
+                        // get us a hashcode for later while the cache is warm
+                        // for RequestData, we did that already
+                        data.getName().hashCode();
+                        postProcessedData.add(data);
                     }
 
                     lineNumber++;
@@ -358,6 +358,4 @@ class DataParserThread implements Runnable
 
         return requestData;
     }
-
-
 }

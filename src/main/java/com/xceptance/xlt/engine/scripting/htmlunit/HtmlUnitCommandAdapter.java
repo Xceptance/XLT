@@ -1451,7 +1451,7 @@ public final class HtmlUnitCommandAdapter extends AbstractCommandAdapter impleme
     @Override
     protected String _evaluate(final String expression)
     {
-        if (!getWebClient().getOptions().isJavaScriptEnabled())
+        if (!getWebClient().isJavaScriptEnabled())
         {
             return null;
         }

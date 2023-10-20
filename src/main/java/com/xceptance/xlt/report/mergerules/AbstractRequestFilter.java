@@ -26,7 +26,7 @@ public abstract class AbstractRequestFilter
      * The type code of this request filter.
      */
     private final String typeCode;
-    
+
     /**
      * The hash of the string for faster comparison of the type code
      */
@@ -34,7 +34,7 @@ public abstract class AbstractRequestFilter
 
     /**
      * Constructor.
-     * 
+     *
      * @param typeCode
      *            the type code of this request filter
      */
@@ -46,7 +46,7 @@ public abstract class AbstractRequestFilter
 
     /**
      * Returns the replacement text derived from the passed request data object.
-     * 
+     *
      * @param requestData
      *            the request data object
      * @param capturingGroupIndex
@@ -59,7 +59,7 @@ public abstract class AbstractRequestFilter
 
     /**
      * Whether or not the passed request data object is accepted by this request filter.
-     * 
+     *
      * @param requestData
      *            the request data object
      * @return in case the filter accepted the passed request data: a state object representing the filter state (can be
@@ -69,7 +69,7 @@ public abstract class AbstractRequestFilter
 
     /**
      * Returns the type code of this request filter.
-     * 
+     *
      * @return the type code
      */
     public String getTypeCode()
@@ -79,14 +79,14 @@ public abstract class AbstractRequestFilter
 
     /**
      * Compares two types codes efficiently
-     * 
+     *
      * @param typeCode the type code to compare to
      * @param typeCodeHashCode the hash of the type code for performance reason
      * @return true, if the type codes match, false otherwise
      */
     public boolean isSameTypeCode(final String typeCode, final int typeCodeHashCode)
     {
-        if (this.typeCodeHashCode == typeCodeHashCode && this.typeCode.length() == typeCode.length())
+        if (this.typeCodeHashCode == typeCodeHashCode)
         {
             return this.typeCode.equals(typeCode);
         }
