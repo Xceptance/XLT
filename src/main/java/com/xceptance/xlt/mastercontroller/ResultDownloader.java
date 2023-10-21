@@ -446,7 +446,7 @@ public class ResultDownloader
                 if (startTime > 0L && startTime < Long.MAX_VALUE)
                 {
                     try (var w = new BufferedWriter(new OutputStreamWriter(testPropFile.getContent().getOutputStream(true),
-                                                                           StandardCharsets.ISO_8859_1)))
+                                                                           StandardCharsets.UTF_8)))
                     {
                         w.newLine();
                         w.newLine();

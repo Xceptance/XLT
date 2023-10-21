@@ -31,6 +31,8 @@ import java.util.regex.Matcher;
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.VFS;
 
+import com.xceptance.common.io.Utf8Reader;
+
 /**
  * The PropertiesUtils helps in dealing with properties files.
  *
@@ -123,7 +125,7 @@ public final class PropertiesUtils
         {
             ParameterCheckUtils.isReadableFile(file, "file");
         }
-        catch(IllegalArgumentException e)
+        catch (IllegalArgumentException e)
         {
             throw new FileNotFoundException(file.toString());
         }
@@ -131,7 +133,7 @@ public final class PropertiesUtils
 
         try (final InputStream is = file.getContent().getInputStream())
         {
-            props.load(is);
+            props.load(new Utf8Reader(is));
         }
     }
 

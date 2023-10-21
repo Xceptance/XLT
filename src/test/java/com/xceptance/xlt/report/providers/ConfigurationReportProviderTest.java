@@ -40,7 +40,7 @@ public class ConfigurationReportProviderTest
         {
             final Path secretPath = testDir.resolve("config").resolve(XltConstants.SECRET_PROPERTIES_FILENAME);
             Files.createDirectories(secretPath.getParent());
-            Files.write(secretPath, "value=Some very secret Value\n".getBytes(StandardCharsets.ISO_8859_1));
+            Files.write(secretPath, "value=Some very secret Value\n".getBytes(StandardCharsets.UTF_8));
             final ConfigurationReportProvider provider = new ConfigurationReportProvider();
             ReportGeneratorConfiguration config = new ReportGeneratorConfiguration();
             config.setReportDirectory(testDir.toFile());
