@@ -15,9 +15,12 @@
  */
 package com.xceptance.xlt.engine.socket;
 
-import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketImplFactory;
+
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.xceptance.xlt.api.util.XltProperties;
 import com.xceptance.xlt.common.XltConstants;
@@ -35,6 +38,8 @@ import com.xceptance.xlt.common.XltConstants;
  */
 public final class XltSockets
 {
+    private static final Logger LOG = LoggerFactory.getLogger(XltSockets.class);
+
     private static final String PROP_COLLECT_NETWORK_DATA = XltConstants.XLT_PACKAGE_PATH + ".socket.collectNetworkData";
 
     static
@@ -46,9 +51,9 @@ public final class XltSockets
                 // set the global socket impl factory
                 Socket.setSocketImplFactory(new InstrumentedSocketImplFactory());
             }
-            catch (final IOException ex)
+            catch (final Throwable ex)
             {
-                throw new RuntimeException("Failed to initialize XLT sockets", ex);
+                LOG.warn("Failed to initialize XLT sockets: {}", ExceptionUtils.getRootCauseMessage(ex));
             }
         }
     }
