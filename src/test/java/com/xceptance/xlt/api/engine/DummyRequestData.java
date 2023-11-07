@@ -24,7 +24,7 @@ import com.xceptance.xlt.api.util.XltCharBufferUtil;
  * The class provides the convenience method {@link #getDefault()} which gives a new instance of this class for each
  * invocation.
  * </p>
- * 
+ *
  * @author Sebastian Oerding
  */
 public class DummyRequestData extends RequestData
@@ -41,14 +41,14 @@ public class DummyRequestData extends RequestData
      * <li>200 received bytes</li>
      * <li>&quot;404&quot; as response status</li>
      * </ul>
-     * 
+     *
      * @return a new instance for each invocation with some hard coded values as described above
      */
     public static RequestData getDefault()
     {
         final DummyRequestData returnValue = new DummyRequestData();
         // String stackTrace = "a (user: 'testUser', output: '1234567890')";
-        returnValue.parseRemainingValues(XltCharBufferUtil.toList(new String[]
+        returnValue.setupRemainingValues(XltCharBufferUtil.toList(new String[]
             {
                 "R", "requestName", "4000", "1", "true", "100", "200", "404"
             }));
