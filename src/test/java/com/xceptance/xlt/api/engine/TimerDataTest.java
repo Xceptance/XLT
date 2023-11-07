@@ -144,8 +144,8 @@ public class TimerDataTest extends AbstractDataTest
                            );
 
         var d = new TestData(TYPECODE);
-        d.parseBaseValues(list); // inherited
-        d.parseRemainingValues(list);
+        d.initBaseValues(list); // inherited
+        d.initRemainingValues(list);
 
         assertEquals(TYPECODE, d.getTypeCode());
         assertEquals("Name", d.getName());
@@ -170,7 +170,7 @@ public class TimerDataTest extends AbstractDataTest
 
         try
         {
-            d.parseRemainingValues(list);
+            d.setupRemainingValues(list);
             fail();
         }
         catch (IllegalArgumentException e)

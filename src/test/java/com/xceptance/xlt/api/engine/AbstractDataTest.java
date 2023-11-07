@@ -62,7 +62,7 @@ public class AbstractDataTest
         }
 
         @Override
-        protected void parseRemainingValues(List<XltCharBuffer> values)
+        protected void setupRemainingValues(List<XltCharBuffer> values)
         {
             myData = values.get(3);
         }
@@ -101,7 +101,7 @@ public class AbstractDataTest
         }
 
         @Override
-        protected void parseRemainingValues(List<XltCharBuffer> values)
+        protected void setupRemainingValues(List<XltCharBuffer> values)
         {
             myData1 = values.get(3);
             myData2 = ParseNumbers.parseInt(values.get(4));

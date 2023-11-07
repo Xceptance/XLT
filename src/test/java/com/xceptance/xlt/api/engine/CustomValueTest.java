@@ -42,7 +42,7 @@ public class CustomValueTest
     public void testParseValues()
     {
         final TestCustomValue value = new TestCustomValue();
-        value.parseRemainingValues(XltCharBufferUtil.toList(new String[]
+        value.setupRemainingValues(XltCharBufferUtil.toList(new String[]
             {
                 "V", "null", "123000", "0.0"
             }));
