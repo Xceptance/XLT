@@ -56,9 +56,9 @@ function send(data, messageID) {
     }
   }
 
-  startWebSocketConnect(function (connection) {
+  startWebSocketConnect(function (webSocket) {
     try {
-      connection.send(messageString);
+      webSocket.send(messageString);
     } catch (e) {
       console.log(e);
     }
@@ -323,7 +323,6 @@ function sendTimingDataEntries(tabId, onlyFinished) {
       }
     }
   }
-
 }
 
 chrome.webNavigation.onBeforeNavigate.addListener(async function (details) {
@@ -419,7 +418,7 @@ chrome.webRequest.onSendHeaders.addListener(async function (details) {
         request.method = details.method;
         request.type = details.type;
         request.header = details.requestHeaders || null;
-        request.requestSize = (request.requestSize || 0) + getHeaderSize(details.requestHeaders) + getStatusLineSize(details.statusLine);
+        request.requestSize = (request.requestSize || 0) + getHeaderSize(details.requestHeaders);
       });
     }
   });
@@ -585,7 +584,7 @@ chrome.runtime.onMessage.addListener(async function (message, sender, sendRespon
   }
   else if (data === "eventResourceTimingBufferFull") {
     if (hasTimingDataEntry(TimingData, tabId)) {
-      setTimingData(getCurrentTimingDataEntry(tabId), message.value);
+      setTimingData(getCurrentTimingDataEntry(TimingData, tabId), message.value);
     }
   }
 
