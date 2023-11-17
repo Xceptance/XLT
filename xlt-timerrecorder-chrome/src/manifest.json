@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "minimum_chrome_version": "102",
+  "minimum_chrome_version": "116",
   "name": "XLT Timer Recorder",
   "short_name": "XLT-CTR",
   "description": "Enable XLT to collect performance data from the browser",

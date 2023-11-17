@@ -1,8 +1,22 @@
+// log something so we can see when a service worker was (re-)activated
+log("Service worker activated");
+
+// send a keep-alive message every 10 secs to prevent the service worker from being deactivated after 30 secs of inactivity
+setInterval(
+  () => {
+    log("Sending keep-alive message");
+    send({ action: "KEEP_ALIVE_PING", data: "[]" }, "<dummy>");
+  },
+  10 * 1000
+);
+
+
 const ContentCommunicationID = "44cbe54d-c0d5-4712-b0b0-929ca3d72c83";
 const BackgroundCommunicationID = "a35329d7-3f97-44c2-8aae-88213a474ffe";
 const ExternalCommunicationID = "8401bc88-ed75-4560-ae93-6854efbfbe62";
 
-const CRLF = "\r\n";
+const CRLF_LENGTH = "\r\n".length;
+const HTTP_VERSION_LENGTH = "HTTP/x.x".length;
 
 const reResponseStatus = /HTTP\/\d(?:\.\d)?\s+\d{3}\s+(.*)/;
 
@@ -25,7 +39,9 @@ function loadStorageCache() {
 }
 
 function storeStorageCache() {
-  chrome.storage.session.set(storageCache);
+  if (storageCache.configuration.useSessionStorage) {
+    chrome.storage.session.set(storageCache).catch((e) => error("Failed to store data to session storage", e));
+  }
 }
 
 const initStorageProm = loadStorageCache().then(function (items) {
@@ -34,7 +50,7 @@ const initStorageProm = loadStorageCache().then(function (items) {
     return prev;
   }, {}), items);
 }, function (e) {
-  console.error("Failed to initialize storage cache", e);
+  error("Failed to initialize storage cache", e);
 });
 
 function isWebSocketClosed(ws) {
@@ -52,7 +68,7 @@ function send(data, messageID) {
       webSocket.send(messageString);
       return;
     } catch (e) {
-      console.log(e);
+      error("Failed to send message", e);
     }
   }
 
@@ -60,7 +76,7 @@ function send(data, messageID) {
     try {
       webSocket.send(messageString);
     } catch (e) {
-      console.log(e);
+      error("Failed to send message", e);
     }
   });
 }
@@ -71,7 +87,7 @@ function startWebSocketConnect(onOpenHandler) {
   const configuration = storageCache["configuration"] || {};
   const connectParams = configuration.connectParams;
   if (!connectParams) {
-    console.log("Could not open websocket due to missing configuration");
+    error("Could not open websocket due to missing configuration");
     return;
   }
 
@@ -98,7 +114,7 @@ function startWebSocketConnect(onOpenHandler) {
     }, 1000);
   };
   webSocket.onerror = function (event) {
-    console.log(event);
+    error("Websocket error", event);
   };
 }
 
@@ -122,7 +138,7 @@ function connectByXltParametersURL(url) {
   if (parameters.xltPort && parameters.clientID) {
     startWebSocketConnect();
   } else {
-    console.log("incomplete xlt start url:" + url);
+    log("Incomplete XLT start URL", url);
   }
 }
 
@@ -149,6 +165,7 @@ function getUrlParameters(url) {
 function setConfiguration(parameters) {
   const configuration = {
     recordIncompleted: String(parameters.recordIncompleted).toLocaleLowerCase() === "true",
+    useSessionStorage: String(parameters.useSessionStorage).toLocaleLowerCase() === "true",
     connectParams: {
       port: parameters.xltPort,
       clientID: parameters.clientID
@@ -160,10 +177,15 @@ function setConfiguration(parameters) {
 }
 
 function clearRuntimeData() {
+  const useSessionStorage = storageCache.configuration.useSessionStorage;
+
   Object.keys(storageCache).forEach(function (key) {
     delete storageCache[key];
   });
-  chrome.storage.session.remove(CacheKeys);
+
+  if (useSessionStorage) {
+    chrome.storage.session.remove(CacheKeys).catch((e) => error("Failed to remove data from session storage", e));;
+  }
 }
 
 function hasTimingDataEntry(timingData, tabId) {
@@ -418,7 +440,7 @@ chrome.webRequest.onSendHeaders.addListener(async function (details) {
         request.method = details.method;
         request.type = details.type;
         request.header = details.requestHeaders || null;
-        request.requestSize = (request.requestSize || 0) + getHeaderSize(details.requestHeaders);
+        request.requestSize = (request.requestSize || 0) + getHeaderSize(details.requestHeaders) + getRequestLineSize(details);
       });
     }
   });
@@ -595,6 +617,11 @@ chrome.runtime.onSuspend.addListener(function () {
   storeStorageCache();
 });
 
+function getRequestLineSize(details) {
+  // ex: "GET https://www.google.de HTTP/1.1"
+  return details.method.length + details.url.length + HTTP_VERSION_LENGTH + CRLF_LENGTH + 2 /* spaces */;
+}
+
 function getRequestBodySize(details) {
   let size = 0;
   if (details.requestBody) {
@@ -630,7 +657,7 @@ function getResponseSize(details) {
 
 function getStatusLineSize(statusLine) {
   if (statusLine) {
-    return statusLine.length + CRLF.length;
+    return statusLine.length + CRLF_LENGTH;
   }
   return 0;
 }
@@ -647,9 +674,9 @@ function getHeaderSize(headerArray) {
   let size = 0;
   if (headerArray && headerArray.length) {
     headerArray.forEach(function (eachHeader) {
-      size += (eachHeader.name.length + ": ".length + eachHeader.value.length + CRLF.length);
+      size += (eachHeader.name.length + ": ".length + eachHeader.value.length + CRLF_LENGTH);
     });
-    size += CRLF.length;
+    size += CRLF_LENGTH;
   }
   return size;
 }
@@ -1198,4 +1225,16 @@ function getRequestBody(request) {
   }
 
   return { formData: formData, raw: rawData };
+}
+
+function buildLogLine(msg, obj) {
+  return "XLT-TR: " + msg + (obj ? " -> " + JSON.stringify(obj) : "");
+}
+
+function log(msg, obj) {
+  console.log(buildLogLine(msg, obj));
+}
+
+function error(msg, obj) {
+  console.error(buildLogLine(msg, obj));
 }

@@ -123,6 +123,16 @@ public class XltChromeDriver extends ChromeDriver
     private static final boolean RECORD_INCOMPLETE_ENABLED;
 
     /**
+     * The (hidden) XLT property to enable the use of the session storage in the Chrome timer recorder extension.
+     */
+    private static final String PROPERTY_USE_SESSION_STORAGE = PROPERTY_DOMAIN + "useSessionStorage";
+
+    /**
+     * Whether the Chrome timer recorder extension should use the session storage. Defaults to false.
+     */
+    private static final boolean USE_SESSION_STORAGE;
+
+    /**
      * The base name of the extension file.
      */
     private static final String EXTENSION_FILE_NAME = "xlt-timerrecorder-chrome";
@@ -177,6 +187,7 @@ public class XltChromeDriver extends ChromeDriver
 
         HEADLESS_ENABLED = props.getProperty(PROPERTY_HEADLESS, false);
         RECORD_INCOMPLETE_ENABLED = props.getProperty(PROPERTY_RECORD_INCOMPLETE, false);
+        USE_SESSION_STORAGE = props.getProperty(PROPERTY_USE_SESSION_STORAGE, false);
         IGNORE_MISSING_DATA = props.getProperty(PROPERTY_IGNORE_MISSING_DATA, true);
 
         // unpack the extension file to the temp directory
@@ -300,8 +311,9 @@ public class XltChromeDriver extends ChromeDriver
      */
     private void initConnect(final int retryCount)
     {
-        final String url = "data:,xltParameters?xltPort=" + connectionHandler.getPort() + "&clientID=" + connectionHandler.getID() +
-                           "&recordIncompleted=" + RECORD_INCOMPLETE_ENABLED;
+        final String url = String.format("data:,xltParameters?xltPort=%d&clientID=%s&recordIncompleted=%b&useSessionStorage=%b",
+                                         connectionHandler.getPort(), connectionHandler.getID(), RECORD_INCOMPLETE_ENABLED,
+                                         USE_SESSION_STORAGE);
 
         long timeout = CONNECT_RETRY_BASE_TIMEOUT;
 
@@ -363,7 +375,7 @@ public class XltChromeDriver extends ChromeDriver
 
                 // read the environment settings
                 final Map<String, String> environment = ReflectionUtils.readField(ChromeDriverService.class, service,
-                                                                                           FIELD_NAME_ENVIRONMENT);
+                                                                                  FIELD_NAME_ENVIRONMENT);
 
                 // create the new environment settings including the DISPLAY variable
                 final ImmutableMap.Builder<String, String> mapBuilder = new ImmutableMap.Builder<>();
