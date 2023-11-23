@@ -214,8 +214,38 @@ public class XHTMLValidator
         // static initializer (synchronized by class loader)
         static
         {
-            _instance = new XHTMLValidator(true, true);
+            final boolean enabled = XltProperties.getInstance().getProperty(propertyName, false);
+            _instance = enabled ? new XHTMLValidator(true, true) : new DisabledXHTMLValidator();
         }
+    }
+    
+    /**
+     * NoOp implementation of the parent class.
+     */
+    private static final class DisabledXHTMLValidator extends XHTMLValidator
+    {
+        private DisabledXHTMLValidator()
+        {
+            super(false, false);
+        }
+        
+        /** Does nothing. Validation is disabled. */
+        @Override
+        public void validate(final HtmlPage page)
+        {
+        };
+
+        /** Does nothing. Validation is disabled. */
+        @Override
+        public void validate(final LightWeightPage page)
+        {
+        };
+
+        /** Does nothing. Validation is disabled. */
+        @Override
+        public void validate(final String content)
+        {
+        };
     }
 
     /**
