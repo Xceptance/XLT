@@ -437,7 +437,9 @@
          * @param {(string) => void} handler - consumes the JSON path of the target node
          */
         onJsonNodeSelected(handler) {
-            attachEventHandlers(this.tree, (node) => handler(node.getJsonPath()));
+            if (this.tree) {
+                attachEventHandlers(this.tree, (node) => handler(node.getJsonPath()));
+            }
         }   
     }
 
