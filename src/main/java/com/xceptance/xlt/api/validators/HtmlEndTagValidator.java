@@ -23,7 +23,6 @@ import org.junit.Assert;
 
 import com.xceptance.xlt.api.htmlunit.LightWeightPage;
 import com.xceptance.xlt.api.util.XltLogger;
-import com.xceptance.xlt.api.util.XltProperties;
 
 /**
  * Checks that a page has at least one closing HTML tag. Does not check, that this tag is the only one. It uses a
@@ -154,33 +153,7 @@ public class HtmlEndTagValidator
         // static initializer (synchronized by class loader)
         static
         {
-            final String propertyName = HtmlEndTagValidator.class.getName() + ".enabled";
-            final boolean enabled = XltProperties.getInstance().getProperty(propertyName, false);
-            instance = enabled ? new HtmlEndTagValidator() : new DisabledHtmlEndTagValidator();
+            instance = new HtmlEndTagValidator();
         }
     }
-
-   /**
-    * NoOp implementation of the parent class.
-    */
-   private static final class DisabledHtmlEndTagValidator extends HtmlEndTagValidator
-   {
-       /** Does nothing. Validation is disabled. */
-       @Override
-       public void validate(final HtmlPage page)
-       {
-       };
-       
-       /** Does nothing. Validation is disabled. */
-       @Override
-       public void validate(final LightWeightPage page)
-       {
-       };
-       
-       /** Does nothing. Validation is disabled. */
-       @Override
-       public void validate(final String content)
-       {
-       };
-   }
 }

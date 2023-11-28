@@ -26,7 +26,6 @@ import org.junit.Assert;
 
 import com.xceptance.common.net.HttpHeaderConstants;
 import com.xceptance.xlt.api.htmlunit.LightWeightPage;
-import com.xceptance.xlt.api.util.XltProperties;
 
 /**
  * Validates the downloaded content length with the announced size from the HTTP header.
@@ -35,11 +34,6 @@ import com.xceptance.xlt.api.util.XltProperties;
  */
 public class ContentLengthValidator
 {
-    /**
-     * Property status.
-     */
-    private static final boolean ENABLED = XltProperties.getInstance().getProperty(ContentLengthValidator.class.getName() + ".enabled", false);
-    
     /**
      * Validates the specified HTML page.
      * 
@@ -124,24 +118,7 @@ public class ContentLengthValidator
     {
         // return new instance instead of singleton instance because there is no
         // object state at all
-        return ENABLED ? new ContentLengthValidator() : new DisabledContentLengthValidator();
+        return new ContentLengthValidator();
     }
 
-    /**
-     * NoOp implementation of the parent class.
-     */
-    private static final class DisabledContentLengthValidator extends ContentLengthValidator
-    {
-        /** Does nothing. Validation is disabled. */
-        @Override
-        public void validate(final HtmlPage page)
-        {
-        };
-        
-        /** Does nothing. Validation is disabled. */
-        @Override
-        public void validate(final LightWeightPage page)
-        {
-        };
-    }
 }
