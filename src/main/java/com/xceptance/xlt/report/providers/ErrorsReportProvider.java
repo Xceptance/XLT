@@ -407,8 +407,6 @@ public class ErrorsReportProvider extends AbstractReportProvider
             final String trace = txnStats.getFailureStackTrace();
             if (trace != null)
             {
-
-
                 // qualify the trace with the test case/action name in case of equal stack traces (#1092)
                 final String testCaseName = txnStats.getName();
                 final String failedActionName = txnStats.getFailedActionName();
@@ -463,18 +461,19 @@ public class ErrorsReportProvider extends AbstractReportProvider
                         if (size < MAXIMUM_NUMBER_OF_HINTS)
                         {
                             final ReportGeneratorConfiguration config = (ReportGeneratorConfiguration) getConfiguration();
+                            final String filePath = directoryHint + "/index.html";
                             try
                             {
-                                // Check if such a directory is existing.
-                                if (VFS.getManager().resolveFile(config.getResultsDirectory(), directoryHint).exists())
+                                // Check if such a directory exists and contains an index.html file.
+                                if (VFS.getManager().resolveFile(config.getResultsDirectory(), filePath).exists())
                                 {
                                     errorReport.directoryHints.add(directoryHint);
                                 }
                             }
-                            catch (FileSystemException e)
+                            catch (final FileSystemException e)
                             {
-                                XltLogger.reportLogger.warn("Unable to parse " + directoryHint + " in " +
-                                                             config.getResultsDirectory().getName().getPath());
+                                XltLogger.reportLogger.warn("Unable to check if '{}' exists in '{}'", filePath,
+                                                            config.getResultsDirectory().getName().getPath());
                             }
                         }
                         else if (size == MAXIMUM_NUMBER_OF_HINTS)
