@@ -5,7 +5,7 @@ log("Service worker activated");
 setInterval(
   () => {
     log("Sending keep-alive message");
-    send({ action: "KEEP_ALIVE_PING", data: "[]" }, "<dummy>");
+    send({ action: "KEEP_ALIVE_PING", data: "[]" });
   },
   10 * 1000
 );
@@ -614,6 +614,7 @@ chrome.runtime.onMessage.addListener(async function (message, sender, sendRespon
 });
 
 chrome.runtime.onSuspend.addListener(function () {
+  error("Service worker is about to be suspended, which is unexpected");
   storeStorageCache();
 });
 

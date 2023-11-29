@@ -170,12 +170,7 @@ public class WebExtConnectionHandler implements ConnectionListener
     {
         final String action = data.optString("action");
 
-        LOG.debug("Message received: {}", action);
-
-        if (LOG.isTraceEnabled())
-        {
-            LOG.trace("Message data: " + data);
-        }
+        LOG.debug("Message received for action: {}", action);
 
         try
         {
@@ -236,11 +231,6 @@ public class WebExtConnectionHandler implements ConnectionListener
             }
 
             ClientPerformanceMetrics.updatePerformanceData(session, performanceData);
-
-            if (LOG.isTraceEnabled())
-            {
-                LOG.trace("Dumped client-performance metrics: " + rawData);
-            }
         }
         catch (final Throwable t)
         {
