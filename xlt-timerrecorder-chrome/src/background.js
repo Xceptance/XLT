@@ -3,7 +3,7 @@ log("Service worker activated");
 
 // send a keep-alive message every 10 secs to prevent the service worker from being deactivated after 30 secs of inactivity
 setInterval(
-  () => {
+  function ping() {
     log("Sending keep-alive message");
     send({ action: "KEEP_ALIVE_PING", data: "[]" });
   },
