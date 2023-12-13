@@ -6,17 +6,24 @@
 
 	<xsl:text disable-output-escaping="yes">
 	<![CDATA[
+
 		<nav>
-		    <ul>
-				<li><a href="#general" onclick="$.scrollTo( $(this).attr('href'), 250, {easing:'swing', offset: {top: -25}}); return false;">Overview</a></li>
-				<li><a href="#anchor-general-report1" onclick="$.scrollTo( $(this).attr('href'), 250, {easing:'swing', offset: {top: -25}}); return false;">Baseline Profile</a></li>
-				<li><a href="#anchor-general-report2" onclick="$.scrollTo( $(this).attr('href'), 250, {easing:'swing', offset: {top: -25}}); return false;">Measurement Profile</a></li>
-				<li><a href="#transaction-summary" onclick="$.scrollTo( $(this).attr('href'), 250, {easing:'swing', offset: {top: -25}}); return false;">Transactions</a></li>
-				<li><a href="#action-summary" onclick="$.scrollTo( $(this).attr('href'), 250, {easing:'swing', offset: {top: -25}}); return false;">Actions</a></li>
-				<li><a href="#request-summary" onclick="$.scrollTo( $(this).attr('href'), 250, {easing:'swing', offset: {top: -25}}); return false;">Requests</a></li>
-				<li><a href="#page-load-timing-summary" onclick="$.scrollTo( $(this).attr('href'), 250, {easing:'swing', offset: {top: -25}}); return false;">Page Load Timings</a></li>
-                <li><a href="#custom-timer-summary" onclick="$.scrollTo( $(this).attr('href'), 250, {easing:'swing', offset: {top: -25}}); return false;">Custom Timers</a></li>
-		    </ul>
+			<input class="hamburger-btn" type="checkbox" id="hamburger-btn" />
+			<label class="hamburger-icon" for="hamburger-btn"><span class="navicon"></span></label>
+			<ul class="nav-menu">
+				<li><a href="index.html">Overview</a>
+					<ul>
+						<li><a href="index.html#general">General Information</a></li>
+                        <li><a href="index.html#anchor-general-report1">Baseline Profile</a></li>
+						<li><a href="index.html#anchor-general-report2">Measurement Profile</a></li>
+					</ul>
+				</li>
+				<li><a href="transactions.html">Transactions</a></li>
+				<li><a href="actions.html">Actions</a></li>
+				<li><a href="requests.html">Requests</a></li>
+				<li><a href="page-load-timings.html">Page Load Timings</a></li>
+				<li><a href="custom-timers.html">Custom Timers</a></li>
+			</ul>
 		</nav>
 	]]>
 	</xsl:text>

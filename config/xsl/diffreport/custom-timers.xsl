@@ -23,7 +23,7 @@
 
 <xsl:include href="text/descriptions.xsl" />
 
-<xsl:include href="sections/transactions.xsl" />
+<xsl:include href="sections/custom-timers.xsl" />
 
 <xsl:include href="../common/sections/head.xsl" />
 <xsl:include href="../common/sections/header.xsl" />
@@ -62,10 +62,10 @@
 
             <!--
                 ************************************
-                * Transactions
+                * Custom Timers
                 ************************************
             -->
-            <xsl:call-template name="transactions"/>
+            <xsl:call-template name="custom-timers"/>
 
         </div> <!-- data-content -->
 
