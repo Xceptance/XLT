@@ -108,7 +108,11 @@
 
         </div> <!-- data-content -->
 
-        <xsl:call-template name="footer" />
+        <xsl:call-template name="footer">
+        	<xsl:with-param name="productUrl" select="/testreport/configuration/version/productURL" />
+    		<xsl:with-param name="productName" select="/testreport/configuration/version/productName" />
+    		<xsl:with-param name="productVersion" select="/testreport/configuration/version/version" />
+    	</xsl:call-template>
     </div> <!-- content -->
 </div> <!-- container -->    
 
