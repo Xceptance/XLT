@@ -5,7 +5,7 @@
         <nav>
             <ul>
                 <li><a href="index.html">Overview</a></li>
-                <li><a href="index.html">Transactions</a></li>
+                <li><a href="transactions.html">Transactions</a></li>
                 <li><a href="actions.html">Actions</a></li>
                 <li><a href="requests.html">Requests</a></li>
                 <li><a href="page-load-timings.html">Page Load Timings</a></li>
