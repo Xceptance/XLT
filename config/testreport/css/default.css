@@ -1301,7 +1301,7 @@ table * {
             display: block;
             margin-top: 1em;
         }
-        .section .description p
+        .section .description p, .section .description ul
         {
             text-align: justify;
             line-height: 1.25;
@@ -1320,8 +1320,6 @@ table * {
         .section .description ul
         {
             margin: 1em 10em 1em 4em;
-            line-height: 1.3em;
-            font-size: 110%;
         }
             .section .description ul li
             {
