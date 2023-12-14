@@ -17,14 +17,9 @@
 
 <xsl:template name="description-general">
     <div class="description">   
-    	<xsl:variable name="gid" select="concat('overview', generate-id(.))"/>  
         <p>
             A trend report shows the development of performance over time. 
-            <xsl:call-template name="show-n-hide">
-            	<xsl:with-param name="gid" select="$gid"/>
-            </xsl:call-template>
         </p>
-        <div id="more-{$gid}" class="more">
         <p>
             Multiple measurements are taken into account and evaluated against each other. 
             An XLT trend reports shows you, how your system performs over time, how your tuning effort pays out, and how your live environment acts under
@@ -52,7 +47,6 @@
         	Please keep in mind, that changes up to 10% can be measurement fluctuations.
         </p>
         </div>
-    </div>
 </xsl:template>
 
 <!--- ## Description: Transaction Summary ## -->

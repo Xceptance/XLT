@@ -45,7 +45,7 @@
 <html lang="en">
 <head>
     <xsl:call-template name="head">
-        <xsl:with-param name="title" select="'XLT Performance Trend Report - Custom Timers'" />
+        <xsl:with-param name="title" select="'XLT Performance Trend Report - Page Load Timings'" />
         <xsl:with-param name="projectName" select="$projectName" />
     </xsl:call-template>
 </head>

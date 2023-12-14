@@ -45,7 +45,7 @@
 <html lang="en">
 <head>
     <xsl:call-template name="head">
-        <xsl:with-param name="title" select="'XLT Performance Comparison Report'"/>
+        <xsl:with-param name="title" select="'XLT Performance Comparison Report - Overview'"/>
         <xsl:with-param name="projectName" select="$projectName" />
     </xsl:call-template>
 </head>
