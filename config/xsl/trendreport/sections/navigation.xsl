@@ -3,9 +3,6 @@
 
     <xsl:template name="navigation">
 
-	<xsl:text disable-output-escaping="yes">
-	<![CDATA[
-
 		<nav>
 			<input class="hamburger-btn" type="checkbox" id="hamburger-btn" />
 			<label class="hamburger-icon" for="hamburger-btn"><span class="navicon"></span></label>
@@ -18,8 +15,6 @@
                 <li><a href="custom-timers.html">Custom Timers</a></li>
 			</ul>
 		</nav>
-	]]>
-	</xsl:text>
     
     </xsl:template>
 

@@ -1,11 +1,7 @@
 <?xml version="1.0"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
 
-<xsl:template name="navigation">
-
-	<xsl:text disable-output-escaping="yes">
-	<![CDATA[
-
+	<xsl:template name="navigation">
 		<nav>
 			<input class="hamburger-btn" type="checkbox" id="hamburger-btn" />
 			<label class="hamburger-icon" for="hamburger-btn"><span class="navicon"></span></label>
@@ -59,8 +55,6 @@
 				</li>
 			</ul>
 		</nav>
-	]]>
-	</xsl:text>
-</xsl:template>
+	</xsl:template>
 
 </xsl:stylesheet>
