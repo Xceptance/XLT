@@ -23,9 +23,7 @@
 
 <xsl:include href="text/descriptions.xsl" />
 
-<xsl:include href="sections/comment.xsl" />
-<xsl:include href="sections/load-profile.xsl" />
-<xsl:include href="sections/general.xsl" />
+<xsl:include href="sections/page-load-timings.xsl" />
 
 <xsl:include href="../common/sections/head.xsl" />
 <xsl:include href="../common/sections/header.xsl" />
@@ -45,7 +43,7 @@
 <html lang="en">
 <head>
     <xsl:call-template name="head">
-        <xsl:with-param name="title" select="'XLT Performance Comparison Report - Overview'"/>
+        <xsl:with-param name="title" select="'XLT Performance Comparison Report - Page Load Timings'"/>
         <xsl:with-param name="projectName" select="$projectName" />
     </xsl:call-template>
 </head>
@@ -64,46 +62,10 @@
 
             <!--
                 ************************************
-                * Load Profile
+                * Page Load Timings
                 ************************************
             -->
-            <div class="section" id="general">
-                <xsl:call-template name="headline-general" />
-
-                <div class="content">
-                    <xsl:call-template name="description-general" />
-
-                    <xsl:call-template name="headline-general-report1" />
-                    <xsl:call-template name="testcomment">
-                        <xsl:with-param name="rootNode" select="testReport1/comments" />
-                    </xsl:call-template>
-                    <xsl:call-template name="general">
-                        <xsl:with-param name="rootNode" select="testReport1/general" />
-                        <xsl:with-param name="name" select="testReport1/name" />
-                        <xsl:with-param name="id">general-report1</xsl:with-param>
-                    </xsl:call-template>
-
-                    <xsl:call-template name="load-profile">
-                        <xsl:with-param name="rootNode" select="testReport1/loadProfile" />
-                        <xsl:with-param name="id">load-profile-report1</xsl:with-param>
-                    </xsl:call-template>
-
-                    <xsl:call-template name="headline-general-report2" />
-                    <xsl:call-template name="testcomment">
-                        <xsl:with-param name="rootNode" select="testReport2/comments" />
-                    </xsl:call-template>
-                    <xsl:call-template name="general">
-                        <xsl:with-param name="rootNode" select="testReport2/general" />
-                        <xsl:with-param name="name" select="testReport2/name" />
-                        <xsl:with-param name="id">general-report2</xsl:with-param>
-                    </xsl:call-template>
-
-                    <xsl:call-template name="load-profile">
-                        <xsl:with-param name="rootNode" select="testReport2/loadProfile" />
-                        <xsl:with-param name="id">load-profile-report2</xsl:with-param>
-                    </xsl:call-template>
-                </div>	
-            </div>
+            <xsl:call-template name="page-load-timings"/>
 
         </div> <!-- data-content -->
 

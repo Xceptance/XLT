@@ -34,6 +34,8 @@
 
 <xsl:include href="../common/sections/javascript.xsl" />
 
+
+
 <xsl:param name="productName" />
 <xsl:param name="productVersion" />
 <xsl:param name="productUrl" />
@@ -45,7 +47,7 @@
 <html lang="en">
 <head>
     <xsl:call-template name="head">
-        <xsl:with-param name="title" select="'XLT Performance Trend Report - Overview'" />
+        <xsl:with-param name="title" select="'XLT Performance Trend Report - Transactions'" />
         <xsl:with-param name="projectName" select="$projectName" />
     </xsl:call-template>
 </head>
@@ -64,17 +66,10 @@
 
             <!--
                 ************************************
-                * General section
+                * Transactions
                 ************************************
             -->
-            <div class="section" id="general">
-                <xsl:call-template name="headline-general" />
-
-                <div class="content">
-                    <xsl:call-template name="description-general" />
-                </div>
-            </div>
-
+            <xsl:call-template name="transactions"/>
 
         </div> <!-- data-content -->
 

@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -49,10 +50,11 @@ import org.xml.sax.SAXException;
 import com.xceptance.common.util.ProcessExitCodes;
 import com.xceptance.common.util.ProductInformation;
 import com.xceptance.common.xml.DomUtils;
-import com.xceptance.common.xml.XSLTUtils;
 import com.xceptance.xlt.common.XltConstants;
+import com.xceptance.xlt.report.ReportTransformer;
 import com.xceptance.xlt.report.util.ElementSpecification;
 import com.xceptance.xlt.report.util.ReportUtils;
+import com.xceptance.xlt.report.util.TaskManager;
 
 /**
  * 
@@ -125,19 +127,33 @@ public class DiffReportGeneratorMain
             // create the difference report HTML file
             System.out.println("Rendering the HTML difference report ...");
 
-            // the static set file name, does not yet read a dynamic property
-            // set
-            final File htmlFile = new File(outputDir, XltConstants.DIFF_REPORT_HTML_FILENAME);
-            final File styleSheetFile = new File(config.getConfigDirectory(), XltConstants.DIFF_REPORT_XSL_PATH + File.separator +
-                                                                              XltConstants.DIFF_REPORT_XSL_FILENAME);
-
             final HashMap<String, Object> parameters = new HashMap<String, Object>();
             parameters.put("productName", ProductInformation.getProductInformation().getProductName());
             parameters.put("productVersion", ProductInformation.getProductInformation().getVersion());
             parameters.put("productUrl", ProductInformation.getProductInformation().getProductURL());
             parameters.put("projectName", ReportUtils.obtainProjectName(Arrays.asList(oldTestReport, newTestReport)));
 
-            XSLTUtils.transform(xmlFile, htmlFile, styleSheetFile, parameters);
+            // get the configured output and style sheet file names
+            final List<File> outputFiles = new ArrayList<File>();
+            final List<File> styleSheetFiles = new ArrayList<File>();
+
+            // create the files from the file names
+            final List<String> styleSheetFileNames = config.getStyleSheetFileNames();
+            final List<String> outputFileNames = config.getOutputFileNames();
+
+            for (int i = 0; i < styleSheetFileNames.size(); i++)
+            {
+                final File outputFile = new File(outputDir, outputFileNames.get(i));
+                outputFiles.add(outputFile);
+
+                final File styleSheetFile = new File(new File(config.getConfigDirectory(), XltConstants.DIFF_REPORT_XSL_PATH),
+                                                     styleSheetFileNames.get(i));
+                styleSheetFiles.add(styleSheetFile);
+            }
+
+            // transform the report
+            final ReportTransformer reportTransformer = new ReportTransformer(outputFiles, styleSheetFiles, parameters);
+            reportTransformer.run(xmlFile, outputDir);
 
             // copy the report's static resources
             final File resourcesDir = new File(config.getConfigDirectory(), XltConstants.REPORT_RESOURCES_PATH);
@@ -146,6 +162,9 @@ public class DiffReportGeneratorMain
             // output the path to the report either as file path (Win) or as clickable file URL
             final File reportFile = new File(outputDir, "index.html");
             final String reportPath = ReportUtils.toString(reportFile);
+            
+            // wait for any asynchronous task to complete
+            TaskManager.getInstance().waitForAllTasksToComplete();
 
             System.out.println("\nReport: " + reportPath);
 
