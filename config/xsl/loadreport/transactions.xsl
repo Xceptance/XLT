@@ -48,7 +48,7 @@
 <head>
     <xsl:call-template name="head">
         <xsl:with-param name="title" select="'XLT Report - Transactions'" />
-        <xsl:with-param name="projectName" select="$projectName" />
+        <xsl:with-param name="projectName" select="configuration/projectName" />
     </xsl:call-template>
 </head>
 <body id="loadtestreport">
