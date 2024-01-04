@@ -15,7 +15,7 @@
                             <input class="filter" placeholder="Enter filter substrings" title=""/>
                             <button class="clear-input" type="clear" title="Click to clear">&#x2715;</button>
                         </th>
-                        <th colspan="5">Count</th>
+                        <th colspan="4">Count</th>
                         <th>Errors</th>
                         <xsl:if test="$type = 'transaction'">
                             <th>Events</th>
@@ -27,7 +27,6 @@
                         <th class="table-sortable:numeric">1/s</th>
                         <th class="table-sortable:numeric">1/min</th>
                         <th class="table-sortable:numeric">1/h*</th>
-                        <th class="table-sortable:numeric">1/d*</th>
                         <th class="table-sortable:numeric">Total</th>
                         <xsl:if test="$type = 'transaction'">
                             <th class="table-sortable:numeric">Total</th>

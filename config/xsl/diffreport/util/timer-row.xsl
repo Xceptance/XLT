@@ -32,13 +32,6 @@
             <xsl:with-param name="format" select="'#,##0'"/>
         </xsl:call-template>
 
-        <!-- count per day -->
-        <xsl:call-template name="timer-cell">
-            <xsl:with-param name="node" select="countPerDay"/>
-            <xsl:with-param name="isInverse" select="true()"/>
-            <xsl:with-param name="format" select="'#,##0'"/>
-        </xsl:call-template>
-
         <!-- errors -->
         <xsl:call-template name="timer-cell">
             <xsl:with-param name="node" select="errors"/>

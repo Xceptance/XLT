@@ -59,6 +59,11 @@
 					<td class="value number">
 						<xsl:value-of select="format-number(countPerSecond, '#,##0.0')" />
 					</td>
+					
+					<!-- count per min -->
+					<td class="value number">
+						<xsl:value-of select="format-number(countPerMinute, '#,##0.0')" />
+					</td>
 
 					<!-- count per hour -->
 					<td class="value number">
@@ -70,15 +75,15 @@
 					<td class="value number">
 						<xsl:value-of select="format-number(countPerSecond, '#,##0.0')" />
 					</td>
+					
+					<!-- count per min -->
+					<td class="value number">
+						<xsl:value-of select="format-number(countPerMinute, '#,##0.0')" />
+					</td>
 
 					<!-- count per hour -->
 					<td class="value number">
 						<xsl:value-of select="format-number(countPerHour, '#,##0')" />
-					</td>
-
-					<!-- count per day -->
-					<td class="value number">
-						<xsl:value-of select="format-number(countPerDay, '#,##0')" />
 					</td>
 				</xsl:otherwise>
 			</xsl:choose>

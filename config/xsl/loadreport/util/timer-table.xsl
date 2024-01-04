@@ -35,7 +35,15 @@
                             <button class="clear-input" type="clear" title="Click to clear">&#x2715;</button>
                         </form>
                     </th>
-                    <th colspan="4">Count</th>
+                    <xsl:choose>
+                        <xsl:when test="$type = 'request'">
+                            <th colspan="5">Count</th>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <th colspan="4">Count</th>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                    
                     <th colspan="2" class="colgroup1">Errors</th>
                     <xsl:if test="$type = 'transaction'">
                         <th class="colgroup1">Events</th>
@@ -58,12 +66,13 @@
                         <xsl:when test="$type = 'request'">
                             <th class="table-sortable:numeric">Distinct**</th>
                             <th class="table-sortable:numeric">1/s</th>
+                            <th class="table-sortable:numeric">1/min</th>
                             <th class="table-sortable:numeric">1/h*</th>
                         </xsl:when>
                         <xsl:otherwise>
                             <th class="table-sortable:numeric">1/s</th>
+                            <th class="table-sortable:numeric">1/min</th>
                             <th class="table-sortable:numeric">1/h*</th>
-                            <th class="table-sortable:numeric">1/d*</th>
                         </xsl:otherwise>
                     </xsl:choose>
 
