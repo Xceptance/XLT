@@ -3,6 +3,15 @@
 
     <xsl:template name="timer-row-value-tds">
         <xsl:param name="type"/>
+        
+        <xsl:if test="$type = 'request'">
+			<!-- distinct -->
+			<xsl:call-template name="timer-cell">
+	            <xsl:with-param name="node" select="urls/total"/>
+	            <xsl:with-param name="isInverse" select="true()"/>
+	            <xsl:with-param name="format" select="'#,##0'"/>
+	        </xsl:call-template>
+		</xsl:if>
 
         <!-- count -->
         <xsl:call-template name="timer-cell">
