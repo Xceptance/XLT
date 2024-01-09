@@ -84,6 +84,14 @@
             <xsl:with-param name="node" select="deviation"/>
             <xsl:with-param name="format" select="'#,##0'"/>
         </xsl:call-template>
+        
+        <!-- Pxx values -->
+        <xsl:for-each select="percentiles/*">
+		    <xsl:call-template name="timer-cell">
+	            <xsl:with-param name="node" select="current()"/>
+	            <xsl:with-param name="format" select="'#,##0'"/>
+	        </xsl:call-template>
+	    </xsl:for-each>
     </xsl:template>
     
     <xsl:template name="timer-row">

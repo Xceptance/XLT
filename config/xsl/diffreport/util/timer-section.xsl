@@ -5,6 +5,9 @@
         <xsl:param name="summaryElement"/>
         <xsl:param name="tableRowHeader"/>
         <xsl:param name="type"/>
+        
+        <xsl:variable name="percentileCount" select="count(/testreport/testReport1/runtimePercentiles/string)"/>
+        
         <div class="data">
             <table class="table-autosort:0">
                 <thead>
@@ -28,6 +31,9 @@
                             <th>Events</th>
                         </xsl:if>
                         <th colspan="5">Runtime [ms]</th>
+                        <xsl:if test="$percentileCount &gt; 0">
+	                        <th colspan="{$percentileCount}" class="colgroup1">Runtime Percentiles [ms]</th>
+	                    </xsl:if>
                     </tr>
                     <tr>
                         <xsl:if test="$type = 'request'">
@@ -46,6 +52,11 @@
                         <th class="table-sortable:numeric" title="The smallest value of the data series.">Min.</th>
                         <th class="table-sortable:numeric" title="The largest value of the data series.">Max.</th>
                         <th class="table-sortable:numeric" title="The standard deviation of all data within this data series.">Dev.</th>
+                        <xsl:for-each select="/testreport/testReport1/runtimePercentiles/string">
+	                        <th class="table-sortable:numeric colgroup1" title="The nth percentile of the data series.">
+	                            <xsl:text>P</xsl:text><xsl:value-of select="current()"/>
+	                        </th>
+	                    </xsl:for-each>
                     </tr>
                 </thead>
                 <xsl:variable name="count" select="count($elements)" />
