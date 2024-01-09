@@ -54,7 +54,7 @@
                         <th class="table-sortable:numeric" title="The standard deviation of all data within this data series.">Dev.</th>
                         <xsl:for-each select="/testreport/testReport1/runtimePercentiles/string">
 	                        <th class="table-sortable:numeric colgroup1" title="The nth percentile of the data series.">
-	                            <xsl:text>P</xsl:text><xsl:value-of select="current()"/>
+	                            <xsl:text>P</xsl:text><xsl:value-of select="normalize-space(current())"/>
 	                        </th>
 	                    </xsl:for-each>
                     </tr>
