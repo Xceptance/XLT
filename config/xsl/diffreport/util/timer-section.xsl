@@ -12,7 +12,7 @@
             <table class="table-autosort:0">
                 <thead>
                     <tr>
-                        <th rowspan="2" class="table-sortable:alphanumeric">
+                        <th rowspan="2" class="table-sortable:alphanumeric colgroup1">
                             <xsl:value-of select="$tableRowHeader"/>
                             <br/>
                             <input class="filter" placeholder="Enter filter substrings" title=""/>
@@ -26,9 +26,9 @@
 	                            <th colspan="4">Count</th>
 	                        </xsl:otherwise>
 	                    </xsl:choose>
-                        <th>Errors</th>
+                        <th class="colgroup1">Errors</th>
                         <xsl:if test="$type = 'transaction'">
-                            <th>Events</th>
+                            <th class="colgroup1">Events</th>
                         </xsl:if>
                         <th colspan="5">Runtime [ms]</th>
                         <xsl:if test="$percentileCount &gt; 0">
@@ -43,9 +43,9 @@
                         <th class="table-sortable:numeric">1/s</th>
                         <th class="table-sortable:numeric">1/min</th>
                         <th class="table-sortable:numeric">1/h*</th>
-                        <th class="table-sortable:numeric">Total</th>
+                        <th class="table-sortable:numeric colgroup1">Total</th>
                         <xsl:if test="$type = 'transaction'">
-                            <th class="table-sortable:numeric">Total</th>
+                            <th class="table-sortable:numeric colgroup1">Total</th>
                         </xsl:if>
                         <th class="table-sortable:numeric" title="The median of the data series.">Med.</th>
                         <th class="table-sortable:numeric" title="The arithmetic mean of the data series.">Mean</th>
