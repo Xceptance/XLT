@@ -31,7 +31,7 @@
                     </div>
                         
                     <div id="Bandwidth" class="c-tab">
-                        <h4 class="print">Overview</h4>
+                        <h4 class="print">Bandwidth</h4>
                         <table class="c-tab-content table-autosort:0">
                             <thead>
                                 <tr>
