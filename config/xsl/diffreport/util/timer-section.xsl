@@ -8,107 +8,269 @@
         
         <xsl:variable name="percentileCount" select="count(/testreport/testReport1/runtimePercentiles/string)"/>
         
-        <div class="data">
-            <table class="table-autosort:0">
-                <thead>
-                    <tr>
-                        <th rowspan="2" class="table-sortable:alphanumeric colgroup1">
-                            <xsl:value-of select="$tableRowHeader"/>
-                            <br/>
-                            <input class="filter" placeholder="Enter filter substrings" title=""/>
-                            <button class="clear-input" type="clear" title="Click to clear">&#x2715;</button>
-                        </th>
-                        <xsl:choose>
-	                        <xsl:when test="$type = 'request'">
-	                            <th colspan="5">Count</th>
-	                        </xsl:when>
-	                        <xsl:otherwise>
-	                            <th colspan="4">Count</th>
-	                        </xsl:otherwise>
-	                    </xsl:choose>
-                        <th class="colgroup1">Errors</th>
-                        <xsl:if test="$type = 'transaction'">
-                            <th class="colgroup1">Events</th>
-                        </xsl:if>
-                        <th colspan="5">Runtime [ms]</th>
-                        <xsl:if test="$percentileCount &gt; 0">
-	                        <th colspan="{$percentileCount}" class="colgroup1">Runtime Percentiles [ms]</th>
-	                    </xsl:if>
-                    </tr>
-                    <tr>
-                        <xsl:if test="$type = 'request'">
-                            <th class="table-sortable:numeric">Distinct**</th>
-                        </xsl:if>
-                        <th class="table-sortable:numeric">Total</th>
-                        <th class="table-sortable:numeric">1/s</th>
-                        <th class="table-sortable:numeric">1/min</th>
-                        <th class="table-sortable:numeric">1/h*</th>
-                        <th class="table-sortable:numeric colgroup1">Total</th>
-                        <xsl:if test="$type = 'transaction'">
-                            <th class="table-sortable:numeric colgroup1">Total</th>
-                        </xsl:if>
-                        <th class="table-sortable:numeric" title="The median of the data series.">Med.</th>
-                        <th class="table-sortable:numeric" title="The arithmetic mean of the data series.">Mean</th>
-                        <th class="table-sortable:numeric" title="The smallest value of the data series.">Min.</th>
-                        <th class="table-sortable:numeric" title="The largest value of the data series.">Max.</th>
-                        <th class="table-sortable:numeric" title="The standard deviation of all data within this data series.">Dev.</th>
-                        <xsl:for-each select="/testreport/testReport1/runtimePercentiles/string">
-	                        <th class="table-sortable:numeric colgroup1" title="The nth percentile of the data series.">
-	                            <xsl:text>P</xsl:text><xsl:value-of select="normalize-space(current())"/>
-	                        </th>
-	                    </xsl:for-each>
-                    </tr>
-                </thead>
-                <xsl:variable name="count" select="count($elements)" />
-                <xsl:choose>
-                    <xsl:when test="$count > 0">
-                        <tfoot>
-                            <xsl:for-each select="$summaryElement">
-                                <xsl:call-template name="timer-summary-row">
-                                    <xsl:with-param name="type" select="$type"/>
-                                    <xsl:with-param name="rows-in-table" select="$count"/>
-                                </xsl:call-template>
-                            </xsl:for-each>
-                            <xsl:call-template name="filtered-footer-row" />
-                        </tfoot>
-                        <tbody>
-                            <xsl:for-each select="$elements">
-                                <xsl:sort select="name" data-type="number"/>
-                                <xsl:call-template name="timer-row">
-                                    <xsl:with-param name="type" select="$type"/>
-                                </xsl:call-template>
-                            </xsl:for-each>
-                        </tbody>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <xsl:variable name="columns">
+        <xsl:choose>
+            <xsl:when test="$type = 'request'">
+            <div id="tabletabbies" class="c-tabs">
+                    <ul class="c-tabs-nav">
+                        <li class="c-tabs-nav-link c-is-active">
+                            <a href="#Overview">Overview</a>
+                        </li>
+                        <li class="c-tabs-nav-link">
+                            <a href="#Bandwidth">Bandwidth</a>
+                        </li>
+                    </ul>
+
+                    <div id="Overview" class="c-tab c-is-active">
+                        <h4 class="print">Overview</h4>
+                        <xsl:call-template name="timer-table">
+                            <xsl:with-param name="elements" select="$elements"/>
+                            <xsl:with-param name="summaryElement" select="$summaryElement"/>
+                            <xsl:with-param name="tableRowHeader" select="$tableRowHeader"/>
+                            <xsl:with-param name="type" select="$type"/>
+                        </xsl:call-template>
+                    </div>
+                        
+                    <div id="Bandwidth" class="c-tab">
+                        <h4 class="print">Overview</h4>
+                        <table class="c-tab-content table-autosort:0">
+                            <thead>
+                                <tr>
+                                    <th rowspan="2" class="table-sortable:alphanumeric colgroup1">
+                                        <xsl:value-of select="$tableRowHeader"/>
+                                        <br/>
+                                        <input class="filter" placeholder="Enter filter substrings" title=""/>
+                                        <button class="clear-input" type="clear" title="Click to clear">&#x2715;</button>
+                                    </th>
+                                    <th colspan="8">Bytes Sent</th>
+                                    <th colspan="8" class="colgroup1">Bytes Received</th>
+                                </tr>
+                                <tr>
+                                    <th class="table-sortable:numeric">Total</th>
+                                    <th class="table-sortable:numeric">1/s</th>
+                                    <th class="table-sortable:numeric">1/min</th>
+                                    <th class="table-sortable:numeric">1/h</th>
+                                    <th class="table-sortable:numeric">1/d</th>
+                                    <th class="table-sortable:numeric" title="The arithmetic mean.">Mean</th>
+                                    <th class="table-sortable:numeric">Min.</th>
+                                    <th class="table-sortable:numeric">Max.</th>
+
+                                    <th class="table-sortable:numeric colgroup1">Total</th>
+                                    <th class="table-sortable:numeric colgroup1">1/s</th>
+                                    <th class="table-sortable:numeric colgroup1">1/min</th>
+                                    <th class="table-sortable:numeric colgroup1">1/h</th>
+                                    <th class="table-sortable:numeric colgroup1">1/d</th>
+                                    <th class="table-sortable:numeric colgroup1" title="The arithmetic mean.">Mean</th>
+                                    <th class="table-sortable:numeric colgroup1">Min.</th>
+                                    <th class="table-sortable:numeric colgroup1">Max.</th>
+                                </tr>
+                            </thead>
+                            <xsl:variable name="count" select="count($elements)"/>
                             <xsl:choose>
-                                <xsl:when test="$type = 'transaction'">
-                                    13
+                                <xsl:when test="$count > 0">
+                                    <tfoot>
+                                        <xsl:for-each select="$summaryElement">
+                                            <tr class="totals">
+                                                <xsl:call-template name="create-totals-td">
+                                                    <xsl:with-param name="rows-in-table" select="$count"/>
+                                                    <xsl:with-param name="class" select="'key colgroup1'"/>
+                                                </xsl:call-template>
+
+                                               	<xsl:call-template name="timer-cell">
+										            <xsl:with-param name="node" select="bytesSent/totalCount"/>
+										            <xsl:with-param name="format" select="'#,##0'"/>
+										        </xsl:call-template>
+                                                   <xsl:call-template name="timer-cell">
+										            <xsl:with-param name="node" select="bytesSent/countPerSecond"/>
+										            <xsl:with-param name="format" select="'#,##0'"/>
+										        </xsl:call-template>                                                
+                                                   <xsl:call-template name="timer-cell">
+										            <xsl:with-param name="node" select="bytesSent/countPerMinute"/>
+										            <xsl:with-param name="format" select="'#,##0'"/>
+										        </xsl:call-template>
+                                                   <xsl:call-template name="timer-cell">
+										            <xsl:with-param name="node" select="bytesSent/countPerHour"/>
+										            <xsl:with-param name="format" select="'#,##0'"/>
+										        </xsl:call-template>
+                                                   <xsl:call-template name="timer-cell">
+										            <xsl:with-param name="node" select="bytesSent/countPerDay"/>
+										            <xsl:with-param name="format" select="'#,##0'"/>
+										        </xsl:call-template>
+                                                   <xsl:call-template name="timer-cell">
+										            <xsl:with-param name="node" select="bytesSent/mean"/>
+										            <xsl:with-param name="format" select="'#,##0'"/>
+										        </xsl:call-template>
+                                                   <xsl:call-template name="timer-cell">
+										            <xsl:with-param name="node" select="bytesSent/min"/>
+										            <xsl:with-param name="format" select="'#,##0'"/>
+										        </xsl:call-template>
+                                                   <xsl:call-template name="timer-cell">
+										            <xsl:with-param name="node" select="bytesSent/max"/>
+										            <xsl:with-param name="format" select="'#,##0'"/>
+										        </xsl:call-template>
+
+                                                <xsl:call-template name="timer-cell">
+										            <xsl:with-param name="node" select="bytesReceived/totalCount"/>
+										            <xsl:with-param name="format" select="'#,##0'"/>
+										        </xsl:call-template>
+                                                   <xsl:call-template name="timer-cell">
+										            <xsl:with-param name="node" select="bytesReceived/countPerSecond"/>
+										            <xsl:with-param name="format" select="'#,##0'"/>
+										        </xsl:call-template>
+                                                   <xsl:call-template name="timer-cell">
+										            <xsl:with-param name="node" select="bytesReceived/countPerMinute"/>
+										            <xsl:with-param name="format" select="'#,##0'"/>
+										        </xsl:call-template>
+                                                   <xsl:call-template name="timer-cell">
+										            <xsl:with-param name="node" select="bytesReceived/countPerHour"/>
+										            <xsl:with-param name="format" select="'#,##0'"/>
+										        </xsl:call-template>
+                                                   <xsl:call-template name="timer-cell">
+										            <xsl:with-param name="node" select="bytesReceived/countPerDay"/>
+										            <xsl:with-param name="format" select="'#,##0'"/>
+										        </xsl:call-template>
+                                                   <xsl:call-template name="timer-cell">
+										            <xsl:with-param name="node" select="bytesReceived/mean"/>
+										            <xsl:with-param name="format" select="'#,##0'"/>
+										        </xsl:call-template>
+                                                   <xsl:call-template name="timer-cell">
+										            <xsl:with-param name="node" select="bytesReceived/min"/>
+										            <xsl:with-param name="format" select="'#,##0'"/>
+										        </xsl:call-template>
+                                                   <xsl:call-template name="timer-cell">
+										            <xsl:with-param name="node" select="bytesReceived/max"/>
+										            <xsl:with-param name="format" select="'#,##0'"/>
+										        </xsl:call-template>
+                                            </tr>
+                                        </xsl:for-each>
+                                        <xsl:call-template name="filtered-footer-row"/>
+                                    </tfoot>
+                                    <tbody>
+                                        <xsl:for-each select="$elements">
+                                            <xsl:sort select="name" data-type="number"/>
+
+                                            <xsl:variable name="gid" select="generate-id(.)"/>
+
+                                            <tr>
+                                                <td class="key colgroup1 forcewordbreak">
+  		                                            <xsl:value-of select="name"/>
+                                                </td>
+
+                                                <xsl:call-template name="timer-cell">
+										            <xsl:with-param name="node" select="bytesSent/totalCount"/>
+										            <xsl:with-param name="format" select="'#,##0'"/>
+										        </xsl:call-template>
+                                                   <xsl:call-template name="timer-cell">
+										            <xsl:with-param name="node" select="bytesSent/countPerSecond"/>
+										            <xsl:with-param name="format" select="'#,##0'"/>
+										        </xsl:call-template>
+                                                   <xsl:call-template name="timer-cell">
+										            <xsl:with-param name="node" select="bytesSent/countPerMinute"/>
+										            <xsl:with-param name="format" select="'#,##0'"/>
+										        </xsl:call-template>
+                                                   <xsl:call-template name="timer-cell">
+										            <xsl:with-param name="node" select="bytesSent/countPerHour"/>
+										            <xsl:with-param name="format" select="'#,##0'"/>
+										        </xsl:call-template>
+                                                   <xsl:call-template name="timer-cell">
+										            <xsl:with-param name="node" select="bytesSent/countPerDay"/>
+										            <xsl:with-param name="format" select="'#,##0'"/>
+										        </xsl:call-template>
+                                                   <xsl:call-template name="timer-cell">
+										            <xsl:with-param name="node" select="bytesSent/mean"/>
+										            <xsl:with-param name="format" select="'#,##0'"/>
+										        </xsl:call-template>
+                                                   <xsl:call-template name="timer-cell">
+										            <xsl:with-param name="node" select="bytesSent/min"/>
+										            <xsl:with-param name="format" select="'#,##0'"/>
+										        </xsl:call-template>
+                                                   <xsl:call-template name="timer-cell">
+										            <xsl:with-param name="node" select="bytesSent/max"/>
+										            <xsl:with-param name="format" select="'#,##0'"/>
+										        </xsl:call-template>
+
+                                                <xsl:call-template name="timer-cell">
+										            <xsl:with-param name="node" select="bytesReceived/totalCount"/>
+										            <xsl:with-param name="format" select="'#,##0'"/>
+										        </xsl:call-template>
+                                                   <xsl:call-template name="timer-cell">
+										            <xsl:with-param name="node" select="bytesReceived/countPerSecond"/>
+										            <xsl:with-param name="format" select="'#,##0'"/>
+										        </xsl:call-template>
+                                                   <xsl:call-template name="timer-cell">
+										            <xsl:with-param name="node" select="bytesReceived/countPerMinute"/>
+										            <xsl:with-param name="format" select="'#,##0'"/>
+										        </xsl:call-template>
+                                                   <xsl:call-template name="timer-cell">
+										            <xsl:with-param name="node" select="bytesReceived/countPerHour"/>
+										            <xsl:with-param name="format" select="'#,##0'"/>
+										        </xsl:call-template>
+                                                   <xsl:call-template name="timer-cell">
+										            <xsl:with-param name="node" select="bytesReceived/countPerDay"/>
+										            <xsl:with-param name="format" select="'#,##0'"/>
+										        </xsl:call-template>
+                                                   <xsl:call-template name="timer-cell">
+										            <xsl:with-param name="node" select="bytesReceived/mean"/>
+										            <xsl:with-param name="format" select="'#,##0'"/>
+										        </xsl:call-template>
+                                                   <xsl:call-template name="timer-cell">
+										            <xsl:with-param name="node" select="bytesReceived/min"/>
+										            <xsl:with-param name="format" select="'#,##0'"/>
+										        </xsl:call-template>
+                                                   <xsl:call-template name="timer-cell">
+										            <xsl:with-param name="node" select="bytesReceived/max"/>
+										            <xsl:with-param name="format" select="'#,##0'"/>
+										        </xsl:call-template>
+                                            </tr>
+                                        </xsl:for-each>
+                                    </tbody>
                                 </xsl:when>
                                 <xsl:otherwise>
-                                    12
+                                    <tfoot>
+                                        <tr>
+                                            <td class="colgroup1"></td>
+
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+
+                                            <td class="colgroup1"></td>
+                                            <td class="colgroup1"></td>
+                                            <td class="colgroup1"></td>
+                                            <td class="colgroup1"></td>
+                                            <td class="colgroup1"></td>
+                                            <td class="colgroup1"></td>
+                                            <td class="colgroup1"></td>
+                                            <td class="colgroup1"></td>
+                                        </tr>
+                                        <xsl:call-template name="filtered-footer-row"/>
+                                    </tfoot>
+                                    <tbody class="table-nosort">
+                                        <tr>
+                                            <td colspan="17" class="no-data">No data available</td>
+                                        </tr>
+                                    </tbody>
                                 </xsl:otherwise>
                             </xsl:choose>
-                        </xsl:variable>
-                        <tfoot>
-                            <tr>
-                                <td colspan="{$columns}"></td>
-                            </tr>
-                            <xsl:call-template name="filtered-footer-row" />
-                        </tfoot>
-                        <tbody class="table-nosort">
-                            <tr>
-                                <td class="no-data" colspan="{$columns}">
-                                    No data available
-                                </td>
-                            </tr>
-                        </tbody>
-                    </xsl:otherwise>
-                </xsl:choose>
-            </table>
+                        </table>
+                    </div>  
+             </div> 
+            </xsl:when>
+            <xsl:otherwise>
+        <div class="data">
+                    <xsl:call-template name="timer-table">
+                        <xsl:with-param name="elements" select="$elements"/>
+                        <xsl:with-param name="summaryElement" select="$summaryElement"/>
+                        <xsl:with-param name="tableRowHeader" select="$tableRowHeader"/>
+                        <xsl:with-param name="type" select="$type"/>
+                    </xsl:call-template>
         </div>
-
+        </xsl:otherwise>
+        </xsl:choose>
     </xsl:template>
 
 </xsl:stylesheet>
