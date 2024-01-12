@@ -6,7 +6,7 @@
         <xsl:param name="tableRowHeader"/>
         <xsl:param name="type"/>
         
-        <xsl:variable name="percentileCount" select="count(/testreport/testReport1/runtimePercentiles/string)"/>
+        <xsl:variable name="percentileCount" select="count($summaryElement/percentiles/*)"/>
         
             <table class="table-autosort:0">
                 <thead>
@@ -51,9 +51,9 @@
                         <th class="table-sortable:numeric" title="The smallest value of the data series.">Min.</th>
                         <th class="table-sortable:numeric" title="The largest value of the data series.">Max.</th>
                         <th class="table-sortable:numeric" title="The standard deviation of all data within this data series.">Dev.</th>
-                        <xsl:for-each select="/testreport/testReport1/runtimePercentiles/string">
+                        <xsl:for-each select="$summaryElement/percentiles/*">
 	                        <th class="table-sortable:numeric colgroup1" title="The nth percentile of the data series.">
-	                            <xsl:text>P</xsl:text><xsl:value-of select="normalize-space(current())"/>
+	                            <xsl:value-of select="translate(name(), 'p', 'P')"/>
 	                        </th>
 	                    </xsl:for-each>
                     </tr>

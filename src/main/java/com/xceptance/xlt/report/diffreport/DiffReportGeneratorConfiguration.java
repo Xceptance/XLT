@@ -109,7 +109,6 @@ public class DiffReportGeneratorConfiguration extends AbstractConfiguration
         specs.add(new ElementSpecification("/testreport/configuration/loadProfile", null));
         specs.add(new ElementSpecification("/testreport/configuration/comments", null));
         specs.add(new ElementSpecification("/testreport/configuration/properties", null));
-        specs.add(new ElementSpecification("/testreport/testReportConfig/runtimePercentiles", null));
         specs.add(new ElementSpecification(ReportUtils.XPATH_PROJECT_NAME, null));
 
         return specs;
