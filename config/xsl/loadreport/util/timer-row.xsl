@@ -48,45 +48,27 @@
 				<xsl:value-of select="format-number(count, '#,##0')" />
 			</td>
 
-			<xsl:choose>
-				<xsl:when test="$type = 'request'">
-					<!-- distinct -->
-					<td class="value number">
-						<xsl:value-of select="format-number(urls/total, '#,##0')" />
-					</td>
+			<xsl:if test="$type = 'request'">
+				<!-- distinct -->
+				<td class="value number">
+					<xsl:value-of select="format-number(urls/total, '#,##0')" />
+				</td>
+			</xsl:if>
 
-					<!-- count per sec -->
-					<td class="value number">
-						<xsl:value-of select="format-number(countPerSecond, '#,##0.0')" />
-					</td>
-					
-					<!-- count per min -->
-					<td class="value number">
-						<xsl:value-of select="format-number(countPerMinute, '#,##0.0')" />
-					</td>
+			<!-- count per sec -->
+			<td class="value number">
+				<xsl:value-of select="format-number(countPerSecond, '#,##0.0')" />
+			</td>
+			
+			<!-- count per min -->
+			<td class="value number">
+				<xsl:value-of select="format-number(countPerMinute, '#,##0.0')" />
+			</td>
 
-					<!-- count per hour -->
-					<td class="value number">
-						<xsl:value-of select="format-number(countPerHour, '#,##0')" />
-					</td>
-				</xsl:when>
-				<xsl:otherwise>
-					<!-- count per sec -->
-					<td class="value number">
-						<xsl:value-of select="format-number(countPerSecond, '#,##0.0')" />
-					</td>
-					
-					<!-- count per min -->
-					<td class="value number">
-						<xsl:value-of select="format-number(countPerMinute, '#,##0.0')" />
-					</td>
-
-					<!-- count per hour -->
-					<td class="value number">
-						<xsl:value-of select="format-number(countPerHour, '#,##0')" />
-					</td>
-				</xsl:otherwise>
-			</xsl:choose>
+			<!-- count per hour -->
+			<td class="value number">
+				<xsl:value-of select="format-number(countPerHour, '#,##0')" />
+			</td>
 
 			<!-- errors -->
 			<td class="value number colgroup1">
