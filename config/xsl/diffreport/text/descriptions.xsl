@@ -148,6 +148,8 @@
 	            and application behavior remain the same.
 	        </p>
 	        <p>*) numbers might be projected</p>
+	        <p>**) Numbers are estimated using <a href="https://en.wikipedia.org/wiki/HyperLogLog">HyperLogLog</a> and can be off by up to 0.5%, but only for distinct counts larger than 100,000. A difference of up to 2%
+                can occur for distinct counts larger than 1,000,000.</p>
         </div>
     </div>
 </xsl:template>
