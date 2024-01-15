@@ -80,14 +80,20 @@
                     </xsl:when>
                     <xsl:otherwise>
                         <xsl:variable name="columns">
-                            <xsl:choose>
-                                <xsl:when test="$type = 'transaction'">
-                                    13
-                                </xsl:when>
-                                <xsl:otherwise>
-                                    12
-                                </xsl:otherwise>
-                            </xsl:choose>
+	                        <xsl:choose>
+	                            <xsl:when test="$type = 'request'">
+	                                <xsl:value-of select="11 + $percentileCount"/>
+	                            </xsl:when>
+	                            <xsl:when test="$type = 'transaction'">
+	                                <xsl:value-of select="12 + $percentileCount"/>
+	                            </xsl:when>
+	                            <xsl:when test="$type = 'action'">
+	                                <xsl:value-of select="12 + $percentileCount"/>
+	                            </xsl:when>
+	                            <xsl:otherwise>
+	                                <xsl:value-of select="11 + $percentileCount"/>
+	                            </xsl:otherwise>
+	                        </xsl:choose>
                         </xsl:variable>
                         <tfoot>
                             <tr>
