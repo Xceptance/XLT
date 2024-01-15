@@ -29,7 +29,7 @@
                         <xsl:if test="$type = 'transaction'">
                             <th class="colgroup1">Events</th>
                         </xsl:if>
-                        <th colspan="5">Runtime [ms]</th>
+                        <th colspan="4">Runtime [ms]</th>
                         <xsl:if test="$percentileCount &gt; 0">
 	                        <th colspan="{$percentileCount}" class="colgroup1">Runtime Percentiles [ms]</th>
 	                    </xsl:if>
@@ -46,7 +46,6 @@
                         <xsl:if test="$type = 'transaction'">
                             <th class="table-sortable:numeric colgroup1">Total</th>
                         </xsl:if>
-                        <th class="table-sortable:numeric" title="The median of the data series.">Med.</th>
                         <th class="table-sortable:numeric" title="The arithmetic mean of the data series.">Mean</th>
                         <th class="table-sortable:numeric" title="The smallest value of the data series.">Min.</th>
                         <th class="table-sortable:numeric" title="The largest value of the data series.">Max.</th>

@@ -55,12 +55,6 @@
             </xsl:call-template>
         </xsl:if>
 
-        <!-- median -->
-        <xsl:call-template name="timer-cell">
-            <xsl:with-param name="node" select="median"/>
-            <xsl:with-param name="format" select="'#,##0'"/>
-        </xsl:call-template>
-
         <!-- mean -->
         <xsl:call-template name="timer-cell">
             <xsl:with-param name="node" select="mean"/>
