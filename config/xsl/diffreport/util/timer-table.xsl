@@ -85,19 +85,39 @@
 	                                <xsl:value-of select="11 + $percentileCount"/>
 	                            </xsl:when>
 	                            <xsl:when test="$type = 'transaction'">
-	                                <xsl:value-of select="12 + $percentileCount"/>
+	                                <xsl:value-of select="11 + $percentileCount"/>
 	                            </xsl:when>
 	                            <xsl:when test="$type = 'action'">
-	                                <xsl:value-of select="12 + $percentileCount"/>
+	                                <xsl:value-of select="10 + $percentileCount"/>
 	                            </xsl:when>
 	                            <xsl:otherwise>
-	                                <xsl:value-of select="11 + $percentileCount"/>
+	                                <xsl:value-of select="10 + $percentileCount"/>
 	                            </xsl:otherwise>
 	                        </xsl:choose>
                         </xsl:variable>
                         <tfoot>
                             <tr>
-                                <td colspan="{$columns}"></td>
+                                <td class="colgroup1"></td>
+                                <xsl:choose>
+			                        <xsl:when test="$type = 'request'">
+			                            <td colspan="5"></td>
+			                        </xsl:when>
+			                        <xsl:otherwise>
+			                            <td colspan="4"></td>
+			                        </xsl:otherwise>
+			                    </xsl:choose>
+			                    <xsl:choose>
+			                        <xsl:when test="$type = 'transaction'">
+			                            <td colspan="2" class="colgroup1"></td>
+			                        </xsl:when>
+			                        <xsl:otherwise>
+			                            <td class="colgroup1"></td>
+			                        </xsl:otherwise>
+			                    </xsl:choose>
+                        		<td colspan="4"></td>
+                        		<xsl:if test="$percentileCount &gt; 0">
+	                        		<td colspan="{$percentileCount}" class="colgroup1"></td>
+	                        	</xsl:if>
                             </tr>
                             <xsl:call-template name="filtered-footer-row" />
                         </tfoot>
