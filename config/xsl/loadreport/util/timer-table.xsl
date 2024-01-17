@@ -143,7 +143,7 @@
                     <xsl:variable name="columnCount">
                         <xsl:choose>
                             <xsl:when test="$type = 'request'">
-                                <xsl:value-of select="11 + $percentileCount + count($runtimeIntervalsNode/interval)"/>
+                                <xsl:value-of select="12 + $percentileCount + count($runtimeIntervalsNode/interval)"/>
                             </xsl:when>
                             <xsl:when test="$type = 'transaction'">
                                 <xsl:value-of select="12 + $percentileCount"/>

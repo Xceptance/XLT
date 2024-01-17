@@ -228,24 +228,8 @@
                                     <tfoot>
                                         <tr>
                                             <td class="colgroup1"></td>
-
-                                            <td></td>
-                                            <td></td>
-                                            <td></td>
-                                            <td></td>
-                                            <td></td>
-                                            <td></td>
-                                            <td></td>
-                                            <td></td>
-
-                                            <td class="colgroup1"></td>
-                                            <td class="colgroup1"></td>
-                                            <td class="colgroup1"></td>
-                                            <td class="colgroup1"></td>
-                                            <td class="colgroup1"></td>
-                                            <td class="colgroup1"></td>
-                                            <td class="colgroup1"></td>
-                                            <td class="colgroup1"></td>
+                                            <td colspan="8"></td>
+                                            <td colspan="8" class="colgroup1"></td>
                                         </tr>
                                         <xsl:call-template name="filtered-footer-row"/>
                                     </tfoot>
