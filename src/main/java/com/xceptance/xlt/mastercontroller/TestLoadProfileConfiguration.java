@@ -160,8 +160,8 @@ public class TestLoadProfileConfiguration extends AbstractConfiguration
     private Set<String> activeTestCases;
 
     /**
-     * The XLT properties reads initially. We need that to be able to look up by test case name and user
-     * and avoid the dependencies to Session/SessionImpl.
+     * The XLT properties reads initially. We need that to be able to look up by test case name and user and avoid the
+     * dependencies to Session/SessionImpl.
      */
     private final XltPropertiesImpl xltProperties;
 
@@ -205,7 +205,8 @@ public class TestLoadProfileConfiguration extends AbstractConfiguration
     /**
      * Creates a new load test profile configuration.
      *
-     * @param properties form external to avoid loading conflicts
+     * @param properties
+     *            form external to avoid loading conflicts
      */
     public TestLoadProfileConfiguration(final XltPropertiesImpl properties)
     {
@@ -393,8 +394,7 @@ public class TestLoadProfileConfiguration extends AbstractConfiguration
                                                              defaultConfiguration.getShutdownPeriod());
             final int measurementPeriod = getTimePeriodProperty(propertyName + PROP_SUFFIX_MEASUREMENT_PERIOD,
                                                                 defaultConfiguration.getMeasurementPeriod());
-            final int rampUpPeriod = getTimePeriodProperty(propertyName + PROP_SUFFIX_RAMP_UP_PERIOD,
-                                                           defaultConfiguration.getRampUpPeriod());
+            int rampUpPeriod = getTimePeriodProperty(propertyName + PROP_SUFFIX_RAMP_UP_PERIOD, defaultConfiguration.getRampUpPeriod());
             final int rampUpSteadyPeriod = getTimePeriodProperty(propertyName + PROP_SUFFIX_RAMP_UP_STEADY_PERIOD,
                                                                  defaultConfiguration.getRampUpSteadyPeriod());
             final int initialDelay = getTimePeriodProperty(propertyName + PROP_SUFFIX_INITIAL_DELAY,
@@ -409,11 +409,11 @@ public class TestLoadProfileConfiguration extends AbstractConfiguration
             final boolean isCPTest = getBooleanProperty(propertyName + PROP_SUFFIX_ISCLIENTPERFTEST, false);
 
             final int actionThinkTime = xltProperties.getProperty(className, testCaseName, PROP_ACTION_THINK_TIME)
-                .flatMap(ParseNumbers::parseOptionalInt)
-                .orElse(defaultConfiguration.getActionThinkTime());
+                                                     .flatMap(ParseNumbers::parseOptionalInt)
+                                                     .orElse(defaultConfiguration.getActionThinkTime());
             final int actionThinkTimeDeviation = xltProperties.getProperty(className, testCaseName, PROP_ACTION_THINK_TIME_DEVIATION)
-                .flatMap(ParseNumbers::parseOptionalInt)
-                .orElse(defaultConfiguration.getActionThinkTimeDeviation());
+                                                              .flatMap(ParseNumbers::parseOptionalInt)
+                                                              .orElse(defaultConfiguration.getActionThinkTimeDeviation());
 
             // check mandatory parameters
             if (className == null || className.isBlank())
@@ -437,13 +437,13 @@ public class TestLoadProfileConfiguration extends AbstractConfiguration
                 if (LoadFunctionUtils.isComplexLoadFunction(users))
                 {
                     throw new XltException("Both a complex user function and an arrival rate are specified for test case '" + testCaseName +
-                        "', but they cannot be used together.");
+                                           "', but they cannot be used together.");
                 }
 
                 if (iterations != 0)
                 {
                     throw new XltException("Both number of iterations and arrival rate are specified for test case '" + testCaseName +
-                        "', but they cannot be used together.");
+                                           "', but they cannot be used together.");
                 }
             }
 
@@ -452,13 +452,13 @@ public class TestLoadProfileConfiguration extends AbstractConfiguration
                 if (LoadFunctionUtils.isComplexLoadFunction(users))
                 {
                     throw new XltException("Both a complex user function and a complex load factor function are specified for test case '" +
-                        testCaseName + "', but only one of them can be complex.");
+                                           testCaseName + "', but only one of them can be complex.");
                 }
 
                 if (arrivalRate != null && LoadFunctionUtils.isComplexLoadFunction(arrivalRate))
                 {
                     throw new XltException("Both a complex arrival rate function and a complex load factor function are specified for test case '" +
-                        testCaseName + "', but only one of them can be complex.");
+                                           testCaseName + "', but only one of them can be complex.");
                 }
             }
 
@@ -477,9 +477,16 @@ public class TestLoadProfileConfiguration extends AbstractConfiguration
                 complexLoadFunction = users;
             }
 
-            // apply ramp-up parameters to either users or arrival rates
-            if (LoadFunctionUtils.isSimpleLoadFunction(users))
+            // handle ramp-up parameters
+            if (LoadFunctionUtils.isComplexLoadFunction(users) ||
+                (arrivalRate != null && LoadFunctionUtils.isComplexLoadFunction(arrivalRate)))
             {
+                // GH#457: Clear ramp-up period in the presence of already complex user/arrival rate load functions
+                rampUpPeriod = -1;
+            }
+            else
+            {
+                // apply ramp-up parameters to either users or arrival rates
                 if (arrivalRate == null)
                 {
                     final int rampUpTargetValue = users[0][1];
@@ -487,7 +494,7 @@ public class TestLoadProfileConfiguration extends AbstractConfiguration
                     users = LoadFunctionUtils.computeLoadFunction(rampUpInitialValue, rampUpTargetValue, rampUpPeriod, rampUpStepSize,
                                                                   rampUpSteadyPeriod);
                 }
-                else if (LoadFunctionUtils.isSimpleLoadFunction(arrivalRate))
+                else
                 {
                     final int rampUpTargetValue = arrivalRate[0][1];
 
@@ -591,9 +598,9 @@ public class TestLoadProfileConfiguration extends AbstractConfiguration
                 // build a pseudo function
                 loadFunction = new int[][]
                     {
-                    {
-                        0, value
-                    }
+                        {
+                            0, value
+                        }
                     };
             }
             catch (final Exception e2)
@@ -666,9 +673,9 @@ public class TestLoadProfileConfiguration extends AbstractConfiguration
                 // build a pseudo function
                 loadFunction = new int[][]
                     {
-                    {
-                        0, value
-                    }
+                        {
+                            0, value
+                        }
                     };
             }
             catch (final Exception e2)
