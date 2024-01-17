@@ -19,6 +19,7 @@
 
 <xsl:include href="util/timer-row.xsl" />
 <xsl:include href="util/timer-section.xsl" />
+<xsl:include href="util/timer-table.xsl" />
 <xsl:include href="util/timer-cell.xsl" />
 
 <xsl:include href="text/descriptions.xsl" />

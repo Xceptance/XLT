@@ -62,8 +62,8 @@
                                     <th class="table-sortable:numeric">Total</th>
                                     <th class="table-sortable:numeric">1/s</th>
                                     <th class="table-sortable:numeric">1/min</th>
-                                    <th class="table-sortable:numeric">1/h</th>
-                                    <th class="table-sortable:numeric">1/d</th>
+                                    <th class="table-sortable:numeric">1/h*</th>
+                                    <th class="table-sortable:numeric">1/d*</th>
                                     <th class="table-sortable:numeric" title="The arithmetic mean.">Mean</th>
                                     <th class="table-sortable:numeric">Min.</th>
                                     <th class="table-sortable:numeric">Max.</th>
@@ -71,8 +71,8 @@
                                     <th class="table-sortable:numeric colgroup1">Total</th>
                                     <th class="table-sortable:numeric colgroup1">1/s</th>
                                     <th class="table-sortable:numeric colgroup1">1/min</th>
-                                    <th class="table-sortable:numeric colgroup1">1/h</th>
-                                    <th class="table-sortable:numeric colgroup1">1/d</th>
+                                    <th class="table-sortable:numeric colgroup1">1/h*</th>
+                                    <th class="table-sortable:numeric colgroup1">1/d*</th>
                                     <th class="table-sortable:numeric colgroup1" title="The arithmetic mean.">Mean</th>
                                     <th class="table-sortable:numeric colgroup1">Min.</th>
                                     <th class="table-sortable:numeric colgroup1">Max.</th>
