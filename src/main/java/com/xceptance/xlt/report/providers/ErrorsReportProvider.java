@@ -43,6 +43,7 @@ import com.xceptance.xlt.api.engine.RequestData;
 import com.xceptance.xlt.api.engine.TimerData;
 import com.xceptance.xlt.api.engine.TransactionData;
 import com.xceptance.xlt.api.report.AbstractReportProvider;
+import com.xceptance.xlt.api.report.ReportProviderConfiguration;
 import com.xceptance.xlt.api.util.XltLogger;
 import com.xceptance.xlt.api.util.XltProperties;
 import com.xceptance.xlt.engine.resultbrowser.RequestHistory;
@@ -52,41 +53,29 @@ import com.xceptance.xlt.report.util.JFreeChartUtils;
 import com.xceptance.xlt.report.util.TaskManager;
 import com.xceptance.xlt.report.util.ValueSet;
 
+import it.unimi.dsi.util.FastRandom;
+
 /**
  *
  */
 public class ErrorsReportProvider extends AbstractReportProvider
 {
-    private static final String ELLIPSES = "...";
-
-    /**
-     * Compares two directory hints like strings with the exception that an {@link ErrorsReportProvider#ELLIPSES} string
-     * is always lexicographically greater (and thus will end up at the end of the list when sorting multiple directory
-     * hints).
-     */
-    private static final class DirectoryHintComparator implements Comparator<String>
-    {
-        @Override
-        public int compare(String s1, String s2)
-        {
-            if (ELLIPSES.equals(s1))
-            {
-                return 1; // by definition, s1 is greater
-            }
-
-            if (ELLIPSES.equals(s2))
-            {
-                return -1; // by definition, s1 is less
-            }
-
-            return s1.compareTo(s2);
-        }
-    }
-
     /**
      * The maximum number of directory hints remembered for a certain error (stack trace).
      */
-    private static final int MAXIMUM_NUMBER_OF_HINTS = 25;
+    private int directoryLimitPerError;
+
+    /**
+     * The chance to replace directory hints remembered for a certain error (stack trace) with new hints when above the
+     * maximum number. Given and used in range from 0.0 to 1.0. Converted automatically from the relating property value
+     * which is given in percent.
+     */
+    private double directoryReplacementChance;
+
+    /**
+     * The root directory of the result set.
+     */
+    private FileObject resultsDirectory;
 
     /**
      * The dump mode used during the load test.
@@ -124,6 +113,11 @@ public class ErrorsReportProvider extends AbstractReportProvider
     private final Map<String, ValueSet> requestErrorOverviewValues = new HashMap<>();
 
     /**
+     * some fix random sequence that is fast and always the same, this might change in the future
+     */
+    private final FastRandom random = new FastRandom(98765111L);
+
+    /**
      * Constructor.
      */
     public ErrorsReportProvider()
@@ -136,10 +130,24 @@ public class ErrorsReportProvider extends AbstractReportProvider
      * {@inheritDoc}
      */
     @Override
+    public void setConfiguration(final ReportProviderConfiguration config)
+    {
+        super.setConfiguration(config);
+
+        // cache some configuration values
+        directoryLimitPerError = getConfiguration().getDirectoryLimitPerError();
+        directoryReplacementChance = getConfiguration().getDirectoryReplacementChance();
+        resultsDirectory = getConfiguration().getResultsDirectory();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public Object createReportFragment()
     {
-        List<TransactionOverviewChartReport> availableTransactionErrorOverviewCharts = new ArrayList<>();
-        List<RequestErrorChartReport> availableRequestErrorCharts = new ArrayList<>();
+        final List<TransactionOverviewChartReport> availableTransactionErrorOverviewCharts = new ArrayList<>();
+        final List<RequestErrorChartReport> availableRequestErrorCharts = new ArrayList<>();
 
         if (getConfiguration().shouldChartsGenerated())
         {
@@ -170,11 +178,12 @@ public class ErrorsReportProvider extends AbstractReportProvider
             if (getConfiguration().createRequestErrorOverviewCharts())
             {
                 // get top N transaction errors
-                int chartCount = getChartCount(getConfiguration().getRequestErrorOverviewChartLimit(), requestErrorOverviewValues.size());
+                final int chartCount = getChartCount(getConfiguration().getRequestErrorOverviewChartLimit(),
+                                                     requestErrorOverviewValues.size());
                 final List<Entry<String, ValueSet>> selectedErrors = getRequestOverviewErrorsSortedByOccurrence().subList(0, chartCount);
-                for (Entry<String, ValueSet> eachEntry : selectedErrors)
+                for (final Entry<String, ValueSet> eachEntry : selectedErrors)
                 {
-                    RequestErrorChartReport requestErrorChartReport = new RequestErrorChartReport();
+                    final RequestErrorChartReport requestErrorChartReport = new RequestErrorChartReport();
                     requestErrorChartReport.id = Integer.valueOf(eachEntry.getKey());
 
                     availableRequestErrorCharts.add(requestErrorChartReport);
@@ -185,10 +194,10 @@ public class ErrorsReportProvider extends AbstractReportProvider
                     @Override
                     public void run()
                     {
-                        for (Entry<String, ValueSet> eachEntry : selectedErrors)
+                        for (final Entry<String, ValueSet> eachEntry : selectedErrors)
                         {
-                            String responseCode = eachEntry.getKey();
-                            ValueSet data = eachEntry.getValue();
+                            final String responseCode = eachEntry.getKey();
+                            final ValueSet data = eachEntry.getValue();
 
                             createRequestErrorOverviewChart(responseCode, data);
                         }
@@ -200,10 +209,10 @@ public class ErrorsReportProvider extends AbstractReportProvider
             if (getConfiguration().createTransactionErrorOverviewCharts())
             {
                 // get top N transaction errors
-                int chartCount = getChartCount(getConfiguration().getTransactionErrorOverviewChartLimit(),
-                                               transactionErrorOverviewValues.size());
+                final int chartCount = getChartCount(getConfiguration().getTransactionErrorOverviewChartLimit(),
+                                                     transactionErrorOverviewValues.size());
                 final List<TransactionErrorOverviewValues> selectedErrors = getTransactionErrorsSortedByOccurrence().subList(0, chartCount);
-                for (TransactionErrorOverviewValues eachError : selectedErrors)
+                for (final TransactionErrorOverviewValues eachError : selectedErrors)
                 {
                     availableTransactionErrorOverviewCharts.add(eachError.getChartReport());
                 }
@@ -214,7 +223,7 @@ public class ErrorsReportProvider extends AbstractReportProvider
                     @Override
                     public void run()
                     {
-                        for (TransactionErrorOverviewValues eachEntry : selectedErrors)
+                        for (final TransactionErrorOverviewValues eachEntry : selectedErrors)
                         {
                             createTransactionErrorOverviewChart(eachEntry);
                         }
@@ -226,11 +235,11 @@ public class ErrorsReportProvider extends AbstractReportProvider
             if (getConfiguration().createErrorDetailsCharts())
             {
                 // get top N errors
-                int chartCount = getChartCount(getConfiguration().getErrorDetailsChartLimit(), errorReports.size());
+                final int chartCount = getChartCount(getConfiguration().getErrorDetailsChartLimit(), errorReports.size());
                 final List<ErrorValues> selectedErrors = getErrorsSortedByOccurrence().subList(0, chartCount);
 
                 // the selected errors will have a chart and maybe a transaction overview chart, set the ID's
-                for (ErrorValues eachError : selectedErrors)
+                for (final ErrorValues eachError : selectedErrors)
                 {
                     eachError.errorReport.detailChartID = System.identityHashCode(eachError.errorReport);
                 }
@@ -241,7 +250,7 @@ public class ErrorsReportProvider extends AbstractReportProvider
                     @Override
                     public void run()
                     {
-                        for (ErrorValues eachErrorValues : selectedErrors)
+                        for (final ErrorValues eachErrorValues : selectedErrors)
                         {
                             createErrorDetailsChart(eachErrorValues);
                         }
@@ -266,7 +275,7 @@ public class ErrorsReportProvider extends AbstractReportProvider
         return errorReport;
     }
 
-    private int getChartCount(int configuredCount, int collectionSize)
+    private int getChartCount(final int configuredCount, final int collectionSize)
     {
         if (configuredCount < 0 || configuredCount > collectionSize)
         {
@@ -277,11 +286,11 @@ public class ErrorsReportProvider extends AbstractReportProvider
 
     private List<Entry<String, ValueSet>> getRequestOverviewErrorsSortedByOccurrence()
     {
-        ArrayList<Entry<String, ValueSet>> errors = new ArrayList<>(requestErrorOverviewValues.entrySet());
+        final ArrayList<Entry<String, ValueSet>> errors = new ArrayList<>(requestErrorOverviewValues.entrySet());
         Collections.sort(errors, Collections.reverseOrder(new Comparator<Entry<String, ValueSet>>()
         {
             @Override
-            public int compare(Entry<String, ValueSet> o1, Entry<String, ValueSet> o2)
+            public int compare(final Entry<String, ValueSet> o1, final Entry<String, ValueSet> o2)
             {
                 return Long.compare(o1.getValue().getValueCount(), o2.getValue().getValueCount());
             }
@@ -291,11 +300,11 @@ public class ErrorsReportProvider extends AbstractReportProvider
 
     private List<ErrorValues> getErrorsSortedByOccurrence()
     {
-        List<ErrorValues> errors = new ArrayList<ErrorValues>(errorReports.values());
+        final List<ErrorValues> errors = new ArrayList<>(errorReports.values());
         Collections.sort(errors, Collections.reverseOrder(new Comparator<ErrorValues>()
         {
             @Override
-            public int compare(ErrorValues o1, ErrorValues o2)
+            public int compare(final ErrorValues o1, final ErrorValues o2)
             {
                 return Integer.compare(o1.getErrorReport().count, o2.getErrorReport().count);
             }
@@ -305,11 +314,11 @@ public class ErrorsReportProvider extends AbstractReportProvider
 
     private List<TransactionErrorOverviewValues> getTransactionErrorsSortedByOccurrence()
     {
-        List<TransactionErrorOverviewValues> errors = new ArrayList<>(transactionErrorOverviewValues.values());
+        final List<TransactionErrorOverviewValues> errors = new ArrayList<>(transactionErrorOverviewValues.values());
         Collections.sort(errors, Collections.reverseOrder(new Comparator<TransactionErrorOverviewValues>()
         {
             @Override
-            public int compare(TransactionErrorOverviewValues o1, TransactionErrorOverviewValues o2)
+            public int compare(final TransactionErrorOverviewValues o1, final TransactionErrorOverviewValues o2)
             {
                 return Long.compare(o1.getValues().getValueCount(), o2.getValues().getValueCount());
             }
@@ -317,49 +326,50 @@ public class ErrorsReportProvider extends AbstractReportProvider
         return errors;
     }
 
-    private void createRequestErrorOverviewChart(String responseCode, ValueSet data)
+    private void createRequestErrorOverviewChart(final String responseCode, final ValueSet data)
     {
-        String title = "(" + responseCode + ")";
-        String fileName = "r" + responseCode;
+        final String title = "(" + responseCode + ")";
+        final String fileName = "r" + responseCode;
 
-        int width = getConfiguration().getChartWidth();
-        int height = (int) (getConfiguration().getChartHeight() / 2.8);
+        final int width = getConfiguration().getChartWidth();
+        final int height = (int) (getConfiguration().getChartHeight() / 2.8);
 
         createErrorChart(data, fileName, title, "Errors", "Errors", width, height, false, false);
     }
 
-    private void createErrorDetailsChart(ErrorValues errorValues)
+    private void createErrorDetailsChart(final ErrorValues errorValues)
     {
-        ErrorReport errorReport = errorValues.getErrorReport();
+        final ErrorReport errorReport = errorValues.getErrorReport();
 
-        String title = null;
-        String fileName = "d" + errorReport.detailChartID;
-        ValueSet data = errorValues.getValues();
+        final String title = null;
+        final String fileName = "d" + errorReport.detailChartID;
+        final ValueSet data = errorValues.getValues();
 
-        int detailsWidth = (int) (getConfiguration().getChartWidth() / 1.4);
-        int detailsHeight = (int) (getConfiguration().getChartHeight() / 3.5);
+        final int detailsWidth = (int) (getConfiguration().getChartWidth() / 1.4);
+        final int detailsHeight = (int) (getConfiguration().getChartHeight() / 3.5);
 
         createErrorChart(data, fileName, title, null, "Errors", detailsWidth, detailsHeight, false, false);
     }
 
-    private void createTransactionErrorOverviewChart(TransactionErrorOverviewValues errorOverview)
+    private void createTransactionErrorOverviewChart(final TransactionErrorOverviewValues errorOverview)
     {
-        String title = StringUtils.defaultIfBlank(errorOverview.getErrorMessage(), "");
-        String fileName = "t" + errorOverview.getOverviewChartID();
-        ValueSet data = errorOverview.getValues();
+        final String title = StringUtils.defaultIfBlank(errorOverview.getErrorMessage(), "");
+        final String fileName = "t" + errorOverview.getOverviewChartID();
+        final ValueSet data = errorOverview.getValues();
 
-        int overviewWidth = getConfiguration().getChartWidth();
-        int overviewHeight = (int) (getConfiguration().getChartHeight() / 2.8);
+        final int overviewWidth = getConfiguration().getChartWidth();
+        final int overviewHeight = (int) (getConfiguration().getChartHeight() / 2.8);
 
         createErrorChart(data, fileName, title, "Errors", "Errors", overviewWidth, overviewHeight, false, false);
     }
 
-    private void createErrorChart(ValueSet data, String chartName, String chartTitle, String yAxisTitle, String dataName, int width,
-                                  int height, boolean createLegend, boolean createTimeAxis)
+    private void createErrorChart(final ValueSet data, final String chartName, final String chartTitle, final String yAxisTitle,
+                                  final String dataName, final int width, final int height, final boolean createLegend,
+                                  final boolean createTimeAxis)
     {
         final int minMaxValueSetSize = width;
         final TimeSeries eachErrorTimeSeries = JFreeChartUtils.toStandardTimeSeries(data.toMinMaxValueSet(minMaxValueSetSize), dataName);
-        TimeSeriesCollection eachErrorTimeSeriesCollection = new TimeSeriesCollection(eachErrorTimeSeries);
+        final TimeSeriesCollection eachErrorTimeSeriesCollection = new TimeSeriesCollection(eachErrorTimeSeries);
 
         final JFreeChart chart = JFreeChartUtils.createBarChart(chartTitle, eachErrorTimeSeriesCollection, yAxisTitle, Color.RED,
                                                                 getConfiguration().getChartStartTime(),
@@ -370,8 +380,8 @@ public class ErrorsReportProvider extends AbstractReportProvider
 
     private List<ErrorReport> getErrorReports()
     {
-        List<ErrorReport> reports = new ArrayList<>(errorReports.size());
-        for (ErrorValues eachErrorValues : errorReports.values())
+        final List<ErrorReport> reports = new ArrayList<>(errorReports.size());
+        for (final ErrorValues eachErrorValues : errorReports.values())
         {
             reports.add(eachErrorValues.getErrorReport());
         }
@@ -386,11 +396,9 @@ public class ErrorsReportProvider extends AbstractReportProvider
      */
     private void sortDirectoryHints(final ErrorsReport errorsReport)
     {
-        Comparator<String> comparator = new DirectoryHintComparator();
-
-        for (ErrorReport errorReport : errorsReport.errors)
+        for (final ErrorReport errorReport : errorsReport.errors)
         {
-            Collections.sort(errorReport.directoryHints, comparator);
+            Collections.sort(errorReport.directoryHints);
         }
     }
 
@@ -407,8 +415,6 @@ public class ErrorsReportProvider extends AbstractReportProvider
             final String trace = txnStats.getFailureStackTrace();
             if (trace != null)
             {
-
-
                 // qualify the trace with the test case/action name in case of equal stack traces (#1092)
                 final String testCaseName = txnStats.getName();
                 final String failedActionName = txnStats.getFailedActionName();
@@ -418,7 +424,7 @@ public class ErrorsReportProvider extends AbstractReportProvider
                 ErrorValues errorValues = errorReports.get(key);
                 if (errorValues == null)
                 {
-                    ErrorReport errorReport = new ErrorReport();
+                    final ErrorReport errorReport = new ErrorReport();
                     errorReport.trace = trace;
                     errorReport.message = txnStats.getFailureMessage();
                     errorReport.testCaseName = testCaseName;
@@ -429,7 +435,7 @@ public class ErrorsReportProvider extends AbstractReportProvider
                     errorReports.put(key, errorValues);
                 }
 
-                ErrorReport errorReport = errorValues.getErrorReport();
+                final ErrorReport errorReport = errorValues.getErrorReport();
 
                 // update errors per second for the error details
                 if (getConfiguration().createErrorDetailsCharts())
@@ -440,7 +446,7 @@ public class ErrorsReportProvider extends AbstractReportProvider
                 // update errors per second for the transaction error overview
                 if (getConfiguration().createTransactionErrorOverviewCharts())
                 {
-                    int id = getTransactionErrorOverviewChartID(errorReport.message);
+                    final int id = getTransactionErrorOverviewChartID(errorReport.message);
                     TransactionErrorOverviewValues overviewErrorValues = transactionErrorOverviewValues.get(id);
                     if (overviewErrorValues == null)
                     {
@@ -460,26 +466,42 @@ public class ErrorsReportProvider extends AbstractReportProvider
                     if (directoryHint != null)
                     {
                         final int size = errorReport.directoryHints.size();
-                        if (size < MAXIMUM_NUMBER_OF_HINTS)
+                        if (size < directoryLimitPerError)
                         {
-                            final ReportGeneratorConfiguration config = (ReportGeneratorConfiguration) getConfiguration();
                             try
                             {
                                 // Check if such a directory is existing.
-                                if (VFS.getManager().resolveFile(config.getResultsDirectory(), directoryHint).exists())
+                                if (VFS.getManager().resolveFile(resultsDirectory, directoryHint).exists())
                                 {
                                     errorReport.directoryHints.add(directoryHint);
                                 }
                             }
-                            catch (FileSystemException e)
+                            catch (final FileSystemException e)
                             {
                                 XltLogger.reportLogger.warn("Unable to parse " + directoryHint + " in " +
-                                                             config.getResultsDirectory().getName().getPath());
+                                                            resultsDirectory.getName().getPath());
                             }
                         }
-                        else if (size == MAXIMUM_NUMBER_OF_HINTS)
+                        else
                         {
-                            errorReport.directoryHints.add(ELLIPSES);
+                            // replace hints with a predefined chance
+                            if (random.nextDoubleFast() <= directoryReplacementChance)
+                            {
+                                try
+                                {
+                                    // Check if such a directory is existing.
+                                    if (VFS.getManager().resolveFile(resultsDirectory, directoryHint).exists())
+                                    {
+                                        // randomly replace one of the existing hints with the new hint
+                                        errorReport.directoryHints.set(random.nextInt(directoryLimitPerError), directoryHint);
+                                    }
+                                }
+                                catch (final FileSystemException e)
+                                {
+                                    XltLogger.reportLogger.warn("Unable to parse " + directoryHint + " in " +
+                                                                resultsDirectory.getName().getPath());
+                                }
+                            }
                         }
                     }
                 }
@@ -522,11 +544,11 @@ public class ErrorsReportProvider extends AbstractReportProvider
             // collect the request errors
             if (getConfiguration().createRequestErrorOverviewCharts() && timerData instanceof RequestData)
             {
-                RequestData requestData = (RequestData) timerData;
-                int code = requestData.getResponseCode();
+                final RequestData requestData = (RequestData) timerData;
+                final int code = requestData.getResponseCode();
                 if (code == 0 || code >= 500)
                 {
-                    String responseCode = String.valueOf(code);
+                    final String responseCode = String.valueOf(code);
                     ValueSet valueSet = requestErrorOverviewValues.get(responseCode);
                     if (valueSet == null)
                     {
@@ -548,7 +570,7 @@ public class ErrorsReportProvider extends AbstractReportProvider
     {
         String pathPrefix = null;
 
-        final ReportGeneratorConfiguration config = (ReportGeneratorConfiguration) getConfiguration();
+        final ReportGeneratorConfiguration config = getConfiguration();
         if (config.isGenerateErrorLinks())
         {
             final URI linkedResultsBaseUri = config.getLinkedResultsBaseUri();
@@ -621,9 +643,9 @@ public class ErrorsReportProvider extends AbstractReportProvider
         // final long start = TimerUtils.getTime();
 
         // convert the time series
-        TimeSeriesCollection transactionErrors = new TimeSeriesCollection(transactionErrorsPerSecondTimeSeries);
-        TimeSeriesCollection actionErrors = new TimeSeriesCollection(actionErrorsPerSecondTimeSeries);
-        TimeSeriesCollection requestErrors = new TimeSeriesCollection(requestErrorsPerSecondTimeSeries);
+        final TimeSeriesCollection transactionErrors = new TimeSeriesCollection(transactionErrorsPerSecondTimeSeries);
+        final TimeSeriesCollection actionErrors = new TimeSeriesCollection(actionErrorsPerSecondTimeSeries);
+        final TimeSeriesCollection requestErrors = new TimeSeriesCollection(requestErrorsPerSecondTimeSeries);
 
         // create a combined plot area and add the separate bar plots to it
         final CombinedDomainXYPlot combinedPlot = JFreeChartUtils.createCombinedPlot(getConfiguration().getChartStartTime(),
@@ -649,7 +671,7 @@ public class ErrorsReportProvider extends AbstractReportProvider
         return (ReportGeneratorConfiguration) super.getConfiguration();
     }
 
-    private int getTransactionErrorOverviewChartID(String errorMessage)
+    private int getTransactionErrorOverviewChartID(final String errorMessage)
     {
         return StringUtils.defaultString(errorMessage).hashCode();
     }
@@ -660,7 +682,7 @@ public class ErrorsReportProvider extends AbstractReportProvider
 
         private final ValueSet values = new ValueSet();
 
-        public ErrorValues(ErrorReport errorReport)
+        public ErrorValues(final ErrorReport errorReport)
         {
             this.errorReport = errorReport;
         }
@@ -682,7 +704,7 @@ public class ErrorsReportProvider extends AbstractReportProvider
 
         private final TransactionOverviewChartReport chartReport = new TransactionOverviewChartReport();
 
-        public TransactionErrorOverviewValues(String errorMessage, int overviewChartID)
+        public TransactionErrorOverviewValues(final String errorMessage, final int overviewChartID)
         {
             chartReport.id = overviewChartID;
             chartReport.title = errorMessage;
