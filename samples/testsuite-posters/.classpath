@@ -6,6 +6,6 @@
 			<attribute name="module" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry combineaccessrules="false" kind="src" path="/xlt"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/xlt-develop"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>
