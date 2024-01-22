@@ -210,7 +210,7 @@ public class ErrorsReportProvider extends AbstractReportProvider
             {
                 // get top N transaction errors
                 final int chartCount = getChartCount(getConfiguration().getTransactionErrorOverviewChartLimit(),
-                                               transactionErrorOverviewValues.size());
+                                                     transactionErrorOverviewValues.size());
                 final List<TransactionErrorOverviewValues> selectedErrors = getTransactionErrorsSortedByOccurrence().subList(0, chartCount);
                 for (final TransactionErrorOverviewValues eachError : selectedErrors)
                 {
@@ -465,42 +465,35 @@ public class ErrorsReportProvider extends AbstractReportProvider
                     final String directoryHint = txnStats.getDumpDirectoryPath();
                     if (directoryHint != null)
                     {
+                        // check if we should add/replace a result browser directory hint
                         final int size = errorReport.directoryHints.size();
-                        if (size < directoryLimitPerError)
+                        if (size < directoryLimitPerError || random.nextDoubleFast() <= directoryReplacementChance)
                         {
+                            // either limit not reached yet or replacement chance
+                            final String indexFilePath = directoryHint + "/index.html";
+
                             try
                             {
-                                // Check if such a directory is existing.
-                                if (VFS.getManager().resolveFile(resultsDirectory, directoryHint).exists())
+                                // check if such a directory exists and contains an index.html file
+                                if (VFS.getManager().resolveFile(resultsDirectory, indexFilePath).exists())
                                 {
-                                    errorReport.directoryHints.add(directoryHint);
-                                }
-                            }
-                            catch (final FileSystemException e)
-                            {
-                                XltLogger.reportLogger.warn("Unable to parse " + directoryHint + " in " +
-                                                            resultsDirectory.getName().getPath());
-                            }
-                        }
-                        else
-                        {
-                            // replace hints with a predefined chance
-                            if (random.nextDoubleFast() <= directoryReplacementChance)
-                        {
-                                try
-                                {
-                                    // Check if such a directory is existing.
-                                    if (VFS.getManager().resolveFile(resultsDirectory, directoryHint).exists())
+                                    // now decide what to do with it
+                                    if (size < directoryLimitPerError)
+                                    {
+                                        // add the directory
+                                        errorReport.directoryHints.add(directoryHint);
+                                    }
+                                    else
                                     {
                                         // randomly replace one of the existing hints with the new hint
                                         errorReport.directoryHints.set(random.nextInt(directoryLimitPerError), directoryHint);
                                     }
                                 }
-                                catch (final FileSystemException e)
-                                {
-                                    XltLogger.reportLogger.warn("Unable to parse " + directoryHint + " in " +
-                                                                resultsDirectory.getName().getPath());
-                                }
+                            }
+                            catch (final FileSystemException e)
+                            {
+                                XltLogger.reportLogger.warn("Unable to check if '{}' exists in '{}'", indexFilePath,
+                                                            resultsDirectory.getName().getPath());
                             }
                         }
                     }
