@@ -1620,6 +1620,86 @@ tr:hover .infinity { background: linear-gradient(rgb(200,120,120), rgba(0,0,0,0)
 
 /*
  * ----------------------------------------------------
+ * Web Vitals
+ * ----------------------------------------------------
+ */
+.web-vital {
+}
+
+.web-vital .score {
+    display: flex; 
+    position: relative; 
+    width: 0; 
+    left: 75%; 
+    justify-content: center; 
+    white-space: nowrap;
+    font-weight: bold;
+}
+
+.web-vital .score.good { 
+    color: green;
+}
+
+.web-vital .score.impr { 
+    color: orange;   
+}
+
+.web-vital .score.poor {
+    color: red;   
+}
+
+.web-vital .marker {
+    display: flex; 
+    position: relative; 
+    width: 0; 
+    left: 75%; 
+    justify-content: center; 
+}
+
+.web-vital .marker .arrow {
+    width: 0; 
+    height: 0; 
+    border-left: 5px solid transparent; 
+    border-right: 5px solid transparent; 
+    border-top: 8px solid black;  /* will be adjusted via class */
+}
+
+.web-vital .marker .arrow.good {
+    border-top-color: green;
+}
+
+.web-vital .marker .arrow.impr {
+    border-top-color: orange;
+}
+
+.web-vital .marker .arrow.poor {
+    border-top-color: red;
+}
+
+.web-vital .bar {
+    padding-top: 2px;
+    display: flex; 
+}
+
+.web-vital .bar .segment {
+    flex-grow: 0;    /* will be adjusted via style */
+    height: 5px;
+}
+
+.web-vital .bar .segment.good {
+    background-color: green;
+}
+
+.web-vital .bar .segment.impr {
+    background-color: orange;
+}
+
+.web-vital .bar .segment.poor {
+    background-color: red;
+}
+
+/*
+ * ----------------------------------------------------
  * Printing
  * ----------------------------------------------------
  */

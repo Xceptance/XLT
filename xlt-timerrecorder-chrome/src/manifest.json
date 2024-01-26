@@ -1,6 +1,5 @@
 {
   "manifest_version": 2,
-  //"minimum_chrome_version":"",
 
   "name": "XLT Timer Recorder",
   "short_name": "XLT-CTR",
@@ -9,7 +8,6 @@
   "version_name": "@version@",
   "author":"Xceptance",
   "homepage_url": "https://www.xceptance.com",
-  //"update_url": "http://path/to/updateInfo.xml",
 
   "background": {
     "scripts": ["background.js"]
@@ -19,7 +17,7 @@
     {
       "matches": ["<all_urls>"],
       "run_at":"document_start",
-      "js":["page.js"]
+      "js":["web-vitals.js", "page.js"]
     }
   ],
 

@@ -513,6 +513,60 @@
         </div>
     </xsl:template>
 
+    <!--- ## Description: Web Vitals Summary ## -->
+    <xsl:template name="headline-web-vitals-summary">
+        <h2>Web Vitals</h2>
+    </xsl:template>
+    <xsl:template name="description-web-vitals-summary">
+        <div class="description">
+            <xsl:variable name="gid" select="concat('web-vitals', generate-id(.))"/>
+            <p>
+                The Page Load Timings section offers a deeper insight into the page loading performance of real browsers. This
+                data helps you to assess how fast a page is loaded from a human user's perspective.
+                <xsl:call-template name="show-n-hide">
+                    <xsl:with-param name="gid" select="$gid"/>
+                </xsl:call-template>
+            </p>
+            <div id="more-{$gid}" class="more">
+                <p>
+                    During a page load, a browser typically goes through different phases and reaches different states. This
+                    section outlines what time it took to reach a certain state. The timings listed here include primarily page
+                    load timings as defined in the
+                    <a href="https://www.w3.org/TR/navigation-timing-2/">Navigation Timing</a>
+                    specification. Since the
+                    <em>perceived</em>
+                    page loading performance is often influenced by how fast something is displayed on the page, paint timings
+                    are listed here as well. See the
+                    <a href="https://www.w3.org/TR/paint-timing/">Paint Timing</a>
+                    specification for more details.
+                </p>
+                <p>
+                    The following timings will be recorded:
+                </p>
+                <ul>
+                    <li>CLS</li>
+                    <li>FCP</li>
+                    <li>FID (deprecated)</li>
+                    <li>LCP</li>
+                    <li>INP</li>
+                    <li>TTFB</li>
+                </ul>
+                <p>
+                    The individual timings for a page load are prefixed with the name of the action that triggered the page load.
+                    All timing values are relative to the start of the page load.
+                </p>
+                <p>
+                    Note that these timings will be recorded only when using
+                    <code>XltChromeDriver</code>
+                    or
+                    <code>XltFirefoxDriver</code>
+                    to run the browser. These are special WebDriver implementations that install an extension into the browser
+                    which is able to gather all the timings and report them to XLT.
+                </p>
+            </div>
+        </div>
+    </xsl:template>
+
     <!--- ## Description: Custom Timer Summary ## -->
     <xsl:template name="headline-custom-timer-summary">
         <h2>Custom Timers</h2>

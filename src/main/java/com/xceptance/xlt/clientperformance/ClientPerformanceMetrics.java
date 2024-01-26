@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.engine.PageLoadTimingData;
 import com.xceptance.xlt.api.engine.RequestData;
+import com.xceptance.xlt.api.engine.WebVitalData;
 import com.xceptance.xlt.engine.SessionImpl;
 import com.xceptance.xlt.engine.metrics.Metrics;
 import com.xceptance.xlt.engine.resultbrowser.ActionInfo;
@@ -75,6 +76,11 @@ public class ClientPerformanceMetrics
         {
             updateAndLogPageLoadTimingData(session, eachData);
         }
+
+        for (WebVitalData eachData : data.getWebVitalsList())
+        {
+            updateAndLogWebVitalData(session, eachData);
+        }
     }
 
     private static void updateAndLogRequestData(final SessionImpl session, final ClientPerformanceRequest request)
@@ -100,6 +106,15 @@ public class ClientPerformanceMetrics
         }
 
         // write page-load timing data to timer file
+        logTimerData(session, actionInfo, data);
+    }
+
+    private static void updateAndLogWebVitalData(final SessionImpl session, final WebVitalData data)
+    {
+        final Entry<Long, ActionInfo> entry = session.getWebDriverActionStartTimes().floorEntry(data.getTime());
+        final ActionInfo actionInfo = entry != null ? entry.getValue() : null;
+
+        // write web-vital data to timer file
         logTimerData(session, actionInfo, data);
     }
 
@@ -160,7 +175,7 @@ public class ClientPerformanceMetrics
         final StringBuilder sb = new StringBuilder(actionName);
         if (StringUtils.isNotBlank(dName))
         {
-            if (data instanceof PageLoadTimingData)
+            if (data instanceof PageLoadTimingData || data instanceof WebVitalData)
             {
                 sb.append(" [").append(dName).append("]");
             }

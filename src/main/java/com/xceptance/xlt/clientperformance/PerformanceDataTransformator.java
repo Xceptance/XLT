@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import com.xceptance.xlt.api.engine.GlobalClock;
 import com.xceptance.xlt.api.engine.PageLoadTimingData;
 import com.xceptance.xlt.api.engine.RequestData;
+import com.xceptance.xlt.api.engine.WebVitalData;
 import com.xceptance.xlt.api.util.XltCharBuffer;
 import com.xceptance.xlt.engine.util.URLCleaner;
 import com.xceptance.xlt.engine.util.UrlUtils;
@@ -110,6 +111,21 @@ public final class PerformanceDataTransformator
                     LOG.debug("Entry without timings data: " + timingData);
                 }
             }
+
+            // get additional timing data from json
+            final JSONArray webVitals = timingData.optJSONArray("webVitals");
+            if (webVitals != null)
+            {
+                performanceData.getWebVitalsList().addAll(getWebVitalsDataList(webVitals));
+            }
+            else
+            {
+                if (LOG.isDebugEnabled())
+                {
+                    LOG.debug("Entry without web-vitals data: " + timingData);
+                }
+            }
+
             dataList.add(performanceData);
         }
         return dataList;
@@ -330,10 +346,10 @@ public final class PerformanceDataTransformator
             if (timingEntry != null)
             {
                 final long startTime = timingEntry.optLong("startTime", 0);
-                final int runTime = timingEntry.optInt("duration", 0);
+                final int runTime = timingEntry.optInt("duration", -1);
 
                 // only process valid records
-                if (startTime > 0 && runTime > 0)
+                if (startTime > 0 && runTime > -1)
                 {
                     final PageLoadTimingData customData = new PageLoadTimingData();
                     customData.setName(StringUtils.capitalize(eachKey));
@@ -350,6 +366,66 @@ public final class PerformanceDataTransformator
         }
         return customDataList;
     }
+
+    private List<WebVitalData> getWebVitalsDataList(JSONArray webVitalsArray)
+    {
+        final List<WebVitalData> webVitalsDataList = new ArrayList<>();
+
+        for (final Object object : webVitalsArray)
+        {
+            if (object instanceof JSONObject)
+            {
+                JSONObject webVital = (JSONObject) object;
+
+                final String name = webVital.optString("name", null);
+                final long time = webVital.optLong("time", 0);
+                final Double value = webVital.optDoubleObject("value", null);
+
+                // only process valid records
+                if (name != null && time > 0 && value != null)
+                {
+                    final WebVitalData webVitalData = new WebVitalData();
+                    webVitalData.setName(name);
+                    webVitalData.setTime(time);
+                    webVitalData.setValue(value.doubleValue());
+
+                    // add to list
+                    webVitalsDataList.add(webVitalData);
+                }
+                else
+                {
+                    LOG.debug("Web-vitals entry is incomplete and will be skipped");
+                }
+            }
+        }
+
+        return webVitalsDataList;
+    }
+
+    /*
+    private WebVitalsData getWebVitalsData(JSONObject webVitals)
+    {
+        final long startTime = webVitals.optLong("startTime", 0);
+        final Double cls = webVitals.optDoubleObject("cls", null);
+        final Double fcp = webVitals.optDoubleObject("fcp", null);
+        final Double fid = webVitals.optDoubleObject("fid", null);
+        final Double inp = webVitals.optDoubleObject("inp", null);
+        final Double lcp = webVitals.optDoubleObject("lcp", null);
+        final Double ttfb = webVitals.optDoubleObject("ttfb", null);
+        
+        WebVitalsData webVitalsData = new WebVitalsData();
+        webVitalsData.setTime(startTime);
+
+//        webVitalsData.setCls(cls);
+//        webVitalsData.setFcp(fcp);
+//        webVitalsData.setFid(fid);
+//        webVitalsData.setInp(inp);
+//        webVitalsData.setLcp(lcp);
+//        webVitalsData.setTtfb(ttfb);
+        
+        return webVitalsData;
+    }
+    */
 
     private static List<NameValuePair> getNameValuePairs(JSONObject postParameters)
     {
