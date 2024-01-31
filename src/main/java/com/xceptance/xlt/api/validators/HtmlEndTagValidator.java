@@ -48,6 +48,11 @@ public class HtmlEndTagValidator
      * Regular expression used to check for regular trailing content.
      */
     private static final String REGULAR_TRAILING_CONTENT_REGEX = "(?sm)(\\s|<!--.*?-->)*";
+    
+    /**
+     * Property name that controls the validator.
+     */
+    private static final String PROPERTY_NAME = HtmlEndTagValidator.class.getName() + ".enabled";
 
     /**
      * The pattern to be use on the page.
@@ -138,7 +143,8 @@ public class HtmlEndTagValidator
      */
     public static HtmlEndTagValidator getInstance()
     {
-        return HtmlEndTagValidator_Singleton.instance;
+        final boolean enabled = XltProperties.getInstance().getProperty(PROPERTY_NAME, false);
+        return enabled ? HtmlEndTagValidator_Singleton.instance : HtmlEndTagValidator_Singleton.noopInstance;
     }
 
     /**
@@ -150,13 +156,13 @@ public class HtmlEndTagValidator
          * Singleton instance.
          */
         private static final HtmlEndTagValidator instance;
+        private static final HtmlEndTagValidator noopInstance;
 
         // static initializer (synchronized by class loader)
         static
         {
-            final String propertyName = HtmlEndTagValidator.class.getName() + ".enabled";
-            final boolean enabled = XltProperties.getInstance().getProperty(propertyName, false);
-            instance = enabled ? new HtmlEndTagValidator() : new DisabledHtmlEndTagValidator();
+            instance = new HtmlEndTagValidator();
+            noopInstance = new DisabledHtmlEndTagValidator();
         }
     }
 

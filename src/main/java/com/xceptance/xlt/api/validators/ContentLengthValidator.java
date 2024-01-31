@@ -36,9 +36,9 @@ import com.xceptance.xlt.api.util.XltProperties;
 public class ContentLengthValidator
 {
     /**
-     * Property status.
+     * Property name that controls the validator.
      */
-    private static final boolean ENABLED = XltProperties.getInstance().getProperty(ContentLengthValidator.class.getName() + ".enabled", false);
+    private static final String PROPERTY_NAME = ContentLengthValidator.class.getName() + ".enabled";
     
     /**
      * Validates the specified HTML page.
@@ -124,7 +124,27 @@ public class ContentLengthValidator
     {
         // return new instance instead of singleton instance because there is no
         // object state at all
-        return ENABLED ? new ContentLengthValidator() : new DisabledContentLengthValidator();
+        final boolean enabled = XltProperties.getInstance().getProperty(PROPERTY_NAME, false);
+        return enabled ? ContentLengthValidator_Singleton.instance : ContentLengthValidator_Singleton.noopInstance;
+    }
+    
+    /**
+     * Singleton implementation of {@link HtmlEndTagValidator}.
+     */
+    private static class ContentLengthValidator_Singleton
+    {
+        /**
+         * Singleton instance.
+         */
+        private static final ContentLengthValidator instance;
+        private static final ContentLengthValidator noopInstance;
+
+        // static initializer (synchronized by class loader)
+        static
+        {
+            instance = new ContentLengthValidator();
+            noopInstance = new DisabledContentLengthValidator();
+        }
     }
 
     /**

@@ -47,9 +47,9 @@ import com.xceptance.xlt.api.util.XltProperties;
 public class XHTMLValidator
 {
     /**
-     * Property name.
+     * Property name that controls the validator.
      */
-    private static final String propertyName = XHTMLValidator.class.getName() + ".enabled";
+    private static final String PROPERTY_NAME = XHTMLValidator.class.getName() + ".enabled";
 
     /**
      * Keeps the information whether to break at errors or not.
@@ -79,7 +79,7 @@ public class XHTMLValidator
         this.breakOnErrors = breakOnErrors;
         this.breakOnWarnings = breakOnWarnings;
 
-        enabled = XltProperties.getInstance().getProperty(propertyName, true);
+        enabled = XltProperties.getInstance().getProperty(PROPERTY_NAME, true);
     }
 
     /**
@@ -189,16 +189,17 @@ public class XHTMLValidator
     }
 
     /**
-     * Returns the default instance of this validator.
+     * Returns the an instance of this validator. The validation itself can be switched ON/OFF by property. 
      * <p style="color:green">
-     * Note, that the default validator will stop on ALL errors and ALL warnings.
+     * Note, assuming the validator is enabled by property, it will stop on ALL errors and ALL warnings.
      * </p>
      * 
      * @return the default instance
      */
     public static XHTMLValidator getInstance()
     {
-        return XHTMLValidator_Singleton._instance;
+        final boolean enabled = XltProperties.getInstance().getProperty(PROPERTY_NAME, false);
+        return enabled ? XHTMLValidator_Singleton.instance : XHTMLValidator_Singleton.noopInstance;
     }
 
     /**
@@ -209,13 +210,14 @@ public class XHTMLValidator
         /**
          * The singleton instance.
          */
-        private static final XHTMLValidator _instance;
+        private static final XHTMLValidator instance;
+        private static final XHTMLValidator noopInstance;
 
         // static initializer (synchronized by class loader)
         static
         {
-            final boolean enabled = XltProperties.getInstance().getProperty(propertyName, false);
-            _instance = enabled ? new XHTMLValidator(true, true) : new DisabledXHTMLValidator();
+            instance = new XHTMLValidator(true, true);
+            noopInstance = new DisabledXHTMLValidator();
         }
     }
     
