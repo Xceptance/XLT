@@ -47,6 +47,11 @@ import com.xceptance.xlt.api.util.XltProperties;
 public class XHTMLValidator
 {
     /**
+     * Property name.
+     */
+    private static final String propertyName = XHTMLValidator.class.getName() + ".enabled";
+
+    /**
      * Keeps the information whether to break at errors or not.
      */
     private final boolean breakOnErrors;
@@ -55,6 +60,11 @@ public class XHTMLValidator
      * Keeps the information whether to break at warnings or not.
      */
     private final boolean breakOnWarnings;
+
+    /**
+     * Keeps the state to allow control by an external property.
+     */
+    private final boolean enabled;
 
     /**
      * Constructor.
@@ -68,6 +78,8 @@ public class XHTMLValidator
     {
         this.breakOnErrors = breakOnErrors;
         this.breakOnWarnings = breakOnWarnings;
+
+        enabled = XltProperties.getInstance().getProperty(propertyName, true);
     }
 
     /**
@@ -107,6 +119,12 @@ public class XHTMLValidator
      */
     public void validate(final String content) throws Exception
     {
+        // check active?
+        if (!enabled)
+        {
+            return;
+        }
+
         final LocalErrorHandler localErrorHandler = new LocalErrorHandler();
         try
         {
@@ -196,8 +214,38 @@ public class XHTMLValidator
         // static initializer (synchronized by class loader)
         static
         {
-            _instance = new XHTMLValidator(true, true);
+            final boolean enabled = XltProperties.getInstance().getProperty(propertyName, false);
+            _instance = enabled ? new XHTMLValidator(true, true) : new DisabledXHTMLValidator();
         }
+    }
+    
+    /**
+     * NoOp implementation of the parent class.
+     */
+    private static final class DisabledXHTMLValidator extends XHTMLValidator
+    {
+        private DisabledXHTMLValidator()
+        {
+            super(false, false);
+        }
+        
+        /** Does nothing. Validation is disabled. */
+        @Override
+        public void validate(final HtmlPage page)
+        {
+        };
+
+        /** Does nothing. Validation is disabled. */
+        @Override
+        public void validate(final LightWeightPage page)
+        {
+        };
+
+        /** Does nothing. Validation is disabled. */
+        @Override
+        public void validate(final String content)
+        {
+        };
     }
 
     /**
