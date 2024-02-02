@@ -64,13 +64,10 @@
         <echo>Path to Chrome : ${timerrecorder.chrome.executable}</echo>
 
         <!-- assemble crx -->
-        <!-- When undoing this, fix "- -" as well. XML sucks.
         <exec executable="${timerrecorder.chrome.executable}" failonerror="true">
-            <arg value="- -pack-extension=${basedir}/${target.dir}" />
-            <arg value="- -pack-extension-key=${basedir}/${timerrecorder.chrome.dir}/xlt-timerrecorder-chrome.pem" />
+            <arg value="--pack-extension=${basedir}/${target.dir}" />
+            <arg value="--pack-extension-key=${basedir}/${timerrecorder.chrome.dir}/xlt-timerrecorder-chrome.pem" />
         </exec>
-        -->
-        <zip destfile="${build.tools.dir}/${crx.fileName}" basedir="${basedir}/${target.dir}" />
     </target>
 
     <!-- Create CRX file. -->
