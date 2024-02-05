@@ -50,7 +50,8 @@
 				<li><a href="configuration.html">Configuration</a>
 					<ul>
 						<li><a href="configuration.html#load-profile">Load Profile</a></li>
-						<li><a href="configuration.html#configuration">Settings</a></li>
+						<li><a href="configuration.html#configuration">Load Test Settings</a></li>
+						<li><a href="configuration.html#jvm-configuration">Agent JVM Settings</a></li>
 					</ul>
 				</li>
 			</ul>
