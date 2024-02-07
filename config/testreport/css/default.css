@@ -1631,11 +1631,10 @@ tr:hover .infinity { background: linear-gradient(rgb(200,120,120), rgba(0,0,0,0)
 }
 
 .web-vital .score {
-    display: flex; 
-    position: relative; 
-    width: 0; 
-    left: 75%; 
-    justify-content: center; 
+    display: flex;
+    margin-left: 75%;
+    width: 0;
+    justify-content: center;
     white-space: nowrap;
     font-weight: bold;
 }
@@ -1653,18 +1652,17 @@ tr:hover .infinity { background: linear-gradient(rgb(200,120,120), rgba(0,0,0,0)
 }
 
 .web-vital .marker {
-    display: flex; 
-    position: relative; 
-    width: 0; 
-    left: 75%; 
-    justify-content: center; 
+    display: flex;
+    margin-left: 75%;
+    width: 0;
+    justify-content: center;
 }
 
 .web-vital .marker .arrow {
-    width: 0; 
-    height: 0; 
-    border-left: 4px solid transparent; 
-    border-right: 4px solid transparent; 
+    width: 0;
+    height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
     border-top: 4px solid grey; /* border color will be adjusted via class */
 }
 
@@ -1682,7 +1680,7 @@ tr:hover .infinity { background: linear-gradient(rgb(200,120,120), rgba(0,0,0,0)
 
 .web-vital .bar {
     padding-top: 2px;
-    display: flex; 
+    display: flex;
 }
 
 .web-vital .bar .segment {
