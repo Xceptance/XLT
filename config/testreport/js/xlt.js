@@ -464,8 +464,9 @@
             const hiddenContent = document.querySelector(".content.hidden");
             if (hiddenContent) {
                 hiddenContent.classList.remove("hidden");
-                registerSortAndFilterListeners();
             }
+
+            registerSortAndFilterListeners();
         })();
 
         // the table filters
