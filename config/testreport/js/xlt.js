@@ -833,7 +833,7 @@
     function updateHashAfterFilter(filterEvent){
         var filter = filterEvent.target.value;
         var encodedFilter = encodeURIComponent(filterEvent.target.value);
-        console.log('filter change:' + filter + ' to ' + encodedFilter);
+        // console.log('filter change:' + filter + ' to ' + encodedFilter);
 
         var newHashObj = splitHash(window.location.hash);
         newHashObj.filter = 'filter=' + encodedFilter;
