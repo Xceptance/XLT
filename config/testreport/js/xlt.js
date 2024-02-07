@@ -464,6 +464,7 @@
             const hiddenContent = document.querySelector(".content.hidden");
             if (hiddenContent) {
                 hiddenContent.classList.remove("hidden");
+                registerSortAndFilterListeners();
             }
         })();
 
@@ -733,7 +734,7 @@
                     }
                 }
             }
-        }        
+        }
 
         return hashObj;
     }
@@ -766,8 +767,8 @@
 
             // check if the hash is different: only then update it
             if(window.location.hash != newJoinedHash){
+                // updated hash to params
                 window.location.hash = newJoinedHash;
-                console.log('hash updated to params');
             }
         }
     }
@@ -792,7 +793,7 @@
         var requestPageActiveTab = document.querySelector('#tabletabbies > .c-tab[id].c-is-active');
         if(requestPageActiveTab != null){
             var currentTabId = requestPageActiveTab.getAttribute('id');
-            
+
             var targetTabId = targetTab.getAttribute('id');
 
             // if the current tab is different from the target tab containing the sorting option switch tabs
@@ -814,9 +815,9 @@
                 // only sort if the sorting rule is not already applied on the element
                 if(classList.contains("table-sorted-" + rule) == false){
                     while(elem.classList.contains("table-sorted-" + rule) == false){
-                        console.log("click sort");
+                        // Click sorting
                         elem.click();
-                    } 
+                    }
                 }
             }
             else{
@@ -840,13 +841,14 @@
         updateHash(newHashObj);
     }
 
-    $(window).on( "load", function(){
-        console.log('Prepare Hash Monitoring');
+    // $(window).on( "load", function(){
+    function registerSortAndFilterListeners(){
+        // Prepare Hash Monitoring
 
         // once everything is loaded check whether there is a sorting rule passed
         var hashObj = splitHash(window.location.hash);
         if(hashObj.sort != undefined){
-            console.log('Perform initial sorting');
+            // Perform initial sorting
             var sortParam = hashObj.sort.split('=');
             var sortingElem = document.getElementById(sortParam[0]);
             var sortingRule = sortParam[1];
@@ -855,13 +857,13 @@
 
         // check for existing filter to apply
         if(hashObj.filter != undefined){
-            console.log('Apply initial filter');
+            // Apply initial filter
             var filterParam = hashObj.filter.split('=');
             var encodedFilter = filterParam[1];
 
             if(encodedFilter.length > 0){
                 var decodedFilter = decodeURIComponent(encodedFilter);
-                console.log('filter value: ' + decodedFilter);
+                // console.log('filter value: ' + decodedFilter);
                 var filterInputFields = document.querySelectorAll('input.filter');
                 for(var i = 0; i < filterInputFields.length; i++){
                     var filterField = filterInputFields[i];
@@ -871,24 +873,23 @@
             }
         }
 
-        console.log('Register sorting listeners');
+        // Register sorting listeners
         var sortableTableRows = document.getElementsByClassName('table-sortable');
         for(var i = 0; i < sortableTableRows.length; i++){
             sortableTableRows[i].addEventListener('click', updateHashAfterSort);
         }
 
-        console.log('Register filter listeners');
+        // Register filter listeners
         var filterInputFields = document.querySelectorAll('input.filter');
         for(var i = 0; i < filterInputFields.length; i++){
             // filterInputFields[i].addEventListener('input', updateHashAfterFilter);
             filterInputFields[i].addEventListener('focusout', updateHashAfterFilter);
         }
 
-        console.log("Register hashchange");
+        // Listeners applied, hook on the hashchange event
         window.addEventListener('hashchange', hashChanged);
-
-        console.log('Preparation of Hash Monitoring done');
-    });
+    //});
+    }
 
 })(jQuery)
 
