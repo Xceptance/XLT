@@ -10,20 +10,8 @@
 <!-- 
     Generate the page frame 
 -->
-<xsl:include href="../common/util/convert-apdex-to-color.xsl" />
-<xsl:include href="../common/util/convertIllegalCharactersInFileName.xsl" />
-<xsl:include href="../common/util/string-replace-all.xsl" />
-<xsl:include href="../common/util/percentage.xsl" />
-<xsl:include href="../common/util/format-bytes.xsl" />
-<xsl:include href="../common/util/format-msec-to-h.xsl" />
 <xsl:include href="../common/util/create-totals-td.xsl" />
 <xsl:include href="../common/util/filtered-footer-row.xsl" />
-
-<xsl:include href="util/timer-row.xsl" />
-<xsl:include href="util/timer-summary-row.xsl" />
-<xsl:include href="util/timer-chart.xsl" />
-<xsl:include href="util/timer-section.xsl" />
-<xsl:include href="util/timer-table.xsl" />
 
 <xsl:include href="text/descriptions.xsl" />
 
@@ -47,7 +35,7 @@
 <html lang="en">    
 <head>
     <xsl:call-template name="head">
-        <xsl:with-param name="title" select="'XLT Report - Custom Values'" />
+        <xsl:with-param name="title" select="'XLT Report - Web Vitals'" />
         <xsl:with-param name="projectName" select="configuration/projectName" />
     </xsl:call-template>
 </head>

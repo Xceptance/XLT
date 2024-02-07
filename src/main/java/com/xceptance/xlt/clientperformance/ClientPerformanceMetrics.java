@@ -77,10 +77,7 @@ public class ClientPerformanceMetrics
             updateAndLogPageLoadTimingData(session, eachData);
         }
 
-        for (WebVitalData eachData : data.getWebVitalsList())
-        {
-            updateAndLogWebVitalData(session, eachData);
-        }
+        postProcessAndLogWebVitals(data.getWebVitalsList(), session);
     }
 
     private static void updateAndLogRequestData(final SessionImpl session, final ClientPerformanceRequest request)
@@ -106,15 +103,6 @@ public class ClientPerformanceMetrics
         }
 
         // write page-load timing data to timer file
-        logTimerData(session, actionInfo, data);
-    }
-
-    private static void updateAndLogWebVitalData(final SessionImpl session, final WebVitalData data)
-    {
-        final Entry<Long, ActionInfo> entry = session.getWebDriverActionStartTimes().floorEntry(data.getTime());
-        final ActionInfo actionInfo = entry != null ? entry.getValue() : null;
-
-        // write web-vital data to timer file
         logTimerData(session, actionInfo, data);
     }
 
@@ -192,5 +180,83 @@ public class ClientPerformanceMetrics
         data.setName(sb.toString());
 
         session.getDataManager().logDataRecord(data);
+    }
+
+    /**
+     * Report only one WebVital per action. Reset metering after a new action boundary.
+     * 
+     * @param webVitalList
+     */
+    private static void postProcessAndLogWebVitals(final List<WebVitalData> webVitalList, SessionImpl session)
+    {
+        // since timer recorder does not know anything about action boundaries it reports any measurement
+
+        // LCP, FID, TTFB occur only once, so report them for the action they lie within
+        logWebVitals("FCP", webVitalList, session);
+        logWebVitals("FID", webVitalList, session);
+        logWebVitals("TTFB", webVitalList, session);
+
+        // CLS, INP, and LCP may occur multiple times with ever increasing values
+        // * use latest/greatest value only, ignore the others
+        // * reset values at action boundaries
+        postProcessAndLogWebVitals("CLS", webVitalList, session);
+        postProcessAndLogWebVitals("INP", webVitalList, session);
+        postProcessAndLogWebVitals("LCP", webVitalList, session);
+    }
+
+    private static void logWebVitals(String name, final List<WebVitalData> webVitalDataList, SessionImpl session)
+    {
+        for (WebVitalData webVitalData : webVitalDataList)
+        {
+            if (webVitalData.getName().equals(name))
+            {
+                final Entry<Long, ActionInfo> entry = session.getWebDriverActionStartTimes().floorEntry(webVitalData.getTime());
+                ActionInfo actionInfo = entry != null ? entry.getValue() : null;
+
+                logTimerData(session, actionInfo, webVitalData);
+            }
+        }
+    }
+
+    private static void postProcessAndLogWebVitals(final String name, final List<WebVitalData> webVitalDataList, final SessionImpl session)
+    {
+        ActionInfo lastActionInfo = null;
+        WebVitalData lastWebVitalData = null;
+        double lastMaxValue = 0.0;
+
+        for (final WebVitalData webVitalData : webVitalDataList)
+        {
+            if (webVitalData.getName().equals(name))
+            {
+                final Entry<Long, ActionInfo> entry = session.getWebDriverActionStartTimes().floorEntry(webVitalData.getTime());
+                final ActionInfo actionInfo = entry != null ? entry.getValue() : null;
+
+                if (lastWebVitalData != null && lastActionInfo != actionInfo)
+                {
+                    // action boundary crossed -> report the last known web vital now
+
+                    // first adjust the value
+                    final double value = lastWebVitalData.getValue();
+                    lastWebVitalData.setValue(value - lastMaxValue);
+
+                    // log the 
+                    logTimerData(session, lastActionInfo, lastWebVitalData);
+
+                    // remember 
+                    lastMaxValue = value;
+                }
+
+                lastActionInfo = actionInfo;
+                lastWebVitalData = webVitalData;
+            }
+        }
+
+        if (lastWebVitalData != null)
+        {
+            final double newValue = lastWebVitalData.getValue() - lastMaxValue;
+            lastWebVitalData.setValue(newValue);
+
+            logTimerData(session, lastActionInfo, lastWebVitalData);
+        }
     }
 }

@@ -16,38 +16,41 @@
 package com.xceptance.xlt.report.providers;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.math3.stat.descriptive.rank.PSquarePercentile;
-import org.apache.commons.math3.stat.descriptive.rank.Percentile;
 
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.engine.WebVitalData;
 import com.xceptance.xlt.api.report.AbstractReportProvider;
+import com.xceptance.xlt.report.providers.WebVitalReport.Rating;
 import com.xceptance.xlt.report.util.ReportUtils;
 
+/**
+ * Processes the {@link WebVitalsData} objects reported for a certain action and returns the result as a
+ * {@link WebVitalsReport}.
+ */
 public class WebVitalsDataProcessor extends AbstractDataProcessor
 {
-    private WebVital cls = new WebVital(0.1, 0.25);
+    private final WebVitalStatistics cls = new WebVitalStatistics(0.1, 0.25);
 
-    private WebVital fcp = new TimingWebVital(1.8, 3.0);
+    private final WebVitalStatistics fcp = new TimingWebVitalStatistics(1800.0, 3000.0);
 
-    private WebVital fid = new TimingWebVital(0.1, 0.3);
+    private final WebVitalStatistics fid = new TimingWebVitalStatistics(100.0, 300.0);
 
-    private WebVital inp = new TimingWebVital(0.2, 0.5);
+    private final WebVitalStatistics inp = new TimingWebVitalStatistics(200.0, 500.0);
 
-    private WebVital lcp = new TimingWebVital(2.5, 4.0);
+    private final WebVitalStatistics lcp = new TimingWebVitalStatistics(2500.0, 4000.0);
 
-    private WebVital ttfb = new TimingWebVital(0.8, 1.8);
+    private final WebVitalStatistics ttfb = new TimingWebVitalStatistics(800.0, 1800.0);
 
     /**
      * Constructor.
-     * 
+     *
      * @param name
-     *            sampler name
+     *            the action name
      * @param reportProvider
-     *            report provider
+     *            the parent report provider
      */
     public WebVitalsDataProcessor(final String name, final AbstractReportProvider reportProvider)
     {
@@ -60,12 +63,10 @@ public class WebVitalsDataProcessor extends AbstractDataProcessor
     @Override
     public void processDataRecord(final Data data)
     {
-        final WebVitalData sample = (WebVitalData) data;
-        final double value = sample.getValue();
+        final WebVitalData webVitalData = (WebVitalData) data;
 
-        // p75.increment(value);
-
-        String webVitalName = extractWebVitalName(data.getName());
+        final String webVitalName = extractWebVitalName(webVitalData.getName());
+        final double value = webVitalData.getValue();
 
         switch (webVitalName)
         {
@@ -91,85 +92,97 @@ public class WebVitalsDataProcessor extends AbstractDataProcessor
                 // unknown value -> ignore
                 break;
         }
-
     }
 
-    private static String extractWebVitalName(String name)
+    /**
+     * Extracts the web vital name from an action name (for example, "Foo Action [CLS]" -> "CLS").
+     * 
+     * @param actionName
+     * @return the contained web vital name
+     */
+    private static String extractWebVitalName(final String actionName)
     {
-        String suffix = StringUtils.substringAfterLast(name, " ");
+        final String suffix = StringUtils.substringAfterLast(actionName, " ");
         return StringUtils.substringBetween(suffix, "[", "]");
     }
 
     /**
-     * create report
-     * 
-     * @return report fragment
+     * Creates a report fragment with the values for all known web vitals.
+     *
+     * @return the report fragment
      */
-    public WebVitalsReport getReportFragment()
+    public WebVitalsReport createWebVitalsReport()
     {
-        WebVitalsReport report = new WebVitalsReport(getName());
+        final WebVitalsReport report = new WebVitalsReport();
 
-        cls.close();
-        fcp.close();
-        fid.close();
-        inp.close();
-        lcp.close();
-        ttfb.close();
-
-        report.cls = cls.count > 0 ? cls : null;
-        report.fcp = fcp.count > 0 ? fcp : null;
-        report.fid = fid.count > 0 ? fid : null;
-        report.inp = inp.count > 0 ? inp : null;
-        report.lcp = lcp.count > 0 ? lcp : null;
-        report.ttfb = ttfb.count > 0 ? ttfb : null;
+        report.name = getName();
+        report.cls = cls.toWebVitalReport();
+        report.fcp = fcp.toWebVitalReport();
+        report.fid = fid.toWebVitalReport();
+        report.inp = inp.toWebVitalReport();
+        report.lcp = lcp.toWebVitalReport();
+        report.ttfb = ttfb.toWebVitalReport();
 
         return report;
     }
 
-    public static class WebVital
+    /**
+     * A statistics object that is fed with all observations for a certain web vital type and produces a final result.
+     */
+    public static class WebVitalStatistics
     {
-        public enum Rating
-        {
-            good,
-            impr,
-            poor
-        };
+        /**
+         * The threshold that values rated "good" must not exceed.
+         */
+        private final double threshold1;
 
-        private transient final double threshold1;
+        /**
+         * The threshold that values rated "needs improvement" must not exceed.
+         */
+        private final double threshold2;
 
-        private transient final double threshold2;
+        /**
+         * Estimates the P75 for a stream of input values.
+         */
+        private final PSquarePercentile p75Estimator = new PSquarePercentile(75.0);
 
-        private transient PSquarePercentile accumulator = new PSquarePercentile(75.0);
+        /**
+         * The number of observations that were rated "good".
+         */
+        private int goodCount;
 
-        private transient Percentile accumulator2 = new Percentile(75.0);
+        /**
+         * The number of observations that were rated "needs improvement".
+         */
+        private int improveCount;
 
-        private transient int count;
+        /**
+         * The number of observations that were rated "poor".
+         */
+        private int poorCount;
 
-        public int goodCount;
-
-        public int imprCount;
-
-        public int poorCount;
-
-        public Rating rating;
-
-        public BigDecimal score;
-
-        double[] data = new double[1000];
-
-        public WebVital(double threshold1, double threshold2)
+        /**
+         * Creates a {@link WebVitalStatistics} object and initializes it with its thresholds.
+         */
+        public WebVitalStatistics(final double threshold1, final double threshold2)
         {
             this.threshold1 = threshold1;
             this.threshold2 = threshold2;
         }
 
+        /**
+         * Updates the internal statistics with the given observation value.
+         * 
+         * @param value
+         *            the metrics value
+         */
         public void update(double value)
         {
+            // TODO: remove
             value = value * 10;
 
-            data[count] = value;
+            p75Estimator.increment(value);
 
-            count++;
             if (value <= threshold1)
             {
                 goodCount++;
@@ -180,27 +193,26 @@ public class WebVitalsDataProcessor extends AbstractDataProcessor
             }
             else
             {
-                imprCount++;
+                improveCount++;
             }
-
-            accumulator.increment(value);
         }
 
-        public void close()
+        /**
+         * Returns the final score, rating, and supplemental data as a {@link WebVitalReport}.
+         * 
+         * @return the web vital report if we had some observations, <code>null</code> otherwise
+         */
+        public WebVitalReport toWebVitalReport()
         {
-            double p75 = accumulator.getResult();
+            if (goodCount + improveCount + poorCount == 0)
+            {
+                // no observations, no report
+                return null;
+            }
 
-            data = Arrays.copyOf(data, count);
-
-            accumulator2.setData(data);
-            double p75_2 = accumulator2.evaluate();
-            double p75_3 = percentile(data);
-
-            System.err.println(p75 + " - " + p75_2 + " - " + p75_3);
-
-            p75 = p75_2;
-
-            score = ReportUtils.convertToBigDecimal(p75);
+            final double p75 = p75Estimator.getResult();
+            final BigDecimal score = calculateScore(p75);
+            final Rating rating;
 
             if (p75 <= threshold1)
             {
@@ -212,33 +224,46 @@ public class WebVitalsDataProcessor extends AbstractDataProcessor
             }
             else
             {
-                rating = Rating.impr;
+                rating = Rating.improve;
             }
+
+            return new WebVitalReport(score, rating, goodCount, improveCount, poorCount);
         }
 
-        private double percentile(double[] data)
+        /**
+         * Calculates the final score from the given double value and returns it as a {@link BigDecimal}. Mainly used to
+         * set a certain precision or perform rounding, depending on the web vital type.
+         * 
+         * @param p75
+         *            the P75 double value
+         * @return the value as a {@link BigDecimal}
+         */
+        protected BigDecimal calculateScore(final double p75)
         {
-            if (count == 0)
-                return 0.0;
-            
-            Arrays.sort(data);
-
-            int i = (int) (0.75 * data.length);
-
-            return data[i];
+            // return the value with a precision of three decimal places
+            return ReportUtils.convertToBigDecimal(p75);
         }
     }
 
-    public static class TimingWebVital extends WebVital
+    /**
+     * A special web vital statistics class for processing web vital data that represents millisecond values. This
+     * affects all web vitals, except CLS. Millisecond values are reported as rounded values.
+     */
+    public static class TimingWebVitalStatistics extends WebVitalStatistics
     {
-        public TimingWebVital(double threshold1, double threshold2)
+        public TimingWebVitalStatistics(final double threshold1, final double threshold2)
         {
             super(threshold1, threshold2);
         }
 
-        public void update(double value)
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        protected BigDecimal calculateScore(final double p75)
         {
-            super.update(value / 1000.0);
+            // round the value to the nearest integral value and return it without any decimal places
+            return new BigDecimal(Math.round(p75));
         }
     }
 }

@@ -16,50 +16,45 @@
 package com.xceptance.xlt.report.providers;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
-import com.xceptance.xlt.report.providers.WebVitalsDataProcessor.WebVital;
 
 /**
+ * The web vitals metrics for a certain action.
  */
 @XStreamAlias("webVitals")
 public class WebVitalsReport
 {
     /**
-     * The page name.
+     * The action/page name.
      */
-    public final String name;
+    public String name;
 
     /**
-     * The value.
+     * The CLS metric data.
      */
-    public WebVital cls;
+    public WebVitalReport cls;
 
     /**
-     * The value.
+     * The FCP metric data.
      */
-    public WebVital fcp;
+    public WebVitalReport fcp;
 
     /**
-     * The value.
+     * The FID metric data.
      */
-    public WebVital fid;
+    public WebVitalReport fid;
 
     /**
-     * The value.
+     * The INP metric data.
      */
-    public WebVital inp;
+    public WebVitalReport inp;
 
     /**
-     * The value.
+     * The LCP metric data.
      */
-    public WebVital lcp;
+    public WebVitalReport lcp;
 
     /**
-     * The value.
+     * The TTFB metric data.
      */
-    public WebVital ttfb;
-    
-    WebVitalsReport(String name)
-    {
-        this.name = name;
-    }
+    public WebVitalReport ttfb;
 }

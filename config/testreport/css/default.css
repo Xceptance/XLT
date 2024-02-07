@@ -401,6 +401,10 @@ template {
 
     --url-hover-border-color: var(--main-border-color);
     --url-hover-shadow-color: var(--navigation-hover-shadow-color);
+
+    --web-vital-color-good: green;
+    --web-vital-color-improve: orange;
+    --web-vital-color-poor: red;
 }
 
 /*
@@ -1637,15 +1641,15 @@ tr:hover .infinity { background: linear-gradient(rgb(200,120,120), rgba(0,0,0,0)
 }
 
 .web-vital .score.good { 
-    color: green;
+    color: var(--web-vital-color-good);
 }
 
-.web-vital .score.impr { 
-    color: orange;   
+.web-vital .score.improve { 
+    color: var(--web-vital-color-improve);   
 }
 
 .web-vital .score.poor {
-    color: red;   
+    color: var(--web-vital-color-poor);   
 }
 
 .web-vital .marker {
@@ -1659,21 +1663,21 @@ tr:hover .infinity { background: linear-gradient(rgb(200,120,120), rgba(0,0,0,0)
 .web-vital .marker .arrow {
     width: 0; 
     height: 0; 
-    border-left: 5px solid transparent; 
-    border-right: 5px solid transparent; 
-    border-top: 8px solid black;  /* will be adjusted via class */
+    border-left: 4px solid transparent; 
+    border-right: 4px solid transparent; 
+    border-top: 4px solid grey; /* border color will be adjusted via class */
 }
 
 .web-vital .marker .arrow.good {
-    border-top-color: green;
+    border-top-color: var(--web-vital-color-good);
 }
 
-.web-vital .marker .arrow.impr {
-    border-top-color: orange;
+.web-vital .marker .arrow.improve {
+    border-top-color:  var(--web-vital-color-improve);
 }
 
 .web-vital .marker .arrow.poor {
-    border-top-color: red;
+    border-top-color: var(--web-vital-color-poor);
 }
 
 .web-vital .bar {
@@ -1682,20 +1686,21 @@ tr:hover .infinity { background: linear-gradient(rgb(200,120,120), rgba(0,0,0,0)
 }
 
 .web-vital .bar .segment {
-    flex-grow: 0;    /* will be adjusted via style */
+    flex-grow: 0; /* will be adjusted via style */
     height: 5px;
+    background-color: grey;  /* will be adjusted via class */
 }
 
 .web-vital .bar .segment.good {
-    background-color: green;
+    background-color: var(--web-vital-color-good);
 }
 
-.web-vital .bar .segment.impr {
-    background-color: orange;
+.web-vital .bar .segment.improve {
+    background-color: var(--web-vital-color-improve);
 }
 
 .web-vital .bar .segment.poor {
-    background-color: red;
+    background-color: var(--web-vital-color-poor);
 }
 
 /*

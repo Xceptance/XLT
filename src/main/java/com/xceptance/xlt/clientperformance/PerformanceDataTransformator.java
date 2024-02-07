@@ -367,7 +367,7 @@ public final class PerformanceDataTransformator
         return customDataList;
     }
 
-    private List<WebVitalData> getWebVitalsDataList(JSONArray webVitalsArray)
+    private List<WebVitalData> getWebVitalsDataList(final JSONArray webVitalsArray)
     {
         final List<WebVitalData> webVitalsDataList = new ArrayList<>();
 
@@ -375,7 +375,7 @@ public final class PerformanceDataTransformator
         {
             if (object instanceof JSONObject)
             {
-                JSONObject webVital = (JSONObject) object;
+                final JSONObject webVital = (JSONObject) object;
 
                 final String name = webVital.optString("name", null);
                 final long time = webVital.optLong("time", 0);
@@ -401,31 +401,6 @@ public final class PerformanceDataTransformator
 
         return webVitalsDataList;
     }
-
-    /*
-    private WebVitalsData getWebVitalsData(JSONObject webVitals)
-    {
-        final long startTime = webVitals.optLong("startTime", 0);
-        final Double cls = webVitals.optDoubleObject("cls", null);
-        final Double fcp = webVitals.optDoubleObject("fcp", null);
-        final Double fid = webVitals.optDoubleObject("fid", null);
-        final Double inp = webVitals.optDoubleObject("inp", null);
-        final Double lcp = webVitals.optDoubleObject("lcp", null);
-        final Double ttfb = webVitals.optDoubleObject("ttfb", null);
-        
-        WebVitalsData webVitalsData = new WebVitalsData();
-        webVitalsData.setTime(startTime);
-
-//        webVitalsData.setCls(cls);
-//        webVitalsData.setFcp(fcp);
-//        webVitalsData.setFid(fid);
-//        webVitalsData.setInp(inp);
-//        webVitalsData.setLcp(lcp);
-//        webVitalsData.setTtfb(ttfb);
-        
-        return webVitalsData;
-    }
-    */
 
     private static List<NameValuePair> getNameValuePairs(JSONObject postParameters)
     {

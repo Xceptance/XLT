@@ -22,6 +22,7 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamImplicit;
 
 /**
+ * The web vitals metrics for all actions.
  */
 @XStreamAlias("webVitalsList")
 public class WebVitalsReports

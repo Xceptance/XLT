@@ -44,7 +44,7 @@ function getTimingData(includeEventTimings) {
   };
   if (includeEventTimings !== false) {
     data['timings'] = createTimingData();
-    data['webVitals'] = getWebVitals3();
+    data['webVitals'] = getWebVitals();
   }
   return {
     timingData: data
@@ -55,7 +55,6 @@ function createTimingData() {
   const timing = performance.timing;
   const navigationStart = timing.navigationStart;
   const paintTimings = getPaintTimings(navigationStart);
-  const vitals = getWebVitals(navigationStart);
 
   return Object.assign({
     domComplete: {
@@ -100,7 +99,7 @@ function createTimingData() {
         ? timing.loadEventStart - navigationStart
         : null
     }
-  }, paintTimings, vitals);
+  }, paintTimings);
 }
 
 function createEntries() {
@@ -207,77 +206,27 @@ function getPaintTimings(navigationStart) {
   return timings;
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////
+/*
+ * Web Vitals
+ */
 
-const webVitalsMetrics = {};
+const webVitalsMetrics = [];
 
-webVitals.onCLS(function (metric) { webVitalsMetrics['CLS'] = metric; }, { reportAllChanges: true });
-webVitals.onFID(function (metric) { webVitalsMetrics['FID'] = metric; });
-webVitals.onLCP(function (metric) { webVitalsMetrics['LCP'] = metric; }, { reportAllChanges: true });
-webVitals.onTTFB(function (metric) { webVitalsMetrics['TTFB'] = metric; });
-webVitals.onFCP(function (metric) { webVitalsMetrics['FCP'] = metric; });
-webVitals.onINP(function (metric) { webVitalsMetrics['INP'] = metric; }, { reportAllChanges: true });
-
-function getWebVitals(navigationStart) {
-  const timings = {};
-
-  console.log(webVitalsMetrics);
-
-  Object.keys(webVitalsMetrics).forEach(function (name) {
-    const entry = webVitalsMetrics[name];
-
-    //
-    const value = name === 'CLS' ? entry.value * 1000 : entry.value;
-
-    timings[entry.name] = {
-      startTime: navigationStart,
-      duration: Math.round(value)
-    };
-  });
-
-  return timings;
+function addMetric(metric) {
+  webVitalsMetrics.push({ time: Date.now(), name: metric.name, value: metric.value });
 }
 
-// ----------------------------------------------------------------------------------------------
-
-const webVitalsMetrics2 = {};
-
-function addMetric2(metric) {
-  webVitalsMetrics2[metric.name] = metric.value;
+function addMetricRounded(metric) {
+  webVitalsMetrics.push({ time: Date.now(), name: metric.name, value: Math.round(metric.value) });
 }
 
-// webVitals.onCLS(addMetric2, { reportAllChanges: true });
-// webVitals.onFID(addMetric2);
-// webVitals.onLCP(addMetric2, { reportAllChanges: true });
-// webVitals.onTTFB(addMetric2);
-// webVitals.onFCP(addMetric2);
-// webVitals.onINP(addMetric2, { reportAllChanges: true });
-
-function getWebVitals2(navigationStart) {
-  console.log(webVitalsMetrics2);
-  return { startTime: navigationStart, ...webVitalsMetrics2 };
+function getWebVitals() {
+  return webVitalsMetrics;
 }
 
-// ----------------------------------------------------------------------------------------------
-
-const webVitalsMetrics3 = [];
-
-function addMetric3(metric) {
-  webVitalsMetrics3.push({ time: Date.now(), name: metric.name, value: metric.value });
-}
-
-function addMetric3Rounded(metric) {
-  webVitalsMetrics3.push({ time: Date.now(), name: metric.name, value: Math.round(metric.value) });
-}
-
-webVitals.onCLS(addMetric3, { reportAllChanges: true });
-webVitals.onFID(addMetric3Rounded);
-webVitals.onLCP(addMetric3Rounded, { reportAllChanges: true });
-webVitals.onTTFB(addMetric3Rounded);
-webVitals.onFCP(addMetric3Rounded);
-webVitals.onINP(addMetric3Rounded, { reportAllChanges: true });
-
-function getWebVitals3() {
-  console.log(webVitalsMetrics3);
-  return webVitalsMetrics3;
-}
+webVitals.onCLS(addMetric, { reportAllChanges: true });
+webVitals.onFCP(addMetricRounded);
+webVitals.onFID(addMetricRounded);
+webVitals.onINP(addMetricRounded, { reportAllChanges: true });
+webVitals.onLCP(addMetricRounded, { reportAllChanges: true });
+webVitals.onTTFB(addMetricRounded);

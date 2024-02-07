@@ -21,6 +21,8 @@ import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.engine.WebVitalData;
 
 /**
+ * A report provider responsible for processing {@link WebVitalData} objects and providing the result data as a
+ * {@link WebVitalsReports} report fragment.
  */
 public class WebVitalsReportProvider extends AbstractDataProcessorBasedReportProvider<WebVitalsDataProcessor>
 {
@@ -40,9 +42,11 @@ public class WebVitalsReportProvider extends AbstractDataProcessorBasedReportPro
     {
         if (data instanceof WebVitalData)
         {
-            NameParts nameParts = NameParts.extractNameParts(data.getName());
+            // All web vital values for a certain action are processed by the same data processor, hence we need to
+            // extract the action name from the full name, e.g. "Foo Action [CLS]" -> "Foo Action".
+            final String name = StringUtils.substringBeforeLast(data.getName(), " ");
 
-            getProcessor(nameParts.pageName).processDataRecord(data);
+            getProcessor(name).processDataRecord(data);
         }
     }
 
@@ -52,48 +56,13 @@ public class WebVitalsReportProvider extends AbstractDataProcessorBasedReportPro
     @Override
     public Object createReportFragment()
     {
-        WebVitalsReports webVitalsReports = new WebVitalsReports();
+        final WebVitalsReports webVitalsReports = new WebVitalsReports();
 
         for (final WebVitalsDataProcessor processor : getProcessors())
         {
-            webVitalsReports.webVitals.add(processor.getReportFragment());
+            webVitalsReports.webVitals.add(processor.createWebVitalsReport());
         }
 
         return webVitalsReports;
-    }
-
-    /*
-     * @Override public Object createReportFragment2() { Map<String, WebVitalsReport> reports = new TreeMap<>(); for
-     * (final WebVitalsDataProcessor processor : getProcessors()) { String name = processor.getName(); NameParts
-     * nameParts = extractNameParts(name); final WebVitalsReport webVitalReport =
-     * reports.computeIfAbsent(nameParts.pageName, WebVitalsReport::new); double value = processor.getValue(); switch
-     * (nameParts.webVitalName) { case "CLS": webVitalReport.cls = ReportUtils.convertToBigDecimal(value); break; case
-     * "FCP": webVitalReport.fcp = (int) Math.round(value); break; case "FID": webVitalReport.fid = (int)
-     * Math.round(value); break; case "INP": webVitalReport.inp = (int) Math.round(value); break; case "LCP":
-     * webVitalReport.lcp = (int) Math.round(value); break; case "TTFB": webVitalReport.ttfb = (int) Math.round(value);
-     * break; default: // unknown value -> ignore break; } } WebVitalsReports webVitalsReports = new WebVitalsReports();
-     * webVitalsReports.webVitals.addAll(reports.values()); return webVitalsReports; }
-     */
-
-    private static class NameParts
-    {
-        public final String pageName;
-
-        public final String webVitalName;
-
-        public NameParts(String pageName, String webVitalName)
-        {
-            this.pageName = pageName;
-            this.webVitalName = webVitalName;
-        }
-
-        public static NameParts extractNameParts(String name)
-        {
-            String pageName = StringUtils.substringBeforeLast(name, " ");
-            String suffix = StringUtils.substringAfterLast(name, " ");
-            String webVitalName = StringUtils.substringBetween(suffix, "[", "]");
-
-            return new NameParts(pageName, webVitalName);
-        }
     }
 }
