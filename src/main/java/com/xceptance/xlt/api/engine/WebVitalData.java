@@ -20,7 +20,15 @@ import java.util.List;
 import com.xceptance.xlt.api.util.XltCharBuffer;
 
 /**
- * The {@link WebVitalData} can store a single 'double' value.
+ * The {@link WebVitalData} stores a single observation for a certain Web Vital in a certain action as a 'double' value.
+ * Which action and Web Vital this data object was reported for is encoded in the name field. For example, "Foo
+ * Action [CLS]" and "Bar Action [LCP]" indicate measurements of CLS for the "Foo Action" and LCP for the "Bar Action".
+ * <p>
+ * Up to now, the following Web Vitals are supported: CLS, FCP, FID, INP, LCP, and TTFB. See the links below for more
+ * information on Web Vitals.
+ * 
+ * @see https://web.dev/articles/vitals
+ * @see https://github.com/GoogleChrome/web-vitals
  */
 public class WebVitalData extends AbstractData
 {

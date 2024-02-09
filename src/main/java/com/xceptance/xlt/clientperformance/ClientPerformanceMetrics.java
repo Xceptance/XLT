@@ -49,7 +49,7 @@ public class ClientPerformanceMetrics
 
     /**
      * Write a list of {@link Data} entries to a timer data file for the given session.
-     * 
+     *
      * @param session
      *            - for which to write the data to the timer file
      * @param dataList
@@ -59,7 +59,7 @@ public class ClientPerformanceMetrics
     {
         LOG.debug("Writing timer data file and reporting client performance metrics");
 
-        for (ClientPerformanceData eachPerformanceData : dataList)
+        for (final ClientPerformanceData eachPerformanceData : dataList)
         {
             updatePerformanceData(session, eachPerformanceData);
         }
@@ -67,17 +67,17 @@ public class ClientPerformanceMetrics
 
     private static void updatePerformanceData(final SessionImpl session, final ClientPerformanceData data)
     {
-        for (ClientPerformanceRequest eachRequest : data.getRequestList())
+        for (final ClientPerformanceRequest eachRequest : data.getRequestList())
         {
             updateAndLogRequestData(session, eachRequest);
         }
 
-        for (PageLoadTimingData eachData : data.getCustomDataList())
+        for (final PageLoadTimingData eachData : data.getCustomDataList())
         {
             updateAndLogPageLoadTimingData(session, eachData);
         }
 
-        postProcessAndLogWebVitals(data.getWebVitalsList(), session);
+        postProcessAndLogWebVitalsData(data.getWebVitalsList(), session);
     }
 
     private static void updateAndLogRequestData(final SessionImpl session, final ClientPerformanceRequest request)
@@ -106,7 +106,7 @@ public class ClientPerformanceMetrics
         logTimerData(session, actionInfo, data);
     }
 
-    private static RequestInfo getRequestInfo(ClientPerformanceRequest request)
+    private static RequestInfo getRequestInfo(final ClientPerformanceRequest request)
     {
         final RequestInfo requestInfo = new RequestInfo();
         final RequestData requestData = request.getRequestData();
@@ -138,10 +138,10 @@ public class ClientPerformanceMetrics
         return requestInfo;
     }
 
-    private static String getRequestName(RequestData requestData)
+    private static String getRequestName(final RequestData requestData)
     {
-        String urlPath = UrlUtils.parseUrlString(requestData.getUrl().toString()).getPath();
-        String pathWithoutEndSeparator = StringUtils.removeEnd(urlPath, "/");
+        final String urlPath = UrlUtils.parseUrlString(requestData.getUrl().toString()).getPath();
+        final String pathWithoutEndSeparator = StringUtils.removeEnd(urlPath, "/");
 
         String name = FilenameUtils.getName(pathWithoutEndSeparator);
         if (!StringUtils.equals(urlPath, pathWithoutEndSeparator))
@@ -154,6 +154,109 @@ public class ClientPerformanceMetrics
             name = "-";
         }
         return name;
+    }
+
+    /**
+     * Post-processes the passed Web vitals and logs the resulting data.
+     * <p>
+     * Some Web vitals are generated only once after a page load (FCP, FID, TTFB), others may be reported multiple times
+     * (CLS, INP, LCP). The latter happens if the metric has worsened over the lifetime of the page. In these cases, the
+     * metric typically represents an accumulated value. For the statistics, only the last (i.e. highest) reported value
+     * is relevant, hence we will usually log only the last observation.
+     * <p>
+     * But remember that we have actions that trigger a page load and actions that don't (a.k.a. "non-page-view"
+     * actions). This has these two implications:
+     * <ul>
+     * <li>We receive the reportings for the last page-view action and all following non-page-view actions in a single
+     * chunk.</li>
+     * <li>All Web vitals are typically be reported for the page-view action, however, non-page-view actions may cause
+     * additional reportings of CLS/INP/LCP values.</li>
+     * </ul>
+     * <p>
+     * If we would log only the highest reported CLS/INP/LCP value, then we might attribute that value to a later
+     * action, even though the biggest part of the accumulated metric value was contributed by a previous action. To not
+     * blame the wrong action, we "reset" the value when action boundaries have been crossed. This means we introduce
+     * artificial measurements which report the delta to the value from the previous action. This approach is
+     * experimental.
+     *
+     * @param webVitalList
+     *            the web vitals to process
+     * @param session
+     *            the current session object
+     */
+    private static void postProcessAndLogWebVitalsData(final List<WebVitalData> webVitalList, final SessionImpl session)
+    {
+        // LCP, FID, TTFB occur only once, so report them for the action they lie within
+        logWebVitals("FCP", webVitalList, session);
+        logWebVitals("FID", webVitalList, session);
+        logWebVitals("TTFB", webVitalList, session);
+
+        // CLS, INP, and LCP may occur multiple times with ever increasing values
+        // * report only the latest/greatest value per action
+        // * "reset" values at action boundaries
+        postProcessAndLogWebVitals("CLS", webVitalList, session);
+        postProcessAndLogWebVitals("INP", webVitalList, session);
+        postProcessAndLogWebVitals("LCP", webVitalList, session);
+    }
+
+    /**
+     * Logs only those web vitals with the given name, such as "FCP".
+     */
+    private static void logWebVitals(final String webVitalName, final List<WebVitalData> webVitalDataList, final SessionImpl session)
+    {
+        for (final WebVitalData webVitalData : webVitalDataList)
+        {
+            if (webVitalData.getName().equals(webVitalName))
+            {
+                final Entry<Long, ActionInfo> entry = session.getWebDriverActionStartTimes().floorEntry(webVitalData.getTime());
+                final ActionInfo actionInfo = entry != null ? entry.getValue() : null;
+
+                logTimerData(session, actionInfo, webVitalData);
+            }
+        }
+    }
+
+    /**
+     * Post-processes and logs only those web vitals with the given name, such as "CLS".
+     */
+    private static void postProcessAndLogWebVitals(final String webVitalName, final List<WebVitalData> webVitalDataList, final SessionImpl session)
+    {
+        ActionInfo lastActionInfo = null;
+        WebVitalData lastWebVitalData = null;
+        double lastMaxValue = 0.0;
+
+        for (final WebVitalData webVitalData : webVitalDataList)
+        {
+            if (webVitalData.getName().equals(webVitalName))
+            {
+                final Entry<Long, ActionInfo> entry = session.getWebDriverActionStartTimes().floorEntry(webVitalData.getTime());
+                final ActionInfo actionInfo = entry != null ? entry.getValue() : null;
+
+                if (lastWebVitalData != null && lastActionInfo != actionInfo)
+                {
+                    // action boundary crossed -> report the last known web vital now
+
+                    // adjust the value and log
+                    final double value = lastWebVitalData.getValue();
+                    lastWebVitalData.setValue(value - lastMaxValue);
+                    logTimerData(session, lastActionInfo, lastWebVitalData);
+
+                    // remember the value
+                    lastMaxValue = value;
+                }
+
+                lastActionInfo = actionInfo;
+                lastWebVitalData = webVitalData;
+            }
+        }
+
+        if (lastWebVitalData != null)
+        {
+            // adjust the value and log
+            final double value = lastWebVitalData.getValue();
+            lastWebVitalData.setValue(value - lastMaxValue);
+            logTimerData(session, lastActionInfo, lastWebVitalData);
+        }
     }
 
     private static void logTimerData(final SessionImpl session, final ActionInfo actionInfo, final Data data)
@@ -180,83 +283,5 @@ public class ClientPerformanceMetrics
         data.setName(sb.toString());
 
         session.getDataManager().logDataRecord(data);
-    }
-
-    /**
-     * Report only one WebVital per action. Reset metering after a new action boundary.
-     * 
-     * @param webVitalList
-     */
-    private static void postProcessAndLogWebVitals(final List<WebVitalData> webVitalList, SessionImpl session)
-    {
-        // since timer recorder does not know anything about action boundaries it reports any measurement
-
-        // LCP, FID, TTFB occur only once, so report them for the action they lie within
-        logWebVitals("FCP", webVitalList, session);
-        logWebVitals("FID", webVitalList, session);
-        logWebVitals("TTFB", webVitalList, session);
-
-        // CLS, INP, and LCP may occur multiple times with ever increasing values
-        // * use latest/greatest value only, ignore the others
-        // * reset values at action boundaries
-        postProcessAndLogWebVitals("CLS", webVitalList, session);
-        postProcessAndLogWebVitals("INP", webVitalList, session);
-        postProcessAndLogWebVitals("LCP", webVitalList, session);
-    }
-
-    private static void logWebVitals(String name, final List<WebVitalData> webVitalDataList, SessionImpl session)
-    {
-        for (WebVitalData webVitalData : webVitalDataList)
-        {
-            if (webVitalData.getName().equals(name))
-            {
-                final Entry<Long, ActionInfo> entry = session.getWebDriverActionStartTimes().floorEntry(webVitalData.getTime());
-                ActionInfo actionInfo = entry != null ? entry.getValue() : null;
-
-                logTimerData(session, actionInfo, webVitalData);
-            }
-        }
-    }
-
-    private static void postProcessAndLogWebVitals(final String name, final List<WebVitalData> webVitalDataList, final SessionImpl session)
-    {
-        ActionInfo lastActionInfo = null;
-        WebVitalData lastWebVitalData = null;
-        double lastMaxValue = 0.0;
-
-        for (final WebVitalData webVitalData : webVitalDataList)
-        {
-            if (webVitalData.getName().equals(name))
-            {
-                final Entry<Long, ActionInfo> entry = session.getWebDriverActionStartTimes().floorEntry(webVitalData.getTime());
-                final ActionInfo actionInfo = entry != null ? entry.getValue() : null;
-
-                if (lastWebVitalData != null && lastActionInfo != actionInfo)
-                {
-                    // action boundary crossed -> report the last known web vital now
-
-                    // first adjust the value
-                    final double value = lastWebVitalData.getValue();
-                    lastWebVitalData.setValue(value - lastMaxValue);
-
-                    // log the 
-                    logTimerData(session, lastActionInfo, lastWebVitalData);
-
-                    // remember 
-                    lastMaxValue = value;
-                }
-
-                lastActionInfo = actionInfo;
-                lastWebVitalData = webVitalData;
-            }
-        }
-
-        if (lastWebVitalData != null)
-        {
-            final double newValue = lastWebVitalData.getValue() - lastMaxValue;
-            lastWebVitalData.setValue(newValue);
-
-            logTimerData(session, lastActionInfo, lastWebVitalData);
-        }
     }
 }

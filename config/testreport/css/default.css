@@ -402,9 +402,9 @@ template {
     --url-hover-border-color: var(--main-border-color);
     --url-hover-shadow-color: var(--navigation-hover-shadow-color);
 
-    --web-vital-color-good: green;
-    --web-vital-color-improve: orange;
-    --web-vital-color-poor: red;
+    --web-vital-color-good: rgb(110,160,110);
+    --web-vital-color-improve: #e0b669;
+    --web-vital-color-poor: rgb(200,120,120);
 }
 
 /*
@@ -1630,7 +1630,7 @@ tr:hover .infinity { background: linear-gradient(rgb(200,120,120), rgba(0,0,0,0)
 .web-vital {
 }
 
-.web-vital .score {
+.web-vital-score {
     display: flex;
     margin-left: 75%;
     width: 0;
@@ -1639,26 +1639,26 @@ tr:hover .infinity { background: linear-gradient(rgb(200,120,120), rgba(0,0,0,0)
     font-weight: bold;
 }
 
-.web-vital .score.good { 
+.web-vital-score-good {
     color: var(--web-vital-color-good);
 }
 
-.web-vital .score.improve { 
-    color: var(--web-vital-color-improve);   
+.web-vital-score-improve {
+    color: var(--web-vital-color-improve);
 }
 
-.web-vital .score.poor {
-    color: var(--web-vital-color-poor);   
+.web-vital-score-poor {
+    color: var(--web-vital-color-poor);
 }
 
-.web-vital .marker {
+.web-vital-gauge {
     display: flex;
     margin-left: 75%;
     width: 0;
     justify-content: center;
 }
 
-.web-vital .marker .arrow {
+.web-vital-gauge-arrow {
     width: 0;
     height: 0;
     border-left: 4px solid transparent;
@@ -1666,38 +1666,38 @@ tr:hover .infinity { background: linear-gradient(rgb(200,120,120), rgba(0,0,0,0)
     border-top: 4px solid grey; /* border color will be adjusted via class */
 }
 
-.web-vital .marker .arrow.good {
+.web-vital-gauge-arrow-good {
     border-top-color: var(--web-vital-color-good);
 }
 
-.web-vital .marker .arrow.improve {
+.web-vital-gauge-arrow-improve {
     border-top-color:  var(--web-vital-color-improve);
 }
 
-.web-vital .marker .arrow.poor {
+.web-vital-gauge-arrow-poor {
     border-top-color: var(--web-vital-color-poor);
 }
 
-.web-vital .bar {
+.web-vital-bar {
     padding-top: 2px;
     display: flex;
 }
 
-.web-vital .bar .segment {
+.web-vital-bar-segment {
     flex-grow: 0; /* will be adjusted via style */
     height: 5px;
     background-color: grey;  /* will be adjusted via class */
 }
 
-.web-vital .bar .segment.good {
+.web-vital-bar-segment-good {
     background-color: var(--web-vital-color-good);
 }
 
-.web-vital .bar .segment.improve {
+.web-vital-bar-segment-improve {
     background-color: var(--web-vital-color-improve);
 }
 
-.web-vital .bar .segment.poor {
+.web-vital-bar-segment-poor {
     background-color: var(--web-vital-color-poor);
 }
 

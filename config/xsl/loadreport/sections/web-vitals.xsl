@@ -111,17 +111,17 @@
             <xsl:variable name="improvePercentage" select="$value/improveCount div $count"/>
             <xsl:variable name="poorPercentage" select="$value/poorCount div $count"/>
 
-            <div class="score {$value/rating}">
+            <div class="web-vital-score web-vital-score-{$value/rating}">
                 <xsl:value-of select="format-number($value/score, $format)"/>
                 <xsl:text> </xsl:text>
                 <xsl:value-of select="$unit"/>
             </div>
     
-            <div class="marker">
-                <span class="arrow {$value/rating}"></span>
+            <div class="web-vital-gauge">
+                <span class="web-vital-gauge-arrow web-vital-gauge-arrow-{$value/rating}"></span>
             </div>
     
-            <div class="bar">
+            <div class="web-vital-bar">
                 <xsl:call-template name="web-vital-bar-segment">
                     <xsl:with-param name="count" select="$value/goodCount"/>
                     <xsl:with-param name="percentage" select="$goodPercentage"/>
@@ -146,7 +146,7 @@
         <xsl:param name="percentage"/>
         <xsl:param name="rating"/>
 
-        <div class="segment {$rating}" style="flex-grow: {$percentage}">
+        <div class="web-vital-bar-segment web-vital-bar-segment-{$rating}" style="flex-grow: {$percentage}">
             <xsl:attribute name="title">
                 <xsl:value-of select="$count"/>
                 <xsl:text> (</xsl:text>

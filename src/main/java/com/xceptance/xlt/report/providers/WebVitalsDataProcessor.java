@@ -29,6 +29,12 @@ import com.xceptance.xlt.report.util.ReportUtils;
 /**
  * Processes the {@link WebVitalsData} objects reported for a certain action and returns the result as a
  * {@link WebVitalsReport}.
+ * <p>
+ * Up to now, the following Web Vitals are supported: CLS, FCP, FID, INP, LCP, and TTFB. See the links below for more
+ * information on Web Vitals, especially the thresholds defined for each Web Vital.
+ * 
+ * @see https://web.dev/articles/vitals
+ * @see https://github.com/GoogleChrome/web-vitals
  */
 public class WebVitalsDataProcessor extends AbstractDataProcessor
 {
@@ -98,6 +104,7 @@ public class WebVitalsDataProcessor extends AbstractDataProcessor
      * Extracts the web vital name from an action name (for example, "Foo Action [CLS]" -> "CLS").
      * 
      * @param actionName
+     *            the action name
      * @return the contained web vital name
      */
     private static String extractWebVitalName(final String actionName)
@@ -247,10 +254,14 @@ public class WebVitalsDataProcessor extends AbstractDataProcessor
 
     /**
      * A special web vital statistics class for processing web vital data that represents millisecond values. This
-     * affects all web vitals, except CLS. Millisecond values are reported as rounded values.
+     * applies to all web vitals except CLS. Millisecond values are reported as rounded values without a fractional
+     * part.
      */
     public static class TimingWebVitalStatistics extends WebVitalStatistics
     {
+        /**
+         * Creates a {@link TimingWebVitalStatisticss} object and initializes it with its thresholds.
+         */
         public TimingWebVitalStatistics(final double threshold1, final double threshold2)
         {
             super(threshold1, threshold2);

@@ -42,8 +42,8 @@ public class WebVitalsReportProvider extends AbstractDataProcessorBasedReportPro
     {
         if (data instanceof WebVitalData)
         {
-            // All web vital values for a certain action are processed by the same data processor, hence we need to
-            // extract the action name from the full name, e.g. "Foo Action [CLS]" -> "Foo Action".
+            // All web vital data records for a certain action are processed by the same data processor, hence we need
+            // to extract the action name from the full name, e.g. "Foo Action [CLS]" -> "Foo Action".
             final String name = StringUtils.substringBeforeLast(data.getName(), " ");
 
             getProcessor(name).processDataRecord(data);
