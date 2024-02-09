@@ -87,19 +87,20 @@ public class XltOfflineWebConnection implements WebConnection
     @Override
     public WebResponse getResponse(WebRequest webRequest)
     {
+
         // create a dummy response data with an appropriate (?) status code
         final WebResponseData webResponseData = new WebResponseData(HTML_RESPONSE_BODY, HttpStatus.SC_OK,
                                                                     EnglishReasonPhraseCatalog.INSTANCE.getReason(HttpStatus.SC_OK, null),
                                                                     HTML_RESPONSE_HEADER_LIST);
-//        try
-//        {
-//            Thread.sleep(10);
-//        }
-//        catch (final InterruptedException e1)
-//        {
-//        }
+        try
+        {
+            Thread.sleep(45);
+        }
+        catch (final InterruptedException e1)
+        {
+        }
 
         // create response using dummy data
-        return new WebResponse(webResponseData, webRequest.getUrl(), webRequest.getHttpMethod(), 0);
+        return new WebResponse(webResponseData, webRequest.getUrl(), webRequest.getHttpMethod(), 45);
     }
 }
