@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 //
-// Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
+// Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
 
 package com.xceptance.xlt.engine.xltdriver;
 
@@ -78,6 +78,7 @@ import org.htmlunit.html.DomNode;
 import org.htmlunit.html.FrameWindow;
 import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.HtmlPage;
+import org.htmlunit.javascript.HtmlUnitScriptable;
 import org.htmlunit.javascript.host.Element;
 import org.htmlunit.javascript.host.Location;
 import org.htmlunit.javascript.host.html.DocumentProxy;
@@ -99,18 +100,18 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.WrapsElement;
+import com.xceptance.xlt.engine.xltdriver.w3.Action;
+import com.xceptance.xlt.engine.xltdriver.w3.Algorithms;
 import org.openqa.selenium.interactions.Interactive;
 import org.openqa.selenium.interactions.Sequence;
 import org.openqa.selenium.remote.Browser;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
 import com.xceptance.xlt.api.engine.Session;
-import com.xceptance.xlt.engine.xltdriver.w3.Action;
-import com.xceptance.xlt.engine.xltdriver.w3.Algorithms;
 
 /**
  * An implementation of {@link WebDriver} that drives
- * <a href="http://htmlunit.sourceforge.net/">HtmlUnit</a>, which is a headless
+ * <a href="https://www.htmlunit.org">HtmlUnit</a>, which is a headless
  * (GUI-less) browser simulator.
  * <p>
  * The main supported browsers are Chrome, Edge, Firefox and Internet Explorer.
@@ -283,7 +284,12 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor, HasCapabil
         webClient_.addWebWindowListener(new WebWindowListener() {
             @Override
             public void webWindowOpened(final WebWindowEvent webWindowEvent) {
-                // Ignore
+                if (webWindowEvent.getWebWindow() instanceof TopLevelWindow) {
+                    // use the first top level window we are getting aware of
+                    if (currentWindow_ == null && webClient_.getTopLevelWindows().size() == 1) {
+                        currentWindow_ = new HtmlUnitWindow(webClient_.getTopLevelWindows().get(0));
+                    }
+                }
             }
 
             @Override
@@ -300,18 +306,26 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor, HasCapabil
             @Override
             public void webWindowClosed(final WebWindowEvent event) {
                 elementsMap_.remove(event.getOldPage());
+
+                // the last window is gone
+                if (getWebClient().getTopLevelWindows().size() == 0) {
+                    currentWindow_ = null;
+                    return;
+                }
+
                 // Check if the event window refers to us or one of our parent windows
                 // setup the currentWindow appropriately if necessary
-                WebWindow curr = currentWindow_.getWebWindow();
+                WebWindow ourCurrentWindow = currentWindow_.getWebWindow();
+                final WebWindow ourCurrentTopWindow = currentWindow_.getWebWindow().getTopWindow();
                 do {
                     // Instance equality is okay in this case
-                    if (curr == event.getWebWindow()) {
-                        setCurrentWindow(currentWindow_.getWebWindow().getTopWindow());
+                    if (ourCurrentWindow == event.getWebWindow()) {
+                        setCurrentWindow(ourCurrentTopWindow);
                         return;
                     }
-                    curr = curr.getParentWindow();
+                    ourCurrentWindow = ourCurrentWindow.getParentWindow();
                 }
-                while (curr != currentWindow_.getWebWindow().getTopWindow());
+                while (ourCurrentWindow != ourCurrentTopWindow);
             }
         });
 
@@ -617,8 +631,9 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor, HasCapabil
         final DesiredCapabilities capabilities = new DesiredCapabilities(HTMLUNIT.browserName(), "", Platform.ANY);
 
         capabilities.setPlatform(Platform.getCurrent());
-        capabilities.setJavascriptEnabled(isJavascriptEnabled());
         capabilities.setVersion(Version.getProductVersion());
+
+        capabilities.setCapability(HtmlUnitDriver.JAVASCRIPT_ENABLED, isJavascriptEnabled());
         return capabilities;
     }
 
@@ -647,8 +662,7 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor, HasCapabil
         getAlert().setAutoAccept(false);
         try {
             // we can't use webClient.getPage(url) here because selenium has a different
-            // idea
-            // of the current window and we like to load into to selenium current one
+            // idea of the current window and we like to load into to selenium current one
             final BrowserVersion browser = getBrowserVersion();
             final WebRequest request = new WebRequest(fullUrl, browser.getHtmlAcceptHeader(),
                     browser.getAcceptEncodingHeader());
@@ -671,6 +685,9 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor, HasCapabil
             throw new TimeoutException(e);
         }
         catch (final NoSuchSessionException e) {
+            throw e;
+        }
+        catch (final NoSuchWindowException e) {
             throw e;
         }
         catch (final SSLHandshakeException e) {
@@ -888,9 +905,9 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor, HasCapabil
     }
 
     private Object[] convertScriptArgs(final HtmlPage page, final Object[] args) {
-        final Object scope = page.getEnclosingWindow().getScriptableObject();
+        final HtmlUnitScriptable scope = page.getEnclosingWindow().getScriptableObject();
 
-        if (!(scope instanceof Scriptable)) {
+        if (scope == null) {
             return args;
         }
 
@@ -898,7 +915,7 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor, HasCapabil
         Context.enter();
         try {
             for (int i = 0; i < args.length; i++) {
-                parameters[i] = parseArgumentIntoJavascriptParameter((Scriptable) scope, args[i]);
+                parameters[i] = parseArgumentIntoJavascriptParameter(scope, args[i]);
             }
         }
         finally {
@@ -1119,7 +1136,6 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor, HasCapabil
 
     private static Map<String, Object> convertLocationToMap(final Location location) {
         final Map<String, Object> map = new HashMap<>();
-        map.put("href", location.getHref());
         map.put("protocol", location.getProtocol());
         map.put("host", location.getHost());
         map.put("hostname", location.getHostname());
@@ -1251,9 +1267,12 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor, HasCapabil
     }
 
     public HtmlUnitWindow getCurrentWindow() {
+        if (webClient_ == null || currentWindow_ == null) {
+            throw new NoSuchSessionException("Session is closed");
+        }
         // JW - start
         /*
-        if (currentWindow_ == null || currentWindow_.getWebWindow().isClosed()) {
+        if (currentWindow_.getWebWindow().isClosed()) {
             throw new NoSuchWindowException("Window is closed");
         }
         */

@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 //
-// Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
+// Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
 
 package com.xceptance.xlt.engine.xltdriver;
 
@@ -28,11 +28,31 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 
+import org.htmlunit.ScriptResult;
+import org.htmlunit.corejs.javascript.ScriptRuntime;
+import org.htmlunit.corejs.javascript.ScriptableObject;
+import org.htmlunit.html.DisabledElement;
+import org.htmlunit.html.DomElement;
+import org.htmlunit.html.DomNode;
+import org.htmlunit.html.HtmlButton;
+import org.htmlunit.html.HtmlCheckBoxInput;
+import org.htmlunit.html.HtmlElement;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlImageInput;
+import org.htmlunit.html.HtmlInput;
+import org.htmlunit.html.HtmlOption;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlRadioButtonInput;
+import org.htmlunit.html.HtmlSelect;
+import org.htmlunit.html.HtmlSubmitInput;
+import org.htmlunit.html.HtmlTextArea;
+import org.htmlunit.html.impl.SelectableTextInput;
+import org.htmlunit.javascript.HtmlUnitScriptable;
+import org.htmlunit.javascript.host.html.HTMLElement;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.ElementNotInteractableException;
 import org.openqa.selenium.InvalidElementStateException;
-import org.openqa.selenium.JavascriptException;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.Point;
 import org.openqa.selenium.Rectangle;
@@ -48,28 +68,6 @@ import org.openqa.selenium.support.Color;
 import org.openqa.selenium.support.Colors;
 import org.w3c.dom.Attr;
 import org.w3c.dom.NamedNodeMap;
-
-import org.htmlunit.ScriptResult;
-import org.htmlunit.html.DisabledElement;
-import org.htmlunit.html.DomElement;
-import org.htmlunit.html.DomNode;
-import org.htmlunit.html.HtmlButton;
-import org.htmlunit.html.HtmlElement;
-import org.htmlunit.html.HtmlFileInput;
-import org.htmlunit.html.HtmlForm;
-import org.htmlunit.html.HtmlImageInput;
-import org.htmlunit.html.HtmlInput;
-import org.htmlunit.html.HtmlOption;
-import org.htmlunit.html.HtmlPage;
-import org.htmlunit.html.HtmlSelect;
-import org.htmlunit.html.HtmlSubmitInput;
-import org.htmlunit.html.HtmlTextArea;
-import org.htmlunit.html.impl.SelectableTextInput;
-import org.htmlunit.javascript.host.html.HTMLElement;
-import org.htmlunit.javascript.host.html.HTMLInputElement;
-
-import org.htmlunit.corejs.javascript.Scriptable;
-import org.htmlunit.corejs.javascript.ScriptableObject;
 
 import com.xceptance.xlt.engine.scripting.htmlunit.HtmlUnitElementUtils;
 
@@ -130,14 +128,16 @@ public class HtmlUnitWebElement implements WrapsDriver, WebElement, Coordinates,
             else if (element_ instanceof HtmlInput) {
                 final HtmlForm form = ((HtmlElement) element_).getEnclosingForm();
                 if (form == null) {
-                    throw new JavascriptException("Unable to find the containing form");
+                    throw new UnsupportedOperationException(
+                            "To submit an element, it must be nested inside a form element");
                 }
                 submitForm(form);
             }
             else {
                 final HtmlUnitWebElement form = findParentForm();
                 if (form == null) {
-                    throw new JavascriptException("Unable to find the containing form");
+                    throw new UnsupportedOperationException(
+                            "To submit an element, it must be nested inside a form element");
                 }
                 form.submitImpl();
             }
@@ -300,10 +300,24 @@ public class HtmlUnitWebElement implements WrapsDriver, WebElement, Coordinates,
             return trueOrNull(((HtmlInput) element_).isChecked());
         }
 
-        if ("href".equals(lowerName) || "src".equals(lowerName)) {
+        if ("href".equals(lowerName)) {
+            final String href = element_.getAttribute(name);
+            if (ATTRIBUTE_NOT_DEFINED == href) {
+                return null;
+            }
+            final HtmlPage page = (HtmlPage) element_.getPage();
+            try {
+                return page.getFullyQualifiedUrl(href.trim()).toString();
+            }
+            catch (final MalformedURLException e) {
+                return null;
+            }
+        }
+
+        if ("src".equals(lowerName)) {
             final String link = element_.getAttribute(name);
             if (ATTRIBUTE_NOT_DEFINED == link) {
-                return null;
+                return "";
             }
             final HtmlPage page = (HtmlPage) element_.getPage();
             try {
@@ -315,9 +329,6 @@ public class HtmlUnitWebElement implements WrapsDriver, WebElement, Coordinates,
         }
 
         if ("value".equals(lowerName)) {
-            if (element_ instanceof HtmlFileInput) {
-                return ((HTMLInputElement) element_.getScriptableObject()).getValue();
-            }
             if (element_ instanceof HtmlInput) {
                 return ((HtmlInput) element_).getValue();
             }
@@ -335,7 +346,10 @@ public class HtmlUnitWebElement implements WrapsDriver, WebElement, Coordinates,
             }
 
             final String attributeValue = element_.getAttribute(name);
-            return attributeValue == null ? "" : attributeValue;
+            if (ATTRIBUTE_NOT_DEFINED == attributeValue) {
+                return null;
+            }
+            return attributeValue;
         }
 
         if ("disabled".equals(lowerName)) {
@@ -381,11 +395,13 @@ public class HtmlUnitWebElement implements WrapsDriver, WebElement, Coordinates,
             return "";
         }
 
-        final Object scriptable = element_.getScriptableObject();
-        if (scriptable instanceof Scriptable) {
-            final Object slotVal = ScriptableObject.getProperty((Scriptable) scriptable, name);
-            if (slotVal instanceof String) {
-                return (String) slotVal;
+        if (driver_.isJavascriptEnabled()) {
+            final HtmlUnitScriptable scriptable = element_.getScriptableObject();
+            if (scriptable != null) {
+                final Object slotVal = ScriptableObject.getProperty(scriptable, name);
+                if (slotVal instanceof String) {
+                    return (String) slotVal;
+                }
             }
         }
 
@@ -397,15 +413,34 @@ public class HtmlUnitWebElement implements WrapsDriver, WebElement, Coordinates,
         assertElementNotStale();
 
         final String lowerName = name.toLowerCase();
+
+        final HtmlUnitScriptable scriptable = element_.getScriptableObject();
+        if (scriptable != null) {
+            if (!ScriptableObject.hasProperty(scriptable, lowerName)) {
+                return null;
+            }
+            return ScriptRuntime.toCharSequence(ScriptableObject.getProperty(scriptable, lowerName)).toString();
+        }
+
+        // js disabled, fallback to some hacks
+        if ("disabled".equals(lowerName)) {
+            if (element_ instanceof DisabledElement) {
+                return trueOrFalse(((DisabledElement) element_).isDisabled());
+            }
+        }
+
+        if ("checked".equals(lowerName)) {
+            if (element_ instanceof HtmlCheckBoxInput) {
+                return trueOrFalse(((HtmlCheckBoxInput) element_).isChecked());
+            }
+            else if (element_ instanceof HtmlRadioButtonInput) {
+                return trueOrFalse(((HtmlRadioButtonInput) element_).isChecked());
+            }
+        }
+
         final String value = element_.getAttribute(lowerName);
         if (ATTRIBUTE_NOT_DEFINED == value) {
             return null;
-        }
-
-        if ("disabled".equals(lowerName)) {
-            if (element_ instanceof DisabledElement) {
-                return trueOrNull(((DisabledElement) element_).isDisabled());
-            }
         }
 
         if (ATTRIBUTE_VALUE_EMPTY == value) {
@@ -431,11 +466,24 @@ public class HtmlUnitWebElement implements WrapsDriver, WebElement, Coordinates,
             }
         }
 
+        if ("checked".equals(lowerName)) {
+            if (element_ instanceof HtmlCheckBoxInput) {
+                return trueOrNull(((HtmlCheckBoxInput) element_).isChecked());
+            }
+            else if (element_ instanceof HtmlRadioButtonInput) {
+                return trueOrNull(((HtmlRadioButtonInput) element_).isChecked());
+            }
+        }
+
         return value;
     }
 
     private static String trueOrNull(final boolean condition) {
         return condition ? "true" : null;
+    }
+
+    private static String trueOrFalse(final boolean condition) {
+        return condition ? "true" : "false";
     }
 
     @Override
@@ -614,10 +662,16 @@ public class HtmlUnitWebElement implements WrapsDriver, WebElement, Coordinates,
     public String getCssValue(final String propertyName) {
         assertElementNotStale();
 
+        // TODO switch to the js free version
+        //
+        //    final ComputedCssStyleDeclaration cssStyle =
+        //            element_.getPage().getEnclosingWindow().getComputedStyle(element_, null);
+        //
+        //    final Definition definition = StyleAttributes.getDefinition(propertyName, driver_.getBrowserVersion());
+        //    final String style = cssStyle.getStyleAttribute(definition, true);
+
         final HTMLElement elem = element_.getScriptableObject();
-
         final String style = elem.getWindow().getComputedStyle(elem, null).getPropertyValue(propertyName);
-
         return getColor(style);
     }
 
@@ -675,22 +729,27 @@ public class HtmlUnitWebElement implements WrapsDriver, WebElement, Coordinates,
         return driver_;
     }
 
+    @Override
     public Coordinates getCoordinates() {
         return this;
     }
 
+    @Override
     public Point onScreen() {
         throw new UnsupportedOperationException("Not displayed, no screen location.");
     }
 
+    @Override
     public Point inViewPort() {
         return getLocation();
     }
 
+    @Override
     public Point onPage() {
         return getLocation();
     }
 
+    @Override
     public Object getAuxiliary() {
         return element_;
     }
