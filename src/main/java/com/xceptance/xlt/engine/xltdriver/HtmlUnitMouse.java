@@ -183,9 +183,9 @@ public class HtmlUnitMouse {
         {
             final int xPos = currentMousePosition.getX();
             final int yPos = currentMousePosition.getY();
-            HtmlUnitElementUtils.fireMouseEvent(element, "mousedown", xPos, yPos, MouseEvent.BUTTON_RIGHT);
-            HtmlUnitElementUtils.fireMouseEvent(element, "mouseup", xPos, yPos, MouseEvent.BUTTON_RIGHT);
-            HtmlUnitElementUtils.fireMouseEvent(element, "contextmenu", xPos, yPos, MouseEvent.BUTTON_RIGHT);
+            HtmlUnitElementUtils.fireMouseEvent(element, "mousedown", xPos, yPos, MouseEvent.BUTTON_RIGHT, 1);
+            HtmlUnitElementUtils.fireMouseEvent(element, "mouseup", xPos, yPos, MouseEvent.BUTTON_RIGHT, 1);
+            HtmlUnitElementUtils.fireMouseEvent(element, "contextmenu", xPos, yPos, MouseEvent.BUTTON_RIGHT, 0);
         }
         // HA #2142 end
 
