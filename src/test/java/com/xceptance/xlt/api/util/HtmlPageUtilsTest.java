@@ -1681,14 +1681,14 @@ public class HtmlPageUtilsTest
      */
     public HtmlPage getHtmlPage(final String htmlSource) throws FailingHttpStatusCodeException, MalformedURLException, IOException
     {
-        try (final WebClient webClient = new WebClient(BrowserVersion.CHROME))
-        {
-            final MockWebConnection connection = new MockWebConnection();
-            connection.setDefaultResponse(htmlSource);
-            webClient.setWebConnection(connection);
+        @SuppressWarnings("resource")
+        final WebClient webClient = new WebClient(BrowserVersion.CHROME);
 
-            return webClient.getPage("http://localhost/");
-        }
+        final MockWebConnection connection = new MockWebConnection();
+        connection.setDefaultResponse(htmlSource);
+        webClient.setWebConnection(connection);
+
+        return webClient.getPage("http://localhost/");
     }
 
     /**
