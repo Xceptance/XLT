@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,19 +22,18 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.htmlunit.HtmlUnitDriver;
-
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.BuggyWebDriver;
 import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import org.htmlunit.util.NameValuePair;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 
 /**
  * Unit tests for {@link HtmlElement}.
@@ -174,7 +173,8 @@ public class HtmlElement2Test extends WebDriverTestCase {
      */
     @Test
     @Alerts("something")
-    @BuggyWebDriver(FF = "")
+    @BuggyWebDriver(FF = "",
+            FF_ESR = "")
     @NotYetImplemented
     //TODO: fails because of HTMLElement.getContentEditable doesn't detect DomElement.ATTRIBUTE_VALUE_EMPTY
     // this could be a general attribute issue
@@ -414,8 +414,6 @@ public class HtmlElement2Test extends WebDriverTestCase {
      */
     @Test
     @Alerts("Hello-world")
-    @BuggyWebDriver(FF = "Hello-world",
-            FF_ESR = "-worldHello")
     public void typeAtEndOfEditableDiv() throws Exception {
         final String html = "<html><head><script>\n"
             + "  function test() {\n"
@@ -440,7 +438,7 @@ public class HtmlElement2Test extends WebDriverTestCase {
     @Test
     @Alerts("Hello-world")
     @BuggyWebDriver(FF = "Hello\n-world",
-            FF_ESR = "-worldHello")
+            FF_ESR = "Hello\n-world")
     public void typeAtEndOfEditableDivWithParagraphInside() throws Exception {
         final String html = "<html><head><script>\n"
             + "  function test() {\n"

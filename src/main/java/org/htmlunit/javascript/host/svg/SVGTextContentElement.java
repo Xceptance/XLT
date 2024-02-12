@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,8 +52,8 @@ public class SVGTextContentElement extends SVGGraphicsElement {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     @Override
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public void jsConstructor() {
         super.jsConstructor();
     }
@@ -62,7 +62,7 @@ public class SVGTextContentElement extends SVGGraphicsElement {
      * @return the length of the text
      */
     @JsxFunction
-    public float getComputedTextLength() {
+    public double getComputedTextLength() {
         // simple estimation
         return getDomNodeOrDie().getTextContent().length() * getBrowserVersion().getPixesPerChar();
     }

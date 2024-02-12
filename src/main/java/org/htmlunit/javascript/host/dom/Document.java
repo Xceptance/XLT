@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,12 +22,14 @@ import static org.htmlunit.BrowserVersionFeatures.EVENT_TYPE_HASHCHANGEEVENT;
 import static org.htmlunit.BrowserVersionFeatures.EVENT_TYPE_MOUSEWHEELEVENT;
 import static org.htmlunit.BrowserVersionFeatures.EVENT_TYPE_POINTEREVENT;
 import static org.htmlunit.BrowserVersionFeatures.EVENT_TYPE_PROGRESSEVENT;
+import static org.htmlunit.BrowserVersionFeatures.EVENT_TYPE_TEXTEVENT;
 import static org.htmlunit.BrowserVersionFeatures.EVENT_TYPE_WHEELEVENT;
 import static org.htmlunit.BrowserVersionFeatures.HTMLDOCUMENT_CHARSET_LOWERCASE;
 import static org.htmlunit.BrowserVersionFeatures.HTMLDOCUMENT_COLOR;
 import static org.htmlunit.BrowserVersionFeatures.HTML_COLOR_EXPAND_ZERO;
-import static org.htmlunit.BrowserVersionFeatures.JS_ANCHORS_REQUIRES_NAME_OR_ID;
+import static org.htmlunit.BrowserVersionFeatures.JS_ANCHOR_REQUIRES_NAME_OR_ID;
 import static org.htmlunit.BrowserVersionFeatures.JS_DOCUMENT_DESIGN_MODE_INHERIT;
+import static org.htmlunit.BrowserVersionFeatures.JS_DOCUMENT_EVALUATE_RECREATES_RESULT;
 import static org.htmlunit.BrowserVersionFeatures.JS_DOCUMENT_FORMS_FUNCTION_SUPPORTED;
 import static org.htmlunit.BrowserVersionFeatures.JS_DOCUMENT_SELECTION_RANGE_COUNT;
 import static org.htmlunit.BrowserVersionFeatures.JS_DOCUMENT_SETTING_DOMAIN_THROWS_FOR_ABOUT_BLANK;
@@ -41,7 +43,6 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
-import static org.htmlunit.util.StringUtils.parseHttpDate;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -62,13 +63,6 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.htmlunit.cssparser.parser.CSSException;
-import org.htmlunit.xpath.xml.utils.PrefixResolver;
-import org.w3c.dom.CDATASection;
-import org.w3c.dom.DOMException;
-import org.w3c.dom.DocumentType;
-import org.w3c.dom.ProcessingInstruction;
-
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.ElementNotFoundException;
 import org.htmlunit.HttpHeader;
@@ -76,6 +70,14 @@ import org.htmlunit.Page;
 import org.htmlunit.SgmlPage;
 import org.htmlunit.WebResponse;
 import org.htmlunit.WebWindow;
+import org.htmlunit.corejs.javascript.Callable;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.Function;
+import org.htmlunit.corejs.javascript.FunctionObject;
+import org.htmlunit.corejs.javascript.NativeFunction;
+import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.ScriptableObject;
+import org.htmlunit.cssparser.parser.CSSException;
 import org.htmlunit.html.DomComment;
 import org.htmlunit.html.DomDocumentFragment;
 import org.htmlunit.html.DomElement;
@@ -91,16 +93,19 @@ import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.HtmlEmbed;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlImage;
-import org.htmlunit.html.HtmlInput;
 import org.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlRb;
 import org.htmlunit.html.HtmlRp;
 import org.htmlunit.html.HtmlRt;
+import org.htmlunit.html.HtmlRtc;
 import org.htmlunit.html.HtmlScript;
 import org.htmlunit.html.HtmlSvg;
 import org.htmlunit.html.HtmlUnknownElement;
 import org.htmlunit.html.UnknownElementFactory;
 import org.htmlunit.html.impl.SimpleRange;
+import org.htmlunit.httpclient.HttpClientConverter;
 import org.htmlunit.javascript.HtmlUnitScriptable;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
@@ -144,15 +149,11 @@ import org.htmlunit.javascript.host.html.HTMLFrameSetElement;
 import org.htmlunit.util.EncodingSniffer;
 import org.htmlunit.util.UrlUtils;
 import org.htmlunit.xml.XmlPage;
-
-import org.htmlunit.corejs.javascript.Callable;
-import org.htmlunit.corejs.javascript.Context;
-import org.htmlunit.corejs.javascript.Function;
-import org.htmlunit.corejs.javascript.FunctionObject;
-import org.htmlunit.corejs.javascript.NativeFunction;
-import org.htmlunit.corejs.javascript.ScriptRuntime;
-import org.htmlunit.corejs.javascript.Scriptable;
-import org.htmlunit.corejs.javascript.ScriptableObject;
+import org.htmlunit.xpath.xml.utils.PrefixResolver;
+import org.w3c.dom.CDATASection;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.DocumentType;
+import org.w3c.dom.ProcessingInstruction;
 
 /**
  * A JavaScript object for {@code Document}.
@@ -324,8 +325,16 @@ public class Document extends Node {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public Document() {
+    }
+
+    /**
+     * JavaScript constructor.
+     */
+    @Override
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    public void jsConstructor() {
+        throw JavaScriptEngine.reportRuntimeError("Illegal constructor.");
     }
 
     /**
@@ -441,7 +450,7 @@ public class Document extends Node {
         final boolean inherit = browserVersion.hasFeature(JS_DOCUMENT_DESIGN_MODE_INHERIT);
         if (inherit) {
             if (!"on".equalsIgnoreCase(mode) && !"off".equalsIgnoreCase(mode) && !"inherit".equalsIgnoreCase(mode)) {
-                throw Context.reportRuntimeError("Invalid document.designMode value '" + mode + "'.");
+                throw JavaScriptEngine.reportRuntimeError("Invalid document.designMode value '" + mode + "'.");
             }
 
             if ("on".equalsIgnoreCase(mode)) {
@@ -524,7 +533,7 @@ public class Document extends Node {
      * @return the imported node that belongs to this Document
      */
     @JsxFunction
-    public Object importNode(final Node importedNode, final boolean deep) {
+    public HtmlUnitScriptable importNode(final Node importedNode, final boolean deep) {
         DomNode domNode = importedNode.getDomNodeOrDie();
         domNode = domNode.cloneNode(deep);
         domNode.processImportNode(this);
@@ -632,11 +641,25 @@ public class Document extends Node {
     public XPathResult evaluate(final String expression, final Node contextNode,
             final Object resolver, final int type, final Object result) {
         try {
-            XPathResult xPathResult = (XPathResult) result;
-            if (xPathResult == null) {
+            XPathResult xPathResult = null;
+            if (result instanceof XPathResult) {
+                xPathResult = (XPathResult) result;
+
+                if (getBrowserVersion().hasFeature(JS_DOCUMENT_EVALUATE_RECREATES_RESULT)) {
+                    xPathResult = new XPathResult();
+                    xPathResult.setParentScope(getParentScope());
+                    xPathResult.setPrototype(getPrototype(xPathResult.getClass()));
+                }
+            }
+            else if (result == null
+                    || JavaScriptEngine.isUndefined(result)
+                    || result instanceof ScriptableObject) {
                 xPathResult = new XPathResult();
                 xPathResult.setParentScope(getParentScope());
                 xPathResult.setPrototype(getPrototype(xPathResult.getClass()));
+            }
+            else {
+                throw JavaScriptEngine.typeError("Argument 5 of Document.evaluate has to be an XPathResult or null.");
             }
 
             PrefixResolver prefixResolver = null;
@@ -651,7 +674,7 @@ public class Document extends Node {
             return xPathResult;
         }
         catch (final Exception e) {
-            throw Context.reportRuntimeError("Failed to execute 'evaluate': " + e.getMessage());
+            throw JavaScriptEngine.reportRuntimeError("Failed to execute 'evaluate': " + e.getMessage());
         }
     }
 
@@ -669,7 +692,7 @@ public class Document extends Node {
                     LOG.info("createElement: Provided string '"
                                 + tagName + "' contains an invalid character; '<' and '>' are not allowed");
                 }
-                throw Context.reportRuntimeError("String contains an invalid character");
+                throw JavaScriptEngine.reportRuntimeError("String contains an invalid character");
             }
             else if (tagName.length() > 0 && tagName.charAt(0) == '<' && tagName.endsWith(">")) {
                 tagName = tagName.substring(1, tagName.length() - 1);
@@ -679,24 +702,27 @@ public class Document extends Node {
                     if (LOG.isInfoEnabled()) {
                         LOG.info("createElement: Provided string '" + tagName + "' contains an invalid character");
                     }
-                    throw Context.reportRuntimeError("String contains an invalid character");
+                    throw JavaScriptEngine.reportRuntimeError("String contains an invalid character");
                 }
             }
 
             final SgmlPage page = getPage();
             org.w3c.dom.Node element = page.createElement(tagName);
 
-            if (element instanceof HtmlInput) {
-                ((HtmlInput) element).markAsCreatedByJavascript();
-            }
-            else if (element instanceof HtmlImage) {
+            if (element instanceof HtmlImage) {
                 ((HtmlImage) element).markAsCreatedByJavascript();
+            }
+            else if (element instanceof HtmlRb) {
+                ((HtmlRb) element).markAsCreatedByJavascript();
             }
             else if (element instanceof HtmlRp) {
                 ((HtmlRp) element).markAsCreatedByJavascript();
             }
             else if (element instanceof HtmlRt) {
                 ((HtmlRt) element).markAsCreatedByJavascript();
+            }
+            else if (element instanceof HtmlRtc) {
+                ((HtmlRtc) element).markAsCreatedByJavascript();
             }
             else if (element instanceof HtmlUnknownElement) {
                 ((HtmlUnknownElement) element).markAsCreatedByJavascript();
@@ -732,7 +758,7 @@ public class Document extends Node {
     @JsxFunction
     public Object createElementNS(final String namespaceURI, final String qualifiedName) {
         if ("http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul".equals(namespaceURI)) {
-            throw Context.reportRuntimeError("XUL not available");
+            throw JavaScriptEngine.reportRuntimeError("XUL not available");
         }
 
         final org.w3c.dom.Element element;
@@ -854,16 +880,18 @@ public class Document extends Node {
                         return false;
                     }
                     final HtmlAnchor anchor = (HtmlAnchor) node;
-                    if (getBrowserVersion().hasFeature(JS_ANCHORS_REQUIRES_NAME_OR_ID)) {
-                        return anchor.hasAttribute("name") || anchor.hasAttribute("id");
+                    if (getBrowserVersion().hasFeature(JS_ANCHOR_REQUIRES_NAME_OR_ID)) {
+                        return anchor.hasAttribute(DomElement.NAME_ATTRIBUTE)
+                                || anchor.hasAttribute(DomElement.ID_ATTRIBUTE);
                     }
-                    return anchor.hasAttribute("name");
+                    return anchor.hasAttribute(DomElement.NAME_ATTRIBUTE);
                 });
 
         anchors.setEffectOnCacheFunction(
                 (java.util.function.Function<HtmlAttributeChangeEvent, EffectOnCache> & Serializable)
                     event -> {
-                        if ("name".equals(event.getName()) || "id".equals(event.getName())) {
+                        if (DomElement.NAME_ATTRIBUTE.equals(event.getName())
+                                || DomElement.ID_ATTRIBUTE.equals(event.getName())) {
                             return EffectOnCache.RESET;
                         }
                         return EffectOnCache.NONE;
@@ -919,7 +947,7 @@ public class Document extends Node {
             }
             return;
         }
-        throw Context.reportRuntimeError("Failed to set the 'body' property on 'Document': "
+        throw JavaScriptEngine.reportRuntimeError("Failed to set the 'body' property on 'Document': "
                 + "The new body element is of type '" +  htmlElement.getTagName() + "'. "
                 + "It must be either a 'BODY' or 'FRAMESET' element.");
     }
@@ -1022,7 +1050,7 @@ public class Document extends Node {
             return null;
         }
         catch (final CSSException e) {
-            throw ScriptRuntime.constructError("SyntaxError",
+            throw JavaScriptEngine.constructError("SyntaxError",
                     "An invalid or illegal selector was specified (selector: '"
                             + selectors + "' error: " + e.getMessage() + ").");
         }
@@ -1041,7 +1069,7 @@ public class Document extends Node {
             return NodeList.staticNodeList(this, getDomNodeOrDie().querySelectorAll(selectors));
         }
         catch (final CSSException e) {
-            throw Context.reportRuntimeError("An invalid or illegal selector was specified (selector: '"
+            throw JavaScriptEngine.reportRuntimeError("An invalid or illegal selector was specified (selector: '"
                     + selectors + "' error: " + e.getMessage() + ").");
         }
     }
@@ -1202,6 +1230,10 @@ public class Document extends Node {
                     && getBrowserVersion().hasFeature(EVENT_ONCLOSE_DOCUMENT_CREATE_NOT_SUPPORTED)) {
                 clazz = null;
             }
+            else if (TextEvent.class == clazz
+                    && !getBrowserVersion().hasFeature(EVENT_TYPE_TEXTEVENT)) {
+                clazz = CompositionEvent.class;
+            }
         }
         if (clazz == null
                 && ("Events".equals(eventType)
@@ -1232,9 +1264,8 @@ public class Document extends Node {
             }
         }
         if (clazz == null) {
-            Context.throwAsScriptRuntimeEx(new DOMException(DOMException.NOT_SUPPORTED_ERR,
+            throw JavaScriptEngine.throwAsScriptRuntimeEx(new DOMException(DOMException.NOT_SUPPORTED_ERR,
                 "Event Type is not supported: " + eventType));
-            return null; // to stop eclipse warning
         }
         try {
             final Event event = clazz.newInstance();
@@ -1244,7 +1275,7 @@ public class Document extends Node {
             return event;
         }
         catch (final InstantiationException | IllegalAccessException e) {
-            throw Context.reportRuntimeError("Failed to instantiate event: class ='" + clazz.getName()
+            throw JavaScriptEngine.reportRuntimeError("Failed to instantiate event: class ='" + clazz.getName()
                             + "' for event type of '" + eventType + "': " + e.getMessage());
         }
     }
@@ -1261,7 +1292,7 @@ public class Document extends Node {
     @JsxFunction
     public NodeIterator createNodeIterator(final Node root, final int whatToShow, final Scriptable filter) {
         final org.w3c.dom.traversal.NodeFilter filterWrapper = createFilterWrapper(filter, false);
-        final NodeIterator iterator = new NodeIterator(getPage(), root, whatToShow, filterWrapper);
+        final NodeIterator iterator = new NodeIterator(root, whatToShow, filterWrapper);
         iterator.setParentScope(getParentScope());
         iterator.setPrototype(getPrototype(iterator.getClass()));
         return iterator;
@@ -1279,11 +1310,11 @@ public class Document extends Node {
                 }
                 else {
                     if (filterFunctionOnly) {
-                        throw Context.reportRuntimeError("only a function is allowed as filter");
+                        throw JavaScriptEngine.reportRuntimeError("only a function is allowed as filter");
                     }
                     response = ScriptableObject.callMethod(filter, "acceptNode", args);
                 }
-                return (short) Context.toNumber(response);
+                return (short) JavaScriptEngine.toNumber(response);
             };
         }
         return filterWrapper;
@@ -1414,7 +1445,7 @@ public class Document extends Node {
         // IE doesn't allow to set domain of about:blank
         if (UrlUtils.URL_ABOUT_BLANK == getPage().getUrl()
             && browserVersion.hasFeature(JS_DOCUMENT_SETTING_DOMAIN_THROWS_FOR_ABOUT_BLANK)) {
-            throw Context.reportRuntimeError("Illegal domain value, cannot set domain from \""
+            throw JavaScriptEngine.reportRuntimeError("Illegal domain value, cannot set domain from \""
                     + UrlUtils.URL_ABOUT_BLANK + "\" to: \""
                     + newDomain + "\".");
         }
@@ -1427,13 +1458,13 @@ public class Document extends Node {
         }
 
         if (newDomain.indexOf('.') == -1) {
-            throw Context.reportRuntimeError("Illegal domain value, cannot set domain from: \""
+            throw JavaScriptEngine.reportRuntimeError("Illegal domain value, cannot set domain from: \""
                     + currentDomain + "\" to: \"" + newDomain + "\" (new domain has to contain a dot).");
         }
 
         if (currentDomain.indexOf('.') > -1
                 && !currentDomain.toLowerCase(Locale.ROOT).endsWith("." + newDomain.toLowerCase(Locale.ROOT))) {
-            throw Context.reportRuntimeError("Illegal domain value, cannot set domain from: \""
+            throw JavaScriptEngine.reportRuntimeError("Illegal domain value, cannot set domain from: \""
                     + currentDomain + "\" to: \"" + newDomain + "\"");
         }
 
@@ -1812,7 +1843,7 @@ public class Document extends Node {
                 if (getBrowserVersion().hasFeature(JS_DOCUMENT_FORMS_FUNCTION_SUPPORTED)) {
                     return super.call(cx, scope, thisObj, args);
                 }
-                throw ScriptRuntime.typeError("document.forms is not a function");
+                throw JavaScriptEngine.typeError("document.forms is not a function");
             }
         };
 
@@ -1835,7 +1866,7 @@ public class Document extends Node {
                 if (getBrowserVersion().hasFeature(JS_DOCUMENT_FORMS_FUNCTION_SUPPORTED)) {
                     return super.call(cx, scope, thisObj, args);
                 }
-                throw ScriptRuntime.typeError("document.embeds is not a function");
+                throw JavaScriptEngine.typeError("document.embeds is not a function");
             }
         };
 
@@ -1856,7 +1887,7 @@ public class Document extends Node {
                 if (getBrowserVersion().hasFeature(JS_DOCUMENT_FORMS_FUNCTION_SUPPORTED)) {
                     return super.call(cx, scope, thisObj, args);
                 }
-                throw ScriptRuntime.typeError("document.images is not a function");
+                throw JavaScriptEngine.typeError("document.images is not a function");
             }
         };
 
@@ -1877,7 +1908,7 @@ public class Document extends Node {
                 if (getBrowserVersion().hasFeature(JS_DOCUMENT_FORMS_FUNCTION_SUPPORTED)) {
                     return super.call(cx, scope, thisObj, args);
                 }
-                throw ScriptRuntime.typeError("document.scripts is not a function");
+                throw JavaScriptEngine.typeError("document.scripts is not a function");
             }
         };
 
@@ -1957,8 +1988,8 @@ public class Document extends Node {
      * @param elementName - value of the {@code name} attribute to look for
      * @return all HTML elements that have a {@code name} attribute with the specified value
      */
-    @JsxFunction({CHROME, EDGE, IE})
-    public HTMLCollection getElementsByName(final String elementName) {
+    @JsxFunction({CHROME, EDGE, FF, FF_ESR, IE})
+    public NodeList getElementsByName(final String elementName) {
         return null;
     }
 
@@ -2011,7 +2042,7 @@ public class Document extends Node {
      * Returns the current selection.
      * @return the current selection
      */
-    @JsxFunction({CHROME, EDGE})
+    @JsxFunction
     public Selection getSelection() {
         return null;
     }
@@ -2020,7 +2051,7 @@ public class Document extends Node {
      * Returns this document's {@code head} element.
      * @return this document's {@code head} element
      */
-    @JsxGetter({CHROME, EDGE, IE})
+    @JsxGetter
     public Object getHead() {
         return null;
     }
@@ -2064,7 +2095,7 @@ public class Document extends Node {
     }
 
     private static Date parseDateOrNow(final String stringDate) {
-        final Date date = parseHttpDate(stringDate);
+        final Date date = HttpClientConverter.parseHttpDate(stringDate);
         if (date == null) {
             return new Date();
         }
@@ -2073,11 +2104,9 @@ public class Document extends Node {
 
     /**
      * Mock for the moment.
-     * @return true for success
      */
     @JsxFunction({FF, FF_ESR, IE})
-    public boolean releaseCapture() {
-        return true;
+    public void releaseCapture() {
     }
 
     /**
@@ -2307,7 +2336,7 @@ public class Document extends Node {
     @JsxGetter(IE)
     public Object getFrames() {
         if (ScriptableObject.getTopLevelScope(this) == null) {
-            throw ScriptRuntime.constructError("Error", "Not implemented");
+            throw JavaScriptEngine.constructError("Error", "Not implemented");
         }
         return getWindow().getFrames_js();
     }
@@ -4221,7 +4250,7 @@ public class Document extends Node {
      * @return the element with the specified ID, as long as it is an HTML element; {@code null} otherwise
      */
     @JsxFunction
-    public Object getElementById(final String id) {
+    public HtmlUnitScriptable getElementById(final String id) {
         final DomNode domNode = getDomNodeOrDie();
         final Object domElement = domNode.getFirstByXPath("//*[@id = \"" + id + "\"]");
         if (domElement != null) {

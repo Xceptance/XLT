@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,11 +22,10 @@ import java.util.Objects;
 
 import org.apache.xerces.dom.DeferredDocumentImpl;
 import org.apache.xerces.dom.DeferredNode;
+import org.htmlunit.platform.XmlUtilsHelperAPI;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
-
-import org.htmlunit.platform.XmlUtilsHelperAPI;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 

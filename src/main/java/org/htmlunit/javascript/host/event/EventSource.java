@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,20 +34,28 @@ public class EventSource extends EventTarget {
 
     /** The connection is being established. */
     @JsxConstant
-    public static final short CONNECTING = 0;
+    public static final int CONNECTING = 0;
 
     /** The connection is open and dispatching events. */
     @JsxConstant
-    public static final short OPEN = 1;
+    public static final int OPEN = 1;
 
     /** The connection is not being established, has been closed or there was a fatal error. */
     @JsxConstant
-    public static final short CLOSED = 2;
+    public static final int CLOSED = 2;
 
     /**
      * Default constructor.
      */
-    @JsxConstructor
     public EventSource() {
+    }
+
+    /**
+     * JavaScript constructor.
+     */
+    @Override
+    @JsxConstructor
+    public void jsConstructor() {
+        super.jsConstructor();
     }
 }

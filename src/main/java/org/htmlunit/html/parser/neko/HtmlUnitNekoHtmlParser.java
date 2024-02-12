@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.htmlunit.ObjectInstantiationException;
+import org.htmlunit.Page;
+import org.htmlunit.SgmlPage;
+import org.htmlunit.WebAssert;
+import org.htmlunit.WebResponse;
 import org.htmlunit.cyberneko.HTMLScanner;
 import org.htmlunit.cyberneko.HTMLTagBalancer;
 import org.htmlunit.cyberneko.xerces.util.DefaultErrorHandler;
@@ -34,14 +39,6 @@ import org.htmlunit.cyberneko.xerces.xni.XNIException;
 import org.htmlunit.cyberneko.xerces.xni.parser.XMLErrorHandler;
 import org.htmlunit.cyberneko.xerces.xni.parser.XMLInputSource;
 import org.htmlunit.cyberneko.xerces.xni.parser.XMLParseException;
-import org.w3c.dom.Node;
-import org.xml.sax.SAXException;
-
-import org.htmlunit.ObjectInstantiationException;
-import org.htmlunit.Page;
-import org.htmlunit.SgmlPage;
-import org.htmlunit.WebAssert;
-import org.htmlunit.WebResponse;
 import org.htmlunit.html.DefaultElementFactory;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.html.ElementFactory;
@@ -52,6 +49,8 @@ import org.htmlunit.html.parser.HTMLParser;
 import org.htmlunit.html.parser.HTMLParserListener;
 import org.htmlunit.svg.SvgElementFactory;
 import org.htmlunit.util.StringUtils;
+import org.w3c.dom.Node;
+import org.xml.sax.SAXException;
 
 /**
  * <p>SAX parser implementation that uses the NekoHTML {@link org.htmlunit.cyberneko.HTMLConfiguration}
@@ -135,10 +134,10 @@ public final class HtmlUnitNekoHtmlParser implements HTMLParser {
             ancestors.add(0, new QName(null, node.getNodeName(), null, null));
             node = node.getParentNode();
         }
-        if (ancestors.isEmpty() || !"html".equals(ancestors.get(0).localpart)) {
+        if (ancestors.isEmpty() || !"html".equals(ancestors.get(0).getLocalpart())) {
             ancestors.add(0, new QName(null, "html", null, null));
         }
-        if (ancestors.size() == 1 || !"body".equals(ancestors.get(1).localpart)) {
+        if (ancestors.size() == 1 || !"body".equals(ancestors.get(1).getLocalpart())) {
             ancestors.add(1, new QName(null, "body", null, null));
         }
 
@@ -285,7 +284,7 @@ public final class HtmlUnitNekoHtmlParser implements HTMLParser {
             String tagName = qualifiedName;
             final int index = tagName.indexOf(':');
             if (index == -1) {
-                tagName = StringUtils.toRootLowerCaseWithCache(tagName);
+                tagName = StringUtils.toRootLowerCase(tagName);
             }
             else {
                 tagName = tagName.substring(index + 1);

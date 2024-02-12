@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,22 +25,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
-
 import org.htmlunit.ScriptResult;
+import org.htmlunit.corejs.javascript.Function;
+import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.HtmlLabel;
 import org.htmlunit.javascript.HtmlUnitScriptable;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.host.Window;
 import org.htmlunit.javascript.host.dom.Document;
-
-import org.htmlunit.corejs.javascript.Context;
-import org.htmlunit.corejs.javascript.Function;
-import org.htmlunit.corejs.javascript.Scriptable;
 
 /**
  * A JavaScript object for {@code EventTarget}.
@@ -58,8 +56,14 @@ public class EventTarget extends HtmlUnitScriptable {
     /**
      * Default constructor.
      */
-    @JsxConstructor
     public EventTarget() {
+    }
+
+    /**
+     * JavaScript constructor.
+     */
+    @JsxConstructor
+    public void jsConstructor() {
     }
 
     /**
@@ -271,7 +275,7 @@ public class EventTarget extends HtmlUnitScriptable {
                 ((DomElement) domNode).click(event, event.isShiftKey(), event.isCtrlKey(), event.isAltKey(), true);
             }
             catch (final IOException e) {
-                throw Context.reportRuntimeError("Error calling click(): " + e.getMessage());
+                throw JavaScriptEngine.reportRuntimeError("Error calling click(): " + e.getMessage());
             }
         }
         else {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 package org.htmlunit.html;
 
 import static org.htmlunit.BrowserVersionFeatures.HTMLINPUT_TYPE_WEEK_SUPPORTED;
+import static org.htmlunit.BrowserVersionFeatures.JS_INPUT_CHANGE_TYPE_DROPS_VALUE_WEEK_MONTH;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -22,7 +23,7 @@ import java.time.format.DateTimeParseException;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
-
+import org.htmlunit.BrowserVersion;
 import org.htmlunit.SgmlPage;
 
 /**
@@ -126,5 +127,14 @@ public class HtmlWeekInput extends HtmlInput implements LabelableElement {
             }
         }
         return true;
+    }
+
+    @Override
+    protected void adjustValueAfterTypeChange(final HtmlInput oldInput, final BrowserVersion browserVersion) {
+        if (browserVersion.hasFeature(JS_INPUT_CHANGE_TYPE_DROPS_VALUE_WEEK_MONTH)) {
+            setValue("");
+            return;
+        }
+        super.adjustValueAfterTypeChange(oldInput, browserVersion);
     }
 }

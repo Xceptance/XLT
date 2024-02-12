@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,13 +20,11 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
+import org.htmlunit.corejs.javascript.ScriptableObject;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxGetter;
-
-import org.htmlunit.corejs.javascript.ScriptRuntime;
-import org.htmlunit.corejs.javascript.ScriptableObject;
-import org.htmlunit.corejs.javascript.Undefined;
 
 /**
  * A JavaScript object for {@code InputEvent}.
@@ -60,22 +58,22 @@ public class InputEvent extends UIEvent {
     public void jsConstructor(final String type, final ScriptableObject details) {
         super.jsConstructor(type, details);
 
-        if (details != null && !Undefined.isUndefined(details)) {
+        if (details != null && !JavaScriptEngine.isUndefined(details)) {
             if (getBrowserVersion().hasFeature(JS_EVENT_INPUT_CTOR_INPUTTYPE)) {
                 final Object inputType = details.get("inputType", details);
                 if (!isMissingOrUndefined(inputType)) {
-                    inputType_ = ScriptRuntime.toString(inputType);
+                    inputType_ = JavaScriptEngine.toString(inputType);
                 }
             }
 
             final Object dataObj = details.get("data", details);
             if (!isMissingOrUndefined(dataObj)) {
-                data_ = ScriptRuntime.toString(dataObj);
+                data_ = JavaScriptEngine.toString(dataObj);
             }
 
             final Object isComposing = details.get("isComposing", details);
             if (!isMissingOrUndefined(isComposing)) {
-                setIsComposing(ScriptRuntime.toBoolean(isComposing));
+                setIsComposing(JavaScriptEngine.toBoolean(isComposing));
             }
         }
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,11 @@
  */
 package org.htmlunit.html;
 
-import java.util.Locale;
-
 import org.htmlunit.SgmlPage;
 import org.htmlunit.WebAssert;
 import org.htmlunit.html.xpath.XPathHelper;
 import org.htmlunit.javascript.host.dom.Document;
+import org.htmlunit.util.StringUtils;
 
 /**
  * Intermediate base class for DOM Nodes that have namespaces. That includes HtmlElement and HtmlAttr.
@@ -61,7 +60,7 @@ public abstract class DomNamespaceNode extends DomNode {
             prefix_ = qualifiedName_.substring(0, colonPosition);
         }
 
-        localNameLC_ = localName_.toLowerCase(Locale.ROOT);
+        localNameLC_ = StringUtils.toRootLowerCase(localName_);
     }
 
     /**

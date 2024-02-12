@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,15 +28,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.htmlunit.BrowserVersion;
-import org.htmlunit.html.DomElement;
-import org.htmlunit.html.DomNode;
-import org.htmlunit.javascript.configuration.JsxClass;
-import org.htmlunit.javascript.configuration.JsxConstructor;
-
 import org.htmlunit.corejs.javascript.Context;
-import org.htmlunit.corejs.javascript.ScriptRuntime;
 import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.corejs.javascript.Undefined;
+import org.htmlunit.html.DomElement;
+import org.htmlunit.html.DomNode;
+import org.htmlunit.javascript.JavaScriptEngine;
+import org.htmlunit.javascript.configuration.JsxClass;
+import org.htmlunit.javascript.configuration.JsxConstructor;
 
 /**
  * A special {@link HTMLCollection} for <code>document.all</code>.
@@ -50,8 +49,16 @@ public class HTMLAllCollection extends HTMLCollection {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public HTMLAllCollection() {
+    }
+
+    /**
+     * JavaScript constructor.
+     */
+    @Override
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    public void jsConstructor() {
+        super.jsConstructor();
     }
 
     /**
@@ -76,21 +83,21 @@ public class HTMLAllCollection extends HTMLCollection {
         if (index instanceof String) {
             final String name = (String) index;
             final Object result = namedItem(name);
-            if (null != result && !Undefined.isUndefined(result)) {
+            if (null != result && !JavaScriptEngine.isUndefined(result)) {
                 return result;
             }
             numb = Double.NaN;
 
             browser = getBrowserVersion();
             if (!browser.hasFeature(HTMLALLCOLLECTION_DO_NOT_CONVERT_STRINGS_TO_NUMBER)) {
-                numb = ScriptRuntime.toNumber(index);
+                numb = JavaScriptEngine.toNumber(index);
             }
             if (Double.isNaN(numb)) {
                 return null;
             }
         }
         else {
-            numb = ScriptRuntime.toNumber(index);
+            numb = JavaScriptEngine.toNumber(index);
             browser = getBrowserVersion();
         }
 
@@ -124,7 +131,7 @@ public class HTMLAllCollection extends HTMLCollection {
         for (final DomNode next : elements) {
             if (next instanceof DomElement) {
                 final DomElement elem = (DomElement) next;
-                if (name.equals(elem.getAttributeDirect("name"))
+                if (name.equals(elem.getAttributeDirect(DomElement.NAME_ATTRIBUTE))
                         || name.equals(elem.getId())) {
                     matching.add(elem);
                 }
@@ -169,7 +176,7 @@ public class HTMLAllCollection extends HTMLCollection {
                 }
             }
             else {
-                final String val = Context.toString(args[0]);
+                final String val = JavaScriptEngine.toString(args[0]);
                 try {
                     args[0] = Integer.parseInt(val);
                 }
@@ -180,7 +187,7 @@ public class HTMLAllCollection extends HTMLCollection {
         }
 
         final Object value = super.call(cx, scope, thisObj, args);
-        if (nullIfNotFound && Undefined.isUndefined(value)) {
+        if (nullIfNotFound && JavaScriptEngine.isUndefined(value)) {
             return null;
         }
         return value;

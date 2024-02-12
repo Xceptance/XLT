@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import java.util.Locale;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
-
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.ProxyConfig;
 import org.htmlunit.WebClient;

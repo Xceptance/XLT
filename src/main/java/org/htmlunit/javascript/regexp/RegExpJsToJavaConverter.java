@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package org.htmlunit.javascript.regexp;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -32,16 +33,28 @@ import java.util.List;
  * @author Ronald Brill
  * @author Leszek Hoppe
  * @author Atsushi Nakagawa
+ * @author Lai Quang Duong
  */
 public class RegExpJsToJavaConverter {
 
     private static final String DIGITS = "0123456789";
+    private static final HashMap<String, String> UNICODE_ESCAPES;
 
     private Tape tape_;
     private boolean insideCharClass_;
     private boolean insideRepetition_;
     private Deque<Subexpresion> parsingSubexpressions_;
     private List<Subexpresion> subexpressions_;
+
+    static {
+        UNICODE_ESCAPES = new HashMap<>();
+        UNICODE_ESCAPES.put("L", "L");
+        UNICODE_ESCAPES.put("LETTER", "L");
+        UNICODE_ESCAPES.put("LU", "Lu");
+        UNICODE_ESCAPES.put("UPPERCASELETTER", "Lu");
+        UNICODE_ESCAPES.put("LL", "Ll");
+        UNICODE_ESCAPES.put("LOWERCASELETTER", "Ll");
+    }
 
     /**
      * Helper to encapsulate the transformations.
@@ -240,7 +253,8 @@ public class RegExpJsToJavaConverter {
                 else if (']' == next) {
                     // [^]
                     tape_.move(-3);
-                    tape_.replace(3, ".");
+                    tape_.replace(3, "(?s:.)");
+                    insideCharClass_ = false;
                 }
                 else {
                     tape_.move(-1);
@@ -250,6 +264,7 @@ public class RegExpJsToJavaConverter {
                 // []
                 tape_.move(-2);
                 tape_.replace(2, "(?!)");
+                insideCharClass_ = false;
             }
             else {
                 tape_.move(-1);
@@ -365,6 +380,29 @@ public class RegExpJsToJavaConverter {
 
                 // Unicode (e.g. \u0009)
                 // we have nothing to convert here
+            }
+
+            return;
+        }
+
+        // Unicode property escape
+        if ('p' == escapeSequence) {
+            int next = tape_.read();
+            if (next > -1) {
+                if (next == '{') {
+                    final int uPos = tape_.currentPos_;
+                    do {
+                        next = tape_.read();
+                    }
+                    while (next > -1 && next != '}');
+                    if (next == '}') {
+                        return;
+                    }
+
+                    // back to the old behavior
+                    tape_.move(uPos - tape_.currentPos_ - 3);
+                    tape_.remove(1);
+                }
             }
 
             return;

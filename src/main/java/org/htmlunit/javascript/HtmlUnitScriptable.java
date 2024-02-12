@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,23 +24,20 @@ import java.util.function.Supplier;
 import org.apache.commons.lang3.function.FailableSupplier;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.SgmlPage;
 import org.htmlunit.WebAssert;
 import org.htmlunit.WebWindow;
-import org.htmlunit.html.DomNode;
-import org.htmlunit.html.HtmlImage;
-import org.htmlunit.javascript.host.Window;
-import org.htmlunit.javascript.host.html.HTMLElement;
-import org.htmlunit.javascript.host.html.HTMLUnknownElement;
-
 import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.LambdaConstructor;
 import org.htmlunit.corejs.javascript.LambdaFunction;
 import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.corejs.javascript.ScriptableObject;
-import org.htmlunit.corejs.javascript.Undefined;
+import org.htmlunit.html.DomNode;
+import org.htmlunit.html.HtmlImage;
+import org.htmlunit.javascript.host.Window;
+import org.htmlunit.javascript.host.html.HTMLElement;
+import org.htmlunit.javascript.host.html.HTMLUnknownElement;
 
 /**
  * Base class for Rhino host objects in HtmlUnit (not bound to a DOM node).
@@ -111,7 +108,7 @@ public class HtmlUnitScriptable extends ScriptableObject implements Cloneable {
         }
         catch (final IllegalArgumentException e) {
             // is it the right place or should Rhino throw a RuntimeError instead of an IllegalArgumentException?
-            throw Context.reportRuntimeError("'set "
+            throw JavaScriptEngine.reportRuntimeError("'set "
                 + name + "' called on an object that does not implement interface " + getClassName());
         }
     }
@@ -156,7 +153,7 @@ public class HtmlUnitScriptable extends ScriptableObject implements Cloneable {
     @Override
     public boolean has(final int index, final Scriptable start) {
         final Object found = get(index, start);
-        if (Scriptable.NOT_FOUND != found && !Undefined.isUndefined(found)) {
+        if (Scriptable.NOT_FOUND != found && !JavaScriptEngine.isUndefined(found)) {
             return true;
         }
         return super.has(index, start);
@@ -193,11 +190,13 @@ public class HtmlUnitScriptable extends ScriptableObject implements Cloneable {
     }
 
     /**
+     * <span style="color:red">INTERNAL API - SUBJECT TO CHANGE AT ANY TIME - USE AT YOUR OWN RISK.</span><br>
+     *
      * Sets the DOM node that corresponds to this JavaScript object.
      * @param domNode the DOM node
      * @param assignScriptObject If true, call <code>setScriptObject</code> on domNode
      */
-    protected void setDomNode(final DomNode domNode, final boolean assignScriptObject) {
+    public void setDomNode(final DomNode domNode, final boolean assignScriptObject) {
         WebAssert.notNull("domNode", domNode);
         domNode_ = domNode;
         if (assignScriptObject) {
@@ -220,9 +219,9 @@ public class HtmlUnitScriptable extends ScriptableObject implements Cloneable {
 
         final DomNode domNode = (DomNode) object;
 
-        final Object scriptObject = domNode.getScriptableObject();
+        final HtmlUnitScriptable scriptObject = domNode.getScriptableObject();
         if (scriptObject != null) {
-            return (HtmlUnitScriptable) scriptObject;
+            return scriptObject;
         }
         return makeScriptableFor(domNode);
     }
@@ -266,7 +265,7 @@ public class HtmlUnitScriptable extends ScriptableObject implements Cloneable {
                 scriptable = javaScriptClass.newInstance();
             }
             catch (final Exception e) {
-                throw Context.throwAsScriptRuntimeEx(e);
+                throw JavaScriptEngine.throwAsScriptRuntimeEx(e);
             }
         }
         initParentScope(domNode, scriptable);
@@ -368,7 +367,16 @@ public class HtmlUnitScriptable extends ScriptableObject implements Cloneable {
         if (node != null) {
             return node.getPage().getWebClient().getBrowserVersion();
         }
-        return getWindow().getWebWindow().getWebClient().getBrowserVersion();
+
+        final Window window = getWindow();
+        if (window != null) {
+            final WebWindow webWindow = window.getWebWindow();
+            if (webWindow != null) {
+                return webWindow.getWebClient().getBrowserVersion();
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -381,7 +389,7 @@ public class HtmlUnitScriptable extends ScriptableObject implements Cloneable {
             // but HTMLElement is not in the prototype chain of any element
             final Object prototype = get("prototype", this);
             if (!(prototype instanceof ScriptableObject)) {
-                Context.throwAsScriptRuntimeEx(new Exception("Null prototype"));
+                throw JavaScriptEngine.throwAsScriptRuntimeEx(new Exception("Null prototype"));
             }
             return ((ScriptableObject) prototype).hasInstance(instance);
         }

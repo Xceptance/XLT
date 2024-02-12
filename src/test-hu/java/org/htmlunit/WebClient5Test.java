@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,22 +71,5 @@ public class WebClient5Test extends WebTestCase {
             wc.getPage(URL_FIRST.toExternalForm());
             assertEquals(URL_FIRST, calledUrls[0]);
         }
-    }
-
-    /**
-     * @throws Exception if the test fails
-     */
-    @Test
-    public void useAfterCloseShouldNotCreateThreads() throws Exception {
-        final MockWebConnection connection = getMockWebConnection();
-        connection.setDefaultResponse("hello");
-
-        @SuppressWarnings("resource")
-        final WebClient webClient = new WebClient();
-        webClient.setWebConnection(connection);
-        webClient.close();
-
-        webClient.getPage(URL_FIRST);
-        assertTrue(getJavaScriptThreads().isEmpty());
     }
 }

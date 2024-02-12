@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,15 +22,13 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import org.htmlunit.html.HtmlCanvas;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.configuration.JsxSetter;
 import org.htmlunit.javascript.host.canvas.CanvasRenderingContext2D;
-
-import org.htmlunit.corejs.javascript.Context;
-import org.htmlunit.corejs.javascript.Undefined;
 
 /**
  * The JavaScript object {@code HTMLCanvasElement}.
@@ -47,8 +45,16 @@ public class HTMLCanvasElement extends HTMLElement {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public HTMLCanvasElement() {
+    }
+
+    /**
+     * JavaScript constructor.
+     */
+    @Override
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    public void jsConstructor() {
+        super.jsConstructor();
     }
 
     /**
@@ -138,11 +144,11 @@ public class HTMLCanvasElement extends HTMLElement {
     public String toDataURL(final Object type) {
         if (context2d_ != null) {
             final String typeInUse;
-            if (Undefined.isUndefined(type)) {
+            if (JavaScriptEngine.isUndefined(type)) {
                 typeInUse = null;
             }
             else {
-                typeInUse = Context.toString(type);
+                typeInUse = JavaScriptEngine.toString(type);
             }
             return context2d_.toDataURL(typeInUse);
         }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,12 @@
  */
 package org.htmlunit.javascript.host;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * Tests for {@link InstallTrigger}.
@@ -41,13 +40,10 @@ public class InstallTriggerTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "undefined",
             FF = {"null", "object", "{\"enumerable\":true,\"configurable\":true}"},
-            FF_ESR = {"[object InstallTriggerImpl]", "object", "{\"enumerable\":true,\"configurable\":true}"})
+            FF_ESR = {"null", "object", "{\"enumerable\":true,\"configurable\":true}"})
     @HtmlUnitNYI(
             FF = {"null", "object", "{\"value\":null,\"writable\":true,\"enumerable\":true,\"configurable\":true}"},
-            FF_ESR = {"[object InstallTriggerImpl]",
-                      "object",
-                      "{\"value\":{\"SKIN\":1,\"LOCALE\":2,\"CONTENT\":4,\"PACKAGE\":7},"
-                              + "\"writable\":true,\"enumerable\":false,\"configurable\":true}"})
+            FF_ESR = {"null", "object", "{\"value\":null,\"writable\":true,\"enumerable\":true,\"configurable\":true}"})
     public void windowProperty() throws Exception {
         final String html = "<html><head>\n"
                 + "<script>\n"

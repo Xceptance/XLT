@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.jetty.server.Server;
+import org.htmlunit.WebClient;
+import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.WebRequest;
+import org.htmlunit.WebResponse;
+import org.htmlunit.WebResponseData;
+import org.htmlunit.WebServerTestCase;
+import org.htmlunit.junit.BrowserRunner;
+import org.htmlunit.util.NameValuePair;
+import org.htmlunit.util.WebConnectionWrapper;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.ComparisonFailure;
@@ -34,16 +43,6 @@ import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
-
-import org.htmlunit.WebClient;
-import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.WebRequest;
-import org.htmlunit.WebResponse;
-import org.htmlunit.WebResponseData;
-import org.htmlunit.WebServerTestCase;
-import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.util.NameValuePair;
-import org.htmlunit.util.WebConnectionWrapper;
 
 /**
  * Base class for jQuery Tests.

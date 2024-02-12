@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,9 +25,8 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.htmlunit.cssparser.dom.CSSStyleRuleImpl;
-
 import org.htmlunit.css.WrappedCssStyleDeclaration;
+import org.htmlunit.cssparser.dom.CSSStyleRuleImpl;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxGetter;
@@ -112,7 +111,7 @@ public class CSSStyleRule extends CSSRule {
     @JsxGetter
     public CSSStyleDeclaration getStyle() {
         final WrappedCssStyleDeclaration styleDeclaration
-                = new WrappedCssStyleDeclaration(((CSSStyleRuleImpl) getRule()).getStyle());
+                = new WrappedCssStyleDeclaration(((CSSStyleRuleImpl) getRule()).getStyle(), getBrowserVersion());
         return new CSSStyleDeclaration(getParentStyleSheet(), styleDeclaration);
     }
 

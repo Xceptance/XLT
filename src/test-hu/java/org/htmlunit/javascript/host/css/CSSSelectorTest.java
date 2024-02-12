@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,7 @@
  */
 package org.htmlunit.javascript.host.css;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.openqa.selenium.WebDriver;
+import java.nio.charset.StandardCharsets;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
@@ -24,6 +22,9 @@ import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import org.htmlunit.util.UrlUtils;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.openqa.selenium.WebDriver;
 
 /**
  * Tests for CSS selectors.
@@ -1059,10 +1060,7 @@ public class CSSSelectorTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"theform", "id3"},
             IE = "id3") //minLength and maxLength not supported in IE
-    @HtmlUnitNYI(CHROME = "id3",
-            EDGE = "id3",
-            FF = "id3",
-            FF_ESR = "id3")
+    @HtmlUnitNYI(IE = {"theform", "id3"})
     public void pseudoInvalid() throws Exception {
         final String html = "<html><head>\n"
                 + "<script>\n"
@@ -1096,11 +1094,6 @@ public class CSSSelectorTest extends WebDriverTestCase {
      */
     @Test
     @Alerts({"id1", "id2", "id4", "id5", "id6"})
-    @HtmlUnitNYI(CHROME = {"", "", "", "", "theform", "id1", "id2", "id4", "id5", "id6", "id7"},
-            EDGE = {"", "", "", "", "theform", "id1", "id2", "id4", "id5", "id6", "id7"},
-            FF = {"", "", "", "", "theform", "id1", "id2", "id4", "id5", "id6", "id7"},
-            FF_ESR = {"", "", "", "", "theform", "id1", "id2", "id4", "id5", "id6", "id7"},
-            IE = {"", "", "", "", "theform", "id1", "id2", "id4", "id5", "id6", "id7"})
     public void pseudoValid() throws Exception {
         final String html = "<html><head>\n"
                 + "<script>\n"
@@ -1889,8 +1882,8 @@ public class CSSSelectorTest extends WebDriverTestCase {
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  found = document.querySelectorAll(':target');\n"
-            + "  alert(found.length);\n"
-            + "  if (found.length > 0) { alert(found[0].id); }\n"
+            + "  log(found.length);\n"
+            + "  if (found.length > 0) { log(found[0].id); }\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -1899,7 +1892,8 @@ public class CSSSelectorTest extends WebDriverTestCase {
             + "</body></html>";
 
         getMockWebConnection().setDefaultResponse(html);
-        loadPageWithAlerts2(UrlUtils.getUrlWithNewRef(URL_FIRST, "id2"));
+        final WebDriver driver = loadPage2(UrlUtils.getUrlWithNewRef(URL_FIRST, "id2"), StandardCharsets.UTF_8);
+        verifyTitle2(driver, getExpectedAlerts());
     }
 
     /**
@@ -1934,9 +1928,10 @@ public class CSSSelectorTest extends WebDriverTestCase {
         final String html = "<html><head>\n"
             + "<meta http-equiv='X-UA-Compatible' content='IE=edge'>\n"
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  found = document.querySelectorAll(':target');\n"
-            + "  alert(found.length);\n"
+            + "  log(found.length);\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -1945,7 +1940,8 @@ public class CSSSelectorTest extends WebDriverTestCase {
             + "</body></html>";
 
         getMockWebConnection().setDefaultResponse(html);
-        loadPageWithAlerts2(UrlUtils.getUrlWithNewRef(URL_FIRST, "id3"));
+        final WebDriver driver = loadPage2(UrlUtils.getUrlWithNewRef(URL_FIRST, "id3"), StandardCharsets.UTF_8);
+        verifyTitle2(driver, getExpectedAlerts());
     }
 
     /**
@@ -1975,11 +1971,11 @@ public class CSSSelectorTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = {"1", "[object HTMLHeadingElement]"},
-            FF = "exception",
             FF_ESR = "exception",
             IE = "exception")
     @HtmlUnitNYI(CHROME = "exception",
-            EDGE = "exception")
+            EDGE = "exception",
+            FF = "exception")
     public void has() throws Exception {
         final String html = "<html><head>\n"
             + "<meta http-equiv='X-UA-Compatible' content='IE=edge'>\n"

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,10 +26,6 @@ import org.htmlunit.BrowserVersion;
 import org.htmlunit.ScriptException;
 import org.htmlunit.ScriptPreProcessor;
 import org.htmlunit.WebClient;
-import org.htmlunit.html.HtmlElement;
-import org.htmlunit.html.HtmlPage;
-import org.htmlunit.javascript.regexp.HtmlUnitRegExpProxy;
-
 import org.htmlunit.corejs.javascript.Callable;
 import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.ContextAction;
@@ -41,8 +37,10 @@ import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.Script;
 import org.htmlunit.corejs.javascript.ScriptRuntime;
 import org.htmlunit.corejs.javascript.Scriptable;
-import org.htmlunit.corejs.javascript.WrapFactory;
 import org.htmlunit.corejs.javascript.debug.Debugger;
+import org.htmlunit.html.HtmlElement;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.javascript.regexp.HtmlUnitRegExpProxy;
 
 /**
  * ContextFactory that supports termination of scripts if they exceed a timeout. Based on example from
@@ -61,7 +59,6 @@ public class HtmlUnitContextFactory extends ContextFactory {
     private final BrowserVersion browserVersion_;
     private long timeout_;
     private Debugger debugger_;
-    private final WrapFactory wrapFactory_ = new HtmlUnitWrapFactory();
     private boolean deminifyFunctionCode_;
 
     /**
@@ -239,7 +236,7 @@ public class HtmlUnitContextFactory extends ContextFactory {
 
     /**
      * Pre process the specified source code in the context of the given page using the processor specified
-     * in the webclient. This method delegates to the pre processor handler specified in the
+     * in the {@link WebClient}. This method delegates to the pre processor handler specified in the
      * <code>WebClient</code>. If no pre processor handler is defined, the original source code is returned
      * unchanged.
      * @param htmlPage the page
@@ -294,7 +291,8 @@ public class HtmlUnitContextFactory extends ContextFactory {
         cx.setInstructionObserverThreshold(INSTRUCTION_COUNT_THRESHOLD);
 
         cx.setErrorReporter(new HtmlUnitErrorReporter(webClient_.getJavaScriptErrorListener()));
-        cx.setWrapFactory(wrapFactory_);
+        // We don't want to wrap String & Co.
+        cx.getWrapFactory().setJavaPrimitiveWrap(false);
 
         if (debugger_ != null) {
             cx.setDebugger(debugger_, null);
@@ -303,7 +301,7 @@ public class HtmlUnitContextFactory extends ContextFactory {
         // register custom RegExp processing
         ScriptRuntime.setRegExpProxy(cx, new HtmlUnitRegExpProxy(ScriptRuntime.getRegExpProxy(cx), browserVersion_));
 
-        cx.setMaximumInterpreterStackDepth(10_000);
+        cx.setMaximumInterpreterStackDepth(5_000);
 
         return cx;
     }
@@ -377,8 +375,6 @@ public class HtmlUnitContextFactory extends ContextFactory {
             case Context.FEATURE_HTMLUNIT_FN_ARGUMENTS_IS_RO_VIEW:
                 return browserVersion_.hasFeature(JS_ARGUMENTS_READ_ONLY_ACCESSED_FROM_FUNCTION);
             case Context.FEATURE_HTMLUNIT_FUNCTION_DECLARED_FORWARD_IN_BLOCK:
-                return true;
-            case Context.FEATURE_HTMLUNIT_ENUM_NUMBERS_FIRST:
                 return true;
             case Context.FEATURE_HTMLUNIT_MEMBERBOX_NAME:
                 return browserVersion_.hasFeature(JS_PROPERTY_DESCRIPTOR_NAME);

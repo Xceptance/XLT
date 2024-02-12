@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,7 +63,7 @@ public class HtmlCheckBoxInput extends HtmlInput implements LabelableElement {
             final Map<String, DomAttr> attributes) {
         super(qualifiedName, page, attributes);
 
-        if (getAttributeDirect("value") == ATTRIBUTE_NOT_DEFINED) {
+        if (getAttributeDirect(VALUE_ATTRIBUTE) == ATTRIBUTE_NOT_DEFINED) {
             setRawValue(DEFAULT_VALUE);
         }
 
@@ -204,10 +204,19 @@ public class HtmlCheckBoxInput extends HtmlInput implements LabelableElement {
     @Override
     protected void setAttributeNS(final String namespaceURI, final String qualifiedName, final String attributeValue,
             final boolean notifyAttributeChangeListeners, final boolean notifyMutationObservers) {
-        if (ATTRIBUTE_CHECKED.equals(qualifiedName)) {
+        final String qualifiedNameLC = org.htmlunit.util.StringUtils.toRootLowerCase(qualifiedName);
+
+        if (VALUE_ATTRIBUTE.equals(qualifiedNameLC)) {
+            super.setAttributeNS(namespaceURI, qualifiedNameLC, attributeValue, notifyAttributeChangeListeners,
+                    notifyMutationObservers);
+            setRawValue(attributeValue);
+            return;
+        }
+
+        if (ATTRIBUTE_CHECKED.equals(qualifiedNameLC)) {
             checkedState_ = true;
         }
-        super.setAttributeNS(namespaceURI, qualifiedName, attributeValue, notifyAttributeChangeListeners,
+        super.setAttributeNS(namespaceURI, qualifiedNameLC, attributeValue, notifyAttributeChangeListeners,
                 notifyMutationObservers);
     }
 

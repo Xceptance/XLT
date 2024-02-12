@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,28 +35,34 @@ public class SVGAngle extends HtmlUnitScriptable {
 
     /** Invalid unit type. */
     @JsxConstant
-    public static final short SVG_ANGLETYPE_UNKNOWN = 0;
+    public static final int SVG_ANGLETYPE_UNKNOWN = 0;
 
     /** Unspecified unit type. */
     @JsxConstant
-    public static final short SVG_ANGLETYPE_UNSPECIFIED = 1;
+    public static final int SVG_ANGLETYPE_UNSPECIFIED = 1;
 
     /** Degree unit type. */
     @JsxConstant
-    public static final short SVG_ANGLETYPE_DEG = 2;
+    public static final int SVG_ANGLETYPE_DEG = 2;
 
     /** Radian unit type. */
     @JsxConstant
-    public static final short SVG_ANGLETYPE_RAD = 3;
+    public static final int SVG_ANGLETYPE_RAD = 3;
 
     /** Grad unit type. */
     @JsxConstant
-    public static final short SVG_ANGLETYPE_GRAD = 4;
+    public static final int SVG_ANGLETYPE_GRAD = 4;
 
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public SVGAngle() {
+    }
+
+    /**
+     * JavaScript constructor.
+     */
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    public void jsConstructor() {
     }
 }
