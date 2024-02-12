@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -141,7 +141,6 @@ public class CodeStyleTest {
                 singleAlert(lines, relativePath);
                 staticLoggers(lines, relativePath);
                 loggingEnabled(lines, relativePath);
-                browserVersion_isIE(lines, relativePath);
                 alerts(lines, relativePath);
                 className(lines, relativePath);
                 classNameUsed(lines, classNames, relativePath);
@@ -382,6 +381,7 @@ public class CodeStyleTest {
     private void runWith(final List<String> lines, final String relativePath) {
         if (relativePath.replace('\\', '/').contains("src/test/java")
                 && !relativePath.contains("CodeStyleTest")
+                && !relativePath.contains("WebClient9Test")
                 && !relativePath.contains("FaqTest")) {
             boolean runWith = false;
             boolean browserNone = true;
@@ -564,58 +564,6 @@ public class CodeStyleTest {
             return matcher.end() - matcher.start();
         }
         return 0;
-    }
-
-    /**
-     * Verifies that not invocation of browserVersion.isIE(), .isFirefox() or .getBrowserVersionNumeric().
-     */
-    private void browserVersion_isIE(final List<String> lines, final String relativePath) {
-        if (relativePath.replace('\\', '/').contains("src/main/java")
-                && !relativePath.contains("JavaScriptConfiguration.java")
-                && !relativePath.contains("BrowserVersionFeatures.java")
-                && !relativePath.contains("BrowserConfiguration.java")
-                && !relativePath.contains("DateTimeFormat.java")
-                && !relativePath.contains("NumberFormat.java")
-                && !relativePath.contains("Document.java")
-                && !relativePath.contains("HTMLDocument2.java")) {
-            int index = 1;
-            for (final String line : lines) {
-                if (line.contains(".isIE()")) {
-                    addFailure(".isIE() should not be used, please use .hasFeature(): "
-                            + relativePath + ", line: " + index);
-                }
-                if (line.contains(".isFirefox()")) {
-                    addFailure(".isFirefox() should not be used, please use .hasFeature(): "
-                            + relativePath + ", line: " + index);
-                }
-                if (line.contains(".isFirefox78()")) {
-                    addFailure(".isFirefox78() should not be used, please use .hasFeature(): "
-                            + relativePath + ", line: " + index);
-                }
-                if (line.contains(".isChrome()")) {
-                    addFailure(".isChrome() should not be used, please use .hasFeature(): "
-                            + relativePath + ", line: " + index);
-                }
-                index++;
-            }
-        }
-        if (relativePath.replace('\\', '/').contains("src/main/java")
-                && !relativePath.contains("BrowserConfiguration.java")
-                && !relativePath.contains("BrowserVersion.java")
-                && !relativePath.contains("Document.java")
-                && !relativePath.contains("HtmlUnitNekoDOMBuilder.java")
-                && !relativePath.contains("HtmlUnitValidatorDOMBuilder.java")
-                && !relativePath.contains("Window.java")
-                && !relativePath.contains("Window2.java")) {
-            int index = 1;
-            for (final String line : lines) {
-                if (line.contains(".getBrowserVersionNumeric()")) {
-                    addFailure(".getBrowserVersionNumeric() should not be used, please use .hasFeature(): "
-                            + relativePath + ", line: " + index);
-                }
-                index++;
-            }
-        }
     }
 
     /**

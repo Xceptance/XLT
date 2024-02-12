@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.corejs.javascript.Undefined;
 import org.htmlunit.html.DomDocumentType;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
@@ -55,9 +56,10 @@ public class DocumentType extends Node {
     /**
      * Creates an instance.
      */
+    @Override
     @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public void jsConstructor() {
-        throw Context.reportRuntimeError("Illegal constructor.");
+        throw JavaScriptEngine.reportRuntimeError("Illegal constructor.");
     }
 
     /**
@@ -156,13 +158,14 @@ public class DocumentType extends Node {
      * Inserts a set of Node or DOMString objects in the children list of this ChildNode's parent,
      * just before this ChildNode.
      * @param context the context
+     * @param scope the scope
      * @param thisObj this object
      * @param args the arguments
      * @param function the function
      */
     @JsxFunction({CHROME, EDGE, FF, FF_ESR})
-    public static void before(final Context context, final Scriptable thisObj, final Object[] args,
-            final Function function) {
+    public static void before(final Context context, final Scriptable scope,
+            final Scriptable thisObj, final Object[] args, final Function function) {
         Node.before(context, thisObj, args, function);
     }
 
@@ -170,26 +173,28 @@ public class DocumentType extends Node {
      * Inserts a set of Node or DOMString objects in the children list of this ChildNode's parent,
      * just after this ChildNode.
      * @param context the context
+     * @param scope the scope
      * @param thisObj this object
      * @param args the arguments
      * @param function the function
      */
     @JsxFunction({CHROME, EDGE, FF, FF_ESR})
-    public static void after(final Context context, final Scriptable thisObj, final Object[] args,
-            final Function function) {
+    public static void after(final Context context, final Scriptable scope,
+            final Scriptable thisObj, final Object[] args, final Function function) {
         Node.after(context, thisObj, args, function);
     }
 
     /**
      * Replaces the node wit a set of Node or DOMString objects.
      * @param context the context
+     * @param scope the scope
      * @param thisObj this object
      * @param args the arguments
      * @param function the function
      */
     @JsxFunction({CHROME, EDGE, FF, FF_ESR})
-    public static void replaceWith(final Context context, final Scriptable thisObj, final Object[] args,
-            final Function function) {
+    public static void replaceWith(final Context context, final Scriptable scope,
+            final Scriptable thisObj, final Object[] args, final Function function) {
         Node.replaceWith(context, thisObj, args, function);
     }
 }

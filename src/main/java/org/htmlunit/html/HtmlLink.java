@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import java.net.URL;
 import java.util.Locale;
 import java.util.Map;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.htmlunit.BrowserVersion;
@@ -29,10 +30,13 @@ import org.htmlunit.SgmlPage;
 import org.htmlunit.WebClient;
 import org.htmlunit.WebRequest;
 import org.htmlunit.WebResponse;
+import org.htmlunit.css.CssStyleSheet;
+import org.htmlunit.cssparser.dom.MediaListImpl;
 import org.htmlunit.javascript.AbstractJavaScriptEngine;
 import org.htmlunit.javascript.PostponedAction;
 import org.htmlunit.javascript.host.event.Event;
 import org.htmlunit.javascript.host.html.HTMLLinkElement;
+import org.htmlunit.util.StringUtils;
 import org.htmlunit.xml.XmlPage;
 
 /**
@@ -52,6 +56,12 @@ public class HtmlLink extends HtmlElement {
 
     /** The HTML tag represented by this element. */
     public static final String TAG_NAME = "link";
+
+    /**
+     * The associated style sheet (only valid for links of type
+     * <code>&lt;link rel="stylesheet" type="text/css" href="..." /&gt;</code>).
+     */
+    private CssStyleSheet sheet_;
 
     /**
      * Creates an instance of HtmlLink
@@ -110,7 +120,7 @@ public class HtmlLink extends HtmlElement {
      * or an empty string if that attribute isn't defined.
      */
     public final String getTypeAttribute() {
-        return getAttributeDirect("type");
+        return getAttributeDirect(TYPE_ATTRIBUTE);
     }
 
     /**
@@ -252,8 +262,7 @@ public class HtmlLink extends HtmlElement {
     }
 
     private void executeEvent(final String type) {
-        final Object scriptable = getScriptableObject();
-        final HTMLLinkElement link = (HTMLLinkElement) scriptable;
+        final HTMLLinkElement link = getScriptableObject();
         final Event event = new Event(this, type);
         link.executeEventLocally(event);
     }
@@ -323,13 +332,48 @@ public class HtmlLink extends HtmlElement {
     }
 
     /**
+     * Returns the associated style sheet (only valid for links of type
+     * <code>&lt;link rel="stylesheet" type="text/css" href="..." /&gt;</code>).
+     * @return the associated style sheet
+     */
+    public CssStyleSheet getSheet() {
+        if (sheet_ == null) {
+            sheet_ = CssStyleSheet.loadStylesheet(this, this, null);
+        }
+        return sheet_;
+    }
+
+    /**
      * @return true if the rel attribute is 'stylesheet'
      */
     public boolean isStyleSheetLink() {
         String rel = getRelAttribute();
         if (rel != null) {
-            rel = rel.trim().toLowerCase(Locale.ROOT);
+            rel = rel.toLowerCase(Locale.ROOT);
+            return ArrayUtils.contains(StringUtils.splitAtBlank(rel), "stylesheet");
         }
-        return "stylesheet".equals(rel);
+        return false;
+    }
+
+    /**
+     * <p><span style="color:red">Experimental API: May be changed in next release
+     * and may not yet work perfectly!</span></p>
+     *
+     * Verifies if the provided node is a link node pointing to an active stylesheet.
+     *
+     * @return true if the provided node is a stylesheet link
+     */
+    public boolean isActiveStyleSheetLink() {
+        if (isStyleSheetLink()) {
+            final String media = getMediaAttribute();
+            if (org.apache.commons.lang3.StringUtils.isBlank(media)) {
+                return true;
+            }
+
+            final MediaListImpl mediaList =
+                    CssStyleSheet.parseMedia(media, getPage().getWebClient());
+            return CssStyleSheet.isActive(mediaList, getPage().getEnclosingWindow());
+        }
+        return false;
     }
 }

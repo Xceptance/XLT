@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ package org.htmlunit.javascript.host.html;
 
 import static org.htmlunit.BrowserVersionFeatures.JS_TYPE_ACCEPTS_ARBITRARY_VALUES;
 
-import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.configuration.JsxSetter;
@@ -46,7 +46,7 @@ public class HTMLListElement extends HTMLElement {
      */
     @JsxSetter
     public void setCompact(final Object compact) {
-        if (Context.toBoolean(compact)) {
+        if (JavaScriptEngine.toBoolean(compact)) {
             getDomNodeOrDie().setAttribute("compact", "");
         }
         else {
@@ -89,6 +89,6 @@ public class HTMLListElement extends HTMLElement {
             return;
         }
 
-        throw Context.reportRuntimeError("Cannot set the type property to invalid value: '" + type + "'");
+        throw JavaScriptEngine.reportRuntimeError("Cannot set the type property to invalid value: '" + type + "'");
     }
 }

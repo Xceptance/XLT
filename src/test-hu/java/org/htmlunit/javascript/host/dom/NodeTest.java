@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -362,6 +362,67 @@ public class NodeTest extends WebDriverTestCase {
 
         driver.findElement(By.id("div1")).click();
         verifyTitle2(driver, getExpectedAlerts());
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"false", "false", "true", "false", "false", "false"})
+    public void isEqualNode() throws Exception {
+        final String html = "<html><head><script>\n"
+                + LOG_TITLE_FUNCTION
+                + "  function test() {\n"
+                + "    var list1 = document.getElementById('list1');\n"
+                + "    var list2 = document.getElementById('list2');\n"
+                + "    log(list1.isEqualNode(list2));\n"
+                + "\n"
+                + "    var nodes = document.getElementsByClassName('test');\n"
+                + "    log(nodes[0].isEqualNode(nodes[1]));\n"
+                + "    log(nodes[0].isEqualNode(nodes[2]));\n"
+                + "    log(nodes[0].isEqualNode(nodes[3]));\n"
+                + "    log(nodes[0].isEqualNode(nodes[4]));\n"
+                + "    log(nodes[0].isEqualNode(nodes[5]));"
+                + "  }\n"
+                + "</script></head>\n"
+                + "<body onload='test()'>\n"
+                + "  <ul id='list1'>\n"
+                + "    <li>foo</li>\n"
+                + "    <li>bar</li>\n"
+                + "  </ul>\n"
+                + "  <ul id='list2'>\n"
+                + "    <li>foo</li>\n"
+                + "    <li>bar</li>\n"
+                + "  </ul>\n"
+                + "\n"
+                + "  <ul class='test'>\n"
+                + "    <li>foo</li>\n"
+                + "    <li>bar</li>\n"
+                + "  </ul>\n"
+                + "  <ul class='test'>\n"
+                + "    <li>foo</li>     \n"
+                + "    <li>bar</li>\n"
+                + "  </ul>\n"
+                + "  <ul class='test'>\n"
+                + "    <li>foo</li>\n"
+                + "    <li>bar</li>\n"
+                + "  </ul>\n"
+                + "  <ul class='test'>\n"
+                + "    <li>foo</li>\n"
+                + "\n"
+                + "    <li>bar</li>\n"
+                + "  </ul>\n"
+                + "  <ul class='test'>\n"
+                + "    <li>foo</li>\n"
+                + "    <li>bar</li>\n"
+                + "    <li></li>\n"
+                + "  </ul>\n"
+                + "  <ul class='test'>\n"
+                + "    <li>foobar</li>\n"
+                + "    <li></li>\n"
+                + "  </ul>\n"
+                + "</body></html>";
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -1144,6 +1205,7 @@ public class NodeTest extends WebDriverTestCase {
         getMockWebConnection().setResponse(URL_SECOND, secondHtml);
 
         final WebDriver driver = loadPage2(firstHtml);
+        Thread.sleep(200);
         verifyWindowName2(driver, getExpectedAlerts());
 
         driver.findElement(By.id("myInput")).click();

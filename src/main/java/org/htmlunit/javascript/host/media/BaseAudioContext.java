@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
-import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.typedarrays.NativeArrayBuffer;
 import org.htmlunit.html.HtmlPage;
@@ -49,9 +48,10 @@ public class BaseAudioContext extends EventTarget {
     /**
      * Creates an instance.
      */
+    @Override
     @JsxConstructor
     public void jsConstructor() {
-        throw Context.reportRuntimeError("Illegal constructor.");
+        throw JavaScriptEngine.reportRuntimeError("Illegal constructor.");
     }
 
     /**
@@ -116,7 +116,7 @@ public class BaseAudioContext extends EventTarget {
         if (error != null) {
             jsEngine.addPostponedAction(new PostponedAction(owningPage, "BaseAudioContext.decodeAudioData") {
                 @Override
-                public void execute() throws Exception {
+                public void execute() {
                     jsEngine.callFunction(owningPage, error, getParentScope(), BaseAudioContext.this, new Object[] {});
                 }
             });

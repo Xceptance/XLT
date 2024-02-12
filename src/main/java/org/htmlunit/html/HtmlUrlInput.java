@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@ public class HtmlUrlInput extends HtmlSelectableTextInput implements LabelableEl
         final BrowserVersion browserVersion = page.getWebClient().getBrowserVersion();
         if (browserVersion.hasFeature(JS_INPUT_URL_VALUE_TRIMMED)) {
             for (final Map.Entry<String, DomAttr> entry : attributes.entrySet()) {
-                if ("value".equalsIgnoreCase(entry.getKey())) {
+                if (VALUE_ATTRIBUTE.equalsIgnoreCase(entry.getKey())) {
                     entry.getValue().setValue(entry.getValue().getValue().trim());
                     break;
                 }

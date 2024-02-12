@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.junit.runner.RunWith;
  *
  * @author Ahmed Ashour
  * @author Ronald Brill
+ * @author Lai Quang Duong
  */
 @RunWith(BrowserRunner.class)
 public class NodeListTest extends WebDriverTestCase {
@@ -214,7 +215,7 @@ public class NodeListTest extends WebDriverTestCase {
      * @throws Exception on test failure
      */
     @Test
-    @Alerts(DEFAULT = {"[object HTMLHtmlElement]", "[object HTMLHeadElement]",
+    @Alerts(DEFAULT = {"true", "[object HTMLHtmlElement]", "[object HTMLHeadElement]",
                        "[object HTMLScriptElement]", "[object HTMLBodyElement]",
                        "[object HTMLDivElement]"},
             IE = "no for..of")
@@ -224,6 +225,11 @@ public class NodeListTest extends WebDriverTestCase {
                 + LOG_TITLE_FUNCTION
                 + "  function test() {\n"
                 + "    var nodeList = document.querySelectorAll('*');\n"
+
+                + "    if (typeof Symbol != 'undefined') {\n"
+                + "      log(nodeList[Symbol.iterator] === nodeList.values);\n"
+                + "    }\n"
+
                 + "    if (!nodeList.forEach) {\n"
                 + "      log('no for..of');\n"
                 + "      return;\n"

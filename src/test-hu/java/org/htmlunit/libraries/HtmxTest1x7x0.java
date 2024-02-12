@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
  */
 package org.htmlunit.libraries;
 
+import org.htmlunit.WebClient;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
@@ -37,5 +38,14 @@ public class HtmxTest1x7x0 extends HtmxTest {
     @HtmlUnitNYI(IE = "passes:17failures:430")
     public void htmx() throws Exception {
         htmx("htmx-1.7.0");
+    }
+
+    @Override
+    protected void setupWebClient(final WebClient webClient) {
+        super.setupWebClient(webClient);
+
+        if (webClient.getBrowserVersion().isIE()) {
+            webClient.getOptions().setThrowExceptionOnScriptError(false);
+        }
     }
 }

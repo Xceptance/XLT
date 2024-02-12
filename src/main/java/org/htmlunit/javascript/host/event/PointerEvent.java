@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import org.htmlunit.corejs.javascript.NativeObject;
 import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.corejs.javascript.ScriptableObject;
 import org.htmlunit.html.DomNode;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
@@ -61,18 +62,18 @@ public class PointerEvent extends MouseEvent {
     /**
      * JavaScript constructor.
      * @param cx the current context
+     * @param scope the scope
      * @param args the arguments to the WebSocket constructor
      * @param ctorObj the function object
      * @param inNewExpr Is new or not
      * @return the java object to allow JavaScript to access
      */
     @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
-    public static Scriptable jsConstructor(
-            final Context cx, final Object[] args, final Function ctorObj,
-            final boolean inNewExpr) {
+    public static Scriptable jsConstructor(final Context cx, final Scriptable scope,
+            final Object[] args, final Function ctorObj, final boolean inNewExpr) {
         final PointerEvent event = new PointerEvent();
         if (args.length != 0) {
-            event.setType(Context.toString(args[0]));
+            event.setType(JavaScriptEngine.toString(args[0]));
             event.setBubbles(false);
             event.setCancelable(false);
             event.width_ = 1;
@@ -104,13 +105,13 @@ public class PointerEvent extends MouseEvent {
                 value = String.valueOf(value);
             }
             else if (defaulValue instanceof Double) {
-                value = Context.toNumber(value);
+                value = JavaScriptEngine.toNumber(value);
             }
             else if (defaulValue instanceof Number) {
-                value = (int) Context.toNumber(value);
+                value = (int) JavaScriptEngine.toNumber(value);
             }
             else {
-                value = Context.toBoolean(value);
+                value = JavaScriptEngine.toBoolean(value);
             }
         }
         return value;
@@ -129,8 +130,7 @@ public class PointerEvent extends MouseEvent {
      */
     public PointerEvent(final DomNode domNode, final String type, final boolean shiftKey,
             final boolean ctrlKey, final boolean altKey, final int button, final int detail) {
-        super(domNode, type, shiftKey, ctrlKey, altKey, button);
-        setDetail(detail);
+        super(domNode, type, shiftKey, ctrlKey, altKey, button, detail);
 
         pointerId_ = 1;
         width_ = 1;

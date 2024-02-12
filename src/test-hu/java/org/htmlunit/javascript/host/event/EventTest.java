@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,6 @@
  */
 package org.htmlunit.javascript.host.event;
 
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.FF;
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.FF_ESR;
 import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 
 import org.htmlunit.WebDriverTestCase;
@@ -968,9 +966,13 @@ public class EventTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "activeElement BODY",
+            FF = {"activeElement BODY", "focus #document", "handler: activeElement BODY"},
+            FF_ESR = {"activeElement BODY", "focus #document", "handler: activeElement BODY"},
             IE = {"activeElement BODY", "focus BODY", "handler: activeElement BODY"})
     // http://code.google.com/p/selenium/issues/detail?id=4665
-    @NotYetImplemented({IE, FF, FF_ESR})
+    @HtmlUnitNYI(FF = {"activeElement BODY", "focus undefined", "handler: activeElement BODY"},
+            FF_ESR = {"activeElement BODY", "focus undefined", "handler: activeElement BODY"},
+            IE = {"activeElement BODY", "focus undefined", "handler: activeElement BODY"})
     public void document_focus() throws Exception {
         final String html = "<html>\n"
                 + "<head>\n"

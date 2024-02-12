@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,15 @@ package org.htmlunit.html;
 import static org.htmlunit.BrowserVersionFeatures.EVENT_MOUSE_ON_DISABLED;
 import static org.htmlunit.BrowserVersionFeatures.HTMLINPUT_ATTRIBUTE_MIN_MAX_LENGTH_SUPPORTED;
 import static org.htmlunit.BrowserVersionFeatures.HTMLINPUT_DOES_NOT_CLICK_SURROUNDING_ANCHOR;
+import static org.htmlunit.BrowserVersionFeatures.HTMLINPUT_TYPE_COLOR_NOT_SUPPORTED;
+import static org.htmlunit.BrowserVersionFeatures.HTMLINPUT_TYPE_DATETIME_LOCAL_SUPPORTED;
+import static org.htmlunit.BrowserVersionFeatures.HTMLINPUT_TYPE_DATETIME_SUPPORTED;
 import static org.htmlunit.BrowserVersionFeatures.HTMLINPUT_TYPE_IMAGE_IGNORES_CUSTOM_VALIDITY;
+import static org.htmlunit.BrowserVersionFeatures.HTMLINPUT_TYPE_MONTH_SUPPORTED;
+import static org.htmlunit.BrowserVersionFeatures.HTMLINPUT_TYPE_WEEK_SUPPORTED;
+import static org.htmlunit.BrowserVersionFeatures.JS_INPUT_CHANGE_TYPE_DROPS_VALUE;
+import static org.htmlunit.BrowserVersionFeatures.JS_INPUT_SET_TYPE_LOWERCASE;
+import static org.htmlunit.BrowserVersionFeatures.JS_INPUT_SET_UNSUPORTED_TYPE_EXCEPTION;
 import static org.htmlunit.html.HtmlForm.ATTRIBUTE_FORMNOVALIDATE;
 
 import java.net.MalformedURLException;
@@ -31,16 +39,20 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.htmlunit.BrowserVersion;
 import org.htmlunit.HttpHeader;
 import org.htmlunit.Page;
 import org.htmlunit.ScriptResult;
 import org.htmlunit.SgmlPage;
 import org.htmlunit.WebClient;
 import org.htmlunit.javascript.AbstractJavaScriptEngine;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.host.event.Event;
 import org.htmlunit.javascript.host.event.MouseEvent;
+import org.htmlunit.javascript.host.html.HTMLInputElement;
 import org.htmlunit.javascript.regexp.RegExpJsToJavaConverter;
 import org.htmlunit.util.NameValuePair;
+import org.xml.sax.helpers.AttributesImpl;
 
 /**
  * Wrapper for the HTML element "input".
@@ -55,6 +67,7 @@ import org.htmlunit.util.NameValuePair;
  * @author Ronald Brill
  * @author Frank Danek
  * @author Anton Demydenko
+ * @author Ronny Shapiro
  */
 public abstract class HtmlInput extends HtmlElement implements DisabledElement, SubmittableElement,
     FormFieldWithNameHistory, ValidatableElement  {
@@ -64,12 +77,10 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
     /** The HTML tag represented by this element. */
     public static final String TAG_NAME = "input";
 
-    private static final String TYPE_ATTRUBUTE = "type";
-
     private String rawValue_;
+    private boolean isValueDirty_;
     private final String originalName_;
     private Collection<String> newNames_ = Collections.emptySet();
-    private boolean createdByJavascript_;
     private boolean valueModifiedByJavascript_;
     private Object valueAtFocus_;
     private String customValidity_;
@@ -104,7 +115,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
      * @param newValue the new value
      */
     public void setValueAttribute(final String newValue) {
-        super.setAttribute("value", newValue);
+        super.setAttribute(VALUE_ATTRIBUTE, newValue);
     }
 
     /**
@@ -123,7 +134,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
      * @return the value of the attribute {@code type} or an empty string if that attribute isn't defined
      */
     public final String getTypeAttribute() {
-        final String type = getAttributeDirect(TYPE_ATTRUBUTE);
+        final String type = getAttributeDirect(DomElement.TYPE_ATTRIBUTE);
         if (ATTRIBUTE_NOT_DEFINED == type) {
             return "text";
         }
@@ -138,7 +149,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
      * @return the value of the attribute {@code name} or an empty string if that attribute isn't defined
      */
     public final String getNameAttribute() {
-        return getAttributeDirect("name");
+        return getAttributeDirect(NAME_ATTRIBUTE);
     }
 
     /**
@@ -149,7 +160,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
      * @return the value of the attribute {@code value} or an empty string if that attribute isn't defined
      */
     public final String getValueAttribute() {
-        return getAttributeDirect("value");
+        return getAttributeDirect(VALUE_ATTRIBUTE);
     }
 
     /**
@@ -166,6 +177,13 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
      */
     public void setValue(final String newValue) {
         setRawValue(newValue);
+        isValueDirty_ = true;
+    }
+
+    protected void valueAttributeChanged(final String attributeValue, final boolean isValueDirty) {
+        if (!isValueDirty_) {
+            setRawValue(attributeValue);
+        }
     }
 
     /**
@@ -450,6 +468,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
     @Override
     public void reset() {
         setValue(getDefaultValue());
+        isValueDirty_ = true;
     }
 
     /**
@@ -459,12 +478,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
      */
     @Override
     public void setDefaultValue(final String defaultValue) {
-        final String oldDefaultValue = getDefaultValue();
         setValueAttribute(defaultValue);
-
-        if (oldDefaultValue.equals(getValue())) {
-            setRawValue(defaultValue);
-        }
     }
 
     /**
@@ -612,13 +626,28 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
     @Override
     protected void setAttributeNS(final String namespaceURI, final String qualifiedName, final String attributeValue,
             final boolean notifyAttributeChangeListeners, final boolean notifyMutationObservers) {
-        if ("name".equals(qualifiedName)) {
+        final String qualifiedNameLC = org.htmlunit.util.StringUtils.toRootLowerCase(qualifiedName);
+        if (NAME_ATTRIBUTE.equals(qualifiedNameLC)) {
             if (newNames_.isEmpty()) {
                 newNames_ = new HashSet<>();
             }
             newNames_.add(attributeValue);
         }
-        super.setAttributeNS(namespaceURI, qualifiedName, attributeValue, notifyAttributeChangeListeners,
+
+        if (TYPE_ATTRIBUTE.equals(qualifiedNameLC)) {
+            changeType(attributeValue, true);
+            return;
+        }
+
+        if (VALUE_ATTRIBUTE.equals(qualifiedNameLC)) {
+            super.setAttributeNS(namespaceURI, qualifiedNameLC, attributeValue, notifyAttributeChangeListeners,
+                    notifyMutationObservers);
+
+            valueAttributeChanged(attributeValue, isValueDirty_);
+            return;
+        }
+
+        super.setAttributeNS(namespaceURI, qualifiedNameLC, attributeValue, notifyAttributeChangeListeners,
                 notifyMutationObservers);
     }
 
@@ -636,27 +665,6 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
     @Override
     public Collection<String> getNewNames() {
         return newNames_;
-    }
-
-    /**
-     * <span style="color:red">INTERNAL API - SUBJECT TO CHANGE AT ANY TIME - USE AT YOUR OWN RISK.</span><br>
-     *
-     * Marks this frame as created by javascript. This is needed to handle
-     * some special IE behavior.
-     */
-    public void markAsCreatedByJavascript() {
-        createdByJavascript_ = true;
-    }
-
-    /**
-     * <span style="color:red">INTERNAL API - SUBJECT TO CHANGE AT ANY TIME - USE AT YOUR OWN RISK.</span><br>
-     *
-     * Returns true if this frame was created by javascript. This is needed to handle
-     * some special IE behavior.
-     * @return true or false
-     */
-    public boolean wasCreatedByJavascript() {
-        return createdByJavascript_;
     }
 
     /**
@@ -880,7 +888,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
 
     protected boolean isCustomValidityValid() {
         if (isCustomErrorValidityState()) {
-            final String type = getAttributeDirect(TYPE_ATTRUBUTE).toLowerCase(Locale.ROOT);
+            final String type = getAttributeDirect(DomElement.TYPE_ATTRIBUTE).toLowerCase(Locale.ROOT);
             if (!"button".equals(type)
                     && !"hidden".equals(type)
                     && !"reset".equals(type)
@@ -1028,7 +1036,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
      * @return whether this is a checkbox or a radio button
      */
     public boolean isCheckable() {
-        final String type = getAttributeDirect(TYPE_ATTRUBUTE).toLowerCase(Locale.ROOT);
+        final String type = getAttributeDirect(DomElement.TYPE_ATTRIBUTE).toLowerCase(Locale.ROOT);
         return "radio".equals(type) || "checkbox".equals(type);
     }
 
@@ -1036,7 +1044,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
      * @return false for type submit/resest/image/button otherwise true
      */
     public boolean isSubmitable() {
-        final String type = getAttributeDirect(TYPE_ATTRUBUTE).toLowerCase(Locale.ROOT);
+        final String type = getAttributeDirect(DomElement.TYPE_ATTRIBUTE).toLowerCase(Locale.ROOT);
         return !"submit".equals(type) && !"image".equals(type) && !"reset".equals(type) && !"button".equals(type);
     }
 
@@ -1128,5 +1136,175 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
         else {
             removeAttribute(ATTRIBUTE_FORMNOVALIDATE);
         }
+    }
+
+    /**
+     * @return the {@code type} property
+     */
+    public final String getType() {
+        final BrowserVersion browserVersion = getPage().getWebClient().getBrowserVersion();
+        String type = getTypeAttribute();
+        type = org.htmlunit.util.StringUtils.toRootLowerCase(type);
+        return isSupported(type, browserVersion) ? type : "text";
+    }
+
+    /**
+     * <span style="color:red">INTERNAL API - SUBJECT TO CHANGE AT ANY TIME - USE AT YOUR OWN RISK.</span><br>
+     *
+     * Changes the type of the current HtmlInput. Because there are several subclasses of HtmlInput,
+     * changing the type attribute is not sufficient, this will replace the HtmlInput element in the
+     * DOM tree with a new one (at least of the newType is different from the old one).<br>
+     * The js peer object is still the same (there is only a HTMLInputElement without any sublcasses).<br>
+     * This returns the new (or the old) HtmlInput element to ease the use of this method.
+     * @param newType the new type to set
+     * @param setThroughAttribute set type value through setAttribute()
+     * @return the new or the old HtmlInput element
+     */
+    public HtmlInput changeType(String newType, final boolean setThroughAttribute) {
+        final String currentType = getAttributeDirect(TYPE_ATTRIBUTE);
+
+        final SgmlPage page = getPage();
+        final WebClient webClient = page.getWebClient();
+        final BrowserVersion browser = webClient.getBrowserVersion();
+        if (!currentType.equalsIgnoreCase(newType)) {
+            if (newType != null && browser.hasFeature(JS_INPUT_SET_TYPE_LOWERCASE)) {
+                newType = org.htmlunit.util.StringUtils.toRootLowerCase(newType);
+            }
+
+            if (!isSupported(org.htmlunit.util.StringUtils
+                                    .toRootLowerCase(newType), browser)) {
+                if (setThroughAttribute) {
+                    newType = "text";
+                }
+                else if (browser.hasFeature(JS_INPUT_SET_UNSUPORTED_TYPE_EXCEPTION)) {
+                    throw JavaScriptEngine.reportRuntimeError("Invalid argument '" + newType
+                            + "' for setting property type.");
+                }
+            }
+
+            final AttributesImpl attributes = new AttributesImpl();
+            boolean typeFound = false;
+            for (final DomAttr entry : getAttributesMap().values()) {
+                final String name = entry.getName();
+                final String value = entry.getValue();
+
+                if (TYPE_ATTRIBUTE.equals(name)) {
+                    attributes.addAttribute(null, name, name, null, newType);
+                    typeFound = true;
+                }
+                else {
+                    attributes.addAttribute(null, name, name, null, value);
+                }
+            }
+
+            if (!typeFound) {
+                attributes.addAttribute(null, TYPE_ATTRIBUTE, TYPE_ATTRIBUTE, null, newType);
+            }
+
+            // create a new one only if we have a new type
+            if (ATTRIBUTE_NOT_DEFINED != currentType || !"text".equalsIgnoreCase(newType)) {
+                final HtmlInput newInput = (HtmlInput) webClient.getPageCreator().getHtmlParser()
+                        .getFactory(HtmlInput.TAG_NAME)
+                        .createElement(page, HtmlInput.TAG_NAME, attributes);
+
+                if (browser.hasFeature(JS_INPUT_CHANGE_TYPE_DROPS_VALUE)) {
+                    // a hack for the moment (IE)
+                    if (!(newInput instanceof HtmlSubmitInput)
+                            && !(newInput instanceof HtmlResetInput)
+                            && !(newInput instanceof HtmlCheckBoxInput)
+                            && !(newInput instanceof HtmlRadioButtonInput)
+                            && !(newInput instanceof HtmlImageInput)) {
+                        newInput.setRawValue(getRawValue());
+                    }
+                }
+                else {
+                    newInput.adjustValueAfterTypeChange(this, browser);
+                }
+
+                // the input hasn't yet been inserted into the DOM tree (likely has been
+                // created via document.createElement()), so simply replace it with the
+                // new Input instance created in the code above
+                if (getParentNode() != null) {
+                    getParentNode().replaceChild(newInput, this);
+                }
+
+                final WebClient client = page.getWebClient();
+                if (client.isJavaScriptEngineEnabled()) {
+                    final HTMLInputElement scriptable = getScriptableObject();
+                    setScriptableObject(null);
+                    scriptable.setDomNode(newInput, true);
+                }
+
+                return newInput;
+            }
+            super.setAttributeNS(null, TYPE_ATTRIBUTE, newType, true, true);
+        }
+        return this;
+    }
+
+    protected void adjustValueAfterTypeChange(final HtmlInput oldInput, final BrowserVersion browserVersion) {
+        final String originalValue = oldInput.getValue();
+        if (ATTRIBUTE_NOT_DEFINED != originalValue) {
+            setValue(originalValue);
+        }
+    }
+
+    /**
+     * Returns whether the specified type is supported or not.
+     * @param type the input type
+     * @param browserVersion the browser version
+     * @return whether the specified type is supported or not
+     */
+    private static boolean isSupported(final String type, final BrowserVersion browserVersion) {
+        boolean supported = false;
+        switch (type) {
+            case "date":
+                supported = browserVersion.hasFeature(HTMLINPUT_TYPE_DATETIME_SUPPORTED);
+                break;
+            case "datetime-local":
+                supported = browserVersion.hasFeature(HTMLINPUT_TYPE_DATETIME_LOCAL_SUPPORTED);
+                break;
+            case "month":
+                supported = browserVersion.hasFeature(HTMLINPUT_TYPE_MONTH_SUPPORTED);
+                break;
+            case "time":
+                supported = browserVersion.hasFeature(HTMLINPUT_TYPE_DATETIME_SUPPORTED);
+                break;
+            case "week":
+                supported = browserVersion.hasFeature(HTMLINPUT_TYPE_WEEK_SUPPORTED);
+                break;
+            case "color":
+                supported = !browserVersion.hasFeature(HTMLINPUT_TYPE_COLOR_NOT_SUPPORTED);
+                break;
+            case "email":
+            case "text":
+            case "submit":
+            case "checkbox":
+            case "radio":
+            case "hidden":
+            case "password":
+            case "image":
+            case "reset":
+            case "button":
+            case "file":
+            case "number":
+            case "range":
+            case "search":
+            case "tel":
+            case "url":
+                supported = true;
+                break;
+
+            default:
+        }
+        return supported;
+    }
+
+    protected void unmarkValueDirty() {
+        isValueDirty_ = false;
+    }
+
+    protected void markValueDirty() {
+        isValueDirty_ = true;
     }
 }

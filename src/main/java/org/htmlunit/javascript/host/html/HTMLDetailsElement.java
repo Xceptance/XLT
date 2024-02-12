@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
-import org.htmlunit.corejs.javascript.ScriptRuntime;
 import org.htmlunit.html.HtmlDetails;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxGetter;
@@ -38,8 +38,16 @@ public class HTMLDetailsElement extends HTMLElement {
     /**
      * Creates a new instance.
      */
-    @JsxConstructor
     public HTMLDetailsElement() {
+    }
+
+    /**
+     * JavaScript constructor.
+     */
+    @Override
+    @JsxConstructor
+    public void jsConstructor() {
+        super.jsConstructor();
     }
 
     /**
@@ -57,12 +65,28 @@ public class HTMLDetailsElement extends HTMLElement {
      */
     @JsxSetter
     public void setOpen(final Object newValue) {
-        final boolean bool = ScriptRuntime.toBoolean(newValue);
-        if (bool) {
-            getDomNodeOrDie().setAttribute("open", "");
-        }
-        else {
-            getDomNodeOrDie().removeAttribute("open");
-        }
+        final boolean bool = JavaScriptEngine.toBoolean(newValue);
+
+        ((HtmlDetails) getDomNodeOrDie()).setOpen(bool);
+    }
+
+    /**
+     * Returns the {@code name} property.
+     * @return the {@code name} property
+     */
+    @JsxGetter({CHROME, EDGE})
+    @Override
+    public String getName() {
+        return super.getName();
+    }
+
+    /**
+     * Sets the name attribute.
+     * @param newValue the new value to set
+     */
+    @JsxSetter
+    @Override
+    public void setName(final String newValue) {
+        super.setName(newValue);
     }
 }

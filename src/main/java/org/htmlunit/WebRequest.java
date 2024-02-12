@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.apache.http.auth.Credentials;
-import org.apache.http.auth.UsernamePasswordCredentials;
+import org.htmlunit.httpclient.HtmlUnitUsernamePasswordCredentials;
 import org.htmlunit.httpclient.HttpClientConverter;
 import org.htmlunit.util.NameValuePair;
 import org.htmlunit.util.UrlUtils;
@@ -189,12 +189,12 @@ public class WebRequest implements Serializable {
         if (userInfo != null) {
             final int splitPos = userInfo.indexOf(':');
             if (splitPos == -1) {
-                urlCredentials_ = new UsernamePasswordCredentials(userInfo, "");
+                urlCredentials_ = new HtmlUnitUsernamePasswordCredentials(userInfo, new char[0]);
             }
             else {
                 final String username = userInfo.substring(0, splitPos);
                 final String password = userInfo.substring(splitPos + 1);
-                urlCredentials_ = new UsernamePasswordCredentials(username, password);
+                urlCredentials_ = new HtmlUnitUsernamePasswordCredentials(username, password.toCharArray());
             }
         }
     }
@@ -435,7 +435,7 @@ public class WebRequest implements Serializable {
 
     /**
      * Sets the body content to be submitted if this is a {@code POST}, {@code PUT} or {@code PATCH} request.
-     * Ignored for all other request types.
+     * Other request types result in {@link RuntimeException}.
      * Should not be used in combination with {@link #setRequestParameters(List) request parameters}.
      * @param requestBody the body content to be submitted if this is a {@code POST}, {@code PUT}
      * or {@code PATCH} request

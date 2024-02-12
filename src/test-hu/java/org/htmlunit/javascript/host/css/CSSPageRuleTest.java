@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,6 +61,7 @@ public class CSSPageRuleTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "@page { margin: 1cm; }",
+            FF = "@page  { margin: 1cm; }",
             IE = "@page  {\n\tmargin: 1cm;\n}")
     public void cssText() throws Exception {
         final String html
@@ -89,6 +90,7 @@ public class CSSPageRuleTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "@page { }",
+            FF = "@page  { }",
             IE = "@page  {\n\t\n}")
     public void cssTextEmpty() throws Exception {
         final String html
@@ -117,6 +119,7 @@ public class CSSPageRuleTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "@page { margin-left: 4cm; margin-right: 3cm; }",
+            FF = "@page  { margin-left: 4cm; margin-right: 3cm; }",
             IE = "@page  {\n\tmargin-right: 3cm; margin-left: 4cm;\n}")
     @HtmlUnitNYI(IE = "@page  {\n\tmargin-left: 4cm; margin-right: 3cm;\n}")
     public void cssTextMultipleRules() throws Exception {
@@ -146,6 +149,7 @@ public class CSSPageRuleTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "@page { margin: 1cm; }",
+            FF = "@page  { margin: 1cm; }",
             IE = "@page  {\n\tmargin: 1cm;\n}")
     public void cssTextSet() throws Exception {
         final String html
@@ -288,9 +292,7 @@ public class CSSPageRuleTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "",
-            FF_ESR = "undefined")
-    @HtmlUnitNYI(FF = "undefined")
+    @Alerts("")
     public void selectorTextEmpty() throws Exception {
         final String html
             = "<html><body>\n"
@@ -321,11 +323,8 @@ public class CSSPageRuleTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = ":first",
             IE = "",
-            FF = "exception",
             FF_ESR = "exception")
-    @HtmlUnitNYI(FF = "undefined",
-            FF_ESR = "undefined")
-    // FIXME FFs do not understand selectors for page rules at all and thus ignore the complete rule during parsing
+    @HtmlUnitNYI(FF_ESR = ":first")
     public void selectorText() throws Exception {
         final String html
             = "<html><body>\n"
@@ -356,11 +355,8 @@ public class CSSPageRuleTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = ":first",
             IE = "",
-            FF = "exception",
             FF_ESR = "exception")
-    @HtmlUnitNYI(FF = "undefined",
-            FF_ESR = "undefined")
-    // FIXME FFs do not understand selectors for page rules at all and thus ignore the complete rule during parsing
+    @HtmlUnitNYI(FF_ESR = ":first")
     public void selectorTextCaseInsensitive() throws Exception {
         final String html
             = "<html><body>\n"
@@ -391,12 +387,9 @@ public class CSSPageRuleTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {":first", ":left"},
             IE = {"", "exception"},
-            FF = "exception",
             FF_ESR = "exception")
     @HtmlUnitNYI(IE = {"", ""},
-            FF = {"undefined", ":left"},
-            FF_ESR = {"undefined", ":left"})
-    // FIXME FFs do not understand selectors for page rules at all and thus ignore the complete rule during parsing
+            FF_ESR = {":first", ":left"})
     public void selectorTextSet() throws Exception {
         final String html
             = "<html><body>\n"
@@ -429,12 +422,9 @@ public class CSSPageRuleTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {":first", "null"},
             IE = {"", "exception"},
-            FF = "exception",
             FF_ESR = "exception")
     @HtmlUnitNYI(IE = {"", ""},
-            FF = {"undefined", "null"},
-            FF_ESR = {"undefined", "null"})
-    // FIXME FFs do not understand selectors for page rules at all and thus ignore the complete rule during parsing
+            FF_ESR = {":first", "null"})
     public void selectorTextSetNull() throws Exception {
         final String html
             = "<html><body>\n"
@@ -467,12 +457,9 @@ public class CSSPageRuleTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {":first", ""},
             IE = {"", "exception"},
-            FF = "exception",
             FF_ESR = "exception")
     @HtmlUnitNYI(IE = {"", ""},
-            FF = {"undefined", ""},
-            FF_ESR = {"undefined", ""})
-    // FIXME FFs do not understand selectors for page rules at all and thus ignore the complete rule during parsing
+            FF_ESR = {":first", ""})
     public void selectorTextSetEmpty() throws Exception {
         final String html
             = "<html><body>\n"
@@ -505,12 +492,9 @@ public class CSSPageRuleTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {":first", ":first"},
             IE = {"", "exception"},
-            FF = "exception",
             FF_ESR = "exception")
     @HtmlUnitNYI(IE = {"", ""},
-            FF = {"undefined", ":grey"},
-            FF_ESR = {"undefined", ":grey"})
-    // FIXME FFs do not understand selectors for page rules at all and thus ignore the complete rule during parsing
+            FF_ESR = {":first", ":first"})
     public void selectorTextSetInvalid() throws Exception {
         final String html
             = "<html><body>\n"
@@ -543,12 +527,9 @@ public class CSSPageRuleTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {":first", ":left"},
             IE = {"", "exception"},
-            FF = "exception",
             FF_ESR = "exception")
     @HtmlUnitNYI(IE = {"", ""},
-            FF = {"undefined", ":LeFt"},
-            FF_ESR = {"undefined", ":LeFt"})
-    // FIXME FFs do not understand selectors for page rules at all and thus ignore the complete rule during parsing
+            FF_ESR = {":first", ":left"})
     public void selectorTextSetCaseInsensitive() throws Exception {
         final String html
             = "<html><body>\n"

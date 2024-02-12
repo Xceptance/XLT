@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -314,7 +314,7 @@ public class CookieManager4Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"c12=12",
+    @Alerts(DEFAULT = {"c11=11; c12=12",
                        "c12=12; path=/; domain=htmlunit; sameSite=Lax",
                        "c11=11; path=/; domain=htmlunit; sameSite=Lax"},
             FF = {"c11=11; c12=12",
@@ -511,7 +511,9 @@ public class CookieManager4Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"1", "c12=12; path=/; domain=htmlunit; sameSite=Lax"},
+    @Alerts(DEFAULT = {"2",
+                       "c12=12; path=/; domain=htmlunit; sameSite=Lax",
+                       "c11=11; path=/; domain=htmlunit; sameSite=Lax"},
             FF = {"2",
                   "c12=12; path=/; domain=htmlunit; sameSite=None",
                   "c11=11; path=/; domain=htmlunit; sameSite=None"},

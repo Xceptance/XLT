@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,20 +16,10 @@ package org.htmlunit.javascript.host.html;
 
 import static org.htmlunit.BrowserVersionFeatures.HTMLINPUT_FILES_UNDEFINED;
 import static org.htmlunit.BrowserVersionFeatures.HTMLINPUT_FILE_SELECTION_START_END_NULL;
-import static org.htmlunit.BrowserVersionFeatures.HTMLINPUT_TYPE_COLOR_NOT_SUPPORTED;
-import static org.htmlunit.BrowserVersionFeatures.HTMLINPUT_TYPE_DATETIME_LOCAL_SUPPORTED;
-import static org.htmlunit.BrowserVersionFeatures.HTMLINPUT_TYPE_DATETIME_SUPPORTED;
-import static org.htmlunit.BrowserVersionFeatures.HTMLINPUT_TYPE_MONTH_SUPPORTED;
-import static org.htmlunit.BrowserVersionFeatures.HTMLINPUT_TYPE_WEEK_SUPPORTED;
 import static org.htmlunit.BrowserVersionFeatures.JS_ALIGN_FOR_INPUT_IGNORES_VALUES;
-import static org.htmlunit.BrowserVersionFeatures.JS_INPUT_CHANGE_TYPE_DROPS_VALUE;
-import static org.htmlunit.BrowserVersionFeatures.JS_INPUT_CHANGE_TYPE_DROPS_VALUE_WEEK_MONTH;
 import static org.htmlunit.BrowserVersionFeatures.JS_INPUT_NUMBER_DOT_AT_END_IS_DOUBLE;
 import static org.htmlunit.BrowserVersionFeatures.JS_INPUT_NUMBER_SELECTION_START_END_NULL;
-import static org.htmlunit.BrowserVersionFeatures.JS_INPUT_SET_TYPE_LOWERCASE;
-import static org.htmlunit.BrowserVersionFeatures.JS_INPUT_SET_UNSUPORTED_TYPE_EXCEPTION;
 import static org.htmlunit.BrowserVersionFeatures.JS_SELECT_FILE_THROWS;
-import static org.htmlunit.html.DomElement.ATTRIBUTE_NOT_DEFINED;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
@@ -40,25 +30,17 @@ import java.io.IOException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
-import org.htmlunit.BrowserVersion;
-import org.htmlunit.SgmlPage;
-import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.Undefined;
+import org.htmlunit.html.DomElement;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.html.HtmlCheckBoxInput;
-import org.htmlunit.html.HtmlDateTimeLocalInput;
 import org.htmlunit.html.HtmlFileInput;
-import org.htmlunit.html.HtmlImageInput;
 import org.htmlunit.html.HtmlInput;
-import org.htmlunit.html.HtmlMonthInput;
 import org.htmlunit.html.HtmlNumberInput;
 import org.htmlunit.html.HtmlRadioButtonInput;
-import org.htmlunit.html.HtmlResetInput;
-import org.htmlunit.html.HtmlSubmitInput;
 import org.htmlunit.html.HtmlTextInput;
-import org.htmlunit.html.HtmlTimeInput;
-import org.htmlunit.html.HtmlWeekInput;
 import org.htmlunit.html.impl.SelectableTextInput;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
@@ -68,7 +50,6 @@ import org.htmlunit.javascript.host.dom.NodeList;
 import org.htmlunit.javascript.host.dom.TextRange;
 import org.htmlunit.javascript.host.event.Event;
 import org.htmlunit.javascript.host.file.FileList;
-import org.xml.sax.helpers.AttributesImpl;
 
 /**
  * The JavaScript object for {@link HtmlInput}.
@@ -92,8 +73,16 @@ public class HTMLInputElement extends HTMLElement {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public HTMLInputElement() {
+    }
+
+    /**
+     * JavaScript constructor.
+     */
+    @Override
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    public void jsConstructor() {
+        super.jsConstructor();
     }
 
     /**
@@ -102,61 +91,7 @@ public class HTMLInputElement extends HTMLElement {
      */
     @JsxGetter
     public String getType() {
-        final BrowserVersion browserVersion = getBrowserVersion();
-        String type = getDomNodeOrDie().getTypeAttribute();
-        type = org.htmlunit.util.StringUtils.toRootLowerCaseWithCache(type);
-        return isSupported(type, browserVersion) ? type : "text";
-    }
-
-    /**
-     * Returns whether the specified type is supported or not.
-     * @param type the input type
-     * @param browserVersion the browser version
-     * @return whether the specified type is supported or not
-     */
-    private static boolean isSupported(final String type, final BrowserVersion browserVersion) {
-        boolean supported = false;
-        switch (type) {
-            case "date":
-                supported = browserVersion.hasFeature(HTMLINPUT_TYPE_DATETIME_SUPPORTED);
-                break;
-            case "datetime-local":
-                supported = browserVersion.hasFeature(HTMLINPUT_TYPE_DATETIME_LOCAL_SUPPORTED);
-                break;
-            case "month":
-                supported = browserVersion.hasFeature(HTMLINPUT_TYPE_MONTH_SUPPORTED);
-                break;
-            case "time":
-                supported = browserVersion.hasFeature(HTMLINPUT_TYPE_DATETIME_SUPPORTED);
-                break;
-            case "week":
-                supported = browserVersion.hasFeature(HTMLINPUT_TYPE_WEEK_SUPPORTED);
-                break;
-            case "color":
-                supported = !browserVersion.hasFeature(HTMLINPUT_TYPE_COLOR_NOT_SUPPORTED);
-                break;
-            case "email":
-            case "text":
-            case "submit":
-            case "checkbox":
-            case "radio":
-            case "hidden":
-            case "password":
-            case "image":
-            case "reset":
-            case "button":
-            case "file":
-            case "number":
-            case "range":
-            case "search":
-            case "tel":
-            case "url":
-                supported = true;
-                break;
-
-            default:
-        }
-        return supported;
+        return getDomNodeOrDie().getType();
     }
 
     /**
@@ -166,102 +101,7 @@ public class HTMLInputElement extends HTMLElement {
      */
     @JsxSetter
     public void setType(final String newType) {
-        setType(newType, false);
-    }
-
-    /**
-     * Sets the value of the attribute {@code type}.
-     * Note: this replace the DOM node with a new one.
-     * @param newType the new type to set
-     * @param setThroughAttribute set type value through setAttribute()
-     */
-    private void setType(String newType, final boolean setThroughAttribute) {
-        HtmlInput input = getDomNodeOrDie();
-
-        final String currentType = input.getAttributeDirect("type");
-
-        final BrowserVersion browser = getBrowserVersion();
-        if (!currentType.equalsIgnoreCase(newType)) {
-            if (newType != null && browser.hasFeature(JS_INPUT_SET_TYPE_LOWERCASE)) {
-                newType = org.htmlunit.util.StringUtils.toRootLowerCaseWithCache(newType);
-            }
-
-            if (!isSupported(org.htmlunit.util.StringUtils
-                                    .toRootLowerCaseWithCache(newType), browser)) {
-                if (setThroughAttribute) {
-                    newType = "text";
-                }
-                else if (browser.hasFeature(JS_INPUT_SET_UNSUPORTED_TYPE_EXCEPTION)) {
-                    throw Context.reportRuntimeError("Invalid argument '" + newType
-                            + "' for setting property type.");
-                }
-            }
-
-            final AttributesImpl attributes = readAttributes(input);
-            final int index = attributes.getIndex("type");
-            if (index > -1) {
-                attributes.setValue(index, newType);
-            }
-            else {
-                attributes.addAttribute(null, "type", "type", null, newType);
-            }
-
-            // create a new one only if we have a new type
-            if (ATTRIBUTE_NOT_DEFINED != currentType || !"text".equalsIgnoreCase(newType)) {
-                final SgmlPage page = input.getPage();
-                final HtmlInput newInput = (HtmlInput) page.getWebClient().getPageCreator().getHtmlParser()
-                        .getFactory(HtmlInput.TAG_NAME)
-                        .createElement(page, HtmlInput.TAG_NAME, attributes);
-
-                if (browser.hasFeature(JS_INPUT_CHANGE_TYPE_DROPS_VALUE)) {
-                    // a hack for the moment
-                    if (!(newInput instanceof HtmlSubmitInput)
-                            && !(newInput instanceof HtmlResetInput)
-                            && !(newInput instanceof HtmlCheckBoxInput)
-                            && !(newInput instanceof HtmlRadioButtonInput)
-                            && !(newInput instanceof HtmlImageInput)) {
-                        newInput.setRawValue(input.getRawValue());
-                    }
-                }
-                else {
-                    if (newInput instanceof HtmlTimeInput
-                            || newInput instanceof HtmlDateTimeLocalInput
-                            || newInput instanceof HtmlFileInput) {
-                        newInput.setValue("");
-                    }
-                    else if (browser.hasFeature(JS_INPUT_CHANGE_TYPE_DROPS_VALUE_WEEK_MONTH)
-                            && (newInput instanceof HtmlWeekInput || newInput instanceof HtmlMonthInput)) {
-                        newInput.setValue("");
-                    }
-                    else {
-                        final String originalValue = input.getValue();
-                        if (ATTRIBUTE_NOT_DEFINED != originalValue) {
-                            newInput.setValue(originalValue);
-                        }
-                    }
-                }
-
-                if (input.wasCreatedByJavascript()) {
-                    newInput.markAsCreatedByJavascript();
-                }
-
-                if (input.getParentNode() == null) {
-                    // the input hasn't yet been inserted into the DOM tree (likely has been
-                    // created via document.createElement()), so simply replace it with the
-                    // new Input instance created in the code above
-                    input = newInput;
-                }
-                else {
-                    input.getParentNode().replaceChild(newInput, input);
-                }
-
-                input.setScriptableObject(null);
-                setDomNode(newInput, true);
-            }
-            else {
-                super.setAttribute("type", newType);
-            }
-        }
+        getDomNodeOrDie().changeType(newType, false);
     }
 
     /**
@@ -278,10 +118,10 @@ public class HTMLInputElement extends HTMLElement {
             return;
         }
 
-        final String val = Context.toString(newValue);
+        final String val = JavaScriptEngine.toString(newValue);
         if ("file".equalsIgnoreCase(getType())) {
             if (StringUtils.isNotEmpty(val) &&  getBrowserVersion().hasFeature(JS_SELECT_FILE_THROWS)) {
-                throw Context.reportRuntimeError("InvalidStateError: "
+                throw JavaScriptEngine.reportRuntimeError("InvalidStateError: "
                         + "Failed to set the 'value' property on 'HTMLInputElement'.");
             }
             return;
@@ -335,25 +175,6 @@ public class HTMLInputElement extends HTMLElement {
             ((HtmlTextInput) input).select();
         }
         // currently nothing for other input types
-    }
-
-    /**
-     * Uses {@link #setType(String)} if attribute's name is type to
-     * replace DOM node as well as long as we have subclasses of {@link HtmlInput}.
-     * {@inheritDoc}
-     */
-    @Override
-    public void setAttribute(final String name, final String value) {
-        if ("type".equalsIgnoreCase(name)) {
-            setType(value, true);
-            return;
-        }
-        if ("value".equalsIgnoreCase(name)) {
-            setDefaultValue(value);
-            return;
-        }
-
-        super.setAttribute(name, value);
     }
 
     /**
@@ -424,7 +245,8 @@ public class HTMLInputElement extends HTMLElement {
         if (getBrowserVersion().hasFeature(HTMLINPUT_FILE_SELECTION_START_END_NULL)) {
             return null;
         }
-        throw Context.reportRuntimeError("Failed to read the 'selectionStart' property from 'HTMLInputElement': "
+        throw JavaScriptEngine.reportRuntimeError(
+                "Failed to read the 'selectionStart' property from 'HTMLInputElement': "
                 + "The input element's type (" + getType() + ") does not support selection.");
     }
 
@@ -438,7 +260,7 @@ public class HTMLInputElement extends HTMLElement {
         if (dom instanceof SelectableTextInput) {
             if ("number".equalsIgnoreCase(getType())
                     && getBrowserVersion().hasFeature(JS_INPUT_NUMBER_SELECTION_START_END_NULL)) {
-                throw Context.reportRuntimeError("Failed to set the 'selectionStart' property"
+                throw JavaScriptEngine.reportRuntimeError("Failed to set the 'selectionStart' property"
                         + "from 'HTMLInputElement': "
                         + "The input element's type ('number') does not support selection.");
             }
@@ -447,7 +269,8 @@ public class HTMLInputElement extends HTMLElement {
             return;
         }
 
-        throw Context.reportRuntimeError("Failed to set the 'selectionStart' property from 'HTMLInputElement': "
+        throw JavaScriptEngine.reportRuntimeError(
+                "Failed to set the 'selectionStart' property from 'HTMLInputElement': "
                 + "The input element's type (" + getType() + ") does not support selection.");
     }
 
@@ -470,7 +293,7 @@ public class HTMLInputElement extends HTMLElement {
         if (getBrowserVersion().hasFeature(HTMLINPUT_FILE_SELECTION_START_END_NULL)) {
             return null;
         }
-        throw Context.reportRuntimeError("Failed to read the 'selectionEnd' property from 'HTMLInputElement': "
+        throw JavaScriptEngine.reportRuntimeError("Failed to read the 'selectionEnd' property from 'HTMLInputElement': "
                 + "The input element's type (" + getType() + ") does not support selection.");
     }
 
@@ -484,7 +307,7 @@ public class HTMLInputElement extends HTMLElement {
         if (dom instanceof SelectableTextInput) {
             if ("number".equalsIgnoreCase(getType())
                     && getBrowserVersion().hasFeature(JS_INPUT_NUMBER_SELECTION_START_END_NULL)) {
-                throw Context.reportRuntimeError("Failed to set the 'selectionEnd' property"
+                throw JavaScriptEngine.reportRuntimeError("Failed to set the 'selectionEnd' property"
                         + "from 'HTMLInputElement': "
                         + "The input element's type ('number') does not support selection.");
             }
@@ -493,7 +316,7 @@ public class HTMLInputElement extends HTMLElement {
             return;
         }
 
-        throw Context.reportRuntimeError("Failed to set the 'selectionEnd' property from 'HTMLInputElement': "
+        throw JavaScriptEngine.reportRuntimeError("Failed to set the 'selectionEnd' property from 'HTMLInputElement': "
                 + "The input element's type (" + getType() + ") does not support selection.");
     }
 
@@ -735,7 +558,7 @@ public class HTMLInputElement extends HTMLElement {
     @Override
     public String getAttribute(final String attributeName, final Integer flags) {
         final String superAttribute = super.getAttribute(attributeName, flags);
-        if ("value".equalsIgnoreCase(attributeName)) {
+        if (DomElement.VALUE_ATTRIBUTE.equalsIgnoreCase(attributeName)) {
             if ((superAttribute == null || !superAttribute.isEmpty())
                     && getDefaultValue().isEmpty()) {
                 return null;

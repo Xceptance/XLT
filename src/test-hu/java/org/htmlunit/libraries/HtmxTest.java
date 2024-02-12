@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,10 @@ package org.htmlunit.libraries;
 
 import java.util.List;
 
+import org.htmlunit.Page;
+import org.htmlunit.WebClient;
 import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.html.HtmlPage;
 import org.htmlunit.junit.BrowserRunner;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
@@ -33,6 +36,9 @@ import org.openqa.selenium.htmlunit.HtmlUnitDriver;
  */
 @RunWith(BrowserRunner.class)
 public abstract class HtmxTest extends WebDriverTestCase {
+
+    private static final boolean BUG_HUNTING = false;
+
     private static final int RETRIES = 2;
     private static final long RUN_TIME = 42 * DEFAULT_WAIT_TIME;
 
@@ -43,59 +49,60 @@ public abstract class HtmxTest extends WebDriverTestCase {
             final String url = URL_FIRST + "test/index.html";
             final WebDriver webDriver = getWebDriver();
 
-            if (getWebDriver() instanceof HtmlUnitDriver) {
-                getWebClient().getOptions().setThrowExceptionOnScriptError(false);
+            if (webDriver instanceof HtmlUnitDriver) {
+                setupWebClient(((HtmlUnitDriver) webDriver).getWebClient());
             }
 
-            String lastStats = "";
             int tries = 0;
-            while (tries < RETRIES) {
-                tries++;
+            String lastStats = "";
+            webDriver.get(url);
+            long endTime = System.currentTimeMillis() + RUN_TIME;
 
-                webDriver.get(url);
+            while (true) {
+                lastStats = getResultElementText(webDriver);
+                if (lastStats.startsWith(getExpectedAlerts()[0])) {
+                    break;
+                }
+                Thread.sleep(100);
 
-                lastStats = "";
-                final long endTime = System.currentTimeMillis() + RUN_TIME;
-                while (lastStats.length() == 0 || !lastStats.startsWith(getExpectedAlerts()[0])) {
-                    if (lastStats.startsWith(getExpectedAlerts()[0])) {
-                        tries = RETRIES;
-                        break;
+                if (System.currentTimeMillis() > endTime) {
+                    tries++;
+
+                    if (tries < RETRIES) {
+                        lastStats = "";
+                        webDriver.get(url);
+                        endTime = System.currentTimeMillis() + RUN_TIME;
                     }
-                    Thread.sleep(100);
-
-                    if (System.currentTimeMillis() > endTime) {
+                    else {
                         lastStats = "HtmxTest runs too long (longer than " + RUN_TIME / 1000 + "s) - "
                                 + getResultElementText(webDriver);
                         break;
                     }
-
-                    lastStats = getResultElementText(webDriver);
                 }
             }
 
-            // bug hunting
-            /*
-            if (getWebDriver() instanceof HtmlUnitDriver) {
-                final WebClient webClient = getWebWindowOf((HtmlUnitDriver) getWebDriver()).getWebClient();
+            if (BUG_HUNTING && getWebDriver() instanceof HtmlUnitDriver) {
+                final WebClient webClient = ((HtmlUnitDriver) getWebDriver()).getWebClient();
 
                 final Page page = webClient.getCurrentWindow().getEnclosedPage();
                 System.out.println(((HtmlPage) page).asNormalizedText());
             }
-            */
 
             assertTrue(lastStats + "\n\n" + getErrors(webDriver), lastStats.startsWith(getExpectedAlerts()[0]));
         }
         catch (final Exception e) {
-            // bug hunting
-            /*
-            e.printStackTrace();
-            Throwable t = e;
-            while ((t = t.getCause()) != null) {
-                t.printStackTrace();
+            if (BUG_HUNTING && getWebDriver() instanceof HtmlUnitDriver) {
+                e.printStackTrace();
+                Throwable t = e;
+                while ((t = t.getCause()) != null) {
+                    t.printStackTrace();
+                }
             }
-            */
             throw e;
         }
+    }
+
+    protected void setupWebClient(final WebClient webClient) {
     }
 
     private static String getResultElementText(final WebDriver webdriver) {

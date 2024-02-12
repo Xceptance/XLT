@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -111,7 +111,7 @@ public class CSSStyleRule extends CSSRule {
     @JsxGetter
     public CSSStyleDeclaration getStyle() {
         final WrappedCssStyleDeclaration styleDeclaration
-                = new WrappedCssStyleDeclaration(((CSSStyleRuleImpl) getRule()).getStyle());
+                = new WrappedCssStyleDeclaration(((CSSStyleRuleImpl) getRule()).getStyle(), getBrowserVersion());
         return new CSSStyleDeclaration(getParentStyleSheet(), styleDeclaration);
     }
 

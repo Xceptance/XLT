@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,14 +46,17 @@ public class HtmlRangeInput extends HtmlInput implements LabelableElement {
             final double max = getMaxNumeric();
             if (max < min) {
                 setValue(min);
+                unmarkValueDirty();
                 return;
             }
 
             final double val = min + ((max - min) / 2);
             setValue(val);
+            unmarkValueDirty();
         }
         else {
             setValue(value);
+            unmarkValueDirty();
         }
     }
 
@@ -164,6 +167,61 @@ public class HtmlRangeInput extends HtmlInput implements LabelableElement {
         }
         else {
             super.setValue(Double.toString(value));
+        }
+    }
+
+    @Override
+    protected void valueAttributeChanged(final String attributeValue, final boolean isValueDirty) {
+        if (isValueDirty) {
+            return;
+        }
+
+        try {
+            if (StringUtils.isNotEmpty(attributeValue)) {
+                setRawValue(Double.parseDouble(attributeValue));
+            }
+            else {
+                final double min = getMinNumeric();
+                final double max = getMaxNumeric();
+
+                // place in the middle
+                setRawValue(min + ((max - min) / 2));
+            }
+        }
+        catch (final NumberFormatException e) {
+            // ignore
+        }
+    }
+
+    private void setRawValue(final double newValue) {
+        double value = newValue;
+
+        final double min = getMinNumeric();
+        final double max = getMaxNumeric();
+
+        if (value > max) {
+            value = max;
+        }
+        else {
+            if (value < min) {
+                value = min;
+            }
+        }
+
+        final double step = getStepNumeric();
+        value = value - min;
+        int fact = (int) (value / step);
+        final double rest = value % step;
+        if (rest >= step / 2) {
+            fact++;
+        }
+        value = min + step * fact;
+
+        if (!Double.isInfinite(value) && value == Math.floor(value)) {
+            setRawValue(Integer.toString((int) value));
+        }
+        else {
+            setRawValue(Double.toString(value));
         }
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,13 +19,12 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 import java.io.Serializable;
 import java.util.function.Predicate;
 
-import org.htmlunit.corejs.javascript.Context;
-import org.htmlunit.corejs.javascript.Undefined;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlTableRow;
 import org.htmlunit.javascript.HtmlUnitScriptable;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
@@ -103,8 +102,8 @@ public class RowContainer extends HTMLElement {
     @JsxFunction
     public Object insertRow(final Object index) {
         int rowIndex = -1;
-        if (!Undefined.isUndefined(index)) {
-            rowIndex = (int) Context.toNumber(index);
+        if (!JavaScriptEngine.isUndefined(index)) {
+            rowIndex = (int) JavaScriptEngine.toNumber(index);
         }
         final HTMLCollection rows = (HTMLCollection) getRows();
         final int rowCount = rows.getLength();
@@ -117,7 +116,7 @@ public class RowContainer extends HTMLElement {
         }
 
         if (r < 0 || r > rowCount) {
-            throw Context.reportRuntimeError("Index or size is negative or greater than the allowed amount "
+            throw JavaScriptEngine.reportRuntimeError("Index or size is negative or greater than the allowed amount "
                     + "(index: " + rowIndex + ", " + rowCount + " rows)");
         }
 

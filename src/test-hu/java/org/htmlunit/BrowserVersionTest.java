@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,11 +35,11 @@ public class BrowserVersionTest {
      */
     @Test
     public void getBrowserVersionNumeric() {
-        assertEquals(111, BrowserVersion.FIREFOX.getBrowserVersionNumeric());
-        assertEquals(102, BrowserVersion.FIREFOX_ESR.getBrowserVersionNumeric());
+        assertEquals(122, BrowserVersion.FIREFOX.getBrowserVersionNumeric());
+        assertEquals(115, BrowserVersion.FIREFOX_ESR.getBrowserVersionNumeric());
+        assertEquals(121, BrowserVersion.CHROME.getBrowserVersionNumeric());
+        assertEquals(121, BrowserVersion.EDGE.getBrowserVersionNumeric());
         assertEquals(11, BrowserVersion.INTERNET_EXPLORER.getBrowserVersionNumeric());
-        assertEquals(111, BrowserVersion.CHROME.getBrowserVersionNumeric());
-        assertEquals(111, BrowserVersion.EDGE.getBrowserVersionNumeric());
     }
 
     /**

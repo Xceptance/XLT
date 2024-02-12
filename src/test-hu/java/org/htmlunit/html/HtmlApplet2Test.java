@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,14 +60,12 @@ public class HtmlApplet2Test extends WebDriverTestCase {
 
         final WebDriver driver = loadPageVerifyTitle2(html);
         if (driver instanceof HtmlUnitDriver) {
-            if (getBrowserVersion().isChrome()
-                    || getBrowserVersion().isFirefox()
-                    || getBrowserVersion().isEdge()) {
-                final HtmlPage page = (HtmlPage) getEnclosedPage();
+            final HtmlPage page = (HtmlPage) getEnclosedPage();
+
+            if ("[object HTMLUnknownElement]".equals(getExpectedAlerts()[0])) {
                 assertTrue(HtmlUnknownElement.class.isInstance(page.getHtmlElementById("myId")));
             }
             else {
-                final HtmlPage page = (HtmlPage) getEnclosedPage();
                 assertTrue(HtmlApplet.class.isInstance(page.getHtmlElementById("myId")));
             }
         }

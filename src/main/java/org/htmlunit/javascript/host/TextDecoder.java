@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,12 +24,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Locale;
 
-import org.htmlunit.corejs.javascript.Context;
-import org.htmlunit.corejs.javascript.ScriptRuntime;
-import org.htmlunit.corejs.javascript.Undefined;
 import org.htmlunit.corejs.javascript.typedarrays.NativeArrayBuffer;
 import org.htmlunit.corejs.javascript.typedarrays.NativeArrayBufferView;
 import org.htmlunit.javascript.HtmlUnitScriptable;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
@@ -352,18 +350,18 @@ public class TextDecoder extends HtmlUnitScriptable {
      * @param encoding the encoding
      */
     @JsxConstructor
-    public TextDecoder(final Object encoding) {
-        if (Undefined.isUndefined(encoding)) {
+    public void jsConstructor(final Object encoding) {
+        if (JavaScriptEngine.isUndefined(encoding)) {
             return;
         }
 
-        final String enc = Context.toString(encoding);
+        final String enc = JavaScriptEngine.toString(encoding);
         final Charset charset = ENCODINGS_.get(enc);
         if (charset != null) {
             encoding_ = charset.name();
             return;
         }
-        throw ScriptRuntime.typeError("Argument 1 '" + enc + "' is not a supported encoding");
+        throw JavaScriptEngine.typeError("Argument 1 '" + enc + "' is not a supported encoding");
     }
 
     /**
@@ -384,7 +382,7 @@ public class TextDecoder extends HtmlUnitScriptable {
      */
     @JsxFunction
     public String decode(final Object buffer) {
-        if (Undefined.isUndefined(buffer)) {
+        if (JavaScriptEngine.isUndefined(buffer)) {
             return "";
         }
 
@@ -400,7 +398,7 @@ public class TextDecoder extends HtmlUnitScriptable {
             return new String(arrayBuffer.getBuffer(), Charset.forName(encoding_));
         }
 
-        throw ScriptRuntime.typeError("Argument 1 of TextDecoder.decode could not be"
+        throw JavaScriptEngine.typeError("Argument 1 of TextDecoder.decode could not be"
                                 + " converted to any of: ArrayBufferView, ArrayBuffer.");
     }
 }

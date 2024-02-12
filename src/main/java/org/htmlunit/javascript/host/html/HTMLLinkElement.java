@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,10 +23,10 @@ import java.net.MalformedURLException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.css.CssStyleSheet;
 import org.htmlunit.html.HtmlLink;
 import org.htmlunit.html.HtmlPage;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxGetter;
@@ -54,8 +54,24 @@ public class HTMLLinkElement extends HTMLElement {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public HTMLLinkElement() {
+    }
+
+    /**
+     * JavaScript constructor.
+     */
+    @Override
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    public void jsConstructor() {
+        super.jsConstructor();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public HtmlLink getDomNodeOrDie() {
+        return (HtmlLink) super.getDomNodeOrDie();
     }
 
     /**
@@ -73,7 +89,7 @@ public class HTMLLinkElement extends HTMLElement {
      */
     @JsxGetter
     public String getHref() {
-        final HtmlLink link = (HtmlLink) getDomNodeOrDie();
+        final HtmlLink link = getDomNodeOrDie();
         final String href = link.getHrefAttribute();
         if (href.isEmpty()) {
             return href;
@@ -101,7 +117,7 @@ public class HTMLLinkElement extends HTMLElement {
      */
     @JsxGetter
     public String getRel() {
-        return ((HtmlLink) getDomNodeOrDie()).getRelAttribute();
+        return getDomNodeOrDie().getRelAttribute();
     }
 
     /**
@@ -119,7 +135,7 @@ public class HTMLLinkElement extends HTMLElement {
      */
     @JsxGetter
     public String getRev() {
-        return ((HtmlLink) getDomNodeOrDie()).getRevAttribute();
+        return getDomNodeOrDie().getRevAttribute();
     }
 
     /**
@@ -137,7 +153,7 @@ public class HTMLLinkElement extends HTMLElement {
      */
     @JsxGetter
     public String getType() {
-        return ((HtmlLink) getDomNodeOrDie()).getTypeAttribute();
+        return getDomNodeOrDie().getTypeAttribute();
     }
 
     /**
@@ -148,23 +164,22 @@ public class HTMLLinkElement extends HTMLElement {
     public CSSStyleSheet getSheet() {
         if (sheet_ == null) {
             try {
-                final CssStyleSheet sheet =
-                        CssStyleSheet.loadStylesheet(getDomNodeOrDie(), (HtmlLink) getDomNodeOrDie(), null);
-                sheet_ = new CSSStyleSheet(this, this.getWindow(), sheet);
+                final CssStyleSheet sheet = getDomNodeOrDie().getSheet();
+                sheet_ = new CSSStyleSheet(this, getWindow(), sheet);
             }
             catch (final RuntimeException e) {
                 // Got something unexpected; we can throw an exception in this case.
                 if (LOG.isErrorEnabled()) {
                     LOG.error("RuntimeException loading stylesheet", e);
                 }
-                throw Context.reportRuntimeError("Exception: " + e);
+                throw JavaScriptEngine.reportRuntimeError("Exception: " + e);
             }
             catch (final Exception e) {
                 // Got something unexpected; we can throw an exception in this case.
                 if (LOG.isErrorEnabled()) {
                     LOG.error("Exception loading stylesheet", e);
                 }
-                throw Context.reportRuntimeError("Exception: " + e);
+                throw JavaScriptEngine.reportRuntimeError("Exception: " + e);
             }
         }
         return sheet_;
@@ -188,6 +203,19 @@ public class HTMLLinkElement extends HTMLElement {
     }
 
     /**
+     * Sets the relList property.
+     * @param rel attribute value
+     */
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
+    public void setRelList(final Object rel) {
+        if (JavaScriptEngine.isUndefined(rel)) {
+            setRel("undefined");
+            return;
+        }
+        setRel(JavaScriptEngine.toString(rel));
+    }
+
+    /**
      * {@inheritDoc} Overridden to modify browser configurations.
      */
     @Override
@@ -204,5 +232,4 @@ public class HTMLLinkElement extends HTMLElement {
     public void setDisabled(final boolean disabled) {
         super.setDisabled(disabled);
     }
-
 }

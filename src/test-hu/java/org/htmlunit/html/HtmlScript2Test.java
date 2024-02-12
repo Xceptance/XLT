@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -547,7 +547,7 @@ public class HtmlScript2Test extends WebDriverTestCase {
             + "<body onload='test()'></body>\n"
             + "</html>";
 
-        getMockWebConnection().setDefaultResponse("", MimeType.APPLICATION_JAVASCRIPT);
+        getMockWebConnection().setDefaultResponse("", MimeType.TEXT_JAVASCRIPT);
 
         loadPage2(html);
         verifyTitle2(DEFAULT_WAIT_TIME, getWebDriver(), getExpectedAlerts());
@@ -580,7 +580,7 @@ public class HtmlScript2Test extends WebDriverTestCase {
             + "</html>";
 
         getMockWebConnection().setResponse(scriptUrl, (String) null, HttpClientConverter.NO_CONTENT, "No Content",
-                                                MimeType.APPLICATION_JAVASCRIPT, null);
+                                                MimeType.TEXT_JAVASCRIPT, null);
         loadPageVerifyTitle2(html);
     }
 
@@ -615,35 +615,44 @@ public class HtmlScript2Test extends WebDriverTestCase {
     public void lineBreaksInUrl() throws Exception {
         final String html
             = "<html><head>\n"
+            + "  <script>\n"
+            + LOG_TITLE_FUNCTION_NORMALIZE
+            + "  </script>\n"
             + "  <script id='myScript' src='" + URL_SECOND + "a\rb\nc\r\nd'></script>\n"
             + "</head>\n"
-            + "<body onload='alert(document.getElementById(\"myScript\").src);'>Test</body>\n"
+            + "<body onload='log(document.getElementById(\"myScript\").src);'>Test</body>\n"
             + "</html>";
 
-        getMockWebConnection().setResponse(new URL(URL_SECOND, "abcd"), "alert('loaded')");
+        getMockWebConnection().setResponse(new URL(URL_SECOND, "abcd"), "log('loaded')");
         expandExpectedAlertsVariables(URL_SECOND);
-        loadPageWithAlerts2(html);
+
+        loadPageVerifyTitle2(html);
     }
 
     /**
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("\u0623\u0647\u0644\u0627\u064b\u0623\u0647\u0644\u0627"
-            + "\u064b\u0623\u0647\u0644\u0627\u064b\u0623\u0647\u0644\u0627\u064b")
+    @Alerts({"\u0623\u0647\u0644\u0627\u064b\u0623\u0647\u0644\u0627"
+            + "\u064b\u0623\u0647\u0644\u0627\u064b\u0623\u0647\u0644\u0627\u064b", "§§URL§§"})
     public void incorrectCharset() throws Exception {
         final String html
             = "<html><head>\n"
-            + "  <script src='" + URL_SECOND + "' charset='" + ISO_8859_1 + "'></script>\n"
+            + "  <script>\n"
+            + LOG_TITLE_FUNCTION_NORMALIZE
+            + "  </script>\n"
+            + "  <script id='myScript' src='" + URL_SECOND + "' charset='" + ISO_8859_1 + "'></script>\n"
             + "</head>\n"
-            + "<body></body>\n"
+            + "<body onload='log(document.getElementById(\"myScript\").src);'></body>\n"
             + "</html>";
 
         final String script = new String(ByteOrderMark.UTF_8.getBytes())
-                + "alert('" + "\u0623\u0647\u0644\u0627\u064b\u0623\u0647\u0644\u0627"
+                + "log('" + "\u0623\u0647\u0644\u0627\u064b\u0623\u0647\u0644\u0627"
                             + "\u064b\u0623\u0647\u0644\u0627\u064b\u0623\u0647\u0644\u0627\u064b" + "');";
-        getMockWebConnection().setResponse(URL_SECOND, script, MimeType.APPLICATION_JAVASCRIPT, UTF_8);
-        loadPageWithAlerts2(html);
+        getMockWebConnection().setResponse(URL_SECOND, script, MimeType.TEXT_JAVASCRIPT, UTF_8);
+        expandExpectedAlertsVariables(URL_SECOND);
+
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -862,14 +871,18 @@ public class HtmlScript2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("ok")
+    @Alerts({"loaded", "§§URL§§"})
     public void whitespaceInSrc() throws Exception {
-        final String html = "<html><head><script src=' " + URL_SECOND + " '></script></head><body>abc</body></html>";
-        final String js = "alert('ok')";
+        final String html = "<html><head>"
+                + "  <script>" + LOG_TITLE_FUNCTION_NORMALIZE + "</script>"
+                + "<script id='myScript' src=' " + URL_SECOND + " '></script></head>"
+                + "<body onload='log(document.getElementById(\"myScript\").src);'>abc</body></html>";
 
+        final String js = "log('loaded')";
         getMockWebConnection().setResponse(URL_SECOND, js);
+        expandExpectedAlertsVariables(URL_SECOND);
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -877,15 +890,18 @@ public class HtmlScript2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("ok")
+    @Alerts({"loaded", "§§URL§§"})
     public void controlCharsInSrc() throws Exception {
         final String html = "<html><head>"
-                + "<script src='\u0011" + URL_SECOND + "\u001d'></script></head><body>abc</body></html>";
-        final String js = "alert('ok')";
+                + "  <script>" + LOG_TITLE_FUNCTION_NORMALIZE + "</script>"
+                + "<script id='myScript' src=' " + URL_SECOND + "\u001d'></script></head>"
+                + "<body onload='log(document.getElementById(\"myScript\").src);'>abc</body></html>";
 
+        final String js = "log('loaded')";
         getMockWebConnection().setResponse(URL_SECOND, js);
+        expandExpectedAlertsVariables(URL_SECOND);
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -893,18 +909,21 @@ public class HtmlScript2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("ok")
+    @Alerts({"loaded", "§§URL§§"})
     public void tabCharInSrc() throws Exception {
         String url = URL_SECOND.toExternalForm();
         url = url.replace("http", "http\t");
 
         final String html = "<html><head>"
-                + "<script src='" + url + "'></script></head><body>abc</body></html>";
-        final String js = "alert('ok')";
+                + "  <script>" + LOG_TITLE_FUNCTION_NORMALIZE + "</script>"
+                + "<script id='myScript' src=' " + url + "\u001d'></script></head>"
+                + "<body onload='log(document.getElementById(\"myScript\").src);'>abc</body></html>";
 
+        final String js = "log('loaded')";
         getMockWebConnection().setResponse(URL_SECOND, js);
+        expandExpectedAlertsVariables(URL_SECOND);
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -931,9 +950,93 @@ public class HtmlScript2Test extends WebDriverTestCase {
 
         final ArrayList<NameValuePair> headers = new ArrayList<>();
         getMockWebConnection().setResponse(URL_SECOND, (String) null, HttpClientConverter.NO_CONTENT, "No Content",
-                MimeType.APPLICATION_JAVASCRIPT,
+                MimeType.TEXT_JAVASCRIPT,
                 headers);
 
         loadPageWithAlerts2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts("script")
+    public void srcAndContent() throws Exception {
+        final String html = "<html>\n"
+            + "  <head>\n"
+            + "    <script src='foo.js'>window.document.title += 'content' + '\\u00a7';</script>\n";
+
+        final String js = "window.document.title += 'script' + '\\u00a7';";
+
+        getMockWebConnection().setDefaultResponse(js, MimeType.TEXT_JAVASCRIPT);
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    public void emptySrcAndContent() throws Exception {
+        final String html = "<html>\n"
+            + "  <head>\n"
+            + "    <script src=''>window.document.title += 'content' + '\\u00a7';</script>\n";
+
+        final String js = "window.document.title += 'script' + '\\u00a7';";
+
+        getMockWebConnection().setDefaultResponse(js, MimeType.TEXT_JAVASCRIPT);
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    public void blankSrcAndContent() throws Exception {
+        final String html = "<html>\n"
+            + "  <head>\n"
+            + "    <script src=' '>window.document.title += 'content' + '\\u00a7';</script>\n";
+
+        final String js = "window.document.title += 'script' + '\\u00a7';";
+
+        getMockWebConnection().setDefaultResponse(js, MimeType.TEXT_JAVASCRIPT);
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    public void attribSrcAndContent() throws Exception {
+        final String html = "<html>\n"
+            + "  <head>\n"
+            + "    <script src>window.document.title += 'content' + '\\u00a7';</script>\n";
+
+        final String js = "window.document.title += 'script' + '\\u00a7';";
+
+        getMockWebConnection().setDefaultResponse(js, MimeType.TEXT_JAVASCRIPT);
+
+        loadPageVerifyTitle2(html);
+    }
+
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts({"first script", "second script"})
+    public void content() throws Exception {
+        final String html = "<html>\n"
+            + "  <head>\n"
+            + "    <script src='foo.js'>window.document.title += 'content' + '\\u00a7';</script>\n"
+            + "    <script>window.document.title += 'second script' + '\\u00a7';</script>\n";
+
+        final String js = "window.document.title += 'first script' + '\\u00a7';";
+
+        getMockWebConnection().setDefaultResponse(js, MimeType.TEXT_JAVASCRIPT);
+
+        loadPageVerifyTitle2(html);
     }
 }

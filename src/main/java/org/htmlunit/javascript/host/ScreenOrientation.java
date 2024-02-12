@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxGetter;
+import org.htmlunit.javascript.configuration.JsxSetter;
 import org.htmlunit.javascript.host.event.Event;
 import org.htmlunit.javascript.host.event.EventTarget;
 
@@ -38,8 +39,16 @@ public class ScreenOrientation extends EventTarget {
     /**
      * Creates an instance.
      */
-    @JsxConstructor
     public ScreenOrientation() {
+    }
+
+    /**
+     * JavaScript constructor.
+     */
+    @Override
+    @JsxConstructor
+    public void jsConstructor() {
+        super.jsConstructor();
     }
 
     /**
@@ -67,5 +76,14 @@ public class ScreenOrientation extends EventTarget {
     @JsxGetter
     public Function getOnchange() {
         return getEventHandler(Event.TYPE_CHANGE);
+    }
+
+    /**
+     * Setter for the {@code onchange} event handler.
+     * @param change the handler
+     */
+    @JsxSetter
+    public void setOnchange(final Object change) {
+        setEventHandler(Event.TYPE_CHANGE, change);
     }
 }

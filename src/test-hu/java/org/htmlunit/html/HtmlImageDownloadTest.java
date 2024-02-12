@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectOutputStream;
 import java.net.URL;
-
-import javax.imageio.ImageReader;
 
 import org.apache.commons.io.IOUtils;
 import org.htmlunit.HttpHeader;
@@ -136,14 +134,11 @@ public class HtmlImageDownloadTest extends WebServerTestCase {
         final HtmlImage htmlImage = getHtmlElementToTest("image1");
 
         final ImageData imageData = htmlImage.getImageData();
-        final ImageReader imageReader = htmlImage.getImageReader();
 
         htmlImage.setAttribute("src", htmlImage.getSrcAttribute() + "#changed");
 
         assertFalse("Src attribute changed but ImageData was not reloaded",
                 imageData.equals(htmlImage.getImageData()));
-        assertFalse("Src attribute changed but ImageReader was not reloaded",
-                imageReader.equals(htmlImage.getImageReader()));
     }
 
     /**
@@ -175,7 +170,7 @@ public class HtmlImageDownloadTest extends WebServerTestCase {
     @Test
     public void serialize() throws Exception {
         final HtmlImage htmlImage = getHtmlElementToTest("image1");
-        htmlImage.getImageReader();
+        htmlImage.getImageData();
 
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             try (ObjectOutputStream out = new ObjectOutputStream(baos)) {

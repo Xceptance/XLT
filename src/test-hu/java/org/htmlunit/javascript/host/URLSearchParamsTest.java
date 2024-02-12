@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,6 +47,191 @@ public class URLSearchParamsTest extends WebDriverTestCase {
             + "      if (self.URLSearchParams) {\n"
             + "        log(new URLSearchParams('?foo=1&bar=2'));\n"
             + "        log(new URLSearchParams());\n"
+            + "      }\n"
+            + "    }\n"
+            + "  </script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "</body>\n"
+            + "</html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    @Test
+    @Alerts(DEFAULT = {"",
+                       "Failed to construct 'URLSearchParams': The provided value cannot be converted to a sequence",
+                       "foo=1&bar=2&null=null",
+                       "Failed to construct 'URLSearchParams': Sequence initializer must only contain pair elements",
+                       "a%2Cb=1%2C2%2C3",
+                       "Failed to construct 'URLSearchParams': The object must have a callable @@iterator property"},
+            IE = {})
+    public void ctorArray() throws Exception {
+        final String html =
+            "<html>\n"
+            + "<head>\n"
+            + "  <script>\n"
+            + LOG_TITLE_FUNCTION
+            + "    function test() {\n"
+            + "      if (self.URLSearchParams) {\n"
+            + "        log(new URLSearchParams(Array(0)));\n"
+            + "        try {\n"
+            + "          new URLSearchParams(Array(1));\n"
+            + "        } catch (ex) {\n"
+            + "          log(\"Failed to construct 'URLSearchParams': "
+                                + "The provided value cannot be converted to a sequence\");\n"
+            + "        }\n"
+            + "\n"
+            + "        log(new URLSearchParams([\n"
+            + "          ['foo', '1'],\n"
+            + "          ['bar', '2'],\n"
+            + "          [null, null],\n"
+            + "        ]));\n"
+            + "\n"
+            + "        try {\n"
+            + "          new URLSearchParams([\n"
+            + "            ['foo', '1', '2'],\n"
+            + "          ]);\n"
+            + "        } catch (ex) {\n"
+            + "          log(\"Failed to construct 'URLSearchParams': "
+                                + "Sequence initializer must only contain pair elements\");\n"
+            + "        }\n"
+            + "\n"
+            + "        log(new URLSearchParams([\n"
+            + "          [\n"
+            + "            ['a', 'b'],\n"
+            + "            ['1', '2', '3']\n"
+            + "          ],\n"
+            + "        ]));\n"
+            + "\n"
+            + "        try {\n"
+            + "          new URLSearchParams([\n"
+            + "            {'foo': 1},\n"
+            + "            {'bar': 2},\n"
+            + "          ]);\n"
+            + "        } catch (ex) {\n"
+            + "          log(\"Failed to construct 'URLSearchParams': "
+                                + "The object must have a callable @@iterator property\");\n"
+            + "        }\n"
+            + "      }\n"
+            + "    }\n"
+            + "  </script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "</body>\n"
+            + "</html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    @Test
+    @Alerts(DEFAULT = {"foo=1&bar=2", "foo=%5Bobject+Object%5D&bar=3"},
+            IE = {})
+    public void ctorObject() throws Exception {
+        final String html =
+            "<html>\n"
+            + "<head>\n"
+            + "  <script>\n"
+            + LOG_TITLE_FUNCTION
+            + "    function test() {\n"
+            + "      if (self.URLSearchParams) {\n"
+            + "        log(new URLSearchParams({\n"
+            + "          foo: '1',\n"
+            + "          bar: '2'\n"
+            + "        }));\n"
+            + "\n"
+            + "        log(new URLSearchParams({\n"
+            + "          'foo': {\n"
+            + "            'x': '1',\n"
+            + "            'y': '2'\n"
+            + "          },\n"
+            + "          'bar': '3',\n"
+            + "        }))\n;"
+            + "      }\n"
+            + "    }\n"
+            + "  </script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "</body>\n"
+            + "</html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    @Test
+    @Alerts(DEFAULT = {"foo=1&bar=%5Bobject+Object%5D&foobar=4%2C5%2C6",
+                       "foo=1&bar=2", "foo=1&bar=2",
+                       "Failed to construct 'URLSearchParams': Iterator object must be an object",
+                       "Failed to construct 'URLSearchParams': @@iterator must be a callable",
+                       "Failed to construct 'URLSearchParams': Expected next() function on iterator",
+                       "foo=1&bar=2",
+                       "Failed to construct 'URLSearchParams': The provided value cannot be converted to a sequence"},
+            IE = {})
+    public void ctorIterable() throws Exception {
+        final String html =
+            "<html>\n"
+            + "<head>\n"
+            + "  <script>\n"
+            + LOG_TITLE_FUNCTION
+            + "    function test() {\n"
+            + "      if (self.URLSearchParams) {\n"
+            + "        var map = new Map();\n"
+            + "        map.set('foo', 1);\n"
+            + "        map.set('bar', {\n"
+            + "          'x': 1,\n"
+            + "          'y': 2,\n"
+            + "        });\n"
+            + "        map.set('foobar', [4, 5, 6]);\n"
+            + "        log(new URLSearchParams(map));\n"
+            + "\n"
+            + "        var formData = new FormData();\n"
+            + "        formData.append('foo', '1');\n"
+            + "        formData.append('bar', '2');\n"
+            + "        log(new URLSearchParams(formData));\n"
+            + "\n"
+            + "        var searchParams = new URLSearchParams('foo=1&bar=2');\n"
+            + "        log(new URLSearchParams(searchParams));\n"
+            + "\n"
+            + "        try {\n"
+            + "          var brokenIterable = {};\n"
+            + "          brokenIterable[Symbol.iterator] = function (){};\n"
+            + "          new URLSearchParams(brokenIterable);\n"
+            + "        } catch (ex) {\n"
+            + "          log(\"Failed to construct 'URLSearchParams': Iterator object must be an object\");\n"
+            + "        }\n"
+            + "\n"
+            + "        try {\n"
+            + "          var brokenIterable = {};\n"
+            + "          brokenIterable[Symbol.iterator] = 1;\n"
+            + "          new URLSearchParams(brokenIterable);\n"
+            + "        } catch (ex) {\n"
+            + "          log(\"Failed to construct 'URLSearchParams': @@iterator must be a callable\");\n"
+            + "        }\n"
+            + "\n"
+            + "        try {\n"
+            + "          var brokenIterable = {};\n"
+            + "          brokenIterable[Symbol.iterator] = function (){ return {} };\n"
+            + "          new URLSearchParams(brokenIterable);\n"
+            + "        } catch (ex) {\n"
+            + "          log(\"Failed to construct 'URLSearchParams': Expected next() function on iterator\");\n"
+            + "        }\n"
+            + "\n"
+            + "        var generatorObject = (function* () {\n"
+            + "          yield ['foo', 1];\n"
+            + "          yield ['bar', 2];\n"
+            + "        })();\n"
+            + "        log(new URLSearchParams(generatorObject));\n"
+            + "\n"
+            + "        try {\n"
+            + "          var generatorObject = (function* () {\n"
+            + "            yield 1;\n"
+            + "            yield 2;\n"
+            + "          })();\n"
+            + "          new URLSearchParams(generatorObject);\n"
+            + "        } catch (ex) {\n"
+            + "          log(\"Failed to construct 'URLSearchParams': "
+                                + "The provided value cannot be converted to a sequence\");\n"
+            + "        }\n"
             + "      }\n"
             + "    }\n"
             + "  </script>\n"
@@ -764,7 +949,7 @@ public class URLSearchParamsTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"function entries() { [native code] }", "[object URLSearchParams Iterator]",
+    @Alerts(DEFAULT = {"true", "function entries() { [native code] }", "[object URLSearchParams Iterator]",
                        "key1-val1", "key2-", "key1-val3", "-val4", "true"},
             IE = {})
     public void entries() throws Exception {
@@ -776,6 +961,10 @@ public class URLSearchParamsTest extends WebDriverTestCase {
             + "    function test() {\n"
             + "      if (self.URLSearchParams) {\n"
             + "        var param = new URLSearchParams('key1=val1&key2=&key1=val3&=val4');\n"
+
+            + "        if (typeof Symbol != 'undefined') {\n"
+            + "          log(param[Symbol.iterator] === param.entries);\n"
+            + "        }\n"
 
             + "        log(param.entries);\n"
             + "        var iter = param.entries();\n"
@@ -821,6 +1010,39 @@ public class URLSearchParamsTest extends WebDriverTestCase {
             + "        for (var i of param.entries()) {\n"
             + "          log(i);\n"
             + "        }\n"
+            + "      }\n"
+            + "    }\n"
+            + "  </script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "</body>\n"
+            + "</html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"4", "0", "1"},
+            IE = {})
+    public void size() throws Exception {
+        final String html =
+            "<html>\n"
+            + "<head>\n"
+            + "  <script>\n"
+            + LOG_TITLE_FUNCTION
+            + "    function test() {\n"
+            + "      if (self.URLSearchParams) {\n"
+            + "        var param = new URLSearchParams('key1=val1&key2=&key1=val3&=val4');\n"
+            + "        log(param.size);\n"
+
+            + "        param = new URLSearchParams('');\n"
+            + "        log(param.size);\n"
+
+            + "        param = new URLSearchParams('key1=val1');\n"
+            + "        log(param.size);\n"
             + "      }\n"
             + "    }\n"
             + "  </script>\n"

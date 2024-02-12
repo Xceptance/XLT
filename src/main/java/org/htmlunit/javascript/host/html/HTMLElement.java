@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,12 +48,12 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.htmlunit.SgmlPage;
-import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.WebWindow;
 import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.ScriptableObject;
-import org.htmlunit.corejs.javascript.Undefined;
+import org.htmlunit.css.ComputedCssStyleDeclaration;
 import org.htmlunit.css.StyleAttributes;
-import org.htmlunit.html.DomAttr;
+import org.htmlunit.html.DomElement;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.html.DomText;
 import org.htmlunit.html.HtmlAbbreviated;
@@ -95,8 +95,10 @@ import org.htmlunit.html.HtmlNoLayer;
 import org.htmlunit.html.HtmlNoScript;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlPlainText;
+import org.htmlunit.html.HtmlRb;
 import org.htmlunit.html.HtmlRp;
 import org.htmlunit.html.HtmlRt;
+import org.htmlunit.html.HtmlRtc;
 import org.htmlunit.html.HtmlRuby;
 import org.htmlunit.html.HtmlS;
 import org.htmlunit.html.HtmlSample;
@@ -114,6 +116,8 @@ import org.htmlunit.html.HtmlUnderlined;
 import org.htmlunit.html.HtmlVariable;
 import org.htmlunit.html.HtmlWordBreak;
 import org.htmlunit.html.serializer.HtmlSerializerInnerOuterText;
+import org.htmlunit.javascript.HtmlUnitScriptable;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
@@ -131,7 +135,6 @@ import org.htmlunit.javascript.host.dom.NodeList;
 import org.htmlunit.javascript.host.event.Event;
 import org.htmlunit.javascript.host.event.EventHandler;
 import org.htmlunit.javascript.host.event.MouseEvent;
-import org.xml.sax.helpers.AttributesImpl;
 
 /**
  * The JavaScript object {@code HTMLElement} which is the base class for all HTML
@@ -186,8 +189,10 @@ import org.xml.sax.helpers.AttributesImpl;
 @JsxClass(domClass = HtmlNoScript.class)
 @JsxClass(domClass = HtmlPlainText.class, value = {CHROME, EDGE, FF, FF_ESR})
 @JsxClass(domClass = HtmlRuby.class, value = {CHROME, EDGE})
+@JsxClass(domClass = HtmlRb.class, value = {CHROME, EDGE})
 @JsxClass(domClass = HtmlRp.class, value = {CHROME, EDGE})
 @JsxClass(domClass = HtmlRt.class, value = {CHROME, EDGE})
+@JsxClass(domClass = HtmlRtc.class, value = {CHROME, EDGE})
 @JsxClass(domClass = HtmlS.class, value = {CHROME, EDGE, FF, FF_ESR})
 @JsxClass(domClass = HtmlSample.class, value = {CHROME, EDGE, FF, FF_ESR})
 @JsxClass(domClass = HtmlSection.class)
@@ -382,8 +387,16 @@ public class HTMLElement extends Element {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public HTMLElement() {
+    }
+
+    /**
+     * JavaScript constructor.
+     */
+    @Override
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    public void jsConstructor() {
+        super.jsConstructor();
     }
 
     /**
@@ -428,7 +441,7 @@ public class HTMLElement extends Element {
 
     /**
      * Returns the element title.
-     * @return the ID of this element
+     * @return the title of this element
      */
     @JsxGetter
     public String getTitle() {
@@ -437,11 +450,34 @@ public class HTMLElement extends Element {
 
     /**
      * Sets the title of this element.
-     * @param newTitle the new identifier of this element
+     * @param newTitle the new title of this element
      */
     @JsxSetter
     public void setTitle(final String newTitle) {
         getDomNodeOrDie().setAttribute("title", newTitle);
+    }
+
+    /**
+     * Returns the element autofocus property.
+     * @return the autofocus of this element
+     */
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    public boolean getAutofocus() {
+        return getDomNodeOrDie().hasAttribute("autofocus");
+    }
+
+    /**
+     * Sets the autofocus of this element.
+     * @param newAutofocus the new autofocus of this element
+     */
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
+    public void setAutofocus(final boolean newAutofocus) {
+        if (newAutofocus) {
+            getDomNodeOrDie().setAttribute("autofocus", "");
+        }
+        else {
+            getDomNodeOrDie().removeAttribute("autofocus");
+        }
     }
 
     /**
@@ -479,13 +515,13 @@ public class HTMLElement extends Element {
             if (prefix != null) {
                 // create string builder only if needed (performance)
                 final StringBuilder localName = new StringBuilder(
-                                org.htmlunit.util.StringUtils.toRootLowerCaseWithCache(prefix))
+                                org.htmlunit.util.StringUtils.toRootLowerCase(prefix))
                     .append(':')
                     .append(org.htmlunit.util.StringUtils
-                                .toRootLowerCaseWithCache(domNode.getLocalName()));
+                                .toRootLowerCase(domNode.getLocalName()));
                 return localName.toString();
             }
-            return org.htmlunit.util.StringUtils.toRootLowerCaseWithCache(domNode.getLocalName());
+            return org.htmlunit.util.StringUtils.toRootLowerCase(domNode.getLocalName());
         }
         return domNode.getLocalName();
     }
@@ -536,7 +572,7 @@ public class HTMLElement extends Element {
         // Merge ID and name if we aren't preserving identity.
         if (preserveIdentity instanceof Boolean && !((Boolean) preserveIdentity).booleanValue()) {
             target.setId(src.getId());
-            target.setAttribute("name", src.getAttributeDirect("name"));
+            target.setAttribute(DomElement.NAME_ATTRIBUTE, src.getAttributeDirect(DomElement.NAME_ATTRIBUTE));
         }
     }
 
@@ -572,22 +608,6 @@ public class HTMLElement extends Element {
     }
 
     /**
-     * Gets the attributes of the element in the form of a {@link org.xml.sax.Attributes}.
-     * @param element the element to read the attributes from
-     * @return the attributes
-     */
-    protected AttributesImpl readAttributes(final HtmlElement element) {
-        final AttributesImpl attributes = new AttributesImpl();
-        for (final DomAttr entry : element.getAttributesMap().values()) {
-            final String name = entry.getName();
-            final String value = entry.getValue();
-            attributes.addAttribute(null, name, name, null, value);
-        }
-
-        return attributes;
-    }
-
-    /**
      * Removes this object from the document hierarchy.
      * @param removeChildren whether to remove children or no
      * @return a reference to the object that is removed
@@ -615,7 +635,7 @@ public class HTMLElement extends Element {
      * @return the attribute node for the specified attribute
      */
     @Override
-    public Object getAttributeNode(final String attributeName) {
+    public HtmlUnitScriptable getAttributeNode(final String attributeName) {
         return getAttributes().getNamedItem(attributeName);
     }
 
@@ -743,7 +763,7 @@ public class HTMLElement extends Element {
             valueString = null;
         }
         else {
-            valueString = Context.toString(value);
+            valueString = JavaScriptEngine.toString(value);
         }
 
         final DomNode domNode = getDomNodeOrDie();
@@ -771,7 +791,7 @@ public class HTMLElement extends Element {
         domNode.removeAllChildren();
 
         if (value != null) {
-            final String textValue = Context.toString(value);
+            final String textValue = JavaScriptEngine.toString(value);
             if (StringUtils.isNotEmpty(textValue)) {
                 domNode.appendChild(new DomText(domNode.getPage(), textValue));
             }
@@ -846,7 +866,7 @@ public class HTMLElement extends Element {
             // compute appropriate offset height to pretend mouse event was produced within this element
             return event.getClientY() - getPosY() + 50;
         }
-        final ComputedCSSStyleDeclaration style = getWindow().getComputedStyle(this, null);
+        final ComputedCssStyleDeclaration style = getWindow().getWebWindow().getComputedStyle(getDomNodeOrDie(), null);
         return style.getCalculatedHeight(true, true);
     }
 
@@ -869,7 +889,7 @@ public class HTMLElement extends Element {
             // compute appropriate offset width to pretend mouse event was produced within this element
             return event.getClientX() - getPosX() + 50;
         }
-        final ComputedCSSStyleDeclaration style = getWindow().getComputedStyle(this, null);
+        final ComputedCssStyleDeclaration style = getWindow().getWebWindow().getComputedStyle(getDomNodeOrDie(), null);
         return style.getCalculatedWidth(true, true);
     }
 
@@ -972,8 +992,6 @@ public class HTMLElement extends Element {
     @JsxFunction(IE)
     public void setActive() {
         final Window window = getWindow();
-        final HTMLDocument document = (HTMLDocument) window.getDocument();
-        document.setActiveElement(this);
         if (window.getWebWindow() == window.getWebWindow().getWebClient().getCurrentWindow()) {
             final HtmlElement element = getDomNodeOrDie();
             ((HtmlPage) element.getPage()).setFocusedElement(element);
@@ -1017,7 +1035,7 @@ public class HTMLElement extends Element {
      */
     @JsxGetter({FF, FF_ESR})
     public boolean isSpellcheck() {
-        return Context.toBoolean(getDomNodeOrDie().getAttributeDirect("spellcheck"));
+        return JavaScriptEngine.toBoolean(getDomNodeOrDie().getAttributeDirect("spellcheck"));
     }
 
     /**
@@ -1089,7 +1107,7 @@ public class HTMLElement extends Element {
      */
     @JsxGetter
     public int getTabIndex() {
-        return (int) Context.toNumber(getDomNodeOrDie().getAttributeDirect("tabindex"));
+        return (int) JavaScriptEngine.toNumber(getDomNodeOrDie().getAttributeDirect("tabindex"));
     }
 
     /**
@@ -1190,7 +1208,7 @@ public class HTMLElement extends Element {
             if (error) {
                 final Exception e = new Exception("Cannot set the '" + attributeName
                         + "' property to invalid value: '" + value + "'");
-                Context.throwAsScriptRuntimeEx(e);
+                throw JavaScriptEngine.throwAsScriptRuntimeEx(e);
             }
         }
         getDomNodeOrDie().setAttribute(attributeName, value);
@@ -1283,7 +1301,7 @@ public class HTMLElement extends Element {
             return;
         }
 
-        throw Context.reportRuntimeError("Cannot set the align property to invalid value: '" + align + "'");
+        throw JavaScriptEngine.reportRuntimeError("Cannot set the align property to invalid value: '" + align + "'");
     }
 
     /**
@@ -1310,7 +1328,7 @@ public class HTMLElement extends Element {
      * @param valid the valid values; if {@code null}, any value is valid
      */
     protected void setVAlign(final Object vAlign, final String[] valid) {
-        final String valign = Context.toString(vAlign);
+        final String valign = JavaScriptEngine.toString(vAlign);
         final String valignLC = valign.toLowerCase(Locale.ROOT);
         if (valid == null || ArrayUtils.contains(valid, valignLC)) {
             if (getBrowserVersion().hasFeature(JS_VALIGN_CONVERTS_TO_LOWERCASE)) {
@@ -1321,7 +1339,7 @@ public class HTMLElement extends Element {
             }
         }
         else {
-            throw Context.reportRuntimeError("Cannot set the vAlign property to invalid value: " + vAlign);
+            throw JavaScriptEngine.reportRuntimeError("Cannot set the vAlign property to invalid value: " + vAlign);
         }
     }
 
@@ -1390,7 +1408,8 @@ public class HTMLElement extends Element {
         // Add the offset for this node.
         DomNode node = getDomNodeOrDie();
         HTMLElement element = node.getScriptableObject();
-        ComputedCSSStyleDeclaration style = element.getWindow().getComputedStyle(element, null);
+        final WebWindow webWindow = element.getWindow().getWebWindow();
+        ComputedCssStyleDeclaration style = webWindow.getComputedStyle(element.getDomNodeOrDie(), null);
         left += style.getLeft(true, false, false);
 
         // If this node is absolutely positioned, we're done.
@@ -1406,14 +1425,14 @@ public class HTMLElement extends Element {
         while (node != null && node.getScriptableObject() != offsetParent) {
             if (node.getScriptableObject() instanceof HTMLElement) {
                 element = node.getScriptableObject();
-                style = element.getWindow().getComputedStyle(element, null);
+                style = webWindow.getComputedStyle(element.getDomNodeOrDie(), null);
                 left += style.getLeft(true, true, true);
             }
             node = node.getParentNode();
         }
 
         if (offsetParent != null) {
-            style = offsetParent.getWindow().getComputedStyle(offsetParent, null);
+            style = webWindow.getComputedStyle(offsetParent.getDomNodeOrDie(), null);
             left += style.getMarginLeftValue();
             left += style.getPaddingLeftValue();
         }
@@ -1428,10 +1447,12 @@ public class HTMLElement extends Element {
     public int getPosX() {
         int cumulativeOffset = 0;
         HTMLElement element = this;
+        final WebWindow webWindow = element.getWindow().getWebWindow();
         while (element != null) {
             cumulativeOffset += element.getOffsetLeft();
             if (element != this) {
-                final ComputedCSSStyleDeclaration style = element.getWindow().getComputedStyle(element, null);
+                final ComputedCssStyleDeclaration style =
+                        webWindow.getComputedStyle(element.getDomNodeOrDie(), null);
                 cumulativeOffset += style.getBorderLeftValue();
             }
             element = element.getOffsetParent();
@@ -1446,10 +1467,12 @@ public class HTMLElement extends Element {
     public int getPosY() {
         int cumulativeOffset = 0;
         HTMLElement element = this;
+        final WebWindow webWindow = element.getWindow().getWebWindow();
         while (element != null) {
             cumulativeOffset += element.getOffsetTop();
             if (element != this) {
-                final ComputedCSSStyleDeclaration style = element.getWindow().getComputedStyle(element, null);
+                final ComputedCssStyleDeclaration style =
+                        webWindow.getComputedStyle(element.getDomNodeOrDie(), null);
                 cumulativeOffset += style.getBorderTopValue();
             }
             element = element.getOffsetParent();
@@ -1489,7 +1512,8 @@ public class HTMLElement extends Element {
         // Add the offset for this node.
         DomNode node = getDomNodeOrDie();
         HTMLElement element = node.getScriptableObject();
-        ComputedCSSStyleDeclaration style = element.getWindow().getComputedStyle(element, null);
+        final WebWindow webWindow = element.getWindow().getWebWindow();
+        ComputedCssStyleDeclaration style = webWindow.getComputedStyle(element.getDomNodeOrDie(), null);
         top += style.getTop(true, false, false);
 
         // If this node is absolutely positioned, we're done.
@@ -1505,18 +1529,17 @@ public class HTMLElement extends Element {
         while (node != null && node.getScriptableObject() != offsetParent) {
             if (node.getScriptableObject() instanceof HTMLElement) {
                 element = node.getScriptableObject();
-                style = element.getWindow().getComputedStyle(element, null);
+                style = webWindow.getComputedStyle(element.getDomNodeOrDie(), null);
                 top += style.getTop(false, true, true);
             }
             node = node.getParentNode();
         }
 
         if (offsetParent != null) {
-            final HTMLElement thiz = getDomNodeOrDie().getScriptableObject();
-            style = thiz.getWindow().getComputedStyle(thiz, null);
+            style = webWindow.getComputedStyle(getDomNodeOrDie(), null);
             final boolean thisElementHasTopMargin = style.getMarginTopValue() != 0;
 
-            style = offsetParent.getWindow().getComputedStyle(offsetParent, null);
+            style = webWindow.getComputedStyle(offsetParent.getDomNodeOrDie(), null);
             if (!thisElementHasTopMargin) {
                 top += style.getMarginTopValue();
             }
@@ -1557,7 +1580,8 @@ public class HTMLElement extends Element {
             return null;
         }
 
-        final ComputedCSSStyleDeclaration style = htmlElement.getWindow().getComputedStyle(htmlElement, null);
+        final WebWindow webWindow = htmlElement.getWindow().getWebWindow();
+        final ComputedCssStyleDeclaration style = webWindow.getComputedStyle(htmlElement.getDomNodeOrDie(), null);
         final String position = style.getPositionWithInheritance();
         final boolean staticPos = "static".equals(position);
 
@@ -1572,8 +1596,8 @@ public class HTMLElement extends Element {
 
             if (parentNode != null && parentNode.getScriptableObject() instanceof HTMLElement) {
                 final HTMLElement parentElement = parentNode.getScriptableObject();
-                final ComputedCSSStyleDeclaration parentStyle =
-                            parentElement.getWindow().getComputedStyle(parentElement, null);
+                final ComputedCssStyleDeclaration parentStyle =
+                        webWindow.getComputedStyle(parentElement.getDomNodeOrDie(), null);
                 final String parentPosition = parentStyle.getPositionWithInheritance();
                 if (!"static".equals(parentPosition)) {
                     return parentNode.getScriptableObject();
@@ -1738,12 +1762,11 @@ public class HTMLElement extends Element {
 
     /**
      * Mock for the moment.
-     * @return true for success
      */
     @JsxFunction(IE)
     @Override
-    public boolean releaseCapture() {
-        return super.releaseCapture();
+    public void releaseCapture() {
+        super.releaseCapture();
     }
 
     /**
@@ -1785,7 +1808,7 @@ public class HTMLElement extends Element {
         if ("inherit".equals(attribute)) {
             final DomNode parent = getDomNodeOrDie().getParentNode();
             if (parent != null) {
-                final Object parentScriptable = parent.getScriptableObject();
+                final HtmlUnitScriptable parentScriptable = parent.getScriptableObject();
                 if (parentScriptable instanceof HTMLElement) {
                     return ((HTMLElement) parentScriptable).isIsContentEditable();
                 }
@@ -2993,6 +3016,24 @@ public class HTMLElement extends Element {
     }
 
     /**
+     * Returns the {@code onscrollend} event handler for this element.
+     * @return the {@code onscrollend} event handler for this element
+     */
+    @JsxGetter({CHROME, EDGE, FF})
+    public Function getOnscrollend() {
+        return getEventHandler(Event.TYPE_SCROLLEND);
+    }
+
+    /**
+     * Sets the {@code onscrollend} event handler for this element.
+     * @param onscrollend the {@code onscrollend} event handler for this element
+     */
+    @JsxSetter({CHROME, EDGE, FF})
+    public void setOnscrollend(final Object onscrollend) {
+        setEventHandler(Event.TYPE_SCROLLEND, onscrollend);
+    }
+
+    /**
      * Returns the {@code onseeked} event handler for this element.
      * @return the {@code onseeked} event handler for this element
      */
@@ -3454,7 +3495,7 @@ public class HTMLElement extends Element {
      * @return the value of this attribute
      */
     public String getName() {
-        return getDomNodeOrDie().getAttributeDirect("name");
+        return getDomNodeOrDie().getAttributeDirect(DomElement.NAME_ATTRIBUTE);
     }
 
     /**
@@ -3463,7 +3504,7 @@ public class HTMLElement extends Element {
      * @param newName the new name
      */
     public void setName(final String newName) {
-        getDomNodeOrDie().setAttribute("name", newName);
+        getDomNodeOrDie().setAttribute(DomElement.NAME_ATTRIBUTE, newName);
     }
 
     /**
@@ -3472,7 +3513,7 @@ public class HTMLElement extends Element {
      * @return the value of this attribute
      */
     public Object getValue() {
-        return getDomNodeOrDie().getAttributeDirect("value");
+        return getDomNodeOrDie().getAttributeDirect(DomElement.VALUE_ATTRIBUTE);
     }
 
     /**
@@ -3481,7 +3522,7 @@ public class HTMLElement extends Element {
      * @param newValue the new value
      */
     public void setValue(final Object newValue) {
-        getDomNodeOrDie().setAttribute("value", Context.toString(newValue));
+        getDomNodeOrDie().setAttribute(DomElement.VALUE_ATTRIBUTE, JavaScriptEngine.toString(newValue));
     }
 
     /**
@@ -3510,11 +3551,11 @@ public class HTMLElement extends Element {
      */
     @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setEnterKeyHint(final Object enterKeyHint) {
-        if (enterKeyHint == null || Undefined.isUndefined(enterKeyHint)) {
+        if (enterKeyHint == null || JavaScriptEngine.isUndefined(enterKeyHint)) {
             getDomNodeOrDie().removeAttribute("enterkeyhint");
             return;
         }
-        getDomNodeOrDie().setAttribute("enterkeyhint", Context.toString(enterKeyHint));
+        getDomNodeOrDie().setAttribute("enterkeyhint", JavaScriptEngine.toString(enterKeyHint));
     }
 
     /**

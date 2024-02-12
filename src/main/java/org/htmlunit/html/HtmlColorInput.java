@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,6 +73,27 @@ public class HtmlColorInput extends HtmlInput implements LabelableElement {
 
         if (isValid(newValue)) {
             super.setValue(newValue);
+        }
+    }
+
+    @Override
+    protected void valueAttributeChanged(final String attributeValue, final boolean isValueDirty) {
+        if (isValueDirty) {
+            return;
+        }
+
+        if (hasFeature(HTMLINPUT_TYPE_COLOR_NOT_SUPPORTED)) {
+            setRawValue(attributeValue);
+            return;
+        }
+
+        if (StringUtils.isEmpty(attributeValue)) {
+            setRawValue("#000000");
+            return;
+        }
+
+        if (isValid(attributeValue)) {
+            setRawValue(attributeValue);
         }
     }
 

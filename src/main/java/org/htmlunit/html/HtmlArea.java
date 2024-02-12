@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -268,7 +268,7 @@ public class HtmlArea extends HtmlElement {
 
     private Rectangle2D parseRect() {
         // browsers seem to support comma and blank
-        final String[] coords = StringUtils.split(getCoordsAttribute(), ", ");
+        final String[] coords = org.htmlunit.util.StringUtils.splitAtCommaOrBlank(getCoordsAttribute());
 
         double leftX = 0;
         double topY = 0;
@@ -300,7 +300,7 @@ public class HtmlArea extends HtmlElement {
 
     private Circle2D parseCircle() {
         // browsers seem to support comma and blank
-        final String[] coords = StringUtils.split(getCoordsAttribute(), ", ");
+        final String[] coords = org.htmlunit.util.StringUtils.splitAtCommaOrBlank(getCoordsAttribute());
 
         double centerX = 0;
         double centerY = 0;
@@ -327,7 +327,7 @@ public class HtmlArea extends HtmlElement {
 
     private Shape2D parsePoly() {
         // browsers seem to support comma and blank
-        final String[] coords = StringUtils.split(getCoordsAttribute(), ", ");
+        final String[] coords = org.htmlunit.util.StringUtils.splitAtCommaOrBlank(getCoordsAttribute());
 
         try {
             if (coords.length > 1) {

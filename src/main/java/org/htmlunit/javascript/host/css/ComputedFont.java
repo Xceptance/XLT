@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ import static org.htmlunit.BrowserVersionFeatures.CSS_SET_NULL_THROWS;
 import static org.htmlunit.javascript.host.css.CSSStyleDeclaration.isLength;
 
 import org.htmlunit.BrowserVersion;
+import org.htmlunit.util.StringUtils;
 
 /**
  * A helper class for handling font attributes of {@link ComputedCSSStyleDeclaration}.
@@ -44,7 +45,7 @@ final class ComputedFont {
                 && fontName.contains("/ ")) {
             return null;
         }
-        final String[] tokens = fontName.split(" ");
+        final String[] tokens = StringUtils.splitAtBlank(fontName);
         if (tokens.length > 1) {
             final String[] fontSizeDetails = getFontSizeDetails(tokens[tokens.length - 2]);
             if (fontSizeDetails == null) {

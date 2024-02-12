@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,13 @@
  */
 package org.htmlunit.html;
 
-import static org.htmlunit.BrowserVersionFeatures.FORM_SUBMISSION_FORM_ATTRIBUTE;
+import static org.htmlunit.BrowserVersionFeatures.FORM_FORM_ATTRIBUTE_SUPPORTED;
 import static org.htmlunit.BrowserVersionFeatures.HTMLELEMENT_DETACH_ACTIVE_TRIGGERS_NO_KEYUP_EVENT;
 import static org.htmlunit.BrowserVersionFeatures.HTMLELEMENT_REMOVE_ACTIVE_TRIGGERS_BLUR_EVENT;
 import static org.htmlunit.BrowserVersionFeatures.KEYBOARD_EVENT_SPECIAL_KEYPRESS;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -36,6 +34,7 @@ import org.htmlunit.SgmlPage;
 import org.htmlunit.WebAssert;
 import org.htmlunit.WebClient;
 import org.htmlunit.html.impl.SelectableTextInput;
+import org.htmlunit.javascript.HtmlUnitScriptable;
 import org.htmlunit.javascript.host.dom.Document;
 import org.htmlunit.javascript.host.dom.MutationObserver;
 import org.htmlunit.javascript.host.event.Event;
@@ -112,8 +111,12 @@ public abstract class HtmlElement extends DomElement {
         TABLE_CAPTION("table-caption"),
         /** ruby. */
         RUBY("ruby"),
-        /** ruby-text. */
-        RUBY_TEXT("ruby-text");
+        /** ruby-base. */
+        RUBY_BASE("ruby-base"),
+        /** ruby-text-container. */
+        RUBY_TEXT("ruby-text"),
+        /** ruby-text-container. */
+        RUBY_TEXT_CONTAINER("ruby-text-container");
 
         private final String value_;
         DisplayStyle(final String value) {
@@ -143,7 +146,7 @@ public abstract class HtmlElement extends DomElement {
     protected static final String ATTRIBUTE_CHECKED = "checked";
 
     /** The listeners which are to be notified of attribute changes. */
-    private final Collection<HtmlAttributeChangeListener> attributeListeners_;
+    private final List<HtmlAttributeChangeListener> attributeListeners_ = new ArrayList<>();
 
     /** The owning form for lost form children. */
     private HtmlForm owningForm_;
@@ -177,7 +180,6 @@ public abstract class HtmlElement extends DomElement {
     protected HtmlElement(final String namespaceURI, final String qualifiedName, final SgmlPage page,
             final Map<String, DomAttr> attributes) {
         super(namespaceURI, qualifiedName, page, attributes);
-        attributeListeners_ = new LinkedHashSet<>();
     }
 
     /**
@@ -231,7 +233,7 @@ public abstract class HtmlElement extends DomElement {
      */
     protected static void notifyAttributeChangeListeners(final HtmlAttributeChangeEvent event,
             final HtmlElement element, final String oldAttributeValue, final boolean notifyMutationObservers) {
-        final Collection<HtmlAttributeChangeListener> listeners = element.attributeListeners_;
+        final List<HtmlAttributeChangeListener> listeners = element.attributeListeners_;
         if (ATTRIBUTE_NOT_DEFINED == oldAttributeValue) {
             synchronized (listeners) {
                 for (final HtmlAttributeChangeListener listener : listeners) {
@@ -460,7 +462,7 @@ public abstract class HtmlElement extends DomElement {
      */
     public HtmlForm getEnclosingForm() {
         final BrowserVersion browserVersion = getPage().getWebClient().getBrowserVersion();
-        if (browserVersion.hasFeature(FORM_SUBMISSION_FORM_ATTRIBUTE)) {
+        if (browserVersion.hasFeature(FORM_FORM_ATTRIBUTE_SUPPORTED)) {
             final String formId = getAttribute("form");
             if (ATTRIBUTE_NOT_DEFINED != formId) {
                 final Element formById = getPage().getElementById(formId);
@@ -966,7 +968,7 @@ public abstract class HtmlElement extends DomElement {
      */
     public final boolean hasEventHandlers(final String eventName) {
         if (getPage().getWebClient().isJavaScriptEngineEnabled()) {
-            final Object jsObj = getScriptableObject();
+            final HtmlUnitScriptable jsObj = getScriptableObject();
             if (jsObj instanceof EventTarget) {
                 return ((EventTarget) jsObj).hasEventHandlers(eventName);
             }
@@ -1018,7 +1020,13 @@ public abstract class HtmlElement extends DomElement {
         super.checkChildHierarchy(childNode);
     }
 
-    void setOwningForm(final HtmlForm form) {
+    /**
+     * <span style="color:red">INTERNAL API - SUBJECT TO CHANGE AT ANY TIME - USE AT YOUR OWN RISK.</span><br>
+     *
+     * Allows the parser to connect to a form that is not a parent of this due to malformed HTML code
+     * @param form the owning form
+     */
+    public void setOwningForm(final HtmlForm form) {
         owningForm_ = form;
     }
 
@@ -1270,14 +1278,13 @@ public abstract class HtmlElement extends DomElement {
             return;
         }
 
-        final Object document = page.getScriptableObject();
+        final HtmlUnitScriptable document = page.getScriptableObject();
 
         if (document instanceof HTMLDocument) {
             final HTMLDocument doc = (HTMLDocument) document;
             final Object activeElement = doc.getActiveElement();
 
             if (activeElement == getScriptableObject()) {
-                doc.setActiveElement(null);
                 if (hasFeature(HTMLELEMENT_REMOVE_ACTIVE_TRIGGERS_BLUR_EVENT)) {
                     ((HtmlPage) page).setFocusedElement(null);
                 }
@@ -1288,7 +1295,6 @@ public abstract class HtmlElement extends DomElement {
             else {
                 for (final DomNode child : getChildNodes()) {
                     if (activeElement == child.getScriptableObject()) {
-                        doc.setActiveElement(null);
                         if (hasFeature(HTMLELEMENT_REMOVE_ACTIVE_TRIGGERS_BLUR_EVENT)) {
                             ((HtmlPage) page).setFocusedElement(null);
                         }
@@ -1350,7 +1356,7 @@ public abstract class HtmlElement extends DomElement {
     public boolean isValid() {
         return !isRequiredSupported()
                 || ATTRIBUTE_NOT_DEFINED == getAttributeDirect(ATTRIBUTE_REQUIRED)
-                || !getAttributeDirect("value").isEmpty();
+                || !getAttributeDirect(VALUE_ATTRIBUTE).isEmpty();
     }
 
     /**

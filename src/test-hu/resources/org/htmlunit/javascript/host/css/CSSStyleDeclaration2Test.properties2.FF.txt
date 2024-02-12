@@ -30,7 +30,6 @@ MozFontFeatureSettings
 MozFontLanguageOverride
 MozForceBrokenImageIcon
 MozHyphens
-MozImageRegion
 MozMarginEnd
 MozMarginStart
 MozOrient
@@ -109,6 +108,7 @@ WebkitOrder
 WebkitPerspective
 WebkitPerspectiveOrigin
 WebkitTextFillColor
+WebkitTextSecurity
 WebkitTextSizeAdjust
 WebkitTextStroke
 WebkitTextStrokeColor
@@ -128,6 +128,7 @@ alignItems
 alignSelf
 all
 animation
+animationComposition
 animationDelay
 animationDirection
 animationDuration
@@ -152,6 +153,7 @@ backgroundPositionX
 backgroundPositionY
 backgroundRepeat
 backgroundSize
+baselineSource
 blockSize
 border
 borderBlock
@@ -291,6 +293,7 @@ fontSizeAdjust
 fontStretch
 fontStyle
 fontSynthesis
+fontSynthesisPosition
 fontSynthesisSmallCaps
 fontSynthesisStyle
 fontSynthesisWeight
@@ -303,6 +306,7 @@ fontVariantNumeric
 fontVariantPosition
 fontVariationSettings
 fontWeight
+forcedColorAdjust
 gap
 grid
 gridArea
@@ -376,6 +380,8 @@ maskPositionY
 maskRepeat
 maskSize
 maskType
+mathDepth
+mathStyle
 maxBlockSize
 maxHeight
 maxInlineSize
@@ -391,6 +397,7 @@ offset
 offsetAnchor
 offsetDistance
 offsetPath
+offsetPosition
 offsetRotate
 opacity
 order
@@ -515,6 +522,7 @@ textShadow
 textTransform
 textUnderlineOffset
 textUnderlinePosition
+textWrap
 top
 touchAction
 transform
@@ -588,6 +596,7 @@ webkitOrder
 webkitPerspective
 webkitPerspectiveOrigin
 webkitTextFillColor
+webkitTextSecurity
 webkitTextSizeAdjust
 webkitTextStroke
 webkitTextStrokeColor

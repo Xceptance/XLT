@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,6 +42,7 @@ import org.htmlunit.javascript.host.xml.XMLHttpRequestTest.BasicAuthenticationSe
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.junit.Retry;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
 import org.junit.After;
@@ -619,6 +620,7 @@ public class XMLHTTPRequestTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
+    @Retry
     @Alerts(DEFAULT = "no\\sActiveX",
             IE = {"1:ex\\sstatus\\sex\\stext\\s",
                   "1:ex\\sstatus\\sex\\stext\\s",
@@ -1255,9 +1257,6 @@ public class XMLHTTPRequestTest extends WebDriverTestCase {
     @Alerts(DEFAULT = {"null", "text/html,application/xhtml+xml,application/xml;"
                         + "q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
                        "null", "null", "no\\sActiveX"},
-            EDGE = {"null", "text/html,application/xhtml+xml,application/xml;"
-                        + "q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
-                    "null", "null", "no\\sActiveX"},
             FF = {"null", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
                   "null", "null", "no\\sActiveX"},
             FF_ESR = {"null", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",

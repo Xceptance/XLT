@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ public class Notification extends EventTarget {
      * The maximum number of actions supported.
      */
     @JsxConstant({CHROME, EDGE})
-    public static final short maxActions            = 2;
+    public static final int maxActions = 2;
 
     /**
      * JavaScript constructor.

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -632,11 +632,7 @@ public class HostParentOfPTest extends HostParentOf {
      *             if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "false",
-            FF = "true",
-            FF_ESR = "true")
-    @HtmlUnitNYI(FF = "false",
-            FF_ESR = "false")
+    @Alerts("false")
     public void _RTCIceCandidate_mozRTCIceCandidate() throws Exception {
         test("RTCIceCandidate", "mozRTCIceCandidate");
     }
@@ -656,11 +652,7 @@ public class HostParentOfPTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "false",
-            FF = "true",
-            FF_ESR = "true")
-    @HtmlUnitNYI(FF = "false",
-            FF_ESR = "false")
+    @Alerts("false")
     public void _RTCPeerConnection_mozRTCPeerConnection() throws Exception {
         test("RTCPeerConnection", "mozRTCPeerConnection");
     }
@@ -682,8 +674,6 @@ public class HostParentOfPTest extends HostParentOf {
     @Alerts(DEFAULT = "false",
             CHROME = "true",
             EDGE = "true")
-    @HtmlUnitNYI(CHROME = "false",
-            EDGE = "false")
     public void _RTCPeerConnection_webkitRTCPeerConnection() throws Exception {
         test("RTCPeerConnection", "webkitRTCPeerConnection");
     }
@@ -703,11 +693,17 @@ public class HostParentOfPTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "false",
-            FF = "true",
-            FF_ESR = "true")
-    @HtmlUnitNYI(FF = "false",
-            FF_ESR = "false")
+    @Alerts(DEFAULT = "true",
+            IE = "false")
+    public void _RTCSctpTransport_RTCSctpTransport() throws Exception {
+        test("RTCSctpTransport", "RTCSctpTransport");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("false")
     public void _RTCSessionDescription_mozRTCSessionDescription() throws Exception {
         test("RTCSessionDescription", "mozRTCSessionDescription");
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -134,10 +134,10 @@ public final class HtmlUnitNekoHtmlParser implements HTMLParser {
             ancestors.add(0, new QName(null, node.getNodeName(), null, null));
             node = node.getParentNode();
         }
-        if (ancestors.isEmpty() || !"html".equals(ancestors.get(0).localpart)) {
+        if (ancestors.isEmpty() || !"html".equals(ancestors.get(0).getLocalpart())) {
             ancestors.add(0, new QName(null, "html", null, null));
         }
-        if (ancestors.size() == 1 || !"body".equals(ancestors.get(1).localpart)) {
+        if (ancestors.size() == 1 || !"body".equals(ancestors.get(1).getLocalpart())) {
             ancestors.add(1, new QName(null, "body", null, null));
         }
 
@@ -284,7 +284,7 @@ public final class HtmlUnitNekoHtmlParser implements HTMLParser {
             String tagName = qualifiedName;
             final int index = tagName.indexOf(':');
             if (index == -1) {
-                tagName = StringUtils.toRootLowerCaseWithCache(tagName);
+                tagName = StringUtils.toRootLowerCase(tagName);
             }
             else {
                 tagName = tagName.substring(index + 1);

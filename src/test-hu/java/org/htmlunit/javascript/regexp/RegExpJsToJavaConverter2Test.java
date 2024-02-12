@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -84,6 +84,59 @@ public class RegExpJsToJavaConverter2Test extends WebDriverTestCase {
     @Alerts("false")
     public void validationPatternUnicodeCodePointEscapesFails() throws Exception {
         validation("123\\u{1D306}", "123&#x1D307;");
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts("true")
+    public void validationPatternUnicodePropertyEscapeLetter() throws Exception {
+        validation("\\p{L}*", "Html");
+        validation("\\p{L}*", "&#x043C;&#x0439;&#x0440;");
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts("true")
+    public void validationPatternUnicodePropertyEscapeUppercaseLetter() throws Exception {
+        validation("\\p{Lu}*", "HTML");
+        validation("\\p{Lu}*", "&#x041C;&#x0419;&#x0420;");
+        validation("\\p{uppercase letter}*", "&#x041C;&#x0419;&#x0420");
+        validation("\\p{Uppercase Letter}*", "&#x041C;&#x0419;&#x0420");
+        validation("\\p{Uppercase_Letter}*", "&#x041C;&#x0419;&#x0420");
+        validation("\\p{Uppercase-Letter}*", "&#x041C;&#x0419;&#x0420");
+        validation("\\p{uppercaseletter}*", "&#x041C;&#x0419;&#x0420");
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts("true")
+    public void validationPatternUnicodePropertyEscapeLowercaseLetter() throws Exception {
+        validation("\\p{Ll}*", "html");
+        validation("\\p{Ll}*", "&#x043C;&#x0439;&#x0440;");
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts("true")
+    public void validationPatternUnicodePropertyEscapePrivateUse() throws Exception {
+        validation("[\\p{gc=Co}]+", "&#xE000;&#xF8FF;");
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts("false")
+    public void validationPatternUnicodePropertyEscapeOther() throws Exception {
+        validation("^\\p{gc=Cn}", "a");
     }
 
     private void validation(final String pattern, final String value) throws Exception {

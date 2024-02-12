@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -134,7 +134,7 @@ public class HtmlObject extends HtmlElement implements ValidatableElement {
      * or an empty string if that attribute isn't defined.
      */
     public final String getTypeAttribute() {
-        return getAttributeDirect("type");
+        return getAttributeDirect(TYPE_ATTRIBUTE);
     }
 
     /**
@@ -218,7 +218,7 @@ public class HtmlObject extends HtmlElement implements ValidatableElement {
      * or an empty string if that attribute isn't defined.
      */
     public final String getNameAttribute() {
-        return getAttributeDirect("name");
+        return getAttributeDirect(NAME_ATTRIBUTE);
     }
 
     /**
@@ -337,7 +337,7 @@ public class HtmlObject extends HtmlElement implements ValidatableElement {
         }
 
         final HashMap<String, String> params = new HashMap<>();
-        params.put("name", getNameAttribute());
+        params.put(NAME_ATTRIBUTE, getNameAttribute());
 
         params.put("height", getHeightAttribute());
         params.put("width", getWidthAttribute());
@@ -389,7 +389,7 @@ public class HtmlObject extends HtmlElement implements ValidatableElement {
 
             // check archive
             List<URL> archiveUrls = new ArrayList<>();
-            String[] archives = StringUtils.split(params.get(ARCHIVE), ',');
+            String[] archives = org.htmlunit.util.StringUtils.splitAtComma(params.get(ARCHIVE));
             if (null != archives) {
                 for (final String tmpArchive : archives) {
                     final String tempUrl = UrlUtils.resolveUrl(baseUrl, tmpArchive.trim());
@@ -399,7 +399,7 @@ public class HtmlObject extends HtmlElement implements ValidatableElement {
                     archiveUrls.add(archiveUrl);
                 }
             }
-            archives = StringUtils.split(params.get(CACHE_ARCHIVE), ',');
+            archives = org.htmlunit.util.StringUtils.splitAtComma(params.get(CACHE_ARCHIVE));
             if (null != archives) {
                 for (final String tmpArchive : archives) {
                     final String tempUrl = UrlUtils.resolveUrl(baseUrl, tmpArchive.trim());

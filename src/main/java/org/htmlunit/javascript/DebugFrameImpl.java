@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -121,7 +121,7 @@ public class DebugFrameImpl extends DebugFrameAdapter {
         String asString;
         try {
             // try to get the js representation
-            asString = Context.toString(arg);
+            asString = JavaScriptEngine.toString(arg);
             if (arg instanceof Event) {
                 asString += "<" + ((Event) arg).getType() + ">";
             }
@@ -143,14 +143,14 @@ public class DebugFrameImpl extends DebugFrameAdapter {
                 final JavaScriptException e = (JavaScriptException) t;
                 if (LOG.isTraceEnabled()) {
                     LOG.trace(getSourceName(cx) + ":" + getFirstLine(cx)
-                        + " Exception thrown: " + Context.toString(e.details()));
+                        + " Exception thrown: " + JavaScriptEngine.toString(e.details()));
                 }
             }
             else if (t instanceof EcmaError) {
                 final EcmaError e = (EcmaError) t;
                 if (LOG.isTraceEnabled()) {
                     LOG.trace(getSourceName(cx) + ":" + getFirstLine(cx)
-                        + " Exception thrown: " + Context.toString(e.details()));
+                        + " Exception thrown: " + JavaScriptEngine.toString(e.details()));
                 }
             }
             else {

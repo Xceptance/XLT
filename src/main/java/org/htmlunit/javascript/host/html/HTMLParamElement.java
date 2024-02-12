@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
+import org.htmlunit.html.DomElement;
 import org.htmlunit.html.HtmlParameter;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
@@ -36,8 +37,16 @@ public class HTMLParamElement extends HTMLElement {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public HTMLParamElement() {
+    }
+
+    /**
+     * JavaScript constructor.
+     */
+    @Override
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    public void jsConstructor() {
+        super.jsConstructor();
     }
 
     /**
@@ -47,7 +56,7 @@ public class HTMLParamElement extends HTMLElement {
     @JsxGetter
     @Override
     public String getName() {
-        return getDomNodeOrDie().getAttributeDirect("name");
+        return getDomNodeOrDie().getAttributeDirect(DomElement.NAME_ATTRIBUTE);
     }
 
     /**
@@ -57,7 +66,7 @@ public class HTMLParamElement extends HTMLElement {
     @JsxGetter
     @Override
     public String getValue() {
-        return getDomNodeOrDie().getAttributeDirect("value");
+        return getDomNodeOrDie().getAttributeDirect(DomElement.VALUE_ATTRIBUTE);
     }
 
     /**
@@ -66,7 +75,7 @@ public class HTMLParamElement extends HTMLElement {
      */
     @JsxGetter
     public String getType() {
-        return getDomNodeOrDie().getAttributeDirect("type");
+        return getDomNodeOrDie().getAttributeDirect(DomElement.TYPE_ATTRIBUTE);
     }
 
     /**

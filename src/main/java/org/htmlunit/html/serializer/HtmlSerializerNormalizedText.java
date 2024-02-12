@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -201,8 +201,7 @@ public class HtmlSerializerNormalizedText {
         if (!(domNode instanceof HtmlBody)) {
             final SgmlPage page = domNode.getPage();
             final WebWindow window = page.getEnclosingWindow();
-            if (page.getWebClient().isJavaScriptEngineEnabled()  // TODO
-                    && window.getWebClient().getOptions().isCssEnabled()) {
+            if (window.getWebClient().getOptions().isCssEnabled()) {
                 if (domNode instanceof DomElement) {
                     final String display = window.getComputedStyle((DomElement) domNode, null).getDisplay();
                     block = BLOCK.equals(display);

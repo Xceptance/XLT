@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1204,9 +1204,9 @@ public class HTMLElementTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "Outer = <p id=\"myNode\">New  cell value\n"
-                    + "  <textarea id=\"myLog\" cols=\"80\" rows=\"42\"></textarea>\n\n</p>",
+                    + "  <textarea id=\"myLog\" cols=\"80\" rows=\"22\"></textarea>\n\n</p>",
             IE = "Outer = <p id=\"myNode\">New  cell value\n"
-                    + "  <textarea id=\"myLog\" rows=\"42\" cols=\"80\"></textarea>\n\n")
+                    + "  <textarea id=\"myLog\" rows=\"22\" cols=\"80\"></textarea>\n\n")
     @NotYetImplemented
     public void getOuterHTMLFromUnclosedParagraph() throws Exception {
         final String html = createPageForGetOuterHTML("p", "New  cell value", true);
@@ -4554,7 +4554,7 @@ public class HTMLElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "setCapture available",
+    @Alerts(DEFAULT = {"undefined", "undefined", "undefined", "setCapture available"},
             CHROME = "exception",
             EDGE = "exception")
     public void setCapture() throws Exception {
@@ -4565,9 +4565,9 @@ public class HTMLElementTest extends WebDriverTestCase {
             + "  function test() {\n"
             + "    var div = document.getElementById('myDiv');\n"
             + "    try {\n"
-            + "      div.setCapture();\n"
-            + "      div.setCapture(true);\n"
-            + "      div.setCapture(false);\n"
+            + "      log(div.setCapture());\n"
+            + "      log(div.setCapture(true));\n"
+            + "      log(div.setCapture(false));\n"
             + "      log('setCapture available');\n"
             + "    } catch(e) { log('exception'); }\n"
             + "  }\n"
@@ -4584,7 +4584,7 @@ public class HTMLElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "releaseCapture available",
+    @Alerts(DEFAULT = {"undefined", "releaseCapture available"},
             CHROME = "exception",
             EDGE = "exception")
     public void releaseCapture() throws Exception {
@@ -4595,7 +4595,7 @@ public class HTMLElementTest extends WebDriverTestCase {
             + "  function test() {\n"
             + "    var div = document.getElementById('myDiv');\n"
             + "    try {\n"
-            + "      div.releaseCapture();\n"
+            + "      log(div.releaseCapture());\n"
             + "      log('releaseCapture available');\n"
             + "    } catch(e) { log('exception'); }\n"
             + "  }\n"
@@ -5304,5 +5304,121 @@ public class HTMLElementTest extends WebDriverTestCase {
             + "</body></html>";
 
         loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception on test failure
+     */
+    @Test
+    @Alerts(DEFAULT = {"true", "", "true", "7", "true", "seven", "false", "null"},
+            IE = {"undefined", "", "undefined", "7", "undefined", "seven", "undefined", "null"})
+    public void autofocus() throws Exception {
+        final String html = "<html>\n"
+                + "<head>\n"
+                + "  <title>test</title>\n"
+                + "  <script>\n"
+                + LOG_TEXTAREA_FUNCTION
+                + "  function doTest() {\n"
+                + "    var myNode1 = document.getElementById('myNode1');\n"
+                + "    log(myNode1.autofocus);\n"
+                + "    log(myNode1.getAttribute('autofocus'));\n"
+
+                + "    var myNode2 = document.getElementById('myNode2');\n"
+                + "    log(myNode2.autofocus);\n"
+                + "    log(myNode2.getAttribute('autofocus'));\n"
+
+                + "    var myNode3 = document.getElementById('myNode3');\n"
+                + "    log(myNode3.autofocus);\n"
+                + "    log(myNode3.getAttribute('autofoCuS'));\n"
+
+                + "    var myNode4 = document.getElementById('myNode4');\n"
+                + "    log(myNode4.autofocus);\n"
+                + "    log(myNode4.getAttribute('autofocus'));\n"
+                + "  }\n"
+                + "  </script>\n"
+                + "</head>\n"
+                + "<body onload='doTest()'>\n"
+                + "<p id='myNode1' autofocus></p>\n"
+                + "<p id='myNode2' autofocus=7></p>\n"
+                + "<p id='myNode3' autOFocus='seven'></p>\n"
+                + "<p id='myNode4'></p>\n"
+                + LOG_TEXTAREA
+                + "</body>\n"
+                + "</html>";
+
+        loadPageVerifyTextArea2(html);
+    }
+
+    /**
+     * @throws Exception on test failure
+     */
+    @Test
+    @Alerts(DEFAULT = {"true", "", "true", "", "false", "null", "true", "7",
+                       "true", "", "false", "null", "true", "", "false", "null",
+                       "true", "", "false", "null", "false", "null"},
+            IE = {"undefined", "", "undefined", "", "undefined", "null", "undefined", "7",
+                  "true", "7", "false", "7", "true", "7", "false", "7",
+                  "no", "7", "null", "7", "undefined", "7"})
+    public void editAutofocus() throws Exception {
+        final String html = "<html>\n"
+                + "<head>\n"
+                + "  <title>test</title>\n"
+                + "  <script>\n"
+                + LOG_TEXTAREA_FUNCTION
+                + "  function doTest() {\n"
+                + "    var myNode1 = document.getElementById('myNode1');\n"
+                + "    log(myNode1.autofocus);\n"
+                + "    log(myNode1.getAttribute('autofocus'));\n"
+
+                + "    myNode1.setAttribute('autofocus', '');\n"
+                + "    log(myNode1.autofocus);\n"
+                + "    log(myNode1.getAttribute('autofocus'));\n"
+
+                + "    myNode1.removeAttribute('autofocus');\n"
+                + "    log(myNode1.autofocus);\n"
+                + "    log(myNode1.getAttribute('autofocus'));\n"
+
+                + "    var myNode2 = document.getElementById('myNode2');\n"
+                + "    log(myNode2.autofocus);\n"
+                + "    log(myNode2.getAttribute('autofocus'));\n"
+
+                + "    myNode2.autofocus = true;\n"
+                + "    log(myNode2.autofocus);\n"
+                + "    log(myNode2.getAttribute('autofocus'));\n"
+
+                + "    myNode2.autofocus = false;\n"
+                + "    log(myNode2.autofocus);\n"
+                + "    log(myNode2.getAttribute('autofocus'));\n"
+
+                + "    myNode2.autofocus = true;\n"
+                + "    log(myNode2.autofocus);\n"
+                + "    log(myNode2.getAttribute('autofocus'));\n"
+
+                + "    myNode2.autofocus = false;\n"
+                + "    log(myNode2.autofocus);\n"
+                + "    log(myNode2.getAttribute('autofocus'));\n"
+
+                + "    myNode2.autofocus = 'no';\n"
+                + "    log(myNode2.autofocus);\n"
+                + "    log(myNode2.getAttribute('autofocus'));\n"
+
+                + "    myNode2.autofocus = null;\n"
+                + "    log(myNode2.autofocus);\n"
+                + "    log(myNode2.getAttribute('autofocus'));\n"
+
+                + "    myNode2.autofocus = undefined;\n"
+                + "    log(myNode2.autofocus);\n"
+                + "    log(myNode2.getAttribute('autofocus'));\n"
+                + "  }\n"
+                + "  </script>\n"
+                + "</head>\n"
+                + "<body onload='doTest()'>\n"
+                + "<p id='myNode1' autofocus></p>\n"
+                + "<p id='myNode2' autofocus=7></p>\n"
+                + LOG_TEXTAREA
+                + "</body>\n"
+                + "</html>";
+
+        loadPageVerifyTextArea2(html);
     }
 }

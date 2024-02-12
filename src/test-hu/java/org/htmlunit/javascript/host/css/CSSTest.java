@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,6 @@ public class CSSTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = {"[object CSS]", "undefined"},
-            FF_ESR = {"[object Object]", "undefined"},
             IE = "Exception")
     public void global() throws Exception {
         final String html

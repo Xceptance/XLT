@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.htmlunit.BrowserVersion;
 import org.htmlunit.SgmlPage;
 import org.htmlunit.javascript.host.event.Event;
 import org.htmlunit.util.KeyDataPair;
@@ -59,7 +60,7 @@ public class HtmlFileInput extends HtmlInput implements LabelableElement {
             final Map<String, DomAttr> attributes) {
         super(qualifiedName, page, attributes);
 
-        final DomAttr valueAttrib = attributes.get("value");
+        final DomAttr valueAttrib = attributes.get(VALUE_ATTRIBUTE);
         if (valueAttrib != null) {
             setDefaultValue(valueAttrib.getNodeValue());
         }
@@ -305,5 +306,10 @@ public class HtmlFileInput extends HtmlInput implements LabelableElement {
                 && (!isRequiredSupported()
                         || ATTRIBUTE_NOT_DEFINED == getAttributeDirect("required")
                         || files_.length > 0);
+    }
+
+    @Override
+    protected void adjustValueAfterTypeChange(final HtmlInput oldInput, final BrowserVersion browserVersion) {
+        setValue("");
     }
 }

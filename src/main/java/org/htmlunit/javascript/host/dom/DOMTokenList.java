@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,13 +29,13 @@ import java.util.Arrays;
 import java.util.HashSet;
 
 import org.apache.commons.lang3.StringUtils;
-import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.corejs.javascript.Undefined;
 import org.htmlunit.html.DomAttr;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.javascript.HtmlUnitScriptable;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
@@ -59,8 +59,14 @@ public class DOMTokenList extends HtmlUnitScriptable {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public DOMTokenList() {
+    }
+
+    /**
+     * JavaScript constructor.
+     */
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    public void jsConstructor() {
     }
 
     /**
@@ -129,10 +135,10 @@ public class DOMTokenList extends HtmlUnitScriptable {
     @JsxFunction
     public void add(final String token) {
         if (StringUtils.isEmpty(token)) {
-            throw Context.reportRuntimeError("Empty input not allowed");
+            throw JavaScriptEngine.reportRuntimeError("Empty input not allowed");
         }
         if (StringUtils.containsAny(token, whitespaceChars())) {
-            throw Context.reportRuntimeError("Empty input not allowed");
+            throw JavaScriptEngine.reportRuntimeError("Empty input not allowed");
         }
 
         boolean changed = false;
@@ -168,10 +174,10 @@ public class DOMTokenList extends HtmlUnitScriptable {
     @JsxFunction
     public void remove(final String token) {
         if (StringUtils.isEmpty(token)) {
-            throw Context.reportRuntimeError("Empty input not allowed");
+            throw JavaScriptEngine.reportRuntimeError("Empty input not allowed");
         }
         if (StringUtils.containsAny(token, whitespaceChars())) {
-            throw Context.reportRuntimeError("Empty input not allowed");
+            throw JavaScriptEngine.reportRuntimeError("Empty input not allowed");
         }
 
         final String oldValue = getAttribValue();
@@ -245,10 +251,10 @@ public class DOMTokenList extends HtmlUnitScriptable {
         }
 
         if (StringUtils.isEmpty(token)) {
-            throw Context.reportRuntimeError("Empty input not allowed");
+            throw JavaScriptEngine.reportRuntimeError("Empty input not allowed");
         }
         if (StringUtils.containsAny(token, whitespaceChars())) {
-            throw Context.reportRuntimeError("Empty input not allowed");
+            throw JavaScriptEngine.reportRuntimeError("Empty input not allowed");
         }
 
         String value = getAttribValue();

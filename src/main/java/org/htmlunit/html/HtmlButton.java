@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 package org.htmlunit.html;
 
 import static org.htmlunit.BrowserVersionFeatures.EVENT_MOUSE_ON_DISABLED;
-import static org.htmlunit.BrowserVersionFeatures.FORM_FORM_ATTRIBUTE_SUPPORTED;
 import static org.htmlunit.BrowserVersionFeatures.HTMLBUTTON_SUBMIT_IGNORES_DISABLED_STATE;
 import static org.htmlunit.BrowserVersionFeatures.HTMLBUTTON_WILL_VALIDATE_IGNORES_READONLY;
 import static org.htmlunit.html.HtmlForm.ATTRIBUTE_FORMNOVALIDATE;
@@ -83,7 +82,7 @@ public class HtmlButton extends HtmlElement implements DisabledElement, Submitta
      * @param newValue the new content
      */
     public void setValueAttribute(final String newValue) {
-        setAttribute("value", newValue);
+        setAttribute(VALUE_ATTRIBUTE, newValue);
     }
 
     /**
@@ -92,18 +91,7 @@ public class HtmlButton extends HtmlElement implements DisabledElement, Submitta
     @Override
     protected boolean doClickStateUpdate(final boolean shiftKey, final boolean ctrlKey) throws IOException {
         if (hasFeature(HTMLBUTTON_SUBMIT_IGNORES_DISABLED_STATE) || !isDisabled()) {
-            HtmlForm form = null;
-            final String formId = getAttributeDirect("form");
-            if (DomElement.ATTRIBUTE_NOT_DEFINED == formId || !hasFeature(FORM_FORM_ATTRIBUTE_SUPPORTED)) {
-                form = getEnclosingForm();
-            }
-            else {
-                final DomElement elem = getHtmlPageOrNull().getElementById(formId);
-                if (elem instanceof HtmlForm) {
-                    form = (HtmlForm) elem;
-                }
-            }
-
+            final HtmlForm form = getEnclosingForm();
             if (form != null) {
                 final String type = getType();
                 if (TYPE_BUTTON.equals(type)) {
@@ -235,7 +223,7 @@ public class HtmlButton extends HtmlElement implements DisabledElement, Submitta
      * @return the value of the attribute {@code name} or an empty string if that attribute isn't defined
      */
     public final String getNameAttribute() {
-        return getAttributeDirect("name");
+        return getAttributeDirect(NAME_ATTRIBUTE);
     }
 
     /**
@@ -246,7 +234,7 @@ public class HtmlButton extends HtmlElement implements DisabledElement, Submitta
      * @return the value of the attribute {@code value} or an empty string if that attribute isn't defined
      */
     public final String getValueAttribute() {
-        return getAttributeDirect("value");
+        return getAttributeDirect(VALUE_ATTRIBUTE);
     }
 
     /**
@@ -257,7 +245,7 @@ public class HtmlButton extends HtmlElement implements DisabledElement, Submitta
      * @return the value of the attribute {@code type} or the default value if that attribute isn't defined
      */
     public final String getTypeAttribute() {
-        return getAttribute("type");
+        return getAttribute(TYPE_ATTRIBUTE);
     }
 
     /**
@@ -336,13 +324,14 @@ public class HtmlButton extends HtmlElement implements DisabledElement, Submitta
     @Override
     protected void setAttributeNS(final String namespaceURI, final String qualifiedName, final String attributeValue,
             final boolean notifyAttributeChangeListeners, final boolean notifyMutationObservers) {
-        if ("name".equals(qualifiedName)) {
+        final String qualifiedNameLC = org.htmlunit.util.StringUtils.toRootLowerCase(qualifiedName);
+        if (NAME_ATTRIBUTE.equals(qualifiedNameLC)) {
             if (newNames_.isEmpty()) {
                 newNames_ = new HashSet<>();
             }
             newNames_.add(attributeValue);
         }
-        super.setAttributeNS(namespaceURI, qualifiedName, attributeValue, notifyAttributeChangeListeners,
+        super.setAttributeNS(namespaceURI, qualifiedNameLC, attributeValue, notifyAttributeChangeListeners,
                 notifyMutationObservers);
     }
 

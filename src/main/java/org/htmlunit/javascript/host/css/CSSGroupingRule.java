@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,13 +24,11 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.htmlunit.corejs.javascript.Context;
-import org.htmlunit.corejs.javascript.ScriptRuntime;
-import org.htmlunit.corejs.javascript.Undefined;
 import org.htmlunit.cssparser.dom.AbstractCSSRuleImpl;
 import org.htmlunit.cssparser.dom.CSSCharsetRuleImpl;
 import org.htmlunit.cssparser.dom.CSSMediaRuleImpl;
 import org.htmlunit.cssparser.dom.CSSRuleListImpl;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
@@ -99,17 +97,17 @@ public class CSSGroupingRule extends CSSRule {
         if (position == null) {
             positionInt = 0;
         }
-        else if (Undefined.isUndefined(position)) {
+        else if (JavaScriptEngine.isUndefined(position)) {
             if (getBrowserVersion().hasFeature(JS_GROUPINGRULE_INSERTRULE_INDEX_OPTIONAL)) {
                 positionInt = 0;
             }
             else {
-                throw ScriptRuntime.typeError("Failed to execute 'insertRule' on 'CSSGroupingRule':"
+                throw JavaScriptEngine.typeError("Failed to execute 'insertRule' on 'CSSGroupingRule':"
                         + " 2 arguments required, but only 1 present.");
             }
         }
         else {
-            positionInt = ScriptRuntime.toInt32(position);
+            positionInt = JavaScriptEngine.toInt32(position);
         }
 
         try {
@@ -129,10 +127,10 @@ public class CSSGroupingRule extends CSSRule {
                     return positionInt;
                 }
                 catch (final DOMException ex) {
-                    throw Context.throwAsScriptRuntimeEx(ex);
+                    throw JavaScriptEngine.throwAsScriptRuntimeEx(ex);
                 }
             }
-            throw Context.throwAsScriptRuntimeEx(e);
+            throw JavaScriptEngine.throwAsScriptRuntimeEx(e);
         }
     }
 
@@ -148,7 +146,7 @@ public class CSSGroupingRule extends CSSRule {
             refreshCssRules();
         }
         catch (final DOMException e) {
-            throw Context.throwAsScriptRuntimeEx(e);
+            throw JavaScriptEngine.throwAsScriptRuntimeEx(e);
         }
     }
 

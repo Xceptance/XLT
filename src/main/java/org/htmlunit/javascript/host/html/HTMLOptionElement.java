@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,14 +22,14 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import org.htmlunit.SgmlPage;
-import org.htmlunit.corejs.javascript.Context;
-import org.htmlunit.corejs.javascript.Undefined;
+import org.htmlunit.html.DomElement;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.html.DomText;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlOption;
 import org.htmlunit.html.HtmlOptionGroup;
 import org.htmlunit.html.HtmlSelect;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxGetter;
@@ -73,8 +73,8 @@ public class HTMLOptionElement extends HTMLElement {
         htmlOption.setSelected(selected);
         setDomNode(htmlOption);
 
-        if (!Undefined.isUndefined(newText)) {
-            final String newTextString = Context.toString(newText);
+        if (!JavaScriptEngine.isUndefined(newText)) {
+            final String newTextString = JavaScriptEngine.toString(newText);
             htmlOption.appendChild(new DomText(page, newTextString));
             htmlOption.setLabelAttribute(newTextString);
         }
@@ -84,13 +84,25 @@ public class HTMLOptionElement extends HTMLElement {
     }
 
     /**
+     * JavaScript constructor.
+     * @param newText the text
+     * @param newValue the value
+     * @param defaultSelected Whether the option is initially selected
+     * @param selected the current selection state of the option
+     */
+    public void jsConstructorOption(final Object newText, final String newValue,
+            final boolean defaultSelected, final boolean selected) {
+        jsConstructor(newText, newValue, defaultSelected, selected);
+    }
+
+    /**
      * Returns the value of the {@code value} property.
      * @return the value property
      */
     @JsxGetter
     @Override
     public String getValue() {
-        String value = getDomNodeOrNull().getAttributeDirect("value");
+        String value = getDomNodeOrNull().getAttributeDirect(DomElement.VALUE_ATTRIBUTE);
         if (ATTRIBUTE_NOT_DEFINED == value) {
             value = ((HtmlOption) getDomNodeOrNull()).getText();
         }

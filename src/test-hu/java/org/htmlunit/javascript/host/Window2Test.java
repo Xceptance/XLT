@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -801,8 +801,8 @@ public class Window2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = {"true", "true", "133", "true", "true", "16"},
-            EDGE = {"true", "true", "131", "true", "true", "63"},
+    @Alerts(CHROME = {"true", "true", "138", "true", "true", "16"},
+            EDGE = {"true", "true", "138", "true", "true", "64"},
             FF = {"true", "true", "91", "true", "true", "12"},
             FF_ESR = {"true", "true", "91", "true", "true", "12"},
             IE = {"true", "true", "86", "true", "true", "16"})
@@ -912,8 +912,8 @@ public class Window2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = {"635", "1256", "618", "1239"},
-            EDGE = {"637", "1209", "620", "1192"},
+    @Alerts(CHROME = {"630", "1256", "613", "1239"},
+            EDGE = {"630", "1208", "615", "1193"},
             FF = {"677", "1260", "660", "1243"},
             FF_ESR = {"677", "1260", "660", "1243"},
             IE = {"682", "1256", "665", "1239"})
@@ -2764,5 +2764,39 @@ public class Window2Test extends WebDriverTestCase {
         assertEquals(getExpectedAlerts()[0], "" + result);
 
         shutDownAll();
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts("inline")
+    public void getComputedStyleShouldLoadOnlyStylesheets() throws Exception {
+        final String html = "<html><head>\n"
+
+            + "<link rel='stylesheet' href='imp.css'>\n"
+            + "<link rel='alternate' href='alternate.css'>\n"
+
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var tt = document.getElementById('tt');\n"
+            + "    log(window.getComputedStyle(tt, null).display);\n"
+            + "  }\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <p id='tt'>abcd</p>\n"
+            + "</body></html>\n";
+
+        String css = "p { display: inline };";
+        getMockWebConnection().setResponse(new URL(URL_FIRST, "imp.css"), css, MimeType.TEXT_CSS);
+
+        css = "p { display: none };";
+        getMockWebConnection().setResponse(new URL(URL_FIRST, "alternate.css"), css, MimeType.TEXT_CSS);
+
+        final int requestCount = getMockWebConnection().getRequestCount();
+        loadPageVerifyTitle2(html);
+
+        assertEquals(2, getMockWebConnection().getRequestCount() - requestCount);
     }
 }

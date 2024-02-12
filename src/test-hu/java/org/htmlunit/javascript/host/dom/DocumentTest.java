@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,9 @@ import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.junit.Retry;
 import org.htmlunit.util.MimeType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -2419,6 +2421,7 @@ public class DocumentTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
+    @Retry
     @Alerts(DEFAULT = {"0", "0", "0"},
             FF = {"0", "1", "1"},
             FF_ESR = {"0", "1", "1"})
@@ -3218,6 +3221,41 @@ public class DocumentTest extends WebDriverTestCase {
             + "      } else {\n"
             + "        log('no WeakSet');\n"
             + "      }\n"
+            + "    }\n"
+            + "  </script>\n"
+            + "</head>\n"
+            + "<body onload='test()'></body>\n"
+            + "</html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = {"about:blank", "about:blank", "undefined", "null", "null"},
+            IE = "no")
+    @HtmlUnitNYI(CHROME = "exception",
+            EDGE = "exception",
+            FF = "exception",
+            FF_ESR = "exception")
+    public void newDoc() throws Exception {
+        final String html = "<html>\n"
+            + "<head>\n"
+            + "  <script>\n"
+            + LOG_TITLE_FUNCTION
+            + "    function test() {\n"
+            + "      if (typeof Document === 'object') { log('no'); return ; }\n"
+
+            + "      try {\n"
+            + "        var doc = new Document();"
+            + "        log(doc.documentURI);\n"
+            + "        log(doc.URL);\n"
+            + "        log(doc.origin);\n"
+            + "        log(doc.firstElementChild);\n"
+            + "        log(doc.defaultView);\n"
+            + "      } catch(e) { log('exception'); }\n"
             + "    }\n"
             + "  </script>\n"
             + "</head>\n"

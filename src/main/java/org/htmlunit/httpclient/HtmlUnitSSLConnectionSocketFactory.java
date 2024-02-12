@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.net.SocketAddress;
 import java.net.SocketTimeoutException;
 import java.security.GeneralSecurityException;
 import java.security.KeyManagementException;
@@ -59,6 +58,7 @@ import org.htmlunit.WebClientOptions;
  * @author Martin Huber
  * @author Marc Guillemot
  * @author Ronald Brill
+ * @author Vadzim Miliantsei
  */
 public final class HtmlUnitSSLConnectionSocketFactory extends SSLConnectionSocketFactory {
     private static final String SSL3ONLY = "htmlunit.SSL3Only";
@@ -164,18 +164,16 @@ public final class HtmlUnitSSLConnectionSocketFactory extends SSLConnectionSocke
             final Socket underlying = SocksConnectionSocketFactory.createSocketWithSocksProxy(socksProxy);
             underlying.setReuseAddress(true);
 
-            final SocketAddress socksProxyAddress = new InetSocketAddress(socksProxy.getHostName(),
-                    socksProxy.getPort());
             try {
                 //underlying.setSoTimeout(soTimeout);
                 underlying.connect(remoteAddress, connectTimeout);
             }
             catch (final SocketTimeoutException ex) {
-                throw new ConnectTimeoutException("Connect to " + socksProxyAddress + " timed out");
+                throw new ConnectTimeoutException("Connect to " + socksProxy.toURI() + " timed out");
             }
 
-            final Socket sslSocket = getSSLSocketFactory().createSocket(underlying, socksProxy.getHostName(),
-                    socksProxy.getPort(), true);
+            final Socket sslSocket = getSSLSocketFactory().createSocket(underlying, remoteAddress.getHostName(),
+                    remoteAddress.getPort(), true);
             configureSocket((SSLSocket) sslSocket, context);
             return sslSocket;
         }

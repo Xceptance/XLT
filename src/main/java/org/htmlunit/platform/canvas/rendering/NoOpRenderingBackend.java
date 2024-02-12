@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ import java.io.IOException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.htmlunit.javascript.host.canvas.ImageData;
 
 /**
  * The default implementation of {@link RenderingBackend}.
@@ -205,7 +204,8 @@ public class NoOpRenderingBackend implements RenderingBackend {
      * {@inheritDoc}
      */
     @Override
-    public void putImageData(final ImageData imageData,
+    public void putImageData(
+            final byte[] imageDataBytes, final int imageDataHeight, final int imageDataWidth,
             final int dx, final int dy, final int dirtyX, final int dirtyY,
             final int dirtyWidth, final int dirtyHeight) {
 

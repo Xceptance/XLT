@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,7 +75,7 @@ public class WebRequest2Test extends WebServerTestCase {
         assertTrue(page instanceof TextPage);
         assertEquals("Parameters: \n  'x': 'u'\n", ((TextPage) page).getContent());
 
-        final List<NameValuePair> pairs = new ArrayList<NameValuePair>();
+        final List<NameValuePair> pairs = new ArrayList<>();
         pairs.add(new NameValuePair("hello", "world"));
         request.setRequestParameters(pairs);
         page = client.getPage(request);
@@ -99,7 +99,7 @@ public class WebRequest2Test extends WebServerTestCase {
         assertTrue(page instanceof TextPage);
         assertEquals("Parameters: \n  'x': ''\n", ((TextPage) page).getContent());
 
-        final List<NameValuePair> pairs = new ArrayList<NameValuePair>();
+        final List<NameValuePair> pairs = new ArrayList<>();
         pairs.add(new NameValuePair("hello", ""));
         request.setRequestParameters(pairs);
         page = client.getPage(request);
@@ -123,7 +123,7 @@ public class WebRequest2Test extends WebServerTestCase {
         assertTrue(page instanceof TextPage);
         assertEquals("Parameters: \n  'x': ''\n", ((TextPage) page).getContent());
 
-        final List<NameValuePair> pairs = new ArrayList<NameValuePair>();
+        final List<NameValuePair> pairs = new ArrayList<>();
         pairs.add(new NameValuePair("hello", null));
         request.setRequestParameters(pairs);
         page = client.getPage(request);

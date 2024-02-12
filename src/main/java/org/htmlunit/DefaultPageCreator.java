@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -120,16 +120,15 @@ public class DefaultPageCreator implements PageCreator, Serializable {
         }
 
         final String contentTypeLC = org.htmlunit.util.StringUtils
-                                            .toRootLowerCaseWithCache(contentType);
+                                            .toRootLowerCase(contentType);
+
+        if (MimeType.isJavascriptMimeType(contentTypeLC)) {
+            return PageType.JAVASCRIPT;
+        }
         switch (contentTypeLC) {
             case MimeType.TEXT_HTML:
             case "image/svg+xml":
                 return PageType.HTML;
-
-            case "text/javascript":
-            case "application/x-javascript":
-            case MimeType.APPLICATION_JAVASCRIPT:
-                return PageType.JAVASCRIPT;
 
             case MimeType.TEXT_XML:
             case "application/xml":
@@ -168,6 +167,8 @@ public class DefaultPageCreator implements PageCreator, Serializable {
                 return determinePageType(MimeType.TEXT_PLAIN);
             }
 
+            // looks a bit strange but correct
+            // if there is a bom header the browsers are handling this as text page
             if (startsWith(bytes, markerUTF8_) || startsWith(bytes, markerUTF16BE_)
                     || startsWith(bytes, markerUTF16LE_)) {
                 return determinePageType(MimeType.TEXT_PLAIN);
@@ -178,6 +179,11 @@ public class DefaultPageCreator implements PageCreator, Serializable {
             }
 
             final String asAsciiString = new String(bytes, StandardCharsets.US_ASCII).trim().toUpperCase(Locale.ROOT);
+
+            if (asAsciiString.startsWith("<?XML")) {
+                return determinePageType(MimeType.TEXT_XML);
+            }
+
             for (final String htmlPattern : htmlPatterns) {
                 try {
                     if ('<' == asAsciiString.charAt(0)) {

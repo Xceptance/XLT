@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.html.DomCharacterData;
 import org.htmlunit.html.DomElement;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
@@ -46,8 +47,16 @@ public class CharacterData extends Node {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public CharacterData() {
+    }
+
+    /**
+     * JavaScript constructor.
+     */
+    @Override
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    public void jsConstructor() {
+        super.jsConstructor();
     }
 
     /**
@@ -94,12 +103,12 @@ public class CharacterData extends Node {
     @JsxFunction
     public void deleteData(final int offset, final int count) {
         if (offset < 0) {
-            throw Context.reportRuntimeError("Provided offset: " + offset + " is less than zero.");
+            throw JavaScriptEngine.reportRuntimeError("Provided offset: " + offset + " is less than zero.");
         }
 
         if (getBrowserVersion().hasFeature(JS_DOM_CDATA_DELETE_THROWS_NEGATIVE_COUNT)) {
             if (count < 0) {
-                throw Context.reportRuntimeError("Provided count: " + count + " is less than zero.");
+                throw JavaScriptEngine.reportRuntimeError("Provided count: " + count + " is less than zero.");
             }
             if (count == 0) {
                 return;
@@ -108,7 +117,7 @@ public class CharacterData extends Node {
 
         final DomCharacterData domCharacterData = getDomCharacterDataOrDie();
         if (offset > domCharacterData.getLength()) {
-            throw Context.reportRuntimeError("Provided offset: " + offset + " is greater than length.");
+            throw JavaScriptEngine.reportRuntimeError("Provided offset: " + offset + " is greater than length.");
         }
 
         domCharacterData.deleteData(offset, count);
@@ -193,13 +202,14 @@ public class CharacterData extends Node {
      * Inserts a set of Node or DOMString objects in the children list of this ChildNode's parent,
      * just before this ChildNode.
      * @param context the context
+     * @param scope the scope
      * @param thisObj this object
      * @param args the arguments
      * @param function the function
      */
     @JsxFunction({CHROME, EDGE, FF, FF_ESR})
-    public static void before(final Context context, final Scriptable thisObj, final Object[] args,
-            final Function function) {
+    public static void before(final Context context, final Scriptable scope,
+            final Scriptable thisObj, final Object[] args,  final Function function) {
         Node.before(context, thisObj, args, function);
     }
 
@@ -207,26 +217,28 @@ public class CharacterData extends Node {
      * Inserts a set of Node or DOMString objects in the children list of this ChildNode's parent,
      * just after this ChildNode.
      * @param context the context
+     * @param scope the scope
      * @param thisObj this object
      * @param args the arguments
      * @param function the function
      */
     @JsxFunction({CHROME, EDGE, FF, FF_ESR})
-    public static void after(final Context context, final Scriptable thisObj, final Object[] args,
-            final Function function) {
+    public static void after(final Context context, final Scriptable scope,
+            final Scriptable thisObj, final Object[] args, final Function function) {
         Node.after(context, thisObj, args, function);
     }
 
     /**
      * Replaces the node wit a set of Node or DOMString objects.
      * @param context the context
+     * @param scope the scope
      * @param thisObj this object
      * @param args the arguments
      * @param function the function
      */
     @JsxFunction({CHROME, EDGE, FF, FF_ESR})
-    public static void replaceWith(final Context context, final Scriptable thisObj, final Object[] args,
-            final Function function) {
+    public static void replaceWith(final Context context, final Scriptable scope,
+            final Scriptable thisObj, final Object[] args, final Function function) {
         Node.replaceWith(context, thisObj, args, function);
     }
 }

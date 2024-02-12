@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,13 +26,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
-import org.htmlunit.corejs.javascript.Context;
-import org.htmlunit.corejs.javascript.Undefined;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlTable;
 import org.htmlunit.html.HtmlTableRow;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
@@ -54,8 +53,16 @@ public class HTMLTableRowElement extends HTMLTableComponent {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public HTMLTableRowElement() {
+    }
+
+    /**
+     * JavaScript constructor.
+     */
+    @Override
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    public void jsConstructor() {
+        super.jsConstructor();
     }
 
     /**
@@ -142,8 +149,8 @@ public class HTMLTableRowElement extends HTMLTableComponent {
     @JsxFunction
     public Object insertCell(final Object index) {
         int position = -1;
-        if (!Undefined.isUndefined(index)) {
-            position = (int) Context.toNumber(index);
+        if (!JavaScriptEngine.isUndefined(index)) {
+            position = (int) JavaScriptEngine.toNumber(index);
         }
         final HtmlTableRow htmlRow = (HtmlTableRow) getDomNodeOrDie();
 
@@ -158,7 +165,7 @@ public class HTMLTableRowElement extends HTMLTableComponent {
             }
             return getScriptableFor(newCell);
         }
-        throw Context.reportRuntimeError("Index or size is negative or greater than the allowed amount");
+        throw JavaScriptEngine.reportRuntimeError("Index or size is negative or greater than the allowed amount");
     }
 
     /**
@@ -171,11 +178,11 @@ public class HTMLTableRowElement extends HTMLTableComponent {
     @JsxFunction
     public void deleteCell(final Object index) {
         int position = -1;
-        if (!Undefined.isUndefined(index)) {
-            position = (int) Context.toNumber(index);
+        if (!JavaScriptEngine.isUndefined(index)) {
+            position = (int) JavaScriptEngine.toNumber(index);
         }
         else if (getBrowserVersion().hasFeature(JS_TABLE_ROW_DELETE_CELL_REQUIRES_INDEX)) {
-            throw Context.reportRuntimeError("No enough arguments");
+            throw JavaScriptEngine.reportRuntimeError("No enough arguments");
         }
 
         final HtmlTableRow htmlRow = (HtmlTableRow) getDomNodeOrDie();
@@ -185,7 +192,7 @@ public class HTMLTableRowElement extends HTMLTableComponent {
         }
         final boolean indexValid = position >= -1 && position <= htmlRow.getCells().size();
         if (!indexValid) {
-            throw Context.reportRuntimeError("Index or size is negative or greater than the allowed amount");
+            throw JavaScriptEngine.reportRuntimeError("Index or size is negative or greater than the allowed amount");
         }
 
         htmlRow.getCell(position).remove();
@@ -197,7 +204,7 @@ public class HTMLTableRowElement extends HTMLTableComponent {
      */
     @Override
     public void setOuterHTML(final Object value) {
-        throw Context.reportRuntimeError("outerHTML is read-only for tag 'tr'");
+        throw JavaScriptEngine.reportRuntimeError("outerHTML is read-only for tag 'tr'");
     }
 
     /**

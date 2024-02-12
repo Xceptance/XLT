@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -973,7 +973,7 @@ public class XMLHttpRequestCORSTest extends WebDriverTestCase {
                 + "    }\n"
                 + "  }\n";
 
-        getMockWebConnection().setDefaultResponse(js, MimeType.APPLICATION_JAVASCRIPT);
+        getMockWebConnection().setDefaultResponse(js, MimeType.TEXT_JAVASCRIPT);
         final String xml = "<xml><content>blah</content></xml>";
 
         getMockWebConnection().setResponse(new URL(URL_FIRST, "/data"), xml, MimeType.TEXT_XML);

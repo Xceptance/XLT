@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -2068,5 +2068,44 @@ public class PromiseTest extends WebDriverTestCase {
         final WebDriver driver = loadPage2(html);
         Thread.sleep(100);
         assertTitle(driver, getExpectedAlerts()[0]);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = {"function\\sPromise()\\s{\\s[native\\scode]\\s}", "true", "[GC]"},
+            FF = {"function\\sPromise()\\s{\\n\\s\\s\\s\\s[native\\scode]\\n}", "true", "[GC]"},
+            FF_ESR = {"function\\sPromise()\\s{\\n\\s\\s\\s\\s[native\\scode]\\n}", "true", "[GC]"},
+            IE = {})
+    public void speciesValue() throws Exception {
+        final String html =
+                "<html>\n"
+              + "<head>\n"
+              + "  <script>\n"
+              + LOG_TITLE_FUNCTION_NORMALIZE
+              + "    function test() {\n"
+              + "      if (window.Promise) {\n"
+              + "        log(Promise[Symbol.species]);\n"
+              + "        log(Promise === Promise[Symbol.species]);\n"
+
+              + "        let desc = Object.getOwnPropertyDescriptor(Promise, Symbol.species);\n"
+              + "        let props = '[';\n"
+              + "        if (desc.get != undefined) props += 'G';\n"
+              + "        if (desc.set != undefined) props += 'S';\n"
+              + "        if (desc.writable) props += 'W';\n"
+              + "        if (desc.configurable) props += 'C';\n"
+              + "        if (desc.enumerable) props += 'E';\n"
+              + "        props += ']';\n"
+              + "        log(props);\n"
+              + "      }\n"
+              + "    }\n"
+              + "  </script>\n"
+              + "</head>\n"
+              + "<body onload='test()'>\n"
+              + "</body>\n"
+              + "</html>";
+
+        loadPageVerifyTitle2(html);
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -612,6 +612,34 @@ public class ElementOuterHtmlTest extends WebDriverTestCase {
     @Alerts("<rt></rt>")
     public void rt() throws Exception {
         test("rt");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("<rtc></rtc>")
+    public void rtc() throws Exception {
+        test("rtc");
+    }
+
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("<rb></rb>")
+    public void rb() throws Exception {
+        test("rb");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("<rbc></rbc>")
+    public void rbc() throws Exception {
+        test("rbc");
     }
 
     /**
@@ -1287,15 +1315,6 @@ public class ElementOuterHtmlTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("<abcdefg></abcdefg>")
-    public void arbitrary() throws Exception {
-        test("abcdefg");
-    }
-
-    /**
-     * @throws Exception if the test fails
-     */
-    @Test
     @Alerts("<input>")
     public void input() throws Exception {
         test("input");
@@ -1344,5 +1363,14 @@ public class ElementOuterHtmlTest extends WebDriverTestCase {
     @Alerts("<slot></slot>")
     public void slot() throws Exception {
         test("slot");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("<abcdefg></abcdefg>")
+    public void arbitrary() throws Exception {
+        test("abcdefg");
     }
 }

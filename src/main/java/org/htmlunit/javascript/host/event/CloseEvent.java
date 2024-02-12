@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,9 +20,8 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
-import org.htmlunit.corejs.javascript.ScriptRuntime;
 import org.htmlunit.corejs.javascript.ScriptableObject;
-import org.htmlunit.corejs.javascript.Undefined;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
@@ -69,10 +68,10 @@ public class CloseEvent extends Event {
     public void jsConstructor(final String type, final ScriptableObject details) {
         super.jsConstructor(type, details);
 
-        if (details != null && !Undefined.isUndefined(details)) {
-            code_ = ScriptRuntime.toInt32(details.get("code"));
-            reason_ = ScriptRuntime.toString(details.get("reason"));
-            wasClean_ = ScriptRuntime.toBoolean(details.get("wasClean"));
+        if (details != null && !JavaScriptEngine.isUndefined(details)) {
+            code_ = JavaScriptEngine.toInt32(details.get("code"));
+            reason_ = JavaScriptEngine.toString(details.get("reason"));
+            wasClean_ = JavaScriptEngine.toBoolean(details.get("wasClean"));
         }
     }
 

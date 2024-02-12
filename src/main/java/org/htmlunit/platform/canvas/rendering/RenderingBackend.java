@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@ package org.htmlunit.platform.canvas.rendering;
 
 import java.io.IOException;
 
-import org.htmlunit.javascript.host.canvas.ImageData;
 import org.htmlunit.javascript.host.canvas.Path2D;
 
 /**
@@ -174,7 +173,9 @@ public interface RenderingBackend {
 
     /**
      * Paints data from the given ImageData object onto the canvas.
-     * @param imageData an ImageData object containing the array of pixel values
+     * @param imageDataBytes an array of pixel values
+     * @param imageDataHeight the height of the imageData
+     * @param imageDataWidth the width of the imageData
      * @param dx horizontal position (x coordinate) at which to place the image data in the destination canvas
      * @param dy vertical position (y coordinate) at which to place the image data in the destination canvas
      * @param dirtyX horizontal position (x coordinate) of the top-left corner
@@ -186,7 +187,8 @@ public interface RenderingBackend {
      * @param dirtyHeight height of the rectangle to be painted.
      *  Defaults to the height of the image data.
      */
-    void putImageData(ImageData imageData, int dx, int dy, int dirtyX, int dirtyY, int dirtyWidth, int dirtyHeight);
+    void putImageData(byte[] imageDataBytes, int imageDataHeight, int imageDataWidth,
+            int dx, int dy, int dirtyX, int dirtyY, int dirtyWidth, int dirtyHeight);
 
     /**
      * Adds a quadratic Bézier curve to the current sub-path. It requires

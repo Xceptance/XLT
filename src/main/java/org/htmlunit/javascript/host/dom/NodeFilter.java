@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,19 +41,19 @@ public class NodeFilter extends HtmlUnitScriptable {
      * Accept the node.
      */
     @JsxConstant
-    public static final short FILTER_ACCEPT = org.w3c.dom.traversal.NodeFilter.FILTER_ACCEPT;
+    public static final int FILTER_ACCEPT = org.w3c.dom.traversal.NodeFilter.FILTER_ACCEPT;
 
     /**
      * Reject the node.
      */
     @JsxConstant
-    public static final short FILTER_REJECT = org.w3c.dom.traversal.NodeFilter.FILTER_REJECT;
+    public static final int FILTER_REJECT = org.w3c.dom.traversal.NodeFilter.FILTER_REJECT;
 
     /**
      * Skip the node.
      */
     @JsxConstant
-    public static final short FILTER_SKIP = org.w3c.dom.traversal.NodeFilter.FILTER_SKIP;
+    public static final int FILTER_SKIP = org.w3c.dom.traversal.NodeFilter.FILTER_SKIP;
 
     /** Show all nodes. */
     @JsxConstant
@@ -114,7 +114,13 @@ public class NodeFilter extends HtmlUnitScriptable {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public NodeFilter() {
+    }
+
+    /**
+     * JavaScript constructor.
+     */
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    public void jsConstructor() {
     }
 }

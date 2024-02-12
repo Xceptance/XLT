@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,11 @@
 package org.htmlunit.html.impl;
 
 import org.htmlunit.SimpleWebTestCase;
+import org.htmlunit.html.DomNode;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.junit.BrowserRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.w3c.dom.Node;
 
 /**
  * Tests for SimpleRange.
@@ -41,7 +41,7 @@ public class SimpleRangeTest extends SimpleWebTestCase {
             + "</html>";
 
         final HtmlPage page = loadPage(content);
-        final Node node = page.getElementById("myInput");
+        final DomNode node = page.getElementById("myInput");
 
         // select all
         SimpleRange range = new SimpleRange(node, 0, node, 4);

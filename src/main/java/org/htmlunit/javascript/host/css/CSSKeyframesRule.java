@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import org.htmlunit.cssparser.dom.CSSUnknownRuleImpl;
 import org.htmlunit.javascript.configuration.JsxClass;
@@ -31,7 +30,7 @@ import org.htmlunit.javascript.configuration.JsxGetter;
  * @author Ahmed Ashour
  * @author Ronald Brill
  */
-@JsxClass({CHROME, EDGE, FF, FF_ESR, IE})
+@JsxClass
 public class CSSKeyframesRule extends CSSRule {
 
     /**
@@ -64,7 +63,7 @@ public class CSSKeyframesRule extends CSSRule {
      */
     @Override
     @JsxGetter
-    public short getType() {
+    public int getType() {
         return KEYFRAMES_RULE;
     }
 }

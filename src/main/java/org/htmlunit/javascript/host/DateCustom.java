@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,13 +40,14 @@ public final class DateCustom {
     /**
      * Converts a date to a string, returning the "date" portion using the operating system's locale's conventions.
      * @param context the JavaScript context
+     * @param scope the scope
      * @param thisObj the scriptable
      * @param args the arguments passed into the method
      * @param function the function
      * @return converted string
      */
-    public static String toLocaleDateString(
-            final Context context, final Scriptable thisObj, final Object[] args, final Function function) {
+    public static String toLocaleDateString(final Context context, final Scriptable scope,
+            final Scriptable thisObj, final Object[] args, final Function function) {
         final String formatString;
         final BrowserVersion browserVersion = ((Window) thisObj.getParentScope()).getBrowserVersion();
 
@@ -67,13 +68,14 @@ public final class DateCustom {
     /**
      * Converts a date to a string, returning the "time" portion using the current locale's conventions.
      * @param context the JavaScript context
+     * @param scope the scope
      * @param thisObj the scriptable
      * @param args the arguments passed into the method
      * @param function the function
      * @return converted string
      */
-    public static String toLocaleTimeString(
-            final Context context, final Scriptable thisObj, final Object[] args, final Function function) {
+    public static String toLocaleTimeString(final Context context, final Scriptable scope,
+            final Scriptable thisObj, final Object[] args, final Function function) {
         final String formatString;
         final BrowserVersion browserVersion = ((Window) thisObj.getParentScope()).getBrowserVersion();
 

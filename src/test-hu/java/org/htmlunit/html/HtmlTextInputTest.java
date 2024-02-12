@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.InvalidElementStateException;
-import org.openqa.selenium.JavascriptException;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -676,7 +675,7 @@ public class HtmlTextInputTest extends WebDriverTestCase {
     /**
      * @throws Exception if the test fails
      */
-    @Test(expected = JavascriptException.class)
+    @Test(expected = UnsupportedOperationException.class)
     public void submitWithoutForm() throws Exception {
         final String html =
             "<html>\n"

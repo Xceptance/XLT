@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,9 @@
 package org.htmlunit.util;
 
 import java.nio.charset.Charset;
-import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -49,8 +49,7 @@ public final class StringUtils {
                                 + "\\s*((0|[1-9]\\d?|100)(.\\d*)?)%\\s*\\)");
     private static final Pattern ILLEGAL_FILE_NAME_CHARS = Pattern.compile("\\\\|/|\\||:|\\?|\\*|\"|<|>|\\p{Cntrl}");
 
-    private static final Map<String, String> CamelizeCache_ = new HashMap<>();
-    private static final Map<String, String> RootLowercaseCache_ = new HashMap<>();
+    private static final Map<String, String> CamelizeCache_ = new ConcurrentHashMap<>();
 
     /**
      * Disallow instantiation of this class.
@@ -348,20 +347,15 @@ public final class StringUtils {
         return result;
     }
 
-    public static String toRootLowerCaseWithCache(final String string) {
-        if (string == null) {
-            return null;
-        }
-
-        String result = RootLowercaseCache_.get(string);
-        if (null != result) {
-            return result;
-        }
-
-        result = string.toLowerCase(Locale.ROOT);
-        RootLowercaseCache_.put(string, result);
-
-        return result;
+    /**
+     * Lowercases a string by checking and check for null first. There
+     * is no cache involved and the ROOT locale is used to convert it.
+     *
+     * @param s the string to lowercase
+     * @return the lowercased string
+     */
+    public static String toRootLowerCase(final String s) {
+        return s == null ? null : s.toLowerCase(Locale.ROOT);
     }
 
     /**
@@ -402,5 +396,66 @@ public final class StringUtils {
         }
 
         return content.getBytes(charset);
+    }
+
+    /**
+     * Splits the provided text into an array, using whitespace as the
+     * separator.
+     * Whitespace is defined by {@link Character#isWhitespace(char)}.
+     *
+     * @param str  the String to parse, may be null
+     * @return an array of parsed Strings, an empty array if null String input
+     */
+    public static String[] splitAtJavaWhitespace(final String str) {
+        final String[] parts = org.apache.commons.lang3.StringUtils.split(str);
+        if (parts == null) {
+            return new String[0];
+        }
+        return parts;
+    }
+
+    /**
+     * Splits the provided text into an array, using blank as the
+     * separator.
+     *
+     * @param str  the String to parse, may be null
+     * @return an array of parsed Strings, an empty array if null String input
+     */
+    public static String[] splitAtBlank(final String str) {
+        final String[] parts = org.apache.commons.lang3.StringUtils.split(str, ' ');
+        if (parts == null) {
+            return new String[0];
+        }
+        return parts;
+    }
+
+    /**
+     * Splits the provided text into an array, using blank as the
+     * separator.
+     *
+     * @param str  the String to parse, may be null
+     * @return an array of parsed Strings, an empty array if null String input
+     */
+    public static String[] splitAtComma(final String str) {
+        final String[] parts = org.apache.commons.lang3.StringUtils.split(str, ',');
+        if (parts == null) {
+            return new String[0];
+        }
+        return parts;
+    }
+
+    /**
+     * Splits the provided text into an array, using comma or blank as the
+     * separator.
+     *
+     * @param str  the String to parse, may be null
+     * @return an array of parsed Strings, an empty array if null String input
+     */
+    public static String[] splitAtCommaOrBlank(final String str) {
+        final String[] parts = org.apache.commons.lang3.StringUtils.split(str, ", ");
+        if (parts == null) {
+            return new String[0];
+        }
+        return parts;
     }
 }

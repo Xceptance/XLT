@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
  */
 package org.htmlunit.html;
 
+import static org.htmlunit.BrowserVersionFeatures.EVENT_CONTEXT_MENU_HAS_DETAIL_1;
 import static org.htmlunit.BrowserVersionFeatures.EVENT_ONCLICK_POINTEREVENT_DETAIL_0;
 import static org.htmlunit.BrowserVersionFeatures.EVENT_ONCLICK_USES_POINTEREVENT;
 import static org.htmlunit.BrowserVersionFeatures.EVENT_ONDOUBLECLICK_USES_POINTEREVENT;
@@ -25,7 +26,6 @@ import java.io.Serializable;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -52,6 +52,7 @@ import org.htmlunit.cssparser.parser.CSSException;
 import org.htmlunit.cssparser.parser.selector.Selector;
 import org.htmlunit.cssparser.parser.selector.SelectorList;
 import org.htmlunit.cssparser.parser.selector.SelectorSpecificity;
+import org.htmlunit.cyberneko.util.FastHashMap;
 import org.htmlunit.javascript.AbstractJavaScriptEngine;
 import org.htmlunit.javascript.HtmlUnitContextFactory;
 import org.htmlunit.javascript.JavaScriptEngine;
@@ -59,6 +60,7 @@ import org.htmlunit.javascript.host.event.Event;
 import org.htmlunit.javascript.host.event.EventTarget;
 import org.htmlunit.javascript.host.event.MouseEvent;
 import org.htmlunit.javascript.host.event.PointerEvent;
+import org.htmlunit.util.OrderedFastHashMap;
 import org.htmlunit.util.StringUtils;
 import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
@@ -79,8 +81,20 @@ public class DomElement extends DomNamespaceNode implements Element {
 
     private static final Log LOG = LogFactory.getLog(DomElement.class);
 
+    /** id. */
+    public static final String ID_ATTRIBUTE = "id";
+
+    /** name. */
+    public static final String NAME_ATTRIBUTE = "name";
+
     /** src. */
     public static final String SRC_ATTRIBUTE = "src";
+
+    /** value. */
+    public static final String VALUE_ATTRIBUTE = "value";
+
+    /** type. */
+    public static final String TYPE_ATTRIBUTE = "type";
 
     /** Constant meaning that the specified attribute was not defined. */
     public static final String ATTRIBUTE_NOT_DEFINED = new String("");
@@ -92,7 +106,7 @@ public class DomElement extends DomNamespaceNode implements Element {
     private NamedAttrNodeMapImpl attributes_;
 
     /** The map holding the namespaces, keyed by URI. */
-    private final Map<String, String> namespaces_ = new HashMap<>();
+    private FastHashMap<String, String> namespaces_;
 
     /** Cache for the styles. */
     private String styleString_;
@@ -116,13 +130,18 @@ public class DomElement extends DomNamespaceNode implements Element {
             final Map<String, DomAttr> attributes) {
         super(namespaceURI, qualifiedName, page);
 
-        if (attributes != null && !attributes.isEmpty()) {
+        if (attributes != null) {
             attributes_ = new NamedAttrNodeMapImpl(this, isAttributeCaseSensitive(), attributes);
-            for (final DomAttr entry : attributes_.values()) {
+
+            for (final DomAttr entry : attributes.values()) {
                 entry.setParentNode(this);
                 final String attrNamespaceURI = entry.getNamespaceURI();
                 final String prefix = entry.getPrefix();
+
                 if (attrNamespaceURI != null && prefix != null) {
+                    if (namespaces_ == null) {
+                        namespaces_ = new FastHashMap<>(1, 0.5f);
+                    }
                     namespaces_.put(attrNamespaceURI, prefix);
                 }
             }
@@ -372,7 +391,7 @@ public class DomElement extends DomNamespaceNode implements Element {
             qualifiedName = localName;
         }
         else {
-            final String prefix = namespaces_.get(namespaceURI);
+            final String prefix = namespaces_ == null ? null : namespaces_.get(namespaceURI);
             if (prefix == null) {
                 qualifiedName = null;
             }
@@ -520,6 +539,9 @@ public class DomElement extends DomNamespaceNode implements Element {
         attributes_.put(qualifiedName, newAttr);
 
         if (namespaceURI != null) {
+            if (namespaces_ == null) {
+                namespaces_ = new FastHashMap<>(1, 0.5f);
+            }
             namespaces_.put(namespaceURI, newAttr.getPrefix());
         }
     }
@@ -705,7 +727,7 @@ public class DomElement extends DomNamespaceNode implements Element {
      * @return the identifier of this element
      */
     public final String getId() {
-        return getAttributeDirect("id");
+        return getAttributeDirect(ID_ATTRIBUTE);
     }
 
     /**
@@ -714,7 +736,7 @@ public class DomElement extends DomNamespaceNode implements Element {
      * @param newId the new identifier of this element
      */
     public final void setId(final String newId) {
-        setAttribute("id", newId);
+        setAttribute(ID_ATTRIBUTE, newId);
     }
 
     /**
@@ -1024,7 +1046,7 @@ public class DomElement extends DomNamespaceNode implements Element {
                 }
                 else {
                     event = new MouseEvent(getEventTargetElement(), MouseEvent.TYPE_CLICK, shiftKey,
-                            ctrlKey, altKey, MouseEvent.BUTTON_LEFT);
+                            ctrlKey, altKey, MouseEvent.BUTTON_LEFT, 1);
                 }
 
                 if (disableProcessLabelAfterBubbling) {
@@ -1224,7 +1246,7 @@ public class DomElement extends DomNamespaceNode implements Element {
         }
         else {
             event = new MouseEvent(this, MouseEvent.TYPE_DBL_CLICK, shiftKey, ctrlKey, altKey,
-                    MouseEvent.BUTTON_LEFT);
+                    MouseEvent.BUTTON_LEFT, 2);
         }
         final ScriptResult scriptResult = fireEvent(event);
         if (scriptResult == null) {
@@ -1397,6 +1419,7 @@ public class DomElement extends DomNamespaceNode implements Element {
             }
             return mouseDownPage;
         }
+
         final Page mouseUpPage = mouseUp(shiftKey, ctrlKey, altKey, MouseEvent.BUTTON_RIGHT);
         if (mouseUpPage != getPage()) {
             if (LOG.isDebugEnabled()) {
@@ -1404,6 +1427,7 @@ public class DomElement extends DomNamespaceNode implements Element {
             }
             return mouseUpPage;
         }
+
         return doMouseEvent(MouseEvent.TYPE_CONTEXT_MENU, shiftKey, ctrlKey, altKey, MouseEvent.BUTTON_RIGHT);
     }
 
@@ -1422,18 +1446,30 @@ public class DomElement extends DomNamespaceNode implements Element {
     private Page doMouseEvent(final String eventType, final boolean shiftKey, final boolean ctrlKey,
         final boolean altKey, final int button) {
         final SgmlPage page = getPage();
-        if (!page.getWebClient().isJavaScriptEnabled()) {
+        final WebClient webClient = getPage().getWebClient();
+        if (!webClient.isJavaScriptEnabled()) {
             return page;
         }
 
         final ScriptResult scriptResult;
         final Event event;
-        if (MouseEvent.TYPE_CONTEXT_MENU.equals(eventType)
-                && getPage().getWebClient().getBrowserVersion().hasFeature(EVENT_ONCLICK_USES_POINTEREVENT)) {
-            event = new PointerEvent(this, eventType, shiftKey, ctrlKey, altKey, button, 0);
+        if (MouseEvent.TYPE_CONTEXT_MENU.equals(eventType)) {
+            final BrowserVersion browserVersion = webClient.getBrowserVersion();
+            if (browserVersion.hasFeature(EVENT_ONCLICK_USES_POINTEREVENT)) {
+                event = new PointerEvent(this, eventType, shiftKey, ctrlKey, altKey, button, 0);
+            }
+            else if (browserVersion.hasFeature(EVENT_CONTEXT_MENU_HAS_DETAIL_1)) {
+                event = new MouseEvent(this, eventType, shiftKey, ctrlKey, altKey, button, 1);
+            }
+            else {
+                event = new MouseEvent(this, eventType, shiftKey, ctrlKey, altKey, button, 2);
+            }
+        }
+        else if (MouseEvent.TYPE_DBL_CLICK.equals(eventType)) {
+            event = new MouseEvent(this, eventType, shiftKey, ctrlKey, altKey, button, 2);
         }
         else {
-            event = new MouseEvent(this, eventType, shiftKey, ctrlKey, altKey, button);
+            event = new MouseEvent(this, eventType, shiftKey, ctrlKey, altKey, button, 1);
         }
         scriptResult = fireEvent(event);
 
@@ -1442,7 +1478,7 @@ public class DomElement extends DomNamespaceNode implements Element {
             currentPage = page;
         }
         else {
-            currentPage = page.getWebClient().getCurrentWindow().getEnclosedPage();
+            currentPage = webClient.getCurrentWindow().getEnclosedPage();
         }
 
         final boolean mouseOver = !MouseEvent.TYPE_MOUSE_OUT.equals(eventType);
@@ -1584,12 +1620,12 @@ public class DomElement extends DomNamespaceNode implements Element {
      */
     public boolean matches(final String selectorString) {
         try {
-            final BrowserVersion browserVersion = getPage().getWebClient().getBrowserVersion();
-            final SelectorList selectorList = getSelectorList(selectorString, browserVersion);
+            final WebClient webClient = getPage().getWebClient();
+            final SelectorList selectorList = getSelectorList(selectorString, webClient);
 
             if (selectorList != null) {
                 for (final Selector selector : selectorList) {
-                    if (CssStyleSheet.selects(browserVersion, selector, this, null, true, true)) {
+                    if (CssStyleSheet.selects(webClient.getBrowserVersion(), selector, this, null, true, true)) {
                         return true;
                     }
                 }
@@ -1641,12 +1677,9 @@ public class DomElement extends DomNamespaceNode implements Element {
  * The {@link NamedNodeMap} to store the node attributes.
  */
 class NamedAttrNodeMapImpl implements Map<String, DomAttr>, NamedNodeMap, Serializable {
-    private static final DomAttr[] EMPTY_ARRAY = new DomAttr[0];
     protected static final NamedAttrNodeMapImpl EMPTY_MAP = new NamedAttrNodeMapImpl();
 
-    private final Map<String, DomAttr> map_ = new LinkedHashMap<>();
-    private boolean dirty_;
-    private DomAttr[] attrPositions_ = EMPTY_ARRAY;
+    private final OrderedFastHashMap<String, DomAttr> map_;
     private final DomElement domNode_;
     private final boolean caseSensitive_;
 
@@ -1654,6 +1687,7 @@ class NamedAttrNodeMapImpl implements Map<String, DomAttr>, NamedNodeMap, Serial
         super();
         domNode_ = null;
         caseSensitive_ = true;
+        map_ = new OrderedFastHashMap<>(0);
     }
 
     NamedAttrNodeMapImpl(final DomElement domNode, final boolean caseSensitive) {
@@ -1663,12 +1697,30 @@ class NamedAttrNodeMapImpl implements Map<String, DomAttr>, NamedNodeMap, Serial
         }
         domNode_ = domNode;
         caseSensitive_ = caseSensitive;
+        map_ = new OrderedFastHashMap<>(0);
     }
 
     NamedAttrNodeMapImpl(final DomElement domNode, final boolean caseSensitive,
             final Map<String, DomAttr> attributes) {
-        this(domNode, caseSensitive);
-        putAll(attributes);
+        super();
+        if (domNode == null) {
+            throw new IllegalArgumentException("Provided domNode can't be null.");
+        }
+        domNode_ = domNode;
+        caseSensitive_ = caseSensitive;
+
+        // we expect a special map here, if we don't get it... we have to create us one
+        if (caseSensitive && attributes instanceof OrderedFastHashMap) {
+            // no need to rework the map at all, we are case sensitive, so
+            // we keep all attributes and we got the right map from outside too
+            map_ = (OrderedFastHashMap) attributes;
+        }
+        else {
+            // this is more expensive but atypical, so we don't have to care that much
+            map_ = new OrderedFastHashMap<>(attributes.size());
+            // this will create a new map with all case lowercased and
+            putAll(attributes);
+        }
     }
 
     /**
@@ -1691,7 +1743,7 @@ class NamedAttrNodeMapImpl implements Map<String, DomAttr>, NamedNodeMap, Serial
         if (caseSensitive_) {
             return name;
         }
-        return StringUtils.toRootLowerCaseWithCache(name);
+        return StringUtils.toRootLowerCase(name);
     }
 
     /**
@@ -1713,11 +1765,7 @@ class NamedAttrNodeMapImpl implements Map<String, DomAttr>, NamedNodeMap, Serial
         if (index < 0 || index >= map_.size()) {
             return null;
         }
-        if (dirty_) {
-            attrPositions_ = map_.values().toArray(attrPositions_);
-            dirty_ = false;
-        }
-        return attrPositions_[index];
+        return map_.getValue(index);
     }
 
     /**
@@ -1761,7 +1809,6 @@ class NamedAttrNodeMapImpl implements Map<String, DomAttr>, NamedNodeMap, Serial
     @Override
     public DomAttr put(final String key, final DomAttr value) {
         final String name = fixName(key);
-        dirty_ = true;
         return map_.put(name, value);
     }
 
@@ -1772,7 +1819,6 @@ class NamedAttrNodeMapImpl implements Map<String, DomAttr>, NamedNodeMap, Serial
     public DomAttr remove(final Object key) {
         if (key instanceof String) {
             final String name = fixName((String) key);
-            dirty_ = true;
             return map_.remove(name);
         }
         return null;
@@ -1783,7 +1829,6 @@ class NamedAttrNodeMapImpl implements Map<String, DomAttr>, NamedNodeMap, Serial
      */
     @Override
     public void clear() {
-        dirty_ = true;
         map_.clear();
     }
 

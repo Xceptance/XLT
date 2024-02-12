@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,14 +49,17 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
         final String html =
               "<html>\n"
             + "  <body>\n"
-            + "    <iframe id='i' onload='alert(\"loaded\");' src='" + URL_SECOND + "'></iframe>\n"
+            + "    <script>\n"
+            + LOG_TITLE_FUNCTION
+            + "    </script>\n"
+            + "    <iframe id='i' onload='log(\"loaded\");' src='" + URL_SECOND + "'></iframe>\n"
             + "  </body>\n"
             + "</html>";
 
         final String html2 = "<html><body>foo</body></html>";
         getMockWebConnection().setResponse(URL_SECOND, html2);
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -68,11 +71,14 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
         final String html =
               "<html>\n"
             + "  <body>\n"
-            + "    <iframe id='i' onload='alert(\"loaded\");'></iframe>\n"
+            + "    <script>\n"
+            + LOG_TITLE_FUNCTION
+            + "    </script>\n"
+            + "    <iframe id='i' onload='log(\"loaded\");'></iframe>\n"
             + "  </body>\n"
             + "</html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -85,14 +91,15 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
               "<html>\n"
             + "<body>\n"
             + "<script>\n"
-            + "document.write(\"<iframe id='i' onload='alert(\\\"loaded\\\");' src='" + URL_SECOND + "'></iframe>\");\n"
+            + LOG_TITLE_FUNCTION
+            + "document.write(\"<iframe id='i' onload='log(\\\"loaded\\\");' src='" + URL_SECOND + "'></iframe>\");\n"
             + "</script>\n"
             + "</body>\n"
             + "</html>";
         final String html2 = "<html><body>foo</body></html>";
         getMockWebConnection().setResponse(URL_SECOND, html2);
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -105,12 +112,13 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
               "<html>\n"
             + "  <body>\n"
             + "    <script>\n"
-            + "      document.write(\"<iframe id='i' onload='alert(\\\"loaded\\\");'></iframe>\");\n"
+            + LOG_TITLE_FUNCTION
+            + "      document.write(\"<iframe id='i' onload='log(\\\"loaded\\\");'></iframe>\");\n"
             + "    </script>\n"
             + "  </body>\n"
             + "</html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -122,10 +130,11 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
         final String html =
               "<html>\n"
             + "<head><script type='text/javascript'>\n"
+            + LOG_TITLE_FUNCTION
             + "  function handleFrameLoad() {\n"
-            + "    alert('loaded');\n"
+            + "    log('loaded');\n"
             + "    var myFrame = document.getElementById('myFrame');\n"
-            + "    alert(myFrame.contentWindow.document.body.innerHTML);\n"
+            + "    log(myFrame.contentWindow.document.body.innerHTML);\n"
             + "  }\n"
             + "</script></head>\n"
 
@@ -143,7 +152,7 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
         final String html2 = "<html><body>foo</body></html>";
         getMockWebConnection().setResponse(URL_SECOND, html2);
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -155,10 +164,11 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
         final String html =
               "<html>\n"
             + "<head><script type='text/javascript'>\n"
+            + LOG_TITLE_FUNCTION
             + "  function handleFrameLoad() {\n"
-            + "    alert('loaded');\n"
+            + "    log('loaded');\n"
             + "    var myFrame = document.getElementById('myFrame');\n"
-            + "    alert(myFrame.contentWindow.document.body.innerHTML);\n"
+            + "    log(myFrame.contentWindow.document.body.innerHTML);\n"
             + "  }\n"
             + "</script></head>\n"
 
@@ -173,7 +183,7 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
             + "  </body>\n"
             + "</html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -185,8 +195,9 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
         final String html =
               "<html>\n"
             + "<head><script type='text/javascript'>\n"
+            + LOG_TITLE_FUNCTION
             + "  function createIFrame() {\n"
-            + "    alert('createIFrame');\n"
+            + "    log('createIFrame');\n"
             + "    var myFrame = document.createElement('iframe');\n"
             + "    myFrame.id = 'myFrame';\n"
             + "    myFrame.src = '" + URL_SECOND + "';\n"
@@ -195,9 +206,9 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
             + "    body.appendChild(myFrame);\n"
             + "  }\n"
             + "  function handleFrameLoad() {\n"
-            + "    alert('loaded');\n"
+            + "    log('loaded');\n"
             + "    var myFrame = document.getElementById('myFrame');\n"
-            + "    alert(myFrame.contentWindow.document.body.innerHTML);\n"
+            + "    log(myFrame.contentWindow.document.body.innerHTML);\n"
             + "  }\n"
             + "</script></head>\n"
 
@@ -207,7 +218,8 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
         final String html2 = "<html><body>foo</body></html>";
         getMockWebConnection().setResponse(URL_SECOND, html2);
 
-        loadPageWithAlerts2(html);
+        loadPage2(html);
+        verifyTitle2(DEFAULT_WAIT_TIME, getWebDriver(), getExpectedAlerts());
     }
 
     /**
@@ -219,8 +231,9 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
         final String html =
               "<html>\n"
             + "<head><script type='text/javascript'>\n"
+            + LOG_TITLE_FUNCTION
             + "  function createIFrame() {\n"
-            + "    alert('createIFrame');\n"
+            + "    log('createIFrame');\n"
             + "    var myFrame = document.createElement('iframe');\n"
             + "    myFrame.id = 'myFrame';\n"
             + "    myFrame.onload = handleFrameLoad;\n"
@@ -228,9 +241,9 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
             + "    body.appendChild(myFrame);\n"
             + "  }\n"
             + "  function handleFrameLoad() {\n"
-            + "    alert('loaded');\n"
+            + "    log('loaded');\n"
             + "    var myFrame = document.getElementById('myFrame');\n"
-            + "    alert(myFrame.contentWindow.document.body.innerHTML);\n"
+            + "    log(myFrame.contentWindow.document.body.innerHTML);\n"
             + "  }\n"
             + "</script></head>\n"
 
@@ -238,7 +251,7 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
             + "  </body>\n"
             + "</html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -249,12 +262,13 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
     @Alerts("created")
     public void documentCreateElement_noAppendNoLoad() throws Exception {
         final String html = "<html><body><script>\n"
+            + LOG_TITLE_FUNCTION
             + "var myFrame = document.createElement('iframe');\n"
             + "myFrame.src = 'notExisting.html';\n"
-            + "alert('created');\n"
+            + "log('created');\n"
             + "</script></body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
         assertEquals(1, getMockWebConnection().getRequestCount());
     }
 
@@ -268,8 +282,9 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
         final String html =
                 "<html>\n"
               + "<head><script type='text/javascript'>\n"
+              + LOG_TITLE_FUNCTION
               + "  function createIFrame() {\n"
-              + "    alert('createIFrame');\n"
+              + "    log('createIFrame');\n"
               + "    var content = document.getElementById('content');\n"
               + "    var newContent = document.createElement('div');\n"
               + "    newContent.innerHTML = '<iframe name=\"iFrame\" src=\"" + URL_SECOND + "\"></iframe>';\n"
@@ -282,14 +297,15 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
               + "    <a id='test' onclick='createIFrame();'>insert frame</a>\n"
               + "  </body>\n"
               + "</html>";
-        final String html2 = "<html><body><script>alert('loaded')</script></body></html>";
+        final String html2 = "<html><body>"
+                + "<script>window.parent.document.title += 'loaded\\u00a7';</script></body></html>";
         getMockWebConnection().setResponse(URL_SECOND, html2);
 
         final WebDriver driver = loadPage2(html);
 
         driver.findElement(By.id("test")).click();
 
-        verifyAlerts(driver, getExpectedAlerts());
+        verifyTitle2(driver, getExpectedAlerts());
         assertEquals(2, getMockWebConnection().getRequestCount());
     }
 
@@ -302,8 +318,9 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
         final String html =
               "<html>\n"
             + "<head><script type='text/javascript'>\n"
+            + LOG_TITLE_FUNCTION
             + "  function createIFrame() {\n"
-            + "    alert('createIFrame');\n"
+            + "    log('createIFrame');\n"
             + "    var myFrame = document.createElement('iframe');\n"
             + "    myFrame.id = 'myFrame';\n"
             + "    myFrame.onload = handleFrameLoad;\n"
@@ -312,9 +329,9 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
             + "    body.appendChild(myFrame);\n"
             + "  }\n"
             + "  function handleFrameLoad() {\n"
-            + "    alert('loaded');\n"
+            + "    log('loaded');\n"
             + "    var myFrame = document.getElementById('myFrame');\n"
-            + "    alert(myFrame.contentWindow.document.body.innerHTML);\n"
+            + "    log(myFrame.contentWindow.document.body.innerHTML);\n"
             + "  }\n"
             + "</script></head>\n"
 
@@ -324,7 +341,8 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
         final String html2 = "<html><body>foo</body></html>";
         getMockWebConnection().setResponse(URL_SECOND, html2);
 
-        loadPageWithAlerts2(html);
+        loadPage2(html);
+        verifyTitle2(DEFAULT_WAIT_TIME, getWebDriver(), getExpectedAlerts());
     }
 
     /**
@@ -336,8 +354,9 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
         final String html =
               "<html>\n"
             + "<head><script type='text/javascript'>\n"
+            + LOG_TITLE_FUNCTION
             + "  function createIFrame() {\n"
-            + "    alert('createIFrame');\n"
+            + "    log('createIFrame');\n"
             + "    var myFrame = document.createElement('iframe');\n"
             + "    myFrame.id = 'myFrame';\n"
             + "    myFrame.onload = handleFrameLoad;\n"
@@ -345,9 +364,9 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
             + "    body.appendChild(myFrame);\n"
             + "  }\n"
             + "  function handleFrameLoad() {\n"
-            + "    alert('loaded');\n"
+            + "    log('loaded');\n"
             + "    var myFrame = document.getElementById('myFrame');\n"
-            + "    alert(myFrame.contentWindow.document.body.innerHTML);\n"
+            + "    log(myFrame.contentWindow.document.body.innerHTML);\n"
             + "  }\n"
             + "</script></head>\n"
 
@@ -355,7 +374,7 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
             + "  </body>\n"
             + "</html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -366,8 +385,9 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
         final String html =
               "<html>\n"
             + "<head><script type='text/javascript'>\n"
+            + LOG_TITLE_FUNCTION
             + "  function handleFrameLoad() {\n"
-            + "    alert('loaded');\n"
+            + "    log('loaded');\n"
             + "  }\n"
             + "</script></head>\n"
 
@@ -385,7 +405,7 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
         final String html2 = "<html><body>foo</body></html>";
         getMockWebConnection().setResponse(URL_SECOND, html2);
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -396,8 +416,9 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
         final String html =
               "<html>\n"
             + "<head><script type='text/javascript'>\n"
+            + LOG_TITLE_FUNCTION
             + "  function handleFrameLoad() {\n"
-            + "    alert('loaded');\n"
+            + "    log('loaded');\n"
             + "  }\n"
             + "</script></head>\n"
 
@@ -412,7 +433,7 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
             + "  </body>\n"
             + "</html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -424,8 +445,9 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
         final String html =
               "<html>\n"
             + "<head><script type='text/javascript'>\n"
+            + LOG_TITLE_FUNCTION
             + "  function createIFrame() {\n"
-            + "    alert('createIFrame');\n"
+            + "    log('createIFrame');\n"
             + "    var myFrame = document.createElement('iframe');\n"
             + "    myFrame.id = 'myFrame';\n"
             + "    myFrame.src = '" + URL_SECOND + "';\n"
@@ -434,7 +456,7 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
             + "    fragment.appendChild(myFrame);\n"
             + "  }\n"
             + "  function handleFrameLoad() {\n"
-            + "    alert('loaded');\n"
+            + "    log('loaded');\n"
             + "  }\n"
             + "</script></head>\n"
 
@@ -444,7 +466,7 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
         final String html2 = "<html><body>foo</body></html>";
         getMockWebConnection().setResponse(URL_SECOND, html2);
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -456,8 +478,9 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
         final String html =
               "<html>\n"
             + "<head><script type='text/javascript'>\n"
+            + LOG_TITLE_FUNCTION
             + "  function createIFrame() {\n"
-            + "    alert('createIFrame');\n"
+            + "    log('createIFrame');\n"
             + "    var myFrame = document.createElement('iframe');\n"
             + "    myFrame.id = 'myFrame';\n"
             + "    myFrame.onload = handleFrameLoad;\n"
@@ -465,7 +488,7 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
             + "    fragment.appendChild(myFrame);\n"
             + "  }\n"
             + "  function handleFrameLoad() {\n"
-            + "    alert('loaded');\n"
+            + "    log('loaded');\n"
             + "  }\n"
             + "</script></head>\n"
 
@@ -473,7 +496,7 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
             + "  </body>\n"
             + "</html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -485,8 +508,9 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
         final String html =
               "<html>\n"
             + "<head><script type='text/javascript'>\n"
+            + LOG_TITLE_FUNCTION
             + "  function createIFrame() {\n"
-            + "    alert('createIFrame');\n"
+            + "    log('createIFrame');\n"
             + "    var myFrame = document.createElement('iframe');\n"
             + "    myFrame.id = 'myFrame';\n"
             + "    myFrame.onload = handleFrameLoad;\n"
@@ -495,7 +519,7 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
             + "    fragment.appendChild(myFrame);\n"
             + "  }\n"
             + "  function handleFrameLoad() {\n"
-            + "    alert('loaded');\n"
+            + "    log('loaded');\n"
             + "  }\n"
             + "</script></head>\n"
 
@@ -505,7 +529,7 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
         final String html2 = "<html><body>foo</body></html>";
         getMockWebConnection().setResponse(URL_SECOND, html2);
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -528,15 +552,16 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
 
     private void documentCreateElement_onLoad_srcX(final String iframeSrc) throws Exception {
         final String html = "<html><body><script>\n"
+            + LOG_TITLE_FUNCTION
             + "function createIFrame() {\n"
-            + "  alert('createIFrame');\n"
+            + "  log('createIFrame');\n"
             + "  var myFrame = document.createElement('iframe');\n"
             + "  myFrame.onload = handleFrameLoad;\n"
             + "  myFrame.src = '" + iframeSrc + "';\n"
             + "  document.body.appendChild(myFrame);\n"
             + "}\n"
             + "function handleFrameLoad() {\n"
-            + "  alert('loaded');\n"
+            + "  log('loaded');\n"
             + "}\n"
             + "</script>\n"
             + "<button id='it' onclick='createIFrame()'>click me</button>\n"
@@ -546,7 +571,7 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
         final WebDriver driver = loadPage2(html);
         driver.findElement(By.id("it")).click();
 
-        verifyAlerts(driver, getExpectedAlerts());
+        verifyTitle2(driver, getExpectedAlerts());
     }
 
     /**
@@ -558,8 +583,9 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
         final String html =
               "<html>\n"
             + "<head><script type='text/javascript'>\n"
+            + LOG_TITLE_FUNCTION
             + "  function createIFrame() {\n"
-            + "    alert('createIFrame');\n"
+            + "    log('createIFrame');\n"
             + "    var myFrame = document.createElement('iframe');\n"
             + "    myFrame.id = 'myFrame';\n"
             + "    myFrame.onload = handleFrameLoad;\n"
@@ -567,7 +593,7 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
             + "    fragment.appendChild(myFrame);\n"
             + "  }\n"
             + "  function handleFrameLoad() {\n"
-            + "    alert('loaded');\n"
+            + "    log('loaded');\n"
             + "  }\n"
             + "</script></head>\n"
 
@@ -575,7 +601,7 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
             + "  </body>\n"
             + "</html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -587,8 +613,9 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
         final String html =
               "<html>\n"
             + "<head><script type='text/javascript'>\n"
+            + LOG_TITLE_FUNCTION
             + "  function handleFrameLoad() {\n"
-            + "    alert('loaded');\n"
+            + "    log('loaded');\n"
             + "  }\n"
             + "</script></head>\n"
 
@@ -600,7 +627,7 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
             + "      myFrame.onload = handleFrameLoad;\n"
             + "      var fragment = document.createDocumentFragment();\n"
             + "      fragment.appendChild(myFrame);\n"
-            + "      alert('fragment append done');\n"
+            + "      log('fragment append done');\n"
             + "      var body = document.getElementsByTagName('body')[0];\n"
             + "      body.appendChild(myFrame);\n"
             + "    </script>\n"
@@ -609,7 +636,7 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
         final String html2 = "<html><body>foo</body></html>";
         getMockWebConnection().setResponse(URL_SECOND, html2);
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -621,8 +648,9 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
         final String html =
               "<html>\n"
             + "<head><script type='text/javascript'>\n"
+            + LOG_TITLE_FUNCTION
             + "  function handleFrameLoad() {\n"
-            + "    alert('loaded');\n"
+            + "    log('loaded');\n"
             + "  }\n"
             + "</script></head>\n"
 
@@ -633,14 +661,14 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
             + "      myFrame.onload = handleFrameLoad;\n"
             + "      var fragment = document.createDocumentFragment();\n"
             + "      fragment.appendChild(myFrame);\n"
-            + "      alert('fragment append done');\n"
+            + "      log('fragment append done');\n"
             + "      var body = document.getElementsByTagName('body')[0];\n"
             + "      body.appendChild(myFrame);\n"
             + "    </script>\n"
             + "  </body>\n"
             + "</html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -652,20 +680,21 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
         final String html =
               "<html>\n"
             + "<head><script type='text/javascript'>\n"
+            + LOG_TITLE_FUNCTION
             + "  function createIFrame() {\n"
-            + "    alert('createIFrame');\n"
+            + "    log('createIFrame');\n"
             + "    var myFrame = document.createElement('iframe');\n"
             + "    myFrame.id = 'myFrame';\n"
             + "    myFrame.src = '" + URL_SECOND + "';\n"
             + "    myFrame.onload = handleFrameLoad;\n"
             + "    var fragment = document.createDocumentFragment();\n"
             + "    fragment.appendChild(myFrame);\n"
-            + "    alert('fragment append done');\n"
+            + "    log('fragment append done');\n"
             + "    var body = document.getElementsByTagName('body')[0];\n"
             + "    body.appendChild(myFrame);\n"
             + "  }\n"
             + "  function handleFrameLoad() {\n"
-            + "    alert('loaded');\n"
+            + "    log('loaded');\n"
             + "  }\n"
             + "</script></head>\n"
 
@@ -675,7 +704,8 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
         final String html2 = "<html><body>foo</body></html>";
         getMockWebConnection().setResponse(URL_SECOND, html2);
 
-        loadPageWithAlerts2(html);
+        loadPage2(html);
+        verifyTitle2(DEFAULT_WAIT_TIME, getWebDriver(), getExpectedAlerts());
     }
 
     /**
@@ -687,19 +717,20 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
         final String html =
               "<html>\n"
             + "<head><script type='text/javascript'>\n"
+            + LOG_TITLE_FUNCTION
             + "  function createIFrame() {\n"
-            + "    alert('createIFrame');\n"
+            + "    log('createIFrame');\n"
             + "    var myFrame = document.createElement('iframe');\n"
             + "    myFrame.id = 'myFrame';\n"
             + "    myFrame.onload = handleFrameLoad;\n"
             + "    var fragment = document.createDocumentFragment();\n"
             + "    fragment.appendChild(myFrame);\n"
-            + "    alert('fragment append done');\n"
+            + "    log('fragment append done');\n"
             + "    var body = document.getElementsByTagName('body')[0];\n"
             + "    body.appendChild(myFrame);\n"
             + "  }\n"
             + "  function handleFrameLoad() {\n"
-            + "    alert('loaded');\n"
+            + "    log('loaded');\n"
             + "  }\n"
             + "</script></head>\n"
 
@@ -707,7 +738,7 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
             + "  </body>\n"
             + "</html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -719,20 +750,21 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
         final String html =
               "<html>\n"
             + "<head><script type='text/javascript'>\n"
+            + LOG_TITLE_FUNCTION
             + "  function createIFrame() {\n"
-            + "    alert('createIFrame');\n"
+            + "    log('createIFrame');\n"
             + "    var myFrame = document.createElement('iframe');\n"
             + "    myFrame.id = 'myFrame';\n"
             + "    myFrame.onload = handleFrameLoad;\n"
             + "    myFrame.src = '" + URL_SECOND + "';\n"
             + "    var fragment = document.createDocumentFragment();\n"
             + "    fragment.appendChild(myFrame);\n"
-            + "    alert('fragment append done');\n"
+            + "    log('fragment append done');\n"
             + "    var body = document.getElementsByTagName('body')[0];\n"
             + "    body.appendChild(myFrame);\n"
             + "  }\n"
             + "  function handleFrameLoad() {\n"
-            + "    alert('loaded');\n"
+            + "    log('loaded');\n"
             + "  }\n"
             + "</script></head>\n"
 
@@ -742,7 +774,8 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
         final String html2 = "<html><body>foo</body></html>";
         getMockWebConnection().setResponse(URL_SECOND, html2);
 
-        loadPageWithAlerts2(html);
+        loadPage2(html);
+        verifyTitle2(DEFAULT_WAIT_TIME, getWebDriver(), getExpectedAlerts());
     }
 
     /**
@@ -754,19 +787,20 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
         final String html =
               "<html>\n"
             + "<head><script type='text/javascript'>\n"
+            + LOG_TITLE_FUNCTION
             + "  function createIFrame() {\n"
-            + "    alert('createIFrame');\n"
+            + "    log('createIFrame');\n"
             + "    var myFrame = document.createElement('iframe');\n"
             + "    myFrame.id = 'myFrame';\n"
             + "    myFrame.onload = handleFrameLoad;\n"
             + "    var fragment = document.createDocumentFragment();\n"
             + "    fragment.appendChild(myFrame);\n"
-            + "    alert('fragment append done');\n"
+            + "    log('fragment append done');\n"
             + "    var body = document.getElementsByTagName('body')[0];\n"
             + "    body.appendChild(myFrame);\n"
             + "  }\n"
             + "  function handleFrameLoad() {\n"
-            + "    alert('loaded');\n"
+            + "    log('loaded');\n"
             + "  }\n"
             + "</script></head>\n"
 
@@ -774,7 +808,8 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
             + "  </body>\n"
             + "</html>";
 
-        loadPageWithAlerts2(html);
+        loadPage2(html);
+        verifyTitle2(DEFAULT_WAIT_TIME, getWebDriver(), getExpectedAlerts());
     }
 
     /**
@@ -796,12 +831,14 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
             + "  <iframe id='i7' ></iframe>\n"
 
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  for (var i = 1; i <= 7; i++) {\n"
-            + "    alert(document.getElementById('i' + i).align);\n"
+            + "    log(document.getElementById('i' + i).align);\n"
             + "  }\n"
             + "</script>\n"
             + "</body></html>";
-        loadPageWithAlerts2(html);
+
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -816,11 +853,12 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
             + "  <iframe id='i1' align='left' ></iframe>\n"
 
             + "<script>\n"
+            + LOG_TITLE_FUNCTION
             + "  function setAlign(elem, value) {\n"
             + "    try {\n"
             + "      elem.align = value;\n"
-            + "    } catch (e) { alert('error'); }\n"
-            + "    alert(elem.align);\n"
+            + "    } catch (e) { log('error'); }\n"
+            + "    log(elem.align);\n"
             + "  }\n"
 
             + "  var elem = document.getElementById('i1');\n"
@@ -836,7 +874,8 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
             + "  setAlign(elem, 'top');\n"
             + "</script>\n"
             + "</body></html>";
-        loadPageWithAlerts2(html);
+
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -848,7 +887,10 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
         final String html =
               "<html>\n"
             + "  <body>\n"
-            + "    <iframe id='testFrame' onload='alert(\"loaded\");'></iframe>\n"
+            + "    <script>\n"
+            + LOG_TITLE_FUNCTION
+            + "    </script>\n"
+            + "    <iframe id='testFrame' onload='log(\"loaded\");'></iframe>\n"
             + "    <div id='d1' onclick='i.contentWindow.location.replace(\"blah.html\")'>1</div>\n"
             + "    <div id='d2' onclick='i.contentWindow.location.href=\"blah.html\"'>2</div>\n"
             + "    <script>var i = document.getElementById('testFrame')</script>\n"
@@ -860,35 +902,34 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
         getMockWebConnection().setDefaultResponse(frameHtml);
 
         final WebDriver driver = loadPage2(html);
-        verifyAlerts(driver, getExpectedAlerts()[0]);
+        verifyTitle2(driver, getExpectedAlerts()[0]);
         driver.findElement(By.id("d1")).click();
-        verifyAlerts(driver, getExpectedAlerts()[1]);
+        verifyTitle2(driver, new String[] {getExpectedAlerts()[0], getExpectedAlerts()[1]});
         driver.findElement(By.id("d2")).click();
-        verifyAlerts(driver, getExpectedAlerts()[2]);
+        verifyTitle2(driver, getExpectedAlerts());
     }
 
     /**
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"about:blank", "§§URL§§", "§§URL§§"},
-            FF = {"about:blank", "about:blank", "about:blank"},
-            FF_ESR = {"about:blank", "about:blank", "about:blank"})
+    @Alerts({"about:blank", "§§URL§§", "§§URL§§"})
     public void location() throws Exception {
         final String html =
                 "<html>\n"
               + "<head><script>\n"
+              + LOG_TITLE_FUNCTION
               + "  function test() {\n"
               + "    var myFrame = document.createElement('iframe');\n"
               + "    document.body.appendChild(myFrame);\n"
               + "    var win = myFrame.contentWindow;\n"
               + "    var doc = win.document;\n"
-              + "    alert(win.location);\n"
+              + "    log(win.location);\n"
               + "    doc.open();\n"
-              + "    alert(win.location);\n"
+              + "    log(win.location);\n"
               + "    doc.write('');\n"
               + "    doc.close();\n"
-              + "    alert(win.location);\n"
+              + "    log(win.location);\n"
               + "  }\n"
               + "</script></head>\n"
               + "  <body onload='test()'>\n"
@@ -896,7 +937,8 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
               + "</html>";
 
         expandExpectedAlertsVariables(URL_FIRST);
-        loadPageWithAlerts2(html);
+        loadPage2(html);
+        verifyTitle2(DEFAULT_WAIT_TIME, getWebDriver(), getExpectedAlerts());
     }
 
     /**
@@ -1121,7 +1163,7 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
                                 + URL_SECOND + "ext.js'></script></body></html>";
         getMockWebConnection().setResponse(URL_SECOND, html2);
         final String js = "parent.log('iframe external script');";
-        getMockWebConnection().setResponse(new URL(URL_SECOND, "ext.js"), js, MimeType.APPLICATION_JAVASCRIPT);
+        getMockWebConnection().setResponse(new URL(URL_SECOND, "ext.js"), js, MimeType.TEXT_JAVASCRIPT);
 
         final WebDriver driver = loadPage2(html);
         Thread.sleep(DEFAULT_WAIT_TIME);

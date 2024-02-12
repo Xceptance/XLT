@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,11 +31,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.htmlunit.BrowserVersion;
-import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.ScriptableObject;
-import org.htmlunit.corejs.javascript.Undefined;
 import org.htmlunit.corejs.javascript.typedarrays.NativeArrayBuffer;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstant;
 import org.htmlunit.javascript.configuration.JsxConstructor;
@@ -60,15 +59,15 @@ public class FileReader extends EventTarget {
 
     /** No data has been loaded yet. */
     @JsxConstant
-    public static final short EMPTY = 0;
+    public static final int EMPTY = 0;
 
     /** Data is currently being loaded. */
     @JsxConstant
-    public static final short LOADING = 1;
+    public static final int LOADING = 1;
 
     /** The entire read request has been completed. */
     @JsxConstant
-    public static final short DONE = 2;
+    public static final int DONE = 2;
 
     private int readyState_ = EMPTY;
     private Object result_;
@@ -76,8 +75,16 @@ public class FileReader extends EventTarget {
     /**
      * Creates an instance.
      */
-    @JsxConstructor
     public FileReader() {
+    }
+
+    /**
+     * JavaScript constructor.
+     */
+    @Override
+    @JsxConstructor
+    public void jsConstructor() {
+        super.jsConstructor();
     }
 
     /**
@@ -111,7 +118,7 @@ public class FileReader extends EventTarget {
         result_ = DataURLConnection.DATA_PREFIX;
 
         final byte[] bytes = ((Blob) object).getBytes();
-        final String value = new String(new Base64().encode(bytes), StandardCharsets.US_ASCII);
+        final String value = new String(Base64.encodeBase64(bytes), StandardCharsets.US_ASCII);
         final BrowserVersion browserVersion = getBrowserVersion();
 
         String contentType = ((Blob) object).getType();
@@ -161,10 +168,9 @@ public class FileReader extends EventTarget {
     /**
      * Reads the contents of the specified {@link Blob} or {@link File}.
      * @param object the {@link Blob} or {@link File} from which to read
-     * @throws IOException if an error occurs
      */
     @JsxFunction
-    public void readAsArrayBuffer(final Object object) throws IOException {
+    public void readAsArrayBuffer(final Object object) {
         readyState_ = LOADING;
 
         if (object instanceof Blob) {
@@ -191,15 +197,14 @@ public class FileReader extends EventTarget {
      * contents of the file as a text string.
      * @param object the {@link Blob} or {@link File} from which to read
      * @param encoding the encoding
-     * @throws IOException if an error occurs
      */
     @JsxFunction
-    public void readAsText(final Object object, final Object encoding) throws IOException {
+    public void readAsText(final Object object, final Object encoding) {
         readyState_ = LOADING;
 
         Charset charset = StandardCharsets.UTF_8;
-        if (encoding != null && !Undefined.isUndefined(encoding)) {
-            final String encAsString = Context.toString(encoding);
+        if (encoding != null && !JavaScriptEngine.isUndefined(encoding)) {
+            final String encAsString = JavaScriptEngine.toString(encoding);
             if (StringUtils.isNotBlank(encAsString)) {
                 try {
                     charset = Charsets.toCharset(encAsString.trim().toLowerCase(Locale.ROOT));
