@@ -639,7 +639,7 @@ public final class HtmlUnitElementUtils
             return page;
         }
 
-        final MouseEvent event = new MouseEvent(element, eventType, isShiftPressed, isCtrlPressed, isAltPressed, button);
+        final MouseEvent event = new MouseEvent(element, eventType, isShiftPressed, isCtrlPressed, isAltPressed, button, 1);
         if (xOffset > -1 || yOffset > -1)
         {
             final int[] position = getPosition(element);
