@@ -168,16 +168,19 @@ public class WebExtConnectionHandler implements ConnectionListener
     @Override
     public void onMessage(ClientPerformanceExtensionConnection connection, JSONObject data, Responder responder)
     {
-        if (LOG.isTraceEnabled())
-        {
-            LOG.trace("Message received: " + data);
-        }
+        final String action = data.optString("action");
+
+        LOG.debug("Message received for action: {}", action);
 
         try
         {
-            if ("DUMP_PERFORMANCE_DATA".equals(data.optString("action")))
+            if ("DUMP_PERFORMANCE_DATA".equals(action))
             {
                 dumpPerformanceData(data.optString("performanceData"));
+            }
+            else if ("KEEP_ALIVE_PING".equals(action))
+            {
+                // ignore for now
             }
         }
         catch (Throwable t)
@@ -213,12 +216,21 @@ public class WebExtConnectionHandler implements ConnectionListener
         {
             final List<ClientPerformanceData> performanceData = PerformanceDataTransformator.getTransformedPerformanceDataList(rawData);
 
-            ClientPerformanceMetrics.updatePerformanceData(session, performanceData);
-
             if (LOG.isDebugEnabled())
             {
-                LOG.debug("Dumped client-performance metrics: " + rawData);
+                int requestTimings = 0;
+                int pageLoadTimings = 0;
+
+                for (final ClientPerformanceData clientPerformanceData : performanceData)
+                {
+                    requestTimings += clientPerformanceData.getRequestList().size();
+                    pageLoadTimings += clientPerformanceData.getCustomDataList().size();
+                }
+
+                LOG.debug("Received client-performance metrics (requests: {}, page load timings: {})", requestTimings, pageLoadTimings);
             }
+
+            ClientPerformanceMetrics.updatePerformanceData(session, performanceData);
         }
         catch (final Throwable t)
         {
@@ -229,7 +241,7 @@ public class WebExtConnectionHandler implements ConnectionListener
     /**
      * Fetch the remaining timing data from the client which were not sent.
      */
-    public String fetchPerformanceData() throws JSONException, TimeoutException, CommunicationException, InterruptedException
+    private String fetchPerformanceData() throws JSONException, TimeoutException, CommunicationException, InterruptedException
     {
         ClientPerformanceExtensionConnection conn = currentConnection;
         if (conn == null || !conn.isOpen())
