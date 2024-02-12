@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -333,7 +333,7 @@ public class WebRequestTest {
         final URL url = new URL("http://localhost/test?x=u");
         final WebRequest request = new WebRequest(url);
 
-        final List<NameValuePair> pairs = new ArrayList<NameValuePair>();
+        final List<NameValuePair> pairs = new ArrayList<>();
         request.setRequestParameters(pairs);
         assertEquals(1, request.getParameters().size());
         assertEquals("x", request.getParameters().get(0).getName());
@@ -464,7 +464,7 @@ public class WebRequestTest {
         request.setHttpMethod(HttpMethod.POST);
         request.setEncodingType(FormEncodingType.MULTIPART);
 
-        final List<NameValuePair> requestParams = new ArrayList<NameValuePair>();
+        final List<NameValuePair> requestParams = new ArrayList<>();
         requestParams.add(new NameValuePair("test", "x"));
         requestParams.add(new KeyDataPair("file",
                                           new File("test"),

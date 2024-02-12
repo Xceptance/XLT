@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,14 +29,21 @@ import org.htmlunit.javascript.host.event.EventTarget;
  * @author Ahmed Ashour
  * @author Ronald Brill
  */
-@JsxClass(isJSObject = false, value = {CHROME, EDGE})
-@JsxClass({FF, FF_ESR})
+@JsxClass({CHROME, EDGE, FF, FF_ESR})
 public class SpeechSynthesis extends EventTarget {
 
     /**
      * Creates a new instance.
      */
-    @JsxConstructor
     public SpeechSynthesis() {
+    }
+
+    /**
+     * JavaScript constructor.
+     */
+    @Override
+    @JsxConstructor
+    public void jsConstructor() {
+        super.jsConstructor();
     }
 }

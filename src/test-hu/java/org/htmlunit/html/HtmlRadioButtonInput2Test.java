@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1309,18 +1309,12 @@ public class HtmlRadioButtonInput2Test extends WebDriverTestCase {
     @Alerts(DEFAULT = {"true",
                        "false-false-false-false-false-false-false-false-false-true-false",
                        "true"},
-            FF_ESR = {"false",
-                      "false-false-false-false-false-false-false-false-false-false-true",
-                      "true"},
             IE = {"false",
                   "undefined-false-false-false-false-false-false-undefined-false-false-true",
                   "true"})
-    @HtmlUnitNYI(FF_ESR = {"true",
-                           "false-false-false-false-false-false-false-false-false-true-false",
-                           "true"},
-            IE = {"true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true"})
+    @HtmlUnitNYI(IE = {"true",
+                       "undefined-false-false-false-false-false-false-undefined-false-true-false",
+                       "true"})
     public void validationRequired() throws Exception {
         validation("<input type='radio' id='e1' required>\n", "");
     }

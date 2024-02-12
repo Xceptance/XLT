@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1161,6 +1161,39 @@ public class ElementChildNodesTest extends WebDriverTestCase {
     }
 
     /**
+     * Test {@link org.htmlunit.html.HtmlRtc}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"3", "2", "2", "3", "2", "2"})
+    public void rtc() throws Exception {
+        loadPageVerifyTitle2(test("rtc"));
+    }
+
+    /**
+     * Test {@link org.htmlunit.html.HtmlRb}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"3", "2", "2", "3", "2", "2"})
+    public void rb() throws Exception {
+        loadPageVerifyTitle2(test("rb"));
+    }
+
+    /**
+     * Test HtmlRbc.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"3", "2", "2", "3", "2", "2"})
+    public void rbc() throws Exception {
+        loadPageVerifyTitle2(test("rbc"));
+    }
+
+    /**
      * Test {@link org.htmlunit.html.HtmlRp}.
      *
      * @throws Exception if the test fails
@@ -1629,5 +1662,14 @@ public class ElementChildNodesTest extends WebDriverTestCase {
     @Alerts({"3", "2", "2", "3", "2", "2"})
     public void slot() throws Exception {
         loadPageVerifyTitle2(test("slot"));
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"3", "2", "2", "3", "2", "2"})
+    public void arbitrary() throws Exception {
+        loadPageVerifyTitle2(test("abcdefg"));
     }
 }

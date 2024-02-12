@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,9 +20,8 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
-import org.htmlunit.corejs.javascript.ScriptRuntime;
 import org.htmlunit.corejs.javascript.ScriptableObject;
-import org.htmlunit.corejs.javascript.Undefined;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxGetter;
@@ -52,28 +51,28 @@ public class BlobEvent extends Event {
      * @param type the event type
      * @param details the event details (optional)
      */
-    @JsxConstructor
     @Override
+    @JsxConstructor
     public void jsConstructor(final String type, final ScriptableObject details) {
-        super.jsConstructor(ScriptRuntime.toString(type), details);
+        super.jsConstructor(JavaScriptEngine.toString(type), details);
 
-        if (details != null && !Undefined.isUndefined(details)) {
+        if (details != null && !JavaScriptEngine.isUndefined(details)) {
             final Object dataObj = details.get("data", details);
             if (NOT_FOUND == dataObj) {
                 if (getBrowserVersion().hasFeature(JS_BLOB_EVENT_REQUIRES_DATA)) {
-                    throw ScriptRuntime.typeError("BlobEvent data is required.");
+                    throw JavaScriptEngine.typeError("BlobEvent data is required.");
                 }
             }
             else {
                 if (!(dataObj instanceof Blob)) {
-                    throw ScriptRuntime.typeError("BlobEvent data has to be a Blob.");
+                    throw JavaScriptEngine.typeError("BlobEvent data has to be a Blob.");
                 }
                 data_ = (Blob) dataObj;
             }
         }
         else {
             if (getBrowserVersion().hasFeature(JS_BLOB_EVENT_REQUIRES_DATA)) {
-                throw ScriptRuntime.typeError("BlobEvent data is required.");
+                throw JavaScriptEngine.typeError("BlobEvent data is required.");
             }
         }
     }

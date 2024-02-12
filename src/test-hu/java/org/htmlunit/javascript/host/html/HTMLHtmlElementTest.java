@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -200,7 +200,7 @@ public class HTMLHtmlElementTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(CHROME = {"8", "16", "1227", "0"},
-            EDGE = {"8", "16", "1180", "0"},
+            EDGE = {"8", "16", "1179", "0"},
             FF = {"8", "16", "0", "0"},
             FF_ESR = {"8", "16", "0", "0"},
             IE = {"687", "16", "0", "0"})
@@ -241,7 +241,7 @@ public class HTMLHtmlElementTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(CHROME = {"8", "16", "1227", "0"},
-            EDGE = {"8", "16", "1180", "0"},
+            EDGE = {"8", "16", "1179", "0"},
             FF = {"8", "16", "0", "0"},
             FF_ESR = {"8", "16", "0", "0"},
             IE = {"687", "16", "0", "0"})

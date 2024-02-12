@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,8 +45,8 @@ public class AnimationEvent extends Event {
      * @param type the event type
      * @param details the event details (optional)
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     @Override
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public void jsConstructor(final String type, final ScriptableObject details) {
         super.jsConstructor(type, details);
     }

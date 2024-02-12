@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ import java.util.function.Supplier;
 
 import org.htmlunit.corejs.javascript.ExternalArrayData;
 import org.htmlunit.corejs.javascript.Scriptable;
-import org.htmlunit.corejs.javascript.ScriptableObject;
 import org.htmlunit.html.DomChangeEvent;
 import org.htmlunit.html.DomChangeListener;
 import org.htmlunit.html.DomElement;
@@ -108,7 +107,7 @@ public class AbstractList extends HtmlUnitScriptable implements ExternalArrayDat
             final List<DomNode> initialElements) {
         if (domNode != null) {
             setDomNode(domNode, false);
-            final ScriptableObject parentScope = domNode.getScriptableObject();
+            final HtmlUnitScriptable parentScope = domNode.getScriptableObject();
             if (parentScope != null) {
                 setParentScope(parentScope);
                 setPrototype(getPrototype(getClass()));
@@ -202,7 +201,7 @@ public class AbstractList extends HtmlUnitScriptable implements ExternalArrayDat
     }
 
     @Override
-    protected void setDomNode(final DomNode domNode, final boolean assignScriptObject) {
+    public void setDomNode(final DomNode domNode, final boolean assignScriptObject) {
         final DomNode oldDomNode = getDomNodeOrNull();
 
         super.setDomNode(domNode, assignScriptObject);
@@ -318,7 +317,7 @@ public class AbstractList extends HtmlUnitScriptable implements ExternalArrayDat
         final List<DomNode> matchingElements = new ArrayList<>();
         for (final DomNode next : elements) {
             if (next instanceof DomElement) {
-                final String nodeName = ((DomElement) next).getAttributeDirect("name");
+                final String nodeName = ((DomElement) next).getAttributeDirect(DomElement.NAME_ATTRIBUTE);
                 if (name.equals(nodeName)) {
                     matchingElements.add(next);
                 }

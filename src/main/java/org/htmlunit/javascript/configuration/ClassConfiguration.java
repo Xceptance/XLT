@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@ package org.htmlunit.javascript.configuration;
 
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -38,6 +39,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 public final class ClassConfiguration {
     private Map<String, PropertyInfo> propertyMap_;
     private Map<Symbol, Method> symbolMap_;
+    private Map<Symbol, String> symbolConstantMap_;
     private Map<String, Method> functionMap_;
     private Map<String, PropertyInfo> staticPropertyMap_;
     private Map<String, Method> staticFunctionMap_;
@@ -49,7 +51,8 @@ public final class ClassConfiguration {
     /**
      * The constructor method in the {@link #hostClass_}
      */
-    private Member jsConstructor_;
+    private Map.Entry<String, Member> jsConstructor_;
+    private String jsConstructorAlias_;
     private final Class<?>[] domClasses_;
     private final boolean jsObject_;
     private final String className_;
@@ -78,12 +81,22 @@ public final class ClassConfiguration {
         extendedClassName_ = extendedClassName;
     }
 
-    void setJSConstructor(final Member jsConstructor) {
+    void setJSConstructor(final String name, final Member jsConstructor) {
         if (jsConstructor_ != null) {
             throw new IllegalStateException("Can not have two constructors for "
-                    + jsConstructor_.getDeclaringClass().getName());
+                    + jsConstructor_.getValue().getDeclaringClass().getName());
         }
-        jsConstructor_ = jsConstructor;
+        jsConstructor_ = new AbstractMap.SimpleImmutableEntry(name, jsConstructor);
+    }
+
+    void setJSConstructorAlias(final String alias) {
+        if (jsConstructor_ == null) {
+            throw new IllegalStateException("Can not define the constructor alias '"
+                    + alias + "' for scriptable class -'"
+                    + hostClass_.getName()
+                    + "' because there is no JsxConstructor defined");
+        }
+        jsConstructorAlias_ = alias;
     }
 
     /**
@@ -150,6 +163,15 @@ public final class ClassConfiguration {
     }
 
     /**
+     * Returns the Map of entries for the defined symbols.
+     * @return the map
+     */
+    @SuppressFBWarnings("EI_EXPOSE_REP")
+    public Map<Symbol, String> getSymbolConstantMap() {
+        return symbolConstantMap_;
+    }
+
+    /**
      * Returns the set of entries for the defined static properties.
      * @return a set
      */
@@ -186,7 +208,7 @@ public final class ClassConfiguration {
     }
 
     /**
-     * Add the function to the configuration.
+     * Add the symbol to the configuration.
      * @param symbol the symbol
      * @param method the method
      */
@@ -195,6 +217,18 @@ public final class ClassConfiguration {
             symbolMap_ = new HashMap<>();
         }
         symbolMap_.put(symbol, method);
+    }
+
+    /**
+     * Add the symbol to the configuration.
+     * @param symbol the symbol
+     * @param value the method
+     */
+    public void addSymbolConstant(final Symbol symbol, final String value) {
+        if (symbolConstantMap_ == null) {
+            symbolConstantMap_ = new HashMap<>();
+        }
+        symbolConstantMap_.put(symbol, value);
     }
 
     /**
@@ -248,8 +282,16 @@ public final class ClassConfiguration {
      * @return the JavaScript constructor method in {@link #getHostClass()}
      */
     @SuppressFBWarnings("EI_EXPOSE_REP")
-    public Member getJsConstructor() {
+    public Map.Entry<String, Member> getJsConstructor() {
         return jsConstructor_;
+    }
+
+    /**
+     * @return the JavaScript constructor method alias
+     * or null if there is nothing.
+     */
+    public String getJsConstructorAlias() {
+        return jsConstructorAlias_;
     }
 
     /**

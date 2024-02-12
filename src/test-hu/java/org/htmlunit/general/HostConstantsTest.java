@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -129,6 +129,12 @@ public class HostConstantsTest extends WebDriverTestCase {
         if ("Error".equals(host_) && getBrowserVersion().hasFeature(JS_ERROR_STACK_TRACE_LIMIT)) {
             return "stackTraceLimit:10";
         }
+
+        if ("WebGLContextEvent".equals(host_) && getBrowserVersion().isIE()) {
+            // NYI IE
+            return "AT_TARGET:2 BUBBLING_PHASE:3 CAPTURING_PHASE:1";
+        }
+
         final JavaScriptConfiguration javaScriptConfig = JavaScriptConfiguration.getInstance(getBrowserVersion());
         final List<String> constants = new ArrayList<>();
         ClassConfiguration classConfig = javaScriptConfig.getClassConfiguration(host_);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package org.htmlunit.javascript.host.intl;
 import static org.htmlunit.BrowserVersionFeatures.JS_INTL_V8_BREAK_ITERATOR;
 
 import org.htmlunit.BrowserVersion;
-import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.FunctionObject;
 import org.htmlunit.corejs.javascript.ScriptableObject;
 import org.htmlunit.javascript.HtmlUnitScriptable;
@@ -51,11 +50,12 @@ public class Intl extends HtmlUnitScriptable {
             final ClassConfiguration config = AbstractJavaScriptConfiguration.getClassConfiguration(c, browserVersion);
             final HtmlUnitScriptable prototype = JavaScriptEngine.configureClass(config, this, browserVersion);
             final FunctionObject functionObject =
-                    new RecursiveFunctionObject(config.getClassName(), config.getJsConstructor(), this, browserVersion);
+                    new RecursiveFunctionObject(config.getJsConstructor().getKey(),
+                            config.getJsConstructor().getValue(), this, browserVersion);
             functionObject.addAsConstructor(this, prototype, ScriptableObject.DONTENUM);
         }
         catch (final Exception e) {
-            throw Context.throwAsScriptRuntimeEx(e);
+            throw JavaScriptEngine.throwAsScriptRuntimeEx(e);
         }
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,7 +50,6 @@ import org.htmlunit.WebClient;
 import org.htmlunit.WebRequest;
 import org.htmlunit.WebResponse;
 import org.htmlunit.html.HtmlElementTest.HtmlAttributeChangeListenerTestImpl;
-import org.htmlunit.javascript.host.WebSocket;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
@@ -119,6 +118,92 @@ public class HtmlPageTest extends SimpleWebTestCase {
         assertSame("method", HttpMethod.POST, webConnection.getLastMethod());
         assertEquals("parameters", expectedParameters, webConnection.getLastParameters());
         assertNotNull(secondPage);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void getElementByIdNull() throws Exception {
+        final String htmlContent = "<html>\n"
+            + "<head><title>foo</title></head>\n"
+            + "<body>\n"
+            + "<p>hello world</p>\n"
+            + "</body></html>";
+
+        final HtmlPage page = loadPage(htmlContent);
+
+        assertNull(page.getElementById(null));
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void getElementsByIdNull() throws Exception {
+        final String htmlContent = "<html>\n"
+            + "<head><title>foo</title></head>\n"
+            + "<body>\n"
+            + "<p>hello world</p>\n"
+            + "</body></html>";
+
+        final HtmlPage page = loadPage(htmlContent);
+
+        final List<DomElement> elements = page.getElementsById(null);
+        assertNotNull(elements);
+        assertEquals(0, elements.size());
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void getElementsByIdOrNameNull() throws Exception {
+        final String htmlContent = "<html>\n"
+            + "<head><title>foo</title></head>\n"
+            + "<body>\n"
+            + "<p>hello world</p>\n"
+            + "</body></html>";
+
+        final HtmlPage page = loadPage(htmlContent);
+
+        final List<DomElement> elements = page.getElementsByIdAndOrName(null);
+        assertNotNull(elements);
+        assertEquals(0, elements.size());
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test(expected = ElementNotFoundException.class)
+    public void getElementByNameNull() throws Exception {
+        final String htmlContent = "<html>\n"
+            + "<head><title>foo</title></head>\n"
+            + "<body>\n"
+            + "<p>hello world</p>\n"
+            + "</body></html>";
+
+        final HtmlPage page = loadPage(htmlContent);
+
+        assertNull(page.getElementByName(null));
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void getElementsByNameNull() throws Exception {
+        final String htmlContent = "<html>\n"
+            + "<head><title>foo</title></head>\n"
+            + "<body>\n"
+            + "<p>hello world</p>\n"
+            + "</body></html>";
+
+        final HtmlPage page = loadPage(htmlContent);
+
+        final List<DomElement> elements = page.getElementsByName(null);
+        assertNotNull(elements);
+        assertEquals(0, elements.size());
     }
 
     /**
@@ -1079,15 +1164,19 @@ public class HtmlPageTest extends SimpleWebTestCase {
 
         page.getElementByName("b").remove();
         assertEquals(page.getElementById("b2"), page.getElementByName("b"));
+    }
 
-        boolean thrown = false;
-        try {
-            page.getElementByName("c");
-        }
-        catch (final ElementNotFoundException e) {
-            thrown = true;
-        }
-        assertTrue(thrown);
+    /**
+     * @exception Exception if the test fails
+     */
+    @Test(expected = ElementNotFoundException.class)
+    public void getElementByNameNotfound() throws Exception {
+        final String html = "<html><body>\n"
+            + "<div id='a' name='a'>foo</div>\n"
+            + "<div id='b1' name='b'>bar</div>\n"
+            + "<div id='b2' name='b'>baz</div></body></html>";
+        final HtmlPage page = loadPage(html);
+        page.getElementByName("c");
     }
 
     /**
@@ -1927,7 +2016,12 @@ public class HtmlPageTest extends SimpleWebTestCase {
         page.addAutoCloseable(new AutoCloseable() {
             @Override
             public void close() throws Exception {
-                page.addAutoCloseable(new WebSocket());
+                page.addAutoCloseable(new AutoCloseable() {
+                    @Override
+                    public void close() throws Exception {
+                        throw new NullPointerException("close failed");
+                    }
+                });
             }
         });
         page.cleanUp();

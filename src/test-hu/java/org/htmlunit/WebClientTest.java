@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1464,7 +1464,7 @@ public class WebClientTest extends SimpleWebTestCase {
         assertEquals("empty.png", MimeType.IMAGE_PNG, c.guessContentType(getTestFile("empty.png")));
         assertEquals("empty.jpg", MimeType.IMAGE_JPEG, c.guessContentType(getTestFile("empty.jpg")));
         assertEquals("empty.gif", MimeType.IMAGE_GIF, c.guessContentType(getTestFile("empty.gif")));
-        assertEquals("empty.js", MimeType.APPLICATION_JAVASCRIPT, c.guessContentType(getTestFile("empty.js")));
+        assertEquals("empty.js", MimeType.TEXT_JAVASCRIPT, c.guessContentType(getTestFile("empty.js")));
         assertEquals("empty.css", "text/css", c.guessContentType(getTestFile("empty.css")));
 
         // test real files with bad file suffix
@@ -2396,8 +2396,9 @@ public class WebClientTest extends SimpleWebTestCase {
 
         client.close();
 
-        assertEquals(1, client.getWebWindows().size());
-        assertEquals(1, client.getTopLevelWindows().size());
+        assertEquals(0, client.getWebWindows().size());
+        assertEquals(0, client.getTopLevelWindows().size());
+        assertNull(client.getCurrentWindow());
     }
 
     /**
@@ -2488,9 +2489,12 @@ public class WebClientTest extends SimpleWebTestCase {
 
         // close and verify that the WebClient is clean
         webClient.close();
-        assertEquals(1, webClient.getWebWindows().size());
-        nbJSThreads = getJavaScriptThreads().size();
 
+        assertEquals(0, webClient.getWebWindows().size());
+        assertEquals(0, webClient.getTopLevelWindows().size());
+        assertNull(webClient.getCurrentWindow());
+
+        nbJSThreads = getJavaScriptThreads().size();
         assertEquals(initialJSThreads, nbJSThreads);
     }
 
@@ -2640,5 +2644,109 @@ public class WebClientTest extends SimpleWebTestCase {
         final WebClient client = getWebClient();
         final HtmlPage page = client.loadXHtmlCodeIntoCurrentWindow(htmlCode);
         assertEquals("content...", page.getBody().asNormalizedText());
+    }
+
+    /**
+     * @throws Exception if test fails
+     */
+    @Test
+    public void reset() throws Exception {
+        final String html = "<html><head><title>testpage</title></head>\n"
+                + "<body>\n"
+                + "</body></html>";
+
+        final String html2 = "<html><head><title>testpage</title></head>\n"
+                + "<body>\n"
+                + "<script>document.title = 'js'</script>\n"
+                + "</body></html>";
+
+        getMockWebConnection().setResponse(URL_FIRST, html);
+
+        @SuppressWarnings("resource")
+        final WebClient webClient = getWebClientWithMockWebConnection();
+
+        assertEquals(1, webClient.getWebWindows().size());
+        assertEquals(1, webClient.getTopLevelWindows().size());
+        assertNotNull(webClient.getCurrentWindow());
+        assertNull(webClient.getCurrentWindow().getEnclosedPage());
+
+        webClient.getPage(URL_FIRST);
+
+        assertEquals(1, webClient.getWebWindows().size());
+        assertEquals(1, webClient.getTopLevelWindows().size());
+        assertNotNull(webClient.getCurrentWindow());
+        assertEquals("testpage", ((HtmlPage) webClient.getCurrentWindow().getEnclosedPage()).getTitleText());
+
+        webClient.reset();
+
+        getMockWebConnection().setResponse(URL_FIRST, html);
+        webClient.setWebConnection(getMockWebConnection());
+
+        assertEquals(1, webClient.getWebWindows().size());
+        assertEquals(1, webClient.getTopLevelWindows().size());
+        assertNotNull(webClient.getCurrentWindow());
+        assertNull(webClient.getCurrentWindow().getEnclosedPage());
+
+        webClient.getPage(URL_FIRST);
+
+        assertEquals(1, webClient.getWebWindows().size());
+        assertEquals(1, webClient.getTopLevelWindows().size());
+        assertNotNull(webClient.getCurrentWindow());
+        assertEquals("testpage", ((HtmlPage) webClient.getCurrentWindow().getEnclosedPage()).getTitleText());
+
+        webClient.reset();
+        getMockWebConnection().setResponse(URL_FIRST, html2);
+        webClient.setWebConnection(getMockWebConnection());
+
+        assertEquals(1, webClient.getWebWindows().size());
+        assertEquals(1, webClient.getTopLevelWindows().size());
+        assertNotNull(webClient.getCurrentWindow());
+        assertNull(webClient.getCurrentWindow().getEnclosedPage());
+
+        webClient.getPage(URL_FIRST);
+
+        assertEquals(1, webClient.getWebWindows().size());
+        assertEquals(1, webClient.getTopLevelWindows().size());
+        assertNotNull(webClient.getCurrentWindow());
+        assertEquals("js", ((HtmlPage) webClient.getCurrentWindow().getEnclosedPage()).getTitleText());
+    }
+
+    /**
+     * Test for https://github.com/HtmlUnit/htmlunit/issues/701.
+     * @throws Exception if test fails
+     */
+    @Test
+    public void getPageInSeparateThread() throws Exception {
+        final String html = "<html><head><title>testpage</title></head>\n"
+                + "<body>\n"
+                + "</body></html>";
+
+        getMockWebConnection().setResponse(URL_FIRST, html);
+
+        try (WebClient webClient = getWebClientWithMockWebConnection()) {
+            final TestThread testThread = new TestThread(webClient);
+            testThread.start();
+
+            testThread.join();
+        }
+    }
+
+    private static final class TestThread extends Thread {
+        private final WebClient webClient_;
+
+        private TestThread(final WebClient webClient) {
+            webClient_ = webClient;
+        }
+
+        @Override
+        public void run() {
+            try {
+                final HtmlPage page = webClient_.getPage(URL_FIRST);
+                assertEquals("testpage", page.getTitleText());
+            }
+            catch (FailingHttpStatusCodeException | IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 }

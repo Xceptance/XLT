@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,13 +21,13 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import org.apache.commons.lang3.ArrayUtils;
-import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.html.HtmlHeading1;
 import org.htmlunit.html.HtmlHeading2;
 import org.htmlunit.html.HtmlHeading3;
 import org.htmlunit.html.HtmlHeading4;
 import org.htmlunit.html.HtmlHeading5;
 import org.htmlunit.html.HtmlHeading6;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxGetter;
@@ -53,8 +53,16 @@ public class HTMLHeadingElement extends HTMLElement {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public HTMLHeadingElement() {
+    }
+
+    /**
+     * JavaScript constructor.
+     */
+    @Override
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    public void jsConstructor() {
+        super.jsConstructor();
     }
 
     /**
@@ -95,7 +103,7 @@ public class HTMLHeadingElement extends HTMLElement {
     @JsxSetter(IE)
     public void setClear(final String clear) {
         if (!ArrayUtils.contains(VALID_CLEAR_VALUES, clear)) {
-            throw Context.reportRuntimeError("Invalid clear property value: '" + clear + "'.");
+            throw JavaScriptEngine.reportRuntimeError("Invalid clear property value: '" + clear + "'.");
         }
         getDomNodeOrDie().setAttribute("clear", clear);
     }

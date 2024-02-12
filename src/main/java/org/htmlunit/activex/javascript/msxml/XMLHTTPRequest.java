@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,13 +44,12 @@ import org.htmlunit.WebRequest;
 import org.htmlunit.WebResponse;
 import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.ContextAction;
-import org.htmlunit.corejs.javascript.ContextFactory;
 import org.htmlunit.corejs.javascript.Function;
-import org.htmlunit.corejs.javascript.ScriptRuntime;
 import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.corejs.javascript.Undefined;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.httpclient.HtmlUnitUsernamePasswordCredentials;
+import org.htmlunit.javascript.HtmlUnitContextFactory;
 import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.background.BackgroundJavaScriptFactory;
 import org.htmlunit.javascript.background.JavaScriptJob;
@@ -123,8 +122,14 @@ public class XMLHTTPRequest extends MSXMLScriptable {
     /**
      * Creates an instance.
      */
-    @JsxConstructor
     public XMLHTTPRequest() {
+    }
+
+    /**
+     * JavaScript constructor.
+     */
+    @JsxConstructor
+    public void jsConstructor() {
     }
 
     /**
@@ -203,11 +208,11 @@ public class XMLHTTPRequest extends MSXMLScriptable {
     @JsxGetter
     public String getResponseText() {
         if (state_ == STATE_UNSENT) {
-            throw Context.reportRuntimeError(
+            throw JavaScriptEngine.reportRuntimeError(
                     "The data necessary to complete this operation is not yet available (request not opened).");
         }
         if (state_ != STATE_DONE) {
-            throw Context.reportRuntimeError("Unspecified error (request not sent).");
+            throw JavaScriptEngine.reportRuntimeError("Unspecified error (request not sent).");
         }
         if (webResponse_ != null) {
             final String content = webResponse_.getContentAsString();
@@ -229,7 +234,7 @@ public class XMLHTTPRequest extends MSXMLScriptable {
     @JsxGetter
     public Object getResponseXML() {
         if (state_ == STATE_UNSENT) {
-            throw Context.reportRuntimeError("Unspecified error (request not opened).");
+            throw JavaScriptEngine.reportRuntimeError("Unspecified error (request not opened).");
         }
         final Window w = getWindow();
         if (state_ == STATE_DONE && webResponse_ != null && !(webResponse_ instanceof NetworkErrorWebResponse)) {
@@ -266,7 +271,7 @@ public class XMLHTTPRequest extends MSXMLScriptable {
     @JsxGetter
     public int getStatus() {
         if (state_ != STATE_DONE) {
-            throw Context.reportRuntimeError("Unspecified error (request not sent).");
+            throw JavaScriptEngine.reportRuntimeError("Unspecified error (request not sent).");
         }
         if (webResponse_ != null) {
             return webResponse_.getStatusCode();
@@ -286,7 +291,7 @@ public class XMLHTTPRequest extends MSXMLScriptable {
     @JsxGetter
     public String getStatusText() {
         if (state_ != STATE_DONE) {
-            throw Context.reportRuntimeError("Unspecified error (request not sent).");
+            throw JavaScriptEngine.reportRuntimeError("Unspecified error (request not sent).");
         }
         if (webResponse_ != null) {
             return webResponse_.getStatusMessage();
@@ -315,7 +320,7 @@ public class XMLHTTPRequest extends MSXMLScriptable {
     @JsxFunction
     public String getAllResponseHeaders() {
         if (state_ == STATE_UNSENT || state_ == STATE_OPENED) {
-            throw Context.reportRuntimeError("Unspecified error (request not sent).");
+            throw JavaScriptEngine.reportRuntimeError("Unspecified error (request not sent).");
         }
         if (webResponse_ != null) {
             final StringBuilder builder = new StringBuilder();
@@ -340,13 +345,13 @@ public class XMLHTTPRequest extends MSXMLScriptable {
     @JsxFunction
     public String getResponseHeader(final String header) {
         if (state_ == STATE_UNSENT || state_ == STATE_OPENED) {
-            throw Context.reportRuntimeError("Unspecified error (request not sent).");
+            throw JavaScriptEngine.reportRuntimeError("Unspecified error (request not sent).");
         }
         if (header == null || "null".equals(header)) {
-            throw Context.reportRuntimeError("Type mismatch (header is null).");
+            throw JavaScriptEngine.reportRuntimeError("Type mismatch (header is null).");
         }
         if ("".equals(header)) {
-            throw Context.reportRuntimeError("Invalid argument (header is empty).");
+            throw JavaScriptEngine.reportRuntimeError("Invalid argument (header is empty).");
         }
         if (webResponse_ != null) {
             final String value = webResponse_.getResponseHeaderValue(header);
@@ -378,10 +383,10 @@ public class XMLHTTPRequest extends MSXMLScriptable {
     public void open(final String method, final Object url, final Object asyncParam,
         final Object user, final Object password) {
         if (method == null || "null".equals(method)) {
-            throw Context.reportRuntimeError("Type mismatch (method is null).");
+            throw JavaScriptEngine.reportRuntimeError("Type mismatch (method is null).");
         }
         if (url == null || "null".equals(url)) {
-            throw Context.reportRuntimeError("Type mismatch (url is null).");
+            throw JavaScriptEngine.reportRuntimeError("Type mismatch (url is null).");
         }
         state_ = STATE_UNSENT;
         openedMultipleTimes_ = webRequest_ != null;
@@ -389,19 +394,19 @@ public class XMLHTTPRequest extends MSXMLScriptable {
         webRequest_ = null;
         webResponse_ = null;
         if ("".equals(method) || "TRACE".equalsIgnoreCase(method)) {
-            throw Context.reportRuntimeError("Invalid procedure call or argument (method is invalid).");
+            throw JavaScriptEngine.reportRuntimeError("Invalid procedure call or argument (method is invalid).");
         }
         if ("".equals(url)) {
-            throw Context.reportRuntimeError("Invalid procedure call or argument (url is empty).");
+            throw JavaScriptEngine.reportRuntimeError("Invalid procedure call or argument (url is empty).");
         }
 
         // defaults to true if not specified
         boolean async = true;
-        if (!Undefined.isUndefined(asyncParam)) {
-            async = ScriptRuntime.toBoolean(asyncParam);
+        if (!JavaScriptEngine.isUndefined(asyncParam)) {
+            async = JavaScriptEngine.toBoolean(asyncParam);
         }
 
-        final String urlAsString = Context.toString(url);
+        final String urlAsString = JavaScriptEngine.toString(url);
 
         // (URL + Method + User + Password) become a WebRequest instance.
         containingPage_ = (HtmlPage) getWindow().getWebWindow().getEnclosedPage();
@@ -413,11 +418,11 @@ public class XMLHTTPRequest extends MSXMLScriptable {
             request.setHttpMethod(HttpMethod.valueOf(method.toUpperCase(Locale.ROOT)));
 
             // password is ignored if no user defined
-            if (user != null && !Undefined.isUndefined(user)) {
+            if (user != null && !JavaScriptEngine.isUndefined(user)) {
                 final String userCred = user.toString();
 
                 String passwordCred = "";
-                if (password != null && !Undefined.isUndefined(password)) {
+                if (password != null && !JavaScriptEngine.isUndefined(password)) {
                     passwordCred = password.toString();
                 }
 
@@ -454,7 +459,7 @@ public class XMLHTTPRequest extends MSXMLScriptable {
             return;
         }
         if (sent_) {
-            throw Context.reportRuntimeError("Unspecified error (request already sent).");
+            throw JavaScriptEngine.reportRuntimeError("Unspecified error (request already sent).");
         }
         sent_ = true;
 
@@ -473,7 +478,7 @@ public class XMLHTTPRequest extends MSXMLScriptable {
         }
         else {
             // Create and start a thread in which to execute the request.
-            final ContextFactory cf = ((JavaScriptEngine) client.getJavaScriptEngine()).getContextFactory();
+            final HtmlUnitContextFactory cf = ((JavaScriptEngine) client.getJavaScriptEngine()).getContextFactory();
             final ContextAction<Object> action = cx -> {
                 // KEY_STARTING_SCOPE maintains a stack of scopes
                 @SuppressWarnings("unchecked")
@@ -507,7 +512,7 @@ public class XMLHTTPRequest extends MSXMLScriptable {
      * @param content the content to send
      */
     private void prepareRequest(final Object content) {
-        if (content != null && !Undefined.isUndefined(content)) {
+        if (content != null && !JavaScriptEngine.isUndefined(content)) {
             if (!"".equals(content) && HttpMethod.GET == webRequest_.getHttpMethod()) {
                 webRequest_.setHttpMethod(HttpMethod.POST);
             }
@@ -518,7 +523,7 @@ public class XMLHTTPRequest extends MSXMLScriptable {
                     ((FormData) content).fillRequest(webRequest_);
                 }
                 else {
-                    final String body = Context.toString(content);
+                    final String body = JavaScriptEngine.toString(content);
                     if (!body.isEmpty()) {
                         if (LOG.isDebugEnabled()) {
                             LOG.debug("Setting request body to: " + body);
@@ -571,9 +576,8 @@ public class XMLHTTPRequest extends MSXMLScriptable {
                     if (LOG.isDebugEnabled()) {
                         LOG.debug("No permitted request for URL " + webRequest_.getUrl());
                     }
-                    Context.throwAsScriptRuntimeEx(
+                    throw JavaScriptEngine.throwAsScriptRuntimeEx(
                             new RuntimeException("No permitted \"Access-Control-Allow-Origin\" header."));
-                    return;
                 }
             }
             final WebResponse webResponse = wc.loadWebResponse(webRequest_);
@@ -612,7 +616,7 @@ public class XMLHTTPRequest extends MSXMLScriptable {
             setState(STATE_HEADERS_RECEIVED, context);
             setState(STATE_DONE, context);
             if (!async_) {
-                throw Context.reportRuntimeError("Object not found.");
+                throw JavaScriptEngine.reportRuntimeError("Object not found.");
             }
         }
     }
@@ -683,13 +687,13 @@ public class XMLHTTPRequest extends MSXMLScriptable {
     @JsxFunction
     public void setRequestHeader(final String name, final String value) {
         if (name == null || "null".equals(name)) {
-            throw Context.reportRuntimeError("Type mismatch (name is null).");
+            throw JavaScriptEngine.reportRuntimeError("Type mismatch (name is null).");
         }
         if ("".equals(name)) {
-            throw Context.reportRuntimeError("Invalid argument (name is empty).");
+            throw JavaScriptEngine.reportRuntimeError("Invalid argument (name is empty).");
         }
         if (value == null || "null".equals(value)) {
-            throw Context.reportRuntimeError("Type mismatch (value is null).");
+            throw JavaScriptEngine.reportRuntimeError("Type mismatch (value is null).");
         }
         if (StringUtils.isBlank(value)) {
             return;
@@ -703,7 +707,7 @@ public class XMLHTTPRequest extends MSXMLScriptable {
         }
 
         if (webRequest_ == null) {
-            throw Context.reportRuntimeError("Unspecified error (request not opened).");
+            throw JavaScriptEngine.reportRuntimeError("Unspecified error (request not opened).");
         }
         webRequest_.setAdditionalHeader(name, value);
     }

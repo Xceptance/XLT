@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -960,6 +960,30 @@ public final class UrlUtils {
         }
 
         return true;
+    }
+
+    /**
+     * Returns true if specified string is a special scheme.
+     * <p>
+     * https://url.spec.whatwg.org/#special-scheme
+     * <p>
+     *
+     * @param scheme the scheme string to check
+     * @return true if special
+     */
+    public static boolean isSpecialScheme(final String scheme) {
+        final int length = scheme.length();
+        if (length < 2 || length > 5) {
+            return false;
+        }
+
+        final String schemeLC = scheme.toLowerCase(Locale.ROOT);
+        return "ftp".equals(schemeLC)
+                || "file".equals(schemeLC)
+                || "http".equals(schemeLC)
+                || "https".equals(schemeLC)
+                || "ws".equals(schemeLC)
+                || "wss".equals(schemeLC);
     }
 
     /**

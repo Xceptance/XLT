@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,6 @@ public class NumberFormatTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = {"zh-CN", "latn", "standard", "auto", "decimal", "1", "0", "3", "auto"},
-            FF = {"zh-CN", "latn", "standard", "auto", "decimal", "1", "0", "3", "true"},
             FF_ESR = {"zh-CN", "latn", "standard", "auto", "decimal", "1", "0", "3", "true"},
             IE = {"zh-Hans-CN", "latn", "undefined", "undefined", "decimal", "1", "0", "3", "true"})
     @HtmlUnitNYI(CHROME = {"undefined", "undefined", "undefined", "undefined", "undefined", "undefined", "undefined",

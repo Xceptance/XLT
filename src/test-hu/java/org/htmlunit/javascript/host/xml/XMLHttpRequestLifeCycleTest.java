@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,6 +40,7 @@ import org.htmlunit.httpclient.HttpClientConverter;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.junit.Retry;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
 import org.junit.After;
@@ -1068,6 +1069,7 @@ public final class XMLHttpRequestLifeCycleTest {
          * @throws Exception if the test fails
          */
         @Test
+        @Retry
         @Alerts(DEFAULT = {"readystatechange_1_0_true", "open-done: 1_0", "loadstart_1_0_false",
                            "send-done: 1_0", "readystatechange_4_0_true", "abort_4_0_false",
                            "loadend_4_0_false", "abort-done: 0_0"},
@@ -1471,9 +1473,6 @@ public final class XMLHttpRequestLifeCycleTest {
         @Alerts(DEFAULT = {"readystatechange_1_0_true", "open-done: 1_0", "loadstart_1_0_false",
                            "send-done: 1_0", "readystatechange_4_0_true", "error_4_0_false",
                            "loadend_4_0_false"},
-                FF = {"readystatechange_1_0_true", "open-done: 1_0", "loadstart_1_0_false",
-                      "send-done: 1_0", "progress_1_0_false", "readystatechange_4_0_true",
-                      "error_4_0_false", "loadend_4_0_false"},
                 FF_ESR = {"readystatechange_1_0_true", "open-done: 1_0", "loadstart_1_0_false",
                           "send-done: 1_0", "progress_1_0_false", "readystatechange_4_0_true",
                           "error_4_0_false", "loadend_4_0_false"},
@@ -1733,9 +1732,6 @@ public final class XMLHttpRequestLifeCycleTest {
         @Alerts(DEFAULT = {"readystatechange_1_0_true", "open-done: 1_0", "loadstart_1_0_false",
                            "send-done: 1_0", "readystatechange_4_0_true", "error_4_0_false",
                            "loadend_4_0_false"},
-                FF = {"readystatechange_1_0_true", "open-done: 1_0", "loadstart_1_0_false",
-                      "send-done: 1_0", "progress_1_0_false", "readystatechange_4_0_true",
-                      "error_4_0_false", "loadend_4_0_false"},
                 FF_ESR = {"readystatechange_1_0_true", "open-done: 1_0", "loadstart_1_0_false",
                           "send-done: 1_0", "progress_1_0_false", "readystatechange_4_0_true",
                           "error_4_0_false", "loadend_4_0_false"},

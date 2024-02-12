@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,9 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.Objects;
 import java.util.Set;
 
-import org.apache.commons.lang3.StringUtils;
 import org.htmlunit.util.Cookie;
 
 /**
@@ -118,7 +118,7 @@ public class CookieManager implements Serializable {
         }
 
         for (final Cookie cookie : cookies_) {
-            if (StringUtils.equals(cookie.getName(), name)) {
+            if (Objects.equals(cookie.getName(), name)) {
                 return cookie;
             }
         }

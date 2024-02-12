@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,10 +69,11 @@ public class TopLevelWindowTest extends SimpleWebTestCase {
         final WebWindow windowToClose = webClient.getCurrentWindow();
         ((TopLevelWindow) windowToClose).close();
 
-        final List<WebWindowEvent> expectedEvents = Arrays.asList(
-            new WebWindowEvent(windowToClose, WebWindowEvent.CLOSE, null, null)
-        );
-        assertEquals(expectedEvents, events);
+        assertEquals(2, events.size());
+        assertEquals(new WebWindowEvent(windowToClose, WebWindowEvent.CLOSE, null, null), events.get(0));
+        assertEquals(WebWindowEvent.OPEN, events.get(1).getEventType());
+        assertNull(events.get(1).getOldPage());
+        assertNull(events.get(1).getNewPage());
 
         // Since this was the only open window, a new window should have
         // been created when this one was closed. Verify this.
@@ -80,6 +81,8 @@ public class TopLevelWindowTest extends SimpleWebTestCase {
         assertNotSame(webClient.getCurrentWindow(), windowToClose);
 
         assertEquals(1, webClient.getWebWindows().size());
+        assertEquals(1, webClient.getTopLevelWindows().size());
+        assertEquals(webClient.getWebWindows().get(0), webClient.getTopLevelWindows().get(0));
     }
 
     /**

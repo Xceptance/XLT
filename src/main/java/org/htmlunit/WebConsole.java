@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -155,7 +155,6 @@ public class WebConsole implements ConsolePrinter, Serializable {
     @Override
     public void print(final Context cx, final Scriptable scope, final Level level,
             final Object[] args, final ScriptStackElement[] stack) {
-
         switch (level) {
             case TRACE:
                 if (logger_.isInfoEnabled()) {

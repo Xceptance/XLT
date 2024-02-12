@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1945,10 +1945,7 @@ public class HostParentOfNTest extends HostParentOf {
      *             if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            CHROME = "false",
-            EDGE = "false",
-            IE = "false")
+    @Alerts("false")
     public void _OfflineResourceList_OfflineResourceList() throws Exception {
         test("OfflineResourceList", "OfflineResourceList");
     }

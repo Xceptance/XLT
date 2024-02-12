@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,9 +41,7 @@ import org.htmlunit.WebConnection;
 import org.htmlunit.WebRequest;
 import org.htmlunit.WebResponse;
 import org.htmlunit.WebResponseData;
-import org.htmlunit.corejs.javascript.ContextAction;
-import org.htmlunit.corejs.javascript.ContextFactory;
-import org.htmlunit.corejs.javascript.Script;
+import org.htmlunit.javascript.JavaScriptEngine;
 
 /**
  * Wrapper around a "real" WebConnection that will use the wrapped web connection
@@ -127,15 +125,9 @@ public class DebuggingWebConnection extends WebConnectionWrapper {
 
         // skip if it is already formatted? => TODO
 
-        final ContextFactory factory = new ContextFactory();
-        final ContextAction<Object> action = cx -> {
-            cx.setOptimizationLevel(-1);
-            final Script script = cx.compileString(scriptSource, scriptName, 0, null);
-            return cx.decompileScript(script, 4);
-        };
-
         try {
-            final String decompileScript = (String) factory.call(action);
+            final String decompileScript = JavaScriptEngine.uncompressJavaScript(scriptSource, scriptName);
+
             final List<NameValuePair> responseHeaders = new ArrayList<>(response.getResponseHeaders());
             for (int i = responseHeaders.size() - 1; i >= 0; i--) {
                 if ("content-encoding".equalsIgnoreCase(responseHeaders.get(i).getName())) {

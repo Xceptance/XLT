@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,8 +40,8 @@ public enum BrowserVersionFeatures {
 
     /**
      * If the "href" attribute of HtmlAnchor is defined but empty then IE interprets this as an empty filename.
-     * Example: The page http://htmlunit.sourceforge.net/test/myFile.html contains an anchor with an empty
-     * href attribute. Clicking the link in IE force the load of page http://htmlunit.sourceforge.net/test/.
+     * Example: The page https://www.htmlunit.org/test/myFile.html contains an anchor with an empty
+     * href attribute. Clicking the link in IE force the load of page https://www.htmlunit.org/test/.
      * In Firefox the URL is unchanged.
      */
     @BrowserFeature(IE)
@@ -66,6 +66,10 @@ public enum BrowserVersionFeatures {
     /** Background image is 'rgba(0, 0, 0, 0)'. */
     @BrowserFeature({FF, FF_ESR})
     CSS_BACKGROUND_RGBA,
+
+    /** {@code CSSFontFaceRule.cssText} uses one more blank. */
+    @BrowserFeature(FF)
+    CSS_CSSTEXT_FF_STYLE,
 
     /** {@code CSSFontFaceRule.cssText} uses {@code \n\t} to break lines. */
     @BrowserFeature(IE)
@@ -115,10 +119,6 @@ public enum BrowserVersionFeatures {
     @BrowserFeature({IE, FF_ESR})
     CSS_RT_DISPLAY_RUBY_TEXT_ALWAYS,
 
-    /** The default value of the display property for the 'ruby' tag is 'inline'. */
-    @BrowserFeature({CHROME, EDGE})
-    CSS_RUBY_DISPLAY_INLINE,
-
     /** Throws exception on setting a CSS style value to null. */
     @BrowserFeature(IE)
     CSS_SET_NULL_THROWS,
@@ -151,6 +151,10 @@ public enum BrowserVersionFeatures {
     @BrowserFeature({CHROME, EDGE, FF, FF_ESR})
     EVENT_BEFORE_UNLOAD_RETURN_VALUE_IS_HTML5_LIKE,
 
+    /** The context menu MouseEvent has a detail of 1. */
+    @BrowserFeature(FF)
+    EVENT_CONTEXT_MENU_HAS_DETAIL_1,
+
     /** Triggers the onfocus onfocusin blur onfocusout events in this order. */
     @BrowserFeature({CHROME, EDGE, FF, FF_ESR})
     EVENT_FOCUS_FOCUS_IN_BLUR_OUT,
@@ -168,7 +172,7 @@ public enum BrowserVersionFeatures {
     EVENT_HANDLER_NULL_RETURN_IS_MEANINGFUL,
 
     /** Mouse events are triggered on disabled elements also. */
-    @BrowserFeature({FF, FF_ESR})
+    @BrowserFeature({CHROME, EDGE, FF, FF_ESR})
     EVENT_MOUSE_ON_DISABLED,
 
     /** <code>AnimationEvent</code> can not be created by calling document.createEvent('AnimationEvent'). */
@@ -255,6 +259,10 @@ public enum BrowserVersionFeatures {
     @BrowserFeature(IE)
     EVENT_TYPE_PROGRESSEVENT,
 
+    /** Supports event type 'TextEvent'. */
+    @BrowserFeature({CHROME, EDGE, IE})
+    EVENT_TYPE_TEXTEVENT,
+
     /** Supports event type 'WheelEvent'. */
     @BrowserFeature({CHROME, EDGE, IE})
     EVENT_TYPE_WHEELEVENT,
@@ -275,6 +283,10 @@ public enum BrowserVersionFeatures {
     @BrowserFeature({CHROME, EDGE, FF, FF_ESR})
     FORM_FORM_ATTRIBUTE_SUPPORTED,
 
+    /** Form elements are able to refer to the for by using the from attribute. */
+    @BrowserFeature({CHROME, EDGE, IE})
+    FORM_IGNORE_REL_NOREFERRER,
+
     /** Form formxxx parameters not supported for input type image. */
     @BrowserFeature(IE)
     FORM_PARAMETRS_NOT_SUPPORTED_FOR_IMAGE,
@@ -282,11 +294,6 @@ public enum BrowserVersionFeatures {
     /** Form submit forces a real request also if only the hash was changed. */
     @BrowserFeature({CHROME, EDGE, FF, FF_ESR})
     FORM_SUBMISSION_DOWNLOWDS_ALSO_IF_ONLY_HASH_CHANGED,
-
-    /** Form submit takes care of fields outside the form linked to the form
-     * using the form attribute. */
-    @BrowserFeature({CHROME, EDGE, FF, FF_ESR})
-    FORM_SUBMISSION_FORM_ATTRIBUTE,
 
     /** Form submit includes the Cache-Control: max-age=0 header. */
     @BrowserFeature({CHROME, EDGE})
@@ -296,7 +303,7 @@ public enum BrowserVersionFeatures {
     @BrowserFeature(IE)
     FORM_SUBMISSION_HEADER_CACHE_CONTROL_NO_CACHE,
 
-    /** Form submit includes the origin header. */
+    /** Forms are ignoring the rel='noreferrer' attribute. */
     @BrowserFeature({CHROME, EDGE, FF, FF_ESR})
     FORM_SUBMISSION_HEADER_ORIGIN,
 
@@ -337,7 +344,7 @@ public enum BrowserVersionFeatures {
     HTMLBASE_HREF_DEFAULT_EMPTY,
 
     /** If type submit/reset the form update is triggered even if disabled. */
-    @BrowserFeature({FF, FF_ESR, IE})
+    @BrowserFeature({FF_ESR, IE})
     HTMLBUTTON_SUBMIT_IGNORES_DISABLED_STATE,
 
     /** willValidate does not check the readonly property. */
@@ -613,28 +620,22 @@ public enum BrowserVersionFeatures {
     @BrowserFeature(IE)
     JS_ALIGN_FOR_INPUT_IGNORES_VALUES,
 
-    /**
-     * Javascript property anchors includes all anchors with a name or an id property.
-     * If not set name property is required.
-     */
-    @BrowserFeature(IE)
-    JS_ANCHORS_REQUIRES_NAME_OR_ID,
-
     /** The anchor hostname setter ignores blank url's. */
     @BrowserFeature({FF, FF_ESR})
     JS_ANCHOR_HOSTNAME_IGNORE_BLANK,
 
     /** The anchor pathname detects url's starting with one letter as file url's. */
-    @BrowserFeature({CHROME, EDGE, IE})
+    @BrowserFeature(FF_ESR)
     JS_ANCHOR_PATHNAME_DETECT_WIN_DRIVES_URL,
+
+    /** The anchor pathname detects url's starting with one letter as file url's
+     * and replaces them with the file protocol. */
+    @BrowserFeature({CHROME, EDGE, IE})
+    JS_ANCHOR_PATHNAME_DETECT_WIN_DRIVES_URL_REPLACE,
 
     /** The anchor pathname property returns nothing for broken http(s) url's. */
     @BrowserFeature({CHROME, EDGE, FF, FF_ESR})
     JS_ANCHOR_PATHNAME_NONE_FOR_BROKEN_URL,
-
-    /** The anchor pathname property returns nothing for none http(s) url's. */
-    @BrowserFeature({FF, FF_ESR})
-    JS_ANCHOR_PATHNAME_NONE_FOR_NONE_HTTP_URL,
 
     /** The anchor pathname prefixes file url's with '/'. */
     @BrowserFeature({CHROME, EDGE, IE})
@@ -657,16 +658,17 @@ public enum BrowserVersionFeatures {
     JS_ANCHOR_PROTOCOL_INVALID_THROWS,
 
     /**
+     * Javascript property anchors includes all anchors with a name or an id property.
+     * If not set name property is required.
+     */
+    @BrowserFeature(IE)
+    JS_ANCHOR_REQUIRES_NAME_OR_ID,
+
+    /**
      * Javascript fetch api is supported.
      */
     @BrowserFeature({CHROME, EDGE, FF, FF_ESR})
     JS_API_FETCH,
-
-    /**
-     * Javascript proxy api is supported.
-     */
-    @BrowserFeature({CHROME, EDGE, FF, FF_ESR})
-    JS_API_PROXY,
 
     /** An area element without a href attribute is focusable. */
     @BrowserFeature({FF, FF_ESR})
@@ -756,10 +758,6 @@ public enum BrowserVersionFeatures {
     @BrowserFeature({FF, FF_ESR})
     JS_CSSRULELIST_ENUM_ITEM_LENGTH,
 
-    /** CSS.toString returns [object Object] instead of [object CSS]. */
-    @BrowserFeature(FF_ESR)
-    JS_CSS_OBJECT,
-
     /** <code>Date.toLocaleDateString()</code> returns a short form (d.M.yyyy). */
     @BrowserFeature({CHROME, EDGE, FF, FF_ESR})
     JS_DATE_LOCALE_DATE_SHORT,
@@ -784,13 +782,13 @@ public enum BrowserVersionFeatures {
     @BrowserFeature(IE)
     JS_DOCUMENT_DESIGN_MODE_INHERIT,
 
+    /** Javascript document.evaluate creates a new result object even if provided as param. */
+    @BrowserFeature({CHROME, EDGE})
+    JS_DOCUMENT_EVALUATE_RECREATES_RESULT,
+
     /** Javascript document.forms(...) supported. */
     @BrowserFeature(IE)
     JS_DOCUMENT_FORMS_FUNCTION_SUPPORTED,
-
-    /** Document open() rewrites url of about:blank documents. */
-    @BrowserFeature({CHROME, EDGE, IE})
-    JS_DOCUMENT_OPEN_OVERWRITES_ABOUT_BLANK_LOCATION,
 
     /** The browser has selection {@code rangeCount}. */
     @BrowserFeature({FF, FF_ESR, IE})
@@ -872,7 +870,7 @@ public enum BrowserVersionFeatures {
     @BrowserFeature({CHROME, EDGE, FF, FF_ESR})
     JS_DOMIMPLEMENTATION_FEATURE_SVG_BASICSTRUCTURE_1_2,
 
-    /** If document.implementation.hasFeature() supports 'MutationNameEvents'. */
+    /** If document.implementation.hasFeature() supports 'TextEvents'. */
     @BrowserFeature({CHROME, EDGE, FF, FF_ESR})
     JS_DOMIMPLEMENTATION_FEATURE_TEXTEVENTS,
 
@@ -962,7 +960,7 @@ public enum BrowserVersionFeatures {
     JS_EVENT_LOAD_SUPPRESSED_BY_CONTENT_SECURIRY_POLICY,
 
     /** Whether {@code FileReader} includes content type or not. */
-    @BrowserFeature({FF, FF_ESR})
+    @BrowserFeature({CHROME, EDGE, FF, FF_ESR})
     JS_FILEREADER_CONTENT_TYPE,
 
     /** Whether {@code FileReader} includes {@code base64} for empty content or not. */
@@ -986,7 +984,7 @@ public enum BrowserVersionFeatures {
     JS_FORM_REJECT_INVALID_ENCODING,
 
     /** Calling form.submit() twice forces double download. */
-    @BrowserFeature({CHROME, EDGE, IE})
+    @BrowserFeature(IE)
     JS_FORM_SUBMIT_FORCES_DOWNLOAD,
 
     /** Support for document.formName('inputName'). */
@@ -1002,7 +1000,7 @@ public enum BrowserVersionFeatures {
     JS_GLOBAL_THIS,
 
     /** The index parameter of {@link CSSGroupingRule#insertRule(String, Object)} is optional. */
-    @BrowserFeature({FF, FF_ESR})
+    @BrowserFeature({CHROME, EDGE, FF, FF_ESR})
     JS_GROUPINGRULE_INSERTRULE_INDEX_OPTIONAL,
 
     /** HTMLElement instead of HTMLUnknownElement for elements with hyphen ('-'). */
@@ -1104,7 +1102,7 @@ public enum BrowserVersionFeatures {
     JS_INPUT_NUMBER_ACCEPT_ALL,
 
     /** FF comma at end is not an integer. */
-    @BrowserFeature(FF)
+    @BrowserFeature({FF, FF_ESR})
     JS_INPUT_NUMBER_DOT_AT_END_IS_DOUBLE,
 
     /** Chrome/FF returns null for selectionStart/selectionEnd. */
@@ -1224,6 +1222,10 @@ public enum BrowserVersionFeatures {
     @BrowserFeature(IE)
     JS_NODE_INSERT_BEFORE_REF_OPTIONAL,
 
+    /** Indicates that Object.assign() is supported. */
+    @BrowserFeature({CHROME, EDGE, FF, FF_ESR})
+    JS_OBJECT_ASSIGN,
+
     /** Indicates that Object.getOwnPropertySymbols() is supported. */
     @BrowserFeature({CHROME, EDGE, FF, FF_ESR})
     JS_OBJECT_GET_OWN_PROPERTY_SYMBOLS,
@@ -1309,7 +1311,7 @@ public enum BrowserVersionFeatures {
     JS_SELECT_OPTIONS_HAS_SELECT_CLASS_NAME,
 
     /** Ignore negative value when setting the length. */
-    @BrowserFeature({CHROME, EDGE, FF})
+    @BrowserFeature({CHROME, EDGE, FF, FF_ESR})
     JS_SELECT_OPTIONS_IGNORE_NEGATIVE_LENGTH,
 
     /** The 'in' operator returns always true for HtmlOptionsCollection. */
@@ -1344,6 +1346,22 @@ public enum BrowserVersionFeatures {
     /** Whether to add to the storage even preserved words. */
     @BrowserFeature({FF, FF_ESR, IE})
     JS_STORAGE_PRESERVED_INCLUDED,
+
+    /** Indicates that string.includes() is supported. */
+    @BrowserFeature({CHROME, EDGE, FF, FF_ESR})
+    JS_STRING_INCLUDES,
+
+    /** Indicates that string.startsWith() and .endWith() are supported. */
+    @BrowserFeature({CHROME, EDGE, FF, FF_ESR})
+    JS_STRING_REPEAT,
+
+    /** Indicates that string.startsWith() and .endWith() are supported. */
+    @BrowserFeature({CHROME, EDGE, FF, FF_ESR})
+    JS_STRING_STARTS_ENDS_WITH,
+
+    /** Indicates that string.trimLeft() and .trimRight() are supported. */
+    @BrowserFeature({CHROME, EDGE, FF, FF_ESR})
+    JS_STRING_TRIM_LEFT_RIGHT,
 
     /** Stylesheet list contains only active style sheets. */
     @BrowserFeature({CHROME, EDGE, FF, FF_ESR})
@@ -1459,10 +1477,9 @@ public enum BrowserVersionFeatures {
     @BrowserFeature(IE)
     JS_VALIGN_CONVERTS_TO_LOWERCASE,
 
-    /** Allow inheriting parent constants
-     * in {@link org.htmlunit.javascript.host.event.WebGLContextEvent}. */
+    /** Indicates that WeakSet is supported. */
     @BrowserFeature({CHROME, EDGE, FF, FF_ESR})
-    JS_WEBGL_CONTEXT_EVENT_CONSTANTS,
+    JS_WEAK_SET,
 
     /** Setting the property width/height to arbitrary values is allowed. */
     @BrowserFeature({CHROME, EDGE, FF, FF_ESR})
@@ -1497,7 +1514,7 @@ public enum BrowserVersionFeatures {
     JS_WINDOW_FRAME_BY_ID_RETURNS_WINDOW,
 
     /** Javascript InstallTrigger property set to null. */
-    @BrowserFeature(FF)
+    @BrowserFeature({FF, FF_ESR})
     JS_WINDOW_INSTALL_TRIGGER_NULL,
 
     /**
@@ -1507,10 +1524,10 @@ public enum BrowserVersionFeatures {
     JS_WINDOW_OUTER_INNER_HEIGHT_DIFF_131,
 
     /**
-     * Difference of window.outer/inner height is 133.
+     * Difference of window.outer/inner height is 138.
      */
     @BrowserFeature(CHROME)
-    JS_WINDOW_OUTER_INNER_HEIGHT_DIFF_133,
+    JS_WINDOW_OUTER_INNER_HEIGHT_DIFF_138,
 
     /**
      * Difference of window.outer/inner height is 86.
@@ -1615,22 +1632,6 @@ public enum BrowserVersionFeatures {
     @BrowserFeature({CHROME, EDGE, FF, FF_ESR})
     SLOT_CONTENTS,
 
-    /** Indicates that string.includes() is supported. */
-    @BrowserFeature({CHROME, EDGE, FF, FF_ESR})
-    STRING_INCLUDES,
-
-    /** Indicates that string.startsWith() and .endWith() are supported. */
-    @BrowserFeature({CHROME, EDGE, FF, FF_ESR})
-    STRING_REPEAT,
-
-    /** Indicates that string.startsWith() and .endWith() are supported. */
-    @BrowserFeature({CHROME, EDGE, FF, FF_ESR})
-    STRING_STARTS_ENDS_WITH,
-
-    /** Indicates that string.trimLeft() and .trimRight() are supported. */
-    @BrowserFeature({CHROME, EDGE, FF, FF_ESR})
-    STRING_TRIM_LEFT_RIGHT,
-
     /**
      * Method addRule returns the rule position instead of -1.
      */
@@ -1665,6 +1666,10 @@ public enum BrowserVersionFeatures {
      */
     @BrowserFeature({CHROME, EDGE, FF, FF_ESR})
     URL_AUTH_CREDENTIALS,
+
+    /** The protocol setter does not check for special protocols. */
+    @BrowserFeature({FF_ESR, IE})
+    URL_IGNORE_SPECIAL,
 
     /** Replace only ' ' with %20 when encode the query part of an url. */
     @BrowserFeature(IE)
@@ -1722,7 +1727,7 @@ public enum BrowserVersionFeatures {
 
     /** XMLHttpRequest triggers an additional progress event if a network error
      * was thrown in async mode. */
-    @BrowserFeature({FF, FF_ESR})
+    @BrowserFeature(FF_ESR)
     XHR_PROGRESS_ON_NETWORK_ERROR_ASYNC,
 
     /** If state unsent the response text is empty even if the response type is wrong. */
@@ -1746,6 +1751,6 @@ public enum BrowserVersionFeatures {
     XHR_USE_CONTENT_CHARSET,
 
     /** Indicates that the 'SelectionNamespaces' property is supported by XPath expressions. */
-    @BrowserFeature({CHROME, EDGE, IE})
+    @BrowserFeature(IE)
     XPATH_SELECTION_NAMESPACES,
 }

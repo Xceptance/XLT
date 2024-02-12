@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.HashSet;
@@ -33,9 +32,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.htmlunit.BrowserVersion;
-import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.SymbolKey;
 import org.htmlunit.javascript.HtmlUnitScriptable;
+import org.htmlunit.javascript.JavaScriptEngine;
 
 /**
  * An abstract container for all the JavaScript configuration information.
@@ -200,14 +199,9 @@ public abstract class AbstractJavaScriptConfiguration {
         final Map<String, Method> allSetters = new ConcurrentHashMap<>();
 
         try {
-            for (final Constructor<?> constructor : classConfiguration.getHostClass().getDeclaredConstructors()) {
-                for (final Annotation annotation : constructor.getAnnotations()) {
-                    if (annotation instanceof JsxConstructor && isSupported(((JsxConstructor) annotation).value(),
-                            expectedBrowser)) {
-                        classConfiguration.setJSConstructor(constructor);
-                    }
-                }
-            }
+            // do this as first step to be able to overwrite the symbol later if needed
+            classConfiguration.addSymbolConstant(SymbolKey.TO_STRING_TAG, classConfiguration.getHostClassSimpleName());
+
             for (final Method method : classConfiguration.getHostClass().getDeclaredMethods()) {
                 for (final Annotation annotation : method.getAnnotations()) {
                     if (annotation instanceof JsxGetter) {
@@ -296,9 +290,24 @@ public abstract class AbstractJavaScriptConfiguration {
                             classConfiguration.addStaticFunction(name, method);
                         }
                     }
-                    else if (annotation instanceof JsxConstructor && isSupported(((JsxConstructor) annotation).value(),
-                            expectedBrowser)) {
-                        classConfiguration.setJSConstructor(method);
+                    else if (annotation instanceof JsxConstructor) {
+                        final JsxConstructor jsxConstructor = (JsxConstructor) annotation;
+                        if (isSupported(jsxConstructor.value(), expectedBrowser)) {
+                            final String name;
+                            if (jsxConstructor.functionName().isEmpty()) {
+                                name = classConfiguration.getClassName();
+                            }
+                            else {
+                                name = jsxConstructor.functionName();
+                            }
+                            classConfiguration.setJSConstructor(name, method);
+                        }
+                    }
+                    else if (annotation instanceof JsxConstructorAlias) {
+                        final JsxConstructorAlias jsxConstructorAlias = (JsxConstructorAlias) annotation;
+                        if (isSupported(jsxConstructorAlias.value(), expectedBrowser)) {
+                            classConfiguration.setJSConstructorAlias(jsxConstructorAlias.alias());
+                        }
                     }
                 }
             }
@@ -308,18 +317,36 @@ public abstract class AbstractJavaScriptConfiguration {
                 classConfiguration.addProperty(property, getterEntry.getValue(), allSetters.get(property));
             }
 
-            // JsxConstant
+            // JsxConstant/JsxSymbolConstant
             for (final Field field : classConfiguration.getHostClass().getDeclaredFields()) {
-                final JsxConstant jsxConstant = field.getAnnotation(JsxConstant.class);
-                if (jsxConstant != null && isSupported(jsxConstant.value(), expectedBrowser)) {
-                    try {
-                        classConfiguration.addConstant(field.getName(), field.get(null));
+                for (final Annotation annotation : field.getAnnotations()) {
+                    if (annotation instanceof JsxConstant) {
+                        final JsxConstant jsxConstant = (JsxConstant) annotation;
+                        if (isSupported(jsxConstant.value(), expectedBrowser)) {
+                            try {
+                                classConfiguration.addConstant(field.getName(), field.get(null));
+                            }
+                            catch (final IllegalAccessException e) {
+                                throw JavaScriptEngine.reportRuntimeError(
+                                        "Cannot get field '" + field.getName()
+                                        + "' for type: " + classConfiguration.getHostClass().getName()
+                                        + "reason: " + e.getMessage());
+                            }
+                        }
                     }
-                    catch (final IllegalAccessException e) {
-                        throw Context.reportRuntimeError(
-                                "Cannot get field '" + field.getName()
-                                + "' for type: " + classConfiguration.getHostClass().getName()
-                                + "reason: " + e.getMessage());
+                    if (annotation instanceof JsxSymbolConstant) {
+                        final JsxSymbolConstant jsxSymbolConstant = (JsxSymbolConstant) annotation;
+                        if (isSupported(jsxSymbolConstant.value(), expectedBrowser)) {
+                            final SymbolKey symbolKey;
+                            if ("TO_STRING_TAG".equalsIgnoreCase(field.getName())) {
+                                symbolKey = SymbolKey.TO_STRING_TAG;
+                            }
+                            else {
+                                throw new RuntimeException("Invalid JsxSymbol annotation; unsupported '"
+                                        + field.getName() + "' symbol name.");
+                            }
+                            classConfiguration.addSymbolConstant(symbolKey, field.get(null).toString());
+                        }
                     }
                 }
             }

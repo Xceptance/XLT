@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -325,6 +325,99 @@ public class NativeStringTest extends WebDriverTestCase {
             + "  function doTest() {\n"
             + "    log('\\u0130'.toLocaleLowerCase('en'));\n"
             + "    log('\\u0130'.toLocaleLowerCase('tr'));\n"
+            + "  }\n"
+            + "</script></head>"
+            + "<body onload='doTest()'>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if something goes wrong
+     */
+    @Test
+    @Alerts(DEFAULT = {"Error", "true"},
+            IE = {})
+    public void includesRegExpMatch() throws Exception {
+        final String html
+            = "<!DOCTYPE html>\n"
+            + "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function doTest() {\n"
+            + "    if (window.Symbol) {\n"
+            + "      var regExp = /./;\n"
+            + "      var res = '';\n"
+            + "      try {\n"
+            + "        log('/./'.includes(regExp));\n"
+            + "      } catch (e) {\n"
+            + "        log('Error');\n"
+            + "      }\n"
+            + "      regExp[Symbol.match] = false;\n"
+            + "      log('/./'.includes(regExp));\n"
+            + "    }\n"
+            + "  }\n"
+            + "</script></head>"
+            + "<body onload='doTest()'>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if something goes wrong
+     */
+    @Test
+    @Alerts(DEFAULT = {"Error", "true"},
+            IE = {})
+    public void startsWithRegExpMatch() throws Exception {
+        final String html
+            = "<!DOCTYPE html>\n"
+            + "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function doTest() {\n"
+            + "    if (window.Symbol) {\n"
+            + "      var regExp = /./;\n"
+            + "      var res = '';\n"
+            + "      try {\n"
+            + "        log('/./'.startsWith(regExp));\n"
+            + "      } catch (e) {\n"
+            + "        log('Error');\n"
+            + "      }\n"
+            + "      regExp[Symbol.match] = false;\n"
+            + "      log('/./'.startsWith(regExp));\n"
+            + "    }\n"
+            + "  }\n"
+            + "</script></head>"
+            + "<body onload='doTest()'>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if something goes wrong
+     */
+    @Test
+    @Alerts(DEFAULT = {"Error", "true"},
+            IE = {})
+    public void endsWithRegExpMatch() throws Exception {
+        final String html
+            = "<!DOCTYPE html>\n"
+            + "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function doTest() {\n"
+            + "    if (window.Symbol) {\n"
+            + "      var regExp = /./;\n"
+            + "      var res = '';\n"
+            + "      try {\n"
+            + "        log('/./'.endsWith(regExp));\n"
+            + "      } catch (e) {\n"
+            + "        log('Error');\n"
+            + "      }\n"
+            + "      regExp[Symbol.match] = false;\n"
+            + "      log('/./'.endsWith(regExp));\n"
+            + "    }\n"
             + "  }\n"
             + "</script></head>"
             + "<body onload='doTest()'>\n"

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 package org.htmlunit.javascript.host;
 
 import static org.htmlunit.BrowserVersionFeatures.JS_ANCHOR_HOSTNAME_IGNORE_BLANK;
+import static org.htmlunit.BrowserVersionFeatures.URL_IGNORE_SPECIAL;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
@@ -24,12 +25,11 @@ import java.net.MalformedURLException;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
-import org.htmlunit.corejs.javascript.Context;
-import org.htmlunit.corejs.javascript.ScriptRuntime;
-import org.htmlunit.corejs.javascript.Undefined;
 import org.htmlunit.javascript.HtmlUnitScriptable;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
+import org.htmlunit.javascript.configuration.JsxConstructorAlias;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.configuration.JsxSetter;
@@ -65,10 +65,11 @@ public class URL extends HtmlUnitScriptable {
      * is a relative URL. If not specified, it defaults to ''.
      */
     @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
-    public URL(final String url, final Object base) {
+    @JsxConstructorAlias(value = {CHROME, EDGE, FF, FF_ESR}, alias = "webkitURL")
+    public void jsConstructor(final String url, final Object base) {
         String baseStr = null;
-        if (!Undefined.isUndefined(base)) {
-            baseStr = Context.toString(base);
+        if (!JavaScriptEngine.isUndefined(base)) {
+            baseStr = JavaScriptEngine.toString(base);
         }
 
         try {
@@ -82,7 +83,7 @@ public class URL extends HtmlUnitScriptable {
             url_ = UrlUtils.removeRedundantPort(url_);
         }
         catch (final MalformedURLException e) {
-            throw ScriptRuntime.typeError(e.toString());
+            throw JavaScriptEngine.typeError(e.toString());
         }
     }
 
@@ -354,12 +355,37 @@ public class URL extends HtmlUnitScriptable {
 
     @JsxSetter
     public void setProtocol(final String protocol) throws MalformedURLException {
-        if (url_ == null || protocol.isEmpty() || !UrlUtils.isValidScheme(protocol)) {
+        if (url_ == null || protocol.isEmpty()) {
+            return;
+        }
+
+        String bareProtocol = StringUtils.substringBefore(protocol, ":");
+        if (getBrowserVersion().hasFeature(URL_IGNORE_SPECIAL)) {
+            if (!UrlUtils.isValidScheme(bareProtocol)) {
+                return;
+            }
+
+            try {
+                url_ = UrlUtils.getUrlWithNewProtocol(url_, bareProtocol);
+                url_ = UrlUtils.removeRedundantPort(url_);
+            }
+            catch (final MalformedURLException e) {
+                // ignore
+            }
+
+            return;
+        }
+
+        bareProtocol = bareProtocol.trim();
+        if (!UrlUtils.isValidScheme(bareProtocol)) {
+            return;
+        }
+        if (!UrlUtils.isSpecialScheme(bareProtocol)) {
             return;
         }
 
         try {
-            url_ = UrlUtils.getUrlWithNewProtocol(url_, protocol);
+            url_ = UrlUtils.getUrlWithNewProtocol(url_, bareProtocol);
             url_ = UrlUtils.removeRedundantPort(url_);
         }
         catch (final MalformedURLException e) {

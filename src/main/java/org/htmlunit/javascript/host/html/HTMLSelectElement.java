@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,16 +22,17 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import java.util.List;
 
-import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.ES6Iterator;
 import org.htmlunit.corejs.javascript.Scriptable;
-import org.htmlunit.corejs.javascript.Undefined;
 import org.htmlunit.html.HtmlOption;
 import org.htmlunit.html.HtmlSelect;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.configuration.JsxSetter;
+import org.htmlunit.javascript.configuration.JsxSymbol;
 import org.htmlunit.javascript.host.dom.NodeList;
 
 /**
@@ -56,8 +57,16 @@ public class HTMLSelectElement extends HTMLElement {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public HTMLSelectElement() {
+    }
+
+    /**
+     * JavaScript constructor.
+     */
+    @Override
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    public void jsConstructor() {
+        super.jsConstructor();
     }
 
     /**
@@ -137,7 +146,7 @@ public class HTMLSelectElement extends HTMLElement {
     @JsxFunction
     public Object item(final int index) {
         final Object option = getOptions().item(index);
-        if (Undefined.isUndefined(option)) {
+        if (JavaScriptEngine.isUndefined(option)) {
             return null;
         }
         return option;
@@ -253,7 +262,7 @@ public class HTMLSelectElement extends HTMLElement {
     @Override
     @JsxSetter
     public void setValue(final Object newValue) {
-        final String val = Context.toString(newValue);
+        final String val = JavaScriptEngine.toString(newValue);
         getDomNodeOrDie().setSelectedAttribute(val, true, false);
     }
 
@@ -409,5 +418,10 @@ public class HTMLSelectElement extends HTMLElement {
     @JsxFunction
     public void setCustomValidity(final String message) {
         getDomNodeOrDie().setCustomValidity(message);
+    }
+
+    @JsxSymbol({CHROME, EDGE, FF, FF_ESR})
+    public ES6Iterator iterator() {
+        return getOptions().iterator();
     }
 }

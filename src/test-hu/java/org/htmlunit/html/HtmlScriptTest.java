@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -144,7 +144,7 @@ public class HtmlScriptTest extends SimpleWebTestCase {
 
         final MockWebConnection conn = new MockWebConnection();
         conn.setResponse(URL_FIRST, html);
-        conn.setResponse(URL_SECOND, js, MimeType.APPLICATION_JAVASCRIPT);
+        conn.setResponse(URL_SECOND, js, MimeType.TEXT_JAVASCRIPT);
         client.setWebConnection(conn);
 
         final List<String> actual = new ArrayList<>();
@@ -221,9 +221,9 @@ public class HtmlScriptTest extends SimpleWebTestCase {
         client.getOptions().setThrowExceptionOnFailingStatusCode(throwOnFailingStatusCode);
         final MockWebConnection conn = new MockWebConnection();
         conn.setResponse(URL_FIRST, html);
-        conn.setResponse(URL_SECOND, "var foo;", MimeType.APPLICATION_JAVASCRIPT);
-        conn.setResponse(URL_THIRD, "varrrr foo;", MimeType.APPLICATION_JAVASCRIPT);
-        conn.setResponse(fourOhFour, "", 404, "Missing", MimeType.APPLICATION_JAVASCRIPT,
+        conn.setResponse(URL_SECOND, "var foo;", MimeType.TEXT_JAVASCRIPT);
+        conn.setResponse(URL_THIRD, "varrrr foo;", MimeType.TEXT_JAVASCRIPT);
+        conn.setResponse(fourOhFour, "", 404, "Missing", MimeType.TEXT_JAVASCRIPT,
                 new ArrayList<NameValuePair>());
         client.setWebConnection(conn);
         final List<String> actual = new ArrayList<>();

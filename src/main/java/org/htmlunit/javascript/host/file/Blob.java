@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,15 +31,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.HttpHeader;
 import org.htmlunit.WebRequest;
-import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.NativeArray;
 import org.htmlunit.corejs.javascript.ScriptRuntime;
 import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.corejs.javascript.ScriptableObject;
-import org.htmlunit.corejs.javascript.Undefined;
 import org.htmlunit.corejs.javascript.typedarrays.NativeArrayBuffer;
 import org.htmlunit.corejs.javascript.typedarrays.NativeArrayBufferView;
 import org.htmlunit.javascript.HtmlUnitScriptable;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
@@ -115,7 +114,7 @@ public class Blob extends HtmlUnitScriptable {
                     out.write(bytes, 0, bytes.length);
                 }
                 else {
-                    final String bits = Context.toString(fileBits.get(i));
+                    final String bits = JavaScriptEngine.toString(fileBits.get(i));
                     // Todo normalize line breaks
                     final byte[] bytes = bits.getBytes(UTF_8);
                     out.write(bytes, 0, bytes.length);
@@ -167,29 +166,29 @@ public class Blob extends HtmlUnitScriptable {
     }
 
     protected static String extractFileTypeOrDefault(final ScriptableObject properties) {
-        if (properties == null || Undefined.isUndefined(properties)) {
+        if (properties == null || JavaScriptEngine.isUndefined(properties)) {
             return OPTIONS_TYPE_DEFAULT;
         }
 
         final Object optionsType = properties.get(OPTIONS_TYPE_NAME, properties);
         if (optionsType != null && properties != Scriptable.NOT_FOUND
-                && !Undefined.isUndefined(optionsType)) {
-            return Context.toString(optionsType);
+                && !JavaScriptEngine.isUndefined(optionsType)) {
+            return JavaScriptEngine.toString(optionsType);
         }
 
         return OPTIONS_TYPE_DEFAULT;
     }
 
     protected static long extractLastModifiedOrDefault(final ScriptableObject properties) {
-        if (properties == null || Undefined.isUndefined(properties)) {
+        if (properties == null || JavaScriptEngine.isUndefined(properties)) {
             return System.currentTimeMillis();
         }
 
         final Object optionsType = properties.get(OPTIONS_LASTMODIFIED, properties);
         if (optionsType != null && properties != Scriptable.NOT_FOUND
-                && !Undefined.isUndefined(optionsType)) {
+                && !JavaScriptEngine.isUndefined(optionsType)) {
             try {
-                return Long.parseLong(Context.toString(optionsType));
+                return Long.parseLong(JavaScriptEngine.toString(optionsType));
             }
             catch (final NumberFormatException e) {
                 // fall back to default
@@ -211,9 +210,9 @@ public class Blob extends HtmlUnitScriptable {
      * @param properties the properties
      */
     @JsxConstructor
-    public Blob(final NativeArray fileBits, final ScriptableObject properties) {
+    public void jsConstructor(final NativeArray fileBits, final ScriptableObject properties) {
         NativeArray nativeBits = fileBits;
-        if (Undefined.isUndefined(fileBits)) {
+        if (JavaScriptEngine.isUndefined(fileBits)) {
             nativeBits = null;
         }
 
@@ -268,16 +267,16 @@ public class Blob extends HtmlUnitScriptable {
         final int size = (int) getSize();
         int usedStart = 0;
         int usedEnd = size;
-        if (start != null && !Undefined.isUndefined(start)) {
-            usedStart = ScriptRuntime.toInt32(start);
+        if (start != null && !JavaScriptEngine.isUndefined(start)) {
+            usedStart = JavaScriptEngine.toInt32(start);
             if (usedStart < 0) {
                 usedStart = size + usedStart;
             }
             usedStart = Math.max(0, usedStart);
         }
 
-        if (end != null && !Undefined.isUndefined(end)) {
-            usedEnd = ScriptRuntime.toInt32(end);
+        if (end != null && !JavaScriptEngine.isUndefined(end)) {
+            usedEnd = JavaScriptEngine.toInt32(end);
             if (usedEnd < 0) {
                 usedEnd = size + usedEnd;
             }
@@ -285,8 +284,8 @@ public class Blob extends HtmlUnitScriptable {
         }
 
         String usedContentType = "";
-        if (contentType != null && !Undefined.isUndefined(contentType)) {
-            usedContentType = ScriptRuntime.toString(contentType).toLowerCase(Locale.ROOT);
+        if (contentType != null && !JavaScriptEngine.isUndefined(contentType)) {
+            usedContentType = JavaScriptEngine.toString(contentType).toLowerCase(Locale.ROOT);
         }
 
         if (usedEnd <= usedStart || usedStart >= getSize()) {

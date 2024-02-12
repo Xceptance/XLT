@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,10 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
-import org.htmlunit.corejs.javascript.ScriptRuntime;
 import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.corejs.javascript.ScriptableObject;
-import org.htmlunit.corejs.javascript.Undefined;
 import org.htmlunit.html.DomNode;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstant;
 import org.htmlunit.javascript.configuration.JsxConstructor;
@@ -50,7 +49,7 @@ public class UIEvent extends Event {
 
     /** Constant. */
     @JsxConstant({FF, FF_ESR})
-    public static final short SCROLL_PAGE_UP = 0xFFFF8000;
+    public static final int SCROLL_PAGE_UP = 0xFFFF8000;
 
     /** Specifies some detail information about the event. */
     private long detail_;
@@ -77,13 +76,13 @@ public class UIEvent extends Event {
         super.jsConstructor(type, details);
 
         view_ = NO_VIEW;
-        if (details != null && !Undefined.isUndefined(details)) {
+        if (details != null && !JavaScriptEngine.isUndefined(details)) {
             final Object view = details.get("view", details);
             if (view instanceof Window) {
                 view_ = view;
             }
             else if (view != Scriptable.NOT_FOUND) {
-                throw ScriptRuntime.typeError("View must be a window.");
+                throw JavaScriptEngine.typeError("View must be a window.");
             }
         }
     }
@@ -163,5 +162,14 @@ public class UIEvent extends Event {
         initEvent(type, bubbles, cancelable);
         // Ignore the view parameter; we always use the window.
         setDetail(detail);
+    }
+
+    /**
+     * @return a number that indicates which button was pressed on the mouse,
+     * or the numeric keyCode or the character code (charCode) of the key pressed on the keyboard
+     */
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    public int getWhich() {
+        return 0;
     }
 }

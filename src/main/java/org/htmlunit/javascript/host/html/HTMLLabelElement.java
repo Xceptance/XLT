@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,8 +41,16 @@ public class HTMLLabelElement extends HTMLElement {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public HTMLLabelElement() {
+    }
+
+    /**
+     * JavaScript constructor.
+     */
+    @Override
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    public void jsConstructor() {
+        super.jsConstructor();
     }
 
     /**
@@ -80,16 +88,6 @@ public class HTMLLabelElement extends HTMLElement {
     }
 
     /**
-     * The control attribute is read-only.
-     *
-     * @param control ignored
-     */
-    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
-    public void setControl(final HTMLElement control) {
-        // the control attribute is read-only
-    }
-
-    /**
      * Returns the value of the JavaScript {@code form} attribute.
      *
      * @return the value of the JavaScript {@code form} attribute
@@ -118,15 +116,5 @@ public class HTMLLabelElement extends HTMLElement {
         }
 
         return (HTMLFormElement) getScriptableFor(form);
-    }
-
-    /**
-     * The form attribute is read-only.
-     *
-     * @param form ignored
-     */
-    @JsxSetter
-    public void setForm(final HTMLFormElement form) {
-        // the form attribute is read-only
     }
 }

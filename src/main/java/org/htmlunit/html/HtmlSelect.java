@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -512,23 +512,23 @@ public class HtmlSelect extends HtmlElement implements DisabledElement, Submitta
      * @exception ElementNotFoundException If a particular element could not be found in the DOM model
      */
     public HtmlOption getOptionByValue(final String value) throws ElementNotFoundException {
-        WebAssert.notNull("value", value);
+        WebAssert.notNull(VALUE_ATTRIBUTE, value);
         for (final HtmlOption option : getOptions()) {
             if (option.getValueAttribute().equals(value)) {
                 return option;
             }
         }
-        throw new ElementNotFoundException("option", "value", value);
+        throw new ElementNotFoundException("option", VALUE_ATTRIBUTE, value);
     }
 
     private HtmlOption getOptionByValueStrict(final String value) throws ElementNotFoundException {
-        WebAssert.notNull("value", value);
+        WebAssert.notNull(VALUE_ATTRIBUTE, value);
         for (final HtmlOption option : getOptions()) {
-            if (option.getAttributeDirect("value").equals(value)) {
+            if (option.getAttributeDirect(VALUE_ATTRIBUTE).equals(value)) {
                 return option;
             }
         }
-        throw new ElementNotFoundException("option", "value", value);
+        throw new ElementNotFoundException("option", VALUE_ATTRIBUTE, value);
     }
 
     /**
@@ -555,7 +555,7 @@ public class HtmlSelect extends HtmlElement implements DisabledElement, Submitta
      * @return the value of the attribute {@code name} or an empty string if that attribute isn't defined
      */
     public final String getNameAttribute() {
-        return getAttributeDirect("name");
+        return getAttributeDirect(DomElement.NAME_ATTRIBUTE);
     }
 
     /**
@@ -666,13 +666,14 @@ public class HtmlSelect extends HtmlElement implements DisabledElement, Submitta
     @Override
     protected void setAttributeNS(final String namespaceURI, final String qualifiedName, final String attributeValue,
             final boolean notifyAttributeChangeListeners, final boolean notifyMutationObservers) {
-        if ("name".equals(qualifiedName)) {
+        final String qualifiedNameLC = org.htmlunit.util.StringUtils.toRootLowerCase(qualifiedName);
+        if (DomElement.NAME_ATTRIBUTE.equals(qualifiedNameLC)) {
             if (newNames_.isEmpty()) {
                 newNames_ = new HashSet<>();
             }
             newNames_.add(attributeValue);
         }
-        super.setAttributeNS(namespaceURI, qualifiedName, attributeValue, notifyAttributeChangeListeners,
+        super.setAttributeNS(namespaceURI, qualifiedNameLC, attributeValue, notifyAttributeChangeListeners,
                 notifyMutationObservers);
     }
 

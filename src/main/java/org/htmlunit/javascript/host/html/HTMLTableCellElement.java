@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,17 +27,17 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import java.util.List;
 
-import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.css.ComputedCssStyleDeclaration;
 import org.htmlunit.css.StyleAttributes;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.HtmlTableCell;
 import org.htmlunit.html.HtmlTableRow;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.configuration.JsxSetter;
-import org.htmlunit.javascript.host.css.ComputedCSSStyleDeclaration;
 import org.htmlunit.javascript.host.event.MouseEvent;
 
 /**
@@ -56,8 +56,16 @@ public class HTMLTableCellElement extends HTMLTableComponent {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public HTMLTableCellElement() {
+    }
+
+    /**
+     * JavaScript constructor.
+     */
+    @Override
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    public void jsConstructor() {
+        super.jsConstructor();
     }
 
     /**
@@ -73,7 +81,7 @@ public class HTMLTableCellElement extends HTMLTableComponent {
         if (isDisplayNone()) {
             return 0;
         }
-        final ComputedCSSStyleDeclaration style = getWindow().getComputedStyle(this, null);
+        final ComputedCssStyleDeclaration style = getWindow().getWebWindow().getComputedStyle(getDomNodeOrDie(), null);
         final boolean includeBorder = getBrowserVersion().hasFeature(JS_TABLE_CELL_OFFSET_INCLUDES_BORDER);
         return style.getCalculatedHeight(includeBorder, true);
     }
@@ -93,8 +101,8 @@ public class HTMLTableCellElement extends HTMLTableComponent {
             return 0;
         }
 
-        final ComputedCSSStyleDeclaration style = getWindow().getComputedStyle(this, null);
-        if ("collapse".equals(style.getStyleAttribute(StyleAttributes.Definition.BORDER_COLLAPSE))) {
+        final ComputedCssStyleDeclaration style = getWindow().getWebWindow().getComputedStyle(getDomNodeOrDie(), null);
+        if ("collapse".equals(style.getStyleAttribute(StyleAttributes.Definition.BORDER_COLLAPSE, true))) {
             final HtmlTableRow row = getRow();
             if (row != null) {
                 final HtmlElement thiz = getDomNodeOrDie();
@@ -116,7 +124,7 @@ public class HTMLTableCellElement extends HTMLTableComponent {
      * @see <a href="http://msdn.microsoft.com/en-us/library/ms533549.aspx">MSDN Documentation</a>
      */
     @JsxGetter
-    public Integer getCellIndex() {
+    public int getCellIndex() {
         final HtmlTableCell cell = (HtmlTableCell) getDomNodeOrDie();
         final HtmlTableRow row = cell.getEnclosingRow();
         if (row == null) { // a not attached document.createElement('TD')
@@ -211,7 +219,7 @@ public class HTMLTableCellElement extends HTMLTableComponent {
         }
         catch (final NumberFormatException e) {
             if (getBrowserVersion().hasFeature(JS_TABLE_SPAN_THROWS_EXCEPTION_IF_INVALID)) {
-                throw Context.throwAsScriptRuntimeEx(e);
+                throw JavaScriptEngine.throwAsScriptRuntimeEx(e);
             }
             getDomNodeOrDie().setAttribute("colSpan", "1");
         }
@@ -251,7 +259,7 @@ public class HTMLTableCellElement extends HTMLTableComponent {
         }
         catch (final NumberFormatException e) {
             if (getBrowserVersion().hasFeature(JS_TABLE_SPAN_THROWS_EXCEPTION_IF_INVALID)) {
-                throw Context.throwAsScriptRuntimeEx(e);
+                throw JavaScriptEngine.throwAsScriptRuntimeEx(e);
             }
             if (getBrowserVersion().hasFeature(JS_TABLE_SPAN_SET_ZERO_IF_INVALID)) {
                 getDomNodeOrDie().setAttribute("rowSpan", "0");
@@ -347,7 +355,7 @@ public class HTMLTableCellElement extends HTMLTableComponent {
      */
     @Override
     public void setOuterHTML(final Object value) {
-        throw Context.reportRuntimeError("outerHTML is read-only for tag '"
+        throw JavaScriptEngine.reportRuntimeError("outerHTML is read-only for tag '"
                         + getDomNodeOrDie().getTagName() + "'");
     }
 

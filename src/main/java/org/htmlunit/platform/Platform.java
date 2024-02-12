@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,9 @@ import org.apache.commons.lang3.reflect.ConstructorUtils;
 import org.htmlunit.platform.canvas.rendering.AwtRenderingBackend;
 import org.htmlunit.platform.canvas.rendering.NoOpRenderingBackend;
 import org.htmlunit.platform.canvas.rendering.RenderingBackend;
+import org.htmlunit.platform.font.AwtFontUtil;
+import org.htmlunit.platform.font.FontUtil;
+import org.htmlunit.platform.font.NoOpFontUtil;
 import org.htmlunit.platform.image.ImageData;
 import org.htmlunit.platform.image.NoOpImageData;
 import org.w3c.dom.Document;
@@ -40,6 +43,8 @@ import org.w3c.dom.Node;
 public final class Platform {
 
     // private static final Log LOG = LogFactory.getLog(Platform.class);
+
+    private static FontUtil FontUtil_;
 
     private static XmlUtilsHelperAPI HelperXerces_;
     private static XmlUtilsHelperAPI HelperSunXerces_;
@@ -126,8 +131,29 @@ public final class Platform {
                         "org.htmlunit.platform.canvas.rendering.AwtRenderingBackend");
             return (RenderingBackend) ConstructorUtils.invokeConstructor(backendClass, imageWidth, imageHeight);
         }
-        catch (final Exception e) {
+        catch (final Throwable e) {
             return new NoOpRenderingBackend(imageWidth, imageHeight);
+        }
+    }
+
+    /**
+     * @return a new {@link FontUtil}. If the {@link AwtFontUtil} can't be used a
+     * {@link NoOpFontUtil} is used instead.
+     */
+    public static FontUtil getFontUtil() {
+        // for Android
+        if (FontUtil_ != null) {
+            return FontUtil_;
+        }
+
+        try {
+            final Class<?> backendClass = Class.forName("org.htmlunit.platform.font.AwtFontUtil");
+            FontUtil_ = (FontUtil) ConstructorUtils.invokeConstructor(backendClass);
+            return FontUtil_;
+        }
+        catch (final Throwable e) {
+            FontUtil_ = new NoOpFontUtil();
+            return FontUtil_;
         }
     }
 
@@ -148,7 +174,7 @@ public final class Platform {
         catch (final RuntimeException re) {
             throw re;
         }
-        catch (final Exception ex) {
+        catch (final Throwable ex) {
             return new NoOpImageData();
         }
     }

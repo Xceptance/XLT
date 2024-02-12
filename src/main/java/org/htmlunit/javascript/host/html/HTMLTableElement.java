@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.function.Supplier;
 
-import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.HtmlTable;
@@ -36,6 +35,7 @@ import org.htmlunit.html.HtmlTableBody;
 import org.htmlunit.html.HtmlTableFooter;
 import org.htmlunit.html.HtmlTableHeader;
 import org.htmlunit.html.HtmlTableRow;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
@@ -62,8 +62,16 @@ public class HTMLTableElement extends RowContainer {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public HTMLTableElement() {
+    }
+
+    /**
+     * JavaScript constructor.
+     */
+    @Override
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    public void jsConstructor() {
+        super.jsConstructor();
     }
 
     /**
@@ -87,7 +95,7 @@ public class HTMLTableElement extends RowContainer {
     @JsxSetter
     public void setCaption(final Object o) {
         if (!(o instanceof HTMLTableCaptionElement)) {
-            throw Context.reportRuntimeError("Not a caption");
+            throw JavaScriptEngine.reportRuntimeError("Not a caption");
         }
 
         // remove old caption (if any)
@@ -119,7 +127,7 @@ public class HTMLTableElement extends RowContainer {
     public void setTFoot(final Object o) {
         if (!(o instanceof HTMLTableSectionElement
             && "TFOOT".equals(((HTMLTableSectionElement) o).getTagName()))) {
-            throw Context.reportRuntimeError("Not a tFoot");
+            throw JavaScriptEngine.reportRuntimeError("Not a tFoot");
         }
 
         // remove old caption (if any)
@@ -151,7 +159,7 @@ public class HTMLTableElement extends RowContainer {
     public void setTHead(final Object o) {
         if (!(o instanceof HTMLTableSectionElement
             && "THEAD".equals(((HTMLTableSectionElement) o).getTagName()))) {
-            throw Context.reportRuntimeError("Not a tHead");
+            throw JavaScriptEngine.reportRuntimeError("Not a tHead");
         }
 
         // remove old caption (if any)
@@ -274,10 +282,10 @@ public class HTMLTableElement extends RowContainer {
     public Object insertRow(final int index) {
         // check if a tbody should be created
         if (index != 0) {
-            for (final DomNode domNode : getDomNodeOrDie().getDescendants()) {
-                if (domNode instanceof HtmlTableBody
-                        || domNode instanceof HtmlTableHeader
-                        || domNode instanceof HtmlTableFooter) {
+            for (final HtmlElement htmlElement : getDomNodeOrDie().getHtmlElementDescendants()) {
+                if (htmlElement instanceof HtmlTableBody
+                        || htmlElement instanceof HtmlTableHeader
+                        || htmlElement instanceof HtmlTableFooter) {
                     return super.insertRow(index);
                 }
             }
@@ -494,7 +502,7 @@ public class HTMLTableElement extends RowContainer {
         if (getBrowserVersion().hasFeature(JS_TABLE_VALIGN_SUPPORTS_IE_VALUES)) {
             rules = rules.toLowerCase(Locale.ROOT);
             if (!rules.isEmpty() && !VALID_RULES_.contains(rules)) {
-                throw Context.throwAsScriptRuntimeEx(new Exception("Invalid argument"));
+                throw JavaScriptEngine.throwAsScriptRuntimeEx(new Exception("Invalid argument"));
             }
         }
         setAttribute("rules", rules);

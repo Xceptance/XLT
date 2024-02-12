@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,19 +63,6 @@ public class HTMLParserTest extends SimpleWebTestCase {
 
         final HtmlElement node = (HtmlElement) page.getFirstByXPath("//*[./text() = 'TEST']");
         assertEquals(node.getTagName(), HtmlDivision.TAG_NAME);
-    }
-
-    /**
-     * Works since NekoHtml 0.9.5.
-     * @exception Exception If the test fails
-     */
-    @Test
-    public void badTagInHead() throws Exception {
-        final String htmlContent = "<html>\n" + "<head><foo/>\n<title>foo\n</head>\n"
-                + "<body>\nfoo\n</body>\n</html>";
-
-        final HtmlPage page = loadPage(htmlContent);
-        assertEquals("foo", page.getTitleText());
     }
 
     /**

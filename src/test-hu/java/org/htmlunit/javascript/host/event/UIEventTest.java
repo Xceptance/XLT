@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -163,12 +163,14 @@ public class UIEventTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"[object Event]", "undefined", "[object MouseEvent]", "1",
-                       "[object MouseEvent]", "2", "[object MouseEvent]", "2"},
-            CHROME = {"[object Event]", "undefined", "[object PointerEvent]", "1",
+    @Alerts(CHROME = {"[object Event]", "undefined", "[object PointerEvent]", "1",
                       "[object MouseEvent]", "2", "[object PointerEvent]", "0"},
             EDGE = {"[object Event]", "undefined", "[object PointerEvent]", "1",
                     "[object MouseEvent]", "2", "[object PointerEvent]", "0"},
+            FF = {"[object Event]", "undefined", "[object MouseEvent]", "1",
+                  "[object MouseEvent]", "2", "[object MouseEvent]", "1"},
+            FF_ESR = {"[object Event]", "undefined", "[object MouseEvent]", "1",
+                      "[object MouseEvent]", "2", "[object MouseEvent]", "2"},
             IE = {"[object Event]", "undefined", "[object PointerEvent]", "0",
                   "[object PointerEvent]", "0", "[object PointerEvent]", "0"})
     public void detail() throws Exception {
@@ -212,12 +214,14 @@ public class UIEventTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"[object Event]", "undefined", "[object MouseEvent]", "1",
-                       "[object MouseEvent]", "2", "[object MouseEvent]", "2"},
-            CHROME = {"[object Event]", "undefined", "[object PointerEvent]", "1",
+    @Alerts(CHROME = {"[object Event]", "undefined", "[object PointerEvent]", "1",
                       "[object MouseEvent]", "2", "[object PointerEvent]", "0"},
             EDGE = {"[object Event]", "undefined", "[object PointerEvent]", "1",
                     "[object MouseEvent]", "2", "[object PointerEvent]", "0"},
+            FF = {"[object Event]", "undefined", "[object MouseEvent]", "1",
+                  "[object MouseEvent]", "2", "[object MouseEvent]", "1"},
+            FF_ESR = {"[object Event]", "undefined", "[object MouseEvent]", "1",
+                      "[object MouseEvent]", "2", "[object MouseEvent]", "2"},
             IE = {"[object Event]", "undefined", "[object PointerEvent]", "0",
                   "[object PointerEvent]", "0", "[object PointerEvent]", "0"})
     public void detailInputText() throws Exception {
@@ -262,12 +266,14 @@ public class UIEventTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"[object Event]", "undefined", "[object MouseEvent]", "1",
-                       "[object MouseEvent]", "2", "[object MouseEvent]", "2"},
-            CHROME = {"[object Event]", "undefined", "[object PointerEvent]", "1",
+    @Alerts(CHROME = {"[object Event]", "undefined", "[object PointerEvent]", "1",
                       "[object MouseEvent]", "2", "[object PointerEvent]", "0"},
             EDGE = {"[object Event]", "undefined", "[object PointerEvent]", "1",
                     "[object MouseEvent]", "2", "[object PointerEvent]", "0"},
+            FF = {"[object Event]", "undefined", "[object MouseEvent]", "1",
+                  "[object MouseEvent]", "2", "[object MouseEvent]", "1"},
+            FF_ESR = {"[object Event]", "undefined", "[object MouseEvent]", "1",
+                      "[object MouseEvent]", "2", "[object MouseEvent]", "2"},
             IE = {"[object Event]", "undefined", "[object PointerEvent]", "0",
                   "[object PointerEvent]", "0", "[object PointerEvent]", "0"})
     public void detailInputRadio() throws Exception {

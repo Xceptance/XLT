@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,6 +70,7 @@ public class WaitingRefreshHandler implements RefreshHandler {
         if (seconds > maxwait_ && maxwait_ > 0) {
             seconds = maxwait_;
         }
+
         try {
             Thread.sleep(seconds * 1000L);
         }
@@ -83,7 +84,11 @@ public class WaitingRefreshHandler implements RefreshHandler {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Waiting thread was interrupted. Ignoring interruption to continue navigation.");
             }
+
+            // restore interrupted status
+            Thread.currentThread().interrupt();
         }
+
         final WebWindow window = page.getEnclosingWindow();
         if (window == null) {
             return;

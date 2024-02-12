@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1235,6 +1235,32 @@ public class ElementDefaultStyleDisplayTest extends WebDriverTestCase {
     }
 
     /**
+     * Test {@link org.htmlunit.html.HtmlRb}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = {"", "inline"},
+            FF = {"", "ruby-base"},
+            FF_ESR = {"", "ruby-base"},
+            IE = {"ruby-base", "ruby-base"})
+    public void rb() throws Exception {
+        test("rb");
+    }
+
+    /**
+     * Test HtmlRbc.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = {"", "inline"},
+            IE = {"inline", "inline"})
+    public void rbc() throws Exception {
+        test("rbc");
+    }
+
+    /**
      * Test {@link org.htmlunit.html.HtmlRp}.
      *
      * @throws Exception if the test fails
@@ -1261,14 +1287,26 @@ public class ElementDefaultStyleDisplayTest extends WebDriverTestCase {
     }
 
     /**
-     * Test {@link org.htmlunit.html.HtmlRuby}.
+     * Test HtmlRtc.
      *
      * @throws Exception if the test fails
      */
     @Test
     @Alerts(DEFAULT = {"", "inline"},
-            FF = {"", "ruby"},
-            FF_ESR = {"", "ruby"},
+            FF = {"", "ruby-text-container"},
+            FF_ESR = {"", "ruby-text-container"},
+            IE = {"ruby-text-container", "ruby-text-container"})
+    public void rtc() throws Exception {
+        test("rtc");
+    }
+
+    /**
+     * Test {@link org.htmlunit.html.HtmlRuby}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = {"", "ruby"},
             IE = {"ruby", "ruby"})
     public void ruby() throws Exception {
         test("ruby");
@@ -1356,6 +1394,18 @@ public class ElementDefaultStyleDisplayTest extends WebDriverTestCase {
             IE = {"inline", "inline"})
     public void source() throws Exception {
         test("source");
+    }
+
+    /**
+     * Test Spacer.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = {"", "inline"},
+            IE = {"inline", "inline"})
+    public void spacer() throws Exception {
+        test("spacer");
     }
 
     /**
@@ -1764,5 +1814,15 @@ public class ElementDefaultStyleDisplayTest extends WebDriverTestCase {
             IE = {"inline", "inline"})
     public void slot() throws Exception {
         test("slot");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = {"", "inline"},
+            IE = {"inline", "inline"})
+    public void arbitrary() throws Exception {
+        test("abcdefg");
     }
 }

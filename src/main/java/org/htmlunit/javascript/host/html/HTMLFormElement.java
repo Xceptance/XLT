@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,15 +30,14 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.function.Supplier;
 
 import org.htmlunit.FormEncodingType;
 import org.htmlunit.WebAssert;
 import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.ES6Iterator;
 import org.htmlunit.corejs.javascript.Function;
-import org.htmlunit.corejs.javascript.ScriptRuntime;
 import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.corejs.javascript.ScriptableObject;
 import org.htmlunit.corejs.javascript.Undefined;
@@ -46,27 +45,27 @@ import org.htmlunit.html.DomElement;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.html.FormFieldWithNameHistory;
 import org.htmlunit.html.HtmlAttributeChangeEvent;
-import org.htmlunit.html.HtmlButton;
 import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlImage;
 import org.htmlunit.html.HtmlImageInput;
 import org.htmlunit.html.HtmlInput;
 import org.htmlunit.html.HtmlPage;
-import org.htmlunit.html.HtmlSelect;
-import org.htmlunit.html.HtmlTextArea;
 import org.htmlunit.html.SubmittableElement;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.configuration.JsxSetter;
+import org.htmlunit.javascript.configuration.JsxSymbol;
 import org.htmlunit.javascript.host.dom.AbstractList.EffectOnCache;
+import org.htmlunit.javascript.host.dom.DOMTokenList;
 import org.htmlunit.javascript.host.event.Event;
 import org.htmlunit.util.MimeType;
 
 /**
- * A JavaScript object for {@code HTMLFormElement}.
+ * A JavaScript object {@code HTMLFormElement}.
  *
  * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
  * @author Daniel Gredler
@@ -86,8 +85,16 @@ public class HTMLFormElement extends HTMLElement implements Function {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public HTMLFormElement() {
+    }
+
+    /**
+     * JavaScript constructor.
+     */
+    @Override
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    public void jsConstructor() {
+        super.jsConstructor();
     }
 
     /**
@@ -128,41 +135,12 @@ public class HTMLFormElement extends HTMLElement implements Function {
         elements.setElementsSupplier(
                 (Supplier<List<DomNode>> & Serializable)
                 () -> {
-                    boolean filterChildrenOfNestedForms = false;
-
                     final List<DomNode> response = new ArrayList<>();
                     final DomNode domNode = getDomNodeOrNull();
                     if (domNode == null) {
-                        return response;
+                        return new ArrayList<>();
                     }
-                    for (final DomNode desc : domNode.getDescendants()) {
-                        if (desc instanceof DomElement) {
-                            if (desc instanceof HtmlForm) {
-                                filterChildrenOfNestedForms = true;
-                            }
-                            else {
-                                if (desc instanceof HtmlInput || desc instanceof HtmlButton
-                                    || desc instanceof HtmlTextArea || desc instanceof HtmlSelect) {
-                                    response.add(desc);
-                                }
-                            }
-                        }
-                    }
-
-                    // it would be more performant to avoid iterating through
-                    // nested forms but as it is a corner case of ill formed HTML
-                    // the needed refactoring would take too much time
-                    // => filter here and not in isMatching as it won't be needed in most
-                    // of the cases
-                    if (filterChildrenOfNestedForms) {
-                        for (final Iterator<DomNode> iter = response.iterator(); iter.hasNext();) {
-                            final HtmlElement field = (HtmlElement) iter.next();
-                            if (field.getEnclosingForm() != htmlForm) {
-                                iter.remove();
-                            }
-                        }
-                    }
-                    response.addAll(htmlForm.getLostChildren());
+                    response.addAll(((HtmlForm) domNode).getElements());
                     return response;
                 });
 
@@ -171,6 +149,11 @@ public class HTMLFormElement extends HTMLElement implements Function {
                 event -> EffectOnCache.NONE);
 
         return elements;
+    }
+
+    @JsxSymbol({CHROME, EDGE, FF, FF_ESR})
+    public ES6Iterator iterator() {
+        return getElements().iterator();
     }
 
     /**
@@ -182,7 +165,8 @@ public class HTMLFormElement extends HTMLElement implements Function {
     @JsxGetter
     public int getLength() {
         final int all = getElements().getLength();
-        final int images = getHtmlForm().getElementsByAttribute(HtmlInput.TAG_NAME, "type", "image").size();
+        final int images = getHtmlForm().getElementsByAttribute(
+                            HtmlInput.TAG_NAME, DomElement.TYPE_ATTRIBUTE, "image").size();
         return all - images;
     }
 
@@ -260,9 +244,40 @@ public class HTMLFormElement extends HTMLElement implements Function {
      * Returns the value of the rel property.
      * @return the rel property
      */
-    @JsxGetter({CHROME, EDGE, FF})
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
     public String getRel() {
         return getHtmlForm().getRelAttribute();
+    }
+
+    /**
+     * Sets the rel property.
+     * @param rel rel attribute value
+     */
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
+    public void setRel(final String rel) {
+        getHtmlForm().setAttribute("rel", rel);
+    }
+
+    /**
+     * Returns the {@code relList} attribute.
+     * @return the {@code relList} attribute
+     */
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    public DOMTokenList getRelList() {
+        return new DOMTokenList(this, "rel");
+    }
+
+    /**
+     * Sets the relList property.
+     * @param rel attribute value
+     */
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
+    public void setRelList(final Object rel) {
+        if (JavaScriptEngine.isUndefined(rel)) {
+            setRel("undefined");
+            return;
+        }
+        setRel(JavaScriptEngine.toString(rel));
     }
 
     /**
@@ -291,7 +306,8 @@ public class HTMLFormElement extends HTMLElement implements Function {
                 && !FormEncodingType.URL_ENCODED.getName().equals(enctype)
                 && !FormEncodingType.MULTIPART.getName().equals(enctype)
                 && !FormEncodingType.TEXT_PLAIN.getName().equals(enctype)) {
-            throw Context.reportRuntimeError("Cannot set the encoding property to invalid value: '" + enctype + "'");
+            throw JavaScriptEngine.reportRuntimeError(
+                    "Cannot set the encoding property to invalid value: '" + enctype + "'");
         }
         getHtmlForm().setEnctypeAttribute(enctype);
     }
@@ -338,7 +354,7 @@ public class HTMLFormElement extends HTMLElement implements Function {
      */
     @JsxFunction({CHROME, EDGE, FF, FF_ESR})
     public void requestSubmit(final Object submitter) {
-        if (Undefined.isUndefined(submitter)) {
+        if (JavaScriptEngine.isUndefined(submitter)) {
             submit();
             return;
         }
@@ -358,14 +374,14 @@ public class HTMLFormElement extends HTMLElement implements Function {
             }
 
             if (submittable != null && subHtmlElement.getForm() != this) {
-                throw ScriptRuntime.typeError(
+                throw JavaScriptEngine.typeError(
                         "Failed to execute 'requestSubmit' on 'HTMLFormElement': "
                         + "The specified element is not owned by this form element.");
             }
         }
 
         if (submittable == null) {
-            throw ScriptRuntime.typeError(
+            throw JavaScriptEngine.typeError(
                     "Failed to execute 'requestSubmit' on 'HTMLFormElement': "
                     + "The specified element is not a submit button.");
         }
@@ -389,7 +405,7 @@ public class HTMLFormElement extends HTMLElement implements Function {
             return getElements().item(index);
         }
 
-        final String name = Context.toString(index);
+        final String name = JavaScriptEngine.toString(index);
         final Object response = getWithPreemption(name);
         if (subIndex instanceof Number && response instanceof HTMLCollection) {
             return ((HTMLCollection) response).item(subIndex);
@@ -480,8 +496,11 @@ public class HTMLFormElement extends HTMLElement implements Function {
             return elements;
         }
 
-        addElements(name, form.getHtmlElementDescendants(), elements);
-        addElements(name, form.getLostChildren(), elements);
+        for (final HtmlElement element : form.getElements()) {
+            if (isAccessibleByIdOrName(element, name)) {
+                elements.add(element);
+            }
+        }
 
         // If no form fields are found, browsers are able to find img elements by ID or name.
         if (elements.isEmpty()) {
@@ -498,28 +517,13 @@ public class HTMLFormElement extends HTMLElement implements Function {
         return elements;
     }
 
-    private void addElements(final String name, final Iterable<HtmlElement> nodes,
-        final List<HtmlElement> addTo) {
-        for (final HtmlElement node : nodes) {
-            if (isAccessibleByIdOrName(node, name)) {
-                addTo.add(node);
-            }
-        }
-    }
-
     private HtmlElement findFirstElement(final String name) {
         final HtmlForm form = (HtmlForm) getDomNodeOrNull();
         if (form == null) {
             return null;
         }
 
-        for (final HtmlElement node : form.getHtmlElementDescendants()) {
-            if (isAccessibleByIdOrName(node, name)) {
-                return node;
-            }
-        }
-
-        for (final HtmlElement node : form.getLostChildren()) {
+        for (final HtmlElement node : form.getElements()) {
             if (isAccessibleByIdOrName(node, name)) {
                 return node;
             }
@@ -558,7 +562,7 @@ public class HTMLFormElement extends HTMLElement implements Function {
                     return true;
                 }
             }
-            else if (name.equals(element.getAttributeDirect("name"))) {
+            else if (name.equals(element.getAttributeDirect(DomElement.NAME_ATTRIBUTE))) {
                 return true;
             }
 
@@ -590,7 +594,7 @@ public class HTMLFormElement extends HTMLElement implements Function {
     @Override
     public Object call(final Context cx, final Scriptable scope, final Scriptable thisObj, final Object[] args) {
         if (!getBrowserVersion().hasFeature(JS_FORM_USABLE_AS_FUNCTION)) {
-            throw Context.reportRuntimeError("Not a function.");
+            throw JavaScriptEngine.reportRuntimeError("Not a function.");
         }
         if (args.length > 0) {
             final Object arg = args[0];
@@ -610,7 +614,7 @@ public class HTMLFormElement extends HTMLElement implements Function {
     @Override
     public Scriptable construct(final Context cx, final Scriptable scope, final Object[] args) {
         if (!getBrowserVersion().hasFeature(JS_FORM_USABLE_AS_FUNCTION)) {
-            throw Context.reportRuntimeError("Not a function.");
+            throw JavaScriptEngine.reportRuntimeError("Not a function.");
         }
         return null;
     }

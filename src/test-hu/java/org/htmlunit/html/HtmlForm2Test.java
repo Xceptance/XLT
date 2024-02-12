@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -270,7 +270,7 @@ public class HtmlForm2Test extends WebDriverTestCase {
      * @throws Exception if the test page can't be loaded
      */
     @Test
-    @Alerts({"1", "val2"})
+    @Alerts({"1", "val2", "3", "3"})
     public void malformedHtml_nestedForms() throws Exception {
         final String html
             = "<html><head>\n"
@@ -279,6 +279,9 @@ public class HtmlForm2Test extends WebDriverTestCase {
             + "  function test() {\n"
             + "    log(document.forms.length);\n"
             + "    log(document.forms[0].field2.value);\n"
+
+            + "    log(document.forms[0].length);\n"
+            + "    log(document.forms[0].elements.length);\n"
             + "  }\n"
             + "</script></head><body onload='test()'>\n"
             + "<form id='form1' method='get' action='foo'>\n"
@@ -395,10 +398,8 @@ public class HtmlForm2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(CHROME = "text/html,application/xhtml+xml,application/xml;q=0.9,"
+    @Alerts(DEFAULT = "text/html,application/xhtml+xml,application/xml;q=0.9,"
                     + "image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
-            EDGE = "text/html,application/xhtml+xml,application/xml;q=0.9,"
-                    + "image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
             FF = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
             FF_ESR = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
             IE = "text/html, application/xhtml+xml, image/jxr, */*")
@@ -1508,7 +1509,9 @@ public class HtmlForm2Test extends WebDriverTestCase {
      * @throws Exception on test failure
      */
     @Test
-    @Alerts("§§URL§§index.html?test")
+    @Alerts(DEFAULT = "§§URL§§index.html?test",
+            FF = "null",
+            FF_ESR = "null")
     public void submit_refererHeaderNoreferrer() throws Exception {
         final String firstHtml
             = "<html><head><title>First</title></head><body>\n"
@@ -1528,7 +1531,7 @@ public class HtmlForm2Test extends WebDriverTestCase {
         driver.findElement(By.id("button")).click();
 
         final Map<String, String> lastAdditionalHeaders = getMockWebConnection().getLastAdditionalHeaders();
-        assertEquals(getExpectedAlerts()[0], lastAdditionalHeaders.get(HttpHeader.REFERER));
+        assertEquals(getExpectedAlerts()[0], "" + lastAdditionalHeaders.get(HttpHeader.REFERER));
     }
 
     /**
@@ -1536,7 +1539,9 @@ public class HtmlForm2Test extends WebDriverTestCase {
      * @throws Exception on test failure
      */
     @Test
-    @Alerts("§§URL§§index.html?test")
+    @Alerts(DEFAULT = "§§URL§§index.html?test",
+            FF = "null",
+            FF_ESR = "null")
     public void submit_refererHeaderNoreferrerCaseSensitive() throws Exception {
         final String firstHtml
             = "<html><head><title>First</title></head><body>\n"
@@ -1556,7 +1561,7 @@ public class HtmlForm2Test extends WebDriverTestCase {
         driver.findElement(By.id("button")).click();
 
         final Map<String, String> lastAdditionalHeaders = getMockWebConnection().getLastAdditionalHeaders();
-        assertEquals(getExpectedAlerts()[0], lastAdditionalHeaders.get(HttpHeader.REFERER));
+        assertEquals(getExpectedAlerts()[0], "" + lastAdditionalHeaders.get(HttpHeader.REFERER));
     }
 
     /**
@@ -1564,7 +1569,9 @@ public class HtmlForm2Test extends WebDriverTestCase {
      * @throws Exception on test failure
      */
     @Test
-    @Alerts("§§URL§§index.html?test")
+    @Alerts(DEFAULT = "§§URL§§index.html?test",
+            FF = "null",
+            FF_ESR = "null")
     public void submit_refererHeaderNoreferrerGet() throws Exception {
         final String firstHtml
             = "<html><head><title>First</title></head><body>\n"
@@ -1584,7 +1591,7 @@ public class HtmlForm2Test extends WebDriverTestCase {
         driver.findElement(By.id("button")).click();
 
         final Map<String, String> lastAdditionalHeaders = getMockWebConnection().getLastAdditionalHeaders();
-        assertEquals(getExpectedAlerts()[0], lastAdditionalHeaders.get(HttpHeader.REFERER));
+        assertEquals(getExpectedAlerts()[0], "" + lastAdditionalHeaders.get(HttpHeader.REFERER));
     }
 
     /**
@@ -1592,7 +1599,6 @@ public class HtmlForm2Test extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "NoReferrer",
-            FF_ESR = "undefined",
             IE = "undefined")
     public void relAttribute() throws Exception {
         final String html
@@ -1708,5 +1714,40 @@ public class HtmlForm2Test extends WebDriverTestCase {
             + "</body></html>";
 
         loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("second/?hiddenName=hiddenValue")
+    public void inputHiddenAdded() throws Exception {
+        final String html = "<!DOCTYPE html>\n"
+            + "<html><head></head>\n"
+            + "<body>\n"
+            + "  <p>hello world</p>\n"
+            + "  <form id='myForm' method='GET' action='" + URL_SECOND + "'>\n"
+            + "    <input id='myButton' type='submit' />\n"
+            + "  </form>\n"
+            + "  <script>\n"
+            + "    var i = document.createElement('input');\n"
+            + "    i.setAttribute('type', 'hidden');\n"
+            + "    i.setAttribute('id', 'hiddenId');\n"
+            + "    i.setAttribute('name', 'hiddenName');\n"
+            + "    i.setAttribute('value', 'hiddenValue');\n"
+
+            + "    var f = document.getElementById('myForm');\n"
+            + "    f.appendChild(i);\n"
+            + "  </script>\n"
+            + "</body></html>";
+
+        final String secondContent = "second content";
+        getMockWebConnection().setResponse(URL_SECOND, secondContent);
+
+        final WebDriver driver = loadPage2(html);
+        driver.findElement(By.id("myButton")).click();
+
+        final String url = getMockWebConnection().getLastWebRequest().getUrl().toExternalForm();
+        assertTrue(url.endsWith(getExpectedAlerts()[0]));
     }
 }

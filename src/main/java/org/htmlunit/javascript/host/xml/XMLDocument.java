@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,6 @@ import org.apache.commons.logging.LogFactory;
 import org.htmlunit.StringWebResponse;
 import org.htmlunit.WebResponse;
 import org.htmlunit.WebWindow;
-import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.html.DomAttr;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.DomNode;
@@ -69,9 +68,17 @@ public class XMLDocument extends Document {
     /**
      * Creates a new instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public XMLDocument() {
         this(null);
+    }
+
+    /**
+     * JavaScript constructor.
+     */
+    @Override
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    public void jsConstructor() {
+        super.jsConstructor();
     }
 
     /**
@@ -85,7 +92,7 @@ public class XMLDocument extends Document {
                 setDomNode(page);
             }
             catch (final IOException e) {
-                throw Context.reportRuntimeError("IOException: " + e);
+                throw JavaScriptEngine.reportRuntimeError("IOException: " + e);
             }
         }
     }
@@ -163,7 +170,7 @@ public class XMLDocument extends Document {
                     scriptable = javaScriptClass.newInstance();
                 }
                 catch (final Exception e) {
-                    throw Context.throwAsScriptRuntimeEx(e);
+                    throw JavaScriptEngine.throwAsScriptRuntimeEx(e);
                 }
             }
             else {

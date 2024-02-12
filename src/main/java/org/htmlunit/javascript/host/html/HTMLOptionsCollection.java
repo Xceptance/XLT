@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,9 @@ import org.htmlunit.BrowserVersion;
 import org.htmlunit.SgmlPage;
 import org.htmlunit.WebAssert;
 import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.ES6Iterator;
 import org.htmlunit.corejs.javascript.EvaluatorException;
+import org.htmlunit.corejs.javascript.NativeArrayIterator;
 import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.corejs.javascript.ScriptableObject;
 import org.htmlunit.corejs.javascript.Undefined;
@@ -44,11 +46,13 @@ import org.htmlunit.html.ElementFactory;
 import org.htmlunit.html.HtmlOption;
 import org.htmlunit.html.HtmlSelect;
 import org.htmlunit.javascript.HtmlUnitScriptable;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.configuration.JsxSetter;
+import org.htmlunit.javascript.configuration.JsxSymbol;
 import org.htmlunit.javascript.host.dom.NodeList;
 
 /**
@@ -71,8 +75,14 @@ public class HTMLOptionsCollection extends HtmlUnitScriptable {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public HTMLOptionsCollection() {
+    }
+
+    /**
+     * JavaScript constructor.
+     */
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    public void jsConstructor() {
     }
 
     /**
@@ -216,7 +226,7 @@ public class HTMLOptionsCollection extends HtmlUnitScriptable {
             if (getBrowserVersion().hasFeature(JS_SELECT_OPTIONS_IGNORE_NEGATIVE_LENGTH)) {
                 return;
             }
-            throw Context.reportRuntimeError("Length is negative");
+            throw JavaScriptEngine.reportRuntimeError("Length is negative");
         }
 
         final int currentLength = htmlSelect_.getOptionSize();
@@ -313,7 +323,7 @@ public class HTMLOptionsCollection extends HtmlUnitScriptable {
                 return;
             }
             if (index < 0 && getBrowserVersion().hasFeature(JS_SELECT_OPTIONS_REMOVE_THROWS_IF_NEGATIV)) {
-                throw Context.reportRuntimeError("Invalid index for option collection: " + index);
+                throw JavaScriptEngine.reportRuntimeError("Invalid index for option collection: " + index);
             }
         }
 
@@ -370,5 +380,10 @@ public class HTMLOptionsCollection extends HtmlUnitScriptable {
                     return response;
                 });
         return childNodes;
+    }
+
+    @JsxSymbol({CHROME, EDGE, FF, FF_ESR})
+    public ES6Iterator iterator() {
+        return new NativeArrayIterator(getParentScope(), this, NativeArrayIterator.ARRAY_ITERATOR_TYPE.VALUES);
     }
 }

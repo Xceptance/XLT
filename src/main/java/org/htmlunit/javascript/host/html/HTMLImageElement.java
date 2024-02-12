@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,12 +25,12 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-import org.htmlunit.corejs.javascript.Context;
-import org.htmlunit.corejs.javascript.ScriptRuntime;
+import org.htmlunit.SgmlPage;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.HtmlImage;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxGetter;
@@ -68,9 +68,22 @@ public class HTMLImageElement extends HTMLElement {
     /**
      * JavaScript constructor.
      */
+    @Override
     @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public void jsConstructor() {
-        throw ScriptRuntime.typeError("Invalid constructor.");
+        throw JavaScriptEngine.typeError("Invalid constructor.");
+    }
+
+    /**
+     * JavaScript constructor.
+     */
+    public void jsConstructorImage() {
+        final SgmlPage page = (SgmlPage) getWindow().getWebWindow().getEnclosedPage();
+        final DomElement fake =
+                page.getWebClient().getPageCreator().getHtmlParser()
+                    .getFactory(HtmlImage.TAG_NAME)
+                    .createElement(page, HtmlImage.TAG_NAME, null);
+        setDomNode(fake);
     }
 
     /**
@@ -191,7 +204,7 @@ public class HTMLImageElement extends HTMLElement {
             return;
         }
 
-        throw Context.reportRuntimeError("Cannot set the align property to invalid value: '" + align + "'");
+        throw JavaScriptEngine.reportRuntimeError("Cannot set the align property to invalid value: '" + align + "'");
     }
 
     /**
@@ -286,7 +299,7 @@ public class HTMLImageElement extends HTMLElement {
     @JsxGetter
     @Override
     public String getName() {
-        return getDomNodeOrDie().getAttributeDirect("name");
+        return getDomNodeOrDie().getAttributeDirect(DomElement.NAME_ATTRIBUTE);
     }
 
     /**
@@ -296,7 +309,7 @@ public class HTMLImageElement extends HTMLElement {
     @JsxSetter
     @Override
     public void setName(final String name) {
-        getDomNodeOrDie().setAttribute("name", name);
+        getDomNodeOrDie().setAttribute(DomElement.NAME_ATTRIBUTE, name);
     }
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -382,5 +382,23 @@ public class RegExpJsToJavaConverterTest {
 
         assertEquals("\\u{FFFFD", regExpJsToJavaConverter.convert("\\u{FFFFD"));
         assertEquals("\\x{FFFFD}\\}", regExpJsToJavaConverter.convert("\\u{FFFFD}}"));
+    }
+
+    /**
+     * Unicode property escapes.
+     */
+    @Test
+    public void unicodePropertyEscapes() {
+        final RegExpJsToJavaConverter regExpJsToJavaConverter = new RegExpJsToJavaConverter();
+
+        assertEquals("\\p{L}0-9", regExpJsToJavaConverter.convert("\\p{L}0-9"));
+        assertEquals("\\p{Letter}0-9", regExpJsToJavaConverter.convert("\\p{Letter}0-9"));
+
+        assertEquals("\\p{Lu}0-9", regExpJsToJavaConverter.convert("\\p{Lu}0-9"));
+        assertEquals("\\p{Ll}0-9", regExpJsToJavaConverter.convert("\\p{Ll}0-9"));
+
+        assertEquals("[^\\p{gc=Co}\\p{gc=Cn}]+", regExpJsToJavaConverter.convert("[^\\p{gc=Co}\\p{gc=Cn}]+"));
+
+        // assertEquals("p\\{html\\}0-9", regExpJsToJavaConverter.convert("\\p{html}0-9"));
     }
 }

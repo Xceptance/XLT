@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,9 +25,9 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
 
-import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.javascript.HtmlUnitScriptable;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
@@ -57,9 +57,15 @@ public class Storage extends HtmlUnitScriptable {
     /**
      * Public default constructor only for the prototype.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public Storage() {
         store_ = null;
+    }
+
+    /**
+     * JavaScript constructor.
+     */
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    public void jsConstructor() {
     }
 
     /**
@@ -84,7 +90,7 @@ public class Storage extends HtmlUnitScriptable {
             super.put(name, start, value);
         }
         if (store_ != null && (!isReserved || getBrowserVersion().hasFeature(JS_STORAGE_PRESERVED_INCLUDED))) {
-            setItem(name, Context.toString(value));
+            setItem(name, JavaScriptEngine.toString(value));
         }
     }
 
@@ -160,10 +166,9 @@ public class Storage extends HtmlUnitScriptable {
     public void setItem(final String key, final String data) {
         final long storeSize = storeSize_ + data.length();
         if (storeSize > STORE_SIZE_KIMIT) {
-            Context.throwAsScriptRuntimeEx(
+            throw JavaScriptEngine.throwAsScriptRuntimeEx(
                     new DOMException((short) 22, "QuotaExceededError: Failed to execute 'setItem' on 'Storage': "
                             + "Setting the value of '" + key + "' exceeded the quota."));
-            return;
         }
         storeSize_ = storeSize;
         store_.put(key, data);

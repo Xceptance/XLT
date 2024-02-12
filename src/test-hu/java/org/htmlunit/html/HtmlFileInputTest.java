@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.WebRequest;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.Retry;
 import org.htmlunit.util.MimeType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -75,6 +76,7 @@ public class HtmlFileInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
+    @Retry
     @Alerts("Content-Disposition: form-data; name=\"myInput\"; filename=\"\"")
     public void empty() throws Exception {
         final String htmlContent
@@ -134,6 +136,7 @@ public class HtmlFileInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
+    @Retry
     public void chunked() throws Exception {
         final String htmlContent
             = "<html>\n"

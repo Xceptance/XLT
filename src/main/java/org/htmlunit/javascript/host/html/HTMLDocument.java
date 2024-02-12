@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,12 +21,10 @@ import static org.htmlunit.BrowserVersionFeatures.HTMLDOCUMENT_GET_ALSO_FRAMES;
 import static org.htmlunit.BrowserVersionFeatures.HTMLDOCUMENT_GET_FOR_ID_AND_OR_NAME;
 import static org.htmlunit.BrowserVersionFeatures.HTMLDOCUMENT_GET_PREFERS_STANDARD_FUNCTIONS;
 import static org.htmlunit.BrowserVersionFeatures.JS_DOCUMENT_CREATE_ATTRUBUTE_LOWER_CASE;
-import static org.htmlunit.BrowserVersionFeatures.JS_DOCUMENT_OPEN_OVERWRITES_ABOUT_BLANK_LOCATION;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -46,8 +44,6 @@ import org.htmlunit.WebWindow;
 import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.Scriptable;
-import org.htmlunit.corejs.javascript.ScriptableObject;
-import org.htmlunit.corejs.javascript.Undefined;
 import org.htmlunit.html.BaseFrameElement;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.DomNode;
@@ -57,11 +53,11 @@ import org.htmlunit.html.HtmlAttributeChangeEvent;
 import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlImage;
-import org.htmlunit.html.HtmlInlineFrame;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlScript;
 import org.htmlunit.httpclient.HtmlUnitBrowserCompatCookieSpec;
 import org.htmlunit.javascript.HtmlUnitScriptable;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.PostponedAction;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
@@ -108,8 +104,6 @@ public class HTMLDocument extends Document {
 
     private enum ParsingStatus { OUTSIDE, START, IN_NAME, INSIDE, IN_STRING }
 
-    private HTMLElement activeElement_;
-
     /** The buffer that will be used for calls to document.write(). */
     private final StringBuilder writeBuilder_ = new StringBuilder();
     private boolean writeInCurrentDocument_ = true;
@@ -120,8 +114,16 @@ public class HTMLDocument extends Document {
     /**
      * The constructor.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public HTMLDocument() {
+    }
+
+    /**
+     * JavaScript constructor.
+     */
+    @Override
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    public void jsConstructor() {
+        super.jsConstructor();
     }
 
     /**
@@ -133,7 +135,7 @@ public class HTMLDocument extends Document {
             return super.getDomNodeOrDie();
         }
         catch (final IllegalStateException e) {
-            throw Context.reportRuntimeError("No node attached to this object");
+            throw JavaScriptEngine.reportRuntimeError("No node attached to this object");
         }
     }
 
@@ -149,14 +151,15 @@ public class HTMLDocument extends Document {
     /**
      * JavaScript function "write" may accept a variable number of arguments.
      * @param context the JavaScript context
+     * @param scope the scope
      * @param thisObj the scriptable
      * @param args the arguments passed into the method
      * @param function the function
      * @see <a href="http://msdn.microsoft.com/en-us/library/ms536782.aspx">MSDN documentation</a>
      */
     @JsxFunction
-    public static void write(final Context context, final Scriptable thisObj, final Object[] args,
-        final Function function) {
+    public static void write(final Context context, final Scriptable scope,
+            final Scriptable thisObj, final Object[] args, final Function function) {
         final HTMLDocument thisAsDocument = getDocument(thisObj);
         thisAsDocument.write(concatArgsAsString(args));
     }
@@ -169,7 +172,7 @@ public class HTMLDocument extends Document {
     private static String concatArgsAsString(final Object[] args) {
         final StringBuilder builder = new StringBuilder();
         for (final Object arg : args) {
-            builder.append(Context.toString(arg));
+            builder.append(JavaScriptEngine.toString(arg));
         }
         return builder.toString();
     }
@@ -177,14 +180,15 @@ public class HTMLDocument extends Document {
     /**
      * JavaScript function "writeln" may accept a variable number of arguments.
      * @param context the JavaScript context
+     * @param scope the scope
      * @param thisObj the scriptable
      * @param args the arguments passed into the method
      * @param function the function
      * @see <a href="http://msdn.microsoft.com/en-us/library/ms536783.aspx">MSDN documentation</a>
      */
     @JsxFunction
-    public static void writeln(
-        final Context context, final Scriptable thisObj, final Object[] args, final Function function) {
+    public static void writeln(final Context context, final Scriptable scope,
+            final Scriptable thisObj, final Object[] args, final Function function) {
         final HTMLDocument thisAsDocument = getDocument(thisObj);
         thisAsDocument.write(concatArgsAsString(args) + "\n");
     }
@@ -210,7 +214,7 @@ public class HTMLDocument extends Document {
         if (window.getBrowserVersion().hasFeature(HTMLDOCUMENT_FUNCTION_DETACHED)) {
             return (HTMLDocument) window.getDocument();
         }
-        throw Context.reportRuntimeError("Function can't be used detached from document");
+        throw JavaScriptEngine.reportRuntimeError("Function can't be used detached from document");
     }
 
     /**
@@ -500,8 +504,6 @@ public class HTMLDocument extends Document {
         writeInCurrentDocument_ = false;
         final WebWindow ww = getWindow().getWebWindow();
         if (ww instanceof FrameWindow
-                && (!Undefined.isUndefined(url)
-                        || getBrowserVersion().hasFeature(JS_DOCUMENT_OPEN_OVERWRITES_ABOUT_BLANK_LOCATION))
                 && UrlUtils.ABOUT_BLANK.equals(getPage().getUrl().toExternalForm())) {
             final URL enclosingUrl = ((FrameWindow) ww).getEnclosingPage().getUrl();
             getPage().getWebResponse().getWebRequest().setUrl(enclosingUrl);
@@ -531,7 +533,7 @@ public class HTMLDocument extends Document {
             // reset isAttachedToPageDuringOnload_ to trigger the onload event for chrome also
             if (window instanceof FrameWindow) {
                 final BaseFrameElement frame = ((FrameWindow) window).getFrameElement();
-                final ScriptableObject scriptable = frame.getScriptableObject();
+                final HtmlUnitScriptable scriptable = frame.getScriptableObject();
                 if (scriptable instanceof HTMLIFrameElement) {
                     ((HTMLIFrameElement) scriptable).onRefresh();
                 }
@@ -559,7 +561,7 @@ public class HTMLDocument extends Document {
                 close();
             }
             catch (final IOException e) {
-                throw Context.throwAsScriptRuntimeEx(e);
+                throw JavaScriptEngine.throwAsScriptRuntimeEx(e);
             }
         }
     }
@@ -569,7 +571,7 @@ public class HTMLDocument extends Document {
      */
     @Override
     public Object appendChild(final Object childObject) {
-        throw Context.reportRuntimeError("Node cannot be inserted at the specified point in the hierarchy.");
+        throw JavaScriptEngine.reportRuntimeError("Node cannot be inserted at the specified point in the hierarchy.");
     }
 
     /**
@@ -579,7 +581,7 @@ public class HTMLDocument extends Document {
      */
     @JsxFunction
     @Override
-    public Object getElementById(final String id) {
+    public HtmlUnitScriptable getElementById(final String id) {
         implicitCloseIfNecessary();
         final DomElement domElement = getPage().getElementById(id);
         if (null == domElement) {
@@ -590,7 +592,7 @@ public class HTMLDocument extends Document {
             return null;
         }
 
-        final Object jsElement = getScriptableFor(domElement);
+        final HtmlUnitScriptable jsElement = getScriptableFor(domElement);
         if (jsElement == NOT_FOUND) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("getElementById(" + id
@@ -702,7 +704,8 @@ public class HTMLDocument extends Document {
                 (java.util.function.Function<HtmlAttributeChangeEvent, EffectOnCache> & Serializable)
                 event -> {
                     final String attributeName = event.getName();
-                    if ("name".equals(attributeName) || (forIDAndOrName && "id".equals(attributeName))) {
+                    if (DomElement.NAME_ATTRIBUTE.equals(attributeName)
+                            || (forIDAndOrName && DomElement.ID_ATTRIBUTE.equals(attributeName))) {
                         return EffectOnCache.RESET;
                     }
 
@@ -735,7 +738,6 @@ public class HTMLDocument extends Document {
      * {@inheritDoc}
      */
     @Override
-    @JsxGetter
     public HTMLElement getHead() {
         final HtmlElement head = getPage().getHead();
         if (head == null) {
@@ -765,14 +767,11 @@ public class HTMLDocument extends Document {
      */
     @Override
     public HTMLElement getActiveElement() {
-        if (activeElement_ == null) {
-            final HtmlElement body = getPage().getBody();
-            if (body != null) {
-                activeElement_ = (HTMLElement) getScriptableFor(body);
-            }
+        final HtmlElement activeElement = getPage().getActiveElement();
+        if (activeElement != null) {
+            return activeElement.getScriptableObject();
         }
-
-        return activeElement_;
+        return null;
     }
 
     /**
@@ -780,32 +779,7 @@ public class HTMLDocument extends Document {
      */
     @Override
     public boolean hasFocus() {
-        return activeElement_ != null && getPage().getFocusedElement() == activeElement_.getDomNodeOrDie();
-    }
-
-    /**
-     * Sets the specified element as the document's active element.
-     * @see HTMLElement#setActive()
-     * @param element the new active element for this document
-     */
-    public void setActiveElement(final HTMLElement element) {
-        // TODO update page focus element also
-
-        activeElement_ = element;
-
-        if (element != null) {
-            // if this is part of an iFrame, make the iFrame tag the
-            // active element of his doc
-            final WebWindow window = element.getDomNodeOrDie().getPage().getEnclosingWindow();
-            if (window instanceof FrameWindow) {
-                final BaseFrameElement frame = ((FrameWindow) window).getFrameElement();
-                if (frame instanceof HtmlInlineFrame) {
-                    final Window winWithFrame = frame.getPage().getEnclosingWindow().getScriptableObject();
-                    ((HTMLDocument) winWithFrame.getDocument()).setActiveElement(
-                            frame.getScriptableObject());
-                }
-            }
-        }
+        return getPage().getFocusedElement() != null;
     }
 
     /**
@@ -823,15 +797,6 @@ public class HTMLDocument extends Document {
         event.setTarget(this);
         final ScriptResult result = fireEvent(event);
         return !event.isAborted(result);
-    }
-
-    /**
-     * Sets the head.
-     * @param head the head
-     */
-    @JsxSetter({FF, FF_ESR, IE})
-    public void setHead(final ScriptableObject head) {
-        //ignore
     }
 
     /**
@@ -853,7 +818,7 @@ public class HTMLDocument extends Document {
         String name = attributeName;
         if (StringUtils.isNotEmpty(name)
                 && getBrowserVersion().hasFeature(JS_DOCUMENT_CREATE_ATTRUBUTE_LOWER_CASE)) {
-            name = org.htmlunit.util.StringUtils.toRootLowerCaseWithCache(name);
+            name = org.htmlunit.util.StringUtils.toRootLowerCase(name);
         }
 
         return super.createAttribute(name);
@@ -871,7 +836,7 @@ public class HTMLDocument extends Document {
      * {@inheritDoc}
      */
     @Override
-    public Object elementFromPoint(final int x, final int y) {
+    public HtmlUnitScriptable elementFromPoint(final int x, final int y) {
         final HtmlElement element = getPage().getElementFromPoint(x, y);
         return element == null ? null : element.getScriptableObject();
     }

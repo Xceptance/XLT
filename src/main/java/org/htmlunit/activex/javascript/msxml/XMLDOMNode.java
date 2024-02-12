@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.htmlunit.SgmlPage;
 import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.Function;
-import org.htmlunit.corejs.javascript.ScriptRuntime;
 import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.corejs.javascript.Undefined;
 import org.htmlunit.html.DomCDataSection;
@@ -31,6 +30,8 @@ import org.htmlunit.html.DomDocumentFragment;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.html.DomText;
+import org.htmlunit.javascript.HtmlUnitScriptable;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
@@ -164,7 +165,7 @@ public class XMLDOMNode extends MSXMLScriptable {
      */
     @JsxSetter
     public void setFirstChild(final Object ignored) {
-        throw ScriptRuntime.typeError("Wrong number of arguments or invalid property assignment");
+        throw JavaScriptEngine.typeError("Wrong number of arguments or invalid property assignment");
     }
 
     /**
@@ -183,7 +184,7 @@ public class XMLDOMNode extends MSXMLScriptable {
      */
     @JsxSetter
     public void setLastChild(final Object ignored) {
-        throw ScriptRuntime.typeError("Wrong number of arguments or invalid property assignment");
+        throw JavaScriptEngine.typeError("Wrong number of arguments or invalid property assignment");
     }
 
     /**
@@ -227,7 +228,7 @@ public class XMLDOMNode extends MSXMLScriptable {
      * @return the XML Document Object Model (DOM) node type
      */
     @JsxGetter
-    public short getNodeType() {
+    public int getNodeType() {
         final DomNode domNode = getDomNodeOrDie();
         return domNode.getNodeType();
     }
@@ -249,7 +250,7 @@ public class XMLDOMNode extends MSXMLScriptable {
     @JsxSetter
     public void setNodeValue(final String value) {
         if (value == null || "null".equals(value)) {
-            throw Context.reportRuntimeError("Type mismatch.");
+            throw JavaScriptEngine.reportRuntimeError("Type mismatch.");
         }
 
         final DomNode domNode = getDomNodeOrDie();
@@ -261,7 +262,7 @@ public class XMLDOMNode extends MSXMLScriptable {
      * @return the root of the document that contains the node
      */
     @JsxGetter
-    public Object getOwnerDocument() {
+    public HtmlUnitScriptable getOwnerDocument() {
         final DomNode domNode = getDomNodeOrDie();
         final Object document = domNode.getOwnerDocument();
         if (document == null) {
@@ -275,7 +276,7 @@ public class XMLDOMNode extends MSXMLScriptable {
      * @return the parent node
      */
     @JsxGetter
-    public Object getParentNode() {
+    public HtmlUnitScriptable getParentNode() {
         final DomNode domNode = getDomNodeOrDie();
         return getJavaScriptNode(domNode.getParentNode());
     }
@@ -321,7 +322,7 @@ public class XMLDOMNode extends MSXMLScriptable {
     @JsxSetter
     public void setText(final Object text) {
         final DomNode domNode = getDomNodeOrDie();
-        domNode.setTextContent(text == null ? null : Context.toString(text));
+        domNode.setTextContent(text == null ? null : JavaScriptEngine.toString(text));
     }
 
     /**
@@ -357,7 +358,7 @@ public class XMLDOMNode extends MSXMLScriptable {
     @JsxFunction
     public Object appendChild(final Object newChild) {
         if (newChild == null || "null".equals(newChild)) {
-            throw Context.reportRuntimeError("Type mismatch.");
+            throw JavaScriptEngine.reportRuntimeError("Type mismatch.");
         }
 
         Object appendedChild = null;
@@ -413,14 +414,15 @@ public class XMLDOMNode extends MSXMLScriptable {
     /**
      * Inserts a child node to the left of the specified node, or at the end of the list.
      * @param context the JavaScript context
+     * @param scope the scope
      * @param thisObj the scriptable
      * @param args the arguments passed into the method
      * @param function the function
      * @return on success, returns the child node that was inserted
      */
     @JsxFunction
-    public static Object insertBefore(
-            final Context context, final Scriptable thisObj, final Object[] args, final Function function) {
+    public static Object insertBefore(final Context context, final Scriptable scope,
+            final Scriptable thisObj, final Object[] args, final Function function) {
         return ((XMLDOMNode) thisObj).insertBeforeImpl(args);
     }
 
@@ -459,9 +461,9 @@ public class XMLDOMNode extends MSXMLScriptable {
             }
             final DomNode refChildNode;
             // IE accepts non standard calls with only one arg
-            if (Undefined.isUndefined(refChildObject)) {
+            if (JavaScriptEngine.isUndefined(refChildObject)) {
                 if (args.length > 1) {
-                    throw Context.reportRuntimeError("Invalid argument.");
+                    throw JavaScriptEngine.reportRuntimeError("Invalid argument.");
                 }
                 refChildNode = null;
             }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,12 +24,11 @@ import java.util.ArrayList;
 
 import org.htmlunit.ScriptResult;
 import org.htmlunit.corejs.javascript.Context;
-import org.htmlunit.corejs.javascript.ScriptRuntime;
 import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.corejs.javascript.ScriptableObject;
-import org.htmlunit.corejs.javascript.Undefined;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.javascript.HtmlUnitScriptable;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstant;
 import org.htmlunit.javascript.configuration.JsxConstructor;
@@ -154,6 +153,9 @@ public class Event extends HtmlUnitScriptable {
     /** The scroll event type, triggered by {@code onscroll} event handlers. */
     public static final String TYPE_SCROLL = "scroll";
 
+    /** The scroll event type, triggered by {@code onscrollend} event handlers. */
+    public static final String TYPE_SCROLLEND = "scrollend";
+
     /** The search event type, triggered by {@code onsearch} event handlers. */
     public static final String TYPE_SEARCH = "search";
 
@@ -199,9 +201,6 @@ public class Event extends HtmlUnitScriptable {
     /** The msgesturestart event type, triggered by {@code msgesturestart} event handlers. */
     public static final String TYPE_MSGESTURESTART = "msgesturestart";
 
-    /** The deviceproximity event type, triggered by {@code deviceproximity} event handlers. */
-    public static final String TYPE_DEVICEPROXIMITY = "deviceproximity";
-
     /** The drag event type, triggered by {@code drag} event handlers. */
     public static final String TYPE_DRAG = "drag";
 
@@ -237,9 +236,6 @@ public class Event extends HtmlUnitScriptable {
 
     /** The mspointermove event type, triggered by {@code mspointermove} event handlers. */
     public static final String TYPE_MSPOINTERMOVE = "mspointermove";
-
-    /** The userproximity event type, triggered by {@code userproximity} event handlers. */
-    public static final String TYPE_USERPROXIMITY = "userproximity";
 
     /** The lostpointercapture event type, triggered by {@code lostpointercapture} event handlers. */
     public static final String TYPE_LOSTPOINTERCAPTURE = "lostpointercapture";
@@ -345,9 +341,6 @@ public class Event extends HtmlUnitScriptable {
 
     /** The storage event type, triggered by {@code storage} event handlers. */
     public static final String TYPE_STORAGE = "storage";
-
-    /** The devicelight event type, triggered by {@code devicelight} event handlers. */
-    public static final String TYPE_DEVICELIGHT = "devicelight";
 
     /** The animationstart event type, triggered by {@code animationstart} event handlers. */
     public static final String TYPE_ANIMATIONSTART = "animationstart";
@@ -536,19 +529,19 @@ public class Event extends HtmlUnitScriptable {
 
     /** No event phase. */
     @JsxConstant({CHROME, EDGE, FF, FF_ESR})
-    public static final short NONE = 0;
+    public static final int NONE = 0;
 
     /** The first event phase: the capturing phase. */
     @JsxConstant
-    public static final short CAPTURING_PHASE = 1;
+    public static final int CAPTURING_PHASE = 1;
 
     /** The second event phase: at the event target. */
     @JsxConstant
-    public static final short AT_TARGET = 2;
+    public static final int AT_TARGET = 2;
 
     /** The third (and final) event phase: the bubbling phase. */
     @JsxConstant
-    public static final short BUBBLING_PHASE = 3;
+    public static final int BUBBLING_PHASE = 3;
 
     /** Constant. */
     @JsxConstant({FF, FF_ESR})
@@ -583,7 +576,7 @@ public class Event extends HtmlUnitScriptable {
      * The current event phase. This is a W3C standard attribute. One of {@link #NONE},
      * {@link #CAPTURING_PHASE}, {@link #AT_TARGET} or {@link #BUBBLING_PHASE}.
      */
-    private short eventPhase_;
+    private int eventPhase_;
 
     /**
      * Whether or not the event bubbles. The value of this attribute depends on the event type. To
@@ -636,7 +629,8 @@ public class Event extends HtmlUnitScriptable {
         if (TYPE_CHANGE.equals(type)) {
             cancelable_ = false;
         }
-        else if (TYPE_LOAD.equals(type)) {
+        else if (TYPE_LOAD.equals(type)
+                    || TYPE_CLOSE.equals(type)) {
             bubbles_ = false;
             cancelable_ = false;
         }
@@ -692,9 +686,9 @@ public class Event extends HtmlUnitScriptable {
         boolean bubbles = false;
         boolean cancelable = false;
 
-        if (details != null && !Undefined.isUndefined(details)) {
-            bubbles = ScriptRuntime.toBoolean(details.get("bubbles"));
-            cancelable  = ScriptRuntime.toBoolean(details.get("cancelable"));
+        if (details != null && !JavaScriptEngine.isUndefined(details)) {
+            bubbles = JavaScriptEngine.toBoolean(details.get("bubbles"));
+            cancelable  = JavaScriptEngine.toBoolean(details.get("cancelable"));
         }
         initEvent(type, bubbles, cancelable);
     }
@@ -791,7 +785,6 @@ public class Event extends HtmlUnitScriptable {
      * Sets the event type.
      * @param type the event type
      */
-    @JsxSetter
     public void setType(final String type) {
         type_ = type;
     }
@@ -892,7 +885,7 @@ public class Event extends HtmlUnitScriptable {
      *
      * @param phase the phase the event is in
      */
-    public void setEventPhase(final short phase) {
+    public void setEventPhase(final int phase) {
         if (phase != CAPTURING_PHASE && phase != AT_TARGET && phase != BUBBLING_PHASE) {
             throw new IllegalArgumentException("Illegal phase specified: " + phase);
         }
@@ -1082,7 +1075,7 @@ public class Event extends HtmlUnitScriptable {
     @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setReturnValue(final Object newValue) {
         if (isCancelable()) {
-            final boolean bool = !ScriptRuntime.toBoolean(newValue);
+            final boolean bool = !JavaScriptEngine.toBoolean(newValue);
             if (bool) {
                 preventDefault_ = bool;
             }
@@ -1103,6 +1096,6 @@ public class Event extends HtmlUnitScriptable {
      * @return whether the given value indicates a missing or undefined property
      */
     protected static boolean isMissingOrUndefined(final Object value) {
-        return value == Scriptable.NOT_FOUND || Undefined.isUndefined(value);
+        return value == Scriptable.NOT_FOUND || JavaScriptEngine.isUndefined(value);
     }
 }

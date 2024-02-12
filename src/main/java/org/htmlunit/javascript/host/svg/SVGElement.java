@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,8 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
-import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.Function;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxGetter;
@@ -50,9 +50,10 @@ public class SVGElement extends Element {
     /**
      * Creates an instance.
      */
+    @Override
     @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public void jsConstructor() {
-        throw Context.reportRuntimeError("Illegal constructor.");
+        throw JavaScriptEngine.reportRuntimeError("Illegal constructor.");
     }
 
     /**
@@ -442,6 +443,24 @@ public class SVGElement extends Element {
     @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setOnscroll(final Object scroll) {
         setEventHandler(Event.TYPE_SCROLL, scroll);
+    }
+
+    /**
+     * Returns the {@code onscrollend} event handler.
+     * @return the {@code onscrollend} event handler
+     */
+    @JsxGetter({CHROME, EDGE, FF})
+    public Function getOnscrollend() {
+        return getEventHandler(Event.TYPE_SCROLLEND);
+    }
+
+    /**
+     * Sets the {@code onscrollend} event handler.
+     * @param scrollend the {@code onscrollend} event handler
+     */
+    @JsxSetter({CHROME, EDGE, FF})
+    public void setOnscrollend(final Object scrollend) {
+        setEventHandler(Event.TYPE_SCROLLEND, scrollend);
     }
 
     /**
@@ -1321,7 +1340,7 @@ public class SVGElement extends Element {
      * Sets the {@code onpaste} event handler.
      * @param paste the {@code onpaste} event handler
      */
-    @JsxSetter({FF, FF_ESR})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setOnpaste(final Object paste) {
         setEventHandler(Event.TYPE_PASTE, paste);
     }

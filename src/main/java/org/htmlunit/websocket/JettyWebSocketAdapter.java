@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -116,14 +116,14 @@ public abstract class JettyWebSocketAdapter implements WebSocketAdapter {
     }
 
     @Override
-    public void closeIncommingSession() throws Exception {
+    public void closeIncommingSession() {
         if (incomingSession_ != null) {
             incomingSession_.close();
         }
     }
 
     @Override
-    public void closeOutgoingSession() throws Exception {
+    public void closeOutgoingSession() {
         if (outgoingSession_ != null) {
             outgoingSession_.close();
         }

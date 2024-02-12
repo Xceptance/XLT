@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,24 +24,21 @@ import java.io.Serializable;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
-import org.htmlunit.BrowserVersion;
 import org.htmlunit.BrowserVersionFeatures;
 import org.htmlunit.IncorrectnessListener;
 import org.htmlunit.Page;
 import org.htmlunit.SgmlPage;
 import org.htmlunit.WebAssert;
 import org.htmlunit.WebClient;
+import org.htmlunit.WebClient.PooledCSS3Parser;
 import org.htmlunit.WebWindow;
-import org.htmlunit.corejs.javascript.Context;
-import org.htmlunit.corejs.javascript.ScriptableObject;
+import org.htmlunit.activex.javascript.msxml.XMLDOMDocument;
 import org.htmlunit.css.ComputedCssStyleDeclaration;
 import org.htmlunit.css.CssStyleSheet;
 import org.htmlunit.css.StyleAttributes;
@@ -49,7 +46,6 @@ import org.htmlunit.cssparser.parser.CSSErrorHandler;
 import org.htmlunit.cssparser.parser.CSSException;
 import org.htmlunit.cssparser.parser.CSSOMParser;
 import org.htmlunit.cssparser.parser.CSSParseException;
-import org.htmlunit.cssparser.parser.javacc.CSS3Parser;
 import org.htmlunit.cssparser.parser.selector.Selector;
 import org.htmlunit.cssparser.parser.selector.SelectorList;
 import org.htmlunit.html.HtmlElement.DisplayStyle;
@@ -57,10 +53,10 @@ import org.htmlunit.html.serializer.HtmlSerializerNormalizedText;
 import org.htmlunit.html.serializer.HtmlSerializerVisibleText;
 import org.htmlunit.html.xpath.XPathHelper;
 import org.htmlunit.javascript.HtmlUnitScriptable;
-import org.htmlunit.javascript.host.css.CSSStyleSheet;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.host.event.Event;
 import org.htmlunit.javascript.host.html.HTMLDocument;
-import org.htmlunit.util.SerializableLock;
+import org.htmlunit.util.StringUtils;
 import org.htmlunit.xml.XmlPage;
 import org.htmlunit.xpath.xml.utils.PrefixResolver;
 import org.w3c.dom.DOMException;
@@ -137,7 +133,7 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
      * This is the JavaScript object corresponding to this DOM node. It may
      * be null if there isn't a corresponding JavaScript object.
      */
-    private Object scriptObject_;
+    private HtmlUnitScriptable scriptObject_;
 
     /** The ready state is an IE-only value that is available to a large number of elements. */
     private String readyState_;
@@ -164,14 +160,10 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
 
     private boolean attachedToPage_;
 
-    private final Object listeners_lock_ = new SerializableLock();
-
     /** The listeners which are to be notified of characterData change. */
-    private Collection<CharacterDataChangeListener> characterDataListeners_;
-    private List<CharacterDataChangeListener> characterDataListenersList_;
+    private List<CharacterDataChangeListener> characterDataListeners_;
+    private List<DomChangeListener> domListeners_;
 
-    private Collection<DomChangeListener> domListeners_;
-    private List<DomChangeListener> domListenersList_;
     private Map<String, Object> userData_;
 
     /**
@@ -276,7 +268,7 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
      *
      * @param scriptObject the JavaScript object
      */
-    public void setScriptableObject(final Object scriptObject) {
+    public void setScriptableObject(final HtmlUnitScriptable scriptObject) {
         scriptObject_ = scriptObject;
     }
 
@@ -701,23 +693,31 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
         final Page page = getPage();
         final WebWindow window = page.getEnclosingWindow();
         final WebClient webClient = window.getWebClient();
-        if (webClient.getOptions().isCssEnabled() && webClient.isJavaScriptEnabled()) {
+        if (webClient.getOptions().isCssEnabled()) {
             // display: iterate top to bottom, because if a parent is display:none,
             // there's nothing that a child can do to override it
             final List<Node> ancestors = getAncestors();
             final ArrayList<ComputedCssStyleDeclaration> styles = new ArrayList<>(ancestors.size());
 
             for (final Node node : ancestors) {
-                if (node instanceof HtmlElement && ((HtmlElement) node).isHidden()) {
-                    return false;
-                }
-
                 if (node instanceof HtmlElement) {
-                    final ComputedCssStyleDeclaration style = window.getComputedStyle((HtmlElement) node, null);
-                    if (DisplayStyle.NONE.value().equals(style.getDisplay())) {
+                    final HtmlElement elem = (HtmlElement) node;
+                    if (elem.isHidden()) {
                         return false;
                     }
-                    styles.add(style);
+
+                    if (elem instanceof HtmlDialog) {
+                        if (!((HtmlDialog) elem).isOpen()) {
+                            return false;
+                        }
+                    }
+                    else {
+                        final ComputedCssStyleDeclaration style = window.getComputedStyle(elem, null);
+                        if (DisplayStyle.NONE.value().equals(style.getDisplay())) {
+                            return false;
+                        }
+                        styles.add(style);
+                    }
                 }
             }
 
@@ -878,7 +878,7 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
      * @return the JavaScript object that corresponds to this node
      */
     @SuppressWarnings("unchecked")
-    public <T> T getScriptableObject() {
+    public <T extends HtmlUnitScriptable> T getScriptableObject() {
         if (scriptObject_ == null) {
             final SgmlPage page = getPage();
             if (this == page) {
@@ -898,10 +898,7 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
                 }
                 throw new IllegalStateException(msg.toString());
             }
-            final Object o = page.getScriptableObject();
-            if (o instanceof HtmlUnitScriptable) {
-                scriptObject_ = ((HtmlUnitScriptable) o).makeScriptableFor(this);
-            }
+            scriptObject_ = page.getScriptableObject().makeScriptableFor(this);
         }
         return (T) scriptObject_;
     }
@@ -912,12 +909,11 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
     @Override
     public DomNode appendChild(final Node node) {
         if (node == this) {
-            Context.throwAsScriptRuntimeEx(new Exception("Can not add not to itself " + this));
-            return this;
+            throw JavaScriptEngine.throwAsScriptRuntimeEx(new Exception("Can not add not to itself " + this));
         }
         final DomNode domNode = (DomNode) node;
         if (domNode.isAncestorOf(this)) {
-            Context.throwAsScriptRuntimeEx(new Exception("Can not add (grand)parent to itself " + this));
+            throw JavaScriptEngine.throwAsScriptRuntimeEx(new Exception("Can not add (grand)parent to itself " + this));
         }
 
         if (domNode instanceof DomDocumentFragment) {
@@ -1519,7 +1515,7 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
      */
     private static Map<String, String> parseSelectionNamespaces(final String selectionNS) {
         final Map<String, String> result = new HashMap<>();
-        final String[] toks = selectionNS.split("\\s");
+        final String[] toks = StringUtils.splitAtJavaWhitespace(selectionNS);
         for (final String tok : toks) {
             if (tok.startsWith("xmlns=")) {
                 result.put("", tok.substring(7, tok.length() - 7));
@@ -1547,38 +1543,38 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
      * @see #getCanonicalXPath()
      */
     public <T> List<T> getByXPath(final String xpathExpr) {
+        // strange feature of the old IE XML support
+        if (!hasFeature(XPATH_SELECTION_NAMESPACES)) {
+            return XPathHelper.getByXPath(this, xpathExpr, null);
+        }
+
+        // See if the document has the SelectionNamespaces property defined. If so,
+        // create a PrefixResolver that resolves the defined namespaces.
         PrefixResolver prefixResolver = null;
-        if (hasFeature(XPATH_SELECTION_NAMESPACES)) {
-            /*
-             * See if the document has the SelectionNamespaces property defined.  If so, then
-             * create a PrefixResolver that resolves the defined namespaces.
-             */
-            final Document doc = getOwnerDocument();
-            if (doc instanceof XmlPage) {
-                final ScriptableObject scriptable = ((XmlPage) doc).getScriptableObject();
-                if (ScriptableObject.hasProperty(scriptable, "getProperty")) {
-                    final Object selectionNS =
-                            ScriptableObject.callMethod(scriptable, "getProperty", new Object[]{"SelectionNamespaces"});
-                    if (selectionNS != null && !selectionNS.toString().isEmpty()) {
-                        final Map<String, String> namespaces = parseSelectionNamespaces(selectionNS.toString());
-                        if (namespaces != null) {
-                            prefixResolver = new PrefixResolver() {
-                                @Override
-                                public String getNamespaceForPrefix(final String prefix) {
-                                    return namespaces.get(prefix);
-                                }
+        final Document doc = getOwnerDocument();
+        if (doc instanceof XmlPage) {
+            final HtmlUnitScriptable scriptable = ((XmlPage) doc).getScriptableObject();
+            if (scriptable instanceof XMLDOMDocument) {
+                final String selectionNS = ((XMLDOMDocument) scriptable).getProperty("SelectionNamespaces");
+                if (selectionNS != null && !selectionNS.isEmpty()) {
+                    final Map<String, String> namespaces = parseSelectionNamespaces(selectionNS.toString());
+                    if (namespaces != null) {
+                        prefixResolver = new PrefixResolver() {
+                            @Override
+                            public String getNamespaceForPrefix(final String prefix) {
+                                return namespaces.get(prefix);
+                            }
 
-                                @Override
-                                public String getNamespaceForPrefix(final String prefix, final Node node) {
-                                    throw new UnsupportedOperationException();
-                                }
+                            @Override
+                            public String getNamespaceForPrefix(final String prefix, final Node node) {
+                                throw new UnsupportedOperationException();
+                            }
 
-                                @Override
-                                public boolean handlesNullPrefixes() {
-                                    return false;
-                                }
-                            };
-                        }
+                            @Override
+                            public boolean handlesNullPrefixes() {
+                                return false;
+                            }
+                        };
                     }
                 }
             }
@@ -1668,12 +1664,11 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
     public void addDomChangeListener(final DomChangeListener listener) {
         WebAssert.notNull("listener", listener);
 
-        synchronized (listeners_lock_) {
+        synchronized (this) {
             if (domListeners_ == null) {
-                domListeners_ = new LinkedHashSet<>();
+                domListeners_ = new ArrayList<>();
             }
             domListeners_.add(listener);
-            domListenersList_ = null;
         }
     }
 
@@ -1687,10 +1682,9 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
     public void removeDomChangeListener(final DomChangeListener listener) {
         WebAssert.notNull("listener", listener);
 
-        synchronized (listeners_lock_) {
+        synchronized (this) {
             if (domListeners_ != null) {
                 domListeners_.remove(listener);
-                domListenersList_ = null;
             }
         }
     }
@@ -1708,8 +1702,9 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
         while (toInform != null) {
             final List<DomChangeListener> listeners = toInform.safeGetDomListeners();
             if (listeners != null) {
-                for (final DomChangeListener listener : listeners) {
-                    listener.nodeAdded(event);
+                // iterate by index and safe on an iterator copy
+                for (int i = 0; i < listeners.size(); i++) {
+                    listeners.get(i).nodeAdded(event);
                 }
             }
             toInform = toInform.getParentNode();
@@ -1726,12 +1721,11 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
     public void addCharacterDataChangeListener(final CharacterDataChangeListener listener) {
         WebAssert.notNull("listener", listener);
 
-        synchronized (listeners_lock_) {
+        synchronized (this) {
             if (characterDataListeners_ == null) {
-                characterDataListeners_ = new LinkedHashSet<>();
+                characterDataListeners_ = new ArrayList<>();
             }
             characterDataListeners_.add(listener);
-            characterDataListenersList_ = null;
         }
     }
 
@@ -1745,10 +1739,9 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
     public void removeCharacterDataChangeListener(final CharacterDataChangeListener listener) {
         WebAssert.notNull("listener", listener);
 
-        synchronized (listeners_lock_) {
+        synchronized (this) {
             if (characterDataListeners_ != null) {
                 characterDataListeners_.remove(listener);
-                characterDataListenersList_ = null;
             }
         }
     }
@@ -1766,8 +1759,9 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
 
             final List<CharacterDataChangeListener> listeners = toInform.safeGetCharacterDataListeners();
             if (listeners != null) {
-                for (final CharacterDataChangeListener listener : listeners) {
-                    listener.characterDataChanged(event);
+                // iterate by index and safe on an iterator copy
+                for (int i = 0; i < listeners.size(); i++) {
+                    listeners.get(i).characterDataChanged(event);
                 }
             }
             toInform = toInform.getParentNode();
@@ -1787,8 +1781,9 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
         while (toInform != null) {
             final List<DomChangeListener> listeners = toInform.safeGetDomListeners();
             if (listeners != null) {
-                for (final DomChangeListener listener : listeners) {
-                    listener.nodeDeleted(event);
+                // iterate by index and safe on an iterator copy
+                for (int i = 0; i < listeners.size(); i++) {
+                    listeners.get(i).nodeDeleted(event);
                 }
             }
             toInform = toInform.getParentNode();
@@ -1796,26 +1791,14 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
     }
 
     private List<DomChangeListener> safeGetDomListeners() {
-        synchronized (listeners_lock_) {
-            if (domListeners_ == null) {
-                return null;
-            }
-            if (domListenersList_ == null) {
-                domListenersList_ = new ArrayList<>(domListeners_);
-            }
-            return domListenersList_;
+        synchronized (this) {
+            return domListeners_ == null ? null : new ArrayList<>(domListeners_);
         }
     }
 
     private List<CharacterDataChangeListener> safeGetCharacterDataListeners() {
-        synchronized (listeners_lock_) {
-            if (characterDataListeners_ == null) {
-                return null;
-            }
-            if (characterDataListenersList_ == null) {
-                characterDataListenersList_ = new ArrayList<>(characterDataListeners_);
-            }
-            return characterDataListenersList_;
+        synchronized (this) {
+            return characterDataListeners_ == null ? null : new ArrayList<>(characterDataListeners_);
         }
     }
 
@@ -1827,14 +1810,14 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
      */
     public DomNodeList<DomNode> querySelectorAll(final String selectors) {
         try {
-            final BrowserVersion browserVersion = getPage().getWebClient().getBrowserVersion();
-            final SelectorList selectorList = getSelectorList(selectors, browserVersion);
+            final WebClient webClient = getPage().getWebClient();
+            final SelectorList selectorList = getSelectorList(selectors, webClient);
 
             final List<DomNode> elements = new ArrayList<>();
             if (selectorList != null) {
                 for (final DomElement child : getDomElementDescendants()) {
                     for (final Selector selector : selectorList) {
-                        if (CssStyleSheet.selects(browserVersion, selector, child, null, true, true)) {
+                        if (CssStyleSheet.selects(webClient.getBrowserVersion(), selector, child, null, true, true)) {
                             elements.add(child);
                             break;
                         }
@@ -1851,34 +1834,38 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
     /**
      * Returns the {@link SelectorList}.
      * @param selectors the selectors
-     * @param browserVersion the {@link BrowserVersion}
+     * @param webClient the {@link WebClient}
      * @return the {@link SelectorList}
      * @throws IOException if an error occurs
      */
-    protected SelectorList getSelectorList(final String selectors, final BrowserVersion browserVersion)
+    protected SelectorList getSelectorList(final String selectors, final WebClient webClient)
             throws IOException {
-        final CSSOMParser parser = new CSSOMParser(new CSS3Parser());
-        final CheckErrorHandler errorHandler = new CheckErrorHandler();
-        parser.setErrorHandler(errorHandler);
 
-        final SelectorList selectorList = parser.parseSelectors(selectors);
-        // in case of error parseSelectors returns null
-        if (errorHandler.errorDetected()) {
-            throw new CSSException("Invalid selectors: '" + selectors + "'");
-        }
+        // get us a CSS3Parser from the pool so the chance of reusing it are high
+        try (PooledCSS3Parser pooledParser = webClient.getCSS3Parser()) {
+            final CSSOMParser parser = new CSSOMParser(pooledParser);
+            final CheckErrorHandler errorHandler = new CheckErrorHandler();
+            parser.setErrorHandler(errorHandler);
 
-        if (selectorList != null) {
-            int documentMode = 9;
-            if (browserVersion.hasFeature(QUERYSELECTORALL_NOT_IN_QUIRKS)) {
-                final Object sobj = getPage().getScriptableObject();
-                if (sobj instanceof HTMLDocument) {
-                    documentMode = ((HTMLDocument) sobj).getDocumentMode();
-                }
+            final SelectorList selectorList = parser.parseSelectors(selectors);
+            // in case of error parseSelectors returns null
+            if (errorHandler.errorDetected()) {
+                throw new CSSException("Invalid selectors: '" + selectors + "'");
             }
-            CSSStyleSheet.validateSelectors(selectorList, documentMode, this);
 
+            if (selectorList != null) {
+                int documentMode = 9;
+                if (webClient.getBrowserVersion().hasFeature(QUERYSELECTORALL_NOT_IN_QUIRKS)) {
+                    final HtmlUnitScriptable sobj = getPage().getScriptableObject();
+                    if (sobj instanceof HTMLDocument) {
+                        documentMode = ((HTMLDocument) sobj).getDocumentMode();
+                    }
+                }
+                CssStyleSheet.validateSelectors(selectorList, documentMode, this);
+
+            }
+            return selectorList;
         }
-        return selectorList;
     }
 
     /**
@@ -2001,15 +1988,15 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
      */
     public DomElement closest(final String selectorString) {
         try {
-            final BrowserVersion browserVersion = getPage().getWebClient().getBrowserVersion();
-            final SelectorList selectorList = getSelectorList(selectorString, browserVersion);
+            final WebClient webClient = getPage().getWebClient();
+            final SelectorList selectorList = getSelectorList(selectorString, webClient);
 
             DomNode current = this;
             if (selectorList != null) {
                 do {
                     for (final Selector selector : selectorList) {
                         final DomElement elem = (DomElement) current;
-                        if (CssStyleSheet.selects(browserVersion, selector, elem, null, true, true)) {
+                        if (CssStyleSheet.selects(webClient.getBrowserVersion(), selector, elem, null, true, true)) {
                             return elem;
                         }
                     }

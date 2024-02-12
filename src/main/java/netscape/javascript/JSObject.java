@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,9 +21,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.htmlunit.Page;
 import org.htmlunit.ScriptResult;
-import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.ScriptableObject;
 import org.htmlunit.html.HtmlPage;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.host.Element;
 import org.htmlunit.javascript.host.Window;
 
@@ -132,7 +132,7 @@ public class JSObject {
     public void setMember(final String name, final Object value) throws JSException {
         String stringValue = "";
         if (value != null) {
-            stringValue = Context.toString(value);
+            stringValue = JavaScriptEngine.toString(value);
         }
 
         if (LOG.isInfoEnabled()) {

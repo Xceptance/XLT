@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -2887,7 +2887,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
         final byte[] encoded = bos.toByteArray();
         assertTrue(encoded.length > xml.length());
 
-        final List<NameValuePair> headers = new LinkedList<NameValuePair>();
+        final List<NameValuePair> headers = new LinkedList<>();
         headers.add(new NameValuePair("Content-Encoding", "gzip"));
         getMockWebConnection().setResponse(URL_SECOND, encoded, 200, "OK", MimeType.TEXT_XML, headers);
         loadPage2(html);
@@ -2943,7 +2943,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
         final byte[] encoded = bos.toByteArray();
         assertTrue(encoded.length < xml.length());
 
-        final List<NameValuePair> headers = new LinkedList<NameValuePair>();
+        final List<NameValuePair> headers = new LinkedList<>();
         headers.add(new NameValuePair("Content-Encoding", "gzip"));
         getMockWebConnection().setResponse(URL_SECOND, encoded, 200, "OK", MimeType.TEXT_XML, headers);
         loadPage2(html);

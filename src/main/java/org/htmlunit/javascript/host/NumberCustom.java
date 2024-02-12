@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,13 +38,14 @@ public final class NumberCustom {
     /**
      * Returns a string with a language sensitive representation of this number.
      * @param context the JavaScript context
+     * @param scope the scope
      * @param thisObj the scriptable
      * @param args the arguments passed into the method
      * @param function the function
      * @return the string
      */
-    public static String toLocaleString(
-            final Context context, final Scriptable thisObj, final Object[] args, final Function function) {
+    public static String toLocaleString(final Context context, final Scriptable scope,
+            final Scriptable thisObj, final Object[] args, final Function function) {
         if (args.length != 0 && args[0] instanceof String) {
             final String localeStr = (String) args[0];
             try {

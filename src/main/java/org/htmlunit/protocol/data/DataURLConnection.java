@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLConnection;
 
-import org.apache.commons.codec.DecoderException;
-
 /**
  * A URLConnection for supporting data URLs.
  * @see <a href="http://www.ietf.org/rfc/rfc2397.txt">RFC2397</a>
@@ -39,9 +37,8 @@ public class DataURLConnection extends URLConnection {
      * Creates an instance.
      * @param url the data URL
      * @throws UnsupportedEncodingException in case the encoding is not supported
-     * @throws DecoderException in all other cases
      */
-    public DataURLConnection(final URL url) throws UnsupportedEncodingException, DecoderException {
+    public DataURLConnection(final URL url) throws UnsupportedEncodingException {
         super(url);
         dataUrlDecoder_ = DataUrlDecoder.decode(url);
     }
