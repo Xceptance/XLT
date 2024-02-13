@@ -13,6 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// XC: The package "com.sun.org.apache.xerces" is not available in JDK 11, which is our base version.
+// 
 //package org.htmlunit.platform.util;
 //
 //import java.util.ArrayList;
