@@ -206,7 +206,7 @@ public class TestLoadProfileConfiguration extends AbstractConfiguration
      * Creates a new load test profile configuration.
      *
      * @param properties
-     *            form external to avoid loading conflicts
+     *            from external to avoid loading conflicts
      */
     public TestLoadProfileConfiguration(final XltPropertiesImpl properties)
     {
@@ -478,8 +478,7 @@ public class TestLoadProfileConfiguration extends AbstractConfiguration
             }
 
             // handle ramp-up parameters
-            if (LoadFunctionUtils.isComplexLoadFunction(users) ||
-                (arrivalRate != null && LoadFunctionUtils.isComplexLoadFunction(arrivalRate)))
+            if (complexLoadFunction != null)
             {
                 // GH#457: Clear ramp-up period in the presence of already complex user/arrival rate load functions
                 rampUpPeriod = -1;
