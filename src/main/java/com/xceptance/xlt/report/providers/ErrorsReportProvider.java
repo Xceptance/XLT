@@ -466,8 +466,8 @@ public class ErrorsReportProvider extends AbstractReportProvider
                     if (directoryHint != null)
                     {
                         // check if we should add/replace a result browser directory hint
-                        final int size = errorReport.directoryHints.size();
-                        if (size < directoryLimitPerError || random.nextDoubleFast() <= directoryReplacementChance)
+                        final boolean safeToAdd = errorReport.directoryHints.size() < directoryLimitPerError;
+                        if (safeToAdd || random.nextDoubleFast() <= directoryReplacementChance)
                         {
                             // either limit not reached yet or replacement chance
                             final String indexFilePath = directoryHint + "/index.html";
@@ -478,7 +478,7 @@ public class ErrorsReportProvider extends AbstractReportProvider
                                 if (VFS.getManager().resolveFile(resultsDirectory, indexFilePath).exists())
                                 {
                                     // now decide what to do with it
-                                    if (size < directoryLimitPerError)
+                                    if (safeToAdd)
                                     {
                                         // add the directory
                                         errorReport.directoryHints.add(directoryHint);
