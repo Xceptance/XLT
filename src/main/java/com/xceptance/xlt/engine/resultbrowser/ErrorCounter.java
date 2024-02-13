@@ -201,7 +201,7 @@ public class ErrorCounter
         if (session.hasFailed())
         {
             // get the error key
-            final String key = getErrorKey(session.getUserName(), session.getFailReason());
+            final String key = getErrorKey(session.getUserName()+session.getCurrentActionName(), session.getFailReason());
 
             // check if we know it
             AtomicInteger count = errorCounter.get(key);
