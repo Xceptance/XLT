@@ -1660,10 +1660,6 @@ class NamedAttrNodeMapImpl implements Map<String, DomAttr>, NamedNodeMap, Serial
     private final DomElement domNode_;
     private final boolean caseSensitive_;
 
-    // cache for avoid the usual identical lowercasing. At the same time, we unify the strings
-    // and reduce the footprint
-    // private static final ConcurrentLRUCache<String, String> lowerCaseCache = new ConcurrentLRUCache<String, String>(1001);
-    
     private NamedAttrNodeMapImpl() {
         super();
         domNode_ = null;
