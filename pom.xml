@@ -401,13 +401,13 @@
         <dependency>
             <groupId>net.bytebuddy</groupId>
             <artifactId>byte-buddy</artifactId>
-            <version>1.12.22</version>
+            <version>1.14.11</version>
         </dependency>
         <!-- guava is used by Selenium, Google Compute and Checkstyle. Ensure that the highest version wins. -->
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>32.1.2-jre</version>
+            <version>33.0.0-jre</version>
         </dependency>
         <!-- Script-Doc Generator -->
         <dependency>
