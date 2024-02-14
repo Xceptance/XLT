@@ -206,24 +206,37 @@ function getPaintTimings(navigationStart) {
   return timings;
 }
 
-/*
- * Web Vitals
- */
+// --- Web Vitals --------------------------------------------------------------
 
+/**
+ * Store for Web Vital metrics recorded during the lifespan of a page.
+ * The entries are not the original metrics, but simplified ones with only the data we need.
+ */
 const webVitalsMetrics = [];
 
-function addMetric(metric) {
-  webVitalsMetrics.push({ time: Date.now(), name: metric.name, value: metric.value });
-}
-
-function addMetricRounded(metric) {
-  webVitalsMetrics.push({ time: Date.now(), name: metric.name, value: Math.round(metric.value) });
-}
-
+/**
+ * Returns the entries in the metrics store. For now, no further processing needed.
+ */
 function getWebVitals() {
   return webVitalsMetrics;
 }
 
+/**
+ * Adds a metric value to the metrics store.
+ */
+function addMetric(metric) {
+  webVitalsMetrics.push({ time: Date.now(), name: metric.name, value: metric.value });
+}
+
+/**
+ * Rounds a metric value and adds it to the metrics store.
+ * Typically used for metrics representing millisecond measurements as we don't need the fractional part here.
+ */
+function addMetricRounded(metric) {
+  webVitalsMetrics.push({ time: Date.now(), name: metric.name, value: Math.round(metric.value) });
+}
+
+// attach handlers for all known metric events, some may fire multiple times
 webVitals.onCLS(addMetric, { reportAllChanges: true });
 webVitals.onFCP(addMetricRounded);
 webVitals.onFID(addMetricRounded);

@@ -591,9 +591,11 @@
 				<p>
 					The displayed score value for a Web Vital is the 75th
 					percentile (estimated) of all measurements in a given
-					action. In addition, the scores are rated (good, needs
-					improvement, poor) according to Web Vital-specific
-					thresholds.
+					action. In addition, the scores are rated using Web
+					Vital-specific thresholds and colorized accordingly
+					(<span class="web-vital-score-good">good</span>,
+					<span class="web-vital-score-improve">needs improvement</span>,
+					<span class="web-vital-score-poor">poor</span>).
 				</p>
 			</div>
         </div>

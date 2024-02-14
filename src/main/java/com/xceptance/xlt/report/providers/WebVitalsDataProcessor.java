@@ -185,9 +185,6 @@ public class WebVitalsDataProcessor extends AbstractDataProcessor
          */
         public void update(double value)
         {
-            // TODO: remove
-            value = value * 10;
-
             p75Estimator.increment(value);
 
             if (value <= threshold1)
