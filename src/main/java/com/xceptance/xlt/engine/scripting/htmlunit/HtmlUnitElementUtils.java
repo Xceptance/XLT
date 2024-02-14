@@ -52,7 +52,8 @@ public final class HtmlUnitElementUtils
         {
             // From the HTML spec (http://www.w3.org/TR/html401/sgml/dtd.html#block)
             // <!ENTITY % block
-            // "P | %heading; | %list; | %preformatted; | DL | DIV | NOSCRIPT | BLOCKQUOTE | FORM | HR | TABLE | FIELDSET | ADDRESS">
+            // "P | %heading; | %list; | %preformatted; | DL | DIV | NOSCRIPT | BLOCKQUOTE | FORM | HR | TABLE |
+            // FIELDSET | ADDRESS">
             // <!ENTITY % heading "H1|H2|H3|H4|H5|H6">
             // <!ENTITY % list "UL | OL">
             // <!ENTITY % preformatted "PRE">
@@ -627,11 +628,13 @@ public final class HtmlUnitElementUtils
      *            offset relative to X coordinate of given element
      * @param yOffset
      *            offset relative to Y coordinate of given element
+     * @param detail
+     *            the detail field (usually the number of clicks)
      * @return resulting page
      */
     public static HtmlPage fireMouseEvent(final DomElement element, final String eventType, final boolean isCtrlPressed,
                                           final boolean isShiftPressed, final boolean isAltPressed, final int button, final int xOffset,
-                                          final int yOffset)
+                                          final int yOffset, final int detail)
     {
         HtmlPage page = (HtmlPage) element.getPage();
         if (element instanceof DisabledElement && ((DisabledElement) element).isDisabled())
@@ -639,7 +642,7 @@ public final class HtmlUnitElementUtils
             return page;
         }
 
-        final MouseEvent event = new MouseEvent(element, eventType, isShiftPressed, isCtrlPressed, isAltPressed, button);
+        final MouseEvent event = new MouseEvent(element, eventType, isShiftPressed, isCtrlPressed, isAltPressed, button, detail);
         if (xOffset > -1 || yOffset > -1)
         {
             final int[] position = getPosition(element);
@@ -668,47 +671,19 @@ public final class HtmlUnitElementUtils
      *            the target element
      * @param eventType
      *            the type of the mouse event (mousemove etc.)
-     * @param isCtrlPressed
-     *            is CTRL key pressed
-     * @param isShiftPressed
-     *            is SHIFT key pressed
-     * @param isAltPressed
-     *            is ALT key pressed
-     * @param xOffset
-     *            offset relative to X coordinate of given element
-     * @param yOffset
-     *            offset relative to Y coordinate of given element
-     * @return resulting page
-     */
-    public static HtmlPage fireMouseEvent(final DomElement element, final String eventType, final int xOffset, final int yOffset)
-    {
-        return fireMouseEvent(element, eventType, false, false, false, MouseEvent.BUTTON_LEFT, xOffset, yOffset);
-    }
-
-    /**
-     * Fires a mouse event of the given type at the given target element.
-     * 
-     * @param element
-     *            the target element
-     * @param eventType
-     *            the type of the mouse event (mousemove etc.)
-     * @param isCtrlPressed
-     *            is CTRL key pressed
-     * @param isShiftPressed
-     *            is SHIFT key pressed
-     * @param isAltPressed
-     *            is ALT key pressed
      * @param xOffset
      *            offset relative to X coordinate of given element
      * @param yOffset
      *            offset relative to Y coordinate of given element
      * @param mouseButton
      *            the mouse button to use
+     * @param detail
+     *            the detail field (usually the number of clicks)
      * @return resulting page
      */
     public static HtmlPage fireMouseEvent(final DomElement element, final String eventType, final int xOffset, final int yOffset,
-                                          final int mouseButton)
+                                          final int mouseButton, final int detail)
     {
-        return fireMouseEvent(element, eventType, false, false, false, mouseButton, xOffset, yOffset);
+        return fireMouseEvent(element, eventType, false, false, false, mouseButton, xOffset, yOffset, detail);
     }
 }

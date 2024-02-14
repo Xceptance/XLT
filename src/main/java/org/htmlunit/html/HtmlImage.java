@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
- * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,8 +35,6 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.util.Map;
 
-import javax.imageio.ImageReader;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
@@ -58,7 +56,6 @@ import org.htmlunit.javascript.host.html.HTMLElement;
 import org.htmlunit.platform.Platform;
 import org.htmlunit.platform.geom.IntDimension2D;
 import org.htmlunit.platform.image.ImageData;
-import org.htmlunit.platform.image.ImageIOImageData;
 import org.htmlunit.util.UrlUtils;
 
 /**
@@ -143,10 +140,11 @@ public class HtmlImage extends HtmlElement {
             final boolean notifyAttributeChangeListeners, final boolean notifyMutationObservers) {
 
         final HtmlPage htmlPage = getHtmlPageOrNull();
-        if (SRC_ATTRIBUTE.equals(qualifiedName) && value != ATTRIBUTE_NOT_DEFINED && htmlPage != null) {
-            final String oldValue = getAttributeNS(namespaceURI, qualifiedName);
+        final String qualifiedNameLC = org.htmlunit.util.StringUtils.toRootLowerCase(qualifiedName);
+        if (SRC_ATTRIBUTE.equals(qualifiedNameLC) && value != ATTRIBUTE_NOT_DEFINED && htmlPage != null) {
+            final String oldValue = getAttributeNS(namespaceURI, qualifiedNameLC);
             if (!oldValue.equals(value)) {
-                super.setAttributeNS(namespaceURI, qualifiedName, value, notifyAttributeChangeListeners,
+                super.setAttributeNS(namespaceURI, qualifiedNameLC, value, notifyAttributeChangeListeners,
                         notifyMutationObservers);
 
                 // onload handlers may need to be invoked again, and a new image may need to be downloaded
@@ -169,7 +167,7 @@ public class HtmlImage extends HtmlElement {
                 if (READY_STATE_LOADING.equals(readyState)) {
                     final PostponedAction action = new PostponedAction(getPage(), "HtmlImage.setAttributeNS") {
                         @Override
-                        public void execute() throws Exception {
+                        public void execute() {
                             doOnLoad();
                         }
                     };
@@ -181,7 +179,7 @@ public class HtmlImage extends HtmlElement {
             }
         }
 
-        super.setAttributeNS(namespaceURI, qualifiedName, value, notifyAttributeChangeListeners,
+        super.setAttributeNS(namespaceURI, qualifiedNameLC, value, notifyAttributeChangeListeners,
                 notifyMutationObservers);
     }
 
@@ -319,7 +317,7 @@ public class HtmlImage extends HtmlElement {
             if (READY_STATE_LOADING.equals(htmlPage.getReadyState())) {
                 final PostponedAction action = new PostponedAction(getPage(), "HtmlImage.doOnLoad") {
                     @Override
-                    public void execute() throws Exception {
+                    public void execute() {
                         HtmlImage.this.fireEvent(event);
                     }
                 };
@@ -396,7 +394,7 @@ public class HtmlImage extends HtmlElement {
      * @return the value of the attribute {@code name} or an empty string if that attribute isn't defined
      */
     public final String getNameAttribute() {
-        return getAttributeDirect("name");
+        return getAttributeDirect(NAME_ATTRIBUTE);
     }
 
     /**
@@ -633,21 +631,6 @@ public class HtmlImage extends HtmlElement {
         }
     }
 
-    /**
-     * <p>Returns the <code>ImageReader</code> which can be used to read the image contained by this image element.</p>
-     * <p><span style="color:red">POTENTIAL PERFORMANCE KILLER - DOWNLOADS THE IMAGE - USE AT YOUR OWN RISK</span></p>
-     * <p>If the image has not already been downloaded, this method triggers a download and caches the image.</p>
-     *
-     * @return the <code>ImageReader</code> which can be used to read the image contained by this image element
-     * @throws IOException if an error occurs while downloading or reading the image
-     *
-     * @deprecated as of version 2.70.0; use {@link #getImageData()} instead
-     */
-    @Deprecated
-    public ImageReader getImageReader() throws IOException {
-        return ((ImageIOImageData) getImageData()).getImageReader();
-    }
-
     public ImageData getImageData() throws IOException {
         readImageIfNeeded();
         return imageData_;
@@ -795,7 +778,7 @@ public class HtmlImage extends HtmlElement {
             // remove initial '#'
             final String mapName = getUseMapAttribute().substring(1);
             final HtmlElement doc = ((HtmlPage) getPage()).getDocumentElement();
-            final HtmlMap map = doc.getOneHtmlElementByAttribute("map", "name", mapName);
+            final HtmlMap map = doc.getOneHtmlElementByAttribute("map", NAME_ATTRIBUTE, mapName);
             for (final DomElement element : map.getChildElements()) {
                 if (element instanceof HtmlArea) {
                     final HtmlArea area = (HtmlArea) element;

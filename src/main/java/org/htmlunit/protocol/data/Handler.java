@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
 
-import org.apache.commons.codec.DecoderException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -43,7 +42,7 @@ public class Handler extends URLStreamHandler {
         try {
             return new DataURLConnection(url);
         }
-        catch (final UnsupportedEncodingException | DecoderException e) {
+        catch (final UnsupportedEncodingException e) {
             if (LOG.isErrorEnabled()) {
                 LOG.error("Exception decoding " + url, e);
             }

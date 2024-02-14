@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,9 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
+import org.htmlunit.corejs.javascript.ES6Iterator;
+import org.htmlunit.corejs.javascript.NativeArrayIterator;
+import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.javascript.HtmlUnitScriptable;
@@ -26,9 +29,9 @@ import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
+import org.htmlunit.javascript.configuration.JsxSymbol;
+import org.htmlunit.javascript.host.dom.Attr;
 import org.htmlunit.javascript.host.dom.Node;
-
-import org.htmlunit.corejs.javascript.Scriptable;
 
 /**
  * A collection of nodes that can be accessed by name. String comparisons in this class are case-insensitive when
@@ -51,9 +54,15 @@ public class NamedNodeMap extends HtmlUnitScriptable {
     /**
      * We need default constructors to build the prototype instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public NamedNodeMap() {
         attributes_ = null;
+    }
+
+    /**
+     * JavaScript constructor.
+     */
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    public void jsConstructor() {
     }
 
     /**
@@ -111,7 +120,7 @@ public class NamedNodeMap extends HtmlUnitScriptable {
      * @param name attribute name
      * @return the attribute node, {@code null} if the attribute is not defined
      */
-    public Object getNamedItemWithoutSytheticClassAttr(final String name) {
+    public HtmlUnitScriptable getNamedItemWithoutSytheticClassAttr(final String name) {
         if (attributes_ != null) {
             final DomNode attr = (DomNode) attributes_.getNamedItem(name);
             if (attr != null) {
@@ -128,8 +137,26 @@ public class NamedNodeMap extends HtmlUnitScriptable {
      * @return the attribute node, {@code null} if the attribute is not defined
      */
     @JsxFunction
-    public Object getNamedItem(final String name) {
+    public HtmlUnitScriptable getNamedItem(final String name) {
         return getNamedItemWithoutSytheticClassAttr(name);
+    }
+
+    /**
+     * Gets the specified attribute.
+     * @param namespaceURI the namespace URI of the node to retrieve.
+     * @param localName the local name of the node to retrieve.
+     * @return the attribute node, {@code null} if the attribute is not defined
+     */
+    @JsxFunction
+    public Node getNamedItemNS(final String namespaceURI, final String localName) {
+        if (attributes_ != null) {
+            final DomNode attr = (DomNode) attributes_.getNamedItemNS(namespaceURI, localName);
+            if (attr != null) {
+                return attr.getScriptableObject();
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -142,6 +169,15 @@ public class NamedNodeMap extends HtmlUnitScriptable {
     }
 
     /**
+     * Sets the specified attribute.
+     * @param node the attribute
+     */
+    @JsxFunction
+    public void setNamedItemNS(final Node node) {
+        attributes_.setNamedItemNS(node.getDomNodeOrDie());
+    }
+
+    /**
      * Removes the specified attribute.
      * @param name the name of the item to remove
      */
@@ -151,12 +187,23 @@ public class NamedNodeMap extends HtmlUnitScriptable {
     }
 
     /**
+     * Removes the specified attribute.
+     * @param namespaceURI the namespace URI of the node to retrieve.
+     * @param localName the local name of the node to retrieve.
+     * @return the attribute node, {@code null} if the attribute is not defined
+     */
+    @JsxFunction
+    public Attr removeNamedItemNS(final String namespaceURI, final String localName) {
+        return (Attr) attributes_.removeNamedItemNS(namespaceURI, localName);
+    }
+
+    /**
      * Returns the item at the specified index.
      * @param index the index
      * @return the item at the specified index
      */
     @JsxFunction
-    public Object item(final int index) {
+    public HtmlUnitScriptable item(final int index) {
         final DomNode attr = (DomNode) attributes_.item(index);
         if (attr != null) {
             return attr.getScriptableObject();
@@ -179,5 +226,10 @@ public class NamedNodeMap extends HtmlUnitScriptable {
     @Override
     public boolean has(final int index, final Scriptable start) {
         return index >= 0 && index < getLength();
+    }
+
+    @JsxSymbol({CHROME, EDGE, FF, FF_ESR})
+    public ES6Iterator iterator() {
+        return new NativeArrayIterator(getParentScope(), this, NativeArrayIterator.ARRAY_ITERATOR_TYPE.VALUES);
     }
 }

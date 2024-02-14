@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -32,19 +31,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.apache.commons.io.input.BOMInputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.w3c.dom.Attr;
-import org.w3c.dom.Document;
-import org.w3c.dom.DocumentType;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.Attributes;
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-import org.xml.sax.helpers.AttributesImpl;
-
 import org.htmlunit.SgmlPage;
 import org.htmlunit.WebResponse;
 import org.htmlunit.html.DomAttr;
@@ -59,6 +45,18 @@ import org.htmlunit.html.ElementFactory;
 import org.htmlunit.html.Html;
 import org.htmlunit.platform.Platform;
 import org.htmlunit.xml.XmlPage;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.DocumentType;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.Attributes;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
+import org.xml.sax.helpers.AttributesImpl;
 
 /**
  * <span style="color:red">INTERNAL API - SUBJECT TO CHANGE AT ANY TIME - USE AT YOUR OWN RISK.</span><br>
@@ -135,7 +133,8 @@ public final class XmlUtils {
                 webResponse.getContentCharset());
 
         // we have to do the blank input check and the parsing in one step
-        final TrackBlankContentReader tracker = new TrackBlankContentReader(reader);
+        final TrackBlankContentAndSkipLeadingWhitespaceReader tracker
+                = new TrackBlankContentAndSkipLeadingWhitespaceReader(reader);
 
         final InputSource source = new InputSource(tracker);
         final DocumentBuilder builder = factory.newDocumentBuilder();
@@ -156,11 +155,11 @@ public final class XmlUtils {
     /**
      * Helper for memory and performance optimization.
      */
-    private static final class TrackBlankContentReader extends Reader {
+    private static final class TrackBlankContentAndSkipLeadingWhitespaceReader extends Reader {
         private final Reader reader_;
         private boolean wasBlank_ = true;
 
-        TrackBlankContentReader(final Reader characterStream) {
+        TrackBlankContentAndSkipLeadingWhitespaceReader(final Reader characterStream) {
             reader_ = characterStream;
         }
 
@@ -175,13 +174,18 @@ public final class XmlUtils {
 
         @Override
         public int read(final char[] cbuf, final int off, final int len) throws IOException {
-            final int result = reader_.read(cbuf, off, len);
+            int result = reader_.read(cbuf, off, len);
 
             if (wasBlank_ && result > -1) {
                 for (int i = 0; i < result; i++) {
                     final char ch = cbuf[off + i];
                     if (!Character.isWhitespace(ch)) {
                         wasBlank_ = false;
+                        if (i > 0) {
+                            // skipt the leading whitespace
+                            System.arraycopy(cbuf, i, cbuf, off, len - i);
+                            result -= i;
+                        }
                         break;
                     }
                 }
@@ -269,7 +273,7 @@ public final class XmlUtils {
                             namedNodeMapToSaxAttributes(nodeAttributes, attributesOrderMap, source));
         }
 
-        final Map<String, DomAttr> attributes = new LinkedHashMap<>();
+        final OrderedFastHashMap<String, DomAttr> attributes = new OrderedFastHashMap<>();
         for (int i = 0; i < nodeAttributes.getLength(); i++) {
             final int orderedIndex = Platform.getIndex(nodeAttributes, attributesOrderMap, source, i);
             final Attr attribute = (Attr) nodeAttributes.item(orderedIndex);

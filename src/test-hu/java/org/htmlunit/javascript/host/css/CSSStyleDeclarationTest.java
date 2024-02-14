@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,12 +24,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.css.StyleAttributes;
@@ -41,6 +35,11 @@ import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 
 /**
  * Tests for {@link CSSStyleDeclaration}.
@@ -643,7 +642,6 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = {"black", "pink", "color: pink; background: blue;"},
-            FF_ESR = {"black", "pink", "color: pink; background: blue none repeat scroll 0% 0%;"},
             IE = {"black", "pink", "background: blue; color: pink; foo: bar;"})
     @HtmlUnitNYI(CHROME = {"black", "pink", "color: pink; background: blue; foo: bar;"},
             EDGE = {"black", "pink", "color: pink; background: blue; foo: bar;"},
@@ -804,9 +802,7 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "blue",
-            FF_ESR = "blue none repeat scroll 0% 0%")
-    @HtmlUnitNYI(FF_ESR = "blue")
+    @Alerts("blue")
     public void getPropertyValue() throws Exception {
         final String html = "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
@@ -1531,8 +1527,8 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"", "", "inline", "rgb(0, 0, 0)"},
-            IE = {"inline", "rgb(0, 0, 0)", "inline", "rgb(0, 0, 0)"})
+    @Alerts(DEFAULT = {"", "inline"},
+            IE = {"inline", "inline"})
     public void displayDefault() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -1542,9 +1538,32 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
             + "      var e = document.createElement('tt');\n"
             + "      var style = window.getComputedStyle(e, null);\n"
             + "      log(style['display']);\n"
-            + "      log(style['color']);\n"
             + "      document.body.appendChild(e);\n"
             + "      log(style['display']);\n"
+            + "    }\n"
+            + "  </script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "</body></html>";
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = {"", "rgb(0, 0, 0)"},
+            IE = {"rgb(0, 0, 0)", "rgb(0, 0, 0)"})
+    public void colorDefault() throws Exception {
+        final String html = "<html>\n"
+            + "<head>\n"
+            + "  <script>\n"
+            + LOG_TITLE_FUNCTION
+            + "    function test() {\n"
+            + "      var e = document.createElement('tt');\n"
+            + "      var style = window.getComputedStyle(e, null);\n"
+            + "      log(style['color']);\n"
+            + "      document.body.appendChild(e);\n"
             + "      log(style['color']);\n"
             + "    }\n"
             + "  </script>\n"
@@ -3020,20 +3039,38 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
               + LOG_TITLE_FUNCTION
               + "  function test() {\n"
               + "    var node = document.getElementById('a1');\n"
-              + "    if (node.style.getPropertyPriority) {\n"
-              + "      log(node.style.getPropertyPriority('color'));\n"
+              + "    log(node.style.getPropertyPriority('color'));\n"
 
-              + "      node = document.getElementById('a2');\n"
-              + "      log(node.style.getPropertyPriority('color'));\n"
+              + "    node = document.getElementById('a2');\n"
+              + "    log(node.style.getPropertyPriority('color'));\n"
 
-              + "      node = document.getElementById('a3');\n"
-              + "      log(node.style.getPropertyPriority('background-color'));\n"
+              + "    node = document.getElementById('a3');\n"
+              + "    log(node.style.getPropertyPriority('background-color'));\n"
 
-              + "      node = document.getElementById('a4');\n"
-              + "      log(node.style.getPropertyPriority('background-color'));\n"
-              + "    } else {\n"
-              + "      log('not supported');\n"
-              + "    }\n"
+              + "    node = document.getElementById('a4');\n"
+              + "    log(node.style.getPropertyPriority('background-color'));\n"
+              + "  }\n"
+              + "</script>\n"
+              + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts("")
+    public void getPropertyPriorityNoStyle() throws Exception {
+        final String html =
+                "<html><body onload='test()'>\n"
+              + "<a id='a1' href='#'>go</a>\n"
+
+              + "<script>\n"
+              + LOG_TITLE_FUNCTION
+              + "  function test() {\n"
+              + "    var node = document.getElementById('a1');\n"
+              + "    log(node.style.getPropertyPriority('color'));\n"
               + "  }\n"
               + "</script>\n"
               + "</body></html>";
@@ -3711,6 +3748,30 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
             + "  }\n"
             + "</script>\n"
 
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("\"abCD\"")
+    public void content() throws Exception {
+        final String html =
+            "<html>\n"
+            + "</head>\n"
+            + "  <style type='text/css'>#myDiv::before { content: 'abCD' }</style>\n"
+            + "</head>\n"
+            + "<body>\n"
+            + "  <div id='myDiv'></div>\n"
+            + "  <script>\n"
+            + LOG_TITLE_FUNCTION
+            + "    var myDiv = document.getElementById('myDiv');\n"
+            + "    var myDivStyle = window.getComputedStyle(myDiv, '::before');\n"
+            + "    log(myDivStyle.content);\n"
+            + "  </script>\n"
             + "</body></html>";
 
         loadPageVerifyTitle2(html);

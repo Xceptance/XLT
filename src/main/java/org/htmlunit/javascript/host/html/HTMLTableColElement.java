@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,12 +24,11 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import org.htmlunit.html.HtmlTableColumn;
 import org.htmlunit.html.HtmlTableColumnGroup;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.configuration.JsxSetter;
-
-import org.htmlunit.corejs.javascript.Context;
 
 /**
  * The JavaScript object {@code HTMLTableColElement}.
@@ -44,8 +43,16 @@ public class HTMLTableColElement extends HTMLTableComponent {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public HTMLTableColElement() {
+    }
+
+    /**
+     * JavaScript constructor.
+     */
+    @Override
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    public void jsConstructor() {
+        super.jsConstructor();
     }
 
     /**
@@ -74,16 +81,14 @@ public class HTMLTableColElement extends HTMLTableComponent {
      */
     @JsxSetter
     public void setSpan(final Object span) {
-        final double d = Context.toNumber(span);
+        final double d = JavaScriptEngine.toNumber(span);
         int i = (int) d;
         if (i < 1) {
             if (getBrowserVersion().hasFeature(JS_TABLE_SPAN_THROWS_EXCEPTION_IF_INVALID)) {
                 final Exception e = new Exception("Cannot set the span property to invalid value: " + span);
-                Context.throwAsScriptRuntimeEx(e);
+                throw JavaScriptEngine.throwAsScriptRuntimeEx(e);
             }
-            else {
-                i = 1;
-            }
+            i = 1;
         }
         getDomNodeOrDie().setAttribute("span", Integer.toString(i));
     }
@@ -110,7 +115,7 @@ public class HTMLTableColElement extends HTMLTableComponent {
             value = "";
         }
         else {
-            value = Context.toString(width);
+            value = JavaScriptEngine.toString(width);
         }
         setWidthOrHeight("width", value, false);
     }
@@ -129,7 +134,7 @@ public class HTMLTableColElement extends HTMLTableComponent {
      */
     @Override
     public void setOuterHTML(final Object value) {
-        throw Context.reportRuntimeError("outerHTML is read-only for tag '"
+        throw JavaScriptEngine.reportRuntimeError("outerHTML is read-only for tag '"
                             + getDomNodeOrDie().getNodeName() + "'");
     }
 }

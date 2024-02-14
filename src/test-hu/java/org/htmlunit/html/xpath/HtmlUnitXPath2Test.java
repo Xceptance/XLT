@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,11 @@
  */
 package org.htmlunit.html.xpath;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * Tests for XPath evaluation on HtmlUnit DOM.
@@ -420,6 +419,201 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
             + "    <p id='a' x='1' y='7'></p>\n"
             + "    <p id='b' y='13'></p>\n"
             + "  </div>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(content);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = "mySpan",
+            IE = "error")
+    public void minimalParameters() throws Exception {
+        final String content = "<html>\n"
+            + "<head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "function test() {\n"
+            + "  try {\n"
+            + "    var res = '';\n"
+            + "    var result = document.evaluate('//span', document.documentElement);\n"
+            + "    while (node = result.iterateNext()) {\n"
+            + "      res += node.id;\n"
+            + "    }\n"
+            + "    log(res);\n"
+            + "  } catch (e) {log('error')}\n"
+            + "}\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <div id='myDiv' attr='false'>false</span>\n"
+            + "  <span id='mySpan' attr='true'>true</span>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(content);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = "mySpan",
+            IE = "error")
+    public void undefinedResult() throws Exception {
+        final String content = "<html>\n"
+            + "<head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "function test() {\n"
+            + "  try {\n"
+            + "    var res = '';\n"
+            + "    var result = document.evaluate('//span', "
+                        + "document.documentElement, null, XPathResult.ANY_TYPE, undefined);\n"
+            + "    while (node = result.iterateNext()) {\n"
+            + "      res += node.id;\n"
+            + "    }\n"
+            + "    log(res);\n"
+            + "  } catch (e) {log('error')}\n"
+            + "}\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <div id='myDiv' attr='false'>false</span>\n"
+            + "  <span id='mySpan' attr='true'>true</span>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(content);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("error")
+    public void stringResult() throws Exception {
+        final String content = "<html>\n"
+            + "<head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "function test() {\n"
+            + "  try {\n"
+            + "    var res = '';\n"
+            + "    var result = document.evaluate('//span', "
+                        + "document.documentElement, null, XPathResult.ANY_TYPE, 'abcd');\n"
+            + "    while (node = result.iterateNext()) {\n"
+            + "      res += node.id;\n"
+            + "    }\n"
+            + "    log(res);\n"
+            + "  } catch (e) {log('error')}\n"
+            + "}\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <div id='myDiv' attr='false'>false</span>\n"
+            + "  <span id='mySpan' attr='true'>true</span>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(content);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = "mySpan",
+            IE = "error")
+    public void objectResult() throws Exception {
+        final String content = "<html>\n"
+            + "<head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "function test() {\n"
+            + "  try {\n"
+            + "    var res = '';\n"
+            + "    var result = document.evaluate('//span', "
+                        + "document.documentElement, null, XPathResult.ANY_TYPE, {});\n"
+            + "    while (node = result.iterateNext()) {\n"
+            + "      res += node.id;\n"
+            + "    }\n"
+            + "    log(res);\n"
+            + "  } catch (e) {log('error')}\n"
+            + "}\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <div id='myDiv' attr='false'>false</span>\n"
+            + "  <span id='mySpan' attr='true'>true</span>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(content);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = "mySpan - - myDiv",
+            FF = "mySpan - myDiv - ",
+            FF_ESR = "mySpan - myDiv - ",
+            IE = "error")
+    public void reuseResult() throws Exception {
+        final String content = "<html>\n"
+            + "<head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "function test() {\n"
+            + "  try {\n"
+            + "    var res = '';\n"
+            + "    var result = document.evaluate('//span', "
+                        + "document.documentElement, null, XPathResult.ANY_TYPE);\n"
+            + "    while (node = result.iterateNext()) {\n"
+            + "      res += node.id;\n"
+            + "    }\n"
+            + "    res += ' - ';\n"
+
+            + "    var result2 = document.evaluate('//div', "
+                        + "document.documentElement, null, XPathResult.ANY_TYPE, result);\n"
+            + "    while (node = result.iterateNext()) {\n"
+            + "      res += node.id;\n"
+            + "    }\n"
+            + "    res += ' - ';\n"
+
+            + "    while (node = result2.iterateNext()) {\n"
+            + "      res += node.id;\n"
+            + "    }\n"
+
+            + "    log(res);\n"
+            + "  } catch (e) {log('error')}\n"
+            + "}\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <div id='myDiv' attr='false'>false</span>\n"
+            + "  <span id='mySpan' attr='true'>true</span>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(content);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = "myDiv1",
+            IE = "error")
+    public void documentEvaluateFirst() throws Exception {
+        final String content = "<html>\n"
+            + "<head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "function test() {\n"
+            + "  try {\n"
+            + "    var res = '';\n"
+            + "    var result = document.evaluate('//div', document, null, XPathResult.FIRST_ORDERED_NODE_TYPE);\n"
+            + "    log(result.singleNodeValue.id);\n"
+            + "  } catch (e) {log('error')}\n"
+            + "}\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <div id='myDiv1'>div1</div>\n"
+            + "  <div id='myDiv2'>div1</div>\n"
             + "</body></html>";
 
         loadPageVerifyTitle2(content);

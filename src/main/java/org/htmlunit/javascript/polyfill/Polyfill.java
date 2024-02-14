@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
-
 import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.Script;
 import org.htmlunit.corejs.javascript.Scriptable;
@@ -41,10 +40,6 @@ public class Polyfill {
 
     public static Polyfill getFetchPolyfill() throws IOException {
         return getPolyfill("fetch/fetch.umd.js");
-    }
-
-    public static Polyfill getProxyPolyfill() throws IOException {
-        return getPolyfill("proxy/es6-proxy-polyfill.js");
     }
 
     private static Polyfill getPolyfill(final String resouceName) throws IOException {

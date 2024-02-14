@@ -15,20 +15,19 @@
 // specific language governing permissions and limitations
 // under the License.
 //
-// Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
+// Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
 
 package com.xceptance.xlt.engine.xltdriver;
 
 import java.io.IOException;
-
-import org.openqa.selenium.Keys;
-import org.openqa.selenium.WebDriverException;
 
 import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.HtmlFileInput;
 import org.htmlunit.html.HtmlInput;
 import org.htmlunit.html.HtmlNumberInput;
 import org.htmlunit.html.Keyboard;
+import org.openqa.selenium.Keys;
+import org.openqa.selenium.WebDriverException;
 
 /**
  * Implements keyboard operations using the HtmlUnit WebDriver.

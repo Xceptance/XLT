@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package org.htmlunit.html;
 import static org.htmlunit.BrowserVersionFeatures.CSS_DIALOG_NONE;
 import static org.htmlunit.BrowserVersionFeatures.CSS_RP_DISPLAY_NONE;
 import static org.htmlunit.BrowserVersionFeatures.CSS_RT_DISPLAY_RUBY_TEXT_ALWAYS;
-import static org.htmlunit.BrowserVersionFeatures.CSS_RUBY_DISPLAY_INLINE;
 import static org.htmlunit.BrowserVersionFeatures.MULTICOL_BLOCK;
 import static org.htmlunit.BrowserVersionFeatures.SLOT_CONTENTS;
 
@@ -79,10 +78,13 @@ public class HtmlUnknownElement extends HtmlElement {
     public DisplayStyle getDefaultStyleDisplay() {
         switch (getTagName()) {
             case HtmlRuby.TAG_NAME:
-                if (hasFeature(CSS_RUBY_DISPLAY_INLINE)) {
-                    return DisplayStyle.INLINE;
-                }
                 return DisplayStyle.RUBY;
+            case HtmlRb.TAG_NAME:
+                if (!hasFeature(CSS_RT_DISPLAY_RUBY_TEXT_ALWAYS)
+                        && wasCreatedByJavascript() && getParentNode() == null) {
+                    return DisplayStyle.BLOCK;
+                }
+                return DisplayStyle.RUBY_BASE;
             case HtmlRp.TAG_NAME:
                 if (hasFeature(CSS_RP_DISPLAY_NONE)) {
                     return DisplayStyle.NONE;
@@ -97,6 +99,12 @@ public class HtmlUnknownElement extends HtmlElement {
                     return DisplayStyle.BLOCK;
                 }
                 return DisplayStyle.RUBY_TEXT;
+            case HtmlRtc.TAG_NAME:
+                if (!hasFeature(CSS_RT_DISPLAY_RUBY_TEXT_ALWAYS)
+                        && wasCreatedByJavascript() && getParentNode() == null) {
+                    return DisplayStyle.BLOCK;
+                }
+                return DisplayStyle.RUBY_TEXT_CONTAINER;
             case HtmlMultiColumn.TAG_NAME:
                 if (hasFeature(MULTICOL_BLOCK)) {
                     return DisplayStyle.BLOCK;

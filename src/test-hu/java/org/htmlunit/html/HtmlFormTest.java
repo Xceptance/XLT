@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,9 +27,6 @@ import java.util.List;
 import java.util.Locale;
 
 import org.apache.commons.lang3.StringUtils;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import org.htmlunit.CollectingAlertHandler;
 import org.htmlunit.ElementNotFoundException;
 import org.htmlunit.HttpMethod;
@@ -43,6 +40,8 @@ import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * Tests for {@link HtmlForm}.
@@ -629,6 +628,63 @@ public class HtmlFormTest extends SimpleWebTestCase {
         }
     }
 
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void getInputByValueValueChanged() throws Exception {
+        final String html
+            = "<html><head><title>foo</title></head><body>\n"
+            + "<form id='form1'>\n"
+            + "  <input type='submit' name='button' value='xxx'/>\n"
+            + "  <input type='text' name='textfield' value='foo'/>\n"
+            + "  <input type='submit' name='button1' value='foo'/>\n"
+            + "  <input type='reset' name='button2' value='foo'/>\n"
+            + "  <input type='button' name='button3' value='foo'/>\n"
+            + "  <input type='image' name='img' value='foo'/>\n"
+            + "  <input type='submit' name='button' value='bar'/>\n"
+            + "</form></body></html>";
+        final HtmlPage page = loadPage(html);
+
+        final HtmlForm form = page.getHtmlElementById("form1");
+
+        HtmlInput input = form.getInputByValue("xxx");
+        input.setValue("yyy");
+        HtmlElement elem = form.getInputByValue("yyy");
+        assertEquals(input, elem);
+
+        input = form.getInputByValue("foo");
+        input.setValue("text");
+        elem = form.getInputByValue("text");
+        assertEquals(input, elem);
+
+        input = form.getInputByValue("foo");
+        input.setValue("suBmit");
+        elem = form.getInputByValue("suBmit");
+        assertEquals(input, elem);
+
+        input = form.getInputByValue("foo");
+        input.setValue("RESET");
+        elem = form.getInputByValue("RESET");
+        assertEquals(input, elem);
+
+        input = form.getInputByValue("foo");
+        input.setValue("button");
+        elem = form.getInputByValue("button");
+        assertEquals(input, elem);
+
+        input = form.getInputByValue("foo");
+        input.setValue("Image");
+        elem = form.getInputByValue("Image");
+        assertEquals(input, elem);
+
+        input = form.getInputByValue("bar");
+        input.setValue("1234");
+        elem = form.getInputByValue("1234");
+        assertEquals(input, elem);
+    }
+
     /**
      * Test that {@link HtmlForm#getTextAreaByName(String)} returns
      * the first textarea with the given name.
@@ -1190,5 +1246,40 @@ public class HtmlFormTest extends SimpleWebTestCase {
 
         final HtmlPage page = loadPage(html);
         assertEquals(xml, page.asXml());
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("second/?hiddenName=hiddenValue")
+    public void inputHiddenAdded() throws Exception {
+        final String html = "<!DOCTYPE html>\n"
+            + "<html><head></head>\n"
+            + "<body>\n"
+            + "  <p>hello world</p>\n"
+            + "  <form id='myForm' method='GET' action='" + URL_SECOND + "'>\n"
+            + "    <input id='myButton' type='submit' />\n"
+            + "  </form>\n"
+            + "</body></html>";
+
+        final String secondContent = "second content";
+        getMockWebConnection().setResponse(URL_SECOND, secondContent);
+
+        final HtmlPage page = loadPage(html);
+        final HtmlForm form = (HtmlForm) page.getElementById("myForm");
+
+        final DomElement input = page.createElement("input");
+        input.setAttribute("type", "hidden");
+        input.setAttribute("id", "hiddenId");
+        input.setAttribute("name", "hiddenName");
+        input.setAttribute("value", "hiddenValue");
+
+        form.appendChild(input);
+
+        page.getElementById("myButton").click();
+
+        final String url = getMockWebConnection().getLastWebRequest().getUrl().toExternalForm();
+        assertTrue(url.endsWith(getExpectedAlerts()[0]));
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,9 +24,6 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.w3c.dom.CDATASection;
-import org.w3c.dom.Node;
-
 import org.htmlunit.ElementNotFoundException;
 import org.htmlunit.SgmlPage;
 import org.htmlunit.StringWebResponse;
@@ -44,14 +41,14 @@ import org.htmlunit.html.Html;
 import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.javascript.HtmlUnitScriptable;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.configuration.JsxSetter;
 import org.htmlunit.xml.XmlPage;
-
-import org.htmlunit.corejs.javascript.Context;
-import org.htmlunit.corejs.javascript.ScriptRuntime;
+import org.w3c.dom.CDATASection;
+import org.w3c.dom.Node;
 
 /**
  * A JavaScript object for MSXML's (ActiveX) XMLDOMDocument.<br>
@@ -96,7 +93,7 @@ public class XMLDOMDocument extends XMLDOMNode {
                 setDomNode(page);
             }
             catch (final IOException e) {
-                throw Context.reportRuntimeError("IOException: " + e);
+                throw JavaScriptEngine.reportRuntimeError("IOException: " + e);
             }
         }
     }
@@ -138,7 +135,7 @@ public class XMLDOMDocument extends XMLDOMNode {
      */
     @JsxSetter
     public void setDoctype(final Object ignored) {
-        throw ScriptRuntime.typeError("Wrong number of arguments or invalid property assignment");
+        throw JavaScriptEngine.typeError("Wrong number of arguments or invalid property assignment");
     }
 
     /**
@@ -162,7 +159,7 @@ public class XMLDOMDocument extends XMLDOMNode {
     @JsxSetter
     public void setDocumentElement(final XMLDOMElement element) {
         if (element == null) {
-            throw Context.reportRuntimeError("Type mismatch.");
+            throw JavaScriptEngine.reportRuntimeError("Type mismatch.");
         }
 
         final XMLDOMElement documentElement = getDocumentElement();
@@ -193,7 +190,7 @@ public class XMLDOMDocument extends XMLDOMNode {
      */
     @JsxSetter
     public void setImplementation(final Object ignored) {
-        throw ScriptRuntime.typeError("Wrong number of arguments or invalid property assignment");
+        throw JavaScriptEngine.typeError("Wrong number of arguments or invalid property assignment");
     }
 
     /**
@@ -203,16 +200,16 @@ public class XMLDOMDocument extends XMLDOMNode {
     @Override
     public void setNodeValue(final String value) {
         if (value == null || "null".equals(value)) {
-            throw Context.reportRuntimeError("Type mismatch.");
+            throw JavaScriptEngine.reportRuntimeError("Type mismatch.");
         }
-        throw Context.reportRuntimeError("This operation cannot be performed with a node of type DOCUMENT.");
+        throw JavaScriptEngine.reportRuntimeError("This operation cannot be performed with a node of type DOCUMENT.");
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Object getOwnerDocument() {
+    public HtmlUnitScriptable getOwnerDocument() {
         return null;
     }
 
@@ -236,7 +233,7 @@ public class XMLDOMDocument extends XMLDOMNode {
      */
     @JsxSetter
     public void setParseError(final Object ignored) {
-        throw ScriptRuntime.typeError("Wrong number of arguments or invalid property assignment");
+        throw JavaScriptEngine.typeError("Wrong number of arguments or invalid property assignment");
     }
 
     /**
@@ -276,9 +273,9 @@ public class XMLDOMDocument extends XMLDOMNode {
     @Override
     public void setText(final Object text) {
         if (text == null || "null".equals(text)) {
-            throw Context.reportRuntimeError("Type mismatch.");
+            throw JavaScriptEngine.reportRuntimeError("Type mismatch.");
         }
-        throw Context.reportRuntimeError("This operation cannot be performed with a node of type DOCUMENT.");
+        throw JavaScriptEngine.reportRuntimeError("This operation cannot be performed with a node of type DOCUMENT.");
     }
 
     /**
@@ -313,30 +310,33 @@ public class XMLDOMDocument extends XMLDOMNode {
 
     private void verifyChild(final Object newChild) {
         if (!(newChild instanceof XMLDOMNode)) {
-            throw Context.reportRuntimeError("Type mismatch.");
+            throw JavaScriptEngine.reportRuntimeError("Type mismatch.");
         }
         if (newChild instanceof XMLDOMCDATASection) {
-            throw Context.reportRuntimeError("This operation cannot be performed with a node of type CDATA.");
+            throw JavaScriptEngine.reportRuntimeError("This operation cannot be performed with a node of type CDATA.");
         }
         if (newChild instanceof XMLDOMText) {
-            throw Context.reportRuntimeError("This operation cannot be performed with a node of type TEXT.");
+            throw JavaScriptEngine.reportRuntimeError("This operation cannot be performed with a node of type TEXT.");
         }
         if (newChild instanceof XMLDOMElement && getDocumentElement() != null) {
-            throw Context.reportRuntimeError("Only one top level element is allowed in an XML document.");
+            throw JavaScriptEngine.reportRuntimeError("Only one top level element is allowed in an XML document.");
         }
         if (newChild instanceof XMLDOMDocumentFragment) {
             boolean elementFound = false;
             XMLDOMNode child = ((XMLDOMDocumentFragment) newChild).getFirstChild();
             while (child != null) {
                 if (child instanceof XMLDOMCDATASection) {
-                    throw Context.reportRuntimeError("This operation cannot be performed with a node of type CDATA.");
+                    throw JavaScriptEngine.reportRuntimeError(
+                            "This operation cannot be performed with a node of type CDATA.");
                 }
                 if (child instanceof XMLDOMText) {
-                    throw Context.reportRuntimeError("This operation cannot be performed with a node of type TEXT.");
+                    throw JavaScriptEngine.reportRuntimeError(
+                            "This operation cannot be performed with a node of type TEXT.");
                 }
                 if (child instanceof XMLDOMElement) {
                     if (elementFound) {
-                        throw Context.reportRuntimeError("Only one top level element is allowed in an XML document.");
+                        throw JavaScriptEngine.reportRuntimeError(
+                                "Only one top level element is allowed in an XML document.");
                     }
                     elementFound = true;
                 }
@@ -354,10 +354,10 @@ public class XMLDOMDocument extends XMLDOMNode {
     @JsxFunction
     public Object createAttribute(final String name) {
         if (name == null || "null".equals(name)) {
-            throw Context.reportRuntimeError("Type mismatch.");
+            throw JavaScriptEngine.reportRuntimeError("Type mismatch.");
         }
         if (StringUtils.isBlank(name) || name.indexOf('<') >= 0 || name.indexOf('>') >= 0) {
-            throw Context.reportRuntimeError("To create a node of type ATTR a valid name must be given.");
+            throw JavaScriptEngine.reportRuntimeError("To create a node of type ATTR a valid name must be given.");
         }
 
         final DomAttr domAttr = getPage().createAttribute(name);
@@ -404,10 +404,10 @@ public class XMLDOMDocument extends XMLDOMNode {
     @JsxFunction
     public Object createElement(final String tagName) {
         if (tagName == null || "null".equals(tagName)) {
-            throw Context.reportRuntimeError("Type mismatch.");
+            throw JavaScriptEngine.reportRuntimeError("Type mismatch.");
         }
         if (StringUtils.isBlank(tagName) || tagName.indexOf('<') >= 0 || tagName.indexOf('>') >= 0) {
-            throw Context.reportRuntimeError("To create a node of type ELEMENT a valid name must be given.");
+            throw JavaScriptEngine.reportRuntimeError("To create a node of type ELEMENT a valid name must be given.");
         }
 
         try {
@@ -441,15 +441,15 @@ public class XMLDOMDocument extends XMLDOMNode {
      */
     @JsxFunction
     public Object createNode(final Object type, final String name, final Object namespaceURI) {
-        switch ((short) Context.toNumber(type)) {
+        switch ((short) JavaScriptEngine.toNumber(type)) {
             case Node.ELEMENT_NODE:
                 return createElementNS((String) namespaceURI, name);
             case Node.ATTRIBUTE_NODE:
                 return createAttribute(name);
 
             default:
-                throw Context.reportRuntimeError("xmlDoc.createNode(): Unsupported type "
-                        + (short) Context.toNumber(type));
+                throw JavaScriptEngine.reportRuntimeError("xmlDoc.createNode(): Unsupported type "
+                        + (short) JavaScriptEngine.toNumber(type));
         }
     }
 
@@ -462,7 +462,7 @@ public class XMLDOMDocument extends XMLDOMNode {
     private Object createElementNS(final String namespaceURI, final String qualifiedName) {
         final org.w3c.dom.Element element;
         if ("http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul".equals(namespaceURI)) {
-            throw Context.reportRuntimeError("XUL not available");
+            throw JavaScriptEngine.reportRuntimeError("XUL not available");
         }
         else if (Html.XHTML_NAMESPACE.equals(namespaceURI)
                 || Html.SVG_NAMESPACE.equals(namespaceURI)) {
@@ -552,7 +552,7 @@ public class XMLDOMDocument extends XMLDOMNode {
         final Object newChild = args[0];
         verifyChild(newChild);
         if (args.length != 2) {
-            throw Context.reportRuntimeError("Wrong number of arguments or invalid property assignment.");
+            throw JavaScriptEngine.reportRuntimeError("Wrong number of arguments or invalid property assignment.");
         }
 
         return super.insertBeforeImpl(args);

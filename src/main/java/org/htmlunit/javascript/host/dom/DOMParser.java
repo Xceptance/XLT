@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.htmlunit.WebWindow;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.parser.HTMLParser;
 import org.htmlunit.javascript.HtmlUnitScriptable;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
@@ -30,9 +31,6 @@ import org.htmlunit.javascript.host.Window;
 import org.htmlunit.javascript.host.html.HTMLDocument;
 import org.htmlunit.javascript.host.xml.XMLDocument;
 import org.htmlunit.util.MimeType;
-
-import org.htmlunit.corejs.javascript.Context;
-import org.htmlunit.corejs.javascript.Undefined;
 
 /**
  * A JavaScript object for {@code DOMParser}.
@@ -53,8 +51,14 @@ public class DOMParser extends HtmlUnitScriptable {
     /**
      * The constructor.
      */
-    @JsxConstructor
     public DOMParser() {
+    }
+
+    /**
+     * JavaScript constructor.
+     */
+    @JsxConstructor
+    public void jsConstructor() {
     }
 
     /**
@@ -70,12 +74,12 @@ public class DOMParser extends HtmlUnitScriptable {
         try {
             final Document document = parseFromString(this, str, type);
             if (document == null) {
-                throw Context.reportRuntimeError("Invalid 'type' parameter: " + type);
+                throw JavaScriptEngine.reportRuntimeError("Invalid 'type' parameter: " + type);
             }
             return document;
         }
         catch (final IOException e) {
-            throw Context.reportRuntimeError("Parsing failed" + e.getMessage());
+            throw JavaScriptEngine.reportRuntimeError("Parsing failed" + e.getMessage());
         }
     }
 
@@ -93,8 +97,8 @@ public class DOMParser extends HtmlUnitScriptable {
      */
     public static Document parseFromString(final HtmlUnitScriptable scriptable, final String str, final Object type)
                 throws IOException {
-        if (type == null || Undefined.isUndefined(type)) {
-            throw Context.reportRuntimeError("Missing 'type' parameter");
+        if (type == null || JavaScriptEngine.isUndefined(type)) {
+            throw JavaScriptEngine.reportRuntimeError("Missing 'type' parameter");
         }
 
         if (MimeType.TEXT_XML.equals(type)

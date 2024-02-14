@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,14 +20,13 @@ import java.util.List;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import org.htmlunit.MockWebConnection;
 import org.htmlunit.SimpleWebTestCase;
 import org.htmlunit.WebClient;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.junit.BrowserRunner;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * Test class for {@link HTMLParserListener}.
@@ -36,6 +35,7 @@ import org.htmlunit.junit.BrowserRunner;
  * parser but just that we catch and "transmit" them.
  *
  * @author Marc Guillemot
+ * @author Ronald Brill
  */
 @RunWith(BrowserRunner.class)
 public class HTMLParserListenerTest extends SimpleWebTestCase {
@@ -118,7 +118,7 @@ public class HTMLParserListenerTest extends SimpleWebTestCase {
      */
     @Test
     public void simple() throws Exception {
-        testSimple(5, 7);
+        testSimple(5, 8);
     }
 
     /**
@@ -129,12 +129,16 @@ public class HTMLParserListenerTest extends SimpleWebTestCase {
      */
     @Test
     public void simple_withWrongLineCol() throws Exception {
-        testSimple(5, 7);
+        testSimple(5, 8);
     }
 
     private void testSimple(final int line, final int col) throws Exception {
-        final String htmlContent = "<html>\n" + "<head>\n<title>foo\n</head>\n"
-                + "<body>\nfoo\n</body>\n</html>";
+        final String htmlContent =
+                "<html>\n"
+                + "<body>\n"
+                + "<p>foo\n"
+                + "</body>"
+                + "\n</html>";
 
         final WebClient webClient = getWebClient();
         assertNull(webClient.getHTMLParserListener());
@@ -161,11 +165,11 @@ public class HTMLParserListenerTest extends SimpleWebTestCase {
         webClient.setWebConnection(webConnection);
 
         final HtmlPage page = webClient.getPage(URL_FIRST);
-        assertEquals("foo", page.getTitleText());
+        assertEquals("foo", page.asNormalizedText());
 
         // ignore column and key
         final MessageInfo expectedError = new MessageInfo(false,
-                "End element <head> automatically closes element <title>.",
+                "End element <body> automatically closes element <p>.",
                 URL_FIRST, null, line, col, null);
 
         assertEquals(1, messages.size());

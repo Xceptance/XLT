@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,12 +25,11 @@ import java.util.zip.GZIPOutputStream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.junit.Test;
-
 import org.htmlunit.MockWebConnection;
 import org.htmlunit.SimpleWebTestCase;
 import org.htmlunit.WebRequest;
 import org.htmlunit.WebResponse;
+import org.junit.Test;
 
 /**
  * Tests for {@link DebuggingWebConnection}.
@@ -104,7 +103,7 @@ public class DebuggingWebConnectionTest extends SimpleWebTestCase {
         final MockWebConnection mockConnection = new MockWebConnection();
         final List<NameValuePair> responseHeaders = Arrays.asList(
             new NameValuePair("Content-Encoding", "gzip"));
-        mockConnection.setResponse(URL_FIRST, baos.toByteArray(), 200, "OK", MimeType.APPLICATION_JAVASCRIPT,
+        mockConnection.setResponse(URL_FIRST, baos.toByteArray(), 200, "OK", MimeType.TEXT_JAVASCRIPT,
             responseHeaders);
 
         final String dirName = "test-" + getClass().getSimpleName();

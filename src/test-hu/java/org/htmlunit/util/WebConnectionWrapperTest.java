@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +17,14 @@ package org.htmlunit.util;
 import java.util.Collections;
 import java.util.List;
 
-import org.junit.Test;
-
 import org.htmlunit.HttpMethod;
 import org.htmlunit.SimpleWebTestCase;
 import org.htmlunit.WebConnection;
 import org.htmlunit.WebRequest;
 import org.htmlunit.WebResponse;
 import org.htmlunit.WebResponseData;
+import org.htmlunit.httpclient.HttpClientConverter;
+import org.junit.Test;
 
 /**
  * Tests for {@link WebConnectionWrapper}.
@@ -39,7 +39,7 @@ public class WebConnectionWrapperTest extends SimpleWebTestCase {
     @Test
     public void wrapper() throws Exception {
         final List<NameValuePair> emptyList = Collections.emptyList();
-        final WebResponseData data = new WebResponseData(new byte[]{}, WebResponse.OK, "", emptyList);
+        final WebResponseData data = new WebResponseData(new byte[]{}, HttpClientConverter.OK, "", emptyList);
         final WebResponse response = new WebResponse(data, URL_FIRST, HttpMethod.GET, 0);
         final WebRequest wrs = new WebRequest(URL_FIRST);
 

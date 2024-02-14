@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -67,14 +67,14 @@ public class HtmlSubmitInput extends HtmlInput implements LabelableElement {
         final BrowserVersion browserVersion = page.getWebClient().getBrowserVersion();
         if (browserVersion.hasFeature(SUBMITINPUT_DEFAULT_VALUE_IF_VALUE_NOT_DEFINED)) {
             for (final String key : attributes.keySet()) {
-                if ("value".equalsIgnoreCase(key)) {
+                if (VALUE_ATTRIBUTE.equalsIgnoreCase(key)) {
                     return attributes; // value attribute was specified
                 }
             }
 
             // value attribute was not specified, add it
-            final DomAttr newAttr = new DomAttr(page, null, "value", DEFAULT_VALUE, true);
-            attributes.put("value", newAttr);
+            final DomAttr newAttr = new DomAttr(page, null, VALUE_ATTRIBUTE, DEFAULT_VALUE, true);
+            attributes.put(VALUE_ATTRIBUTE, newAttr);
         }
 
         return attributes;
@@ -101,7 +101,7 @@ public class HtmlSubmitInput extends HtmlInput implements LabelableElement {
      */
     @Override
     public void setValue(final String newValue) {
-        super.setValue(newValue);
+        unmarkValueDirty();
         setDefaultValue(newValue);
     }
 
@@ -132,7 +132,7 @@ public class HtmlSubmitInput extends HtmlInput implements LabelableElement {
         for (final DomAttr attribute : getAttributesMap().values()) {
             final String name = attribute.getNodeName();
             final String value = attribute.getValue();
-            if (!"value".equals(name) || !DEFAULT_VALUE.equals(value)) {
+            if (!VALUE_ATTRIBUTE.equals(name) || !DEFAULT_VALUE.equals(value)) {
                 printWriter.print(" ");
                 printWriter.print(name);
                 printWriter.print("=\"");
@@ -149,7 +149,7 @@ public class HtmlSubmitInput extends HtmlInput implements LabelableElement {
      */
     @Override
     public NameValuePair[] getSubmitNameValuePairs() {
-        if (!getNameAttribute().isEmpty() && !hasAttribute("value")) {
+        if (!getNameAttribute().isEmpty() && !hasAttribute(VALUE_ATTRIBUTE)) {
             return new NameValuePair[]{new NameValuePair(getNameAttribute(), DEFAULT_VALUE)};
         }
         return super.getSubmitNameValuePairs();

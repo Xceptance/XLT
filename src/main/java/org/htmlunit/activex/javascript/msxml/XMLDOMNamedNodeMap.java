@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,13 @@ package org.htmlunit.activex.javascript.msxml;
 
 import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
+import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.html.DomNode;
+import org.htmlunit.javascript.HtmlUnitScriptable;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
-
-import org.htmlunit.corejs.javascript.Context;
-import org.htmlunit.corejs.javascript.Scriptable;
 
 /**
  * A JavaScript object for MSXML's (ActiveX) XMLDOMNamedNodeMap.<br>
@@ -98,7 +98,7 @@ public class XMLDOMNamedNodeMap extends MSXMLScriptable {
      * @param name attribute name
      * @return the attribute node, {@code null} if the attribute is not defined
      */
-    public Object getNamedItemWithoutSyntheticClassAttr(final String name) {
+    public HtmlUnitScriptable getNamedItemWithoutSyntheticClassAttr(final String name) {
         if (attributes_ != null) {
             final DomNode attr = (DomNode) attributes_.getNamedItem(name);
             if (attr != null) {
@@ -116,7 +116,7 @@ public class XMLDOMNamedNodeMap extends MSXMLScriptable {
     @JsxFunction
     public Object getNamedItem(final String name) {
         if (name == null || "null".equals(name)) {
-            throw Context.reportRuntimeError("Type mismatch.");
+            throw JavaScriptEngine.reportRuntimeError("Type mismatch.");
         }
 
         return getNamedItemWithoutSyntheticClassAttr(name);
@@ -128,7 +128,7 @@ public class XMLDOMNamedNodeMap extends MSXMLScriptable {
      * @return the item at the specified index
      */
     @JsxFunction
-    public Object item(final int index) {
+    public HtmlUnitScriptable item(final int index) {
         final DomNode attr = (DomNode) attributes_.item(index);
         if (attr != null) {
             return attr.getScriptableObject();
@@ -151,9 +151,9 @@ public class XMLDOMNamedNodeMap extends MSXMLScriptable {
      * @return the node removed from the collection or {@code null} if the named node is not an attribute
      */
     @JsxFunction
-    public Object removeNamedItem(final String name) {
+    public HtmlUnitScriptable removeNamedItem(final String name) {
         if (name == null || "null".equals(name)) {
-            throw Context.reportRuntimeError("Type mismatch.");
+            throw JavaScriptEngine.reportRuntimeError("Type mismatch.");
         }
 
         final DomNode attr = (DomNode) attributes_.removeNamedItem(name);
@@ -179,7 +179,7 @@ public class XMLDOMNamedNodeMap extends MSXMLScriptable {
     @JsxFunction
     public Object setNamedItem(final XMLDOMNode node) {
         if (node == null) {
-            throw Context.reportRuntimeError("Type mismatch.");
+            throw JavaScriptEngine.reportRuntimeError("Type mismatch.");
         }
 
         attributes_.setNamedItem(node.getDomNodeOrDie());

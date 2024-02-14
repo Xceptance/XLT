@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,11 @@ package org.htmlunit.javascript.regexp;
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
 
 import org.apache.commons.io.IOUtils;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * Tests for {@link HtmlUnitRegExpProxy}.
@@ -34,6 +33,7 @@ import org.htmlunit.junit.BrowserRunner.Alerts;
  * @author Carsten Steurl
  * @author Leszek Hoppe
  * @author Atsushi Nakagawa
+ * @author Lai Quang Duong
  */
 @RunWith(BrowserRunner.class)
 public class HtmlUnitRegExpProxyTest extends WebDriverTestCase {
@@ -1135,10 +1135,10 @@ public class HtmlUnitRegExpProxyTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("abc")
+    @Alerts("ab\nc")
     public void specialBrackets6() throws Exception {
         // [^] matches any character in JS
-        testEvaluate("'abc'.match(/[^]*/)[0]");
+        testEvaluate("'ab\\nc'.match(/[^]*/)[0]");
     }
 
     /**
@@ -1149,6 +1149,26 @@ public class HtmlUnitRegExpProxyTest extends WebDriverTestCase {
     public void specialBrackets7() throws Exception {
         // [^] matches any character in JS
         testEvaluate("'ab]cd'.replace(/[^]]/g, 'x')");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("xcd")
+    public void specialBrackets8() throws Exception {
+        // [^] matches any character in JS
+        testEvaluate("'abdcd'.replace(/a[^]d/g, 'x')");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("x abdu")
+    public void specialBrackets9() throws Exception {
+        // [^] matches any character in JS
+        testEvaluate("'abdo abdu'.replace(/a[^]d[o]/g, 'x')");
     }
 
     /**

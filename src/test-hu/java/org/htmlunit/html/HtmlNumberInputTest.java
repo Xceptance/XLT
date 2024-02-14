@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,22 +18,20 @@ import static org.junit.Assert.fail;
 
 import java.util.Collections;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.openqa.selenium.By;
-import org.openqa.selenium.InvalidElementStateException;
-import org.openqa.selenium.JavascriptException;
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.Keys;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.htmlunit.HtmlUnitDriver;
-
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import org.htmlunit.util.MimeType;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.openqa.selenium.By;
+import org.openqa.selenium.InvalidElementStateException;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.Keys;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 
 /**
  * Tests for {@link HtmlNumberInput}.
@@ -214,7 +212,7 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = {"1", "1--null-true", "1.", "1.--null-true", "1.2", "1.2--null-false"},
             EDGE = {"1", "1--null-true", "1.", "1.--null-true", "1.2", "1.2--null-false"},
             FF = {"1", "1--null-true", "1.", "--null-false", "1.2", "1.2--null-false"},
-            FF_ESR = {"1", "1--null-true", "1.", "1.--null-true", "1.2", "1.2--null-false"})
+            FF_ESR = {"1", "1--null-true", "1.", "--null-false", "1.2", "1.2--null-false"})
     public void typeIntegerWithDot() throws Exception {
         final String html = "<html>\n"
                 + "<head>\n"
@@ -1569,7 +1567,7 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
     /**
      * @throws Exception if the test fails
      */
-    @Test(expected = JavascriptException.class)
+    @Test(expected = UnsupportedOperationException.class)
     public void submitWithoutForm() throws Exception {
         final String html =
             "<html>\n"

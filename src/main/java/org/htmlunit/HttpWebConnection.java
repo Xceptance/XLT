@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
- * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package org.htmlunit;
 
+import static org.htmlunit.BrowserVersionFeatures.CONNECTION_KEEP_ALIVE_IE;
 import static org.htmlunit.BrowserVersionFeatures.URL_AUTH_CREDENTIALS;
 
 import java.io.ByteArrayInputStream;
@@ -62,6 +63,7 @@ import org.apache.http.auth.Credentials;
 import org.apache.http.client.AuthCache;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpHead;
@@ -76,7 +78,6 @@ import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.client.protocol.RequestAcceptEncoding;
 import org.apache.http.client.protocol.RequestAddCookies;
 import org.apache.http.client.protocol.RequestAuthCache;
-import org.apache.http.client.protocol.RequestClientConnControl;
 import org.apache.http.client.protocol.RequestDefaultHeaders;
 import org.apache.http.client.protocol.RequestExpectContinue;
 import org.apache.http.client.protocol.ResponseProcessCookies;
@@ -85,6 +86,7 @@ import org.apache.http.config.ConnectionConfig;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.config.SocketConfig;
 import org.apache.http.conn.DnsResolver;
+import org.apache.http.conn.routing.RouteInfo;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.LayeredConnectionSocketFactory;
 import org.apache.http.conn.ssl.DefaultHostnameVerifier;
@@ -106,7 +108,6 @@ import org.apache.http.protocol.RequestContent;
 import org.apache.http.protocol.RequestTargetHost;
 import org.apache.http.ssl.SSLContexts;
 import org.apache.http.util.TextUtils;
-
 import org.htmlunit.WebRequest.HttpHint;
 import org.htmlunit.httpclient.HtmlUnitCookieSpecProvider;
 import org.htmlunit.httpclient.HtmlUnitCookieStore;
@@ -147,7 +148,7 @@ public class HttpWebConnection implements WebConnection {
     private final WebClient webClient_;
 
     private String virtualHost_;
-    private final CookieSpecProvider htmlUnitCookieSpecProvider_;
+    private final HtmlUnitCookieSpecProvider htmlUnitCookieSpecProvider_;
     private final WebClientOptions usedOptions_;
     private PoolingHttpClientConnectionManager connectionManager_;
 
@@ -189,10 +190,12 @@ public class HttpWebConnection implements WebConnection {
             final long startTime = System.currentTimeMillis();
 
             final HttpContext httpContext = getHttpContext();
-            HttpResponse httpResponse;
             try {
                 try (CloseableHttpClient closeableHttpClient = builder.build()) {
-                    httpResponse = closeableHttpClient.execute(httpHost, httpMethod, httpContext);
+                    try (CloseableHttpResponse httpResponse =
+                            closeableHttpClient.execute(httpHost, httpMethod, httpContext)) {
+                        return downloadResponse(httpMethod, webRequest, httpResponse, startTime);
+                    }
                 }
             }
             catch (final SSLPeerUnverifiedException s) {
@@ -200,12 +203,13 @@ public class HttpWebConnection implements WebConnection {
                 if (webClient_.getOptions().isUseInsecureSSL()) {
                     HtmlUnitSSLConnectionSocketFactory.setUseSSL3Only(httpContext, true);
                     try (CloseableHttpClient closeableHttpClient = builder.build()) {
-                        httpResponse = closeableHttpClient.execute(httpHost, httpMethod, httpContext);
+                        try (CloseableHttpResponse httpResponse =
+                                closeableHttpClient.execute(httpHost, httpMethod, httpContext)) {
+                            return downloadResponse(httpMethod, webRequest, httpResponse, startTime);
+                        }
                     }
                 }
-                else {
-                    throw s;
-                }
+                throw s;
             }
             catch (final Error e) {
                 // in case a StackOverflowError occurs while the connection is leased, it won't get released.
@@ -215,10 +219,6 @@ public class HttpWebConnection implements WebConnection {
                 httpClientBuilder_.remove(Thread.currentThread());
                 throw e;
             }
-
-            final DownloadedContent downloadedBody = downloadResponseBody(httpResponse);
-            final long endTime = System.currentTimeMillis();
-            return makeWebResponse(httpResponse, webRequest, downloadedBody, endTime - startTime);
         }
         finally {
             if (httpMethod != null) {
@@ -693,7 +693,8 @@ public class HttpWebConnection implements WebConnection {
         builder.setSSLSocketFactory(socketFactory);
 
         usedOptions_.setUseInsecureSSL(options.isUseInsecureSSL());
-        usedOptions_.setSSLClientCertificateStore(options.getSSLClientCertificateStore());
+        usedOptions_.setSSLClientCertificateKeyStore(options.getSSLClientCertificateStore(),
+                        options.getSSLClientCertificatePassword());
         usedOptions_.setSSLTrustStore(options.getSSLTrustStore());
         usedOptions_.setSSLClientCipherSuites(options.getSSLClientCipherSuites());
         usedOptions_.setSSLClientProtocols(options.getSSLClientProtocols());
@@ -738,7 +739,12 @@ public class HttpWebConnection implements WebConnection {
     }
 
     /**
-     * Converts an HttpMethod into a WebResponse.
+     * Converts an HttpMethod into a {@link WebResponse}.
+     * @param httpResponse the web server's response
+     * @param webRequest the {@link WebRequest}
+     * @param responseBody the {@link DownloadedContent}
+     * @param loadTime the download time
+     * @return a wrapper for the downloaded body.
      */
     protected WebResponse makeWebResponse(final HttpResponse httpResponse,
             final WebRequest webRequest, final DownloadedContent responseBody, final long loadTime) {
@@ -757,6 +763,26 @@ public class HttpWebConnection implements WebConnection {
     }
 
     /**
+     * Downloads the response.
+     * This calls {@link #downloadResponseBody(HttpResponse)} and constructs the {@link WebResponse}.
+     * @param httpMethod the HttpUriRequest
+     * @param webRequest the {@link WebRequest}
+     * @param httpResponse the web server's response
+     * @param startTime the download start time
+     * @return a wrapper for the downloaded body.
+     * @throws IOException in case of problem reading/saving the body
+     */
+    protected WebResponse downloadResponse(final HttpUriRequest httpMethod,
+            final WebRequest webRequest, final HttpResponse httpResponse,
+            final long startTime) throws IOException {
+
+        final DownloadedContent downloadedBody = downloadResponseBody(httpResponse);
+        final long endTime = System.currentTimeMillis();
+
+        return makeWebResponse(httpResponse, webRequest, downloadedBody, endTime - startTime);
+    }
+
+    /**
      * Downloads the response body.
      * @param httpResponse the web server's response
      * @return a wrapper for the downloaded body.
@@ -769,7 +795,8 @@ public class HttpWebConnection implements WebConnection {
         }
 
         try (InputStream is = httpEntity.getContent()) {
-            return downloadContent(is, webClient_.getOptions().getMaxInMemory());
+            return downloadContent(is, webClient_.getOptions().getMaxInMemory(),
+                        webClient_.getOptions().getTempFileDirectory());
         }
     }
 
@@ -777,10 +804,12 @@ public class HttpWebConnection implements WebConnection {
      * Reads the content of the stream and saves it in memory or on the file system.
      * @param is the stream to read
      * @param maxInMemory the maximumBytes to store in memory, after which save to a local file
+     * @param tempFileDirectory the directory to be used or null for the system default
      * @return a wrapper around the downloaded content
      * @throws IOException in case of read issues
      */
-    public static DownloadedContent downloadContent(final InputStream is, final int maxInMemory) throws IOException {
+    public static DownloadedContent downloadContent(final InputStream is, final int maxInMemory,
+            final File tempFileDirectory) throws IOException {
         if (is == null) {
             return new DownloadedContent.InMemory(null);
         }
@@ -791,9 +820,9 @@ public class HttpWebConnection implements WebConnection {
             try {
                 while ((nbRead = is.read(buffer)) != -1) {
                     bos.write(buffer, 0, nbRead);
-                    if (bos.size() > maxInMemory) {
+                    if (maxInMemory > 0 && bos.size() > maxInMemory) {
                         // we have exceeded the max for memory, let's write everything to a temporary file
-                        final File file = File.createTempFile("htmlunit", ".tmp");
+                        final File file = File.createTempFile("htmlunit", ".tmp", tempFileDirectory);
                         file.deleteOnExit();
                         try (OutputStream fos = Files.newOutputStream(file.toPath())) {
                             bos.writeTo(fos); // what we have already read
@@ -930,7 +959,8 @@ public class HttpWebConnection implements WebConnection {
                 }
             }
             else if (HttpHeader.CONNECTION.equals(header)) {
-                list.add(new RequestClientConnControl());
+                list.add(new RequestClientConnControl(
+                                webClient_.getBrowserVersion().hasFeature(CONNECTION_KEEP_ALIVE_IE)));
             }
             else if (HttpHeader.COOKIE.equals(header)) {
                 if (!webRequest.hasHint(HttpHint.BlockCookies)) {
@@ -1164,6 +1194,47 @@ public class HttpWebConnection implements WebConnection {
             throws HttpException, IOException {
             for (final Map.Entry<String, String> entry : map_.entrySet()) {
                 request.setHeader(entry.getKey(), entry.getValue());
+            }
+        }
+    }
+
+    private static class RequestClientConnControl implements HttpRequestInterceptor {
+
+        private static final String PROXY_CONN_DIRECTIVE = "Proxy-Connection";
+        private static final String CONN_DIRECTIVE = "Connection";
+        private static final String CONN_KEEP_ALIVE = "keep-alive";
+        private static final String CONN_KEEP_ALIVE_IE = "Keep-Alive";
+
+        private final boolean ie_;
+
+        RequestClientConnControl(final boolean ie) {
+            ie_ = ie;
+        }
+
+        @Override
+        public void process(final HttpRequest request, final HttpContext context)
+            throws HttpException, IOException {
+            final String method = request.getRequestLine().getMethod();
+            if ("CONNECT".equalsIgnoreCase(method)) {
+                request.setHeader(PROXY_CONN_DIRECTIVE, ie_ ? CONN_KEEP_ALIVE_IE : CONN_KEEP_ALIVE);
+                return;
+            }
+
+            final HttpClientContext clientContext = HttpClientContext.adapt(context);
+
+            // Obtain the client connection (required)
+            final RouteInfo route = clientContext.getHttpRoute();
+            if (route == null) {
+                return;
+            }
+
+            if ((route.getHopCount() == 1 || route.isTunnelled())
+                    && !request.containsHeader(CONN_DIRECTIVE)) {
+                request.addHeader(CONN_DIRECTIVE, ie_ ? CONN_KEEP_ALIVE_IE : CONN_KEEP_ALIVE);
+            }
+            if ((route.getHopCount() == 2 && !route.isTunnelled())
+                    && !request.containsHeader(PROXY_CONN_DIRECTIVE)) {
+                request.addHeader(PROXY_CONN_DIRECTIVE, ie_ ? CONN_KEEP_ALIVE_IE : CONN_KEEP_ALIVE);
             }
         }
     }

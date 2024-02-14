@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,15 @@
  */
 package org.htmlunit.javascript.host.dom;
 
+import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
+import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
+
+import org.htmlunit.corejs.javascript.Function;
+import org.htmlunit.corejs.javascript.NativeArray;
+import org.htmlunit.corejs.javascript.NativeObject;
+import org.htmlunit.corejs.javascript.ScriptRuntime;
+import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.TopLevel;
 import org.htmlunit.html.CharacterDataChangeEvent;
 import org.htmlunit.html.CharacterDataChangeListener;
 import org.htmlunit.html.HtmlAttributeChangeEvent;
@@ -25,17 +34,9 @@ import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.PostponedAction;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
+import org.htmlunit.javascript.configuration.JsxConstructorAlias;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.host.Window;
-
-import org.htmlunit.corejs.javascript.Context;
-import org.htmlunit.corejs.javascript.Function;
-import org.htmlunit.corejs.javascript.NativeArray;
-import org.htmlunit.corejs.javascript.NativeObject;
-import org.htmlunit.corejs.javascript.ScriptRuntime;
-import org.htmlunit.corejs.javascript.Scriptable;
-import org.htmlunit.corejs.javascript.ScriptableObject;
-import org.htmlunit.corejs.javascript.TopLevel;
 
 /**
  * A JavaScript object for {@code MutationObserver}.
@@ -68,7 +69,8 @@ public class MutationObserver extends HtmlUnitScriptable implements HtmlAttribut
      * @param function the function to observe
      */
     @JsxConstructor
-    public MutationObserver(final Function function) {
+    @JsxConstructorAlias(value = {CHROME, EDGE}, alias = "WebKitMutationObserver")
+    public void jsConstructor(final Function function) {
         function_ = function;
     }
 
@@ -80,10 +82,10 @@ public class MutationObserver extends HtmlUnitScriptable implements HtmlAttribut
     @JsxFunction
     public void observe(final Node node, final NativeObject options) {
         if (node == null) {
-            throw Context.throwAsScriptRuntimeEx(new IllegalArgumentException("Node is undefined"));
+            throw JavaScriptEngine.throwAsScriptRuntimeEx(new IllegalArgumentException("Node is undefined"));
         }
         if (options == null) {
-            throw Context.throwAsScriptRuntimeEx(new IllegalArgumentException("Options is undefined"));
+            throw JavaScriptEngine.throwAsScriptRuntimeEx(new IllegalArgumentException("Options is undefined"));
         }
 
         node_ = node;
@@ -97,7 +99,7 @@ public class MutationObserver extends HtmlUnitScriptable implements HtmlAttribut
         final boolean childList = Boolean.TRUE.equals(options.get("childList"));
 
         if (!attaributes_ && !childList && !characterData_) {
-            throw Context.throwAsScriptRuntimeEx(new IllegalArgumentException(
+            throw JavaScriptEngine.throwAsScriptRuntimeEx(new IllegalArgumentException(
                         "One of childList, attributes, od characterData must be set"));
         }
 
@@ -136,7 +138,7 @@ public class MutationObserver extends HtmlUnitScriptable implements HtmlAttribut
      */
     @Override
     public void characterDataChanged(final CharacterDataChangeEvent event) {
-        final ScriptableObject target = event.getCharacterData().getScriptableObject();
+        final HtmlUnitScriptable target = event.getCharacterData().getScriptableObject();
         if (subtree_ || target == node_) {
             final MutationRecord mutationRecord = new MutationRecord();
             final Scriptable scope = getParentScope();
@@ -155,7 +157,7 @@ public class MutationObserver extends HtmlUnitScriptable implements HtmlAttribut
                     (JavaScriptEngine) window.getWebWindow().getWebClient().getJavaScriptEngine();
             jsEngine.addPostponedAction(new PostponedAction(owningPage, "MutationObserver.characterDataChanged") {
                 @Override
-                public void execute() throws Exception {
+                public void execute() {
                     final NativeArray array = new NativeArray(new Object[] {mutationRecord});
                     ScriptRuntime.setBuiltinProtoAndParent(array, scope, TopLevel.Builtins.Array);
                     jsEngine.callFunction(owningPage, function_, scope, MutationObserver.this, new Object[] {array});
@@ -205,7 +207,7 @@ public class MutationObserver extends HtmlUnitScriptable implements HtmlAttribut
                         (JavaScriptEngine) window.getWebWindow().getWebClient().getJavaScriptEngine();
                 jsEngine.addPostponedAction(new PostponedAction(owningPage, "MutationObserver.attributeReplaced") {
                     @Override
-                    public void execute() throws Exception {
+                    public void execute() {
                         final NativeArray array = new NativeArray(new Object[] {mutationRecord});
                         ScriptRuntime.setBuiltinProtoAndParent(array, scope, TopLevel.Builtins.Array);
                         jsEngine.callFunction(owningPage, function_, scope,

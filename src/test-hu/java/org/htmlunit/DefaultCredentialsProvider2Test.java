@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,13 +27,12 @@ import org.apache.logging.log4j.core.Logger;
 import org.apache.logging.log4j.core.appender.WriterAppender;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.apache.logging.log4j.core.layout.PatternLayout;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * Tests for {@link DefaultCredentialsProvider}.
@@ -61,7 +60,8 @@ public class DefaultCredentialsProvider2Test extends WebServerTestCase {
 
         // wrong user name
         getWebClient().getCredentialsProvider().clear();
-        ((DefaultCredentialsProvider) getWebClient().getCredentialsProvider()).addCredentials("joe", "jetty");
+        ((DefaultCredentialsProvider) getWebClient().getCredentialsProvider())
+                                        .addCredentials("joe", "jetty".toCharArray());
 
         try {
             loadPage("Hi There");
@@ -81,7 +81,8 @@ public class DefaultCredentialsProvider2Test extends WebServerTestCase {
 
         // wrong user name
         getWebClient().getCredentialsProvider().clear();
-        ((DefaultCredentialsProvider) getWebClient().getCredentialsProvider()).addCredentials("jetty", "secret");
+        ((DefaultCredentialsProvider) getWebClient().getCredentialsProvider())
+                                        .addCredentials("jetty", "secret".toCharArray());
 
         try {
             loadPage("Hi There");
@@ -112,7 +113,8 @@ public class DefaultCredentialsProvider2Test extends WebServerTestCase {
 
         logger.addAppender(writerAppender);
         try {
-            ((DefaultCredentialsProvider) getWebClient().getCredentialsProvider()).addCredentials("jetty", "jetty");
+            ((DefaultCredentialsProvider) getWebClient().getCredentialsProvider())
+                                            .addCredentials("jetty", "jetty".toCharArray());
 
             loadPage("Hi There");
             int unauthorizedCount = StringUtils.countMatches(stringWriter.toString(), "HTTP/1.1 401");
@@ -311,7 +313,8 @@ public class DefaultCredentialsProvider2Test extends WebServerTestCase {
         getMockWebConnection().setDefaultResponse(html);
 
         getWebClient().getCredentialsProvider().clear();
-        ((DefaultCredentialsProvider) getWebClient().getCredentialsProvider()).addCredentials("jetty", "jetty");
+        ((DefaultCredentialsProvider) getWebClient().getCredentialsProvider())
+                                        .addCredentials("jetty", "jetty".toCharArray());
 
         // use default credentials
         loadPageWithAlerts(URL_FIRST);
@@ -346,7 +349,8 @@ public class DefaultCredentialsProvider2Test extends WebServerTestCase {
         getMockWebConnection().setDefaultResponse(html);
 
         getWebClient().getCredentialsProvider().clear();
-        ((DefaultCredentialsProvider) getWebClient().getCredentialsProvider()).addCredentials("joe", "hack");
+        ((DefaultCredentialsProvider) getWebClient().getCredentialsProvider())
+                                        .addCredentials("joe", "hack".toCharArray());
 
         // use default wrong credentials
         try {
@@ -391,7 +395,8 @@ public class DefaultCredentialsProvider2Test extends WebServerTestCase {
             + "xhr.send('');\n"
             + "</script></head><body></body></html>";
 
-        ((DefaultCredentialsProvider) getWebClient().getCredentialsProvider()).addCredentials("jetty", "jetty");
+        ((DefaultCredentialsProvider) getWebClient().getCredentialsProvider())
+                                        .addCredentials("jetty", "jetty".toCharArray());
         getMockWebConnection().setResponse(URL_FIRST, html);
         getMockWebConnection().setResponse(URL_SECOND, "Hello World");
         loadPageWithAlerts(html, URL_FIRST, DEFAULT_WAIT_TIME);
@@ -419,7 +424,8 @@ public class DefaultCredentialsProvider2Test extends WebServerTestCase {
             + "xhr.send('');\n"
             + "</script></head><body></body></html>";
 
-        ((DefaultCredentialsProvider) getWebClient().getCredentialsProvider()).addCredentials("jetty", "jetty");
+        ((DefaultCredentialsProvider) getWebClient().getCredentialsProvider())
+                                        .addCredentials("jetty", "jetty".toCharArray());
         getMockWebConnection().setResponse(URL_FIRST, html);
         getMockWebConnection().setResponse(URL_SECOND, "Hello World");
         loadPageWithAlerts(html, URL_FIRST, DEFAULT_WAIT_TIME);
@@ -445,7 +451,8 @@ public class DefaultCredentialsProvider2Test extends WebServerTestCase {
             + "xhr.send('');\n"
             + "</script></head><body></body></html>";
 
-        ((DefaultCredentialsProvider) getWebClient().getCredentialsProvider()).addCredentials("jetty", "jetty");
+        ((DefaultCredentialsProvider) getWebClient().getCredentialsProvider())
+                                        .addCredentials("jetty", "jetty".toCharArray());
         getMockWebConnection().setResponse(URL_FIRST, html);
         getMockWebConnection().setResponse(URL_SECOND, "Hello World");
         loadPageWithAlerts(html, URL_FIRST, DEFAULT_WAIT_TIME);

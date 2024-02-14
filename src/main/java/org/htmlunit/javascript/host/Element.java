@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,11 +38,15 @@ import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
 import org.apache.commons.logging.LogFactory;
-import org.htmlunit.cssparser.parser.CSSException;
-import org.xml.sax.SAXException;
-
 import org.htmlunit.SgmlPage;
+import org.htmlunit.corejs.javascript.BaseFunction;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.Function;
+import org.htmlunit.corejs.javascript.FunctionObject;
+import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.css.ComputedCssStyleDeclaration;
 import org.htmlunit.css.ElementCssStyleDeclaration;
+import org.htmlunit.cssparser.parser.CSSException;
 import org.htmlunit.html.DomAttr;
 import org.htmlunit.html.DomCharacterData;
 import org.htmlunit.html.DomComment;
@@ -52,13 +56,14 @@ import org.htmlunit.html.DomText;
 import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.HtmlElement.DisplayStyle;
 import org.htmlunit.html.HtmlTemplate;
+import org.htmlunit.javascript.HtmlUnitScriptable;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.configuration.JsxSetter;
 import org.htmlunit.javascript.host.css.CSSStyleDeclaration;
-import org.htmlunit.javascript.host.css.ComputedCSSStyleDeclaration;
 import org.htmlunit.javascript.host.dom.Attr;
 import org.htmlunit.javascript.host.dom.DOMTokenList;
 import org.htmlunit.javascript.host.dom.Document;
@@ -75,14 +80,7 @@ import org.htmlunit.javascript.host.html.HTMLScriptElement;
 import org.htmlunit.javascript.host.html.HTMLStyleElement;
 import org.htmlunit.javascript.host.html.HTMLTemplateElement;
 import org.htmlunit.util.StringUtils;
-
-import org.htmlunit.corejs.javascript.BaseFunction;
-import org.htmlunit.corejs.javascript.Context;
-import org.htmlunit.corejs.javascript.Function;
-import org.htmlunit.corejs.javascript.FunctionObject;
-import org.htmlunit.corejs.javascript.ScriptRuntime;
-import org.htmlunit.corejs.javascript.Scriptable;
-import org.htmlunit.corejs.javascript.Undefined;
+import org.xml.sax.SAXException;
 
 /**
  * A JavaScript object for {@code Element}.
@@ -115,9 +113,16 @@ public class Element extends Node {
     /**
      * Default constructor.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public Element() {
-        // Empty.
+    }
+
+    /**
+     * JavaScript constructor.
+     */
+    @Override
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    public void jsConstructor() {
+        super.jsConstructor();
     }
 
     /**
@@ -136,7 +141,7 @@ public class Element extends Node {
         //Should be called only on construction.
         final DomElement htmlElt = (DomElement) domNode;
         for (final DomAttr attr : htmlElt.getAttributesMap().values()) {
-            final String eventName = StringUtils.toRootLowerCaseWithCache(attr.getName());
+            final String eventName = StringUtils.toRootLowerCase(attr.getName());
             if (eventName.startsWith("on")) {
                 createEventHandler(eventName.substring(2), attr.getValue());
             }
@@ -231,7 +236,7 @@ public class Element extends Node {
         final boolean caseSensitive;
         final DomNode dom = getDomNodeOrNull();
         if (dom == null) {
-            searchTagName = StringUtils.toRootLowerCaseWithCache(tagName);
+            searchTagName = StringUtils.toRootLowerCase(tagName);
             caseSensitive = false;
         }
         else {
@@ -241,7 +246,7 @@ public class Element extends Node {
                 caseSensitive = true;
             }
             else {
-                searchTagName = StringUtils.toRootLowerCaseWithCache(tagName);
+                searchTagName = StringUtils.toRootLowerCase(tagName);
                 caseSensitive = false;
             }
         }
@@ -277,7 +282,7 @@ public class Element extends Node {
      * @return the XMLAttr node with the specified name or {@code null} if there is no such attribute
      */
     @JsxFunction
-    public Object getAttributeNode(final String name) {
+    public HtmlUnitScriptable getAttributeNode(final String name) {
         final Map<String, DomAttr> attributes = getDomNodeOrDie().getAttributesMap();
         for (final DomAttr attr : attributes.values()) {
             if (attr.getName().equals(name)) {
@@ -351,7 +356,7 @@ public class Element extends Node {
     public ClientRect getBoundingClientRect() {
         if (!getDomNodeOrDie().isAttachedToPage()
                 && getBrowserVersion().hasFeature(JS_BOUNDINGCLIENTRECT_THROWS_IF_DISCONNECTED)) {
-            throw Context.reportRuntimeError("Element is not attache to a page");
+            throw JavaScriptEngine.reportRuntimeError("Element is not attache to a page");
         }
 
         final ClientRect textRectangle = new ClientRect(1, 1, 1, 1);
@@ -551,7 +556,7 @@ public class Element extends Node {
             return NodeList.staticNodeList(this, getDomNodeOrDie().querySelectorAll(selectors));
         }
         catch (final CSSException e) {
-            throw Context.reportRuntimeError("An invalid or illegal selector was specified (selector: '"
+            throw JavaScriptEngine.reportRuntimeError("An invalid or illegal selector was specified (selector: '"
                     + selectors + "' error: " + e.getMessage() + ").");
         }
     }
@@ -571,7 +576,7 @@ public class Element extends Node {
             return null;
         }
         catch (final CSSException e) {
-            throw Context.reportRuntimeError("An invalid or illegal selector was specified (selector: '"
+            throw JavaScriptEngine.reportRuntimeError("An invalid or illegal selector was specified (selector: '"
                     + selectors + "' error: " + e.getMessage() + ").");
         }
     }
@@ -600,7 +605,7 @@ public class Element extends Node {
      */
     @JsxGetter
     public int getClientHeight() {
-        final ComputedCSSStyleDeclaration style = getWindow().getComputedStyle(this, null);
+        final ComputedCssStyleDeclaration style = getWindow().getWebWindow().getComputedStyle(getDomNodeOrDie(), null);
         return style.getCalculatedHeight(false, true);
     }
 
@@ -610,7 +615,7 @@ public class Element extends Node {
      */
     @JsxGetter
     public int getClientWidth() {
-        final ComputedCSSStyleDeclaration style = getWindow().getComputedStyle(this, null);
+        final ComputedCssStyleDeclaration style = getWindow().getWebWindow().getComputedStyle(getDomNodeOrDie(), null);
         return style.getCalculatedWidth(false, true);
     }
 
@@ -620,7 +625,7 @@ public class Element extends Node {
      */
     @JsxGetter
     public int getClientLeft() {
-        final ComputedCSSStyleDeclaration style = getWindow().getComputedStyle(this, null);
+        final ComputedCssStyleDeclaration style = getWindow().getWebWindow().getComputedStyle(getDomNodeOrDie(), null);
         return style.getBorderLeftValue();
     }
 
@@ -630,7 +635,7 @@ public class Element extends Node {
      */
     @JsxGetter
     public int getClientTop() {
-        final ComputedCSSStyleDeclaration style = getWindow().getComputedStyle(this, null);
+        final ComputedCssStyleDeclaration style = getWindow().getWebWindow().getComputedStyle(getDomNodeOrDie(), null);
         return style.getBorderTopValue();
     }
 
@@ -641,7 +646,7 @@ public class Element extends Node {
      * @return the specified attribute, {@code null} if the attribute is not defined
      */
     @JsxFunction
-    public Object getAttributeNodeNS(final String namespaceURI, final String localName) {
+    public HtmlUnitScriptable getAttributeNodeNS(final String namespaceURI, final String localName) {
         return getDomNodeOrDie().getAttributeNodeNS(namespaceURI, localName).getScriptableObject();
     }
 
@@ -755,7 +760,7 @@ public class Element extends Node {
             }
             return insertedElement;
         }
-        throw Context.reportRuntimeError("Passed object is not an element: " + insertedElement);
+        throw JavaScriptEngine.reportRuntimeError("Passed object is not an element: " + insertedElement);
     }
 
     /**
@@ -832,7 +837,7 @@ public class Element extends Node {
             }
         }
         else {
-            throw Context.reportRuntimeError("Illegal position value: \"" + where + "\"");
+            throw JavaScriptEngine.reportRuntimeError("Illegal position value: \"" + where + "\"");
         }
 
         if (append) {
@@ -876,7 +881,7 @@ public class Element extends Node {
         }
         catch (final IOException | SAXException e) {
             LogFactory.getLog(HtmlElement.class).error("Unexpected exception occurred while parsing HTML snippet", e);
-            throw Context.reportRuntimeError("Unexpected exception occurred while parsing HTML snippet: "
+            throw JavaScriptEngine.reportRuntimeError("Unexpected exception occurred while parsing HTML snippet: "
                     + e.getMessage());
         }
     }
@@ -905,8 +910,7 @@ public class Element extends Node {
             return getInnerHTML(domNode);
         }
         catch (final IllegalStateException e) {
-            Context.throwAsScriptRuntimeEx(e);
-            return "";
+            throw JavaScriptEngine.throwAsScriptRuntimeEx(e);
         }
     }
 
@@ -921,14 +925,13 @@ public class Element extends Node {
             domNode = getDomNodeOrDie();
         }
         catch (final IllegalStateException e) {
-            Context.throwAsScriptRuntimeEx(e);
-            return;
+            throw JavaScriptEngine.throwAsScriptRuntimeEx(e);
         }
 
         String html = null;
         final boolean addChildForNull = getBrowserVersion().hasFeature(JS_INNER_HTML_ADD_CHILD_FOR_NULL_VALUE);
         if ((value == null && addChildForNull) || (value != null && !"".equals(value))) {
-            html = Context.toString(value);
+            html = JavaScriptEngine.toString(value);
         }
 
         try {
@@ -936,7 +939,7 @@ public class Element extends Node {
         }
         catch (final IOException | SAXException e) {
             LogFactory.getLog(HtmlElement.class).error("Unexpected exception occurred while parsing HTML snippet", e);
-            throw Context.reportRuntimeError("Unexpected exception occurred while parsing HTML snippet: "
+            throw JavaScriptEngine.reportRuntimeError("Unexpected exception occurred while parsing HTML snippet: "
                     + e.getMessage());
         }
     }
@@ -985,7 +988,7 @@ public class Element extends Node {
                 domNode.removeAllChildren();
             }
             if (getBrowserVersion().hasFeature(JS_OUTER_HTML_THROWS_FOR_DETACHED)) {
-                throw Context.reportRuntimeError("outerHTML is readonly for detached nodes");
+                throw JavaScriptEngine.reportRuntimeError("outerHTML is readonly for detached nodes");
             }
             return;
         }
@@ -994,7 +997,7 @@ public class Element extends Node {
             domNode.remove();
             return;
         }
-        final String valueStr = Context.toString(value);
+        final String valueStr = JavaScriptEngine.toString(value);
         if (valueStr.isEmpty()) {
             domNode.remove();
             return;
@@ -1051,7 +1054,7 @@ public class Element extends Node {
             // Remove whitespace sequences, possibly escape XML characters.
             String s = node.getNodeValue();
             if (html) {
-                s = org.htmlunit.util.StringUtils.escapeXmlChars(s);
+                s = StringUtils.escapeXmlChars(s);
             }
             builder.append(s);
         }
@@ -1164,7 +1167,8 @@ public class Element extends Node {
             scrollTop_ = 0;
         }
         else if (scrollTop_ > 0) {
-            final ComputedCSSStyleDeclaration style = getWindow().getComputedStyle(this, null);
+            final ComputedCssStyleDeclaration style =
+                    getWindow().getWebWindow().getComputedStyle(getDomNodeOrDie(), null);
             if (!style.isScrollable(false)) {
                 scrollTop_ = 0;
             }
@@ -1194,7 +1198,8 @@ public class Element extends Node {
             scrollLeft_ = 0;
         }
         else if (scrollLeft_ > 0) {
-            final ComputedCSSStyleDeclaration style = getWindow().getComputedStyle(this, null);
+            final ComputedCssStyleDeclaration style =
+                    getWindow().getWebWindow().getComputedStyle(getDomNodeOrDie(), null);
             if (!style.isScrollable(true)) {
                 scrollLeft_ = 0;
             }
@@ -1926,24 +1931,23 @@ public class Element extends Node {
 
     /**
      * Mock for the moment.
-     * @return true for success
      */
     @JsxFunction({FF, FF_ESR})
-    public boolean releaseCapture() {
-        return true;
+    public void releaseCapture() {
     }
 
     /**
      * Inserts a set of Node or DOMString objects in the children list of this ChildNode's parent,
      * just before this ChildNode.
      * @param context the context
+     * @param scope the scope
      * @param thisObj this object
      * @param args the arguments
      * @param function the function
      */
     @JsxFunction({CHROME, EDGE, FF, FF_ESR})
-    public static void before(final Context context, final Scriptable thisObj, final Object[] args,
-            final Function function) {
+    public static void before(final Context context, final Scriptable scope,
+            final Scriptable thisObj, final Object[] args, final Function function) {
         Node.before(context, thisObj, args, function);
     }
 
@@ -1951,42 +1955,45 @@ public class Element extends Node {
      * Inserts a set of Node or DOMString objects in the children list of this ChildNode's parent,
      * just after this ChildNode.
      * @param context the context
+     * @param scope the scope
      * @param thisObj this object
      * @param args the arguments
      * @param function the function
      */
     @JsxFunction({CHROME, EDGE, FF, FF_ESR})
-    public static void after(final Context context, final Scriptable thisObj, final Object[] args,
-            final Function function) {
+    public static void after(final Context context, final Scriptable scope,
+            final Scriptable thisObj, final Object[] args, final Function function) {
         Node.after(context, thisObj, args, function);
     }
 
     /**
      * Replaces the node with a set of Node or DOMString objects.
      * @param context the context
+     * @param scope the scope
      * @param thisObj this object
      * @param args the arguments
      * @param function the function
      */
     @JsxFunction({CHROME, EDGE, FF, FF_ESR})
-    public static void replaceWith(final Context context, final Scriptable thisObj, final Object[] args,
-            final Function function) {
+    public static void replaceWith(final Context context, final Scriptable scope,
+            final Scriptable thisObj, final Object[] args, final Function function) {
         Node.replaceWith(context, thisObj, args, function);
     }
 
     /**
      * Returns true if the element would be selected by the specified selector string; otherwise, returns false.
      * @param context the JavaScript context
+     * @param scope the scope
      * @param thisObj the scriptable
      * @param args the arguments passed into the method
      * @param function the function
      * @return the value
      */
     @JsxFunction({CHROME, EDGE, FF, FF_ESR})
-    public static boolean matches(
-            final Context context, final Scriptable thisObj, final Object[] args, final Function function) {
+    public static boolean matches(final Context context, final Scriptable scope,
+            final Scriptable thisObj, final Object[] args, final Function function) {
         if (!(thisObj instanceof Element)) {
-            throw ScriptRuntime.typeError("Illegal invocation");
+            throw JavaScriptEngine.typeError("Illegal invocation");
         }
 
         final String selectorString = (String) args[0];
@@ -1995,7 +2002,7 @@ public class Element extends Node {
             return domNode != null && ((DomElement) domNode).matches(selectorString);
         }
         catch (final CSSException e) {
-            throw ScriptRuntime.constructError("SyntaxError",
+            throw JavaScriptEngine.constructError("SyntaxError",
                     "An invalid or illegal selector was specified (selector: '"
                     + selectorString + "' error: " + e.getMessage() + ").");
         }
@@ -2004,50 +2011,53 @@ public class Element extends Node {
     /**
      * Returns true if the element would be selected by the specified selector string; otherwise, returns false.
      * @param context the JavaScript context
+     * @param scope the scope
      * @param thisObj the scriptable
      * @param args the arguments passed into the method
      * @param function the function
      * @return the value
      */
     @JsxFunction({FF, FF_ESR})
-    public static boolean mozMatchesSelector(
-            final Context context, final Scriptable thisObj, final Object[] args, final Function function) {
-        return matches(context, thisObj, args, function);
+    public static boolean mozMatchesSelector(final Context context, final Scriptable scope,
+            final Scriptable thisObj, final Object[] args, final Function function) {
+        return matches(context, scope, thisObj, args, function);
     }
 
     /**
      * Returns true if the element would be selected by the specified selector string; otherwise, returns false.
      * @param context the JavaScript context
+     * @param scope the scope
      * @param thisObj the scriptable
      * @param args the arguments passed into the method
      * @param function the function
      * @return the value
      */
     @JsxFunction({CHROME, EDGE, FF, FF_ESR})
-    public static boolean webkitMatchesSelector(
-            final Context context, final Scriptable thisObj, final Object[] args, final Function function) {
-        return matches(context, thisObj, args, function);
+    public static boolean webkitMatchesSelector(final Context context, final Scriptable scope,
+            final Scriptable thisObj, final Object[] args, final Function function) {
+        return matches(context, scope, thisObj, args, function);
     }
 
     /**
      * Returns true if the element would be selected by the specified selector string; otherwise, returns false.
      * @param context the JavaScript context
+     * @param scope the scope
      * @param thisObj the scriptable
      * @param args the arguments passed into the method
      * @param function the function
      * @return the value
      */
     @JsxFunction(IE)
-    public static boolean msMatchesSelector(
-            final Context context, final Scriptable thisObj, final Object[] args, final Function function) {
-        return matches(context, thisObj, args, function);
+    public static boolean msMatchesSelector(final Context context, final Scriptable scope,
+            final Scriptable thisObj, final Object[] args, final Function function) {
+        return matches(context, scope, thisObj, args, function);
     }
 
     @JsxFunction({CHROME, EDGE, FF, FF_ESR})
-    public static Element closest(
-            final Context context, final Scriptable thisObj, final Object[] args, final Function function) {
+    public static Element closest(final Context context, final Scriptable scope,
+            final Scriptable thisObj, final Object[] args, final Function function) {
         if (!(thisObj instanceof Element)) {
-            throw ScriptRuntime.typeError("Illegal invocation");
+            throw JavaScriptEngine.typeError("Illegal invocation");
         }
 
         final String selectorString = (String) args[0];
@@ -2063,7 +2073,7 @@ public class Element extends Node {
             return elem.getScriptableObject();
         }
         catch (final CSSException e) {
-            throw ScriptRuntime.constructError("SyntaxError",
+            throw JavaScriptEngine.constructError("SyntaxError",
                     "An invalid or illegal selector was specified (selector: '"
                     + selectorString + "' error: " + e.getMessage() + ").");
         }
@@ -2086,39 +2096,36 @@ public class Element extends Node {
      */
     @JsxFunction({CHROME, EDGE, FF, FF_ESR})
     public boolean toggleAttribute(final String name, final Object force) {
-        if (Undefined.isUndefined(force)) {
+        if (JavaScriptEngine.isUndefined(force)) {
             if (hasAttribute(name)) {
                 removeAttribute(name);
                 return false;
             }
-            else {
-                setAttribute(name, "");
-                return true;
-            }
-        }
-        if (ScriptRuntime.toBoolean(force)) {
             setAttribute(name, "");
             return true;
         }
-        else {
-            removeAttribute(name);
-            return false;
+        if (JavaScriptEngine.toBoolean(force)) {
+            setAttribute(name, "");
+            return true;
         }
+        removeAttribute(name);
+        return false;
     }
 
     /**
      * Inserts a set of Node objects or string objects after the last child of the Element.
      * String objects are inserted as equivalent Text nodes.
      * @param context the context
+     * @param scope the scope
      * @param thisObj this object
      * @param args the arguments
      * @param function the function
      */
     @JsxFunction({CHROME, EDGE, FF, FF_ESR})
-    public static void append(final Context context, final Scriptable thisObj, final Object[] args,
-            final Function function) {
+    public static void append(final Context context, final Scriptable scope,
+            final Scriptable thisObj, final Object[] args, final Function function) {
         if (!(thisObj instanceof Element)) {
-            throw ScriptRuntime.typeError("Illegal invocation");
+            throw JavaScriptEngine.typeError("Illegal invocation");
         }
 
         Node.append(context, thisObj, args, function);
@@ -2128,15 +2135,16 @@ public class Element extends Node {
      * Inserts a set of Node objects or string objects before the first child of the Element.
      * String objects are inserted as equivalent Text nodes.
      * @param context the context
+     * @param scope the scope
      * @param thisObj this object
      * @param args the arguments
      * @param function the function
      */
     @JsxFunction({CHROME, EDGE, FF, FF_ESR})
-    public static void prepend(final Context context, final Scriptable thisObj, final Object[] args,
-            final Function function) {
+    public static void prepend(final Context context, final Scriptable scope,
+            final Scriptable thisObj, final Object[] args, final Function function) {
         if (!(thisObj instanceof Element)) {
-            throw ScriptRuntime.typeError("Illegal invocation");
+            throw JavaScriptEngine.typeError("Illegal invocation");
         }
 
         Node.prepend(context, thisObj, args, function);
@@ -2146,15 +2154,16 @@ public class Element extends Node {
      * Replaces the existing children of a Node with a specified new set of children.
      * These can be string or Node objects.
      * @param context the context
+     * @param scope the scope
      * @param thisObj this object
      * @param args the arguments
      * @param function the function
      */
     @JsxFunction({CHROME, EDGE, FF, FF_ESR})
-    public static void replaceChildren(final Context context, final Scriptable thisObj, final Object[] args,
-            final Function function) {
+    public static void replaceChildren(final Context context, final Scriptable scope,
+            final Scriptable thisObj, final Object[] args, final Function function) {
         if (!(thisObj instanceof Element)) {
-            throw ScriptRuntime.typeError("Illegal invocation");
+            throw JavaScriptEngine.typeError("Illegal invocation");
         }
 
         Node.replaceChildren(context, thisObj, args, function);

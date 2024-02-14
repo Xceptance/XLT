@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,6 @@ import java.util.function.Supplier;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.htmlunit.AlertHandler;
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.ConfirmHandler;
@@ -62,6 +61,16 @@ import org.htmlunit.WebClient;
 import org.htmlunit.WebConsole;
 import org.htmlunit.WebWindow;
 import org.htmlunit.WebWindowNotFoundException;
+import org.htmlunit.corejs.javascript.AccessorSlot;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.EcmaError;
+import org.htmlunit.corejs.javascript.Function;
+import org.htmlunit.corejs.javascript.JavaScriptException;
+import org.htmlunit.corejs.javascript.NativeConsole.Level;
+import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.ScriptableObject;
+import org.htmlunit.corejs.javascript.Slot;
+import org.htmlunit.corejs.javascript.Undefined;
 import org.htmlunit.css.ComputedCssStyleDeclaration;
 import org.htmlunit.html.BaseFrameElement;
 import org.htmlunit.html.DomElement;
@@ -81,6 +90,7 @@ import org.htmlunit.html.HtmlObject;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlSelect;
 import org.htmlunit.html.HtmlTextArea;
+import org.htmlunit.javascript.HtmlUnitContextFactory;
 import org.htmlunit.javascript.HtmlUnitScriptable;
 import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.PostponedAction;
@@ -113,19 +123,6 @@ import org.htmlunit.util.UrlUtils;
 import org.htmlunit.xml.XmlPage;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import org.htmlunit.corejs.javascript.AccessorSlot;
-import org.htmlunit.corejs.javascript.Context;
-import org.htmlunit.corejs.javascript.ContextAction;
-import org.htmlunit.corejs.javascript.ContextFactory;
-import org.htmlunit.corejs.javascript.EcmaError;
-import org.htmlunit.corejs.javascript.Function;
-import org.htmlunit.corejs.javascript.JavaScriptException;
-import org.htmlunit.corejs.javascript.NativeConsole.Level;
-import org.htmlunit.corejs.javascript.ScriptRuntime;
-import org.htmlunit.corejs.javascript.Scriptable;
-import org.htmlunit.corejs.javascript.ScriptableObject;
-import org.htmlunit.corejs.javascript.Slot;
-import org.htmlunit.corejs.javascript.Undefined;
 
 /**
  * A JavaScript object for {@code Window}.
@@ -155,11 +152,11 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
 
     /** To be documented. */
     @JsxConstant({CHROME, EDGE})
-    public static final short TEMPORARY = 0;
+    public static final int TEMPORARY = 0;
 
     /** To be documented. */
     @JsxConstant({CHROME, EDGE})
-    public static final short PERSISTENT = 1;
+    public static final int PERSISTENT = 1;
 
     private Document document_;
     private DocumentProxy documentProxy_;
@@ -175,7 +172,6 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
     private Event currentEvent_;
     private String status_ = "";
     private Map<Class<? extends Scriptable>, Scriptable> prototypes_ = new HashMap<>();
-    private Map<String, Scriptable> prototypesPerJSName_ = new HashMap<>();
     private Object controllers_;
     private Object opener_;
     private Object top_ = NOT_FOUND; // top can be set from JS to any value!
@@ -205,15 +201,16 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
      * Creates an instance.
      *
      * @param cx the current context
+     * @param scope the scope
      * @param args the arguments to the ActiveXObject constructor
      * @param ctorObj the function object
      * @param inNewExpr Is new or not
      * @return the java object to allow JavaScript to access
      */
     @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
-    public static Scriptable jsConstructor(final Context cx, final Object[] args, final Function ctorObj,
-            final boolean inNewExpr) {
-        throw ScriptRuntime.typeError("Illegal constructor");
+    public static Scriptable jsConstructor(final Context cx, final Scriptable scope,
+            final Object[] args, final Function ctorObj, final boolean inNewExpr) {
+        throw JavaScriptEngine.typeError("Illegal constructor");
     }
 
     /**
@@ -238,23 +235,11 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
     }
 
     /**
-     * Returns the prototype object corresponding to the specified HtmlUnit class inside the window scope.
-     * @param className the class name whose prototype is to be returned
-     * @return the prototype object corresponding to the specified class inside the specified scope
-     */
-    public Scriptable getPrototype(final String className) {
-        return prototypesPerJSName_.get(className);
-    }
-
-    /**
      * Sets the prototypes for HtmlUnit host classes.
      * @param map a Map of ({@link Class}, {@link Scriptable})
-     * @param prototypesPerJSName map of {@link String} and {@link Scriptable}
      */
-    public void setPrototypes(final Map<Class<? extends Scriptable>, Scriptable> map,
-            final Map<String, Scriptable> prototypesPerJSName) {
+    public void setPrototypes(final Map<Class<? extends Scriptable>, Scriptable> map) {
         prototypes_ = map;
-        prototypesPerJSName_ = prototypesPerJSName;
     }
 
     /**
@@ -265,7 +250,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
     public void alert(final Object message) {
         // use Object as parameter and perform String conversion by ourself
         // this allows to place breakpoint here and "see" the message object and its properties
-        final String stringMessage = Context.toString(message);
+        final String stringMessage = JavaScriptEngine.toString(message);
         final AlertHandler handler = getWebWindow().getWebClient().getAlertHandler();
         if (handler == null) {
             if (LOG.isWarnEnabled()) {
@@ -332,11 +317,11 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
             }
             return null;
         }
-        if (Undefined.isUndefined(defaultValue)) {
+        if (JavaScriptEngine.isUndefined(defaultValue)) {
             defaultValue = null;
         }
         else {
-            defaultValue = Context.toString(defaultValue);
+            defaultValue = JavaScriptEngine.toString(defaultValue);
         }
         return handler.handlePrompt(document_.getPage(), message, (String) defaultValue);
     }
@@ -364,7 +349,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
      * Returns the application cache.
      * @return the application cache
      */
-    @JsxGetter({FF, FF_ESR, IE})
+    @JsxGetter(IE)
     @SuppressFBWarnings("EI_EXPOSE_REP")
     public ApplicationCache getApplicationCache() {
         return applicationCache_;
@@ -416,16 +401,16 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
     public WindowProxy open(final Object url, final Object name, final Object features,
             final Object replace) {
         String urlString = null;
-        if (!Undefined.isUndefined(url)) {
-            urlString = Context.toString(url);
+        if (!JavaScriptEngine.isUndefined(url)) {
+            urlString = JavaScriptEngine.toString(url);
         }
         String windowName = "";
-        if (!Undefined.isUndefined(name)) {
-            windowName = Context.toString(name);
+        if (!JavaScriptEngine.isUndefined(name)) {
+            windowName = JavaScriptEngine.toString(name);
         }
         String featuresString = null;
-        if (!Undefined.isUndefined(features)) {
-            featuresString = Context.toString(features);
+        if (!JavaScriptEngine.isUndefined(features)) {
+            featuresString = JavaScriptEngine.toString(features);
         }
         final WebClient webClient = getWebWindow().getWebClient();
 
@@ -437,8 +422,8 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
         }
 
         boolean replaceCurrentEntryInBrowsingHistory = false;
-        if (!Undefined.isUndefined(replace)) {
-            replaceCurrentEntryInBrowsingHistory = Context.toBoolean(replace);
+        if (!JavaScriptEngine.isUndefined(replace)) {
+            replaceCurrentEntryInBrowsingHistory = JavaScriptEngine.toBoolean(replace);
         }
         if ((featuresString != null || replaceCurrentEntryInBrowsingHistory) && LOG.isDebugEnabled()) {
             LOG.debug(
@@ -494,14 +479,15 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
      * MDN web docs</a>
      *
      * @param context the JavaScript context
+     * @param scope the scope
      * @param thisObj the scriptable
      * @param args the arguments passed into the method
      * @param function the function
      * @return the id of the created timer
      */
     @JsxFunction
-    public static Object setTimeout(final Context context, final Scriptable thisObj,
-            final Object[] args, final Function function) {
+    public static Object setTimeout(final Context context, final Scriptable scope,
+            final Scriptable thisObj, final Object[] args, final Function function) {
         return WindowOrWorkerGlobalScopeMixin.setTimeout(context, thisObj, args, function);
     }
 
@@ -511,23 +497,24 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
      * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/setInterval">
      * MDN web docs</a>
      * @param context the JavaScript context
+     * @param scope the scope
      * @param thisObj the scriptable
      * @param args the arguments passed into the method
      * @param function the function
      * @return the id of the created interval
      */
     @JsxFunction
-    public static Object setInterval(final Context context, final Scriptable thisObj,
-            final Object[] args, final Function function) {
+    public static Object setInterval(final Context context, final Scriptable scope,
+            final Scriptable thisObj, final Object[] args, final Function function) {
         return WindowOrWorkerGlobalScopeMixin.setInterval(context, thisObj, args, function);
     }
 
     /**
      * Cancels a time-out previously set with the
-     * {@link #setTimeout(Context, Scriptable, Object[], Function)} method.
+     * {@link #setTimeout(Context, Scriptable, Scriptable, Object[], Function)} method.
      *
      * @param timeoutId identifier for the timeout to clear
-     *        as returned by {@link #setTimeout(Context, Scriptable, Object[], Function)}
+     *        as returned by {@link #setTimeout(Context, Scriptable, Scriptable, Object[], Function)}
      */
     @JsxFunction
     public void clearTimeout(final int timeoutId) {
@@ -539,10 +526,10 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
 
     /**
      * Cancels the interval previously started using the
-     * {@link #setInterval(Context, Scriptable, Object[], Function)} method.
+     * {@link #setInterval(Context, Scriptable, Scriptable, Object[], Function)} method.
      * Current implementation does nothing.
      * @param intervalID specifies the interval to cancel as returned by the
-     *        {@link #setInterval(Context, Scriptable, Object[], Function)} method
+     *        {@link #setInterval(Context, Scriptable, Scriptable, Object[], Function)} method
      * @see <a href="http://msdn.microsoft.com/en-us/library/ms536353.aspx">MSDN documentation</a>
      */
     @JsxFunction
@@ -730,7 +717,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
      */
     @JsxFunction
     public void cancelAnimationFrame(final Object requestId) {
-        final int id = (int) Context.toNumber(requestId);
+        final int id = (int) JavaScriptEngine.toNumber(requestId);
 
         animationFrames_.removeIf(animationFrame -> animationFrame.id_ == id);
     }
@@ -916,8 +903,8 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
     @JsxSetter
     public void setOpener(final Object newValue) {
         if (getBrowserVersion().hasFeature(JS_WINDOW_CHANGE_OPENER_ONLY_WINDOW_OBJECT)
-            && newValue != null && !Undefined.isUndefined(newValue) && !(newValue instanceof Window)) {
-            throw Context.reportRuntimeError("Can't set opener to something other than a window!");
+            && newValue != null && !JavaScriptEngine.isUndefined(newValue) && !(newValue instanceof Window)) {
+            throw JavaScriptEngine.reportRuntimeError("Can't set opener to something other than a window!");
         }
         opener_ = newValue;
     }
@@ -927,7 +914,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
      * @return {@code null} for a top level window
      */
     @JsxGetter
-    public Object getFrameElement() {
+    public HtmlUnitScriptable getFrameElement() {
         final WebWindow window = getWebWindow();
         if (window instanceof FrameWindow) {
             return ((FrameWindow) window).getFrameElement().getScriptableObject();
@@ -1668,7 +1655,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
     @JsxFunction
     public ComputedCSSStyleDeclaration getComputedStyle(final Object element, final String pseudoElement) {
         if (!(element instanceof Element)) {
-            throw ScriptRuntime.typeError("parameter 1 is not of type 'Element'");
+            throw JavaScriptEngine.typeError("parameter 1 is not of type 'Element'");
         }
         final Element e = (Element) element;
 
@@ -1732,7 +1719,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
             return jsDialog.get("returnValue", jsDialog);
         }
         catch (final IOException e) {
-            throw Context.throwAsScriptRuntimeEx(e);
+            throw JavaScriptEngine.throwAsScriptRuntimeEx(e);
         }
     }
 
@@ -1754,7 +1741,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
             return dialog.getScriptableObject();
         }
         catch (final IOException e) {
-            throw Context.throwAsScriptRuntimeEx(e);
+            throw JavaScriptEngine.throwAsScriptRuntimeEx(e);
         }
     }
 
@@ -1977,54 +1964,89 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
 
     /**
      * Posts a message.
-     * @param message the object passed to the window
-     * @param targetOrigin the origin this window must be for the event to be dispatched
-     * @param transfer an optional sequence of Transferable objects
+     * @param context the current context
+     * @param scope the scope
+     * @param thisObj this object
+     * @param args the script(s) to import
+     * @param funObj the JS function called
      * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/window.postMessage">MDN documentation</a>
      */
     @JsxFunction
-    public void postMessage(final Object message, final String targetOrigin, final Object transfer) {
-        final WebWindow webWindow = getWebWindow();
+    public static void postMessage(final Context context, final Scriptable scope,
+            final Scriptable thisObj, final Object[] args, final Function funObj) {
+
+        // support the structured clone algorithm
+        if (args.length < 1) {
+            throw JavaScriptEngine.typeError("message not provided");
+        }
+        final Object message = args[0];
+
+        String targetOrigin = "*";
+        if (args.length > 1) {
+            targetOrigin = JavaScriptEngine.toString(args[1]);
+        }
+
+        Object transfer = Undefined.instance;
+        if (args.length > 2) {
+            transfer = args[2];
+        }
+
+        final Window sender = (Window) scope;
+        final Window receiver = (Window) thisObj;
+        final URL receiverURL = receiver.getWebWindow().getEnclosedPage().getUrl();
+
+        final WebWindow webWindow = sender.getWebWindow();
         final Page page = webWindow.getEnclosedPage();
-        final URL currentURL = page.getUrl();
+        final URL senderURL = page.getUrl();
 
-        if (!"*".equals(targetOrigin) && !"/".equals(targetOrigin)) {
+        if (!"*".equals(targetOrigin)) {
             final URL targetURL;
-            try {
-                targetURL = new URL(targetOrigin);
+            if ("/".equals(targetOrigin)) {
+                targetURL = senderURL;
             }
-            catch (final Exception e) {
-                throw Context.throwAsScriptRuntimeEx(
-                        new Exception(
-                                "SyntaxError: Failed to execute 'postMessage' on 'Window': Invalid target origin '"
-                                + targetOrigin + "' was specified (reason: " + e.getMessage() + "."));
+            else {
+                try {
+                    targetURL = new URL(targetOrigin);
+                }
+                catch (final Exception e) {
+                    throw JavaScriptEngine.throwAsScriptRuntimeEx(
+                            new Exception(
+                                    "SyntaxError: Failed to execute 'postMessage' on 'Window': Invalid target origin '"
+                                            + targetOrigin + "' was specified (reason: " + e.getMessage() + "."));
+                }
             }
 
-            if (getPort(targetURL) != getPort(currentURL)) {
+            if (getPort(targetURL) != getPort(receiverURL)) {
                 return;
             }
-            if (!targetURL.getHost().equals(currentURL.getHost())) {
+            if (!targetURL.getHost().equals(receiverURL.getHost())) {
                 return;
             }
-            if (!targetURL.getProtocol().equals(currentURL.getProtocol())) {
+            if (!targetURL.getProtocol().equals(receiverURL.getProtocol())) {
                 return;
             }
         }
 
+        String origin = "";
+        try {
+            final URL originUrl = UrlUtils.getUrlWithoutPathRefQuery(senderURL);
+            origin = UrlUtils.removeRedundantPort(originUrl).toExternalForm();
+        }
+        catch (final MalformedURLException e) {
+            throw JavaScriptEngine.throwAsScriptRuntimeEx(e);
+        }
+
         final MessageEvent event = new MessageEvent();
-        final String origin = currentURL.getProtocol() + "://" + currentURL.getHost() + ':' + currentURL.getPort();
-        event.initMessageEvent(Event.TYPE_MESSAGE, false, false, message, origin, "", this, transfer);
-        event.setParentScope(this);
-        event.setPrototype(getPrototype(event.getClass()));
+        event.initMessageEvent(Event.TYPE_MESSAGE, false, false, message, origin, "", sender, transfer);
+        event.setParentScope(scope);
+        event.setPrototype(receiver.getPrototype(event.getClass()));
 
         final JavaScriptEngine jsEngine = (JavaScriptEngine) webWindow.getWebClient().getJavaScriptEngine();
         final PostponedAction action = new PostponedAction(page, "Window.postMessage") {
             @Override
-            public void execute() throws Exception {
-                final ContextAction<Object> contextAction = cx -> dispatchEvent(event);
-
-                final ContextFactory cf = jsEngine.getContextFactory();
-                cf.call(contextAction);
+            public void execute() {
+                final HtmlUnitContextFactory cf = jsEngine.getContextFactory();
+                cf.call(cx -> receiver.dispatchEvent(event));
             }
         };
         jsEngine.addPostponedAction(action);
@@ -2509,24 +2531,6 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
     }
 
     /**
-     * Returns the {@code ondeviceproximity} event handler.
-     * @return the {@code ondeviceproximity} event handler
-     */
-    @JsxGetter({FF, FF_ESR})
-    public Function getOndeviceproximity() {
-        return getEventHandler(Event.TYPE_DEVICEPROXIMITY);
-    }
-
-    /**
-     * Sets the {@code ondeviceproximity} event handler.
-     * @param ondeviceproximity the {@code ondeviceproximity} event handler
-     */
-    @JsxSetter({FF, FF_ESR})
-    public void setOndeviceproximity(final Object ondeviceproximity) {
-        setHandlerForJavaScript(Event.TYPE_DEVICEPROXIMITY, ondeviceproximity);
-    }
-
-    /**
      * Returns the {@code onreset} event handler.
      * @return the {@code onreset} event handler
      */
@@ -2812,24 +2816,6 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
     @JsxSetter
     public void setOnmouseover(final Object onmouseover) {
         setHandlerForJavaScript(MouseEvent.TYPE_MOUSE_OVER, onmouseover);
-    }
-
-    /**
-     * Returns the {@code onuserproximity} event handler.
-     * @return the {@code onuserproximity} event handler
-     */
-    @JsxGetter({FF, FF_ESR})
-    public Function getOnuserproximity() {
-        return getEventHandler(Event.TYPE_USERPROXIMITY);
-    }
-
-    /**
-     * Sets the {@code onuserproximity} event handler.
-     * @param onuserproximity the {@code onuserproximity} event handler
-     */
-    @JsxSetter({FF, FF_ESR})
-    public void setOnuserproximity(final Object onuserproximity) {
-        setHandlerForJavaScript(Event.TYPE_USERPROXIMITY, onuserproximity);
     }
 
     /**
@@ -3535,24 +3521,6 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
     }
 
     /**
-     * Returns the {@code ondevicelight} event handler.
-     * @return the {@code ondevicelight} event handler
-     */
-    @JsxGetter({FF, FF_ESR})
-    public Function getOndevicelight() {
-        return getEventHandler(Event.TYPE_DEVICELIGHT);
-    }
-
-    /**
-     * Sets the {@code ondevicelight} event handler.
-     * @param ondevicelight the {@code ondevicelight} event handler
-     */
-    @JsxSetter({FF, FF_ESR})
-    public void setOndevicelight(final Object ondevicelight) {
-        setHandlerForJavaScript(Event.TYPE_DEVICELIGHT, ondevicelight);
-    }
-
-    /**
      * Returns the {@code onanimationstart} event handler.
      * @return the {@code onanimationstart} event handler
      */
@@ -4197,6 +4165,32 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
             }
         }
         super.put(name, start, value);
+    }
+
+    /**
+     * @return a boolean indicating whether the current context is secure (true) or not (false).
+     */
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    public Object getIsSecureContext() {
+        final Page page = getWebWindow().getEnclosedPage();
+        if (page != null) {
+            final String protocol = page.getUrl().getProtocol();
+            if ("https".equals(protocol)
+                    || "wss".equals(protocol)
+                    || "file".equals(protocol)) {
+                return true;
+            }
+
+            final String host = page.getUrl().getHost();
+            if ("localhost".equals(host)
+                    || "localhost.".equals(host)
+                    || host.endsWith(".localhost")
+                    || host.endsWith(".localhost.")) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
 

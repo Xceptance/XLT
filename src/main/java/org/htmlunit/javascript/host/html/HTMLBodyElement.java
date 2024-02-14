@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
+import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.html.HtmlBody;
 import org.htmlunit.html.HtmlElement;
 import org.htmlunit.javascript.configuration.JsxClass;
@@ -30,8 +31,6 @@ import org.htmlunit.javascript.configuration.JsxSetter;
 import org.htmlunit.javascript.host.dom.TextRange;
 import org.htmlunit.javascript.host.event.Event;
 import org.htmlunit.util.StringUtils;
-
-import org.htmlunit.corejs.javascript.Function;
 
 /**
  * The JavaScript object {@code HTMLBodyElement}.
@@ -47,8 +46,16 @@ public class HTMLBodyElement extends HTMLElement {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public HTMLBodyElement() {
+    }
+
+    /**
+     * JavaScript constructor.
+     */
+    @Override
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    public void jsConstructor() {
+        super.jsConstructor();
     }
 
     /**
@@ -60,7 +67,7 @@ public class HTMLBodyElement extends HTMLElement {
     public void createEventHandlerFromAttribute(final String attributeName, final String value) {
         // when many body tags are found while parsing, attributes of
         // different tags are added and should create an event handler when needed
-        if (StringUtils.toRootLowerCaseWithCache(attributeName).startsWith("on")) {
+        if (StringUtils.toRootLowerCase(attributeName).startsWith("on")) {
             createEventHandler(attributeName.substring(2), value);
         }
     }
@@ -610,7 +617,7 @@ public class HTMLBodyElement extends HTMLElement {
      * Sets the {@code onmessageerror} event handler for this element.
      * @param onmessageerror the {@code onmessageerror} event handler for this element
      */
-    @JsxSetter({CHROME, EDGE})
+    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
     public void setOnmessageerror(final Object onmessageerror) {
         setEventHandler(Event.TYPE_ONMESSAGEERROR, onmessageerror);
     }

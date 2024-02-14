@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,6 @@ import org.htmlunit.javascript.host.Gamepad;
 import org.htmlunit.javascript.host.GamepadButton;
 import org.htmlunit.javascript.host.History;
 import org.htmlunit.javascript.host.ImageBitmap;
-import org.htmlunit.javascript.host.InstallTrigger;
 import org.htmlunit.javascript.host.Location;
 import org.htmlunit.javascript.host.MessageChannel;
 import org.htmlunit.javascript.host.MessagePort;
@@ -73,7 +72,6 @@ import org.htmlunit.javascript.host.URLSearchParams;
 import org.htmlunit.javascript.host.WebSocket;
 import org.htmlunit.javascript.host.Window;
 import org.htmlunit.javascript.host.XPathExpression;
-import org.htmlunit.javascript.host.webkitURL;
 import org.htmlunit.javascript.host.animations.Animation;
 import org.htmlunit.javascript.host.animations.AnimationEvent;
 import org.htmlunit.javascript.host.animations.KeyframeEffect;
@@ -140,8 +138,8 @@ import org.htmlunit.javascript.host.css.MediaQueryList;
 import org.htmlunit.javascript.host.css.StyleMedia;
 import org.htmlunit.javascript.host.css.StyleSheet;
 import org.htmlunit.javascript.host.css.StyleSheetList;
-import org.htmlunit.javascript.host.css.WebKitCSSMatrix;
 import org.htmlunit.javascript.host.dom.AbstractList;
+import org.htmlunit.javascript.host.dom.AbstractRange;
 import org.htmlunit.javascript.host.dom.Attr;
 import org.htmlunit.javascript.host.dom.CDATASection;
 import org.htmlunit.javascript.host.dom.CharacterData;
@@ -179,7 +177,6 @@ import org.htmlunit.javascript.host.dom.ShadowRoot;
 import org.htmlunit.javascript.host.dom.Text;
 import org.htmlunit.javascript.host.dom.TextRange;
 import org.htmlunit.javascript.host.dom.TreeWalker;
-import org.htmlunit.javascript.host.dom.WebKitMutationObserver;
 import org.htmlunit.javascript.host.dom.XPathEvaluator;
 import org.htmlunit.javascript.host.dom.XPathNSResolver;
 import org.htmlunit.javascript.host.dom.XPathResult;
@@ -231,6 +228,7 @@ import org.htmlunit.javascript.host.event.SVGZoomEvent;
 import org.htmlunit.javascript.host.event.SecurityPolicyViolationEvent;
 import org.htmlunit.javascript.host.event.SpeechSynthesisEvent;
 import org.htmlunit.javascript.host.event.StorageEvent;
+import org.htmlunit.javascript.host.event.SubmitEvent;
 import org.htmlunit.javascript.host.event.TextEvent;
 import org.htmlunit.javascript.host.event.TimeEvent;
 import org.htmlunit.javascript.host.event.TouchEvent;
@@ -352,8 +350,6 @@ import org.htmlunit.javascript.host.html.HTMLTrackElement;
 import org.htmlunit.javascript.host.html.HTMLUListElement;
 import org.htmlunit.javascript.host.html.HTMLUnknownElement;
 import org.htmlunit.javascript.host.html.HTMLVideoElement;
-import org.htmlunit.javascript.host.html.Image;
-import org.htmlunit.javascript.host.html.Option;
 import org.htmlunit.javascript.host.html.RowContainer;
 import org.htmlunit.javascript.host.html.ValidityState;
 import org.htmlunit.javascript.host.idb.IDBCursor;
@@ -362,7 +358,6 @@ import org.htmlunit.javascript.host.idb.IDBDatabase;
 import org.htmlunit.javascript.host.idb.IDBFactory;
 import org.htmlunit.javascript.host.idb.IDBIndex;
 import org.htmlunit.javascript.host.idb.IDBKeyRange;
-import org.htmlunit.javascript.host.idb.IDBMutableFile;
 import org.htmlunit.javascript.host.idb.IDBObjectStore;
 import org.htmlunit.javascript.host.idb.IDBOpenDBRequest;
 import org.htmlunit.javascript.host.idb.IDBRequest;
@@ -419,7 +414,6 @@ import org.htmlunit.javascript.host.media.TimeRanges;
 import org.htmlunit.javascript.host.media.VTTCue;
 import org.htmlunit.javascript.host.media.VideoPlaybackQuality;
 import org.htmlunit.javascript.host.media.WaveShaperNode;
-import org.htmlunit.javascript.host.media.WebkitMediaStream;
 import org.htmlunit.javascript.host.media.midi.MIDIAccess;
 import org.htmlunit.javascript.host.media.midi.MIDIInput;
 import org.htmlunit.javascript.host.media.midi.MIDIInputMap;
@@ -430,15 +424,12 @@ import org.htmlunit.javascript.host.media.presentation.Presentation;
 import org.htmlunit.javascript.host.media.presentation.PresentationAvailability;
 import org.htmlunit.javascript.host.media.presentation.PresentationConnection;
 import org.htmlunit.javascript.host.media.presentation.PresentationRequest;
-import org.htmlunit.javascript.host.media.rtc.MozRTCIceCandidate;
-import org.htmlunit.javascript.host.media.rtc.MozRTCPeerConnection;
-import org.htmlunit.javascript.host.media.rtc.MozRTCSessionDescription;
 import org.htmlunit.javascript.host.media.rtc.RTCCertificate;
 import org.htmlunit.javascript.host.media.rtc.RTCIceCandidate;
 import org.htmlunit.javascript.host.media.rtc.RTCPeerConnection;
+import org.htmlunit.javascript.host.media.rtc.RTCSctpTransport;
 import org.htmlunit.javascript.host.media.rtc.RTCSessionDescription;
 import org.htmlunit.javascript.host.media.rtc.RTCStatsReport;
-import org.htmlunit.javascript.host.media.rtc.WebkitRTCPeerConnection;
 import org.htmlunit.javascript.host.network.NetworkInformation;
 import org.htmlunit.javascript.host.payment.PaymentAddress;
 import org.htmlunit.javascript.host.payment.PaymentRequest;
@@ -489,7 +480,8 @@ public final class JavaScriptConfiguration extends AbstractJavaScriptConfigurati
 
     @SuppressWarnings("unchecked")
     static final Class<? extends HtmlUnitScriptable>[] CLASSES_ = new Class[] {
-        AbstractList.class, ActiveXObject.class, AnalyserNode.class, ANGLE_instanced_arrays.class,
+        AbstractList.class, AbstractRange.class,
+        ActiveXObject.class, AnalyserNode.class, ANGLE_instanced_arrays.class,
         Animation.class, AnimationEvent.class,
         ApplicationCache.class,
         Atomics.class,
@@ -560,11 +552,10 @@ public final class JavaScriptConfiguration extends AbstractJavaScriptConfigurati
         HTMLTitleElement.class, HTMLTrackElement.class, HTMLUListElement.class, HTMLUnknownElement.class,
         HTMLVideoElement.class,
         IDBCursor.class, IDBCursorWithValue.class, IDBDatabase.class, IDBFactory.class, IDBIndex.class,
-        IDBKeyRange.class, IDBMutableFile.class, IDBObjectStore.class, IDBOpenDBRequest.class, IDBRequest.class,
+        IDBKeyRange.class, IDBObjectStore.class, IDBOpenDBRequest.class, IDBRequest.class,
         IDBTransaction.class, IDBVersionChangeEvent.class, IdleDeadline.class, IIRFilterNode.class,
-        Image.class, ImageBitmap.class, ImageBitmapRenderingContext.class, ImageData.class,
+        ImageBitmap.class, ImageBitmapRenderingContext.class, ImageData.class,
         InputDeviceCapabilities.class, InputEvent.class,
-        InstallTrigger.class,
         IntersectionObserver.class, IntersectionObserverEntry.class,
         KeyboardEvent.class, KeyframeEffect.class,
         Location.class,
@@ -578,14 +569,13 @@ public final class JavaScriptConfiguration extends AbstractJavaScriptConfigurati
         MessageEvent.class, MessagePort.class, MIDIAccess.class, MIDIConnectionEvent.class, MIDIInput.class,
         MIDIInputMap.class, MIDIMessageEvent.class, MIDIOutput.class, MIDIOutputMap.class, MIDIPort.class,
         MimeType.class, MimeTypeArray.class, MouseEvent.class, MouseScrollEvent.class,
-        MouseWheelEvent.class, MozRTCIceCandidate.class, MozRTCPeerConnection.class, MozRTCSessionDescription.class,
-        MSGestureEvent.class,
+        MouseWheelEvent.class, MSGestureEvent.class,
         MutationEvent.class, MutationObserver.class, MutationRecord.class, NamedNodeMap.class,
         Namespace.class, NamespaceCollection.class,
         Navigator.class, NetworkInformation.class, Node.class, NodeFilter.class, NodeIterator.class,
         NodeList.class, Notification.class, OES_element_index_uint.class, OES_standard_derivatives.class,
         OES_texture_float.class, OES_texture_float_linear.class, OfflineAudioCompletionEvent.class,
-        OfflineAudioContext.class, Option.class, OscillatorNode.class, PageTransitionEvent.class, PannerNode.class,
+        OfflineAudioContext.class, OscillatorNode.class, PageTransitionEvent.class, PannerNode.class,
         PasswordCredential.class,
         Path2D.class,
         PaymentAddress.class, PaymentRequest.class, PaymentResponse.class,
@@ -602,15 +592,15 @@ public final class JavaScriptConfiguration extends AbstractJavaScriptConfigurati
         PushSubscription.class, PushSubscriptionOptions.class, RadioNodeList.class, Range.class, ReadableStream.class,
         RemotePlayback.class, Request.class, Response.class, RowContainer.class, RTCCertificate.class,
         RTCDataChannelEvent.class, RTCIceCandidate.class, RTCPeerConnection.class, RTCPeerConnectionIceEvent.class,
-        RTCSessionDescription.class, RTCStatsReport.class, Screen.class, ScreenOrientation.class,
-        ScriptProcessorNode.class,
+        RTCSctpTransport.class, RTCSessionDescription.class, RTCStatsReport.class,
+        Screen.class, ScreenOrientation.class, ScriptProcessorNode.class,
         SecurityPolicyViolationEvent.class, Selection.class, ServiceWorker.class, ServiceWorkerContainer.class,
         ServiceWorkerRegistration.class,
         ShadowRoot.class, SharedWorker.class, SimpleArray.class, SourceBuffer.class, SourceBufferList.class,
         SpeechSynthesis.class, SpeechSynthesisErrorEvent.class, SpeechSynthesisEvent.class,
         SpeechSynthesisUtterance.class, SpeechSynthesisVoice.class,
         StereoPannerNode.class, Storage.class, StorageEvent.class, StorageManager.class,
-        StyleMedia.class, StyleSheet.class, StyleSheetList.class, SubtleCrypto.class,
+        StyleMedia.class, StyleSheet.class, StyleSheetList.class, SubmitEvent.class, SubtleCrypto.class,
         SVGAElement.class, SVGAngle.class, SVGAnimatedAngle.class,
         SVGAnimatedBoolean.class, SVGAnimatedEnumeration.class, SVGAnimatedInteger.class,
         SVGAnimatedLength.class, SVGAnimatedLengthList.class, SVGAnimatedNumber.class, SVGAnimatedNumberList.class,
@@ -664,10 +654,9 @@ public final class JavaScriptConfiguration extends AbstractJavaScriptConfigurati
         WebGLSampler.class, WebGLShader.class, WebGLShaderPrecisionFormat.class, WebGLSync.class,
         WebGLTexture.class, WebGLTransformFeedback.class,
         WebGLUniformLocation.class, WebGLVertexArrayObject.class,
-        WebKitCSSMatrix.class, WebkitMediaStream.class, WebKitMutationObserver.class,
-        WebkitRTCPeerConnection.class, WebkitSpeechGrammar.class,
+        WebkitSpeechGrammar.class,
         WebkitSpeechGrammarList.class, WebkitSpeechRecognition.class, WebkitSpeechRecognitionError.class,
-        WebkitSpeechRecognitionEvent.class, webkitURL.class,
+        WebkitSpeechRecognitionEvent.class,
         WebSocket.class, WheelEvent.class, Window.class, Worker.class, XMLDocument.class,
         XMLHttpRequest.class, XMLHttpRequestEventTarget.class, XMLHttpRequestUpload.class, XMLSerializer.class,
         XPathEvaluator.class, XPathExpression.class,

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,21 +32,23 @@ import java.util.List;
 import java.util.function.Supplier;
 
 import org.htmlunit.BrowserVersion;
+import org.htmlunit.corejs.javascript.Callable;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.ES6Iterator;
+import org.htmlunit.corejs.javascript.NativeArrayIterator;
+import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.Undefined;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlInput;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
+import org.htmlunit.javascript.configuration.JsxSymbol;
 import org.htmlunit.javascript.host.dom.AbstractList;
-
-import org.htmlunit.corejs.javascript.Callable;
-import org.htmlunit.corejs.javascript.Context;
-import org.htmlunit.corejs.javascript.ScriptRuntime;
-import org.htmlunit.corejs.javascript.Scriptable;
-import org.htmlunit.corejs.javascript.Undefined;
 
 /**
  * An array of elements. Used for the element arrays returned by <code>document.all</code>,
@@ -70,8 +72,14 @@ public class HTMLCollection extends AbstractList implements Callable {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public HTMLCollection() {
+    }
+
+    /**
+     * JavaScript constructor.
+     */
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    public void jsConstructor() {
     }
 
     /**
@@ -115,6 +123,11 @@ public class HTMLCollection extends AbstractList implements Callable {
         return new HTMLCollection(parentScope, initialElements);
     }
 
+    @JsxSymbol({CHROME, EDGE, FF, FF_ESR})
+    public ES6Iterator iterator() {
+        return new NativeArrayIterator(getParentScope(), this, NativeArrayIterator.ARRAY_ITERATOR_TYPE.VALUES);
+    }
+
     /**
      * Returns the length.
      * @return the length
@@ -132,7 +145,7 @@ public class HTMLCollection extends AbstractList implements Callable {
     public Object call(final Context cx, final Scriptable scope, final Scriptable thisObj, final Object[] args) {
         if (supportsParentheses()) {
             if (args.length == 0) {
-                throw Context.reportRuntimeError("Zero arguments; need an index or a key.");
+                throw JavaScriptEngine.reportRuntimeError("Zero arguments; need an index or a key.");
             }
             final Object object = getIt(args[0]);
             if (object == NOT_FOUND) {
@@ -144,7 +157,7 @@ public class HTMLCollection extends AbstractList implements Callable {
             return object;
         }
 
-        throw ScriptRuntime.typeError("HTMLCollection does nont support function like access");
+        throw JavaScriptEngine.typeError("HTMLCollection does nont support function like access");
     }
 
     /**
@@ -166,7 +179,7 @@ public class HTMLCollection extends AbstractList implements Callable {
         for (final DomNode next : elements) {
             if (next instanceof DomElement
                     && (searchName || next instanceof HtmlInput || next instanceof HtmlForm)) {
-                final String nodeName = ((DomElement) next).getAttributeDirect("name");
+                final String nodeName = ((DomElement) next).getAttributeDirect(DomElement.NAME_ATTRIBUTE);
                 if (name.equals(nodeName)) {
                     matchingElements.add(next);
                 }
@@ -175,7 +188,7 @@ public class HTMLCollection extends AbstractList implements Callable {
 
         if (matchingElements.isEmpty()) {
             if (getBrowserVersion().hasFeature(HTMLCOLLECTION_ITEM_SUPPORTS_DOUBLE_INDEX_ALSO)) {
-                final double doubleValue = Context.toNumber(name);
+                final double doubleValue = JavaScriptEngine.toNumber(name);
                 if (!Double.isNaN(doubleValue)) {
                     return get((int) doubleValue, this);
                 }
@@ -215,7 +228,7 @@ public class HTMLCollection extends AbstractList implements Callable {
         }
 
         int idx = 0;
-        final double doubleValue = Context.toNumber(index);
+        final double doubleValue = JavaScriptEngine.toNumber(index);
         if (!Double.isNaN(doubleValue)) {
             idx = (int) doubleValue;
         }
@@ -252,7 +265,7 @@ public class HTMLCollection extends AbstractList implements Callable {
         for (final Object next : elements) {
             if (next instanceof DomElement) {
                 final DomElement elem = (DomElement) next;
-                final String nodeName = elem.getAttributeDirect("name");
+                final String nodeName = elem.getAttributeDirect(DomElement.NAME_ATTRIBUTE);
                 if (name.equals(nodeName)) {
                     return getScriptableForElement(elem);
                 }

@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
- * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,10 +20,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Assume;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import org.htmlunit.AppletConfirmHandler;
 import org.htmlunit.Page;
 import org.htmlunit.SimpleWebTestCase;
@@ -31,6 +27,9 @@ import org.htmlunit.StatusHandler;
 import org.htmlunit.WebClient;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.junit.Assume;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * Tests for {@link HtmlApplet}.
@@ -113,10 +112,6 @@ public class HtmlAppletTest extends SimpleWebTestCase {
     @Test
     public void cacheArchive() throws Exception {
         Assume.assumeFalse(SKIP_);
-
-        if (getBrowserVersion().isChrome()) {
-            return;
-        }
 
         final URL url = getClass().getResource("/objects/cacheArchiveApplet.html");
 

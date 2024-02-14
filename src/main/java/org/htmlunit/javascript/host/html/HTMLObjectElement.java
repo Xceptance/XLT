@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,17 +26,6 @@ import java.lang.reflect.Method;
 import java.util.Map;
 
 import org.htmlunit.WebClient;
-import org.htmlunit.html.DomNode;
-import org.htmlunit.html.HtmlForm;
-import org.htmlunit.html.HtmlObject;
-import org.htmlunit.javascript.HtmlUnitContextFactory;
-import org.htmlunit.javascript.configuration.JsxClass;
-import org.htmlunit.javascript.configuration.JsxConstructor;
-import org.htmlunit.javascript.configuration.JsxFunction;
-import org.htmlunit.javascript.configuration.JsxGetter;
-import org.htmlunit.javascript.configuration.JsxSetter;
-import org.htmlunit.javascript.host.ActiveXObjectImpl;
-
 import org.htmlunit.corejs.javascript.BaseFunction;
 import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.Function;
@@ -44,6 +33,18 @@ import org.htmlunit.corejs.javascript.NativeJavaObject;
 import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.corejs.javascript.ScriptableObject;
 import org.htmlunit.corejs.javascript.Wrapper;
+import org.htmlunit.html.DomElement;
+import org.htmlunit.html.DomNode;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlObject;
+import org.htmlunit.javascript.HtmlUnitContextFactory;
+import org.htmlunit.javascript.JavaScriptEngine;
+import org.htmlunit.javascript.configuration.JsxClass;
+import org.htmlunit.javascript.configuration.JsxConstructor;
+import org.htmlunit.javascript.configuration.JsxFunction;
+import org.htmlunit.javascript.configuration.JsxGetter;
+import org.htmlunit.javascript.configuration.JsxSetter;
+import org.htmlunit.javascript.host.ActiveXObjectImpl;
 
 /**
  * The JavaScript object {@code HTMLObjectElement}.
@@ -60,8 +61,16 @@ public class HTMLObjectElement extends HTMLElement implements Wrapper {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public HTMLObjectElement() {
+    }
+
+    /**
+     * JavaScript constructor.
+     */
+    @Override
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    public void jsConstructor() {
+        super.jsConstructor();
     }
 
     /**
@@ -110,7 +119,7 @@ public class HTMLObjectElement extends HTMLElement implements Wrapper {
                         return method.invoke(applet, realArgs);
                     }
                     catch (final Exception e) {
-                        throw Context.throwAsScriptRuntimeEx(e);
+                        throw JavaScriptEngine.throwAsScriptRuntimeEx(e);
                     }
                 }
             };
@@ -190,7 +199,7 @@ public class HTMLObjectElement extends HTMLElement implements Wrapper {
                         }
                     }
                     catch (final Exception e) {
-                        throw Context.reportRuntimeError("ActiveXObject Error: failed instantiating class "
+                        throw JavaScriptEngine.reportRuntimeError("ActiveXObject Error: failed instantiating class "
                                 + xClassString + " because " + e.getMessage() + ".");
                     }
                     return;
@@ -203,7 +212,7 @@ public class HTMLObjectElement extends HTMLElement implements Wrapper {
                     wrappedActiveX_.setParentScope(getParentScope());
                 }
                 catch (final Exception e) {
-                    Context.throwAsScriptRuntimeEx(e);
+                    throw JavaScriptEngine.throwAsScriptRuntimeEx(e);
                 }
             }
         }
@@ -328,7 +337,7 @@ public class HTMLObjectElement extends HTMLElement implements Wrapper {
     @JsxGetter
     @Override
     public String getName() {
-        return getDomNodeOrDie().getAttributeDirect("name");
+        return getDomNodeOrDie().getAttributeDirect(DomElement.NAME_ATTRIBUTE);
     }
 
     /**
@@ -338,7 +347,7 @@ public class HTMLObjectElement extends HTMLElement implements Wrapper {
     @JsxSetter
     @Override
     public void setName(final String name) {
-        getDomNodeOrDie().setAttribute("name", name);
+        getDomNodeOrDie().setAttribute(DomElement.NAME_ATTRIBUTE, name);
     }
 
     /**

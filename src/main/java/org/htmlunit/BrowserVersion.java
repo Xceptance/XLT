@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import java.util.Set;
 import java.util.TimeZone;
 
 import org.apache.commons.io.FilenameUtils;
-
 import org.htmlunit.javascript.configuration.AbstractJavaScriptConfiguration;
 import org.htmlunit.javascript.configuration.BrowserFeature;
 import org.htmlunit.javascript.configuration.SupportedBrowser;
@@ -90,9 +89,9 @@ public final class BrowserVersion implements Serializable {
     private static final String PLATFORM_WIN32 = "Win32";
 
     /** Latest Firefox. */
-    public static final BrowserVersion FIREFOX = new BrowserVersion(110, "FF");
+    public static final BrowserVersion FIREFOX = new BrowserVersion(122, "FF");
 
-    private static final int FIREFOX_ESR_NUMERIC = 102;
+    private static final int FIREFOX_ESR_NUMERIC = 115;
 
     /** Firefox ESR. */
     public static final BrowserVersion FIREFOX_ESR = new BrowserVersion(FIREFOX_ESR_NUMERIC, "FF-ESR");
@@ -105,10 +104,10 @@ public final class BrowserVersion implements Serializable {
     public static final BrowserVersion INTERNET_EXPLORER = new BrowserVersion(11, "IE");
 
     /** Latest Edge. */
-    public static final BrowserVersion EDGE = new BrowserVersion(110, "Edge");
+    public static final BrowserVersion EDGE = new BrowserVersion(121, "Edge");
 
     /** Latest Chrome. */
-    public static final BrowserVersion CHROME = new BrowserVersion(110, "Chrome");
+    public static final BrowserVersion CHROME = new BrowserVersion(121, "Chrome");
 
     /**
      * Array with all supported browsers.
@@ -126,8 +125,7 @@ public final class BrowserVersion implements Serializable {
     /* Register plugins for the browser versions. */
     static {
         FIREFOX_ESR.applicationVersion_ = "5.0 (Windows)";
-        FIREFOX_ESR.userAgent_ = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:"
-                                    + FIREFOX_ESR.getBrowserVersionNumeric() + ".0) Gecko/20100101 Firefox/"
+        FIREFOX_ESR.userAgent_ = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/"
                                     + FIREFOX_ESR.getBrowserVersionNumeric() + ".0";
         FIREFOX_ESR.buildId_ = "20181001000000";
         FIREFOX_ESR.productSub_ = "20100101";
@@ -161,7 +159,7 @@ public final class BrowserVersion implements Serializable {
 
         FIREFOX.applicationVersion_ = "5.0 (Windows)";
         FIREFOX.userAgent_ = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:"
-                                            + (FIREFOX.getBrowserVersionNumeric() - 1) + ".0) Gecko/20100101 Firefox/"
+                                            + FIREFOX.getBrowserVersionNumeric() + ".0) Gecko/20100101 Firefox/"
                                             + FIREFOX.getBrowserVersionNumeric() + ".0";
         FIREFOX.buildId_ = "20181001000000";
         FIREFOX.productSub_ = "20100101";
@@ -254,8 +252,8 @@ public final class BrowserVersion implements Serializable {
         CHROME.imgAcceptHeader_ = "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8";
         CHROME.cssAcceptHeader_ = "text/css,*/*;q=0.1";
         CHROME.scriptAcceptHeader_ = "*/*";
-        CHROME.secClientHintUserAgentHeader_ = "\"Chromium\";v=\""
-                        + CHROME.getBrowserVersionNumeric() + "\", \"Not A(Brand\";v=\"24\", \"Google Chrome\";v=\""
+        CHROME.secClientHintUserAgentHeader_ = "\"Not A(Brand\";v=\"99\", \"Google Chrome\";v=\""
+                        + CHROME.getBrowserVersionNumeric() + "\", \"Chromium\";v=\""
                         + CHROME.getBrowserVersionNumeric() + "\"";
         CHROME.fontHeights_ = new int[] {
             0, 1, 2, 4, 5, 5, 6, 8, 9, 10, 11, 12, 15, 16, 16, 17, 18, 20, 21, 22, 23, 25, 26, 26,
@@ -268,10 +266,10 @@ public final class BrowserVersion implements Serializable {
         // EDGE (Win10 64bit)
         EDGE.applicationVersion_ = "5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/"
                                         + EDGE.getBrowserVersionNumeric() + ".0.0.0 Safari/537.36 Edg/"
-                                        + EDGE.getBrowserVersionNumeric() + ".0.1587.49";
+                                        + EDGE.getBrowserVersionNumeric() + ".0.0.0";
         EDGE.userAgent_ = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/"
                                         + EDGE.getBrowserVersionNumeric() + ".0.0.0 Safari/537.36 Edg/"
-                                        + EDGE.getBrowserVersionNumeric() + ".0.1587.49";
+                                        + EDGE.getBrowserVersionNumeric() + ".0.0.0";
 
         EDGE.applicationCodeName_ = "Mozilla";
         EDGE.vendor_ = "Google Inc.";
@@ -296,13 +294,13 @@ public final class BrowserVersion implements Serializable {
             HttpHeader.COOKIE};
         EDGE.acceptLanguageHeader_ = "en-US,en;q=0.9";
         EDGE.htmlAcceptHeader_ = "text/html,application/xhtml+xml,application/xml;"
-                                            + "q=0.9,image/webp,image/apng,*/*;"
+                                            + "q=0.9,image/avif,image/webp,image/apng,*/*;"
                                             + "q=0.8,application/signed-exchange;v=b3;q=0.7";
-        EDGE.imgAcceptHeader_ = "image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8";
+        EDGE.imgAcceptHeader_ = "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8";
         EDGE.cssAcceptHeader_ = "text/css,*/*;q=0.1";
         EDGE.scriptAcceptHeader_ = "*/*";
-        EDGE.secClientHintUserAgentHeader_ = "\"Chromium\";v=\""
-                            + EDGE.getBrowserVersionNumeric() + "\", \"Not A(Brand\";v=\"24\", \"Microsoft Edge\";v=\""
+        EDGE.secClientHintUserAgentHeader_ = "\"Not A(Brand\";v=\"99\", \"Microsoft Edge\";v=\""
+                            + EDGE.getBrowserVersionNumeric() + "\", \"Chromium\";v=\""
                             + EDGE.getBrowserVersionNumeric() + "\"";
         EDGE.fontHeights_ = new int[] {
             0, 1, 2, 4, 5, 5, 6, 8, 9, 10, 11, 12, 15, 16, 16, 17, 18, 20, 21, 22, 23, 25, 26, 26,
@@ -321,6 +319,7 @@ public final class BrowserVersion implements Serializable {
         CHROME.registerUploadMimeType("jpeg", MimeType.IMAGE_JPEG);
         CHROME.registerUploadMimeType("jpg", MimeType.IMAGE_JPEG);
         CHROME.registerUploadMimeType("png", MimeType.IMAGE_PNG);
+        CHROME.registerUploadMimeType("pdf", "application/pdf");
         CHROME.registerUploadMimeType("webp", "image/webp");
         CHROME.registerUploadMimeType("mp4", "video/mp4");
         CHROME.registerUploadMimeType("m4v", "video/mp4");
@@ -348,6 +347,7 @@ public final class BrowserVersion implements Serializable {
         EDGE.registerUploadMimeType("jpeg", MimeType.IMAGE_JPEG);
         EDGE.registerUploadMimeType("jpg", MimeType.IMAGE_JPEG);
         EDGE.registerUploadMimeType("png", MimeType.IMAGE_PNG);
+        EDGE.registerUploadMimeType("pdf", "application/pdf");
         EDGE.registerUploadMimeType("webp", "image/webp");
         EDGE.registerUploadMimeType("mp4", "video/mp4");
         EDGE.registerUploadMimeType("m4v", "video/mp4");
@@ -374,6 +374,7 @@ public final class BrowserVersion implements Serializable {
         FIREFOX_ESR.registerUploadMimeType("gif", MimeType.IMAGE_GIF);
         FIREFOX_ESR.registerUploadMimeType("jpeg", MimeType.IMAGE_JPEG);
         FIREFOX_ESR.registerUploadMimeType("jpg", MimeType.IMAGE_JPEG);
+        FIREFOX_ESR.registerUploadMimeType("pdf", "application/pdf");
         FIREFOX_ESR.registerUploadMimeType("mp4", "video/mp4");
         FIREFOX_ESR.registerUploadMimeType("m4v", "video/mp4");
         FIREFOX_ESR.registerUploadMimeType("m4a", "audio/mp4");
@@ -400,6 +401,7 @@ public final class BrowserVersion implements Serializable {
         FIREFOX.registerUploadMimeType("gif", MimeType.IMAGE_GIF);
         FIREFOX.registerUploadMimeType("jpeg", MimeType.IMAGE_JPEG);
         FIREFOX.registerUploadMimeType("jpg", MimeType.IMAGE_JPEG);
+        FIREFOX.registerUploadMimeType("pdf", "application/pdf");
         FIREFOX.registerUploadMimeType("mp4", "video/mp4");
         FIREFOX.registerUploadMimeType("m4v", "video/mp4");
         FIREFOX.registerUploadMimeType("m4a", "audio/mp4");
