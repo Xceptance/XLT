@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,8 @@
  */
 package org.htmlunit.protocol.data;
 
-import static org.htmlunit.protocol.data.DataURLConnection.DATA_PREFIX;
 import static java.nio.charset.StandardCharsets.US_ASCII;
+import static org.htmlunit.protocol.data.DataURLConnection.DATA_PREFIX;
 
 import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
@@ -27,7 +27,6 @@ import java.nio.charset.UnsupportedCharsetException;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
-
 import org.htmlunit.util.MimeType;
 
 /**

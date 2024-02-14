@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,12 @@
  */
 package org.htmlunit.general;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * Tests the result of <code>document.createElement()</code>.
@@ -1551,98 +1550,8 @@ public class ElementCreationTest extends WebDriverTestCase {
      */
     @Test
     @Alerts("[object HTMLUnknownElement]")
-    public void attribute() throws Exception {
-        test("attribute");
-    }
-
-    /**
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Alerts("[object HTMLUnknownElement]")
-    public void clientInformation() throws Exception {
-        test("clientInformation");
-    }
-
-    /**
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Alerts("[object HTMLUnknownElement]")
-    public void clipboardData() throws Exception {
-        test("clipboardData");
-    }
-
-    /**
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Alerts("[object HTMLUnknownElement]")
     public void command() throws Exception {
         test("command");
-    }
-
-    /**
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Alerts("[object HTMLUnknownElement]")
-    public void comment() throws Exception {
-        test("comment");
-    }
-
-    /**
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Alerts("[object HTMLUnknownElement]")
-    public void currentStyle() throws Exception {
-        test("currentStyle");
-    }
-
-    /**
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Alerts("[object HTMLUnknownElement]")
-    public void custom() throws Exception {
-        test("custom");
-    }
-
-    /**
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Alerts("[object HTMLUnknownElement]")
-    public void datagrid() throws Exception {
-        test("datagrid");
-    }
-
-    /**
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Alerts("[object HTMLUnknownElement]")
-    public void datatemplate() throws Exception {
-        test("datatemplate");
-    }
-
-    /**
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Alerts("[object HTMLUnknownElement]")
-    public void dataTransfer() throws Exception {
-        test("dataTransfer");
-    }
-
-    /**
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Alerts("[object HTMLUnknownElement]")
-    public void defaults() throws Exception {
-        test("defaults");
     }
 
     /**
@@ -1673,97 +1582,6 @@ public class ElementCreationTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("[object HTMLUnknownElement]")
-    public void document() throws Exception {
-        test("document");
-    }
-
-    /**
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Alerts("[object HTMLUnknownElement]")
-    public void documentCompatibleInfo() throws Exception {
-        test("DocumentCompatibleInfo");
-    }
-
-    /**
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Alerts("[object HTMLUnknownElement]")
-    public void event() throws Exception {
-        test("event");
-    }
-
-    /**
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Alerts(DEFAULT = "[object HTMLElement]",
-            IE = "[object HTMLUnknownElement]")
-    public void event_source() throws Exception {
-        test("event-source");
-    }
-
-    /**
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Alerts("[object HTMLUnknownElement]")
-    public void external() throws Exception {
-        test("external");
-    }
-
-    /**
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Alerts("[object HTMLUnknownElement]")
-    public void history() throws Exception {
-        test("history");
-    }
-
-    /**
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Alerts("[object HTMLUnknownElement]")
-    public void hn() throws Exception {
-        test("hn");
-    }
-
-    /**
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Alerts("[object HTMLUnknownElement]")
-    public void ilayer() throws Exception {
-        test("ilayer");
-    }
-
-    /**
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Alerts("[object HTMLUnknownElement]")
-    public void implementation() throws Exception {
-        test("implementation");
-    }
-
-    /**
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Alerts("[object HTMLUnknownElement]")
-    public void IMPORT() throws Exception {
-        test("IMPORT");
-    }
-
-    /**
-     * @throws Exception if an error occurs
-     */
-    @Test
     @Alerts(DEFAULT = "[object HTMLUnknownElement]",
             CHROME = "[object HTMLElement]",
             EDGE = "[object HTMLElement]")
@@ -1775,46 +1593,10 @@ public class ElementCreationTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("[object HTMLUnknownElement]")
-    public void location() throws Exception {
-        test("location");
-    }
-
-    /**
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Alerts("[object HTMLUnknownElement]")
-    public void namespace() throws Exception {
-        test("namespace");
-    }
-
-    /**
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Alerts("[object HTMLUnknownElement]")
-    public void navigator() throws Exception {
-        test("navigator");
-    }
-
-    /**
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Alerts("[object HTMLUnknownElement]")
-    public void nest() throws Exception {
-        test("nest");
-    }
-
-    /**
-     * @throws Exception if an error occurs
-     */
-    @Test
     @Alerts(DEFAULT = "[object HTMLUnknownElement]",
             CHROME = "[object HTMLElement]",
             EDGE = "[object HTMLElement]")
-    public void noLayer() throws Exception {
+    public void nolayer() throws Exception {
         test("nolayer");
     }
 
@@ -1822,26 +1604,8 @@ public class ElementCreationTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("[object HTMLUnknownElement]")
-    public void page() throws Exception {
-        test("page");
-    }
-
-    /**
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Alerts("[object HTMLUnknownElement]")
-    public void popup() throws Exception {
-        test("popup");
-    }
-
-    /**
-     * @throws Exception if an error occurs
-     */
-    @Test
     @Alerts(DEFAULT = "[object HTMLElement]",
-            IE = "[object HTMLUnknownElement]")
+            IE = "[object HTMLPhraseElement]")
     public void rb() throws Exception {
         test("rb");
     }
@@ -1860,7 +1624,7 @@ public class ElementCreationTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "[object HTMLElement]",
-            IE = "[object HTMLUnknownElement]")
+            IE = "[object HTMLPhraseElement]")
     public void rtc() throws Exception {
         test("rtc");
     }
@@ -1870,134 +1634,8 @@ public class ElementCreationTest extends WebDriverTestCase {
      */
     @Test
     @Alerts("[object HTMLUnknownElement]")
-    public void rule() throws Exception {
-        test("rule");
-    }
-
-    /**
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Alerts("[object HTMLUnknownElement]")
-    public void runtimeStyle() throws Exception {
-        test("runtimeStyle");
-    }
-
-    /**
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Alerts("[object HTMLUnknownElement]")
-    public void screen() throws Exception {
-        test("screen");
-    }
-
-    /**
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Alerts("[object HTMLUnknownElement]")
-    public void selection() throws Exception {
-        test("selection");
-    }
-
-    /**
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Alerts("[object HTMLUnknownElement]")
     public void spacer() throws Exception {
         test("spacer");
-    }
-
-    /**
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Alerts("[object HTMLUnknownElement]")
-    public void storage() throws Exception {
-        test("Storage");
-    }
-
-    /**
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Alerts("[object HTMLUnknownElement]")
-    public void styleSheet() throws Exception {
-        test("styleSheet");
-    }
-
-    /**
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Alerts("[object HTMLUnknownElement]")
-    public void textNode() throws Exception {
-        test("TextNode");
-    }
-
-    /**
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Alerts("[object HTMLUnknownElement]")
-    public void textRange() throws Exception {
-        test("TextRange");
-    }
-
-    /**
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Alerts("[object HTMLUnknownElement]")
-    public void textRectangle() throws Exception {
-        test("TextRectangle");
-    }
-
-    /**
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Alerts("[object HTMLUnknownElement]")
-    public void userProfile() throws Exception {
-        test("userProfile");
-    }
-
-    /**
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Alerts("[object HTMLUnknownElement]")
-    public void window() throws Exception {
-        test("window");
-    }
-
-    /**
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Alerts("[object HTMLUnknownElement]")
-    public void XDomainRequest() throws Exception {
-        test("XDomainRequest");
-    }
-
-    /**
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Alerts("[object HTMLUnknownElement]")
-    public void xml() throws Exception {
-        test("xml");
-    }
-
-    /**
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Alerts("[object HTMLUnknownElement]")
-    public void XMLHttpRequest() throws Exception {
-        test("XMLHttpRequest");
     }
 
     /**
@@ -2057,5 +1695,14 @@ public class ElementCreationTest extends WebDriverTestCase {
             IE = "[object HTMLUnknownElement]")
     public void slot() throws Exception {
         test("slot");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("[object HTMLUnknownElement]")
+    public void arbitrary() throws Exception {
+        test("abcdefg");
     }
 }

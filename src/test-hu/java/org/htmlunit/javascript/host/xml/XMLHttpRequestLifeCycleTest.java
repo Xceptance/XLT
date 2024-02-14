@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,18 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.htmlunit.HttpMethod;
+import org.htmlunit.MiniServer;
+import org.htmlunit.MockWebConnection;
+import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.WebTestCase;
+import org.htmlunit.httpclient.HttpClientConverter;
+import org.htmlunit.junit.BrowserRunner;
+import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.junit.Retry;
+import org.htmlunit.util.MimeType;
+import org.htmlunit.util.NameValuePair;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -39,18 +51,6 @@ import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriverException;
-
-import org.htmlunit.HttpMethod;
-import org.htmlunit.MiniServer;
-import org.htmlunit.MockWebConnection;
-import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.WebResponse;
-import org.htmlunit.WebTestCase;
-import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
-import org.htmlunit.util.MimeType;
-import org.htmlunit.util.NameValuePair;
 
 /**
  * Tests for the LifeCycle events for XMLHttpRequests.
@@ -154,7 +154,7 @@ public final class XMLHttpRequestLifeCycleTest {
 
                 response.setContentType(MimeType.TEXT_XML);
                 response.setContentLength(RETURN_XML.length());
-                response.setStatus(WebResponse.OK);
+                response.setStatus(HttpClientConverter.OK);
                 final ServletOutputStream outputStream = response.getOutputStream();
                 try (Writer writer = new OutputStreamWriter(outputStream)) {
                     writer.write(RETURN_XML);
@@ -176,7 +176,7 @@ public final class XMLHttpRequestLifeCycleTest {
                     throws ServletException, IOException {
                 response.setContentType(MimeType.TEXT_XML);
                 response.setContentLength(RETURN_XML.length());
-                response.setStatus(WebResponse.OK);
+                response.setStatus(HttpClientConverter.OK);
                 final ServletOutputStream outputStream = response.getOutputStream();
                 try (Writer writer = new OutputStreamWriter(outputStream)) {
                     writer.write(RETURN_XML);
@@ -202,7 +202,7 @@ public final class XMLHttpRequestLifeCycleTest {
 
                 response.setContentType(MimeType.TEXT_XML);
                 response.setContentLength(RETURN_XML.length());
-                response.setStatus(WebResponse.FORBIDDEN);
+                response.setStatus(HttpClientConverter.FORBIDDEN);
                 final ServletOutputStream outputStream = response.getOutputStream();
                 try (Writer writer = new OutputStreamWriter(outputStream)) {
                     writer.write(RETURN_XML);
@@ -228,7 +228,7 @@ public final class XMLHttpRequestLifeCycleTest {
 
                 response.setContentType(MimeType.TEXT_XML);
                 response.setContentLength(RETURN_XML.length());
-                response.setStatus(WebResponse.INTERNAL_SERVER_ERROR);
+                response.setStatus(HttpClientConverter.INTERNAL_SERVER_ERROR);
                 final ServletOutputStream outputStream = response.getOutputStream();
                 try (Writer writer = new OutputStreamWriter(outputStream)) {
                     writer.write(RETURN_XML);
@@ -240,7 +240,7 @@ public final class XMLHttpRequestLifeCycleTest {
 
             @Override
             protected void doOptions(final HttpServletRequest request, final HttpServletResponse response) {
-                response.setStatus(WebResponse.FORBIDDEN);
+                response.setStatus(HttpClientConverter.FORBIDDEN);
             }
         }
 
@@ -248,7 +248,7 @@ public final class XMLHttpRequestLifeCycleTest {
 
             @Override
             protected void doOptions(final HttpServletRequest request, final HttpServletResponse response) {
-                response.setStatus(WebResponse.INTERNAL_SERVER_ERROR);
+                response.setStatus(HttpClientConverter.INTERNAL_SERVER_ERROR);
             }
         }
 
@@ -263,7 +263,7 @@ public final class XMLHttpRequestLifeCycleTest {
 
                 response.setContentType(MimeType.TEXT_XML);
                 response.setContentLength(RETURN_XML.length());
-                response.setStatus(WebResponse.OK);
+                response.setStatus(HttpClientConverter.OK);
                 final ServletOutputStream outputStream = response.getOutputStream();
                 try (Writer writer = new OutputStreamWriter(outputStream)) {
                     writer.flush();
@@ -1069,6 +1069,7 @@ public final class XMLHttpRequestLifeCycleTest {
          * @throws Exception if the test fails
          */
         @Test
+        @Retry
         @Alerts(DEFAULT = {"readystatechange_1_0_true", "open-done: 1_0", "loadstart_1_0_false",
                            "send-done: 1_0", "readystatechange_4_0_true", "abort_4_0_false",
                            "loadend_4_0_false", "abort-done: 0_0"},
@@ -1472,9 +1473,6 @@ public final class XMLHttpRequestLifeCycleTest {
         @Alerts(DEFAULT = {"readystatechange_1_0_true", "open-done: 1_0", "loadstart_1_0_false",
                            "send-done: 1_0", "readystatechange_4_0_true", "error_4_0_false",
                            "loadend_4_0_false"},
-                FF = {"readystatechange_1_0_true", "open-done: 1_0", "loadstart_1_0_false",
-                      "send-done: 1_0", "progress_1_0_false", "readystatechange_4_0_true",
-                      "error_4_0_false", "loadend_4_0_false"},
                 FF_ESR = {"readystatechange_1_0_true", "open-done: 1_0", "loadstart_1_0_false",
                           "send-done: 1_0", "progress_1_0_false", "readystatechange_4_0_true",
                           "error_4_0_false", "loadend_4_0_false"},
@@ -1734,9 +1732,6 @@ public final class XMLHttpRequestLifeCycleTest {
         @Alerts(DEFAULT = {"readystatechange_1_0_true", "open-done: 1_0", "loadstart_1_0_false",
                            "send-done: 1_0", "readystatechange_4_0_true", "error_4_0_false",
                            "loadend_4_0_false"},
-                FF = {"readystatechange_1_0_true", "open-done: 1_0", "loadstart_1_0_false",
-                      "send-done: 1_0", "progress_1_0_false", "readystatechange_4_0_true",
-                      "error_4_0_false", "loadend_4_0_false"},
                 FF_ESR = {"readystatechange_1_0_true", "open-done: 1_0", "loadstart_1_0_false",
                           "send-done: 1_0", "progress_1_0_false", "readystatechange_4_0_true",
                           "error_4_0_false", "loadend_4_0_false"},

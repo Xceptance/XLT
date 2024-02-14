@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ public class DefaultCredentialsProvider3Test {
     @Test
     public void serialization() {
         final String username = "foo";
-        final String password = "password";
+        final char[] password = "password".toCharArray();
         final String host = "my.host";
         final int port = 1234;
         final String realm = "blah";

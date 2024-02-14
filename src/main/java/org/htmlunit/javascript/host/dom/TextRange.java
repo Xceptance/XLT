@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,12 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.w3c.dom.ranges.Range;
-
+import org.htmlunit.html.DomNode;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.impl.SelectableTextInput;
 import org.htmlunit.html.impl.SimpleRange;
 import org.htmlunit.javascript.HtmlUnitScriptable;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
@@ -31,9 +31,6 @@ import org.htmlunit.javascript.configuration.JsxSetter;
 import org.htmlunit.javascript.host.Element;
 import org.htmlunit.javascript.host.Window;
 import org.htmlunit.javascript.host.html.HTMLElement;
-
-import org.htmlunit.corejs.javascript.Context;
-import org.htmlunit.corejs.javascript.Undefined;
 
 /**
  * A JavaScript object for {@code TextRange} (IE only).
@@ -43,6 +40,7 @@ import org.htmlunit.corejs.javascript.Undefined;
  * @author Ahmed Ashour
  * @author Marc Guillemot
  * @author David Gileadi
+ * @author Ronald Brill
  */
 @JsxClass(IE)
 public class TextRange extends HtmlUnitScriptable {
@@ -50,7 +48,7 @@ public class TextRange extends HtmlUnitScriptable {
     private static final Log LOG = LogFactory.getLog(TextRange.class);
 
     /** The wrapped selection range. */
-    private Range range_;
+    private SimpleRange range_;
 
     /**
      * Default constructor used to build the prototype.
@@ -71,7 +69,7 @@ public class TextRange extends HtmlUnitScriptable {
      * Constructs a text range around the provided range.
      * @param range the initial range
      */
-    public TextRange(final Range range) {
+    public TextRange(final SimpleRange range) {
         range_ = range.cloneRange();
     }
 
@@ -191,13 +189,13 @@ public class TextRange extends HtmlUnitScriptable {
             return 0;
         }
         int c = 1;
-        if (!Undefined.isUndefined(count)) {
-            c = (int) Context.toNumber(count);
+        if (!JavaScriptEngine.isUndefined(count)) {
+            c = (int) JavaScriptEngine.toNumber(count);
         }
         if (range_.getStartContainer() == range_.getEndContainer()
                 && range_.getStartContainer() instanceof SelectableTextInput) {
-            final SelectableTextInput input = (SelectableTextInput) range_.getStartContainer();
-            c = constrainMoveBy(c, range_.getStartOffset(), input.getText().length());
+            final DomNode input = range_.getStartContainer();
+            c = constrainMoveBy(c, range_.getStartOffset(), ((SelectableTextInput) input).getText().length());
             range_.setStart(input, range_.getStartOffset() + c);
         }
         return c;
@@ -230,13 +228,13 @@ public class TextRange extends HtmlUnitScriptable {
             return 0;
         }
         int c = 1;
-        if (!Undefined.isUndefined(count)) {
-            c = (int) Context.toNumber(count);
+        if (!JavaScriptEngine.isUndefined(count)) {
+            c = (int) JavaScriptEngine.toNumber(count);
         }
         if (range_.getStartContainer() == range_.getEndContainer()
                 && range_.getStartContainer() instanceof SelectableTextInput) {
-            final SelectableTextInput input = (SelectableTextInput) range_.getStartContainer();
-            c = constrainMoveBy(c, range_.getEndOffset(), input.getText().length());
+            final DomNode input = range_.getStartContainer();
+            c = constrainMoveBy(c, range_.getEndOffset(), ((SelectableTextInput) input).getText().length());
             range_.setEnd(input, range_.getEndOffset() + c);
         }
         return c;
@@ -261,7 +259,7 @@ public class TextRange extends HtmlUnitScriptable {
      */
     @JsxFunction
     public boolean inRange(final TextRange other) {
-        final Range otherRange = other.range_;
+        final SimpleRange otherRange = other.range_;
 
         final org.w3c.dom.Node otherStart = otherRange.getStartContainer();
         if (otherStart == null) {
@@ -269,14 +267,14 @@ public class TextRange extends HtmlUnitScriptable {
         }
 
         final org.w3c.dom.Node start = range_.getStartContainer();
-        final short startComparison = start.compareDocumentPosition(otherStart);
+        final int startComparison = start.compareDocumentPosition(otherStart);
         final boolean startNodeBefore = startComparison == 0
                 || (startComparison & Node.DOCUMENT_POSITION_CONTAINS) != 0
                 || (startComparison & Node.DOCUMENT_POSITION_PRECEDING) != 0;
         if (startNodeBefore && (start != otherStart || range_.getStartOffset() <= otherRange.getStartOffset())) {
             final org.w3c.dom.Node end = range_.getEndContainer();
             final org.w3c.dom.Node otherEnd = otherRange.getEndContainer();
-            final short endComparison = end.compareDocumentPosition(otherEnd);
+            final int endComparison = end.compareDocumentPosition(otherEnd);
             final boolean endNodeAfter = endComparison == 0
                     || (endComparison & Node.DOCUMENT_POSITION_CONTAINS) != 0
                     || (endComparison & Node.DOCUMENT_POSITION_FOLLOWING) != 0;
@@ -296,9 +294,9 @@ public class TextRange extends HtmlUnitScriptable {
      */
     @JsxFunction
     public void setEndPoint(final String type, final TextRange other) {
-        final Range otherRange = other.range_;
+        final SimpleRange otherRange = other.range_;
 
-        final org.w3c.dom.Node target;
+        final DomNode target;
         final int offset;
         if (type.endsWith("ToStart")) {
             target = otherRange.getStartContainer();

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,14 +18,13 @@ import static org.junit.Assert.assertFalse;
 
 import java.util.Arrays;
 
-import org.junit.runners.model.FrameworkMethod;
-import org.junit.runners.model.Statement;
-
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.AlertsStandards;
 import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.junit.runners.model.FrameworkMethod;
+import org.junit.runners.model.Statement;
 
 /**
  * The Browser Statement.

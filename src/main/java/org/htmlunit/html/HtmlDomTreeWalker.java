@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,6 @@ package org.htmlunit.html;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 import org.w3c.dom.traversal.NodeFilter;
-
-import org.htmlunit.corejs.javascript.Context;
 
 /**
  * In general this is an implementation of org.w3c.dom.traversal.TreeWalker.
@@ -58,8 +56,7 @@ public class HtmlDomTreeWalker {
     public HtmlDomTreeWalker(final DomNode root, final int whatToShow, final NodeFilter filter,
             final boolean expandEntityReferences) throws DOMException {
         if (root == null) {
-            Context.throwAsScriptRuntimeEx(new DOMException(DOMException.NOT_SUPPORTED_ERR,
-                    "root must not be null"));
+            throw new IllegalArgumentException("root must not be null");
         }
         root_ = root;
         whatToShow_ = whatToShow;

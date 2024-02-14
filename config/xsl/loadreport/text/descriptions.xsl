@@ -750,13 +750,25 @@
 
     <!--- ## Description: Configuration ## -->
     <xsl:template name="headline-configuration">
-        <h2>Settings</h2>
+        <h2>Load Test Settings</h2>
     </xsl:template>
     <xsl:template name="description-configuration">
         <div class="description">
             <p>
                 See the table below for details on the test configuration used to run this test. It helps to make the test
                 reproducible and preserves the test settings for later test evaluation.
+            </p>
+        </div>
+    </xsl:template>
+    
+    <!--- ## Description: JVM Configuration ## -->
+    <xsl:template name="headline-jvm-configuration">
+        <h2>Agent JVM Settings</h2>
+    </xsl:template>
+    <xsl:template name="description-jvm-configuration">
+        <div class="description">
+            <p>
+                This section lists custom JVM settings for the agents as specified in the <code>jvmargs.cfg</code> file of the test suite.
             </p>
         </div>
     </xsl:template>

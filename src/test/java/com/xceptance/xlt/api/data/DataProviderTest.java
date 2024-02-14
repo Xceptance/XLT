@@ -20,6 +20,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.nio.charset.MalformedInputException;
+import java.nio.file.NoSuchFileException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -212,17 +214,12 @@ public class DataProviderTest
     }
 
     /**
-     * Get UTF8 data with incorrect encoding, validate that platform default encoding is bypassed. Works in conjunction
-     * with previous test.
+     * Get UTF8 data with incorrect encoding.
      */
-    @Test
+    @Test(expected = MalformedInputException.class)
     public void getUTF8File_IncorrectEncoding() throws FileNotFoundException, IOException
     {
-        final DataProvider utf8Provider = new DataProvider("default/utf8data.txt", "ASCII");
-        final List<String> rows = utf8Provider.getAllRows();
-
-        Assert.assertEquals(1, rows.size());
-        Assert.assertFalse(UTF8STRING.equals(rows.get(0)));
+        new DataProvider("default/utf8data.txt", "ASCII");
     }
 
     /**
@@ -230,7 +227,7 @@ public class DataProviderTest
      * 
      * @throws FileNotFoundException
      */
-    @Test(expected = FileNotFoundException.class)
+    @Test(expected = NoSuchFileException.class)
     public void readDataInvalid() throws FileNotFoundException, IOException
     {
         new DataProvider("doesnotexist.txt");

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import org.htmlunit.html.HtmlBackgroundSound;
 import org.htmlunit.javascript.configuration.JsxClass;
+import org.htmlunit.javascript.configuration.JsxSymbolConstant;
 
 /**
  * The JavaScript object {@code HTMLBGSoundElement}.
@@ -31,6 +32,10 @@ import org.htmlunit.javascript.configuration.JsxClass;
 @JsxClass(domClass = HtmlBackgroundSound.class, value = IE)
 @JsxClass(isJSObject = false, domClass = HtmlBackgroundSound.class, value = {FF, FF_ESR})
 public class HTMLBGSoundElement extends HTMLElement {
+
+    /** Symbol.toStringTag support. */
+    @JsxSymbolConstant({FF, FF_ESR})
+    public static final String TO_STRING_TAG = "HTMLUnknownElement";
 
     /**
      * {@inheritDoc}

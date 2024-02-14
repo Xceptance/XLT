@@ -1,21 +1,60 @@
+// log something so we can see when a service worker was (re-)activated
+log("Service worker activated");
+
+// send a keep-alive message every 10 secs to prevent the service worker from being deactivated after 30 secs of inactivity
+setInterval(
+  function ping() {
+    log("Sending keep-alive message");
+    send({ action: "KEEP_ALIVE_PING", data: "[]" });
+  },
+  10 * 1000
+);
+
+
 const ContentCommunicationID = "44cbe54d-c0d5-4712-b0b0-929ca3d72c83";
 const BackgroundCommunicationID = "a35329d7-3f97-44c2-8aae-88213a474ffe";
 const ExternalCommunicationID = "8401bc88-ed75-4560-ae93-6854efbfbe62";
 
-const CRLF = "\r\n";
+const CRLF_LENGTH = "\r\n".length;
+const HTTP_VERSION_LENGTH = "HTTP/x.x".length;
 
-const TimingData = {};
-const TabRequestsMap = {};
 const reResponseStatus = /HTTP\/\d(?:\.\d)?\s+\d{3}\s+(.*)/;
 
 var webSocket = null;
-const configuration = {
-  recordIncompleted: false,
-  connectParams: null
-};
+const storageCache = {};
+const CacheKeys = ["TabRequestsMap", "TimingData", "configuration"];
 
-function isWebSocketClosed() {
-  return webSocket === null || webSocket.readyState === WebSocket.CLOSED || webSocket.readyState === WebSocket.CLOSING;
+// init storage cache
+
+function loadStorageCache() {
+  return new Promise(function (resolve, reject) {
+    chrome.storage.session.get(CacheKeys, function (items) {
+      if (chrome.runtime.lastError) {
+        reject(chrome.runtime.lastError);
+      }
+
+      resolve(items);
+    });
+  });
+}
+
+function storeStorageCache() {
+  if (storageCache.configuration.useSessionStorage) {
+    chrome.storage.session.set(storageCache).catch((e) => error("Failed to store data to session storage", e));
+  }
+}
+
+const initStorageProm = loadStorageCache().then(function (items) {
+  Object.assign(storageCache, CacheKeys.reduce(function (prev, current) {
+    prev[current] = {};
+    return prev;
+  }, {}), items);
+}, function (e) {
+  error("Failed to initialize storage cache", e);
+});
+
+function isWebSocketClosed(ws) {
+  return !ws || [WebSocket.CLOSING, WebSocket.CLOSED].indexOf(ws.readyState) > -1;
 }
 
 function send(data, messageID) {
@@ -24,20 +63,20 @@ function send(data, messageID) {
     data: data
   });
 
-  if (webSocket !== null && webSocket.readyState === WebSocket.OPEN) {
+  if (!!webSocket && webSocket.readyState === WebSocket.OPEN) {
     try {
       webSocket.send(messageString);
       return;
     } catch (e) {
-      console.log(e);
+      error("Failed to send message", e);
     }
   }
 
-  startWebSocketConnect(function(connection) {
+  startWebSocketConnect(function (webSocket) {
     try {
-      connection.send(messageString);
+      webSocket.send(messageString);
     } catch (e) {
-      console.log(e);
+      error("Failed to send message", e);
     }
   });
 }
@@ -45,41 +84,42 @@ function send(data, messageID) {
 function startWebSocketConnect(onOpenHandler) {
   stopWebSocket();
 
+  const configuration = storageCache["configuration"] || {};
   const connectParams = configuration.connectParams;
-  if(!connectParams) {
-    console.log("Could not open websocket due to missing configuration");
+  if (!connectParams) {
+    error("Could not open websocket due to missing configuration");
     return;
   }
 
   webSocket = new WebSocket("ws://127.0.0.1:" + connectParams.port + "/xlt/" + connectParams.clientID);
-  webSocket.onopen = function(openEvent) {
+  webSocket.onopen = function (_openEvent) {
     if (!!onOpenHandler) {
       onOpenHandler(webSocket);
     }
   };
-  webSocket.onmessage = function(message) {
+  webSocket.onmessage = function (message) {
     const messageObject = JSON.parse(message.data);
     if (messageObject.data.action === "GET_DATA") {
-      prepareStoreData(messageObject.data.storageTimeout, function(performanceData) {
+      prepareStoreData(messageObject.data.storageTimeout, function (performanceData) {
         clearRuntimeData();
-        send({action: "GET_DATA", data: JSON.stringify(filterRecordEntries(performanceData))}, messageObject.messageID);
+        send({ action: "GET_DATA", data: JSON.stringify(filterRecordEntries(performanceData, configuration)) }, messageObject.messageID);
       });
     }
   };
-  webSocket.onclose = function(closeEvent) {
-    setTimeout(function() {
-      if (isWebSocketClosed()) {
+  webSocket.onclose = function (_closeEvent) {
+    setTimeout(function () {
+      if (isWebSocketClosed(webSocket)) {
         startWebSocketConnect();
       };
     }, 1000);
   };
-  webSocket.onerror = function(event) {
-    console.log(event);
+  webSocket.onerror = function (event) {
+    error("Websocket error", event);
   };
 }
 
 function stopWebSocket() {
-  if (!isWebSocketClosed()) {
+  if (!isWebSocketClosed(webSocket)) {
     webSocket.onclose = null;
     webSocket.close();
   }
@@ -98,7 +138,7 @@ function connectByXltParametersURL(url) {
   if (parameters.xltPort && parameters.clientID) {
     startWebSocketConnect();
   } else {
-    console.log("incomplete xlt start url:" + url);
+    log("Incomplete XLT start URL", url);
   }
 }
 
@@ -111,7 +151,7 @@ function getUrlParameters(url) {
   }
 
   if (search.length > 0) {
-    search.split("&").forEach(function(each) {
+    search.split("&").forEach(function (each) {
       var split = each.split("=");
       var parameter = split[0];
       if (parameter.length > 0) {
@@ -123,36 +163,45 @@ function getUrlParameters(url) {
 }
 
 function setConfiguration(parameters) {
-  configuration.recordIncompleted = String(parameters.recordIncompleted).toLowerCase() === "true";
-  configuration.connectParams = {
-    port: parameters.xltPort,
-    clientID: parameters.clientID
+  const configuration = {
+    recordIncompleted: String(parameters.recordIncompleted).toLocaleLowerCase() === "true",
+    useSessionStorage: String(parameters.useSessionStorage).toLocaleLowerCase() === "true",
+    connectParams: {
+      port: parameters.xltPort,
+      clientID: parameters.clientID
+    }
   };
+
+  Object.assign(storageCache, { configuration: configuration });
+  storeStorageCache();
 }
 
 function clearRuntimeData() {
-  for (const tabId in TimingData) {
-    delete TimingData[tabId];
-  }
-  for (const tabId2 in TabRequestsMap) {
-    delete TabRequestsMap[tabId2];
+  const useSessionStorage = storageCache.configuration.useSessionStorage;
+
+  Object.keys(storageCache).forEach(function (key) {
+    delete storageCache[key];
+  });
+
+  if (useSessionStorage) {
+    chrome.storage.session.remove(CacheKeys).catch((e) => error("Failed to remove data from session storage", e));;
   }
 }
 
-function hasTimingDataEntry(tabId) {
-  return !!TimingData[tabId];
+function hasTimingDataEntry(timingData, tabId) {
+  return !!timingData[tabId];
 }
 
-function getCurrentTimingDataEntry(tabId) {
-  if (!TimingData[tabId]) {
-    return newTimingDataEntry(tabId);
+function getCurrentTimingDataEntry(timingData, tabId) {
+  if (!timingData[tabId]) {
+    return newTimingDataEntry(timingData, tabId);
   }
-  return TimingData[tabId][TimingData[tabId].length - 1];
+  return timingData[tabId][timingData[tabId].length - 1];
 }
 
-function newTimingDataEntry(tabId) {
-  if (!TimingData[tabId]) {
-    TimingData[tabId] = [];
+function newTimingDataEntry(timingData, tabId) {
+  if (!timingData[tabId]) {
+    timingData[tabId] = [];
   }
   const dataEntry = {
     timings: null,
@@ -162,27 +211,38 @@ function newTimingDataEntry(tabId) {
     loaded: false,
     beforeUnload: false
   };
-  TimingData[tabId].push(dataEntry);
+  timingData[tabId].push(dataEntry);
   return dataEntry;
 }
 
-function removeTimingDataEntry(tabId) {
-  const entry = TimingData[tabId];
+function removeTimingDataEntry(timingData, tabId) {
+  const entry = timingData[tabId];
   if (entry) {
-    delete TimingData[tabId];
+    delete timingData[tabId];
   }
   return entry;
 }
 
-function getRequestEntry(tabId, requestId, url) {
-  if (!TabRequestsMap[tabId]) {
-    TabRequestsMap[tabId] = {};
+function getAndModifyRequestEntry(tabId, requestId, url, callback) {
+
+  const timingData = storageCache["TimingData"] || {};
+  const tabRequestsMap = storageCache["TabRequestsMap"] || {};
+
+  const request = getRequestEntry(timingData, tabRequestsMap, tabId, requestId, url);
+  callback(request);
+
+  storeStorageCache();
+}
+
+function getRequestEntry(timingData, tabRequestsMap, tabId, requestId, url) {
+  if (!tabRequestsMap[tabId]) {
+    tabRequestsMap[tabId] = {};
   }
-  if (!TabRequestsMap[tabId][requestId]) {
-    TabRequestsMap[tabId][requestId] = {};
+  if (!tabRequestsMap[tabId][requestId]) {
+    tabRequestsMap[tabId][requestId] = {};
   }
-  if (!TabRequestsMap[tabId][requestId][url]) {
-    TabRequestsMap[tabId][requestId][url] = {
+  if (!tabRequestsMap[tabId][requestId][url]) {
+    tabRequestsMap[tabId][requestId][url] = {
       requestId: requestId,
       url: url,
       startTime: null,
@@ -212,21 +272,21 @@ function getRequestEntry(tabId, requestId, url) {
       },
       statusLine: null
     };
-    getCurrentTimingDataEntry(tabId).requests.push(TabRequestsMap[tabId][requestId][url]);
+    getCurrentTimingDataEntry(timingData, tabId).requests.push([requestId, url]);
   }
-  return TabRequestsMap[tabId][requestId][url];
+  return tabRequestsMap[tabId][requestId][url];
 }
 
-function removeRequestEntry(tabId) {
-  const entry = TabRequestsMap[tabId];
+function removeRequestEntry(tabRequestsMap, tabId) {
+  const entry = tabRequestsMap[tabId];
   if (entry) {
-    delete TabRequestsMap[tabId];
+    delete tabRequestsMap[tabId];
   }
   return entry;
 }
 
-function hasRequestEntry(tabId, requestId) {
-  const requestMap = TabRequestsMap[tabId];
+function hasRequestEntry(tabRequestsMap, tabId, requestId) {
+  const requestMap = tabRequestsMap[tabId];
   return requestMap && requestMap[requestId];
 }
 
@@ -235,263 +295,334 @@ function sendTimingDataEntries(tabId, onlyFinished) {
     return;
   }
 
+  const TimingData = storageCache["TimingData"] || {};
+  const TabRequestsMap = storageCache["TabRequestsMap"] || {};
+  const configuration = storageCache["configuration"];
+
   const dataEntry = TimingData[tabId];
   if (dataEntry) {
-    const atIndex = onlyFinished ? dataEntry.findIndex(function(eachData) {
-      return !eachData.beforeUnload || eachData.requests.some(function(r) { return !r.finished });
-    }) : dataEntry.length;
+    const atIndex = onlyFinished
+      ? dataEntry.findIndex(function (eachEntry) {
+        return !eachEntry.beforeUnload || (eachEntry.requests.length !== 0 && eachEntry.requests.some(function (r) {
+          const requestId = r[0];
+          const rUrl = r[1];
+
+          const requestEntry = hasRequestEntry(TabRequestsMap, tabId, requestId)
+            ? TabRequestsMap[tabId][requestId][rUrl]
+            : null;
+          return requestEntry && !requestEntry.finished;
+        }));
+      })
+      : dataEntry.length;
     if (atIndex > 0) {
       const removedEntries = dataEntry.splice(0, atIndex);
-      removedEntries.forEach(function(eachEntry) {
-        eachEntry.requests.forEach(function(eachRequest) {
-          const rid = eachRequest.requestId;
-          const rurl = eachRequest.url;
+      removedEntries.forEach(function (eachEntry) {
+        eachEntry.requests = eachEntry.requests.map(function (eachRequest) {
+          const rid = eachRequest[0]
+          const rurl = eachRequest[1];
 
           const request = TabRequestsMap[tabId][rid][rurl];
           if (request) {
             if (Object.keys(TabRequestsMap[tabId][rid]).length === 1) {
-             delete TabRequestsMap[tabId][rid];
+              delete TabRequestsMap[tabId][rid];
             } else {
-             delete TabRequestsMap[tabId][rid][rurl];
+              delete TabRequestsMap[tabId][rid][rurl];
             }
           }
-        });
+          return request;
+        }).filter(Boolean);
       });
 
-      const filteredRecords = filterRecordEntries(createRecordEntriesFromArray(removedEntries));
-      if (filteredRecords.length > 0) {
-        send({
-          action: "DUMP_PERFORMANCE_DATA",
-          performanceData: JSON.stringify(filteredRecords)
-        });
+      if (removedEntries.length > 0) {
+        storeStorageCache();
+
+        const filteredRecords = filterRecordEntries(createRecordEntriesFromArray(removedEntries), configuration);
+        if (filteredRecords.length > 0) {
+          send({
+            action: "DUMP_PERFORMANCE_DATA",
+            performanceData: JSON.stringify(filteredRecords)
+          });
+        }
       }
     }
   }
 }
 
-chrome.webNavigation.onBeforeNavigate.addListener(function(details) {
+chrome.webNavigation.onBeforeNavigate.addListener(async function (details) {
+  await initStorageProm;
+
   if (isXltParametersURL(details.url)) {
     connectByXltParametersURL(details.url);
   }
 }, {
-   url: [{ urlContains: "xltParameters" }, { schemes: ["data"] }]
+  url: [{ urlContains: "xltParameters" }, { schemes: ["data"] }]
 });
 
-chrome.webNavigation.onCommitted.addListener(function(details) {
+chrome.webNavigation.onCommitted.addListener(async function (details) {
+  await initStorageProm;
+
   sendTimingDataEntries(details.tabId, true);
 });
 
-chrome.tabs.onRemoved.addListener(function(tabId, removeInfo) {
+chrome.tabs.onRemoved.addListener(async function (tabId, _removeInfo) {
+  await initStorageProm;
+
   sendTimingDataEntries(tabId, false);
 
-  removeTimingDataEntry(tabId);
-  removeRequestEntry(tabId);
+
+  const TimingData = storageCache["TimingData"] || {};
+  const TabRequestsMap = storageCache["TabRequestsMap"] || {};
+
+  removeTimingDataEntry(TimingData, tabId);
+  removeRequestEntry(TabRequestsMap, tabId);
+
+  storeStorageCache();
 });
 
-chrome.webRequest.onBeforeRequest.addListener(function(details) {
+chrome.webRequest.onBeforeRequest.addListener(async function (details) {
+  await initStorageProm;
+
   if (details.tabId === -1 || isXltParametersURL(details.url))
     return;
 
-  chrome.tabs.get(details.tabId, function(tab) {
+  chrome.tabs.get(details.tabId, function (tab) {
     if (!chrome.runtime.lastError) {
-      const request = getRequestEntry(details.tabId, details.requestId, details.url);
-      request.startTime = details.timeStamp;
-      request.connectStart = details.timeStamp;
+      getAndModifyRequestEntry(details.tabId, details.requestId, details.url, function (request) {
+        request.startTime = details.timeStamp;
+        request.connectStart = details.timeStamp;
 
-      request.method = details.method;
-      request.type = details.type;
-      if (details.requestBody) {
-        request.body.formData = details.requestBody.formData || null;
-        request.body.raw = details.requestBody.raw || null;
-      }
-      request.requestSize = (request.requestSize || 0) + getRequestBodySize(details);
+        request.method = details.method;
+        request.type = details.type;
+        if (details.requestBody) {
+          request.body.formData = details.requestBody.formData || null;
+          request.body.raw = details.requestBody.raw || null;
+        }
+        request.requestSize = (request.requestSize || 0) + getRequestBodySize(details);
+
+      });
     }
   });
 }, {
   urls: ["<all_urls>"]
 }, ["requestBody"]);
 
-chrome.webRequest.onBeforeSendHeaders.addListener(function(details) {
+chrome.webRequest.onBeforeSendHeaders.addListener(async function (details) {
+  await initStorageProm;
+
   if (details.tabId === -1 || isXltParametersURL(details.url))
     return;
 
-  chrome.tabs.get(details.tabId, function(tab) {
+  chrome.tabs.get(details.tabId, function (tab) {
     if (!chrome.runtime.lastError) {
-      const request = getRequestEntry(details.tabId, details.requestId, details.url);
-      request.method = details.method;
-      request.type = details.type;
-      request.header = details.requestHeaders || null;
+      getAndModifyRequestEntry(details.tabId, details.requestId, details.url, function (request) {
+        request.method = details.method;
+        request.type = details.type;
+        request.header = details.requestHeaders || null;
+      });
     }
   });
 }, {
   urls: ["<all_urls>"]
 }, ["requestHeaders", "extraHeaders"]);
 
-chrome.webRequest.onSendHeaders.addListener(function(details) {
+chrome.webRequest.onSendHeaders.addListener(async function (details) {
+  await initStorageProm;
+
   if (details.tabId === -1 || isXltParametersURL(details.url))
     return;
 
-  chrome.tabs.get(details.tabId, function(tab) {
+  chrome.tabs.get(details.tabId, function (tab) {
     if (!chrome.runtime.lastError) {
-      const request = getRequestEntry(details.tabId, details.requestId, details.url);
+      getAndModifyRequestEntry(details.tabId, details.requestId, details.url, function (request) {
+        request.connectEnd = details.timeStamp;
+        request.requestStart = details.timeStamp;
+        request.requestEnd = details.timeStamp;
 
-      request.connectEnd = details.timeStamp;
-      request.requestStart = details.timeStamp;
-      request.requestEnd = details.timeStamp;
-
-      request.method = details.method;
-      request.type = details.type;
-      request.header = details.requestHeaders || null;
-      request.requestSize = (request.requestSize || 0) + getHeaderSize(details.requestHeaders) + getStatusLineSize(details.statusLine);
+        request.method = details.method;
+        request.type = details.type;
+        request.header = details.requestHeaders || null;
+        request.requestSize = (request.requestSize || 0) + getHeaderSize(details.requestHeaders) + getRequestLineSize(details);
+      });
     }
   });
 }, {
   urls: ["<all_urls>"]
 }, ["requestHeaders", "extraHeaders"]);
 
-chrome.webRequest.onHeadersReceived.addListener(function(details) {
+chrome.webRequest.onHeadersReceived.addListener(async function (details) {
+  await initStorageProm;
+
   if (details.tabId === -1 || isXltParametersURL(details.url))
     return;
 
-  chrome.tabs.get(details.tabId, function(tab) {
+  chrome.tabs.get(details.tabId, function (tab) {
     if (!chrome.runtime.lastError) {
-      const request = getRequestEntry(details.tabId, details.requestId, details.url);
-
-      request.method = details.method;
-      request.type = details.type;
-      request.statusCode = details.statusCode;
-      request.statusLine = details.statusLine;
-      request.response.header = details.responseHeaders || null;
-      request.responseSize = getHeaderSize(details.responseHeaders) + getStatusLineSize(details.statusLine);
-      request.contentType = getContentType(details.responseHeaders);
+      getAndModifyRequestEntry(details.tabId, details.requestId, details.url, function (request) {
+        request.method = details.method;
+        request.type = details.type;
+        request.statusCode = details.statusCode;
+        request.statusLine = details.statusLine;
+        request.response.header = details.responseHeaders || null;
+        request.responseSize = getHeaderSize(details.responseHeaders) + getStatusLineSize(details.statusLine);
+        request.contentType = getContentType(details.responseHeaders);
+      });
     }
   });
 }, {
   urls: ["<all_urls>"]
 }, ["responseHeaders", "extraHeaders"]);
 
-chrome.webRequest.onBeforeRedirect.addListener(function(details) {
+chrome.webRequest.onBeforeRedirect.addListener(async function (details) {
+  await initStorageProm;
+
   if (details.tabId === -1 || isXltParametersURL(details.url))
     return;
 
-  chrome.tabs.get(details.tabId, function(tab) {
+  chrome.tabs.get(details.tabId, function (tab) {
     if (!chrome.runtime.lastError) {
-      const request = getRequestEntry(details.tabId, details.requestId, details.url);
-      request.responseStart = details.timeStamp;
-      request.responseEnd = details.timeStamp;
+      getAndModifyRequestEntry(details.tabId, details.requestId, details.url, function (request) {
+        request.responseStart = details.timeStamp;
+        request.responseEnd = details.timeStamp;
 
-      request.method = details.method;
-      request.type = details.type;
-      request.fromCache = details.fromCache;
-      request.statusCode = details.statusCode;
-      request.statusLine = details.statusLine;
-      request.response.header = details.responseHeaders || null;
-      request.finished = true;
-      request.responseSize = getHeaderSize(details.responseHeaders) + getStatusLineSize(details.statusLine);
-      request.contentType = getContentType(details.responseHeaders);
+        request.method = details.method;
+        request.type = details.type;
+        request.fromCache = details.fromCache;
+        request.statusCode = details.statusCode;
+        request.statusLine = details.statusLine;
+        request.response.header = details.responseHeaders || null;
+        request.finished = true;
+        request.responseSize = getHeaderSize(details.responseHeaders) + getStatusLineSize(details.statusLine);
+        request.contentType = getContentType(details.responseHeaders);
+      });
     }
   });
 }, {
   urls: ["<all_urls>"]
 }, ["responseHeaders", "extraHeaders"]);
 
-chrome.webRequest.onResponseStarted.addListener(function(details) {
+chrome.webRequest.onResponseStarted.addListener(async function (details) {
+  await initStorageProm;
+
   if (details.tabId === -1 || isXltParametersURL(details.url))
     return;
 
-  chrome.tabs.get(details.tabId, function(tab) {
+  chrome.tabs.get(details.tabId, function (tab) {
     if (!chrome.runtime.lastError) {
-      const request = getRequestEntry(details.tabId, details.requestId, details.url);
-      request.responseStart = details.timeStamp;
+      getAndModifyRequestEntry(details.tabId, details.requestId, details.url, function (request) {
+        request.responseStart = details.timeStamp;
 
-      request.method = details.method;
-      request.type = details.type;
-      request.fromCache = details.fromCache;
-      request.statusCode = details.statusCode;
-      request.statusLine = details.statusLine;
-      request.response.header = details.responseHeaders || null;
-      request.responseSize = getHeaderSize(details.responseHeaders) + getStatusLineSize(details.statusLine);
-      request.contentType = getContentType(details.responseHeaders);
+        request.method = details.method;
+        request.type = details.type;
+        request.fromCache = details.fromCache;
+        request.statusCode = details.statusCode;
+        request.statusLine = details.statusLine;
+        request.response.header = details.responseHeaders || null;
+        request.responseSize = getHeaderSize(details.responseHeaders) + getStatusLineSize(details.statusLine);
+        request.contentType = getContentType(details.responseHeaders);
+      });
     }
   });
 }, {
   urls: ["<all_urls>"]
 }, ["responseHeaders", "extraHeaders"]);
 
-chrome.webRequest.onCompleted.addListener(function(details) {
+chrome.webRequest.onCompleted.addListener(async function (details) {
+  await initStorageProm;
+
   if (details.tabId === -1 || isXltParametersURL(details.url))
     return;
 
-  chrome.tabs.get(details.tabId, function(tab) {
+  chrome.tabs.get(details.tabId, function (tab) {
     if (!chrome.runtime.lastError) {
-      const request = getRequestEntry(details.tabId, details.requestId, details.url);
-      request.responseEnd = details.timeStamp;
+      getAndModifyRequestEntry(details.tabId, details.requestId, details.url, function (request) {
+        request.responseEnd = details.timeStamp;
 
-      request.method = details.method;
-      request.type = details.type;
-      request.fromCache = details.fromCache;
-      request.statusCode = details.statusCode;
-      request.statusLine = details.statusLine;
-      request.response.header = details.responseHeaders || null;
-      request.finished = true;
-      request.responseSize = getResponseSize(details);
-      request.contentType = getContentType(details.responseHeaders);
+        request.method = details.method;
+        request.type = details.type;
+        request.fromCache = details.fromCache;
+        request.statusCode = details.statusCode;
+        request.statusLine = details.statusLine;
+        request.response.header = details.responseHeaders || null;
+        request.finished = true;
+        request.responseSize = getResponseSize(details);
+        request.contentType = getContentType(details.responseHeaders);
+      });
     }
   });
 }, {
   urls: ["<all_urls>"]
 }, ["responseHeaders", "extraHeaders"]);
 
-chrome.webRequest.onErrorOccurred.addListener(function(details) {
+chrome.webRequest.onErrorOccurred.addListener(async function (details) {
+  await initStorageProm;
+
   if (details.tabId === -1 || isXltParametersURL(details.url))
     return;
 
-  chrome.tabs.get(details.tabId, function(tab) {
+  chrome.tabs.get(details.tabId, function (tab) {
     if (!chrome.runtime.lastError) {
-      const request = getRequestEntry(details.tabId, details.requestId, details.url);
-      request.responseEnd = details.timeStamp;
+      getAndModifyRequestEntry(details.tabId, details.requestId, details.url, function (request) {
+        request.responseEnd = details.timeStamp;
 
-      request.error = true;
-      request.finished = true;
-      request.aborted = details.error === "net::ERR_ABORTED";
-      request.method = details.method;
-      request.type = details.type;
-      request.fromCache = details.fromCache;
-      request.responseSize = getResponseSize(details);
+        request.error = true;
+        request.finished = true;
+        request.aborted = details.error === "net::ERR_ABORTED";
+        request.method = details.method;
+        request.type = details.type;
+        request.fromCache = details.fromCache;
+        request.responseSize = getResponseSize(details);
 
-      if (request.startTime === null) {
-        request.startTime = details.timeStamp;
-      }
+        if (request.startTime === null) {
+          request.startTime = details.timeStamp;
+        }
+      });
     }
   });
 }, {
   urls: ["<all_urls>"]
 }, ["extraHeaders"]);
 
-chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
+chrome.runtime.onMessage.addListener(async function (message, sender, sendResponse) {
+  await initStorageProm;
+
   const data = getDataIfContentMessage(message);
-  if (!data)
+  if (!data || ["eventBeforeUnload", "eventLoad", "eventResourceTimingBufferFull"].indexOf(data) < 0) {
     return;
+  }
 
   const tabId = sender.tab.id;
+  const TimingData = storageCache["TimingData"] || {};
+
   if (data === "eventBeforeUnload") {
-    if (hasTimingDataEntry(tabId)) {
-      const currentDataEntry = getCurrentTimingDataEntry(tabId);
+    if (hasTimingDataEntry(TimingData, tabId)) {
+      const currentDataEntry = getCurrentTimingDataEntry(TimingData, tabId);
       currentDataEntry.beforeUnload = true;
       setTimingData(currentDataEntry, message.value);
     }
-    newTimingDataEntry(tabId);
+    newTimingDataEntry(TimingData, tabId);
   } else if (data === "eventLoad") {
-    if (hasTimingDataEntry(tabId)) {
-      getCurrentTimingDataEntry(tabId).loaded = true;
+    if (hasTimingDataEntry(TimingData, tabId)) {
+      getCurrentTimingDataEntry(TimingData, tabId).loaded = true;
     }
   }
-  else if(data === "eventResourceTimingBufferFull") {
-    if(hasTimingDataEntry(tabId)) {
-      setTimingData(getCurrentTimingDataEntry(tabId), message.value);
+  else if (data === "eventResourceTimingBufferFull") {
+    if (hasTimingDataEntry(TimingData, tabId)) {
+      setTimingData(getCurrentTimingDataEntry(TimingData, tabId), message.value);
     }
   }
+
+  storeStorageCache();
 });
+
+chrome.runtime.onSuspend.addListener(function () {
+  error("Service worker is about to be suspended, which is unexpected");
+  storeStorageCache();
+});
+
+function getRequestLineSize(details) {
+  // ex: "GET https://www.google.de HTTP/1.1"
+  return details.method.length + details.url.length + HTTP_VERSION_LENGTH + CRLF_LENGTH + 2 /* spaces */;
+}
 
 function getRequestBodySize(details) {
   let size = 0;
@@ -499,17 +630,17 @@ function getRequestBodySize(details) {
     if (details.requestBody.formData) {
       for (const key in details.requestBody.formData) {
         size += key.length;
-        details.requestBody.formData[key].forEach(function(eachData) {
+        details.requestBody.formData[key].forEach(function (eachData) {
           size += (eachData.length || eachData.byteLength) || 0;
         });
       }
     }
     if (details.requestBody.raw && details.requestBody.raw.length > 0) {
-      details.requestBody.raw.forEach(function(eachData) {
-        if(eachData.bytes){
+      details.requestBody.raw.forEach(function (eachData) {
+        if (eachData.bytes) {
           size += eachData.bytes.byteLength;
         }
-        else if(eachData.file) {
+        else if (eachData.file) {
           size += eachData.file.length;
         }
       });
@@ -528,7 +659,7 @@ function getResponseSize(details) {
 
 function getStatusLineSize(statusLine) {
   if (statusLine) {
-    return statusLine.length + CRLF.length;
+    return statusLine.length + CRLF_LENGTH;
   }
   return 0;
 }
@@ -544,10 +675,10 @@ function getStatusText(statusLine) {
 function getHeaderSize(headerArray) {
   let size = 0;
   if (headerArray && headerArray.length) {
-    headerArray.forEach(function(eachHeader) {
-      size += (eachHeader.name.length + ": ".length + eachHeader.value.length + CRLF.length);
+    headerArray.forEach(function (eachHeader) {
+      size += (eachHeader.name.length + ": ".length + eachHeader.value.length + CRLF_LENGTH);
     });
-    size += CRLF.length;
+    size += CRLF_LENGTH;
   }
   return size;
 }
@@ -615,14 +746,14 @@ function createRecordEntry(dataEntry) {
   };
 
   const entriesCopy = {};
-  (dataEntry.entries || []).forEach(function(eachEntry){
+  (dataEntry.entries || []).forEach(function (eachEntry) {
     // eachEntry maps URL strings (object keys) to an array of performance timing measurements
     for (const u in eachEntry) {
       entriesCopy[u] = Array.from(eachEntry[u]);
     }
   });
 
-  dataEntry.requests.forEach(function(eachRequest) {
+  dataEntry.requests.forEach(function (eachRequest) {
     const url = eachRequest.url;
     const requestEntry = {
       url: url,
@@ -696,7 +827,7 @@ function createRecordEntry(dataEntry) {
   for (const url in leftovers) {
     const worklist = leftovers[url];
     // sort request-entries by startTime in ascending order
-    worklist.sort(function(x, y) {
+    worklist.sort(function (x, y) {
       const z = x.startTime - y.startTime;
       return z < 0 ? (-1) : (z > 0 ? 1 : 0);
     });
@@ -754,7 +885,7 @@ function setTimingData(dataEntry, data) {
 }
 
 function updateTimingData(tabId, dataEntry) {
-  chrome.tabs.sendMessage(parseInt(tabId), createContentMessage("getTimingData"), function(response) {
+  chrome.tabs.sendMessage(parseInt(tabId), createContentMessage("getTimingData"), function (response) {
     if (!chrome.runtime.lastError) {
       const data = getDataIfContentMessage(response);
       if (!data)
@@ -767,20 +898,25 @@ function updateTimingData(tabId, dataEntry) {
 }
 
 function prepareStoreData(timeout, onDataCollectedHandler) {
-  function dataCollected() {
-    onDataCollectedHandler(createRecordEntries(TimingData));
+  function dataCollected(requestsMap, timingData) {
+    storeStorageCache();
+
+    onDataCollectedHandler(createRecordEntries(requestsMap, timingData));
   }
 
-  const waitForEntries = [];
-  for (const eachTabId in TimingData) {
-    const dataEntry = getCurrentTimingDataEntry(eachTabId);
-    // we're not interested in tabs that haven't made any requests
-    if(dataEntry.requests.length > 0) {
-      waitForEntries.push({
-        tabId: eachTabId,
-        entry: dataEntry
-      });
+  function getEntriesOfInterest(timingData) {
+    const waitForEntries = [];
+    for (const eachTabId in timingData) {
+      const dataEntry = getCurrentTimingDataEntry(timingData, eachTabId);
+      // we're not interested in tabs that haven't made any requests
+      if (dataEntry.requests.length > 0) {
+        waitForEntries.push({
+          tabId: eachTabId,
+          entry: dataEntry
+        });
+      }
     }
+    return waitForEntries;
   }
 
   const checkCompletedDelay = 250;
@@ -788,68 +924,100 @@ function prepareStoreData(timeout, onDataCollectedHandler) {
   // don't spend more than 75% of allowed time with waiting for pending requests to complete
   const safeToScheduleCompletedCheck = (function () {
     const endTime = Date.now() + Math.floor(timeout * 0.75);
-    return function(){
+    return function () {
       return Date.now() < endTime;
     }
   })();
 
-  const scheduleAllowed = (function() {
+  const scheduleAllowed = (function () {
     const endTime = Date.now() + timeout;
-    return function(){
+    return function () {
       return Date.now() < endTime;
     }
   })();
+
+  const tabRequestsMap = storageCache["TabRequestsMap"] || {};
+  const timingData = storageCache["TimingData"] || {};
+
+  const waitForEntries = getEntriesOfInterest(timingData);
 
   setTimeout(function check_completed() {
     // check if some tab's requests are still pending
-    if (safeToScheduleCompletedCheck() && waitForEntries.some(function(e) { return e.entry.requests.some(function(r){ return !r.finished }) })) {
+    if (safeToScheduleCompletedCheck() && waitForEntries.some(function (e) {
+      return e.entry.requests.some(function (r) {
+        const requestId = r[0];
+        const rUrl = r[1];
+        const request = hasRequestEntry(tabRequestsMap, e.tabId, requestId)
+          ? tabRequestsMap[e.tabId][requestId][rUrl]
+          : null;
+        return request && !request.finished;
+      });
+    })) {
       // schedule another check
       return setTimeout(check_completed, checkCompletedDelay);
     }
+
+
     // something to do?
     if (waitForEntries.length > 0) {
       // assume that all tabs are loaded and all requests have completed
       // -> request a timing data update
-      waitForEntries.forEach(function(e) {
+      waitForEntries.forEach(function (e) {
         e.entry.waitLonger = true;
         updateTimingData(e.tabId, e.entry);
       });
 
+
       // schedule a task that checks for the update to be complete
       return setTimeout(function check_updateCompleted() {
+
         // schedule another check if timeout wasn't reached yet and update is still not complete
-        if (scheduleAllowed() && waitForEntries.some(function(e) { return e.entry.waitLonger })) {
+        if (scheduleAllowed() && waitForEntries.some(function (e) { return e.entry.waitLonger })) {
           return setTimeout(check_updateCompleted, updateCheckDelay);
         }
         // timeout reached or update is complete
-        dataCollected();
+        dataCollected(tabRequestsMap, timingData);
       }, updateCheckDelay);
     }
 
     // timeout reached
     // OR nothing to do at all
-    dataCollected();
+    dataCollected(tabRequestsMap, timingData);
+
   }, 10);
 }
 
-function filterRecordEntries(dataArray) {
+function filterRecordEntries(dataArray, opts) {
+  opts = opts || {};
   const entries = [];
-  dataArray.forEach(function(eachData) {
-    const filteredRequests = eachData.requests.filter(function(eachRequest) {
-      return !eachRequest.fromCache && (configuration.recordIncompleted || (eachRequest.finished && !eachRequest.aborted));
+  dataArray.forEach(function (eachData) {
+    const filteredRequests = eachData.requests.filter(function (eachRequest) {
+      return !eachRequest.fromCache && (opts.recordIncompleted || (eachRequest.finished && !eachRequest.aborted));
     });
-    if(filteredRequests.length > 0) {
-      entries.push(Object.assign({}, eachData, { requests: filteredRequests}));
+    if (filteredRequests.length > 0) {
+      entries.push(Object.assign({}, eachData, { requests: filteredRequests }));
     }
   });
 
   return entries;
 }
 
-function createRecordEntries(timingDataEntries) {
+function createRecordEntries(tabRequestsMap, timingDataEntries) {
   let records = [];
   for (const eachTabId in timingDataEntries) {
-    records = records.concat(createRecordEntriesFromArray(timingDataEntries[eachTabId]));
+    const tabEntries = timingDataEntries[eachTabId].map(function (eachEntry) {
+      return Object.assign({}, eachEntry, {
+        requests: eachEntry.requests.map(function (eachRequest) {
+          const requestId = eachRequest[0];
+          const rUrl = eachRequest[1];
+
+          return hasRequestEntry(tabRequestsMap, eachTabId, requestId)
+            ? tabRequestsMap[eachTabId][requestId][rUrl]
+            : null;
+        }).filter(Boolean)
+      });
+    });
+    records = records.concat(createRecordEntriesFromArray(tabEntries));
   }
   return records;
 }
@@ -859,7 +1027,7 @@ function createRecordEntriesFromArray(timingDataEntryArray) {
 }
 
 function createContentMessage(data) {
-  return {communicationID: BackgroundCommunicationID, data: data};
+  return { communicationID: BackgroundCommunicationID, data: data };
 }
 
 function getDataIfContentMessage(message) {
@@ -893,10 +1061,10 @@ function toBase64(arrBuf) {
 
   const bytesLeft = l % 3;
   const firstPadIdx = l - bytesLeft;
-  for (let i = 0; i < firstPadIdx; i = i+3 ) {
+  for (let i = 0; i < firstPadIdx; i = i + 3) {
     let byte1 = view.getUint8(i);
-    let byte2 = view.getUint8(i+1);
-    let byte3 = view.getUint8(i+2);
+    let byte2 = view.getUint8(i + 1);
+    let byte3 = view.getUint8(i + 2);
 
 
     let b1 = byte1 >> 2;
@@ -909,7 +1077,7 @@ function toBase64(arrBuf) {
 
   if (bytesLeft > 0) {
     let byte1 = view.getUint8(firstPadIdx);
-    let byte2 = bytesLeft > 1 ? view.getUint8(firstPadIdx+1) : 0;
+    let byte2 = bytesLeft > 1 ? view.getUint8(firstPadIdx + 1) : 0;
 
     let b1 = byte1 >> 2;
     let b2 = ((byte1 & 3) << 4) + (byte2 >> 4);
@@ -918,7 +1086,7 @@ function toBase64(arrBuf) {
     arr.push(bmap[b1], bmap[b2], bytesLeft === 1 ? '=' : bmap[b3], '=');
   }
 
-  if(truncate) {
+  if (truncate) {
     arr.push('...');
   }
 
@@ -934,9 +1102,9 @@ function urlEncode(data) {
   }
 
   const str = [];
-  for (const name in data){
+  for (const name in data) {
     const key = _encodeField(name);
-    for (const val of data[name]){
+    for (const val of data[name]) {
       const value = _encodeField(val);
       str.push([key, value].join('='));
     }
@@ -954,7 +1122,7 @@ function getContentTypeCharset(contentType) {
   const idx = contentType ? contentType.indexOf(';') : -1;
   let charset = null;
   if (idx > -1) {
-    const params = contentType.substring(idx+1).toLowerCase();
+    const params = contentType.substring(idx + 1).toLowerCase();
     const match = params.match(/charset=([a-z0-9\-]+)/);
     if (match && match.length > 1) {
       charset = match[1];
@@ -980,17 +1148,17 @@ function getRequestBody(request) {
     else {
       if (request.body.formData) {
         const _arr = (request.body.formData['_charset_']) || [];
-        if(_arr.length > 0) {
+        if (_arr.length > 0) {
           encoding = _arr[0];
         }
       }
       else if (multiPart) {
-        uploadDataArr.some(function(d){
+        uploadDataArr.some(function (d) {
           if ('bytes' in d) {
             try {
               const text = decodeBytes(d.bytes, 'us-ascii');
               const match = text.match(/[Cc]ontent\-[Dd]isposition:\s*form\-data;\s*name="_charset_"\s+([a-z0-9\-]+)\s+/);
-              if(match && match.length > 1){
+              if (match && match.length > 1) {
                 encoding = match[1];
                 return true;
               }
@@ -1007,9 +1175,9 @@ function getRequestBody(request) {
 
   let rawData = null;
   if (request.body.raw) {
-    rawData = uploadDataArr.map(function(d) {
+    rawData = uploadDataArr.map(function (d) {
       // check if 'file' property is set
-      if ('file' in d){
+      if ('file' in d) {
         return { file: d.file };
       }
       // check if 'bytes' property is set
@@ -1019,7 +1187,7 @@ function getRequestBody(request) {
           try {
             return { text: decodeBytes(d.bytes, encoding) };
           }
-          catch (e){
+          catch (e) {
             // decoding failed -> fall back to base64
           }
         }
@@ -1035,7 +1203,7 @@ function getRequestBody(request) {
 
     formData = {};
     for (const name in request.body.formData) {
-      formData[name] = (request.body.formData[name] || []).map(function(val) {
+      formData[name] = (request.body.formData[name] || []).map(function (val) {
         // val is given as ArrayBuffer when not UTF-8
         if (val instanceof ArrayBuffer) {
           if (encoding) {
@@ -1063,4 +1231,16 @@ function getRequestBody(request) {
   }
 
   return { formData: formData, raw: rawData };
+}
+
+function buildLogLine(msg, obj) {
+  return "XLT-TR: " + msg + (obj ? " -> " + JSON.stringify(obj) : "");
+}
+
+function log(msg, obj) {
+  console.log(buildLogLine(msg, obj));
+}
+
+function error(msg, obj) {
+  console.error(buildLogLine(msg, obj));
 }

@@ -1163,6 +1163,10 @@ table * {
         {
             text-align: right;
         }
+        #event-summary table td.value
+        {
+            vertical-align: top;
+        }
         table td.text
         {
             text-align: left;

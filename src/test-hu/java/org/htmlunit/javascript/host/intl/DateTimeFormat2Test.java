@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,10 +20,6 @@ import static org.htmlunit.junit.BrowserRunner.TestedBrowser.FF;
 import static org.htmlunit.junit.BrowserRunner.TestedBrowser.FF_ESR;
 
 import org.apache.commons.lang3.CharUtils;
-import org.junit.ComparisonFailure;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
@@ -31,6 +27,9 @@ import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.BuggyWebDriver;
 import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.junit.ComparisonFailure;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * Tests for {@link DateTimeFormat}.
@@ -499,6 +498,7 @@ public class DateTimeFormat2Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "20.12.2013",
             CHROME = "12/20/2013",
+            EDGE = "12/20/2013",
             IE = "\u200E20\u200E.\u200E12\u200E.\u200E2013")
     public void format_be() throws Exception {
         test("new Intl.DateTimeFormat('be').format(date)");
@@ -510,6 +510,7 @@ public class DateTimeFormat2Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "20.12.2013",
             CHROME = "12/20/2013",
+            EDGE = "12/20/2013",
             IE = "\u200E20\u200E.\u200E12\u200E.\u200E2013")
     public void format_be_by() throws Exception {
         test("new Intl.DateTimeFormat('be-BY').format(date)");
@@ -699,8 +700,7 @@ public class DateTimeFormat2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "12/20/2013",
-            FF_ESR = "2013-12-20",
+    @Alerts(DEFAULT = "2013-12-20",
             IE = "\u200e2013\u200e-\u200e12\u200e-\u200e20")
     public void format_en_ca() throws Exception {
         test("new Intl.DateTimeFormat('en-CA').format(date)");
@@ -1112,6 +1112,7 @@ public class DateTimeFormat2Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "20/12/2013",
             CHROME = "12/20/2013",
+            EDGE = "12/20/2013",
             IE = "\u200E20\u200E/\u200E12\u200E/\u200E2013")
     public void format_ga() throws Exception {
         test("new Intl.DateTimeFormat('ga').format(date)");
@@ -1123,6 +1124,7 @@ public class DateTimeFormat2Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "20/12/2013",
             CHROME = "12/20/2013",
+            EDGE = "12/20/2013",
             IE = "\u200E20\u200E/\u200E12\u200E/\u200E2013")
     public void format_ga_ie() throws Exception {
         test("new Intl.DateTimeFormat('ga-IE').format(date)");
@@ -1204,6 +1206,7 @@ public class DateTimeFormat2Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "20.12.2013",
             CHROME = "12/20/2013",
+            EDGE = "12/20/2013",
             IE = "\u200E20\u200E.\u200E12\u200E.\u200E2013")
     public void format_is() throws Exception {
         test("new Intl.DateTimeFormat('is').format(date)");
@@ -1215,6 +1218,7 @@ public class DateTimeFormat2Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "20.12.2013",
             CHROME = "12/20/2013",
+            EDGE = "12/20/2013",
             IE = "\u200E20\u200E.\u200E12\u200E.\u200E2013")
     public void format_is_is() throws Exception {
         test("new Intl.DateTimeFormat('is-IS').format(date)");
@@ -1356,6 +1360,7 @@ public class DateTimeFormat2Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "20.12.2013",
             CHROME = "12/20/2013",
+            EDGE = "12/20/2013",
             IE = "\u200E20\u200E.\u200E12\u200E.\u200E2013")
     public void format_mk() throws Exception {
         test("new Intl.DateTimeFormat('mk').format(date)");
@@ -1367,6 +1372,7 @@ public class DateTimeFormat2Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "20.12.2013",
             CHROME = "12/20/2013",
+            EDGE = "12/20/2013",
             IE = "\u200E20\u200E.\u200E12\u200E.\u200E2013")
     public void format_mk_mk() throws Exception {
         test("new Intl.DateTimeFormat('mk-MK').format(date)");
@@ -1632,7 +1638,6 @@ public class DateTimeFormat2Test extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "20. 12. 2013.",
-            FF_ESR = "20.12.2013.",
             IE = "\u200E20\u200E.\u200E12\u200E.\u200E2013\u200E.")
     public void format_sr() throws Exception {
         test("new Intl.DateTimeFormat('sr').format(date)");
@@ -1643,7 +1648,6 @@ public class DateTimeFormat2Test extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "20. 12. 2013.",
-            FF_ESR = "20.12.2013.",
             IE = "\u200E20\u200E.\u200E12\u200E.\u200E2013")
     public void format_sr_ba() throws Exception {
         test("new Intl.DateTimeFormat('sr-BA').format(date)");
@@ -1654,7 +1658,6 @@ public class DateTimeFormat2Test extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "20. 12. 2013.",
-            FF_ESR = "20.12.2013.",
             IE = "\u200E20\u200E.\u200E12\u200E.\u200E2013")
     public void format_sr_cs() throws Exception {
         test("new Intl.DateTimeFormat('sr-CS').format(date)");
@@ -1665,7 +1668,6 @@ public class DateTimeFormat2Test extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "20. 12. 2013.",
-            FF_ESR = "20.12.2013.",
             IE = "\u200E20\u200E.\u200E12\u200E.\u200E2013")
     public void format_sr_me() throws Exception {
         test("new Intl.DateTimeFormat('sr-ME').format(date)");
@@ -1676,7 +1678,6 @@ public class DateTimeFormat2Test extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "20. 12. 2013.",
-            FF_ESR = "20.12.2013.",
             IE = "\u200E20\u200E.\u200E12\u200E.\u200E2013")
     public void format_sr_rs() throws Exception {
         test("new Intl.DateTimeFormat('sr-RS').format(date)");

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,9 @@
  */
 package org.htmlunit.javascript.host.html;
 
-import java.util.List;
+import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.interactions.Actions;
+import java.util.List;
 
 import org.htmlunit.HttpMethod;
 import org.htmlunit.WebDriverTestCase;
@@ -29,6 +24,14 @@ import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.BuggyWebDriver;
+import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.interactions.Actions;
 
 /**
  * Tests for {@link HTMLSelectElement}.
@@ -2487,9 +2490,8 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "",
-            FF = "mouse over",
-            FF_ESR = "mouse over")
+    @Alerts(DEFAULT = "mouse over",
+            IE = "")
     @BuggyWebDriver(FF = "mouse overmouse overmouse over",
             FF_ESR = "mouse overmouse overmouse over")
     public void mouseOverDisabledSelect() throws Exception {
@@ -2564,6 +2566,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"1", "false", "true", "false", "false"},
             IE = {"1", "true", "true", "true", "true"})
+    @HtmlUnitNYI(IE = {"1", "false", "true", "true", "true"})
     public void in() throws Exception {
         final String html =
             "<html>\n"
@@ -2761,5 +2764,38 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
         assertTrue(options.get(0).isSelected());
         assertFalse(options.get(1).isSelected());
         assertFalse(options.get(2).isSelected());
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"[object HTMLOptionElement]", "[object HTMLOptionElement]", "[object HTMLOptionElement]"},
+            IE = "exception")
+    @NotYetImplemented(IE)
+    public void optionsForOf() throws Exception {
+        final String html =
+              "<html>\n"
+            + "<head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var s = document.getElementById('s');\n"
+            + "    for (var opt of s) {\n"
+            + "      log(opt);\n"
+            + "    }\n"
+            + "  }\n"
+            + "</script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "<select id='s' multiple>\n"
+            + "  <option selected value='one'>One</option>\n"
+            + "  <option value='two'>Two</option>\n"
+            + "  <option selected value='three'>Three</option>\n"
+            + "</select>\n"
+            + "</body>\n"
+            + "</html>";
+
+        loadPageVerifyTitle2(html);
     }
 }

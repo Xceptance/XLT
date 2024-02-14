@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,10 @@
 package org.htmlunit.javascript.background;
 
 import org.htmlunit.WebWindow;
-import org.htmlunit.html.DomElement;
-import org.htmlunit.html.HtmlPage;
-
 import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.html.DomElement;
+import org.htmlunit.html.HtmlPage;
 
 /**
  * A {@link JavaScriptJob} created from a {@link Function} object.

@@ -15,16 +15,15 @@
 // specific language governing permissions and limitations
 // under the License.
 //
-// Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
+// Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
 
 package com.xceptance.xlt.engine.xltdriver;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import org.openqa.selenium.Keys;
-
 import org.htmlunit.javascript.host.event.KeyboardEvent;
+import org.openqa.selenium.Keys;
 
 /**
  * Maps {@link Keys} to their {@link KeyboardEvent} constant.

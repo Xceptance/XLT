@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,12 @@ package org.htmlunit.javascript.host.html;
 
 import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
+import org.htmlunit.corejs.javascript.Undefined;
 import org.htmlunit.javascript.HtmlUnitScriptable;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
-
-import org.htmlunit.corejs.javascript.ScriptRuntime;
-import org.htmlunit.corejs.javascript.Undefined;
 
 /**
  * A JavaScript object for {@code Enumerator}.
@@ -46,10 +45,10 @@ public class Enumerator extends HtmlUnitScriptable {
      */
     @JsxConstructor
     public void jsConstructor(final Object o) {
-        if (Undefined.isUndefined(o)) {
+        if (JavaScriptEngine.isUndefined(o)) {
             return;
         }
-        throw ScriptRuntime.typeError("object is not enumerable");
+        throw JavaScriptEngine.typeError("object is not enumerable");
     }
 
     /**

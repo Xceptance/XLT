@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,11 @@
  */
 package org.htmlunit.html;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * Tests for {@link HtmlRt}.
@@ -34,7 +33,7 @@ public class HtmlRtTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"", "inline", "block"},
+    @Alerts(DEFAULT = {"", "inline", "ruby-text"},
             FF = {"", "ruby-text", "ruby-text"},
             FF_ESR = {"", "ruby-text", "ruby-text"},
             IE = {"ruby-text", "ruby-text", "ruby-text"})
@@ -69,7 +68,7 @@ public class HtmlRtTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"", "inline", "block"},
+    @Alerts(DEFAULT = {"", "inline", "ruby-text"},
             FF = {"", "ruby-text", "ruby-text"},
             FF_ESR = {"", "ruby-text", "ruby-text"},
             IE = {"ruby-text", "ruby-text", "ruby-text"})

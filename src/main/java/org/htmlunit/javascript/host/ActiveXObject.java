@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,20 +22,18 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.htmlunit.WebClient;
 import org.htmlunit.WebWindow;
 import org.htmlunit.activex.javascript.msxml.MSXMLActiveXObjectFactory;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.Function;
+import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.javascript.HtmlUnitScriptable;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.configuration.JsxSetter;
-
-import org.htmlunit.corejs.javascript.Context;
-import org.htmlunit.corejs.javascript.Function;
-import org.htmlunit.corejs.javascript.Scriptable;
-import org.htmlunit.corejs.javascript.Undefined;
 
 /**
  * This is the host object that allows JavaScript to instantiate Java objects via the ActiveXObject
@@ -72,24 +70,24 @@ public class ActiveXObject extends HtmlUnitScriptable {
      * </ol>
      *
      * @param cx the current context
+     * @param scope the scope
      * @param args the arguments to the ActiveXObject constructor
      * @param ctorObj the function object
      * @param inNewExpr Is new or not
      * @return the java object to allow JavaScript to access
      */
     @JsxConstructor
-    public static Scriptable jsConstructor(
-            final Context cx, final Object[] args, final Function ctorObj,
-            final boolean inNewExpr) {
+    public static Scriptable jsConstructor(final Context cx, final Scriptable scope,
+            final Object[] args, final Function ctorObj, final boolean inNewExpr) {
         if (args.length < 1 || args.length > 2) {
-            throw Context.reportRuntimeError(
+            throw JavaScriptEngine.reportRuntimeError(
                     "ActiveXObject Error: constructor must have one or two String parameters.");
         }
-        if (Undefined.isUndefined(args[0])) {
-            throw Context.reportRuntimeError("ActiveXObject Error: constructor parameter is undefined.");
+        if (JavaScriptEngine.isUndefined(args[0])) {
+            throw JavaScriptEngine.reportRuntimeError("ActiveXObject Error: constructor parameter is undefined.");
         }
         if (!(args[0] instanceof String)) {
-            throw Context.reportRuntimeError("ActiveXObject Error: constructor parameter must be a String.");
+            throw JavaScriptEngine.reportRuntimeError("ActiveXObject Error: constructor parameter must be a String.");
         }
         final String activeXName = (String) args[0];
 
@@ -113,7 +111,8 @@ public class ActiveXObject extends HtmlUnitScriptable {
                     return Context.toObject(object, ctorObj);
                 }
                 catch (final Exception e) {
-                    throw Context.reportRuntimeError("ActiveXObject Error: failed instantiating class " + xClassString
+                    throw JavaScriptEngine.reportRuntimeError(
+                            "ActiveXObject Error: failed instantiating class " + xClassString
                             + " because " + e.getMessage() + ".");
                 }
             }
@@ -130,7 +129,7 @@ public class ActiveXObject extends HtmlUnitScriptable {
         if (LOG.isWarnEnabled()) {
             LOG.warn("Automation server can't create object for '" + activeXName + "'.");
         }
-        throw Context.reportRuntimeError("Automation server can't create object for '" + activeXName + "'.");
+        throw JavaScriptEngine.reportRuntimeError("Automation server can't create object for '" + activeXName + "'.");
     }
 
     /**

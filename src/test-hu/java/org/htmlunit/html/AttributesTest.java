@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@ package org.htmlunit.html;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -106,7 +105,7 @@ public class AttributesTest extends TestCase {
             "HtmlParagraph",
             "HtmlParameter", "HtmlPicture", "HtmlPlainText", "HtmlPreformattedText",
             "HtmlProgress",
-            "HtmlRp", "HtmlRt", "HtmlRuby",
+            "HtmlRb", "HtmlRp", "HtmlRt", "HtmlRtc", "HtmlRuby",
             "HtmlS", "HtmlSample",
             "HtmlScript", "HtmlSection", "HtmlSelect", "HtmlSlot", "HtmlSmall",
             "HtmlSource", "HtmlSpan",
@@ -123,7 +122,7 @@ public class AttributesTest extends TestCase {
             "HtmlWordBreak", "HtmlExample"
         };
 
-        final HashSet<String> supportedTags = new HashSet<>(Arrays.asList(DefaultElementFactory.SUPPORTED_TAGS_));
+        final HashSet<String> supportedTags = new HashSet<>(DefaultElementFactory.SUPPORTED_TAGS_);
 
         for (final String testClass : classesToTest) {
             final Class<?> clazz = Class.forName("org.htmlunit.html." + testClass);

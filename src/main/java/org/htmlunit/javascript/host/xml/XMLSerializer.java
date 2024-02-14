@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,8 +22,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.w3c.dom.NamedNodeMap;
-
 import org.htmlunit.SgmlPage;
 import org.htmlunit.html.*;
 import org.htmlunit.javascript.HtmlUnitScriptable;
@@ -37,6 +35,7 @@ import org.htmlunit.javascript.host.dom.DocumentFragment;
 import org.htmlunit.javascript.host.dom.Node;
 import org.htmlunit.javascript.host.html.HTMLDocument;
 import org.htmlunit.util.StringUtils;
+import org.w3c.dom.NamedNodeMap;
 
 /**
  * A JavaScript object for {@code XMLSerializer}.
@@ -96,9 +95,14 @@ public class XMLSerializer extends HtmlUnitScriptable {
     /**
      * Default constructor.
      */
-    @JsxConstructor
     public XMLSerializer() {
-        // Empty.
+    }
+
+    /**
+     * JavaScript constructor.
+     */
+    @JsxConstructor
+    public void jsConstructor() {
     }
 
     /**
@@ -128,7 +132,7 @@ public class XMLSerializer extends HtmlUnitScriptable {
                 builder.append(serializeToString(node));
                 node = node.getNextSibling();
             }
-            return builder.toString();
+            return builder.toString().trim();
         }
 
         if (root instanceof Document) {
@@ -220,7 +224,7 @@ public class XMLSerializer extends HtmlUnitScriptable {
             }
         }
         if (!startTagClosed) {
-            final String tagName = StringUtils.toRootLowerCaseWithCache(nodeName);
+            final String tagName = StringUtils.toRootLowerCase(nodeName);
             if (NON_EMPTY_TAGS.contains(tagName)) {
                 builder.append("></").append(nodeName).append('>');
             }

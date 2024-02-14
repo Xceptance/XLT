@@ -15,16 +15,15 @@
 // specific language governing permissions and limitations
 // under the License.
 //
-// Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
+// Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
 
 package com.xceptance.xlt.engine.xltdriver;
 
+import org.htmlunit.Page;
+import org.htmlunit.WebWindow;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.Point;
 import org.openqa.selenium.WebDriver;
-
-import org.htmlunit.Page;
-import org.htmlunit.WebWindow;
 
 /**
  *
@@ -38,7 +37,7 @@ public class HtmlUnitWindow implements WebDriver.Window {
 
     private final WebWindow webWindow_;
     private final Dimension initialWindowDimension_;
-    private Point windowPosition_ = getBasePoint();
+    private Point windowPosition_;
 
     public HtmlUnitWindow(final WebWindow webWindow) {
         webWindow_ = webWindow;

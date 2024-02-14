@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,18 +20,16 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
-import org.w3c.dom.DOMException;
-
 import org.htmlunit.html.DomNode;
 import org.htmlunit.html.HtmlDomTreeWalker;
 import org.htmlunit.javascript.HtmlUnitScriptable;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.configuration.JsxSetter;
-
-import org.htmlunit.corejs.javascript.Context;
+import org.w3c.dom.DOMException;
 
 /**
  * The JavaScript object that represents a {@code TreeWalker}.
@@ -59,7 +57,7 @@ public class TreeWalker extends HtmlUnitScriptable {
      */
     @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public void jsConstructor() {
-        throw Context.reportRuntimeError("Illegal constructor.");
+        throw JavaScriptEngine.reportRuntimeError("Illegal constructor.");
     }
 
     /**
@@ -82,7 +80,7 @@ public class TreeWalker extends HtmlUnitScriptable {
                       final org.w3c.dom.traversal.NodeFilter filter,
                       final boolean expandEntityReferences) throws DOMException {
         if (root == null) {
-            Context.throwAsScriptRuntimeEx(new DOMException(DOMException.NOT_SUPPORTED_ERR,
+            throw JavaScriptEngine.throwAsScriptRuntimeEx(new DOMException(DOMException.NOT_SUPPORTED_ERR,
                                    "root must not be null"));
         }
         walker_ = new HtmlDomTreeWalker(root.getDomNodeOrDie(), whatToShow, filter, expandEntityReferences);

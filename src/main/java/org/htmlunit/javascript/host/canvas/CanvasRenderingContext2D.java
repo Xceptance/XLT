@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,9 +24,12 @@ import java.io.IOException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.Function;
+import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.html.HtmlImage;
 import org.htmlunit.javascript.HtmlUnitScriptable;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
@@ -39,12 +42,6 @@ import org.htmlunit.platform.canvas.rendering.RenderingBackend;
 import org.htmlunit.platform.canvas.rendering.RenderingBackend.WindingRule;
 import org.htmlunit.protocol.data.DataURLConnection;
 import org.htmlunit.util.MimeType;
-
-import org.htmlunit.corejs.javascript.Context;
-import org.htmlunit.corejs.javascript.Function;
-import org.htmlunit.corejs.javascript.ScriptRuntime;
-import org.htmlunit.corejs.javascript.Scriptable;
-import org.htmlunit.corejs.javascript.Undefined;
 
 /**
  * A JavaScript object for {@code CanvasRenderingContext2D}.
@@ -59,16 +56,20 @@ public class CanvasRenderingContext2D extends HtmlUnitScriptable {
 
     private static final Log LOG = LogFactory.getLog(CanvasRenderingContext2D.class);
 
-    private final HTMLCanvasElement canvas_;
+    private HTMLCanvasElement canvas_;
     private RenderingBackend renderingBackend_;
 
     /**
      * Default constructor.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public CanvasRenderingContext2D() {
-        canvas_ = null;
-        renderingBackend_ = null;
+    }
+
+    /**
+     * JavaScript constructor.
+     */
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    public void jsConstructor() {
     }
 
     /**
@@ -162,8 +163,8 @@ public class CanvasRenderingContext2D extends HtmlUnitScriptable {
      */
     @JsxSetter
     public void setLineWidth(final Object lineWidth) {
-        if (!Undefined.isUndefined(lineWidth)) {
-            final double width = Context.toNumber(lineWidth);
+        if (!JavaScriptEngine.isUndefined(lineWidth)) {
+            final double width = JavaScriptEngine.toNumber(lineWidth);
             if (!Double.isNaN(width)) {
                 getRenderingBackend().setLineWidth((int) width);
             }
@@ -237,22 +238,23 @@ public class CanvasRenderingContext2D extends HtmlUnitScriptable {
     /**
      * Creates a new clipping region.
      * @param context the JavaScript context
+     * @param scope the scope
      * @param thisObj the scriptable
      * @param args the arguments passed into the method
      * @param function the function
      */
     @JsxFunction
-    public static void clip(final Context context, final Scriptable thisObj, final Object[] args,
-        final Function function) {
+    public static void clip(final Context context, final Scriptable scope,
+            final Scriptable thisObj, final Object[] args, final Function function) {
         if (!(thisObj instanceof CanvasRenderingContext2D)) {
-            throw Context.reportRuntimeError(
+            throw JavaScriptEngine.reportRuntimeError(
                     "CanvasRenderingContext2D.getImageData() failed - this is not a CanvasRenderingContext2D");
         }
         final CanvasRenderingContext2D canvas = (CanvasRenderingContext2D) thisObj;
 
         RenderingBackend.WindingRule windingRule = WindingRule.NON_ZERO;
         if (args.length == 1) {
-            final String windingRuleParam = ScriptRuntime.toString(args[0]);
+            final String windingRuleParam = JavaScriptEngine.toString(args[0]);
             if ("evenodd".contentEquals(windingRuleParam)) {
                 windingRule = WindingRule.EVEN_ODD;
             }
@@ -261,11 +263,11 @@ public class CanvasRenderingContext2D extends HtmlUnitScriptable {
 
         if (args.length > 1) {
             if (!(args[0] instanceof Path2D)) {
-                throw Context.reportRuntimeError(
+                throw JavaScriptEngine.reportRuntimeError(
                         "CanvasRenderingContext2D.clip() failed - the first parameter has to be a Path2D");
             }
 
-            final String windingRuleParam = ScriptRuntime.toString(args[1]);
+            final String windingRuleParam = JavaScriptEngine.toString(args[1]);
             if ("evenodd".contentEquals(windingRuleParam)) {
                 windingRule = WindingRule.EVEN_ODD;
             }
@@ -289,16 +291,17 @@ public class CanvasRenderingContext2D extends HtmlUnitScriptable {
      * Returns the {@code ImageData} object.
      * this may accept a variable number of arguments.
      * @param context the JavaScript context
+     * @param scope the scope
      * @param thisObj the scriptable
      * @param args the arguments passed into the method
      * @param function the function
      * @return the {@code ImageData} object
      */
     @JsxFunction
-    public static ImageData createImageData(final Context context, final Scriptable thisObj, final Object[] args,
-        final Function function) {
+    public static ImageData createImageData(final Context context, final Scriptable scope,
+            final Scriptable thisObj, final Object[] args, final Function function) {
         if (!(thisObj instanceof CanvasRenderingContext2D)) {
-            throw Context.reportRuntimeError(
+            throw JavaScriptEngine.reportRuntimeError(
                     "CanvasRenderingContext2D.getImageData() failed - this is not a CanvasRenderingContext2D");
         }
         final CanvasRenderingContext2D canvas = (CanvasRenderingContext2D) thisObj;
@@ -313,15 +316,15 @@ public class CanvasRenderingContext2D extends HtmlUnitScriptable {
         }
 
         if (args.length > 1) {
-            final int width = Math.abs((int) ScriptRuntime.toInteger(args, 0));
-            final int height = Math.abs((int) ScriptRuntime.toInteger(args, 1));
+            final int width = Math.abs((int) JavaScriptEngine.toInteger(args, 0));
+            final int height = Math.abs((int) JavaScriptEngine.toInteger(args, 1));
             final ImageData imageData = new ImageData(null, 0, 0, width, height);
             imageData.setParentScope(canvas.getParentScope());
             imageData.setPrototype(canvas.getPrototype(imageData.getClass()));
             return imageData;
         }
 
-        throw Context.reportRuntimeError(
+        throw JavaScriptEngine.reportRuntimeError(
                 "CanvasRenderingContext2D.getImageData() failed - "
                 + "wrong parameters given (" + StringUtils.join(args, ", ") + ")");
     }
@@ -400,15 +403,15 @@ public class CanvasRenderingContext2D extends HtmlUnitScriptable {
 
                 // 3 arguments
                 //   void ctx.drawImage(image, dx, dy);
-                if (Undefined.isUndefined(sWidth)) {
+                if (JavaScriptEngine.isUndefined(sWidth)) {
                     getRenderingBackend().drawImage(imageData, 0, 0, null, null, sx, sy, null, null);
                 }
 
                 // 5 arguments
                 //   void ctx.drawImage(image, dx, dy, dWidth, dHeight);
-                else if (Undefined.isUndefined(dx)) {
-                    final int dWidthI = ScriptRuntime.toInt32(sWidth);
-                    final int dHeightI = ScriptRuntime.toInt32(sHeight);
+                else if (JavaScriptEngine.isUndefined(dx)) {
+                    final int dWidthI = JavaScriptEngine.toInt32(sWidth);
+                    final int dHeightI = JavaScriptEngine.toInt32(sHeight);
 
                     getRenderingBackend().drawImage(imageData, 0, 0, null, null, sx, sy, dWidthI, dHeightI);
                 }
@@ -416,13 +419,13 @@ public class CanvasRenderingContext2D extends HtmlUnitScriptable {
                 // all 9 arguments
                 //   void ctx.drawImage(image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight);
                 else {
-                    final int sWidthI = ScriptRuntime.toInt32(sWidth);
-                    final int sHeightI = ScriptRuntime.toInt32(sHeight);
+                    final int sWidthI = JavaScriptEngine.toInt32(sWidth);
+                    final int sHeightI = JavaScriptEngine.toInt32(sHeight);
 
-                    final int dxI = ScriptRuntime.toInt32(dx);
-                    final int dyI = ScriptRuntime.toInt32(dy);
-                    final int dWidthI = ScriptRuntime.toInt32(dWidth);
-                    final int dHeightI = ScriptRuntime.toInt32(dHeight);
+                    final int dxI = JavaScriptEngine.toInt32(dx);
+                    final int dyI = JavaScriptEngine.toInt32(dy);
+                    final int dWidthI = JavaScriptEngine.toInt32(dWidth);
+                    final int dHeightI = JavaScriptEngine.toInt32(dHeight);
 
                     getRenderingBackend().drawImage(imageData,
                             sx, sy, sWidthI, sHeightI, dxI, dyI, dWidthI, dHeightI);
@@ -430,7 +433,7 @@ public class CanvasRenderingContext2D extends HtmlUnitScriptable {
             }
             catch (final IOException ioe) {
                 LOG.info("There is no ImageReader available for you imgage with src '" + imageElem.getSrc() + "'"
-                        + "Please have a look at https://htmlunit.sourceforge.io/images-howto.html "
+                        + "Please have a look at https://www.htmlunit.org/images-howto.html "
                         + "for a possible solution.");
             }
         }
@@ -450,7 +453,7 @@ public class CanvasRenderingContext2D extends HtmlUnitScriptable {
             return DataURLConnection.DATA_PREFIX + type + ";base64," + getRenderingBackend().encodeToString(type);
         }
         catch (final IOException ioe) {
-            throw Context.throwAsScriptRuntimeEx(ioe);
+            throw JavaScriptEngine.throwAsScriptRuntimeEx(ioe);
         }
     }
 
@@ -561,12 +564,12 @@ public class CanvasRenderingContext2D extends HtmlUnitScriptable {
      */
     @JsxFunction
     public TextMetrics measureText(final Object text) {
-        if (text == null || Undefined.isUndefined(text)) {
-            throw Context.throwAsScriptRuntimeEx(
+        if (text == null || JavaScriptEngine.isUndefined(text)) {
+            throw JavaScriptEngine.throwAsScriptRuntimeEx(
                     new RuntimeException("Missing argument for CanvasRenderingContext2D.measureText()."));
         }
 
-        final String textValue = Context.toString(text);
+        final String textValue = JavaScriptEngine.toString(text);
 
         // TODO take font into account
         final int width = textValue.length() * getBrowserVersion().getPixesPerChar();
@@ -610,21 +613,23 @@ public class CanvasRenderingContext2D extends HtmlUnitScriptable {
         int dirtyWidthArg = imageData.getWidth();
         int dirtyHeightArg = imageData.getHeight();
 
-        if (!Undefined.isUndefined(dirtyX)) {
-            dirtyXArg = (int) ScriptRuntime.toInteger(dirtyX);
+        if (!JavaScriptEngine.isUndefined(dirtyX)) {
+            dirtyXArg = (int) JavaScriptEngine.toInteger(dirtyX);
 
-            if (Undefined.isUndefined(dirtyY)
-                    || Undefined.isUndefined(dirtyWidth)
-                    || Undefined.isUndefined(dirtyHeight)) {
-                throw Context.reportRuntimeError(
+            if (JavaScriptEngine.isUndefined(dirtyY)
+                    || JavaScriptEngine.isUndefined(dirtyWidth)
+                    || JavaScriptEngine.isUndefined(dirtyHeight)) {
+                throw JavaScriptEngine.reportRuntimeError(
                         "CanvasRenderingContext2D.putImageData() failed - seven parameters expected");
             }
-            dirtyYArg = (int) ScriptRuntime.toInteger(dirtyY);
-            dirtyWidthArg = (int) ScriptRuntime.toInteger(dirtyWidth);
-            dirtyHeightArg = (int) ScriptRuntime.toInteger(dirtyHeight);
+            dirtyYArg = (int) JavaScriptEngine.toInteger(dirtyY);
+            dirtyWidthArg = (int) JavaScriptEngine.toInteger(dirtyWidth);
+            dirtyHeightArg = (int) JavaScriptEngine.toInteger(dirtyHeight);
         }
 
-        getRenderingBackend().putImageData(imageData, dx, dy, dirtyXArg, dirtyYArg, dirtyWidthArg, dirtyHeightArg);
+        getRenderingBackend().putImageData(
+                imageData.getData().getBuffer().getBuffer(), imageData.getHeight(), imageData.getWidth(),
+                dx, dy, dirtyXArg, dirtyYArg, dirtyWidthArg, dirtyHeightArg);
     }
 
     /**

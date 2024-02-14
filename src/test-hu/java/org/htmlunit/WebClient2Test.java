@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,15 +24,15 @@ import java.util.Locale;
 
 import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.time.DateUtils;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.junit.Retry;
 import org.htmlunit.util.Cookie;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * Tests for {@link WebClient} that run with BrowserRunner.
@@ -249,7 +249,7 @@ public class WebClient2Test extends SimpleWebTestCase {
               "toto", "foo", "/myPath", true, null);
 
         // Check that we are able to parse and set the expiration date correctly
-        final String dateString = "Fri, 21 Jul 2023 20:47:11 UTC";
+        final String dateString = "Fri, 21 Jul 2024 20:47:11 UTC";
         final Date date = DateUtils.parseDate(dateString, "EEE, dd MMM yyyy HH:mm:ss z");
         checkCookie("toto=foo; expires=" + dateString, "toto", "foo", "/", false, date);
     }
@@ -275,6 +275,7 @@ public class WebClient2Test extends SimpleWebTestCase {
      * @throws Exception if something goes wrong
      */
     @Test
+    @Retry
     @Alerts({"loadExtraContent started at Page 1", " loadExtraContent finished at Page 1"})
     @HtmlUnitNYI(CHROME = {"loadExtraContent started at Page 1", " loadExtraContent finished at Page 2"},
             EDGE = {"loadExtraContent started at Page 1", " loadExtraContent finished at Page 2"},

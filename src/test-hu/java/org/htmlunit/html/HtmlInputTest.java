@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,13 +21,14 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import org.htmlunit.HttpMethod;
 import org.htmlunit.MockWebConnection;
 import org.htmlunit.SimpleWebTestCase;
+import org.htmlunit.WebClient;
+import org.htmlunit.corejs.javascript.ScriptableObject;
 import org.htmlunit.junit.BrowserRunner;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * Tests for {@link HtmlInput}.
@@ -36,6 +37,7 @@ import org.htmlunit.junit.BrowserRunner;
  * @author Marc Guillemot
  * @author Ahmed Ashour
  * @author Anton Demydenko
+ * @author Ronny Shapiro
  */
 @RunWith(BrowserRunner.class)
 public final class HtmlInputTest extends SimpleWebTestCase {
@@ -238,5 +240,45 @@ public final class HtmlInputTest extends SimpleWebTestCase {
 
         final HtmlInput input = (HtmlInput) page.getElementById("foo");
         assertFalse(input.isValid());
+    }
+
+    @Test
+    public void changeType_javascriptEngineDisabled() throws Exception {
+        final String htmlContent
+                = "<html><head><title>foo</title></head><body>\n"
+                + "<form id='form1'>\n"
+                + "<input type='text' name='text1' onchange='alert(\"changed\")')>\n"
+                + "</form></body></html>";
+
+        try (WebClient webClient = new WebClient(getBrowserVersion(), false, null, -1)) {
+            final HtmlPage page = loadPage(webClient, htmlContent, null, URL_FIRST);
+            final HtmlForm form = page.getHtmlElementById("form1");
+            final HtmlTextInput input = form.getInputByName("text1");
+
+            input.setAttribute("type", "hidden");
+        }
+    }
+
+    @Test
+    public void changeType_javascriptDisabled() throws Exception {
+        final String htmlContent
+                = "<html><head><title>foo</title></head><body>\n"
+                + "<form id='form1'>\n"
+                + "<input type='text' name='text1' onchange='alert(\"changed\")')>\n"
+                + "</form></body></html>";
+
+        try (WebClient webClient = new WebClient(getBrowserVersion())) {
+            webClient.getOptions().setJavaScriptEnabled(false);
+            final HtmlPage page = loadPage(webClient, htmlContent, null, URL_FIRST);
+            final HtmlForm form = page.getHtmlElementById("form1");
+            final HtmlTextInput input = form.getInputByName("text1");
+
+            final ScriptableObject jsPeer = input.getScriptableObject();
+            assertNotNull(jsPeer);
+
+            input.setAttribute("type", "hidden");
+            assertNotNull(input.getScriptableObject());
+            assertNotEquals(jsPeer, input.getScriptableObject());
+        }
     }
 }

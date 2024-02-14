@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,8 +42,16 @@ public class HTMLSpanElement extends HTMLElement {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public HTMLSpanElement() {
+    }
+
+    /**
+     * JavaScript constructor.
+     */
+    @Override
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    public void jsConstructor() {
+        super.jsConstructor();
     }
 
     /**
@@ -55,7 +63,7 @@ public class HTMLSpanElement extends HTMLElement {
         super.setDomNode(domNode);
         final BrowserVersion browser = getBrowserVersion();
         if (browser.hasFeature(HTMLBASEFONT_END_TAG_FORBIDDEN)) {
-            switch (StringUtils.toRootLowerCaseWithCache(domNode.getLocalName())) {
+            switch (StringUtils.toRootLowerCase(domNode.getLocalName())) {
                 case "basefont":
                 case "keygen":
                     endTagForbidden_ = true;

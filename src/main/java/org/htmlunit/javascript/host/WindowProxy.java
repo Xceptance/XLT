@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,8 @@
 package org.htmlunit.javascript.host;
 
 import org.htmlunit.WebWindow;
-import org.htmlunit.javascript.HtmlUnitScriptableProxy;
-
 import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.javascript.HtmlUnitScriptableProxy;
 
 /**
  * Proxy for a {@link Window} script object.

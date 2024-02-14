@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,11 @@
  */
 package org.htmlunit.javascript.host.css;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import org.htmlunit.SimpleWebTestCase;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.junit.BrowserRunner;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * Unit tests for {@link CSSStyleDeclaration}.

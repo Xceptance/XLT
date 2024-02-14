@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,17 +19,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.openqa.selenium.By;
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.WebDriver;
-
 import org.htmlunit.HttpHeader;
 import org.htmlunit.MockWebConnection;
+import org.htmlunit.WebClient;
 import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
@@ -37,6 +31,14 @@ import org.htmlunit.junit.BrowserRunner.BuggyWebDriver;
 import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
+import org.junit.Assert;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 
 /**
  * Tests for {@link HTMLIFrameElement}.
@@ -203,9 +205,7 @@ public class HTMLIFrameElement3Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"false", "false", "true", "true", "true", "object", "object"},
-            FF_ESR = {"false", "false", "true", "false", "false", "object", "undefined"})
-    @HtmlUnitNYI(FF_ESR = {"false", "false", "true", "true", "true", "object", "object"})
+    @Alerts({"false", "false", "true", "true", "true", "object", "object"})
     public void writeToIFrame() throws Exception {
         final String html
             = "<!DOCTYPE html>\n"
@@ -1000,6 +1000,7 @@ public class HTMLIFrameElement3Test extends WebDriverTestCase {
                 + "<head><title>IFrame Title</title></head>\n"
                 + "<body>IFrame Content\n"
                 + "  <iframe id='frame1' src='content.html'></iframe>\n"
+                + "  <input id='myButton' type=button onclick=\"javascript:sayHello('%28%A')\" value='My Button'>\n"
                 + "</body>\n"
                 + "</html>";
 
@@ -1015,5 +1016,48 @@ public class HTMLIFrameElement3Test extends WebDriverTestCase {
         loadPageWithAlerts2(html);
 
         assertEquals(Integer.parseInt(expectedAlerts[1]), getMockWebConnection().getRequestCount());
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("Injected from parent frame")
+    public void writeIntoIFrameContentDocument() throws Exception {
+        final String html
+            = "<!DOCTYPE html>\n"
+            + "<html>\n"
+            + "<head>\n"
+            + "  <script>\n"
+            + "    function doIt() {\n"
+            + "      var html = '<h1>Injected from parent frame</h1>';\n"
+            + "      document.getElementById(\"tester\").contentDocument.write(html);\n"
+            + "    }\n"
+            + "  </script>\n"
+            + "</head>\n"
+            + "<body>\n"
+            + "  <iframe id='tester'></iframe>\n"
+            + "  <input id='myButton' type=button onclick=\"javascript:doIt()\" value='Write'>\n"
+            + "</body>\n"
+            + "</html>";
+
+        getMockWebConnection().setDefaultResponse(html);
+        final WebDriver driver = loadPage2(html);
+
+        driver.findElement(By.id("myButton")).click();
+
+        driver.switchTo().frame("tester");
+        verify(() -> driver.findElement(By.tagName("body")).getText(), getExpectedAlerts()[0]);
+
+        if (driver instanceof HtmlUnitDriver) {
+            final WebClient webClient = ((HtmlUnitDriver) driver).getWebClient();
+
+            final HtmlPage page = (HtmlPage) webClient.getCurrentWindow().getEnclosedPage();
+
+            assertEquals(1, page.getFrames().size());
+
+            final HtmlPage framePage = (HtmlPage) page.getFrames().get(0).getEnclosedPage();
+            assertEquals("Injected from parent frame", framePage.getBody().asNormalizedText());
+        }
     }
 }

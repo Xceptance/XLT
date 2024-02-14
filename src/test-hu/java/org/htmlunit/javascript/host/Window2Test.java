@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,13 +18,14 @@ import static org.htmlunit.junit.BrowserRunner.TestedBrowser.FF;
 import static org.htmlunit.junit.BrowserRunner.TestedBrowser.FF_ESR;
 import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.openqa.selenium.By;
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.htmlunit.HtmlUnitDriver;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.OutputStreamWriter;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 
+import org.apache.commons.io.FileUtils;
+import org.htmlunit.CookieManager4Test;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
@@ -32,6 +33,12 @@ import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import org.htmlunit.util.MimeType;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 
 /**
  * Tests for {@link Window}. The only difference with {@link WindowTest} is that these
@@ -794,8 +801,8 @@ public class Window2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = {"true", "true", "133", "true", "true", "16"},
-            EDGE = {"true", "true", "131", "true", "true", "63"},
+    @Alerts(CHROME = {"true", "true", "138", "true", "true", "16"},
+            EDGE = {"true", "true", "138", "true", "true", "64"},
             FF = {"true", "true", "91", "true", "true", "12"},
             FF_ESR = {"true", "true", "91", "true", "true", "12"},
             IE = {"true", "true", "86", "true", "true", "16"})
@@ -905,8 +912,8 @@ public class Window2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = {"635", "1256", "618", "1239"},
-            EDGE = {"637", "1209", "620", "1192"},
+    @Alerts(CHROME = {"630", "1256", "613", "1239"},
+            EDGE = {"630", "1208", "615", "1193"},
             FF = {"677", "1260", "660", "1243"},
             FF_ESR = {"677", "1260", "660", "1243"},
             IE = {"682", "1256", "665", "1239"})
@@ -1923,7 +1930,7 @@ public class Window2Test extends WebDriverTestCase {
             + "</form>\n"
             + "<script>\n"
             + "  window.onsubmit = function() {\n"
-            + "    window.name = window.name + '-onsubmit-';\n" // hack
+            + "    window.name = window.name + '-onsubmit-' + '\\u00a7';\n" // hack
             + "  }\n"
             + "</script>\n"
             + "</body></html>";
@@ -1931,11 +1938,7 @@ public class Window2Test extends WebDriverTestCase {
         final WebDriver driver = loadPage2(html);
         driver.findElement(By.id("it")).click();
 
-        // we can't use the usual alert here because of the page change
-        final JavascriptExecutor jsExecutor = (JavascriptExecutor) driver;
-        final Object result = jsExecutor.executeScript("return window.name");
-
-        assertEquals(getExpectedAlerts()[0], result);
+        verifyWindowName2(driver, getExpectedAlerts()[0]);
     }
 
     /**
@@ -2668,5 +2671,132 @@ public class Window2Test extends WebDriverTestCase {
                 + "</html>";
 
         loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = "true",
+            IE = "not available")
+    public void isSecureContextLocalhost() throws Exception {
+        final String html
+            = "<html><body><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  log(window.hasOwnProperty('isSecureContext') ? isSecureContext : 'not available');\n"
+            + "</script></body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = "false",
+            IE = "not available")
+    public void isSecureContextHttp() throws Exception {
+        final String html
+            = "<html><body><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  log(window.hasOwnProperty('isSecureContext') ? isSecureContext : 'not available');\n"
+            + "</script></body></html>";
+
+        final WebDriver driver = loadPage2(html, new URL(CookieManager4Test.URL_HOST1));
+        verifyTitle2(driver, getExpectedAlerts());
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = "true",
+            IE = "null")
+    public void isSecureContextHttpS() throws Exception {
+        final WebDriver driver = loadPage2(new URL("https://www.wetator.org/HtmlUnit"), StandardCharsets.UTF_8);
+
+        final String script = "return window.isSecureContext";
+        final Object result = ((JavascriptExecutor) driver).executeScript(script);
+        assertEquals(getExpectedAlerts()[0], "" + result);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = "true",
+            IE = "null")
+    public void isSecureContextFile() throws Exception {
+        final String html
+            = "<html><body><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  log(window.hasOwnProperty('isSecureContext') ? isSecureContext : 'not available');\n"
+            + "</script></body></html>";
+
+        final File currentDirectory = new File((new File("")).getAbsolutePath());
+        final File tmpFile = File.createTempFile("isSecureContext", ".html", currentDirectory);
+        tmpFile.deleteOnExit();
+        final String encoding = (new OutputStreamWriter(new ByteArrayOutputStream())).getEncoding();
+        FileUtils.writeStringToFile(tmpFile, html, encoding);
+
+        final WebDriver driver = getWebDriver();
+        driver.get("file://" + tmpFile.getCanonicalPath());
+
+        final String script = "return window.isSecureContext";
+        final Object result = ((JavascriptExecutor) driver).executeScript(script);
+        assertEquals(getExpectedAlerts()[0], "" + result);
+
+        shutDownAll();
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = "false",
+            IE = "null")
+    public void isSecureContextAboutBlank() throws Exception {
+        final WebDriver driver = getWebDriver();
+        driver.get("about:blank");
+
+        final String script = "return window.isSecureContext";
+        final Object result = ((JavascriptExecutor) driver).executeScript(script);
+        assertEquals(getExpectedAlerts()[0], "" + result);
+
+        shutDownAll();
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts("inline")
+    public void getComputedStyleShouldLoadOnlyStylesheets() throws Exception {
+        final String html = "<html><head>\n"
+
+            + "<link rel='stylesheet' href='imp.css'>\n"
+            + "<link rel='alternate' href='alternate.css'>\n"
+
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var tt = document.getElementById('tt');\n"
+            + "    log(window.getComputedStyle(tt, null).display);\n"
+            + "  }\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <p id='tt'>abcd</p>\n"
+            + "</body></html>\n";
+
+        String css = "p { display: inline };";
+        getMockWebConnection().setResponse(new URL(URL_FIRST, "imp.css"), css, MimeType.TEXT_CSS);
+
+        css = "p { display: none };";
+        getMockWebConnection().setResponse(new URL(URL_FIRST, "alternate.css"), css, MimeType.TEXT_CSS);
+
+        final int requestCount = getMockWebConnection().getRequestCount();
+        loadPageVerifyTitle2(html);
+
+        assertEquals(2, getMockWebConnection().getRequestCount() - requestCount);
     }
 }

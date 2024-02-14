@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,21 +18,20 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
+import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import java.util.ArrayList;
 
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.ScriptableObject;
 import org.htmlunit.html.DomNode;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstant;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.host.html.HTMLElement;
-
-import org.htmlunit.corejs.javascript.Context;
-import org.htmlunit.corejs.javascript.ScriptRuntime;
-import org.htmlunit.corejs.javascript.ScriptableObject;
-import org.htmlunit.corejs.javascript.Undefined;
 
 /**
  * JavaScript object representing a Mouse Event.
@@ -137,45 +136,45 @@ public class MouseEvent extends UIEvent {
      * @param type the event type
      * @param details the event details (optional)
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     @Override
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public void jsConstructor(final String type, final ScriptableObject details) {
-        super.jsConstructor(ScriptRuntime.toString(type), details);
-        if (details != null && !Undefined.isUndefined(details)) {
+        super.jsConstructor(JavaScriptEngine.toString(type), details);
+        if (details != null && !JavaScriptEngine.isUndefined(details)) {
             final Object screenX = details.get("screenX", details);
             if (NOT_FOUND != screenX) {
-                screenX_ = ScriptRuntime.toInt32(screenX);
+                screenX_ = JavaScriptEngine.toInt32(screenX);
             }
 
             final Object screenY = details.get("screenY", details);
             if (NOT_FOUND != screenX) {
-                screenY_ = ScriptRuntime.toInt32(screenY);
+                screenY_ = JavaScriptEngine.toInt32(screenY);
             }
 
             final Object clientX = details.get("clientX", details);
             if (NOT_FOUND != clientX) {
-                clientX_ = ScriptRuntime.toInt32(clientX);
+                clientX_ = JavaScriptEngine.toInt32(clientX);
             }
 
             final Object clientY = details.get("clientY", details);
             if (NOT_FOUND != clientX) {
-                clientY_ = ScriptRuntime.toInt32(clientY);
+                clientY_ = JavaScriptEngine.toInt32(clientY);
             }
 
             final Object button = details.get("button", details);
             if (NOT_FOUND != button) {
-                button_ = ScriptRuntime.toInt32(button);
+                button_ = JavaScriptEngine.toInt32(button);
             }
 
             final Object buttons = details.get("buttons", details);
             if (NOT_FOUND != buttons) {
-                buttons_ = ScriptRuntime.toInt32(buttons);
+                buttons_ = JavaScriptEngine.toInt32(buttons);
             }
 
-            setAltKey(ScriptRuntime.toBoolean(details.get("altKey")));
-            setCtrlKey(ScriptRuntime.toBoolean(details.get("ctrlKey")));
-            setMetaKey(ScriptRuntime.toBoolean(details.get("metaKey")));
-            setShiftKey(ScriptRuntime.toBoolean(details.get("shiftKey")));
+            setAltKey(JavaScriptEngine.toBoolean(details.get("altKey")));
+            setCtrlKey(JavaScriptEngine.toBoolean(details.get("ctrlKey")));
+            setMetaKey(JavaScriptEngine.toBoolean(details.get("metaKey")));
+            setShiftKey(JavaScriptEngine.toBoolean(details.get("shiftKey")));
         }
     }
 
@@ -187,9 +186,10 @@ public class MouseEvent extends UIEvent {
      * @param ctrlKey true if CTRL is pressed
      * @param altKey true if ALT is pressed
      * @param button the button code, must be {@link #BUTTON_LEFT}, {@link #BUTTON_MIDDLE} or {@link #BUTTON_RIGHT}
+     * @param detail the detail value
      */
     public MouseEvent(final DomNode domNode, final String type, final boolean shiftKey,
-        final boolean ctrlKey, final boolean altKey, final int button) {
+        final boolean ctrlKey, final boolean altKey, final int button, final int detail) {
 
         super(domNode, type);
         setShiftKey(shiftKey);
@@ -201,12 +201,7 @@ public class MouseEvent extends UIEvent {
         }
         button_ = button;
 
-        if (TYPE_DBL_CLICK.equals(type) || TYPE_CONTEXT_MENU.equals(type)) {
-            setDetail(2);
-        }
-        else {
-            setDetail(1);
-        }
+        setDetail(detail);
     }
 
     /**
@@ -340,7 +335,8 @@ public class MouseEvent extends UIEvent {
      * @see <a href="http://unixpapa.com/js/mouse.html">Javascript Madness: Mouse Events</a>
      * @return the button code
      */
-    @JsxGetter
+    @JsxGetter(IE)
+    @Override
     public int getWhich() {
         return button_ + 1;
     }
