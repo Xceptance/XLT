@@ -346,10 +346,10 @@ public final class PerformanceDataTransformator
             if (timingEntry != null)
             {
                 final long startTime = timingEntry.optLong("startTime", 0);
-                final int runTime = timingEntry.optInt("duration", -1);
+                final int runTime = timingEntry.optInt("duration", 0);
 
                 // only process valid records
-                if (startTime > 0 && runTime > -1)
+                if (startTime > 0 && runTime > 0)
                 {
                     final PageLoadTimingData customData = new PageLoadTimingData();
                     customData.setName(StringUtils.capitalize(eachKey));
