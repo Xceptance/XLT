@@ -69,7 +69,7 @@
         <htmlunit.version>3.11.0</htmlunit.version>
         <httpclient.version>4.5.14</httpclient.version>
         <jetty.version>9.4.53.v20231009</jetty.version>
-        <log4j.version>2.19.0</log4j.version>
+        <log4j.version>2.22.1</log4j.version>
         <powermock.version>2.0.9</powermock.version>
         <selenium.version>4.17.0</selenium.version>
         <htmlunitdriver.version>4.17.0</htmlunitdriver.version>
@@ -335,7 +335,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-slf4j-impl</artifactId>
+            <artifactId>log4j-slf4j2-impl</artifactId>
             <version>${log4j.version}</version>
         </dependency>
         <dependency>
@@ -408,6 +408,12 @@
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>33.0.0-jre</version>
+        </dependency>
+        <!-- slf4j is used by many libs. Ensure that the version used by log4j-slf4j2-impl wins. -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>2.0.9</version>
         </dependency>
         <!-- Script-Doc Generator -->
         <dependency>
@@ -539,7 +545,7 @@
         <dependency>
             <groupId>com.tngtech.archunit</groupId>
             <artifactId>archunit-junit4</artifactId>
-            <version>1.0.1</version>
+            <version>1.2.1</version>
             <exclusions>
                 <exclusion>
                     <groupId>junit</groupId>
