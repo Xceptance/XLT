@@ -20,11 +20,16 @@ import org.htmlunit.MockWebConnection;
 import org.htmlunit.WebClient;
 import org.htmlunit.WebResponse;
 import org.htmlunit.html.HtmlPage;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
+
+import com.xceptance.xlt.api.util.XltProperties;
+import com.xceptance.xlt.engine.XltEngine;
 
 /**
  * Tests the implementation of {@link StandardValidator}.
@@ -39,7 +44,33 @@ import org.powermock.modules.junit4.PowerMockRunner;
 @PowerMockIgnore({"javax.xml.*", "org.xml.*", "org.w3c.dom.*"})
 public class StandardValidatorTest
 {
-    private final StandardValidator validator = StandardValidator.getInstance();
+    private StandardValidator validator;
+
+    /**
+     * Test fixture setup.
+     * 
+     * @throws Exception
+     *             thrown when setup failed.
+     */
+    @Before
+    public void intro() throws Exception
+    {
+        // enable sub validators
+        XltProperties.getInstance().setProperty(ContentLengthValidator.PROPERTY_NAME, "true");
+        XltProperties.getInstance().setProperty(HtmlEndTagValidator.PROPERTY_NAME, "true");
+        XltProperties.getInstance().setProperty(XHTMLValidator.PROPERTY_NAME, "true");
+
+        validator = StandardValidator.getInstance();
+    }
+
+    /**
+     * Test clean-up.
+     */
+    @After
+    public void cleanUp()
+    {
+        XltEngine.reset();
+    }
 
     /**
      * Well formed XHTML.

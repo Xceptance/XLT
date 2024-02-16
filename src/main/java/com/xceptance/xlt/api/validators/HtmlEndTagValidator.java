@@ -52,7 +52,7 @@ public class HtmlEndTagValidator
     /**
      * Property name that controls the validator.
      */
-    private static final String PROPERTY_NAME = HtmlEndTagValidator.class.getName() + ".enabled";
+    static final String PROPERTY_NAME = HtmlEndTagValidator.class.getName() + ".enabled";
 
     /**
      * The pattern to be use on the page.

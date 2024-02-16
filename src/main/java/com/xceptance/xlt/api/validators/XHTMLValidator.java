@@ -49,7 +49,7 @@ public class XHTMLValidator
     /**
      * Property name that controls the validator.
      */
-    private static final String PROPERTY_NAME = XHTMLValidator.class.getName() + ".enabled";
+    static final String PROPERTY_NAME = XHTMLValidator.class.getName() + ".enabled";
 
     /**
      * Keeps the information whether to break at errors or not.
@@ -60,11 +60,6 @@ public class XHTMLValidator
      * Keeps the information whether to break at warnings or not.
      */
     private final boolean breakOnWarnings;
-
-    /**
-     * Keeps the state to allow control by an external property.
-     */
-    private final boolean enabled;
 
     /**
      * Constructor.
@@ -78,8 +73,6 @@ public class XHTMLValidator
     {
         this.breakOnErrors = breakOnErrors;
         this.breakOnWarnings = breakOnWarnings;
-
-        enabled = XltProperties.getInstance().getProperty(PROPERTY_NAME, true);
     }
 
     /**
@@ -119,12 +112,6 @@ public class XHTMLValidator
      */
     public void validate(final String content) throws Exception
     {
-        // check active?
-        if (!enabled)
-        {
-            return;
-        }
-
         final LocalErrorHandler localErrorHandler = new LocalErrorHandler();
         try
         {

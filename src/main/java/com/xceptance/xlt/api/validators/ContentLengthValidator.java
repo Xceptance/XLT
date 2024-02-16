@@ -38,7 +38,7 @@ public class ContentLengthValidator
     /**
      * Property name that controls the validator.
      */
-    private static final String PROPERTY_NAME = ContentLengthValidator.class.getName() + ".enabled";
+    static final String PROPERTY_NAME = ContentLengthValidator.class.getName() + ".enabled";
     
     /**
      * Validates the specified HTML page.
