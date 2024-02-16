@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,13 +28,6 @@ import java.util.List;
 import java.util.Locale;
 
 import org.apache.http.client.utils.DateUtils;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.htmlunit.HtmlUnitDriver;
-
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlPageTest;
@@ -44,6 +37,12 @@ import org.htmlunit.junit.BrowserRunner.BuggyWebDriver;
 import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 
 /**
  * Tests for {@link HTMLDocument}.
@@ -2458,12 +2457,37 @@ public class HTMLDocumentTest extends WebDriverTestCase {
         loadPageVerifyTitle2(html);
     }
 
+
     /**
      * Simple test that calls setCapture.
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "releaseCapture available",
+    @Alerts("undefined")
+    public void setCapture() throws Exception {
+        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+            + "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    try {\n"
+            + "      log(document.setCapture);\n"
+            + "    } catch(e) { log('exception'); }\n"
+            + "  }\n"
+            + "</script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "  <div id='myDiv'></div>\n"
+            + "</body></html>";
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * Simple test that calls releaseCapture.
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = {"undefined", "releaseCapture available"},
             CHROME = "exception",
             EDGE = "exception")
     public void releaseCapture() throws Exception {
@@ -2473,7 +2497,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    try {\n"
-            + "      document.releaseCapture();\n"
+            + "      log(document.releaseCapture());\n"
             + "      log('releaseCapture available');\n"
             + "    } catch(e) { log('exception'); }\n"
             + "  }\n"
@@ -2775,8 +2799,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = "false",
             EDGE = "false",
             FF = "false",
-            FF_ESR = "false",
-            IE = "false")
+            FF_ESR = "false")
     public void hasFocus() throws Exception {
         final String html = ""
             + "<html><head>\n"

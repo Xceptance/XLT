@@ -95,7 +95,6 @@ public class TimerDataTest extends AbstractDataTest
         assertEquals(1654632508330L, d.getEndTime());
 
         d.setTime(1654632508330L);
-        var e = 1654632508330L + 1000L;
         d.setRunTime(1000);
         assertEquals(1000, d.getRunTime());
         assertEquals(1654632508330L + 1000, d.getEndTime());

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.htmlunit.html.DomElement;
 import org.htmlunit.html.HtmlAnchor;
 import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.HtmlInput;
@@ -225,7 +226,7 @@ public final class WebAssert {
      */
     public static void assertLinkPresent(final HtmlPage page, final String id) {
         try {
-            page.getDocumentElement().getOneHtmlElementByAttribute("a", "id", id);
+            page.getDocumentElement().getOneHtmlElementByAttribute("a", DomElement.ID_ATTRIBUTE, id);
         }
         catch (final ElementNotFoundException e) {
             final String msg = "The page does not contain a link with ID '" + id + "'.";
@@ -241,7 +242,7 @@ public final class WebAssert {
      */
     public static void assertLinkNotPresent(final HtmlPage page, final String id) {
         try {
-            page.getDocumentElement().getOneHtmlElementByAttribute("a", "id", id);
+            page.getDocumentElement().getOneHtmlElementByAttribute("a", DomElement.ID_ATTRIBUTE, id);
             // Not expected.
             final String msg = "The page contains a link with ID '" + id + "'.";
             throw new AssertionError(msg);
@@ -416,7 +417,7 @@ public final class WebAssert {
         for (final String tag : tags) {
             for (final HtmlElement element : page.getDocumentElement().getElementsByTagName(tag)) {
                 final Short tabIndex = element.getTabIndex();
-                if (tabIndex == null || tabIndex == HtmlElement.TAB_INDEX_OUT_OF_BOUNDS) {
+                if (tabIndex == null || HtmlElement.TAB_INDEX_OUT_OF_BOUNDS.equals(tabIndex)) {
                     final String s = element.getAttributeDirect("tabindex");
                     throw new AssertionError("Illegal value for tab index: '" + s + "'.");
                 }

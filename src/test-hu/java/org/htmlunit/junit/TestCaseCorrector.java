@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,12 +29,11 @@ import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.text.StringEscapeUtils;
-import org.junit.ComparisonFailure;
-import org.junit.runners.model.FrameworkMethod;
-
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.CodeStyleTest;
 import org.htmlunit.general.HostExtractor;
+import org.junit.ComparisonFailure;
+import org.junit.runners.model.FrameworkMethod;
 
 /**
  * This is meant to automatically correct the test case to put either the real browser expectations,

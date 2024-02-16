@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
 
@@ -527,5 +526,18 @@ public class MockWebConnection implements WebConnection {
      */
     @Override
     public void close() {
+        clear();
+    }
+
+    /**
+     * Resets this.
+     */
+    public void clear() {
+        throwableMap_.clear();
+        responseMap_.clear();
+        defaultResponse_ = null;
+        lastRequest_ = null;
+        requestCount_ = 0;
+        requestedUrls_.clear();
     }
 }

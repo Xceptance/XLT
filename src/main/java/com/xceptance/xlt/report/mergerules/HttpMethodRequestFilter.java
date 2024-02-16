@@ -43,7 +43,7 @@ public class HttpMethodRequestFilter extends AbstractPatternRequestFilter
      */
     public HttpMethodRequestFilter(final String regex, final boolean exclude)
     {
-        super("m", regex, exclude, 20);
+        super("m", regex, exclude, 60);
     }
 
     /**

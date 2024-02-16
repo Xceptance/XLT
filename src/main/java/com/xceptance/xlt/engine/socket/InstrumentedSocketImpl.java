@@ -182,6 +182,15 @@ class InstrumentedSocketImpl extends SocketImpl
     }
 
     /**
+     * Initializes this class for instrumentation.
+     */
+    public static void initialize()
+    {
+        // Calling this method the first time implicitly triggers the static initializer block above to be executed
+        // once. Apart from that, there is nothing more to do here.
+    }
+
+    /**
      * The actual socket implementation.
      */
     private final SocketImpl socketImpl;

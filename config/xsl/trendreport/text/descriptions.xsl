@@ -18,7 +18,10 @@
 <xsl:template name="description-general">
     <div class="description">   
         <p>
-            A trend report shows the development of performance over time. Multiple measurements are taken into account and evaluated against each other. 
+            A trend report shows the development of performance over time. 
+        </p>
+        <p>
+            Multiple measurements are taken into account and evaluated against each other. 
             An XLT trend reports shows you, how your system performs over time, how your tuning effort pays out, and how your live environment acts under
             changing load situation, if used as monitoring.	Two trend report types are available: <em>Difference to Base Run</em> 
             and <em>Difference to Previous Run</em>. 
@@ -43,7 +46,7 @@
         <p>
         	Please keep in mind, that changes up to 10% can be measurement fluctuations.
         </p>
-    </div>
+        </div>
 </xsl:template>
 
 <!--- ## Description: Transaction Summary ## -->
@@ -52,13 +55,23 @@
 </xsl:template>
 
 <xsl:template name="description-transaction-summary">
-    <div class="description">   
+    <div class="description"> 
+    	<xsl:variable name="gid" select="concat('transaction', generate-id(.))"/>  
         <p>
-            A transaction is a completed test case. The test case consists of one or more actions. The run time of a transaction contains the runtime of all 
-            actions within the test case, thinktimes, and the processing time of the test code itself. If the test path of the test case is heavily randomized, 
-            the runtime of transactions might vary significantly. The average runtime shows the development of tests over time and especially 
-            helps to evaluate the outcome of long running tests.
+            A transaction is a completed test case. The test case consists of one or more actions.
+            <xsl:call-template name="show-n-hide">
+            	<xsl:with-param name="gid" select="$gid"/>
+            </xsl:call-template>
         </p>
+        <div id="more-{$gid}" class="more">
+	        <p>
+	         	The run time of a transaction contains the runtime of all actions within the test case, 
+	         	thinktimes, and the processing time of the test code itself. If the test path of the test 
+	         	case is heavily randomized, the runtime of transactions might vary significantly. The 
+	         	average runtime shows the development of tests over time and especially helps to evaluate 
+	         	the outcome of long running tests.
+        	</p>
+        </div>
     </div>
 </xsl:template>
 
@@ -68,14 +81,23 @@
 </xsl:template>
 
 <xsl:template name="description-action-summary">
-    <div class="description">   
+    <div class="description">  
+    	<xsl:variable name="gid" select="concat('action', generate-id(.))"/>
         <p>
             An action is part of a test case and consists of a prevalidation, an execution, and a postvalidation part.
+            <xsl:call-template name="show-n-hide">
+                <xsl:with-param name="gid" select="$gid"/>
+            </xsl:call-template> 
+        </p>
+        <div id="more-{$gid}" class="more">
+            <p> 
+            
             While the prevalidation ensures, that the necessary data is available for the execution of this test step, 
             the postvalidation evaluates the results and matches it against expectations. The data shown here is the 
             time spent in the execution routine of an action. Therefore its runtime includes the runtime of a request, 
             e.g. an http operation, and the necessary time to prepare, sent, wait, and receive the data.
-        </p>
+        	</p>
+        </div>
     </div>
 </xsl:template>
 
@@ -85,14 +107,22 @@
 </xsl:template>
 
 <xsl:template name="description-request-summary">
-    <div class="description">   
+    <div class="description"> 
+    	<xsl:variable name="gid" select="concat('request', generate-id(.))"/>  
         <p>
-            The request section is the most important statistics section when testing web applications. 
+            The request section is the most important statistical section when testing web applications.
+            <xsl:call-template name="show-n-hide">
+                <xsl:with-param name="gid" select="$gid"/>
+            </xsl:call-template> 
+        </p>
+        <div id="more-{$gid}" class="more">
+	        <p>  
             It directly reflects the loading  time of pages or page components.
             The runtime section of the table shows the median, the arithmetic mean, as well as the 
             minimum and maximum runtime encountered of all data within that series. Additionally the error count
             is visualized to permit a better evaluation of the test run's quality.
-        </p>
+        	</p>
+        </div>
     </div>
 </xsl:template>
 
@@ -142,6 +172,15 @@
 <!--- ## Description: Name for the table headline that indicates the first run of the relative data ## --> 
 <xsl:template name="table-headline-relative-base">
 	<xsl:text>First</xsl:text>
+</xsl:template>
+
+<!-- The show and hide part -->
+<xsl:template name="show-n-hide">
+    <xsl:param name="gid"/>
+    <span id="more-{$gid}-show" onclick="$('#more-{$gid}').show();$('#more-{$gid}-hide').show(); $(this).hide();"
+        class="link more-show">More...</span>
+    <span id="more-{$gid}-hide" onclick="$('#more-{$gid}').hide();$('#more-{$gid}-show').show(); $(this).hide();"
+        class="link more-hide">Hide...</span>
 </xsl:template>
 
 </xsl:stylesheet>

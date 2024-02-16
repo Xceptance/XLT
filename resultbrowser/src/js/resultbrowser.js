@@ -131,6 +131,9 @@
         postRequestParam = getElementById("postrequestparameters");
         requestBodySmall = getElementById("requestBodySmall");
 
+        requestBodyJsonViewer = getElementById("requestBodyJson");
+        responseBodyJsonViewer = getElementById("responseBodyJson");
+
         transactionContent = getElementById("transactionContent");
         valueLog = getElementById("valueLog");
 
@@ -250,23 +253,6 @@
 
         // transaction page
         transaction.addEventListener("click", showTransaction);
-
-        // JSON viewer
-        queryFirst("#jsonViewerActions .expandAll").addEventListener("click", function () { jsonView.expandAll(); });
-        queryFirst("#jsonViewerActions .collapseAll").addEventListener("click", function () { jsonView.collapseAll(); });
-        queryFirst("#jsonViewerActions .search").addEventListener("keyup", search);
-        queryFirst("#jsonViewerActions .ignoreCase").addEventListener("click", search);
-        queryFirst("#jsonViewerActions .filter").addEventListener("click", search);
-        queryFirst("#jsonViewerActions .previous").addEventListener("click", function () { jsonView.highlightNextMatch(false); });
-        queryFirst("#jsonViewerActions .next").addEventListener("click", function () { jsonView.highlightNextMatch(true); });
-    }
-
-    function search() {
-        const searchPhrase = queryFirst("#jsonViewerActions .search").value;
-        const ignoreCase = !!queryFirst("#jsonViewerActions .ignoreCase").checked;
-        const filter = !!queryFirst("#jsonViewerActions .filter").checked;
-
-        jsonView.search(searchPhrase, ignoreCase, filter);
     }
 
     function toggleContent(element) {
@@ -506,6 +492,11 @@
         }
     }
 
+    function isJsonContent(contentType) {
+        //  e.g. "application/json" or "application/<...>+json"
+        return /^application\/(.+\+)?json$/.test(contentType);
+    }
+
     function showRequest(element) {
         // get action parent element
         const action = filterElements(getParents(element), parent => parent.classList.contains("action"))[0];
@@ -518,9 +509,9 @@
 
             hide(getElementById("loadErrorContent"));
 
-            queryFirst("#jsonViewerActions .search").value = "";
-
-            setText(getElementById("jsonViewerContent"), "");
+            // clear JSON viewers
+            requestBodyJsonViewer.clear();
+            responseBodyJsonViewer.clear();
 
             // retrieve the request data
             const requestData = dataStore.fetchData(element);
@@ -570,9 +561,9 @@
                             requestText.classList.add(...(lang ? [`language-${lang}`, lang] : ['text']));
                             show(requestText);
 
-                            // feed the json viewer if the mime type indicates json-ish content (e.g. "application/json" or "application/<...>+json")
-                            if (/^application\/(.+\+)?json$/.test(requestData.mimeType)) {
-                                jsonView.format(data, '#jsonViewerContent');
+                            // feed the response body json viewer if the mime type indicates json-ish content
+                            if (isJsonContent(requestData.mimeType)) {
+                                responseBodyJsonViewer.load(data);
                             }
                         }).catch(() => {
                             hide(requestText);
@@ -628,6 +619,13 @@
 
             // update the request content tab
             setText(getElementById("requestbody"), requestData.requestBodyRaw || '');
+
+            // feed the request body json viewer if the content type indicates json-ish content
+            const requestContentTypeHeader = requestData.requestHeaders.find(e => e.name_.toLowerCase() === "content-type");
+            const requestContentType = requestContentTypeHeader ? requestContentTypeHeader.value_ : "";
+            if (isJsonContent(requestContentType)) {
+                requestBodyJsonViewer.load(requestData.requestBodyRaw);
+            }
 
             // update the response information tab
             setText(getElementById("protocol"), requestData.protocol);

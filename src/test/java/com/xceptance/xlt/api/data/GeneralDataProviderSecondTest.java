@@ -19,6 +19,7 @@ import static org.easymock.EasyMock.expect;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.NoSuchFileException;
 import java.util.UUID;
 
 import org.junit.Assert;
@@ -61,7 +62,7 @@ public class GeneralDataProviderSecondTest
         Assert.assertEquals("user0000ffff-ffff-ff".substring(0, 20), user);
     }
 
-    @Test(expected = FileNotFoundException.class)
+    @Test(expected = NoSuchFileException.class)
     public void testGetDataProvider() throws Exception
     {
         PowerMock.mockStatic(DataProvider.class);

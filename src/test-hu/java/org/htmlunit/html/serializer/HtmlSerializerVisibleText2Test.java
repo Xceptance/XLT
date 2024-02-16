@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,6 @@ package org.htmlunit.html.serializer;
 
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.htmlunit.HtmlUnitDriver;
-
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.html.HtmlPage;
@@ -32,6 +25,12 @@ import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.BuggyWebDriver;
 import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import org.htmlunit.xml.XmlPage;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 
 /**
  * Tests for {@link HtmlSerializerVisibleText}.
@@ -48,14 +47,15 @@ public class HtmlSerializerVisibleText2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "baz",
-            CHROME = "",
+    @Alerts(CHROME = "",
             EDGE = "",
             FF = "\n    baz\n  ",
+            FF_ESR = "\n    baz\n  ",
             IE = "<foo>\n<bar>baz</bar>\n</foo>")
     @HtmlUnitNYI(CHROME = "baz",
             EDGE = "baz",
             FF = "baz",
+            FF_ESR = "baz",
             IE = "baz")
     public void xmlPage() throws Exception {
         final String xml = "<xml>\n"
@@ -1747,7 +1747,6 @@ public class HtmlSerializerVisibleText2Test extends WebDriverTestCase {
      */
     @Test
     @Alerts("Sum")
-    @BuggyWebDriver(FF_ESR = "Sum\ndetail")
     @HtmlUnitNYI(IE = "Sum\ndetail")
     public void getVisibleTextDetails() throws Exception {
         getVisibleTextFormated("<details id='tester'>"
@@ -1762,7 +1761,6 @@ public class HtmlSerializerVisibleText2Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "Sum\nSum2",
             IE = "SumSum2")
-    @BuggyWebDriver(FF_ESR = "Sum\nSum2\ndetail")
     @HtmlUnitNYI(IE = "SumSum2\ndetail")
     public void getVisibleTextDetailsTwoSums() throws Exception {
         getVisibleTextFormated("<details id='tester'>"

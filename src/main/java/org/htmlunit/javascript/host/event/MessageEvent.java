@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,19 +21,17 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import org.htmlunit.HttpHeader;
+import org.htmlunit.corejs.javascript.NativeArray;
+import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.ScriptableObject;
+import org.htmlunit.corejs.javascript.Undefined;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.host.Window;
 import org.htmlunit.javascript.host.WindowProxy;
-
-import org.htmlunit.corejs.javascript.Context;
-import org.htmlunit.corejs.javascript.NativeArray;
-import org.htmlunit.corejs.javascript.ScriptRuntime;
-import org.htmlunit.corejs.javascript.Scriptable;
-import org.htmlunit.corejs.javascript.ScriptableObject;
-import org.htmlunit.corejs.javascript.Undefined;
 
 /**
  * A JavaScript object for {@code MessageEvent}.
@@ -93,7 +91,7 @@ public class MessageEvent extends Event {
 
         String origin = "";
         String lastEventId = "";
-        if (details != null && !Undefined.isUndefined(details)) {
+        if (details != null && !JavaScriptEngine.isUndefined(details)) {
             data_ = details.get("data");
 
             final String detailOrigin = (String) details.get(HttpHeader.ORIGIN_LC);
@@ -103,7 +101,7 @@ public class MessageEvent extends Event {
 
             final Object detailLastEventId = details.get("lastEventId");
             if (detailLastEventId != null) {
-                lastEventId = Context.toString(detailLastEventId);
+                lastEventId = JavaScriptEngine.toString(detailLastEventId);
             }
 
             source_ = null;
@@ -147,13 +145,13 @@ public class MessageEvent extends Event {
         lastEventId_ = lastEventId;
         source_ = source;
 
-        if (Undefined.isUndefined(ports)
+        if (JavaScriptEngine.isUndefined(ports)
             || ports instanceof NativeArray
             || (ports instanceof Scriptable && ScriptableObject.hasProperty((Scriptable) ports, "length"))) {
             ports_ = ports;
         }
         else {
-            throw ScriptRuntime.typeError(
+            throw JavaScriptEngine.typeError(
                     "Argument 8 of MessageEvent.initMessageEvent can't be converted to a sequence.");
         }
     }

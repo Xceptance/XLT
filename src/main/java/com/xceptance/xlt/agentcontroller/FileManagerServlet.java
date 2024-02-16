@@ -31,9 +31,13 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.xceptance.xlt.agentcontroller.PartialGetUtils.RangeHeaderData;
+import com.xceptance.xlt.engine.httprequest.HttpRequestHeaders;
+import com.xceptance.xlt.engine.httprequest.HttpResponseHeaders;
+
 /**
  * The FileManagerServlet handles all file requests made from the master controller.
- * 
+ *
  * @author Jörg Werner (Xceptance Software Technologies GmbH)
  */
 public class FileManagerServlet extends HttpServlet
@@ -65,7 +69,7 @@ public class FileManagerServlet extends HttpServlet
 
     /**
      * Creates a new FileManagerServlet object.
-     * 
+     *
      * @param rootDirectory
      *            the local directory that is the web root
      */
@@ -76,7 +80,7 @@ public class FileManagerServlet extends HttpServlet
 
     /**
      * Handles all download requests.
-     * 
+     *
      * @param req
      *            the servlet request
      * @param resp
@@ -92,21 +96,94 @@ public class FileManagerServlet extends HttpServlet
         {
             log.debug("File being downloaded: " + fileName);
 
+            // paranoia check
             if (fileName == null)
             {
                 resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                return;
+            }
+
+            final File file = new File(rootDirectory, fileName);
+
+            // check if the file does not exist
+            if (!file.isFile())
+            {
+                // handle file does not exist
+                resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                return;
+            }
+
+            // check if the file is empty
+            final long fileLength = file.length();
+            if (fileLength == 0)
+            {
+                // handle empty file
+                resp.setStatus(HttpServletResponse.SC_OK);
+                resp.setContentLengthLong(0);
+                return;
+            }
+
+            // open the file for reading
+            in = new FileInputStream(file);
+
+            // check for a partial GET request
+            final String rangeHeaderValue = req.getHeader(HttpRequestHeaders.RANGE);
+            if (rangeHeaderValue == null)
+            {
+                /*
+                 * No partial request -> serve the full file content in one go.
+                 */
+
+                log.debug("Serving full content from file '{}' ...", file);
+
+                resp.setStatus(HttpServletResponse.SC_OK);
+                resp.setContentLengthLong(fileLength);
+
+                final OutputStream out = resp.getOutputStream();
+
+                IOUtils.copyLarge(in, out);
             }
             else
             {
-                final File file = new File(rootDirectory, fileName);
-                in = new FileInputStream(file);
+                /*
+                 * Partial request -> serve only the requested part of the file.
+                 */
 
-                resp.setStatus(HttpServletResponse.SC_OK);
-                resp.setContentLengthLong(file.length());
-                
+                // validate the Range request header
+                final RangeHeaderData rangeHeaderData = PartialGetUtils.parseRangeHeader(rangeHeaderValue);
+                if (rangeHeaderData == null)
+                {
+                    resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    return;
+                }
+
+                // extract and validate the start/end position passed in the Range header
+                final long startPos = rangeHeaderData.startPos;
+                final long endPos = rangeHeaderData.endPos;
+
+                if (startPos > endPos || startPos > fileLength - 1)
+                {
+                    resp.setStatus(HttpServletResponse.SC_REQUESTED_RANGE_NOT_SATISFIABLE);
+                    return;
+                }
+
+                // determine how many bytes can be served at all
+                final long finalEndPos = Math.min(endPos, fileLength - 1);
+                final long bytes = finalEndPos - startPos + 1;
+
+                // prepare the Content-Range response header
+                final String contentRangeHeaderValue = PartialGetUtils.formatContentRangeHeader(startPos, finalEndPos, fileLength);
+
+                // serve the requested byte range
+                log.debug("Serving chunk {}-{} from file '{}' ...", startPos, endPos, file);
+
+                resp.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT);
+                resp.setContentLengthLong(bytes);
+                resp.setHeader(HttpResponseHeaders.CONTENT_RANGE, contentRangeHeaderValue);
+
                 final OutputStream out = resp.getOutputStream();
 
-                IOUtils.copy(in, out);
+                IOUtils.copyLarge(in, out, startPos, bytes);
             }
         }
         catch (final Exception ex)
@@ -122,7 +199,7 @@ public class FileManagerServlet extends HttpServlet
 
     /**
      * Handles all upload requests.
-     * 
+     *
      * @param req
      *            the servlet request
      * @param resp
@@ -167,7 +244,7 @@ public class FileManagerServlet extends HttpServlet
 
     /**
      * Returns the file name from the URL parameters.
-     * 
+     *
      * @param req
      *            the servlet request
      * @return the file name, or null if not found

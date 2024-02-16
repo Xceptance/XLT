@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,36 +21,32 @@ import java.util.List;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.w3c.dom.DOMException;
-import org.w3c.dom.DocumentFragment;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.ranges.Range;
-import org.w3c.dom.ranges.RangeException;
-
 import org.htmlunit.SgmlPage;
 import org.htmlunit.html.DomDocumentFragment;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.html.DomNodeList;
 import org.htmlunit.html.DomText;
-
-import org.htmlunit.corejs.javascript.Context;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.DocumentFragment;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
- * Simple implementation of {@link Range}.
+ * Simple implementation of an Range.
  *
  * @author Marc Guillemot
  * @author Daniel Gredler
  * @author James Phillpotts
  * @author Ahmed Ashour
+ * @author Ronald Brill
  */
-public class SimpleRange implements Range, Serializable {
+public class SimpleRange implements Serializable {
 
     /** The start (anchor) container. */
-    private Node startContainer_;
+    private DomNode startContainer_;
 
     /** The end (focus) container. */
-    private Node endContainer_;
+    private DomNode endContainer_;
 
     /**
      * The start (anchor) offset; units are chars if the start container is a text node or an
@@ -75,7 +71,7 @@ public class SimpleRange implements Range, Serializable {
      * Constructs a range for the specified element.
      * @param node the node for the range
      */
-    public SimpleRange(final Node node) {
+    public SimpleRange(final DomNode node) {
         startContainer_ = node;
         endContainer_ = node;
         startOffset_ = 0;
@@ -87,7 +83,7 @@ public class SimpleRange implements Range, Serializable {
      * @param node the node for the range
      * @param offset the start and end offset
      */
-    public SimpleRange(final Node node, final int offset) {
+    public SimpleRange(final DomNode node, final int offset) {
         startContainer_ = node;
         endContainer_ = node;
         startOffset_ = offset;
@@ -101,7 +97,7 @@ public class SimpleRange implements Range, Serializable {
      * @param endNode the end node
      * @param endOffset the end offset
      */
-    public SimpleRange(final Node startNode, final int startOffset, final Node endNode, final int endOffset) {
+    public SimpleRange(final DomNode startNode, final int startOffset, final DomNode endNode, final int endOffset) {
         startContainer_ = startNode;
         endContainer_ = endNode;
         startOffset_ = startOffset;
@@ -112,12 +108,12 @@ public class SimpleRange implements Range, Serializable {
     }
 
     /**
-     * {@inheritDoc}
+     * Duplicates the contents of this.
+     * @return DocumentFragment that contains content equivalent to this
      */
-    @Override
-    public DomDocumentFragment cloneContents() throws DOMException {
+    public DomDocumentFragment cloneContents() {
         // Clone the common ancestor.
-        final DomNode ancestor = (DomNode) getCommonAncestorContainer();
+        final DomNode ancestor = getCommonAncestorContainer();
 
         if (ancestor == null) {
             return new DomDocumentFragment(null);
@@ -127,8 +123,8 @@ public class SimpleRange implements Range, Serializable {
         // Find the start container and end container clones.
         DomNode startClone = null;
         DomNode endClone = null;
-        final DomNode start = (DomNode) startContainer_;
-        final DomNode end = (DomNode) endContainer_;
+        final DomNode start = startContainer_;
+        final DomNode end = endContainer_;
         if (start == ancestor) {
             startClone = ancestorClone;
         }
@@ -156,7 +152,7 @@ public class SimpleRange implements Range, Serializable {
 
         // Remove everything following the selection end from the clones.
         if (endClone == null) {
-            throw Context.reportRuntimeError("Unable to find end node clone.");
+            throw new IllegalStateException("Unable to find end node clone.");
         }
         deleteAfter(endClone, endOffset_);
         for (DomNode n = endClone; n != null; n = n.getParentNode()) {
@@ -167,7 +163,7 @@ public class SimpleRange implements Range, Serializable {
 
         // Remove everything prior to the selection start from the clones.
         if (startClone == null) {
-            throw Context.reportRuntimeError("Unable to find start node clone.");
+            throw new IllegalStateException("Unable to find start node clone.");
         }
         deleteBefore(startClone, startOffset_);
         for (DomNode n = startClone; n != null; n = n.getParentNode()) {
@@ -190,18 +186,19 @@ public class SimpleRange implements Range, Serializable {
     }
 
     /**
-     * {@inheritDoc}
+     * Produces a new SimpleRange whose boundary-points are equal to the
+     * boundary-points of this.
+     * @return duplicated simple
      */
-    @Override
-    public Range cloneRange() throws DOMException {
+    public SimpleRange cloneRange() {
         return new SimpleRange(startContainer_, startOffset_, endContainer_, endOffset_);
     }
 
     /**
-     * {@inheritDoc}
+     * Collapse this range onto one of its boundary-points.
+     * @param toStart if true, collapses the Range onto its start; else collapses it onto its end.
      */
-    @Override
-    public void collapse(final boolean toStart) throws DOMException {
+    public void collapse(final boolean toStart) {
         if (toStart) {
             endContainer_ = startContainer_;
             endOffset_ = startOffset_;
@@ -213,19 +210,12 @@ public class SimpleRange implements Range, Serializable {
     }
 
     /**
-     * {@inheritDoc}
+     * Removes the contents of this range from the containing document or
+     * document fragment without returning a reference to the removed
+     * content.
      */
-    @Override
-    public short compareBoundaryPoints(final short how, final Range sourceRange) throws DOMException {
-        throw new RuntimeException("Not implemented!");
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void deleteContents() throws DOMException {
-        final DomNode ancestor = (DomNode) getCommonAncestorContainer();
+    public void deleteContents() {
+        final DomNode ancestor = getCommonAncestorContainer();
         if (ancestor != null) {
             deleteContents(ancestor);
         }
@@ -235,7 +225,7 @@ public class SimpleRange implements Range, Serializable {
         final DomNode start;
         final DomNode end;
         if (isOffsetChars(startContainer_)) {
-            start = (DomNode) startContainer_;
+            start = startContainer_;
             String text = getText(start);
             if (startOffset_ > -1 && startOffset_ < text.length()) {
                 text = text.substring(0, startOffset_);
@@ -246,10 +236,10 @@ public class SimpleRange implements Range, Serializable {
             start = (DomNode) startContainer_.getChildNodes().item(startOffset_);
         }
         else {
-            start = (DomNode) startContainer_.getNextSibling();
+            start = startContainer_.getNextSibling();
         }
         if (isOffsetChars(endContainer_)) {
-            end = (DomNode) endContainer_;
+            end = endContainer_;
             String text = getText(end);
             if (endOffset_ > -1 && endOffset_ < text.length()) {
                 text = text.substring(endOffset_);
@@ -260,7 +250,7 @@ public class SimpleRange implements Range, Serializable {
             end = (DomNode) endContainer_.getChildNodes().item(endOffset_);
         }
         else {
-            end = (DomNode) endContainer_.getNextSibling();
+            end = endContainer_.getNextSibling();
         }
         boolean foundStart = false;
         boolean started = false;
@@ -283,17 +273,10 @@ public class SimpleRange implements Range, Serializable {
     }
 
     /**
-     * {@inheritDoc}
+     * Moves the contents of a Range from the containing document or document
+     * fragment to a new DocumentFragment.
+     * @return DocumentFragment containing the extracted contents
      */
-    @Override
-    public void detach() throws DOMException {
-        throw new RuntimeException("Not implemented!");
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public DomDocumentFragment extractContents() throws DOMException {
         final DomDocumentFragment fragment = cloneContents();
 
@@ -305,21 +288,21 @@ public class SimpleRange implements Range, Serializable {
     }
 
     /**
-     * {@inheritDoc}
+     * @return true if startContainer equals endContainer and
+     * startOffset equals endOffset
      */
-    @Override
-    public boolean getCollapsed() throws DOMException {
+    public boolean isCollapsed() throws DOMException {
         return startContainer_ == endContainer_ && startOffset_ == endOffset_;
     }
 
     /**
-     * {@inheritDoc}
+     * @return the deepest common ancestor container of this range's two
+     * boundary-points.
      */
-    @Override
-    public Node getCommonAncestorContainer() throws DOMException {
+    public DomNode getCommonAncestorContainer() throws DOMException {
         if (startContainer_ != null && endContainer_ != null) {
-            for (Node p1 = startContainer_; p1 != null; p1 = p1.getParentNode()) {
-                for (Node p2 = endContainer_; p2 != null; p2 = p2.getParentNode()) {
+            for (DomNode p1 = startContainer_; p1 != null; p1 = p1.getParentNode()) {
+                for (DomNode p2 = endContainer_; p2 != null; p2 = p2.getParentNode()) {
                     if (p1 == p2) {
                         return p1;
                     }
@@ -330,44 +313,47 @@ public class SimpleRange implements Range, Serializable {
     }
 
     /**
-     * {@inheritDoc}
+     * @return the Node within which this range ends
      */
-    @Override
-    public Node getEndContainer() throws DOMException {
+    public DomNode getEndContainer() {
         return endContainer_;
     }
 
     /**
-     * {@inheritDoc}
+     * @return offset within the ending node of this
      */
-    @Override
-    public int getEndOffset() throws DOMException {
+    public int getEndOffset() {
         return endOffset_;
     }
 
     /**
-     * {@inheritDoc}
+     * @return the Node within which this range begins
      */
-    @Override
-    public Node getStartContainer() throws DOMException {
+    public DomNode getStartContainer() {
         return startContainer_;
     }
 
     /**
-     * {@inheritDoc}
+     * @return offset within the starting node of this
      */
-    @Override
-    public int getStartOffset() throws DOMException {
+    public int getStartOffset() {
         return startOffset_;
     }
 
     /**
-     * {@inheritDoc}
+     * Inserts a node into the Document or DocumentFragment at the start of
+     * the Range. If the container is a Text node, this will be split at the
+     * start of the Range (as if the Text node's splitText method was
+     * performed at the insertion point) and the insertion will occur
+     * between the two resulting Text nodes. Adjacent Text nodes will not be
+     * automatically merged. If the node to be inserted is a
+     * DocumentFragment node, the children will be inserted rather than the
+     * DocumentFragment node itself.
+     * @param newNode The node to insert at the start of the Range
      */
-    @Override
-    public void insertNode(final Node newNode) throws DOMException, RangeException {
+    public void insertNode(final DomNode newNode) {
         if (isOffsetChars(startContainer_)) {
-            final Node split = startContainer_.cloneNode(false);
+            final DomNode split = startContainer_.cloneNode(false);
             String text = getText(startContainer_);
             if (startOffset_ > -1 && startOffset_ < text.length()) {
                 text = text.substring(0, startOffset_);
@@ -382,13 +368,14 @@ public class SimpleRange implements Range, Serializable {
             insertNodeOrDocFragment(startContainer_.getParentNode(), newNode, split);
         }
         else {
-            insertNodeOrDocFragment(startContainer_, newNode, startContainer_.getChildNodes().item(startOffset_));
+            insertNodeOrDocFragment(startContainer_, newNode,
+                    (DomNode) startContainer_.getChildNodes().item(startOffset_));
         }
 
         setStart(newNode, 0);
     }
 
-    private static void insertNodeOrDocFragment(final Node parent, final Node newNode, final Node refNode) {
+    private static void insertNodeOrDocFragment(final DomNode parent, final DomNode newNode, final DomNode refNode) {
         if (newNode instanceof DocumentFragment) {
             final DocumentFragment fragment = (DocumentFragment) newNode;
 
@@ -404,10 +391,10 @@ public class SimpleRange implements Range, Serializable {
     }
 
     /**
-     * {@inheritDoc}
+     * Select a node and its contents.
+     * @param node The node to select.
      */
-    @Override
-    public void selectNode(final Node node) throws RangeException, DOMException {
+    public void selectNode(final DomNode node) {
         startContainer_ = node;
         startOffset_ = 0;
         endContainer_ = node;
@@ -415,10 +402,10 @@ public class SimpleRange implements Range, Serializable {
     }
 
     /**
-     * {@inheritDoc}
+     * Select the contents within a node.
+     * @param node Node to select from
      */
-    @Override
-    public void selectNodeContents(final Node node) throws RangeException, DOMException {
+    public void selectNodeContents(final DomNode node) {
         startContainer_ = node.getFirstChild();
         startOffset_ = 0;
         endContainer_ = node.getLastChild();
@@ -426,60 +413,31 @@ public class SimpleRange implements Range, Serializable {
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the attributes describing the end.
+     * @param refNode the refNode
+     * @param offset offset
      */
-    @Override
-    public void setEnd(final Node refNode, final int offset) throws RangeException, DOMException {
+    public void setEnd(final DomNode refNode, final int offset) {
         endContainer_ = refNode;
         endOffset_ = offset;
     }
 
     /**
-     * {@inheritDoc}
+     * Sets the attributes describing the start.
+     * @param refNode the refNode
+     * @param offset offset
      */
-    @Override
-    public void setEndAfter(final Node refNode) throws RangeException, DOMException {
-        throw new RuntimeException("Not implemented!");
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void setEndBefore(final Node refNode) throws RangeException, DOMException {
-        throw new RuntimeException("Not implemented!");
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void setStart(final Node refNode, final int offset) throws RangeException, DOMException {
+    public void setStart(final DomNode refNode, final int offset) {
         startContainer_ = refNode;
         startOffset_ = offset;
     }
 
     /**
-     * {@inheritDoc}
+     * Reparents the contents of the Range to the given node and inserts the
+     * node at the position of the start of the Range.
+     * @param newParent The node to surround the contents with.
      */
-    @Override
-    public void setStartAfter(final Node refNode) throws RangeException, DOMException {
-        throw new RuntimeException("Not implemented!");
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void setStartBefore(final Node refNode) throws RangeException, DOMException {
-        throw new RuntimeException("Not implemented!");
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void surroundContents(final Node newParent) throws DOMException, RangeException {
+    public void surroundContents(final DomNode newParent) {
         newParent.appendChild(extractContents());
         insertNode(newParent);
         setStart(newParent, 0);
@@ -526,18 +484,18 @@ public class SimpleRange implements Range, Serializable {
         return "";
     }
 
-    private static boolean isOffsetChars(final Node node) {
+    private static boolean isOffsetChars(final DomNode node) {
         return node instanceof DomText || node instanceof SelectableTextInput;
     }
 
-    private static String getText(final Node node) {
+    private static String getText(final DomNode node) {
         if (node instanceof SelectableTextInput) {
             return ((SelectableTextInput) node).getText();
         }
         return node.getTextContent();
     }
 
-    private static void setText(final Node node, final String text) {
+    private static void setText(final DomNode node, final String text) {
         if (node instanceof SelectableTextInput) {
             ((SelectableTextInput) node).setText(text);
         }
@@ -586,7 +544,7 @@ public class SimpleRange implements Range, Serializable {
         }
     }
 
-    private static int getMaxOffset(final Node node) {
+    private static int getMaxOffset(final DomNode node) {
         return isOffsetChars(node) ? getText(node).length() : node.getChildNodes().getLength();
     }
 
@@ -595,7 +553,7 @@ public class SimpleRange implements Range, Serializable {
      */
     public List<DomNode> containedNodes() {
         final List<DomNode> nodes = new ArrayList<>();
-        final DomNode ancestor = (DomNode) getCommonAncestorContainer();
+        final DomNode ancestor = getCommonAncestorContainer();
         if (ancestor == null) {
             return nodes;
         }
@@ -603,7 +561,7 @@ public class SimpleRange implements Range, Serializable {
         final DomNode start;
         final DomNode end;
         if (isOffsetChars(startContainer_)) {
-            start = (DomNode) startContainer_;
+            start = startContainer_;
             String text = getText(start);
             if (startOffset_ > -1 && startOffset_ < text.length()) {
                 text = text.substring(0, startOffset_);
@@ -614,10 +572,10 @@ public class SimpleRange implements Range, Serializable {
             start = (DomNode) startContainer_.getChildNodes().item(startOffset_);
         }
         else {
-            start = (DomNode) startContainer_.getNextSibling();
+            start = startContainer_.getNextSibling();
         }
         if (isOffsetChars(endContainer_)) {
-            end = (DomNode) endContainer_;
+            end = endContainer_;
             String text = getText(end);
             if (endOffset_ > -1 && endOffset_ < text.length()) {
                 text = text.substring(endOffset_);
@@ -628,7 +586,7 @@ public class SimpleRange implements Range, Serializable {
             end = (DomNode) endContainer_.getChildNodes().item(endOffset_);
         }
         else {
-            end = (DomNode) endContainer_.getNextSibling();
+            end = endContainer_.getNextSibling();
         }
 
         boolean foundStart = false;

@@ -19,6 +19,12 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * @deprecated To be removed in XLT 8.0.0.
+ * @see AgentControllerStatus
+ * @see AgentStatusInfo
+ * @see ScenarioStatus
+ */
 public class AgentStatus implements Serializable
 {
     private static final long serialVersionUID = 1L;

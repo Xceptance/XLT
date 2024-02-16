@@ -10,8 +10,6 @@
             <div class="content">
                 <xsl:call-template name="description-configuration"/>
 
-                <h3>Load Test Configuration</h3>
-
                 <div class="data">
                     <table class="properties">
                         <thead>
@@ -41,8 +39,13 @@
                         </tbody>
                     </table>
                 </div>
+            </div>
+        </div>
+        <div class="section" id="jvm-configuration">
+            <xsl:call-template name="headline-jvm-configuration"/>
 
-                <h3>Custom Agent JVM Settings (jvmargs.cfg)</h3>
+            <div class="content">
+                <xsl:call-template name="description-jvm-configuration"/>
 
                 <div class="data">
                     <table class="">

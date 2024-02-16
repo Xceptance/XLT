@@ -28,8 +28,6 @@ import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.junit.runners.model.MultipleFailureException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.xceptance.common.io.FileUtils;
 import com.xceptance.common.lang.ParseNumbers;
@@ -68,11 +66,6 @@ public class SessionImpl extends Session
      * The default transaction timeout [ms], currently 15 minutes.
      */
     private static final int DEFAULT_TRANSACTION_TIMEOUT = 15 * 60 * 1000;
-
-    /**
-     * The log facility.
-     */
-    private static final Logger LOG = LoggerFactory.getLogger(SessionImpl.class);
 
     /**
      * The result dir property key

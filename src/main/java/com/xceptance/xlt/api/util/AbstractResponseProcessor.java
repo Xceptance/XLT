@@ -81,7 +81,7 @@ public abstract class AbstractResponseProcessor implements ResponseProcessor
          * {@inheritDoc}
          */
         @Override
-        public InputStream getInputStreamWithBomIfApplicable(ByteOrderMark[] bomHeaders) throws IOException
+        public InputStream getInputStreamWithBomIfApplicable(final ByteOrderMark... bomHeaders) throws IOException
         {
             return getInputStream();
         }

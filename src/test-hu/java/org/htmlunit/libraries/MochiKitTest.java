@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@ package org.htmlunit.libraries;
 import java.time.Duration;
 
 import org.apache.commons.lang3.StringUtils;
+import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.junit.BrowserRunner;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,23 +26,17 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
-import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
-
 /**
  * Tests for compatibility with <a href="http://mochikit.com">MochiKit</a>.
- * <p>
- * Note: the tests test_MochiKit-DOM-Safari.html, test_MochiKit-DragAndDrop.html and test_MochiKit-JSAN.html
- * are not run as they don't even pass in a "real" Firefox 3.
- * </p>
+ *
  * @author Marc Guillemot
  * @author Frank Danek
- * @author Ronald Brill
+ * @author Ronald Brill#
  */
 @RunWith(BrowserRunner.class)
-public class MochiKitTest extends WebDriverTestCase {
+public abstract class MochiKitTest extends WebDriverTestCase {
 
-    private static final String BASE_FILE_PATH = "libraries/MochiKit/1.4.1";
+    public abstract String srcFolder();
 
     /**
      * @throws Exception if the test fails
@@ -78,9 +74,26 @@ public class MochiKitTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    public void DOM() throws Exception {
+    public void dom() throws Exception {
         doTest("DOM");
     }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void domSafari() throws Exception {
+        doTest("DOM-Safari");
+    }
+
+    // /**
+    //  * @throws Exception if the test fails
+    //  */
+    // have to investigate why this fails in HtmlUnit
+    // @Test
+    // public void dragAndDrop() throws Exception {
+    //     doTest("DragAndDrop");
+    // }
 
     /**
      * @throws Exception if the test fails
@@ -171,7 +184,7 @@ public class MochiKitTest extends WebDriverTestCase {
     }
 
     private String loadExpectation(final String testName) throws Exception {
-        final String resourcePrefix = "/" + BASE_FILE_PATH + "/test-" + testName;
+        final String resourcePrefix = "/libraries/MochiKit/" + srcFolder() + "/test-" + testName;
         return loadExpectation(resourcePrefix, ".expected.txt");
     }
 
@@ -181,6 +194,6 @@ public class MochiKitTest extends WebDriverTestCase {
      */
     @Before
     public void setUp() throws Exception {
-        startWebServer("src/test/resources/libraries/MochiKit/1.4.1", null, null);
+        startWebServer("src/test/resources/libraries/MochiKit/" + srcFolder(), null, null);
     }
 }

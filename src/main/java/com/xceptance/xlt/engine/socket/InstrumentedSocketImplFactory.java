@@ -25,6 +25,15 @@ import java.net.SocketImplFactory;
 class InstrumentedSocketImplFactory implements SocketImplFactory
 {
     /**
+     * Constructor.
+     */
+    public InstrumentedSocketImplFactory()
+    {
+        // try to initialize and throw if initialization fails
+        InstrumentedSocketImpl.initialize();
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override

@@ -22,6 +22,7 @@ import java.net.URL;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.htmlunit.WebRequest;
 import org.htmlunit.WebResponse;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,8 +31,10 @@ import org.mockito.Mockito;
 import com.xceptance.common.net.HttpHeaderConstants;
 import com.xceptance.xlt.AbstractXLTTestCase;
 import com.xceptance.xlt.api.htmlunit.LightWeightPage;
+import com.xceptance.xlt.api.util.XltProperties;
 import com.xceptance.xlt.api.util.XltRandom;
 import com.xceptance.xlt.engine.LightWeightPageImpl;
+import com.xceptance.xlt.engine.XltEngine;
 import com.xceptance.xlt.engine.XltWebClient;
 
 /**
@@ -44,7 +47,7 @@ public class ContentLengthValidatorTest extends AbstractXLTTestCase
     /**
      * ContentLengthValidator test instance.
      */
-    protected final ContentLengthValidator instance = ContentLengthValidator.getInstance();
+    protected ContentLengthValidator instance;
 
     /**
      * Mocked lightweight page.
@@ -60,10 +63,24 @@ public class ContentLengthValidatorTest extends AbstractXLTTestCase
     @Before
     public void intro() throws Exception
     {
+        // enable validator
+        XltProperties.getInstance().setProperty(ContentLengthValidator.PROPERTY_NAME, "true");
+
+        instance = ContentLengthValidator.getInstance();
+        
         final WebResponse r = mock(WebResponse.class);
         Mockito.when(r.getWebRequest()).thenReturn(new WebRequest(new URL("http://localhost")));
         Mockito.doReturn("").when(r).getContentAsString();
         page = new LightWeightPageImpl(r, "Test", mock(XltWebClient.class));
+    }
+
+    /**
+     * Test clean-up.
+     */
+    @After
+    public void cleanUp()
+    {
+        XltEngine.reset();
     }
 
     /**

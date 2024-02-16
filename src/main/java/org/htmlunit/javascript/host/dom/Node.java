@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,14 +24,27 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.Supplier;
 
 import org.htmlunit.SgmlPage;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.Function;
+import org.htmlunit.corejs.javascript.Interpreter;
+import org.htmlunit.corejs.javascript.JavaScriptException;
+import org.htmlunit.corejs.javascript.RhinoException;
+import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.Undefined;
 import org.htmlunit.html.DomDocumentFragment;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.DomNode;
+import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.HtmlInlineFrame;
+import org.htmlunit.javascript.HtmlUnitScriptable;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstant;
 import org.htmlunit.javascript.configuration.JsxConstructor;
@@ -39,20 +52,12 @@ import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.configuration.JsxSetter;
 import org.htmlunit.javascript.host.Element;
+import org.htmlunit.javascript.host.NamedNodeMap;
 import org.htmlunit.javascript.host.Window;
 import org.htmlunit.javascript.host.event.EventTarget;
 import org.htmlunit.javascript.host.html.HTMLCollection;
 import org.htmlunit.javascript.host.html.HTMLDocument;
 import org.htmlunit.javascript.host.html.HTMLHtmlElement;
-
-import org.htmlunit.corejs.javascript.Context;
-import org.htmlunit.corejs.javascript.Function;
-import org.htmlunit.corejs.javascript.Interpreter;
-import org.htmlunit.corejs.javascript.JavaScriptException;
-import org.htmlunit.corejs.javascript.RhinoException;
-import org.htmlunit.corejs.javascript.ScriptRuntime;
-import org.htmlunit.corejs.javascript.Scriptable;
-import org.htmlunit.corejs.javascript.Undefined;
 
 /**
  * The JavaScript object {@code Node} which is the base class for all DOM
@@ -74,75 +79,75 @@ public class Node extends EventTarget {
 
     /** @see org.w3c.dom.Node#ELEMENT_NODE */
     @JsxConstant
-    public static final short ELEMENT_NODE = org.w3c.dom.Node.ELEMENT_NODE;
+    public static final int ELEMENT_NODE = org.w3c.dom.Node.ELEMENT_NODE;
 
     /** @see org.w3c.dom.Node#ATTRIBUTE_NODE */
     @JsxConstant
-    public static final short ATTRIBUTE_NODE = org.w3c.dom.Node.ATTRIBUTE_NODE;
+    public static final int ATTRIBUTE_NODE = org.w3c.dom.Node.ATTRIBUTE_NODE;
 
     /** @see org.w3c.dom.Node#TEXT_NODE */
     @JsxConstant
-    public static final short TEXT_NODE = org.w3c.dom.Node.TEXT_NODE;
+    public static final int TEXT_NODE = org.w3c.dom.Node.TEXT_NODE;
 
     /** @see org.w3c.dom.Node#CDATA_SECTION_NODE */
     @JsxConstant
-    public static final short CDATA_SECTION_NODE = org.w3c.dom.Node.CDATA_SECTION_NODE;
+    public static final int CDATA_SECTION_NODE = org.w3c.dom.Node.CDATA_SECTION_NODE;
 
     /** @see org.w3c.dom.Node#ENTITY_REFERENCE_NODE */
     @JsxConstant
-    public static final short ENTITY_REFERENCE_NODE = org.w3c.dom.Node.ENTITY_REFERENCE_NODE;
+    public static final int ENTITY_REFERENCE_NODE = org.w3c.dom.Node.ENTITY_REFERENCE_NODE;
 
     /** @see org.w3c.dom.Node#ENTITY_NODE */
     @JsxConstant
-    public static final short ENTITY_NODE = org.w3c.dom.Node.ENTITY_NODE;
+    public static final int ENTITY_NODE = org.w3c.dom.Node.ENTITY_NODE;
 
     /** @see org.w3c.dom.Node#PROCESSING_INSTRUCTION_NODE */
     @JsxConstant
-    public static final short PROCESSING_INSTRUCTION_NODE = org.w3c.dom.Node.PROCESSING_INSTRUCTION_NODE;
+    public static final int PROCESSING_INSTRUCTION_NODE = org.w3c.dom.Node.PROCESSING_INSTRUCTION_NODE;
 
     /** @see org.w3c.dom.Node#COMMENT_NODE */
     @JsxConstant
-    public static final short COMMENT_NODE = org.w3c.dom.Node.COMMENT_NODE;
+    public static final int COMMENT_NODE = org.w3c.dom.Node.COMMENT_NODE;
 
     /** @see org.w3c.dom.Node#DOCUMENT_NODE */
     @JsxConstant
-    public static final short DOCUMENT_NODE = org.w3c.dom.Node.DOCUMENT_NODE;
+    public static final int DOCUMENT_NODE = org.w3c.dom.Node.DOCUMENT_NODE;
 
     /** @see org.w3c.dom.Node#DOCUMENT_TYPE_NODE */
     @JsxConstant
-    public static final short DOCUMENT_TYPE_NODE = org.w3c.dom.Node.DOCUMENT_TYPE_NODE;
+    public static final int DOCUMENT_TYPE_NODE = org.w3c.dom.Node.DOCUMENT_TYPE_NODE;
 
     /** @see org.w3c.dom.Node#DOCUMENT_FRAGMENT_NODE */
     @JsxConstant
-    public static final short DOCUMENT_FRAGMENT_NODE = org.w3c.dom.Node.DOCUMENT_FRAGMENT_NODE;
+    public static final int DOCUMENT_FRAGMENT_NODE = org.w3c.dom.Node.DOCUMENT_FRAGMENT_NODE;
 
     /** @see org.w3c.dom.Node#NOTATION_NODE */
     @JsxConstant
-    public static final short NOTATION_NODE = org.w3c.dom.Node.NOTATION_NODE;
+    public static final int NOTATION_NODE = org.w3c.dom.Node.NOTATION_NODE;
 
     /** @see org.w3c.dom.Node#DOCUMENT_POSITION_DISCONNECTED */
     @JsxConstant
-    public static final short DOCUMENT_POSITION_DISCONNECTED = org.w3c.dom.Node.DOCUMENT_POSITION_DISCONNECTED;
+    public static final int DOCUMENT_POSITION_DISCONNECTED = org.w3c.dom.Node.DOCUMENT_POSITION_DISCONNECTED;
 
     /** @see org.w3c.dom.Node#DOCUMENT_POSITION_PRECEDING */
     @JsxConstant
-    public static final short DOCUMENT_POSITION_PRECEDING = org.w3c.dom.Node.DOCUMENT_POSITION_PRECEDING;
+    public static final int DOCUMENT_POSITION_PRECEDING = org.w3c.dom.Node.DOCUMENT_POSITION_PRECEDING;
 
     /** @see org.w3c.dom.Node#DOCUMENT_POSITION_FOLLOWING */
     @JsxConstant
-    public static final short DOCUMENT_POSITION_FOLLOWING = org.w3c.dom.Node.DOCUMENT_POSITION_FOLLOWING;
+    public static final int DOCUMENT_POSITION_FOLLOWING = org.w3c.dom.Node.DOCUMENT_POSITION_FOLLOWING;
 
     /** @see org.w3c.dom.Node#DOCUMENT_POSITION_CONTAINS */
     @JsxConstant
-    public static final short DOCUMENT_POSITION_CONTAINS = org.w3c.dom.Node.DOCUMENT_POSITION_CONTAINS;
+    public static final int DOCUMENT_POSITION_CONTAINS = org.w3c.dom.Node.DOCUMENT_POSITION_CONTAINS;
 
     /** @see org.w3c.dom.Node#DOCUMENT_POSITION_CONTAINED_BY */
     @JsxConstant
-    public static final short DOCUMENT_POSITION_CONTAINED_BY = org.w3c.dom.Node.DOCUMENT_POSITION_CONTAINED_BY;
+    public static final int DOCUMENT_POSITION_CONTAINED_BY = org.w3c.dom.Node.DOCUMENT_POSITION_CONTAINED_BY;
 
     /** @see org.w3c.dom.Node#DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC */
     @JsxConstant
-    public static final short DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC
+    public static final int DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC
         = org.w3c.dom.Node.DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC;
 
     /** "Live" child nodes collection; has to be a member to have equality (==) working. */
@@ -151,9 +156,17 @@ public class Node extends EventTarget {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public Node() {
         // Empty.
+    }
+
+    /**
+     * JavaScript constructor.
+     */
+    @Override
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    public void jsConstructor() {
+        super.jsConstructor();
     }
 
     /**
@@ -161,7 +174,7 @@ public class Node extends EventTarget {
      * @return the node type
      */
     @JsxGetter
-    public short getNodeType() {
+    public int getNodeType() {
         return getDomNodeOrDie().getNodeType();
     }
 
@@ -221,8 +234,8 @@ public class Node extends EventTarget {
             appendedChild = childObject;
 
             initInlineFrameIfNeeded(childDomNode);
-            for (final DomNode domNode : childDomNode.getDescendants()) {
-                initInlineFrameIfNeeded(domNode);
+            for (final HtmlElement htmlElement : childDomNode.getHtmlElementDescendants()) {
+                initInlineFrameIfNeeded(htmlElement);
             }
         }
         return appendedChild;
@@ -277,14 +290,15 @@ public class Node extends EventTarget {
      * Add a DOM node as a child to this node before the referenced node.
      * If the referenced node is null, append to the end.
      * @param context the JavaScript context
+     * @param scope the scope
      * @param thisObj the scriptable
      * @param args the arguments passed into the method
      * @param function the function
      * @return the newly added child node
      */
     @JsxFunction
-    public static Object insertBefore(
-            final Context context, final Scriptable thisObj, final Object[] args, final Function function) {
+    public static Object insertBefore(final Context context, final Scriptable scope,
+            final Scriptable thisObj, final Object[] args, final Function function) {
         return ((Node) thisObj).insertBeforeImpl(args);
     }
 
@@ -296,7 +310,7 @@ public class Node extends EventTarget {
      */
     protected Object insertBeforeImpl(final Object[] args) {
         if (args.length < 1) {
-            throw ScriptRuntime.typeError(
+            throw JavaScriptEngine.typeError(
                     "Failed to execute 'insertBefore' on 'Node': 2 arguments required, but only 0 present.");
         }
 
@@ -315,7 +329,7 @@ public class Node extends EventTarget {
 
             // is the node allowed here?
             if (!isNodeInsertable(newChild)) {
-                throw ScriptRuntime.constructError("ReferenceError",
+                throw JavaScriptEngine.constructError("ReferenceError",
                         "Node cannot be inserted at the specified point in the hierarchy");
             }
 
@@ -324,7 +338,7 @@ public class Node extends EventTarget {
                 final DomDocumentFragment fragment = (DomDocumentFragment) newChildNode;
                 for (final DomNode child : fragment.getChildren()) {
                     if (!isNodeInsertable(child.getScriptableObject())) {
-                        throw ScriptRuntime.constructError("ReferenceError",
+                        throw JavaScriptEngine.constructError("ReferenceError",
                                 "Node cannot be inserted at the specified point in the hierarchy");
                     }
                 }
@@ -332,12 +346,12 @@ public class Node extends EventTarget {
 
             // extract refChild
             final DomNode refChildNode;
-            if (Undefined.isUndefined(refChildObject)) {
+            if (JavaScriptEngine.isUndefined(refChildObject)) {
                 if (args.length == 2 || getBrowserVersion().hasFeature(JS_NODE_INSERT_BEFORE_REF_OPTIONAL)) {
                     refChildNode = null;
                 }
                 else {
-                    throw ScriptRuntime.typeError(
+                    throw JavaScriptEngine.typeError(
                             "Failed to execute 'insertBefore' on 'Node': 2 arguments required, but only 1 present.");
                 }
             }
@@ -354,7 +368,7 @@ public class Node extends EventTarget {
                 domNode.insertBefore(newChildNode, refChildNode);
             }
             catch (final org.w3c.dom.DOMException e) {
-                throw ScriptRuntime.constructError("ReferenceError", e.getMessage());
+                throw JavaScriptEngine.constructError("ReferenceError", e.getMessage());
             }
             insertedChild = newChild;
         }
@@ -397,7 +411,8 @@ public class Node extends EventTarget {
         final DomNode childNode = ((Node) childObject).getDomNodeOrDie();
 
         if (!getDomNodeOrDie().isAncestorOf(childNode)) {
-            Context.throwAsScriptRuntimeEx(new Exception("NotFoundError: Failed to execute 'removeChild' on '"
+            throw JavaScriptEngine.throwAsScriptRuntimeEx(
+                    new Exception("NotFoundError: Failed to execute 'removeChild' on '"
                         + this + "': The node to be removed is not a child of this node."));
         }
         // Remove the child from the parent node
@@ -438,7 +453,8 @@ public class Node extends EventTarget {
 
             // is the node allowed here?
             if (!isNodeInsertable(newChild)) {
-                throw Context.reportRuntimeError("Node cannot be inserted at the specified point in the hierarchy");
+                throw JavaScriptEngine.reportRuntimeError(
+                        "Node cannot be inserted at the specified point in the hierarchy");
             }
 
             // Get XML nodes for the DOM nodes passed in
@@ -464,6 +480,125 @@ public class Node extends EventTarget {
         final DomNode clonedNode = domNode.cloneNode(deep);
 
         return getJavaScriptNode(clonedNode);
+    }
+
+    /**
+     * Check if 2 nodes are equals.
+     * For detail specifications
+     * @see <a href="https://dom.spec.whatwg.org/#concept-node-equals">concept-node-equals</a>
+     * @param other the node to compare with
+     * @return true or false
+     */
+    @JsxFunction
+    public boolean isEqualNode(final Node other) {
+        if (isSameNode(other)) {
+            return true;
+        }
+
+        if (!getClassName().equals(other.getClassName())) {
+            return false;
+        }
+
+        if (this instanceof DocumentType) {
+            final DocumentType docType = (DocumentType) this;
+            final DocumentType otherDocType = (DocumentType) other;
+            if (!Objects.equals(docType.getName(), otherDocType.getName())
+                    || !Objects.equals(docType.getPublicId(), otherDocType.getPublicId())
+                    || !Objects.equals(docType.getSystemId(), otherDocType.getSystemId())) {
+                return false;
+            }
+
+        }
+        else if (this instanceof Element) {
+            final Element element = (Element) this;
+            final Element otherElement = (Element) other;
+            if (!Objects.equals(element.getNodeName(), otherElement.getNodeName())
+                    || !Objects.equals(element.getPrefix(), otherElement.getPrefix())
+                    || !Objects.equals(element.getLocalName(), otherElement.getLocalName())) {
+                return false;
+            }
+
+            final NamedNodeMap attributesMap = element.getAttributes();
+            final NamedNodeMap otherAttributesMap = otherElement.getAttributes();
+            if (attributesMap != null || otherAttributesMap != null) {
+                if (attributesMap == null || otherAttributesMap == null) {
+                    return false;
+                }
+
+                final int length = attributesMap.getLength();
+                if (length != otherAttributesMap.getLength()) {
+                    return false;
+                }
+
+                final Map<String, Attr> name2Attributes = new HashMap<>();
+                for (int i = 0; i < length; i++) {
+                    final Attr attribute = (Attr) attributesMap.item(i);
+                    name2Attributes.put(attribute.getName(), attribute);
+                }
+
+                for (int i = 0; i < length; i++) {
+                    final Attr otherAttribute = (Attr) otherAttributesMap.item(i);
+                    final Attr attribute = name2Attributes.get(otherAttribute.getName());
+                    if (attribute == null) {
+                        return false;
+                    }
+                    if (!attribute.isEqualNode(otherAttribute)) {
+                        return false;
+                    }
+                }
+            }
+
+        }
+        else if (this instanceof Attr) {
+            final Attr attr = (Attr) this;
+            final Attr otherAttr = (Attr) other;
+            if (!Objects.equals(attr.getName(), otherAttr.getName())
+                    || !Objects.equals(attr.getLocalName(), otherAttr.getLocalName())
+                    || !Objects.equals(attr.getValue(), otherAttr.getValue())) {
+                return false;
+            }
+
+        }
+        else if (this instanceof ProcessingInstruction) {
+            final ProcessingInstruction instruction = (ProcessingInstruction) this;
+            final ProcessingInstruction otherInstruction = (ProcessingInstruction) other;
+            if (!Objects.equals(instruction.getTarget(), otherInstruction.getTarget())
+                    || !Objects.equals(instruction.getData(), otherInstruction.getData())) {
+                return false;
+            }
+
+        }
+        else if (this instanceof Text || this instanceof Comment) {
+            final CharacterData data = (CharacterData) this;
+            final CharacterData otherData = (CharacterData) other;
+            if (!Objects.equals(data.getData(), otherData.getData())) {
+                return false;
+            }
+        }
+
+        final NodeList childNodes = getChildNodes();
+        final NodeList otherChildNodes = other.getChildNodes();
+        if (childNodes != null || otherChildNodes != null) {
+            if (childNodes == null || otherChildNodes == null) {
+                return false;
+            }
+
+            final int length = childNodes.getLength();
+            final int otherLength = childNodes.getLength();
+            if (length != otherLength) {
+                return false;
+            }
+
+            for (int i = 0; i < length; i++) {
+                final Node childNode = (Node) childNodes.item(i);
+                final Node otherChildNode = (Node) otherChildNodes.item(i);
+                if (!childNode.isEqualNode(otherChildNode)) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -593,7 +728,7 @@ public class Node extends EventTarget {
      * @return the document
      */
     @JsxGetter
-    public Object getOwnerDocument() {
+    public HtmlUnitScriptable getOwnerDocument() {
         final Object document = getDomNodeOrDie().getOwnerDocument();
         if (document != null) {
             return ((SgmlPage) document).getScriptableObject();
@@ -625,9 +760,9 @@ public class Node extends EventTarget {
      * @see org.w3c.dom.Node#compareDocumentPosition(org.w3c.dom.Node)
      */
     @JsxFunction
-    public short compareDocumentPosition(final Object node) {
+    public int compareDocumentPosition(final Object node) {
         if (!(node instanceof Node)) {
-            throw Context.reportRuntimeError("Could not convert JavaScript argument arg 0");
+            throw JavaScriptEngine.reportRuntimeError("Could not convert JavaScript argument arg 0");
         }
         return getDomNodeOrDie().compareDocumentPosition(((Node) node).getDomNodeOrDie());
     }
@@ -655,7 +790,7 @@ public class Node extends EventTarget {
      */
     @JsxSetter
     public void setTextContent(final Object value) {
-        getDomNodeOrDie().setTextContent(value == null ? null : Context.toString(value));
+        getDomNodeOrDie().setTextContent(value == null ? null : JavaScriptEngine.toString(value));
     }
 
     /**
@@ -689,7 +824,7 @@ public class Node extends EventTarget {
      */
     @JsxFunction({CHROME, EDGE, FF, FF_ESR})
     public boolean contains(final Object element) {
-        if (element == null || Undefined.isUndefined(element)) {
+        if (element == null || JavaScriptEngine.isUndefined(element)) {
             return false;
         }
 
@@ -697,7 +832,7 @@ public class Node extends EventTarget {
             if (getBrowserVersion().hasFeature(JS_NODE_CONTAINS_RETURNS_FALSE_FOR_INVALID_ARG)) {
                 return false;
             }
-            throw Context.reportRuntimeError("Could not convert JavaScript argument arg 0");
+            throw JavaScriptEngine.reportRuntimeError("Could not convert JavaScript argument arg 0");
         }
 
         if (getBrowserVersion().hasFeature(JS_NODE_CONTAINS_RETURNS_FALSE_FOR_INVALID_ARG)) {
@@ -705,7 +840,7 @@ public class Node extends EventTarget {
                 return false;
             }
             if (this instanceof CharacterData) {
-                throw Context.reportRuntimeError("Function 'contains' not available for text nodes.");
+                throw JavaScriptEngine.reportRuntimeError("Function 'contains' not available for text nodes.");
             }
         }
 
@@ -775,7 +910,7 @@ public class Node extends EventTarget {
         int counter = 0;
         for (final DomNode child : getDomNodeOrDie().getChildren()) {
             if (child != null) {
-                final Scriptable scriptable = child.getScriptableObject();
+                final HtmlUnitScriptable scriptable = child.getScriptableObject();
                 if (scriptable instanceof Element) {
                     counter++;
                 }
@@ -800,7 +935,7 @@ public class Node extends EventTarget {
 
         for (final DomNode child : domNode.getChildren()) {
             if (child != null) {
-                final Scriptable scriptable = child.getScriptableObject();
+                final HtmlUnitScriptable scriptable = child.getScriptableObject();
                 if (scriptable instanceof Element) {
                     return (Element) scriptable;
                 }
@@ -825,7 +960,7 @@ public class Node extends EventTarget {
 
         Element result = null;
         for (final DomNode child : domNode.getChildren()) {
-            final Scriptable scriptable = child.getScriptableObject();
+            final HtmlUnitScriptable scriptable = child.getScriptableObject();
             if (scriptable instanceof Element) {
                 result = (Element) scriptable;
             }
@@ -891,7 +1026,7 @@ public class Node extends EventTarget {
     protected static void append(final Context context, final Scriptable thisObj, final Object[] args,
             final Function function) {
         if (!(thisObj instanceof Element)) {
-            throw ScriptRuntime.typeError("Illegal invocation");
+            throw JavaScriptEngine.typeError("Illegal invocation");
         }
 
         final DomNode thisDomNode = ((Node) thisObj).getDomNodeOrDie();
@@ -914,7 +1049,7 @@ public class Node extends EventTarget {
     protected static void prepend(final Context context, final Scriptable thisObj, final Object[] args,
             final Function function) {
         if (!(thisObj instanceof Element)) {
-            throw ScriptRuntime.typeError("Illegal invocation");
+            throw JavaScriptEngine.typeError("Illegal invocation");
         }
 
         final DomNode thisDomNode = ((Node) thisObj).getDomNodeOrDie();
@@ -942,7 +1077,7 @@ public class Node extends EventTarget {
     protected static void replaceChildren(final Context context, final Scriptable thisObj, final Object[] args,
             final Function function) {
         if (!(thisObj instanceof Element)) {
-            throw ScriptRuntime.typeError("Illegal invocation");
+            throw JavaScriptEngine.typeError("Illegal invocation");
         }
 
         final DomNode thisDomNode = ((Node) thisObj).getDomNodeOrDie();
@@ -959,7 +1094,7 @@ public class Node extends EventTarget {
             return (Node) obj;
         }
         return (Node)
-                ((HTMLDocument) thisObj.getOwnerDocument()).createTextNode(Context.toString(obj));
+                ((HTMLDocument) thisObj.getOwnerDocument()).createTextNode(JavaScriptEngine.toString(obj));
     }
 
     /**

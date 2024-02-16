@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,11 @@ package org.htmlunit.css;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.htmlunit.cssparser.dom.AbstractCSSRuleImpl;
-
+import org.htmlunit.BrowserVersion;
+import org.htmlunit.BrowserVersionFeatures;
 import org.htmlunit.css.StyleAttributes.Definition;
+import org.htmlunit.cssparser.dom.AbstractCSSRuleImpl;
 import org.htmlunit.html.DomElement;
-import org.htmlunit.javascript.host.Element;
 import org.htmlunit.util.StringUtils;
 
 /**
@@ -38,19 +38,23 @@ import org.htmlunit.util.StringUtils;
  * @author Frank Danek
  * @author Dennis Duysak
  * @author cd alexndr
+ * @author Lai Quang Duong
  */
 public class ElementCssStyleDeclaration extends AbstractCssStyleDeclaration {
 
     // private static final Log LOG = LogFactory.getLog(ElementCssStyleDeclaration.class);
 
     /** The DomElement. */
-    private DomElement domElement_;
+    private final DomElement domElement_;
 
     /**
      * Creates an instance which backed by the given dom element.
      * @param domElement the dom element this is based on
      */
     public ElementCssStyleDeclaration(final DomElement domElement) {
+        if (domElement == null) {
+            throw new IllegalStateException("domElement can't be null");
+        }
         domElement_ = domElement;
     }
 
@@ -60,7 +64,7 @@ public class ElementCssStyleDeclaration extends AbstractCssStyleDeclaration {
     @Override
     public String getStylePriority(final String name) {
         final StyleElement element = domElement_.getStyleElement(name);
-        if (element.getValue() != null) {
+        if (element != null && element.getValue() != null) {
             return element.getPriority();
         }
         return "";
@@ -83,7 +87,7 @@ public class ElementCssStyleDeclaration extends AbstractCssStyleDeclaration {
         if (element != null && element.getValue() != null) {
             final String value = element.getValue();
             if (!value.contains("url")) {
-                return StringUtils.toRootLowerCaseWithCache(value);
+                return StringUtils.toRootLowerCase(value);
             }
             return value;
         }
@@ -183,19 +187,31 @@ public class ElementCssStyleDeclaration extends AbstractCssStyleDeclaration {
         return domElement_.getStyleMap();
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Element getElementOrNull() {
-        return domElement_.getScriptableObject();
+    public DomElement getDomElement() {
+        return domElement_;
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public DomElement getDomElementOrNull() {
-        return domElement_;
+    public boolean hasFeature(final BrowserVersionFeatures property) {
+        return domElement_.hasFeature(property);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public BrowserVersion getBrowserVersion() {
+        return domElement_.getPage().getWebClient().getBrowserVersion();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String toString() {
+        return "ElementCssStyleDeclaration for '" + getDomElement() + "'";
     }
 }

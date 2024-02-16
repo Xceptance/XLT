@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.brotli.dec.BrotliInputStream;
-
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
 
@@ -93,13 +92,13 @@ public class WebResponseData implements Serializable {
         downloadedContent_ = downloadedContent;
     }
 
-    private InputStream getStream(final DownloadedContent downloadedContent,
-                final List<NameValuePair> headers, final ByteOrderMark... bomHeaders) throws IOException {
+    private InputStream getStream(final ByteOrderMark... bomHeaders) throws IOException {
         InputStream stream = downloadedContent_.getInputStream();
-        if (downloadedContent.isEmpty()) {
+        if (downloadedContent_.isEmpty()) {
             return stream;
         }
 
+        final List<NameValuePair> headers = getResponseHeaders();
         final String encoding = getHeader(headers, "content-encoding");
         if (encoding != null) {
             boolean isGzip = StringUtils.contains(encoding, "gzip") && !"no-gzip".equals(encoding);
@@ -205,7 +204,7 @@ public class WebResponseData implements Serializable {
      * @throws IOException in case of IO problems
      */
     public InputStream getInputStream() throws IOException {
-        return getStream(downloadedContent_, getResponseHeaders(), (ByteOrderMark[]) null);
+        return getStream((ByteOrderMark[]) null);
     }
 
     /**
@@ -216,7 +215,7 @@ public class WebResponseData implements Serializable {
      * @throws IOException in case of IO problems
      */
     public InputStream getInputStreamWithBomIfApplicable(final ByteOrderMark... bomHeaders) throws IOException {
-        return getStream(downloadedContent_, getResponseHeaders(), bomHeaders);
+        return getStream(bomHeaders);
     }
 
     /**

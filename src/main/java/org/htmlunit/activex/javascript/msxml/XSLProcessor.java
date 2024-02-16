@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
@@ -30,20 +31,18 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import org.apache.commons.lang3.StringUtils;
-import org.w3c.dom.NodeList;
-
 import org.htmlunit.SgmlPage;
 import org.htmlunit.html.DomDocumentFragment;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.html.DomText;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.configuration.JsxSetter;
 import org.htmlunit.javascript.host.dom.Node;
 import org.htmlunit.util.XmlUtils;
-
-import org.htmlunit.corejs.javascript.Context;
+import org.w3c.dom.NodeList;
 
 /**
  * A JavaScript object for MSXML's (ActiveX) XSLProcessor.<br>
@@ -182,7 +181,15 @@ public class XSLProcessor extends MSXMLScriptable {
 
             final DOMResult result = new DOMResult(containerElement);
 
-            final Transformer transformer = TransformerFactory.newInstance().newTransformer(xsltSource);
+            final TransformerFactory transformerFactory = TransformerFactory.newInstance();
+
+            // By default, the JDK turns on FSP for DOM and SAX parsers and XML schema validators,
+            // which sets a number of processing limits on the processors. Conversely, by default,
+            // the JDK turns off FSP for transformers and XPath, which enables extension functions for XSLT and XPath.
+            transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+
+            final Transformer transformer = transformerFactory.newTransformer(xsltSource);
+
             for (final Map.Entry<String, Object> entry : parameters_.entrySet()) {
                 transformer.setParameter(entry.getKey(), entry.getValue());
             }
@@ -200,7 +207,7 @@ public class XSLProcessor extends MSXMLScriptable {
             return writer.toString();
         }
         catch (final Exception e) {
-            throw Context.reportRuntimeError("Exception: " + e);
+            throw JavaScriptEngine.reportRuntimeError("Exception: " + e);
         }
     }
 

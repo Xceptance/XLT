@@ -65,16 +65,16 @@ public class HtmlSelectTest
         conn.setResponse(url, IOUtils.toString(url.openStream(), StandardCharsets.UTF_8));
         conn.setResponse(googleURL, googleContent);
 
-        try (final WebClient webClient = new WebClient(BrowserVersion.CHROME))
-        {
-            webClient.getOptions().setJavaScriptEnabled(true);
-            webClient.getOptions().setCssEnabled(true);
-            webClient.getOptions().setThrowExceptionOnScriptError(true);
-            webClient.setWebConnection(conn);
+        @SuppressWarnings("resource")
+        final WebClient webClient = new WebClient(BrowserVersion.CHROME);
 
-            final HtmlPage htmlPage = webClient.getPage(url);
+        webClient.getOptions().setJavaScriptEnabled(true);
+        webClient.getOptions().setCssEnabled(true);
+        webClient.getOptions().setThrowExceptionOnScriptError(true);
+        webClient.setWebConnection(conn);
 
-            return htmlPage;
-        }
+        final HtmlPage htmlPage = webClient.getPage(url);
+
+        return htmlPage;
     }
 }

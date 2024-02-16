@@ -1,0 +1,106 @@
+/**
+ * Inspired by the json-view library (https://github.com/pgrabovets/json-view)
+ * created by Pavel Grabovets and published under ISC license.
+ *
+ * ISC License
+ *
+ * Copyright (c) 2018, Pavel Grabovets
+ *
+ * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ */
+
+json-tree {
+    display: block;
+}
+
+json-tree .json-line {
+    margin: 4px 0;
+    display: flex;
+    justify-content: flex-start;
+}
+
+json-tree .json-caret::after {
+    min-width: 16px;
+    cursor: pointer;
+    font-style: normal;
+    content: "◢";
+    margin-right: 0.5em;
+    font-size: smaller;
+    display: inline-block;
+    transform: translateY(-10%) rotate(-45deg);
+}
+
+json-tree .json-caret-expanded::after {
+    transform: translateY(-10%) rotate(0deg);
+}
+
+json-tree .json-caret-empty::after {
+    cursor: default;
+    display: none;
+}
+
+json-tree .json-key {
+    color: #444;
+    margin-right: 4px;
+    margin-left: 4px;
+}
+
+json-tree .json-size {
+    color: #808080;
+    margin-right: 4px;
+    margin-left: 4px;
+}
+
+json-tree .json-index {
+    color: #444;
+    margin-right: 4px;
+    margin-left: 4px;
+}
+
+json-tree .json-separator {
+    color: #808080;
+}
+
+json-tree .json-value {
+    margin-left: 8px;
+}
+
+json-tree .json-number {
+    color: #f9ae58;
+}
+
+json-tree .json-boolean {
+    color: #ec5f66;
+}
+
+json-tree .json-string {
+    color: #86b25c;
+}
+
+json-tree .json-null {
+    color: #808080;
+}
+
+json-tree .json-match {
+    background-color: #DDD;
+    color: #0c46dd;
+}
+
+json-tree .json-match-current {
+    background-color: #444;
+    color: #FFF;
+}
+
+json-tree .json-hide {
+    display: none;
+}

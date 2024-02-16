@@ -34,7 +34,6 @@ import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 
-import com.xceptance.xlt.api.engine.CustomData;
 import com.xceptance.xlt.api.engine.Session;
 import com.xceptance.xlt.api.util.XltProperties;
 import com.xceptance.xlt.engine.XltEngine;

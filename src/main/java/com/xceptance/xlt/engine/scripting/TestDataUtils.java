@@ -77,19 +77,28 @@ public final class TestDataUtils
             File dataFile = new File(scriptFile.getParentFile(), baseName + "_data.xml");
             if (dataFile.isFile())
             {
-                return parseXMLData(new FileInputStream(dataFile));
+                try (final FileInputStream inputStream = new FileInputStream(dataFile))
+                {
+                    return parseXMLData(inputStream);
+                }
             }
 
             dataFile = new File(scriptFile.getParentFile(), baseName + "_data.csv");
             if (dataFile.isFile())
             {
-                return parseCSVData(new FileInputStream(dataFile));
+                try (final FileInputStream inputStream = new FileInputStream(dataFile))
+                {
+                    return parseCSVData(inputStream);
+                }
             }
 
             dataFile = new File(scriptFile.getParentFile(), baseName + "_data.properties");
             if (dataFile.isFile())
             {
-                return parsePropertiesData(new FileInputStream(dataFile));
+                try (final FileInputStream inputStream = new FileInputStream(dataFile))
+                {
+                    return parsePropertiesData(inputStream);
+                }
             }
         }
         catch (final Exception e)
@@ -282,7 +291,10 @@ public final class TestDataUtils
         {
             if (testDataFile.isFile())
             {
-                return parsePropertiesData(new FileInputStream(testDataFile));
+                try (final FileInputStream inputStream = new FileInputStream(testDataFile))
+                {
+                    return parsePropertiesData(inputStream);
+                }
             }
         }
         catch (final Exception e)

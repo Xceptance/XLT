@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,15 +17,14 @@ package org.htmlunit.html;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import org.htmlunit.MockWebConnection;
 import org.htmlunit.SimpleWebTestCase;
 import org.htmlunit.WebClient;
 import org.htmlunit.javascript.host.event.KeyboardEvent;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * Tests for {@link HtmlTextInput}.
@@ -505,6 +504,40 @@ public class HtmlTextInput2Test extends SimpleWebTestCase {
 
         assertEquals("", input.getValueAttribute());
         assertEquals("0815", input.getValue());
+    }
+
+    /**
+     * @throws Exception
+     *         if the test fails
+     */
+    @Test
+    @Alerts({"text", "x", "x", "hidden", "x", "x"})
+    public void setType() throws Exception {
+        final String htmlContent = "<html>\n"
+            + "<body>\n"
+            + "<form id='form1'>\n"
+            + "  <input type='text' id='foo' value='x'>\n"
+            + "</form>\n"
+            + "</body></html>";
+
+        final HtmlPage page = loadPage(htmlContent);
+
+        final HtmlInput input = (HtmlInput) page.getElementById("foo");
+        assertEquals(getExpectedAlerts()[0], input.getType());
+        assertEquals(getExpectedAlerts()[1], input.getValueAttribute());
+        assertEquals(getExpectedAlerts()[2], input.getValue());
+
+        input.changeType("hidden", true);
+        assertEquals(getExpectedAlerts()[0], input.getType());
+        assertEquals(getExpectedAlerts()[1], input.getValueAttribute());
+        assertEquals(getExpectedAlerts()[2], input.getValue());
+
+        final HtmlInput newInput = (HtmlInput) page.getElementById("foo");
+        assertEquals(getExpectedAlerts()[3], newInput.getType());
+        assertEquals(getExpectedAlerts()[4], newInput.getValueAttribute());
+        assertEquals(getExpectedAlerts()[5], newInput.getValue());
+
+        assertNotSame(input, newInput);
     }
 
     /**

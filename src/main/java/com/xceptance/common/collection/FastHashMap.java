@@ -79,17 +79,23 @@ public class FastHashMap<K, V>
         if ( k == FREE_KEY )
             return null;  //end of chain already
 
-        if ( k.equals( key ) ) //we check FREE and REMOVED prior to this call
+        if ( k.hashCode() == key.hashCode() && k.equals( key ) ) //we check FREE and REMOVED prior to this call
+        {
             return (V) m_data[ ptr + 1 ];
+        }
 
         while ( true )
         {
             ptr = (ptr + 2) & m_mask2; //that's next index
             k = m_data[ ptr ];
             if ( k == FREE_KEY )
+            {
                 return null;
-            if ( k.equals( key ) )
+            }
+            if ( k.hashCode() == key.hashCode() && k.equals( key ) )
+            {
                 return (V) m_data[ ptr + 1 ];
+            }
         }
     }
 

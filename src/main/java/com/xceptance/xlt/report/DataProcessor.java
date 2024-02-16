@@ -23,8 +23,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.xceptance.common.util.StringMatcher;
 import com.xceptance.common.util.concurrent.DaemonThreadFactory;
@@ -50,11 +48,6 @@ import com.xceptance.xlt.engine.util.TimerUtils;
  */
 public class DataProcessor
 {
-    /**
-     * Class logger.
-     */
-    private static final Logger log = LoggerFactory.getLogger(DataProcessor.class);
-
     /**
      * The executor dealing with the data record parser threads.
      */

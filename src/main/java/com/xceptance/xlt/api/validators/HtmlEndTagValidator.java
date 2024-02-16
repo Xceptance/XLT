@@ -23,6 +23,7 @@ import org.junit.Assert;
 
 import com.xceptance.xlt.api.htmlunit.LightWeightPage;
 import com.xceptance.xlt.api.util.XltLogger;
+import com.xceptance.xlt.api.util.XltProperties;
 
 /**
  * Checks that a page has at least one closing HTML tag. Does not check, that this tag is the only one. It uses a
@@ -47,6 +48,11 @@ public class HtmlEndTagValidator
      * Regular expression used to check for regular trailing content.
      */
     private static final String REGULAR_TRAILING_CONTENT_REGEX = "(?sm)(\\s|<!--.*?-->)*";
+    
+    /**
+     * Property name that controls the validator.
+     */
+    static final String PROPERTY_NAME = HtmlEndTagValidator.class.getName() + ".enabled";
 
     /**
      * The pattern to be use on the page.
@@ -137,7 +143,8 @@ public class HtmlEndTagValidator
      */
     public static HtmlEndTagValidator getInstance()
     {
-        return HtmlEndTagValidator_Singleton.instance;
+        final boolean enabled = XltProperties.getInstance().getProperty(PROPERTY_NAME, false);
+        return enabled ? HtmlEndTagValidator_Singleton.instance : HtmlEndTagValidator_Singleton.noopInstance;
     }
 
     /**
@@ -149,11 +156,37 @@ public class HtmlEndTagValidator
          * Singleton instance.
          */
         private static final HtmlEndTagValidator instance;
+        private static final HtmlEndTagValidator noopInstance;
 
         // static initializer (synchronized by class loader)
         static
         {
             instance = new HtmlEndTagValidator();
+            noopInstance = new DisabledHtmlEndTagValidator();
         }
     }
+
+   /**
+    * NoOp implementation of the parent class.
+    */
+   private static final class DisabledHtmlEndTagValidator extends HtmlEndTagValidator
+   {
+       /** Does nothing. Validation is disabled. */
+       @Override
+       public void validate(final HtmlPage page)
+       {
+       };
+       
+       /** Does nothing. Validation is disabled. */
+       @Override
+       public void validate(final LightWeightPage page)
+       {
+       };
+       
+       /** Does nothing. Validation is disabled. */
+       @Override
+       public void validate(final String content)
+       {
+       };
+   }
 }

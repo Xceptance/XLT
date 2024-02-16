@@ -18,7 +18,6 @@ package com.xceptance.common.lang;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.io.Serializable;
 import java.io.Writer;
 import java.nio.CharBuffer;
 import java.util.Iterator;
@@ -409,9 +408,6 @@ public class OpenStringBuilder implements CharSequence, Appendable {
      * @return this, to enable chaining
      */
     public OpenStringBuilder appendNull() {
-        if (nullText == null) {
-            return this;
-        }
         return append(nullText);
     }
 

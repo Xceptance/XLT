@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,8 +26,6 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.w3c.dom.Attr;
-
 import org.htmlunit.FailingHttpStatusCodeException;
 import org.htmlunit.FrameContentHandler;
 import org.htmlunit.Page;
@@ -40,6 +38,7 @@ import org.htmlunit.javascript.AbstractJavaScriptEngine;
 import org.htmlunit.javascript.PostponedAction;
 import org.htmlunit.protocol.javascript.JavaScriptURLConnection;
 import org.htmlunit.util.UrlUtils;
+import org.w3c.dom.Attr;
 
 /**
  * Base class for frame and iframe.
@@ -135,7 +134,7 @@ public abstract class BaseFrameElement extends HtmlElement {
             if (jsEngine != null && jsEngine.isScriptRunning()) {
                 final PostponedAction action = new PostponedAction(getPage(), "BaseFrame.loadInnerPage") {
                     @Override
-                    public void execute() throws Exception {
+                    public void execute() {
                         htmlPage.setReadyState(READY_STATE_COMPLETE);
                     }
                 };
@@ -260,7 +259,7 @@ public abstract class BaseFrameElement extends HtmlElement {
      * @return the value of the attribute {@code name} or an empty string if that attribute isn't defined
      */
     public final String getNameAttribute() {
-        return getAttributeDirect("name");
+        return getAttributeDirect(NAME_ATTRIBUTE);
     }
 
     /**
@@ -269,7 +268,7 @@ public abstract class BaseFrameElement extends HtmlElement {
      * @param name the new window name
      */
     public final void setNameAttribute(final String name) {
-        setAttribute("name", name);
+        setAttribute(NAME_ATTRIBUTE, name);
     }
 
     /**
@@ -381,16 +380,17 @@ public abstract class BaseFrameElement extends HtmlElement {
     @Override
     protected void setAttributeNS(final String namespaceURI, final String qualifiedName, String attributeValue,
             final boolean notifyAttributeChangeListeners, final boolean notifyMutationObserver) {
-        if (null != attributeValue && SRC_ATTRIBUTE.equals(qualifiedName)) {
+        final String qualifiedNameLC = org.htmlunit.util.StringUtils.toRootLowerCase(qualifiedName);
+        if (null != attributeValue && SRC_ATTRIBUTE.equals(qualifiedNameLC)) {
             attributeValue = attributeValue.trim();
         }
 
-        super.setAttributeNS(namespaceURI, qualifiedName, attributeValue, notifyAttributeChangeListeners,
+        super.setAttributeNS(namespaceURI, qualifiedNameLC, attributeValue, notifyAttributeChangeListeners,
                 notifyMutationObserver);
 
         // do not use equals() here
         // see HTMLIFrameElement2Test.documentCreateElement_onLoad_srcAboutBlank()
-        if (SRC_ATTRIBUTE.equals(qualifiedName) && UrlUtils.ABOUT_BLANK != attributeValue) {
+        if (SRC_ATTRIBUTE.equals(qualifiedNameLC) && UrlUtils.ABOUT_BLANK != attributeValue) {
             if (isAttachedToPage()) {
                 loadSrc();
             }

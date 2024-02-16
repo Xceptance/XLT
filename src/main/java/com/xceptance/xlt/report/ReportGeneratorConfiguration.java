@@ -206,8 +206,6 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
     private final List<Class<? extends ReportProvider>> reportProviderClasses;
 
-    private final List<RequestProcessingRule> requestProcessingRules;
-
     private final int[] runtimeIntervalBoundaries;
 
     private final double[] runtimePercentiles;
@@ -278,6 +276,10 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     private final int transactionErrorOverviewChartLimit;
 
     private final int errorDetailsChartLimit;
+    
+    private final int directoryLimitPerError;
+    
+    private final double directoryReplacementChance;
 
     private final Map<Pattern, Double> apdexThresholdsByActionNamePattern = new HashMap<>();
 
@@ -402,6 +404,9 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
                                                             50);
         errorDetailsChartLimit = getIntProperty(XltPropertyNames.ReportGenerator.Errors.TRANSACTION_ERROR_DETAIL_CHARTS_LIMIT, 50);
 
+        directoryLimitPerError = getIntProperty(XltPropertyNames.ReportGenerator.Errors.DIRECTORY_LIMIT_PER_ERROR, 10);
+        directoryReplacementChance = getDoubleProperty(XltPropertyNames.ReportGenerator.Errors.DIRECTORY_REPLACEMENT_CHANCE, 0.1);
+        
         // event settings
         groupEventsByTestCase = getBooleanProperty(PROP_PREFIX + "events.groupByTestCase", true);
         eventLimit = getIntProperty(PROP_PREFIX + "events.eventLimit", 100);
@@ -452,9 +457,6 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
         styleSheetFileNames = new ArrayList<>();
 
         readTransformations(outputFileNames, styleSheetFileNames);
-
-        // request processing rules
-        requestProcessingRules = readRequestProcessingRules();
 
         // Apdex settings
         readApdexThresholds();
@@ -721,11 +723,6 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
         return reportProviderClasses;
     }
 
-    public List<RequestProcessingRule> getRequestProcessingRules()
-    {
-        return requestProcessingRules;
-    }
-
     public FileObject getResultsDirectory()
     {
         return resultsDirectory;
@@ -789,6 +786,26 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     public int getErrorDetailsChartLimit()
     {
         return errorDetailsChartLimit;
+    }
+    
+    /**
+     * The maximum number of directory hints remembered for a certain error (stack trace).
+     *
+     * @return the maximum number of error traces to list
+     */
+    public int getDirectoryLimitPerError()
+    {
+        return directoryLimitPerError;
+    }
+    
+    /**
+     * The chance to replace directory hints remembered for a certain error (stack trace) when the maximum number is reached.
+     *
+     * @return the chance to replace listed error traces
+     */
+    public double getDirectoryReplacementChance()
+    {
+        return directoryReplacementChance;
     }
 
     /**
@@ -1412,11 +1429,11 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     }
 
     /**
-     * Reads the configured request processing rules.
+     * Reads the configured request processing rules and returns new instances
      *
      * @return the list of request processing rules
      */
-    private List<RequestProcessingRule> readRequestProcessingRules()
+    public List<RequestProcessingRule> getRequestProcessingRules()
     {
         final List<RequestProcessingRule> requestProcessingRules = new ArrayList<>();
 

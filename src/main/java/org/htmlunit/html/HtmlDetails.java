@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,10 +42,23 @@ public class HtmlDetails extends HtmlElement {
     }
 
     /**
-     * Returns the {@code open} property.
      * @return the {@code open} property
      */
     public boolean isOpen() {
         return hasAttribute("open");
+    }
+
+    /**
+     * Sets the open state.
+     *
+     * @param newValue the new value
+     */
+    public void setOpen(final boolean newValue) {
+        if (newValue) {
+            setAttribute("open", "");
+        }
+        else {
+            removeAttribute("open");
+        }
     }
 }

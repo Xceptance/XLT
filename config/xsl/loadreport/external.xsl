@@ -24,6 +24,11 @@
 
 <xsl:include href="../common/sections/javascript.xsl" />
 
+<xsl:param name="productName" />
+<xsl:param name="productVersion" />
+<xsl:param name="productUrl" />
+<xsl:param name="projectName" />
+
 <xsl:template match="/testreport">
 
 <xsl:text disable-output-escaping="yes">&lt;!</xsl:text><xsl:text>DOCTYPE html</xsl:text><xsl:text disable-output-escaping="yes">&gt;&#13;</xsl:text>
@@ -48,8 +53,12 @@
             <xsl:call-template name="external" />
 
             </div> <!-- end data-content -->
-
-            <xsl:call-template name="footer" />
+            
+        <xsl:call-template name="footer">
+            <xsl:with-param name="productName" select="$productName" />
+            <xsl:with-param name="productVersion" select="$productVersion" />
+            <xsl:with-param name="productUrl" select="$productUrl" />
+    	</xsl:call-template>
 
         </div> <!-- end content -->
     </div> <!-- end container -->

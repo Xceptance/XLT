@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,11 @@ package org.htmlunit.javascript.polyfill;
 
 import java.net.URL;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import org.htmlunit.SimpleWebTestCase;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * Tests for polyfill support.
@@ -69,44 +68,6 @@ public class PolyfillTest extends SimpleWebTestCase {
 
         final URL fetchUrl = new URL(URL_FIRST, "fetch.txt");
         getMockWebConnection().setResponse(fetchUrl, "Content fetched");
-
-        loadPageWithAlerts(html);
-    }
-
-    @Test
-    @Alerts(DEFAULT = {"hello", "everyone"},
-            IE = {})
-    public void proxy() throws Exception {
-        final String html = "<html><head>\n"
-            + "<script>\n"
-            + "function test() {\n"
-            + "  if (typeof Proxy == 'function') {\n"
-            + "    var target = { message1: 'hello', message2: 'everyone' };\n"
-            + "    var handler1 = {};\n"
-            + "    var proxy1 = new Proxy(target, handler1);\n"
-            + "    alert(proxy1.message1);\n"
-            + "    alert(proxy1.message2);\n"
-            + "  }\n"
-            + "}\n"
-            + "</script>\n"
-            + "</head>\n"
-            + "<body onload='test()'></body></html>";
-
-        getWebClientWithMockWebConnection().getOptions().setProxyPolyfillEnabled(true);
-        loadPageWithAlerts(html, URL_FIRST, (int) DEFAULT_WAIT_TIME);
-    }
-
-    @Test
-    @Alerts("undefined")
-    public void proxyPolyfillDisabled() throws Exception {
-        final String html = "<html><head>\n"
-            + "<script>\n"
-            + "  function test() {\n"
-            + "    alert(typeof Proxy);\n"
-            + "  }\n"
-            + "</script>\n"
-            + "</head>\n"
-            + "<body onload='test()'></body></html>";
 
         loadPageWithAlerts(html);
     }

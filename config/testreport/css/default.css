@@ -1159,6 +1159,10 @@ table * {
         {
             text-align: right;
         }
+        #event-summary table td.value
+        {
+            vertical-align: top;
+        }
         table td.text
         {
             text-align: left;
@@ -1301,7 +1305,7 @@ table * {
             display: block;
             margin-top: 1em;
         }
-        .section .description p
+        .section .description p, .section .description ul
         {
             text-align: justify;
             line-height: 1.25;
@@ -1320,8 +1324,6 @@ table * {
         .section .description ul
         {
             margin: 1em 10em 1em 4em;
-            line-height: 1.3em;
-            font-size: 110%;
         }
             .section .description ul li
             {
@@ -1596,9 +1598,16 @@ tr:hover td.n90 , tr:hover td.n91 , tr:hover td.n92 , tr:hover td.n93 , tr:hover
 tr:hover td.n100                                                                                                                                                                   { background: linear-gradient(rgb(200,120,120), rgba(0,0,0,0), rgb(200,120,120)) !important; }
 
 
-.added    { color: #888 !important;}
-.removed  { color: #888 !important;}
-.infinity { background-color: rgb(200,120,120) !important;}
+.added    { color: #888 !important; }
+.removed  { color: #888 !important; }
+
+.infinity {
+    background-color: rgb(200,120,120) !important;
+    /* The infinity symbol is rather small, so we use a larger font size for it, however, without increasing the height of the table cell. */
+    font-size: 1.3rem;
+    line-height: 0;
+}
+tr:hover .infinity { background: linear-gradient(rgb(200,120,120), rgba(0,0,0,0), rgb(200,120,120)) !important; }
 
 
 /*

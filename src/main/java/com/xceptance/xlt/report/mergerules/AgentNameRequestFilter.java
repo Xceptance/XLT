@@ -43,7 +43,7 @@ public class AgentNameRequestFilter extends AbstractPatternRequestFilter
      */
     public AgentNameRequestFilter(final String regex, final boolean exclude)
     {
-        super("a", regex, exclude, 100);
+        super("a", regex, exclude, 300);
     }
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,12 @@ package org.htmlunit.general.huge;
 
 import java.util.Collection;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized.Parameters;
-
 import org.htmlunit.junit.BrowserParameterizedRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized.Parameters;
 
 /**
  * Tests two Host classes, if one prototype is parent of another.
@@ -460,6 +459,17 @@ public class HostParentOfCTest extends HostParentOf {
             IE = "false")
     public void _CSSGroupingRule_CSSMediaRule() throws Exception {
         test("CSSGroupingRule", "CSSMediaRule");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = "false",
+            FF = "true")
+    @HtmlUnitNYI(FF = "false")
+    public void _CSSGroupingRule_CSSStyleRule() throws Exception {
+        test("CSSGroupingRule", "CSSStyleRule");
     }
 
     /**

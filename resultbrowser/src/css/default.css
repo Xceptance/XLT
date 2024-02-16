@@ -553,44 +553,6 @@ table.key-value-table td.value .csep {
     visibility: hidden !important;
 }
 
-
-
-/********************************************************************************************
- *
- * JSON Viewer
- * 
- ********************************************************************************************/
-
-#jsonViewer {}
-
-#jsonViewerActions {
-    font-size: 13px;
-    background-color: #f8f8f8;
-    border-top: 1px solid gray;
-    padding: 10px;
-}
-
-#jsonViewerActions button {
-    padding: 0px 4px;
-    height: 26px;
-}
-
-#jsonViewerActions input[type="text"] {
-    padding: 0px 4px;
-    height: 26px;
-    box-sizing: border-box;
-}
-
-#jsonViewerContent {
-    font-size: 14px;
-    background-color: #fff;
-    color: #808080;
-    height: 100%;
-    overflow: auto;
-    padding: 10px;
-}
-
-
 /********************************************************************************************
  *
  * Miscellaneous

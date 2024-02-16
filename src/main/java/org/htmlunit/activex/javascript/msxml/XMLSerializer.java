@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,12 @@
  */
 package org.htmlunit.activex.javascript.msxml;
 
-import org.w3c.dom.NamedNodeMap;
-
 import org.htmlunit.html.DomAttr;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.javascript.host.dom.Node;
 import org.htmlunit.util.StringUtils;
+import org.w3c.dom.NamedNodeMap;
 
 /**
  * A JavaScript object for XMLSerializer.

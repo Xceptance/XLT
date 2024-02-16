@@ -19,6 +19,7 @@
 
 <xsl:include href="util/timer-row.xsl" />
 <xsl:include href="util/timer-section.xsl" />
+<xsl:include href="util/timer-table.xsl" />
 <xsl:include href="util/timer-cell.xsl" />
 
 <xsl:include href="text/descriptions.xsl" />
@@ -26,11 +27,6 @@
 <xsl:include href="sections/comment.xsl" />
 <xsl:include href="sections/load-profile.xsl" />
 <xsl:include href="sections/general.xsl" />
-<xsl:include href="sections/transactions.xsl" />
-<xsl:include href="sections/actions.xsl" />
-<xsl:include href="sections/requests.xsl" />
-<xsl:include href="sections/page-load-timings.xsl" />
-<xsl:include href="sections/custom-timers.xsl" />
 
 <xsl:include href="../common/sections/head.xsl" />
 <xsl:include href="../common/sections/header.xsl" />
@@ -50,7 +46,7 @@
 <html lang="en">
 <head>
     <xsl:call-template name="head">
-        <xsl:with-param name="title" select="'XLT Performance Comparison Report'"/>
+        <xsl:with-param name="title" select="'XLT Performance Comparison Report - Overview'"/>
         <xsl:with-param name="projectName" select="$projectName" />
     </xsl:call-template>
 </head>
@@ -110,44 +106,13 @@
                 </div>	
             </div>
 
-            <!--
-                ************************************
-                * Transactions
-                ************************************
-            -->
-            <xsl:call-template name="transactions"/>
-
-            <!--
-                ************************************
-                * Actions
-                ************************************
-            -->
-            <xsl:call-template name="actions"/>
-
-            <!--
-                ************************************
-                * Requests
-                ************************************
-            -->
-            <xsl:call-template name="requests"/>
-
-            <!--
-                ************************************
-                * Page Load Timings
-                ************************************
-            -->
-            <xsl:call-template name="page-load-timings"/>
-
-            <!--
-                ************************************
-                * Custom Timers
-                ************************************
-            -->
-            <xsl:call-template name="custom-timers"/>
-
         </div> <!-- data-content -->
 
-        <xsl:call-template name="footer" />
+        <xsl:call-template name="footer">
+        	<xsl:with-param name="productName" select="$productName" />
+            <xsl:with-param name="productVersion" select="$productVersion" />
+            <xsl:with-param name="productUrl" select="$productUrl" />
+        </xsl:call-template>
     </div> <!-- data-content -->
 </div> <!-- end container -->
 

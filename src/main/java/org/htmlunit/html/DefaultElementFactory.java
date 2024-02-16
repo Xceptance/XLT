@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,17 +16,19 @@ package org.htmlunit.html;
 
 import static org.htmlunit.BrowserVersionFeatures.KEYGEN_AS_BLOCK;
 
-import java.util.LinkedHashMap;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.xml.sax.Attributes;
-
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.SgmlPage;
 import org.htmlunit.javascript.configuration.JavaScriptConfiguration;
+import org.htmlunit.util.OrderedFastHashMap;
+import org.xml.sax.Attributes;
 
 /**
  * <span style="color:red">INTERNAL API - SUBJECT TO CHANGE AT ANY TIME - USE AT YOUR OWN RISK.</span><br>
@@ -56,7 +58,7 @@ public class DefaultElementFactory implements ElementFactory {
     /**
      * You can generate your own test cases by looking into ElementTestSource.generateTestForHtmlElements.
      */
-    public static final String[] SUPPORTED_TAGS_ = {
+    public static final List<String> SUPPORTED_TAGS_ = Collections.unmodifiableList(Arrays.asList(
         KEYGEN_, HtmlAbbreviated.TAG_NAME, HtmlAcronym.TAG_NAME,
         HtmlAnchor.TAG_NAME, HtmlAddress.TAG_NAME, HtmlApplet.TAG_NAME, HtmlArea.TAG_NAME,
         HtmlArticle.TAG_NAME, HtmlAside.TAG_NAME, HtmlAudio.TAG_NAME,
@@ -95,7 +97,7 @@ public class DefaultElementFactory implements ElementFactory {
         HtmlParagraph.TAG_NAME,
         HtmlParameter.TAG_NAME, HtmlPicture.TAG_NAME, HtmlPlainText.TAG_NAME, HtmlPreformattedText.TAG_NAME,
         HtmlProgress.TAG_NAME,
-        HtmlRp.TAG_NAME, HtmlRt.TAG_NAME, HtmlRuby.TAG_NAME,
+        HtmlRb.TAG_NAME, HtmlRp.TAG_NAME, HtmlRt.TAG_NAME, HtmlRtc.TAG_NAME, HtmlRuby.TAG_NAME,
         HtmlS.TAG_NAME, HtmlSample.TAG_NAME,
         HtmlScript.TAG_NAME, HtmlSection.TAG_NAME, HtmlSelect.TAG_NAME, HtmlSlot.TAG_NAME, HtmlSmall.TAG_NAME,
         HtmlSource.TAG_NAME, HtmlSpan.TAG_NAME,
@@ -108,7 +110,7 @@ public class DefaultElementFactory implements ElementFactory {
         HtmlTableHeader.TAG_NAME, HtmlTeletype.TAG_NAME, HtmlTemplate.TAG_NAME, HtmlTime.TAG_NAME,
         HtmlTitle.TAG_NAME, HtmlTrack.TAG_NAME, HtmlUnderlined.TAG_NAME, HtmlUnorderedList.TAG_NAME,
         HtmlVariable.TAG_NAME, HtmlVideo.TAG_NAME, HtmlWordBreak.TAG_NAME, HtmlExample.TAG_NAME
-    };
+    ));
 
     /**
      * @param page the owning page
@@ -589,12 +591,20 @@ public class DefaultElementFactory implements ElementFactory {
                 element = new HtmlProgress(qualifiedName, page, attributeMap);
                 break;
 
+            case HtmlRb.TAG_NAME:
+                element = new HtmlRb(qualifiedName, page, attributeMap);
+                break;
+
             case HtmlRp.TAG_NAME:
                 element = new HtmlRp(qualifiedName, page, attributeMap);
                 break;
 
             case HtmlRt.TAG_NAME:
                 element = new HtmlRt(qualifiedName, page, attributeMap);
+                break;
+
+            case HtmlRtc.TAG_NAME:
+                element = new HtmlRtc(qualifiedName, page, attributeMap);
                 break;
 
             case HtmlRuby.TAG_NAME:
@@ -769,23 +779,25 @@ public class DefaultElementFactory implements ElementFactory {
      * @return the map of attribute values for {@link HtmlElement}s
      */
     static Map<String, DomAttr> toMap(final SgmlPage page, final Attributes attributes) {
-        if (attributes == null) {
-            return null;
-        }
+        final int length = attributes == null ? 0 : attributes.getLength();
+        final Map<String, DomAttr> attributeMap = new OrderedFastHashMap<>(length);
 
-        final Map<String, DomAttr> attributeMap = new LinkedHashMap<>(attributes.getLength());
-        for (int i = 0; i < attributes.getLength(); i++) {
+        for (int i = 0; i < length; i++) {
             final String qName = attributes.getQName(i);
+
             // browsers consider only first attribute (ex: <div id='foo' id='something'>...</div>)
             if (!attributeMap.containsKey(qName)) {
                 String namespaceURI = attributes.getURI(i);
+
                 if (namespaceURI != null && namespaceURI.isEmpty()) {
                     namespaceURI = null;
                 }
+
                 final DomAttr newAttr = new DomAttr(page, namespaceURI, qName, attributes.getValue(i), true);
                 attributeMap.put(qName, newAttr);
             }
         }
+
         return attributeMap;
     }
 
@@ -794,7 +806,7 @@ public class DefaultElementFactory implements ElementFactory {
         String type = "";
         if (attributeMap != null) {
             for (final Map.Entry<String, DomAttr> entry : attributeMap.entrySet()) {
-                if ("type".equalsIgnoreCase(entry.getKey())) {
+                if (DomElement.TYPE_ATTRIBUTE.equalsIgnoreCase(entry.getKey())) {
                     type = entry.getValue().getValue();
                 }
             }

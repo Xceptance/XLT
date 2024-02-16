@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,14 +23,13 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import org.apache.commons.lang3.StringUtils;
-
+import org.htmlunit.html.DomElement;
 import org.htmlunit.html.HtmlMenu;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.configuration.JsxSetter;
-
-import org.htmlunit.corejs.javascript.Context;
 
 /**
  * The JavaScript object {@code HTMLMenuElement}.
@@ -45,8 +44,16 @@ public class HTMLMenuElement extends HTMLListElement {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public HTMLMenuElement() {
+    }
+
+    /**
+     * JavaScript constructor.
+     */
+    @Override
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    public void jsConstructor() {
+        super.jsConstructor();
     }
 
     /**
@@ -86,23 +93,23 @@ public class HTMLMenuElement extends HTMLListElement {
             if (StringUtils.isEmpty(type)) {
                 return;
             }
-            throw Context.reportRuntimeError("Cannot set the type property to invalid value: '" + type + "'");
+            throw JavaScriptEngine.reportRuntimeError("Cannot set the type property to invalid value: '" + type + "'");
         }
 
         if (getBrowserVersion().hasFeature(JS_MENU_TYPE_PASS)) {
-            getDomNodeOrDie().setAttribute("type", type);
+            getDomNodeOrDie().setAttribute(DomElement.TYPE_ATTRIBUTE, type);
             return;
         }
 
         if ("context".equalsIgnoreCase(type)) {
-            getDomNodeOrDie().setAttribute("type", "context");
+            getDomNodeOrDie().setAttribute(DomElement.TYPE_ATTRIBUTE, "context");
             return;
         }
         if ("toolbar".equalsIgnoreCase(type)) {
-            getDomNodeOrDie().setAttribute("type", "toolbar");
+            getDomNodeOrDie().setAttribute(DomElement.TYPE_ATTRIBUTE, "toolbar");
             return;
         }
 
-        getDomNodeOrDie().setAttribute("type", "list");
+        getDomNodeOrDie().setAttribute(DomElement.TYPE_ATTRIBUTE, "list");
     }
 }
