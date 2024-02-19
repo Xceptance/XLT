@@ -19,16 +19,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.xceptance.common.lang.ParseNumbers;
-import com.xceptance.common.util.CsvLineDecoder;
-import com.xceptance.common.util.CsvUtils;
-import com.xceptance.xlt.api.util.SimpleArrayList;
 import com.xceptance.xlt.api.util.XltCharBuffer;
 
 /**
  * The {@link AbstractData} class may be the super class of a special data record class.
- *
- * <p>Import change in 7.0: We are not longer automatically capturing the start time
- * when this object is created for performance reasons. You have to set the time explicitly.
+ * <p>
+ * Import change in 7.0: We are not longer automatically capturing the start time when this object is created for
+ * performance reasons. You have to set the time explicitly.
  *
  * @author Jörg Werner (Xceptance Software Technologies GmbH)
  */
@@ -85,63 +82,48 @@ public abstract class AbstractData implements Data
     }
 
     /**
-     * {@inheritDoc}
-     */
-    @Override
-    public final void initBaseValues(final List<XltCharBuffer> result)
-    {
-        setupBaseValues(result);
-    }
-
-    /**
      * Mainly for testing, we can recreate the state from a list at once
      *
-     * @param result a list of columns with the data matching this data format
+     * @param values
+     *            a list of columns with the data matching this data format
      */
-    public final void initAllValuesAtOnce(final List<XltCharBuffer> result)
+    public final void initAllValues(final List<XltCharBuffer> values)
     {
-        setupBaseValues(result);
-        setupRemainingValues(result);
+        initBaseValues(values);
+        initRemainingValues(values);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public final void initRemainingValues(final List<XltCharBuffer> result)
+    public void initBaseValues(final List<XltCharBuffer> values)
     {
-        setupRemainingValues(result);
-    }
+        if (values.size() < getMinNoOfValues())
+        {
+            throw new IllegalArgumentException(String.format("Expected at least %d fields, but got only %d -> %s", getMinNoOfValues(),
+                                                             values.size(), values));
+        }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public final void baseValuesFromCSV(final SimpleArrayList<XltCharBuffer> result, final XltCharBuffer s)
-    {
-        CsvLineDecoder.parse(result, s);
-        setupBaseValues(result);
-    }
+        // check the type code
+        if (values.get(0).charAt(0) == typeCode)
+        {
+            // read and check the values
+            name = values.get(1).toString();
+            name.hashCode(); // create it when it is still hot in the cache
 
-    /**
-     * Mainly for testing, we can recreate the state from a list at once
-     *
-     * @deprecated {@link AbstractData#initAllValuesAtOnce(List)}
-     */
-    @Deprecated(since = "7.4")
-    public final void parseValues(final SimpleArrayList<XltCharBuffer> result)
-    {
-        setupBaseValues(result);
-        setupRemainingValues(result);
-    }
+            time = ParseNumbers.parseLong(values.get(2));
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public final void remainingValuesFromCSV(final SimpleArrayList<XltCharBuffer> result)
-    {
-        setupRemainingValues(result);
+            if (time <= 0)
+            {
+                throw new IllegalArgumentException(String.format("Invalid time value: %d", time));
+            }
+        }
+        else
+        {
+            throw new IllegalArgumentException("Cannot recreate the object state. The read type code '" + values.get(0) +
+                                               "' does not match the expected type code '" + typeCode + "'.");
+        }
     }
 
     /**
@@ -226,23 +208,12 @@ public abstract class AbstractData implements Data
     }
 
     /**
-     * {@inheritDoc}
-     */
-    @Override
-    public final StringBuilder toCSV()
-    {
-        final List<String> fields = addValues();
-
-        return CsvUtils.encode(fields, DELIMITER);
-    }
-
-    /**
      * Builds a list of string values that represents the state of this object. Override this method in sub classes to
      * add custom values and use the list created by the super class.
      *
      * @return the list of values
      */
-    protected List<String> addValues()
+    public List<String> getAllValues()
     {
         final List<String> fields = new ArrayList<String>(20);
 
@@ -254,57 +225,16 @@ public abstract class AbstractData implements Data
     }
 
     /**
-     * Returns the minimum number of elements in the CSV string.
+     * Returns the minimum number of elements when reconstructing the state from a list of values.
      *
-     * @return minimum number of elements in the CSV string
+     * @return minimum number of elements in the values list
+     * 
+     * @see #initBaseValues(List)
+     * @see #initRemainingValues(List)
      */
-    protected int getMinNoCSVElements()
+    protected int getMinNoOfValues()
     {
         // typeCode, name, time
         return 3;
     }
-
-    /**
-     * Recreates the base state: type code, name, and time.
-     *
-     * @param values
-     *            the list of values, must have at least the length {@link #getMinNoCSVElements()}
-     */
-    protected void setupBaseValues(final List<XltCharBuffer> values)
-    {
-        if (values.size() < getMinNoCSVElements())
-        {
-            throw new IllegalArgumentException(String.format("Expected at least %d fields, but got only %d -> %s", getMinNoCSVElements(),
-                                                             values.size(), values));
-        }
-
-        // check the type code
-        if (values.get(0).charAt(0) == typeCode)
-        {
-            // read and check the values
-            name = values.get(1).toString();
-            name.hashCode(); // create it when it is still hot in the cache
-
-            time = ParseNumbers.parseLong(values.get(2));
-
-            if (time <= 0)
-            {
-                throw new IllegalArgumentException(String.format("Invalid time value: %d", time));
-            }
-        }
-        else
-        {
-            throw new IllegalArgumentException("Cannot recreate the object state. The read type code '" + values.get(0) +
-                                               "' does not match the expected type code '" + typeCode + "'.");
-        }
-    }
-
-    /**
-     * Recreates the state of this object from an array of values. Override this method in sub classes to restore
-     * custom values.
-     *
-     * @param values
-     *            the list of values, must have at least the length {@link #getMinNoCSVElements()}
-     */
-    protected abstract void setupRemainingValues(final List<XltCharBuffer> values);
 }

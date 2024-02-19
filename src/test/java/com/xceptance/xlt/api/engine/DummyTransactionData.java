@@ -46,7 +46,7 @@ public class DummyTransactionData extends TransactionData
     {
         final DummyTransactionData returnValue = new DummyTransactionData();
         final String stackTrace = "a (user: 'testUser', output: '1234567890')";
-        returnValue.setupRemainingValues(XltCharBufferUtil.toList(new String[]
+        returnValue.initAllValues(XltCharBufferUtil.toList(new String[]
             {
                 "T", "transactionName", "5000", "1", "true", stackTrace
             }));

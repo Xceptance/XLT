@@ -62,7 +62,7 @@ public class JvmResourceUsageDataTest
 
         final JvmResourceUsageData data = new JvmResourceUsageData();
 
-        data.parseValues(XltCharBufferUtil.toSimpleArrayList(values));
+        data.initAllValues(XltCharBufferUtil.toSimpleArrayList(values));
 
         checkDoubleIsEqual("CPU", cpuUsage, data.getCpuUsage());
         checkLongIsEqual("committed memory size", committedMemorySize, data.getCommittedMemorySize());
@@ -90,7 +90,7 @@ public class JvmResourceUsageDataTest
 
         checkDoubleIsEqual("total CPU", totalCpuUsage, data.getTotalCpuUsage());
 
-        var a = data.addValues().toArray();
+        var a = data.getAllValues().toArray();
         Assert.assertArrayEquals(values, a);
     }
 

@@ -27,7 +27,7 @@ public final class CsvUtils
     /**
      * Character constant representing a comma.
      */
-    private static final char COMMA = ',';
+    public static final char COMMA = ',';
 
     /**
      * Character constant representing a double quote.
