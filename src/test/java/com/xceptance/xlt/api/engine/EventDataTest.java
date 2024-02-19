@@ -86,7 +86,7 @@ public class EventDataTest extends AbstractDataTest
 
         var e = new EventData();
 
-        e.initBaseValues(data);
+        e.setBaseValues(data);
         assertEquals('E', e.getTypeCode());
         assertEquals("Test42", e.getName());
         assertEquals(1602817628282L, e.getTime());
@@ -96,18 +96,8 @@ public class EventDataTest extends AbstractDataTest
         assertNull(e.getTestCaseName());
 
         // ok, now what is really important
-        e.initRemainingValues(data);
+        e.setRemainingValues(data);
         assertEquals("A message", e.getMessage());
         assertEquals("TCName", e.getTestCaseName());
-    }
-
-    /**
-     * Verify valid size
-     */
-    @Test
-    public void size()
-    {
-        var e = new EventData();
-        assertEquals(5, e.getMinNoOfValues());
     }
 }

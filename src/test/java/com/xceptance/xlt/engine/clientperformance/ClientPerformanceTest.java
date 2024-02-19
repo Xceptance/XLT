@@ -246,7 +246,7 @@ public class ClientPerformanceTest
 
         private void checkRequest(RequestData data)
         {
-            System.err.println(data.getAllValues());
+            System.err.println(data.toList());
 
             // extract expected values from the request's URL
             HttpRequestHandlerConfiguration config = new HttpRequestHandlerConfiguration();

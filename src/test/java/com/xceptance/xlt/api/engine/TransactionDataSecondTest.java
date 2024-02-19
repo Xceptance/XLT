@@ -44,7 +44,7 @@ public class TransactionDataSecondTest
             {
                 "T", "noname", "123", "1", "true", stackTrace
             });
-        td.initRemainingValues(values);
+        td.setRemainingValues(values);
 
         final String directoryName = ReflectionUtils.readField(TransactionData.class, td, "directoryName");
 
@@ -58,7 +58,7 @@ public class TransactionDataSecondTest
             {
                 "T", "noname", "123", "1", "true", ""
             });
-        td.initRemainingValues(values2);
+        td.setRemainingValues(values2);
 
         Assert.assertEquals("Wrong stack trace", null, td.getFailureStackTrace());
 
@@ -66,6 +66,6 @@ public class TransactionDataSecondTest
             {
                 "T", "noname", "123", "1", "true", "neitherMatchingNorEmptySTackTrace"
             });
-        td.initRemainingValues(values3);
+        td.setRemainingValues(values3);
     }
 }

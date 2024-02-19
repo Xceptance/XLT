@@ -741,9 +741,9 @@ public class RequestData extends TimerData
      * {@inheritDoc}
      */
     @Override
-    public List<String> getAllValues()
+    public List<String> toList()
     {
-        final List<String> fields = super.getAllValues();
+        final List<String> fields = super.toList();
 
         fields.add(Integer.toString(bytesSent));
         fields.add(Integer.toString(bytesReceived));
@@ -776,18 +776,9 @@ public class RequestData extends TimerData
      * {@inheritDoc}
      */
     @Override
-    protected int getMinNoOfValues()
+    public void setRemainingValues(final List<XltCharBuffer> values)
     {
-        return 8;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void initRemainingValues(final List<XltCharBuffer> values)
-    {
-        super.initRemainingValues(values);
+        super.setRemainingValues(values);
 
         setBytesSent(ParseNumbers.parseInt(values.get(5)));
         setBytesReceived(ParseNumbers.parseInt(values.get(6)));

@@ -111,7 +111,7 @@ public class TimerDataTest extends AbstractDataTest
         d.setRunTime(1002);
         d.setFailed(true);
 
-        var l = d.getAllValues();
+        var l = d.toList();
         assertEquals(String.valueOf(TYPECODE), l.get(0));
         assertEquals("Test", l.get(1));
         assertEquals("1654632508330", l.get(2));
@@ -120,7 +120,7 @@ public class TimerDataTest extends AbstractDataTest
 
         d.setFailed(false);
 
-        l = d.getAllValues();
+        l = d.toList();
         assertEquals(String.valueOf(TYPECODE), l.get(0));
         assertEquals("Test", l.get(1));
         assertEquals("1654632508330", l.get(2));
@@ -135,8 +135,8 @@ public class TimerDataTest extends AbstractDataTest
         var list = XltCharBufferUtil.toList(String.valueOf(TYPECODE), "Name", "1654632508330", "666", "true");
 
         var d = new TestData(TYPECODE);
-        d.initBaseValues(list); // inherited
-        d.initRemainingValues(list);
+        d.setBaseValues(list); // inherited
+        d.setRemainingValues(list);
 
         assertEquals(TYPECODE, d.getTypeCode());
         assertEquals("Name", d.getName());
@@ -155,21 +155,12 @@ public class TimerDataTest extends AbstractDataTest
 
         try
         {
-            d.initAllValues(list);
+            d.setAllValues(list);
             fail();
         }
         catch (IllegalArgumentException e)
         {
             assertEquals("Invalid value for the 'runtime' attribute.", e.getMessage());
         }
-
-    }
-
-    // count of records
-    @Test
-    public void getMinNoCSVElements()
-    {
-        var d = new TestData("Test", TYPECODE);
-        assertEquals(5, d.getMinNoOfValues());
     }
 }

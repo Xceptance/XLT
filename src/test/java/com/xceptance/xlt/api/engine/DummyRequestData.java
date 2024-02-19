@@ -48,7 +48,7 @@ public class DummyRequestData extends RequestData
     {
         final DummyRequestData returnValue = new DummyRequestData();
         // String stackTrace = "a (user: 'testUser', output: '1234567890')";
-        returnValue.initAllValues(XltCharBufferUtil.toList(new String[]
+        returnValue.setAllValues(XltCharBufferUtil.toList(new String[]
             {
                 "R", "requestName", "4000", "1", "true", "100", "200", "404"
             }));
