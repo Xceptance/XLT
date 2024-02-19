@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 7.4.0
+#Version 7.4.0-SNAPSHOT
 
 CLSS public abstract com.xceptance.xlt.api.actions.AbstractAction
 cons protected init(com.xceptance.xlt.api.actions.AbstractAction,java.lang.String)
@@ -275,19 +275,15 @@ CLSS public abstract com.xceptance.xlt.api.engine.AbstractData
 cons public init(char)
 cons public init(java.lang.String,char)
 intf com.xceptance.xlt.api.engine.Data
-meth protected abstract void parseRemainingValues(java.util.List<com.xceptance.xlt.api.util.XltCharBuffer>)
-meth protected int getMinNoCSVElements()
-meth protected java.util.List<java.lang.String> addValues()
-meth protected void parseBaseValues(java.util.List<com.xceptance.xlt.api.util.XltCharBuffer>)
+meth protected int getMinNoOfValues()
 meth public char getTypeCode()
-meth public final java.lang.StringBuilder toCSV()
-meth public final void baseValuesFromCSV(com.xceptance.xlt.api.util.SimpleArrayList<com.xceptance.xlt.api.util.XltCharBuffer>,com.xceptance.xlt.api.util.XltCharBuffer)
-meth public final void parseValues(com.xceptance.xlt.api.util.SimpleArrayList<com.xceptance.xlt.api.util.XltCharBuffer>)
-meth public final void remainingValuesFromCSV(com.xceptance.xlt.api.util.SimpleArrayList<com.xceptance.xlt.api.util.XltCharBuffer>)
+meth public final void initAllValues(java.util.List<com.xceptance.xlt.api.util.XltCharBuffer>)
 meth public java.lang.String getAgentName()
 meth public java.lang.String getName()
 meth public java.lang.String getTransactionName()
+meth public java.util.List<java.lang.String> getAllValues()
 meth public long getTime()
+meth public void initBaseValues(java.util.List<com.xceptance.xlt.api.util.XltCharBuffer>)
 meth public void setAgentName(java.lang.String)
 meth public void setName(java.lang.String)
 meth public void setTime(long)
@@ -310,24 +306,23 @@ hfds TYPE_CODE
 CLSS public com.xceptance.xlt.api.engine.CustomValue
 cons public init()
 cons public init(java.lang.String)
-meth protected int getMinNoCSVElements()
-meth protected java.util.List<java.lang.String> addValues()
-meth protected void parseRemainingValues(java.util.List<com.xceptance.xlt.api.util.XltCharBuffer>)
+meth protected int getMinNoOfValues()
 meth public double getValue()
+meth public java.util.List<java.lang.String> getAllValues()
+meth public void initRemainingValues(java.util.List<com.xceptance.xlt.api.util.XltCharBuffer>)
 meth public void setValue(double)
 supr com.xceptance.xlt.api.engine.AbstractData
 hfds TYPE_CODE,value
 
 CLSS public abstract interface com.xceptance.xlt.api.engine.Data
-fld public final static char DELIMITER = ','
 meth public abstract char getTypeCode()
 meth public abstract java.lang.String getAgentName()
 meth public abstract java.lang.String getName()
 meth public abstract java.lang.String getTransactionName()
-meth public abstract java.lang.StringBuilder toCSV()
+meth public abstract java.util.List<java.lang.String> getAllValues()
 meth public abstract long getTime()
-meth public abstract void baseValuesFromCSV(com.xceptance.xlt.api.util.SimpleArrayList<com.xceptance.xlt.api.util.XltCharBuffer>,com.xceptance.xlt.api.util.XltCharBuffer)
-meth public abstract void remainingValuesFromCSV(com.xceptance.xlt.api.util.SimpleArrayList<com.xceptance.xlt.api.util.XltCharBuffer>)
+meth public abstract void initBaseValues(java.util.List<com.xceptance.xlt.api.util.XltCharBuffer>)
+meth public abstract void initRemainingValues(java.util.List<com.xceptance.xlt.api.util.XltCharBuffer>)
 meth public abstract void setAgentName(java.lang.String)
 meth public abstract void setName(java.lang.String)
 meth public abstract void setTime(long)
@@ -354,11 +349,11 @@ meth public abstract !hasdefault int value()
 CLSS public com.xceptance.xlt.api.engine.EventData
 cons public init()
 cons public init(java.lang.String)
-meth protected int getMinNoCSVElements()
-meth protected java.util.List<java.lang.String> addValues()
-meth protected void parseRemainingValues(java.util.List<com.xceptance.xlt.api.util.XltCharBuffer>)
+meth protected int getMinNoOfValues()
 meth public java.lang.String getMessage()
 meth public java.lang.String getTestCaseName()
+meth public java.util.List<java.lang.String> getAllValues()
+meth public void initRemainingValues(java.util.List<com.xceptance.xlt.api.util.XltCharBuffer>)
 meth public void setMessage(java.lang.String)
 meth public void setTestCaseName(java.lang.String)
 supr com.xceptance.xlt.api.engine.AbstractData
@@ -409,9 +404,7 @@ CLSS public com.xceptance.xlt.api.engine.RequestData
 cons public init()
 cons public init(java.lang.String)
 fld public final static com.xceptance.xlt.api.util.XltCharBuffer UNKNOWN_HOST
-meth protected int getMinNoCSVElements()
-meth protected java.util.List<java.lang.String> addValues()
-meth protected void parseRemainingValues(java.util.List<com.xceptance.xlt.api.util.XltCharBuffer>)
+meth protected int getMinNoOfValues()
 meth public com.xceptance.xlt.api.util.XltCharBuffer getContentType()
 meth public com.xceptance.xlt.api.util.XltCharBuffer getFormData()
 meth public com.xceptance.xlt.api.util.XltCharBuffer getFormDataEncoding()
@@ -433,6 +426,8 @@ meth public int hashCodeOfUrlWithoutFragment()
 meth public java.lang.String getRequestId()
 meth public java.lang.String getResponseId()
 meth public java.lang.String[] getIpAddresses()
+meth public java.util.List<java.lang.String> getAllValues()
+meth public void initRemainingValues(java.util.List<com.xceptance.xlt.api.util.XltCharBuffer>)
 meth public void setBytesReceived(int)
 meth public void setBytesSent(int)
 meth public void setConnectTime(int)
@@ -524,12 +519,12 @@ meth public abstract void shutdown()
 CLSS public abstract com.xceptance.xlt.api.engine.TimerData
 cons public init(char)
 cons public init(java.lang.String,char)
-meth protected int getMinNoCSVElements()
-meth protected java.util.List<java.lang.String> addValues()
-meth protected void parseRemainingValues(java.util.List<com.xceptance.xlt.api.util.XltCharBuffer>)
+meth protected int getMinNoOfValues()
 meth public boolean hasFailed()
 meth public int getRunTime()
+meth public java.util.List<java.lang.String> getAllValues()
 meth public long getEndTime()
+meth public void initRemainingValues(java.util.List<com.xceptance.xlt.api.util.XltCharBuffer>)
 meth public void setFailed(boolean)
 meth public void setRunTime(int)
 meth public void setRunTime(long)
@@ -539,15 +534,15 @@ hfds failed,runTime
 CLSS public com.xceptance.xlt.api.engine.TransactionData
 cons public init()
 cons public init(java.lang.String)
-meth protected int getMinNoCSVElements()
-meth protected java.util.List<java.lang.String> addValues()
-meth protected void parseRemainingValues(java.util.List<com.xceptance.xlt.api.util.XltCharBuffer>)
+meth protected int getMinNoOfValues()
 meth public java.lang.String getDirectoryName()
 meth public java.lang.String getDumpDirectoryPath()
 meth public java.lang.String getFailedActionName()
 meth public java.lang.String getFailureMessage()
 meth public java.lang.String getFailureStackTrace()
 meth public java.lang.String getTestUserNumber()
+meth public java.util.List<java.lang.String> getAllValues()
+meth public void initRemainingValues(java.util.List<com.xceptance.xlt.api.util.XltCharBuffer>)
 meth public void setDirectoryName(java.lang.String)
 meth public void setFailedActionName(java.lang.String)
 meth public void setFailureStackTrace(java.lang.String)
@@ -1977,6 +1972,8 @@ meth public static com.xceptance.xlt.api.validators.ContentLengthValidator getIn
 meth public void validate(com.xceptance.xlt.api.htmlunit.LightWeightPage)
 meth public void validate(org.htmlunit.html.HtmlPage)
 supr java.lang.Object
+hfds PROPERTY_NAME
+hcls ContentLengthValidator_Singleton,DisabledContentLengthValidator
 
 CLSS public com.xceptance.xlt.api.validators.HtmlEndTagValidator
 meth public static com.xceptance.xlt.api.validators.HtmlEndTagValidator getInstance()
@@ -1984,8 +1981,8 @@ meth public void validate(com.xceptance.xlt.api.htmlunit.LightWeightPage)
 meth public void validate(java.lang.String)
 meth public void validate(org.htmlunit.html.HtmlPage)
 supr java.lang.Object
-hfds CL_HTML_REGEX,REGULAR_TRAILING_CONTENT_REGEX,pattern,trailingContentPattern
-hcls HtmlEndTagValidator_Singleton
+hfds CL_HTML_REGEX,PROPERTY_NAME,REGULAR_TRAILING_CONTENT_REGEX,pattern,trailingContentPattern
+hcls DisabledHtmlEndTagValidator,HtmlEndTagValidator_Singleton
 
 CLSS public com.xceptance.xlt.api.validators.HttpResponseCodeValidator
 cons public init()
@@ -2014,8 +2011,8 @@ meth public void validate(com.xceptance.xlt.api.htmlunit.LightWeightPage) throws
 meth public void validate(java.lang.String) throws java.lang.Exception
 meth public void validate(org.htmlunit.html.HtmlPage) throws java.lang.Exception
 supr java.lang.Object
-hfds breakOnErrors,breakOnWarnings,enabled,propertyName
-hcls LocalEntityResolver,LocalErrorHandler,XHTMLValidator_Singleton
+hfds PROPERTY_NAME,breakOnErrors,breakOnWarnings
+hcls DisabledXHTMLValidator,LocalEntityResolver,LocalErrorHandler,XHTMLValidator_Singleton
 
 CLSS public com.xceptance.xlt.api.webdriver.XltChromeDriver
 cons public init()
@@ -2029,7 +2026,7 @@ meth public static com.xceptance.xlt.api.webdriver.XltChromeDriver$Builder xltBu
 meth public void close()
 meth public void quit()
 supr org.openqa.selenium.chrome.ChromeDriver
-hfds CONNECT_RETRY_BASE_TIMEOUT,CONNECT_RETRY_COUNT,CONNECT_RETRY_TIMEOUT_FACTOR,EXTENSION_FILE_ENDING,EXTENSION_FILE_NAME,FIELD_NAME_ENVIRONMENT,HEADLESS_ENABLED,IGNORE_MISSING_DATA,LOG,PROPERTY_DOMAIN,PROPERTY_HEADLESS,PROPERTY_IGNORE_MISSING_DATA,PROPERTY_RECORD_INCOMPLETE,RECORD_INCOMPLETE_ENABLED,connectionHandler,extensionFile
+hfds CONNECT_RETRY_BASE_TIMEOUT,CONNECT_RETRY_COUNT,CONNECT_RETRY_TIMEOUT_FACTOR,EXTENSION_FILE_ENDING,EXTENSION_FILE_NAME,FIELD_NAME_ENVIRONMENT,HEADLESS_ENABLED,IGNORE_MISSING_DATA,LOG,PROPERTY_DOMAIN,PROPERTY_HEADLESS,PROPERTY_IGNORE_MISSING_DATA,PROPERTY_RECORD_INCOMPLETE,PROPERTY_USE_SESSION_STORAGE,RECORD_INCOMPLETE_ENABLED,USE_SESSION_STORAGE,connectionHandler,extensionFile
 
 CLSS public final static com.xceptance.xlt.api.webdriver.XltChromeDriver$Builder
  outer com.xceptance.xlt.api.webdriver.XltChromeDriver
