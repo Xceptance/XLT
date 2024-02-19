@@ -163,7 +163,7 @@ public class DataManagerImpl implements DataManager
             try
             {
                 // convert the values to a CSV line 
-                final StringBuilder csv = CsvUtils.encode(stats.getAllValues());
+                final StringBuilder csv = CsvUtils.encode(stats.toList());
                 final StringBuilder s = removeLineSeparators(csv, ' ');
                 s.append(LINE_SEPARATOR);
 

@@ -54,22 +54,15 @@ public class AbstractDataTest
         }
 
         @Override
-        protected int getMinNoOfValues()
-        {
-            // typeCode, name, time, myData
-            return super.getMinNoOfValues() + 1;
-        }
-
-        @Override
-        public void initRemainingValues(List<XltCharBuffer> values)
+        public void setRemainingValues(List<XltCharBuffer> values)
         {
             myData = values.get(3);
         }
 
         @Override
-        public List<String> getAllValues()
+        public List<String> toList()
         {
-            var l = super.getAllValues();
+            var l = super.toList();
             l.add(myData.toString());
 
             return l;
@@ -133,7 +126,7 @@ public class AbstractDataTest
 
         try
         {
-            d.initBaseValues(data);
+            d.setBaseValues(data);
             fail("No exception raised");
         }
         catch (IllegalArgumentException e)
@@ -152,7 +145,7 @@ public class AbstractDataTest
 
         try
         {
-            d.initBaseValues(data);
+            d.setBaseValues(data);
             fail("No exception raised");
         }
         catch (IllegalArgumentException e)
@@ -171,7 +164,7 @@ public class AbstractDataTest
 
         try
         {
-            d.initBaseValues(data);
+            d.setBaseValues(data);
             fail("No exception raised");
         }
         catch (IllegalArgumentException e)
@@ -187,7 +180,7 @@ public class AbstractDataTest
         var data = CsvLineDecoder.parse("X,Name,123456789,MyData");
 
         var d = new TestData(TYPECODE);
-        d.initBaseValues(data);
+        d.setBaseValues(data);
 
         assertEquals('X', d.getTypeCode());
         assertEquals("Name", d.getName());
@@ -202,8 +195,8 @@ public class AbstractDataTest
         var data = CsvLineDecoder.parse("X,Name,123456789,MyData");
 
         var d = new TestData(TYPECODE);
-        d.initBaseValues(data);
-        d.initRemainingValues(data);
+        d.setBaseValues(data);
+        d.setRemainingValues(data);
 
         assertEquals('X', d.getTypeCode());
         assertEquals("Name", d.getName());

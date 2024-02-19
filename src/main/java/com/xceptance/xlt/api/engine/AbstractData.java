@@ -82,29 +82,23 @@ public abstract class AbstractData implements Data
     }
 
     /**
-     * Mainly for testing, we can recreate the state from a list at once
+     * Recreates the full object state at once. Mainly for testing.
      *
      * @param values
-     *            a list of columns with the data matching this data format
+     *            the string list to recreate the object state from
      */
-    public final void initAllValues(final List<XltCharBuffer> values)
+    public final void setAllValues(final List<XltCharBuffer> values)
     {
-        initBaseValues(values);
-        initRemainingValues(values);
+        setBaseValues(values);
+        setRemainingValues(values);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void initBaseValues(final List<XltCharBuffer> values)
+    public void setBaseValues(final List<XltCharBuffer> values)
     {
-        if (values.size() < getMinNoOfValues())
-        {
-            throw new IllegalArgumentException(String.format("Expected at least %d fields, but got only %d -> %s", getMinNoOfValues(),
-                                                             values.size(), values));
-        }
-
         // check the type code
         if (values.get(0).charAt(0) == typeCode)
         {
@@ -208,12 +202,11 @@ public abstract class AbstractData implements Data
     }
 
     /**
-     * Builds a list of string values that represents the state of this object. Override this method in sub classes to
-     * add custom values and use the list created by the super class.
-     *
-     * @return the list of values
+     * {@inheritDoc}
+     * <p>
+     * Override this method in sub classes by calling the super method and adding custom values to the list it returns.
      */
-    public List<String> getAllValues()
+    public List<String> toList()
     {
         final List<String> fields = new ArrayList<String>(20);
 
@@ -222,19 +215,5 @@ public abstract class AbstractData implements Data
         fields.add(Long.toString(time));
 
         return fields;
-    }
-
-    /**
-     * Returns the minimum number of elements when reconstructing the state from a list of values.
-     *
-     * @return minimum number of elements in the values list
-     * 
-     * @see #initBaseValues(List)
-     * @see #initRemainingValues(List)
-     */
-    protected int getMinNoOfValues()
-    {
-        // typeCode, name, time
-        return 3;
     }
 }

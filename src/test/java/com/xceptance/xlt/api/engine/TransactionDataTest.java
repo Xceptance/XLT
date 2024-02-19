@@ -168,8 +168,8 @@ public class TransactionDataTest extends TimerDataTest
 
         // read in CSV representation and parse it
         var list = XltCharBufferUtil.toList(elements);
-        instance.initBaseValues(list);
-        instance.initRemainingValues(list);
+        instance.setBaseValues(list);
+        instance.setRemainingValues(list);
         instance.setAgentName(agentName);
 
         // validate
@@ -196,8 +196,8 @@ public class TransactionDataTest extends TimerDataTest
 
         // read in CSV representation and parse it
         var list = XltCharBufferUtil.toList(elements);
-        instance.initBaseValues(list);
-        instance.initRemainingValues(list);
+        instance.setBaseValues(list);
+        instance.setRemainingValues(list);
         instance.setAgentName(agentName);
 
         // validate
@@ -232,7 +232,7 @@ public class TransactionDataTest extends TimerDataTest
         instance.setDirectoryName(directoryName);
 
         // compare CVS output
-        Assert.assertEquals(elements, instance.getAllValues());
+        Assert.assertEquals(elements, instance.toList());
     }
 
     /**
@@ -261,7 +261,7 @@ public class TransactionDataTest extends TimerDataTest
         instance.setDirectoryName(directoryName);
 
         // compare output
-        Assert.assertEquals(elements, instance.getAllValues());
+        Assert.assertEquals(elements, instance.toList());
     }
 
     /**
@@ -315,6 +315,6 @@ public class TransactionDataTest extends TimerDataTest
         stat.setRunTime(RUNTIME);
         stat.setFailed(FAILED);
 
-        return stat.getAllValues();
+        return stat.toList();
     }
 }

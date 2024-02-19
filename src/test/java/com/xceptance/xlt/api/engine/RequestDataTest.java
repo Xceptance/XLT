@@ -830,8 +830,8 @@ public class RequestDataTest extends TimerDataTest
         List<XltCharBuffer> elements = CsvLineDecoder.parse(csv);
 
         RequestData instance = new RequestData();
-        instance.initBaseValues(elements);
-        instance.initRemainingValues(elements);
+        instance.setBaseValues(elements);
+        instance.setRemainingValues(elements);
 
         return instance;
     }
@@ -845,6 +845,6 @@ public class RequestDataTest extends TimerDataTest
      */
     private static String toCsv(final TimerData timerData)
     {
-        return CsvUtils.encode(timerData.getAllValues()).toString();
+        return CsvUtils.encode(timerData.toList()).toString();
     }
 }

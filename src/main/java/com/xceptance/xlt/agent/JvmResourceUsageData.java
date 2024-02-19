@@ -519,9 +519,9 @@ public class JvmResourceUsageData extends AbstractData
      * {@inheritDoc}
      */
     @Override
-    public List<String> getAllValues()
+    public List<String> toList()
     {
-        final List<String> fields = super.getAllValues();
+        final List<String> fields = super.toList();
 
         fields.add(Double.toString(cpuUsage));
         fields.add(Long.toString(committedMemorySize));
@@ -554,7 +554,7 @@ public class JvmResourceUsageData extends AbstractData
      * {@inheritDoc}
      */
     @Override
-    public void initRemainingValues(final List<XltCharBuffer> values)
+    public void setRemainingValues(final List<XltCharBuffer> values)
     {
         // read and check the values
         cpuUsage = Double.parseDouble(values.get(3).toString());

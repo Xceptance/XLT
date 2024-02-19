@@ -176,7 +176,7 @@ class DataParserThread implements Runnable
 
                         // get us the minimal data aka type and time
                         data = dataRecordFactory.createStatistics(line);
-                        data.initBaseValues(csvParseResultBuffer);
+                        data.setBaseValues(csvParseResultBuffer);
 
                         // see if we have to keep it
                         final long time = data.getTime();
@@ -214,7 +214,7 @@ class DataParserThread implements Runnable
                         }
 
                         // finish parsing
-                        data.initRemainingValues(csvParseResultBuffer);
+                        data.setRemainingValues(csvParseResultBuffer);
                     }
                     catch (final Exception ex)
                     {

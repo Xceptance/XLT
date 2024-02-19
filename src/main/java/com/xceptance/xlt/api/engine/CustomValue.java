@@ -82,9 +82,9 @@ public class CustomValue extends AbstractData
      * {@inheritDoc}
      */
     @Override
-    public List<String> getAllValues()
+    public List<String> toList()
     {
-        final List<String> values = super.getAllValues();
+        final List<String> values = super.toList();
         values.add(Double.toString(value));
         return values;
     }
@@ -93,16 +93,7 @@ public class CustomValue extends AbstractData
      * {@inheritDoc}
      */
     @Override
-    protected int getMinNoOfValues()
-    {
-        return 4;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void initRemainingValues(final List<XltCharBuffer> values)
+    public void setRemainingValues(final List<XltCharBuffer> values)
     {
         value = Double.parseDouble(values.get(3).toString());
     }

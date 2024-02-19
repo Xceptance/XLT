@@ -32,7 +32,7 @@ public class CustomValueTest
     {
         final CustomValue value = new CustomValue();
         value.setValue(0.0);
-        final List<String> strings = value.getAllValues();
+        final List<String> strings = value.toList();
         Assert.assertEquals("Wrong number of values!", 4, strings.size());
         Assert.assertEquals("Wrong double value!", "0.0", strings.get(3));
     }
@@ -41,7 +41,7 @@ public class CustomValueTest
     public void testParseValues()
     {
         final CustomValue value = new CustomValue();
-        value.initAllValues(XltCharBufferUtil.toList(new String[]
+        value.setAllValues(XltCharBufferUtil.toList(new String[]
             {
                 "V", "null", "123000", "0.0"
             }));

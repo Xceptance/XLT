@@ -242,9 +242,9 @@ public class TransactionData extends TimerData
      * {@inheritDoc}
      */
     @Override
-    public List<String> getAllValues()
+    public List<String> toList()
     {
-        final List<String> fields = super.getAllValues();
+        final List<String> fields = super.toList();
 
         // process and add the stack trace
         String t = stackTrace;
@@ -274,18 +274,9 @@ public class TransactionData extends TimerData
      * {@inheritDoc}
      */
     @Override
-    protected int getMinNoOfValues()
+    public void setRemainingValues(final List<XltCharBuffer> values)
     {
-        return 6;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void initRemainingValues(final List<XltCharBuffer> values)
-    {
-        super.initRemainingValues(values);
+        super.setRemainingValues(values);
 
         // process the stack trace
         // TODO performance

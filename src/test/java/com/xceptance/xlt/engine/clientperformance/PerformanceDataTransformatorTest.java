@@ -66,8 +66,8 @@ public class PerformanceDataTransformatorTest
             final ClientPerformanceRequest r = new ClientPerformanceRequest();
             var list = CsvLineDecoder.parse("R,xyz,1,0,true,0,0,0,http://example.net,,0,0,0,0,0,0,,GET,,,0");
 
-            r.getRequestData().initBaseValues(list);
-            r.getRequestData().initRemainingValues(list);
+            r.getRequestData().setBaseValues(list);
+            r.getRequestData().setRemainingValues(list);
             r.getRequestData().setTime(0);
             r.setHttpMethod("GET");
             if (new XltPropertiesImpl().collectAdditonalRequestData())
@@ -153,11 +153,11 @@ public class PerformanceDataTransformatorTest
             final ClientPerformanceData d2 = list.get(0);
 
             listCompare(d.getCustomDataList(), d2.getCustomDataList(), (a, b) -> {
-                Assert.assertEquals(a.getAllValues(), b.getAllValues());
+                Assert.assertEquals(a.toList(), b.toList());
             });
 
             listCompare(d.getRequestList(), d2.getRequestList(), (a, b) -> {
-                Assert.assertEquals(a.getRequestData().getAllValues(), b.getRequestData().getAllValues());
+                Assert.assertEquals(a.getRequestData().toList(), b.getRequestData().toList());
             });
         }
     }
