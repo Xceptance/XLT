@@ -126,9 +126,9 @@ public class EventData extends AbstractData
      * {@inheritDoc}
      */
     @Override
-    protected List<String> addValues()
+    public List<String> getAllValues()
     {
-        final List<String> fields = super.addValues();
+        final List<String> fields = super.getAllValues();
 
         fields.add(testCaseName);
         fields.add(message);
@@ -140,7 +140,7 @@ public class EventData extends AbstractData
      * {@inheritDoc}
      */
     @Override
-    protected void setupRemainingValues(final List<XltCharBuffer> values)
+    public void initRemainingValues(final List<XltCharBuffer> values)
     {
         // we don't need to call super, because our two step
         // init process took care of setting the base values
@@ -157,7 +157,7 @@ public class EventData extends AbstractData
      * {@inheritDoc}
      */
     @Override
-    protected int getMinNoCSVElements()
+    protected int getMinNoOfValues()
     {
         return 5;
     }

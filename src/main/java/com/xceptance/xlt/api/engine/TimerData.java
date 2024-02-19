@@ -130,9 +130,9 @@ public abstract class TimerData extends AbstractData
      * {@inheritDoc}
      */
     @Override
-    protected List<String> addValues()
+    public List<String> getAllValues()
     {
-        final List<String> fields = super.addValues();
+        final List<String> fields = super.getAllValues();
 
         fields.add(Long.toString(runTime));
         fields.add(Boolean.toString(failed));
@@ -145,7 +145,7 @@ public abstract class TimerData extends AbstractData
      * {@inheritDoc}
      */
     @Override
-    protected void setupRemainingValues(final List<XltCharBuffer> values)
+    public void initRemainingValues(final List<XltCharBuffer> values)
     {
         // read and check the values
         runTime = ParseNumbers.parseInt(values.get(3));
@@ -162,7 +162,7 @@ public abstract class TimerData extends AbstractData
      * {@inheritDoc}
      */
     @Override
-    protected int getMinNoCSVElements()
+    protected int getMinNoOfValues()
     {
         return 5;
     }

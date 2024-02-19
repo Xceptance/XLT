@@ -55,10 +55,10 @@ public class AbstractDataTest
         }
 
         @Override
-        protected int getMinNoCSVElements()
+        protected int getMinNoOfValues()
         {
             // typeCode, name, time, myData
-            return super.getMinNoCSVElements() + 1;
+            return super.getMinNoOfValues() + 1;
         }
 
         @Override

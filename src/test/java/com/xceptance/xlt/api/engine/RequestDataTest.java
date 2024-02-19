@@ -16,14 +16,15 @@
 package com.xceptance.xlt.api.engine;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.xceptance.common.util.CsvLineDecoder;
 import com.xceptance.common.util.CsvUtils;
-import com.xceptance.xlt.api.util.SimpleArrayList;
 import com.xceptance.xlt.api.util.XltCharBuffer;
 
 /**
@@ -122,7 +123,6 @@ public class RequestDataTest extends TimerDataTest
 
     private final int runTime = 412;
 
-
     /**
      * Tests the implementation of {@link RequestData#remainingValuesFromCSV(String)}.
      * <p>
@@ -132,9 +132,7 @@ public class RequestDataTest extends TimerDataTest
     @Test(expected = IllegalArgumentException.class)
     public void csvMissesAllClassSpecificFields()
     {
-        // read in common CSV string (no bytesSent, bytesReceived and
-        // responseCode
-        // values)
+        // read in common CSV string (no bytesSent, bytesReceived and responseCode values)
         fromCsv(commonCSV);
     }
 
@@ -151,7 +149,7 @@ public class RequestDataTest extends TimerDataTest
         fromCsv(StringUtils.join(new Object[]
             {
                 commonCSV, bytesSent
-            }, Data.DELIMITER));
+            }, CsvUtils.COMMA));
     }
 
     /**
@@ -167,7 +165,7 @@ public class RequestDataTest extends TimerDataTest
         fromCsv(StringUtils.join(new Object[]
             {
                 commonCSV, bytesSent, bytesReceived
-            }, Data.DELIMITER));
+            }, CsvUtils.COMMA));
     }
 
     /**
@@ -184,7 +182,7 @@ public class RequestDataTest extends TimerDataTest
         fromCsv(StringUtils.join(new Object[]
             {
                 commonCSV, "notanInt", bytesReceived, responseCode, url, contentType
-            }, Data.DELIMITER));
+            }, CsvUtils.COMMA));
 
     }
 
@@ -201,7 +199,7 @@ public class RequestDataTest extends TimerDataTest
         fromCsv(StringUtils.join(new Object[]
             {
                 commonCSV, -bytesSent, bytesReceived, responseCode, url, contentType
-            }, Data.DELIMITER));
+            }, CsvUtils.COMMA));
     }
 
     /**
@@ -218,7 +216,7 @@ public class RequestDataTest extends TimerDataTest
         fromCsv(StringUtils.join(new Object[]
             {
                 commonCSV, bytesSent, "NotAnInt", responseCode, url, contentType
-            }, Data.DELIMITER));
+            }, CsvUtils.COMMA));
     }
 
     /**
@@ -234,7 +232,7 @@ public class RequestDataTest extends TimerDataTest
         fromCsv(StringUtils.join(new Object[]
             {
                 commonCSV, bytesSent, -bytesReceived, responseCode, url, contentType
-            }, Data.DELIMITER));
+            }, CsvUtils.COMMA));
     }
 
     /**
@@ -251,7 +249,7 @@ public class RequestDataTest extends TimerDataTest
         fromCsv(StringUtils.join(new Object[]
             {
                 commonCSV, bytesSent, bytesReceived, "NotInt", url, contentType
-            }, Data.DELIMITER));
+            }, CsvUtils.COMMA));
     }
 
     /**
@@ -267,7 +265,7 @@ public class RequestDataTest extends TimerDataTest
         fromCsv(StringUtils.join(new Object[]
             {
                 commonCSV, bytesSent, bytesReceived, -1, url, contentType
-            }, Data.DELIMITER));
+            }, CsvUtils.COMMA));
     }
 
     /**
@@ -352,13 +350,13 @@ public class RequestDataTest extends TimerDataTest
         final String csvLine = StringUtils.join(new Object[]
             {
                 commonCSV, bytesSent, bytesReceived, responseCode, "", "", 0, 0, 0, 0, 0, 0, "", "", "", "", 0, "", "", ""
-            }, Data.DELIMITER);
+            }, CsvUtils.COMMA);
 
         // read in CSV string
         var instance = fromCsv(csvLine);
 
         // validate output of toCSV()
-        Assert.assertEquals(csvLine, instance.toCSV().toString());
+        Assert.assertEquals(csvLine, toCsv(instance));
     }
 
     /**
@@ -374,13 +372,13 @@ public class RequestDataTest extends TimerDataTest
         final String csvLine = StringUtils.join(new Object[]
             {
                 commonCSV, bytesSent, bytesReceived, responseCode, "", contentType, 0, 0, 0, 0, 0, 0, "", "", "", "", 0, "", "", ""
-            }, Data.DELIMITER);
+            }, CsvUtils.COMMA);
 
         // read in CSV string
         var instance = fromCsv(csvLine);
 
         // validate output of toCSV()
-        Assert.assertEquals(csvLine, instance.toCSV().toString());
+        Assert.assertEquals(csvLine, toCsv(instance));
     }
 
     /**
@@ -396,13 +394,13 @@ public class RequestDataTest extends TimerDataTest
         final String csvLine = StringUtils.join(new Object[]
             {
                 commonCSV, bytesSent, bytesReceived, responseCode, url, "", 0, 0, 0, 0, 0, 0, "", "", "", "", 0, "", "", ""
-            }, Data.DELIMITER);
+            }, CsvUtils.COMMA);
 
         // read in CSV string
         var instance = fromCsv(csvLine);
 
         // validate output of toCSV()
-        Assert.assertEquals(csvLine, instance.toCSV().toString());
+        Assert.assertEquals(csvLine, toCsv(instance));
     }
 
     /**
@@ -418,7 +416,7 @@ public class RequestDataTest extends TimerDataTest
         final String csvLine = StringUtils.join(new Object[]
             {
                 commonCSV, bytesSent, bytesReceived, responseCode, url, contentType
-            }, Data.DELIMITER);
+            }, CsvUtils.COMMA);
 
         // read in CSV string
         var instance = fromCsv(csvLine);
@@ -431,7 +429,7 @@ public class RequestDataTest extends TimerDataTest
         Assert.assertEquals(0, instance.getTimeToLastBytes());
 
         // validate output of toCSV()
-        Assert.assertEquals(csvLine + ",0,0,0,0,0,0,,,,,0,,,", instance.toCSV().toString());
+        Assert.assertEquals(csvLine + ",0,0,0,0,0,0,,,,,0,,,", toCsv(instance));
     }
 
     /**
@@ -454,7 +452,7 @@ public class RequestDataTest extends TimerDataTest
         validateBeforeXLT4_6_6_RequestData(instance, false);
 
         // validate output of toCSV()
-        Assert.assertEquals(csvLine + ",,,,0,,,", instance.toCSV().toString());
+        Assert.assertEquals(csvLine + ",,,,0,,,", toCsv(instance));
     }
 
     /**
@@ -477,7 +475,7 @@ public class RequestDataTest extends TimerDataTest
         validateBeforeXLT4_6_6_RequestData(instance, true);
 
         // validate output of toCSV()
-        Assert.assertEquals(csvLine + ",0,,,", instance.toCSV().toString());
+        Assert.assertEquals(csvLine + ",0,,,", toCsv(instance));
     }
 
     /**
@@ -500,7 +498,7 @@ public class RequestDataTest extends TimerDataTest
         validateXLT4_6_6_RequestData(instance, false);
 
         // validate output of toCSV()
-        Assert.assertEquals(csvLine + ",0,,,", instance.toCSV().toString());
+        Assert.assertEquals(csvLine + ",0,,,", toCsv(instance));
     }
 
     /**
@@ -523,7 +521,7 @@ public class RequestDataTest extends TimerDataTest
         validateXLT4_6_6_RequestData(instance, true);
 
         // validate output of toCSV()
-        Assert.assertEquals(csvLine + ",0,,,", instance.toCSV().toString());
+        Assert.assertEquals(csvLine + ",0,,,", toCsv(instance));
     }
 
     /**
@@ -546,7 +544,7 @@ public class RequestDataTest extends TimerDataTest
         validateXLT4_7_0_RequestData(instance);
 
         // validate output of toCSV()
-        Assert.assertEquals(csvLine + ",,,", instance.toCSV().toString());
+        Assert.assertEquals(csvLine + ",,,", toCsv(instance));
     }
 
     /**
@@ -560,7 +558,7 @@ public class RequestDataTest extends TimerDataTest
         var instance = fromCsv(csvLine);
         validateXLT4_12_0_RequestData(instance);
 
-        Assert.assertEquals(csvLine + ",", instance.toCSV().toString());
+        Assert.assertEquals(csvLine + ",", toCsv(instance));
     }
 
     /**
@@ -579,21 +577,22 @@ public class RequestDataTest extends TimerDataTest
         stat.setFailed(failed);
         stat.setRunTime(runTime);
 
-        return stat.toCSV().toString();
-
+        return toCsv(stat);
     }
-//
-//    private void setFormDataOutputEnabled(boolean newEnabledValue)
-//    {
-//        try
-//        {
-//            ReflectionUtils.writeStaticField(SessionImpl.class, "COLLECT_ADDITIONAL_REQUEST_DATA", Boolean.valueOf(newEnabledValue));
-//        }
-//        catch (Exception e)
-//        {
-//            throw new Error("Failed to set field", e);
-//        }
-//    }
+
+    //
+    // private void setFormDataOutputEnabled(boolean newEnabledValue)
+    // {
+    // try
+    // {
+    // ReflectionUtils.writeStaticField(SessionImpl.class, "COLLECT_ADDITIONAL_REQUEST_DATA",
+    // Boolean.valueOf(newEnabledValue));
+    // }
+    // catch (Exception e)
+    // {
+    // throw new Error("Failed to set field", e);
+    // }
+    // }
 
     /**
      * Get a new CSV line containing all default with or without additional form data values.
@@ -618,7 +617,7 @@ public class RequestDataTest extends TimerDataTest
             {
                 commonCSV, bytesSent, bytesReceived, responseCode, url, contentType, connectTime, sendTime, busyTime, receiveTime,
                 firstByteTime, lastByteTime, requestId, httpMethod, formDataEncoding, formData, dnsTime, ipAddresses, responseId
-            }, Data.DELIMITER);
+            }, CsvUtils.COMMA);
     }
 
     /**
@@ -644,7 +643,7 @@ public class RequestDataTest extends TimerDataTest
             {
                 commonCSV, bytesSent, bytesReceived, responseCode, url, contentType, connectTime, sendTime, busyTime, receiveTime,
                 firstByteTime, lastByteTime, requestId, httpMethod, formDataEncoding, formData, dnsTime
-            }, Data.DELIMITER);
+            }, CsvUtils.COMMA);
     }
 
     /**
@@ -671,7 +670,7 @@ public class RequestDataTest extends TimerDataTest
             {
                 commonCSV, bytesSent, bytesReceived, responseCode, url, contentType, connectTime, sendTime, busyTime, receiveTime,
                 firstByteTime, lastByteTime, requestId, httpMethod, formDataEncoding, formData
-            }, Data.DELIMITER);
+            }, CsvUtils.COMMA);
     }
 
     /**
@@ -692,14 +691,14 @@ public class RequestDataTest extends TimerDataTest
                 {
                     commonCSV, bytesSent, bytesReceived, responseCode, url, contentType, connectTime, sendTime, busyTime, receiveTime,
                     firstByteTime, lastByteTime, requestId, httpMethod, formDataEncoding, formData
-                }, Data.DELIMITER);
+                }, CsvUtils.COMMA);
         }
         // no form data columns in csv
         return StringUtils.join(new Object[]
             {
                 commonCSV, bytesSent, bytesReceived, responseCode, url, contentType, connectTime, sendTime, busyTime, receiveTime,
                 firstByteTime, lastByteTime, requestId
-            }, Data.DELIMITER);
+            }, CsvUtils.COMMA);
     }
 
     /**
@@ -805,7 +804,7 @@ public class RequestDataTest extends TimerDataTest
         Assert.assertEquals(XltCharBuffer.valueOf(httpMethod), instance.getHttpMethod());
         Assert.assertEquals(XltCharBuffer.valueOf(formDataEncoding), instance.getFormDataEncoding());
         Assert.assertEquals(XltCharBuffer.valueOf(formData), instance.getFormData());
-        
+
         // XLT 4.7.0
         int dnsTime = (xltVersion < 40700) ? 0 : this.dnsTime;
         Assert.assertEquals(dnsTime, instance.getDnsTime());
@@ -821,17 +820,31 @@ public class RequestDataTest extends TimerDataTest
 
     /**
      * Just a helper to keep the old test cases alive
+     * 
      * @param csv
-     * @return
+     *            the data object as CSV line
+     * @return the corresponding request data object
      */
     private static RequestData fromCsv(final String csv)
     {
-        var instance = new RequestData();
-        var result = new SimpleArrayList<XltCharBuffer>(10);
+        List<XltCharBuffer> elements = CsvLineDecoder.parse(csv);
 
-        instance.baseValuesFromCSV(result, XltCharBuffer.valueOf(csv));
-        instance.remainingValuesFromCSV(result);
+        RequestData instance = new RequestData();
+        instance.initBaseValues(elements);
+        instance.initRemainingValues(elements);
 
         return instance;
+    }
+
+    /**
+     * Just a helper to keep the old test cases alive
+     * 
+     * @param timerData
+     *            the timer data object
+     * @return the data object as CSV line
+     */
+    private static String toCsv(final TimerData timerData)
+    {
+        return CsvUtils.encode(timerData.getAllValues()).toString();
     }
 }

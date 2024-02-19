@@ -32,7 +32,7 @@ public class XltCharBufferUtil
         return list.stream().map(s -> new XltCharBuffer(s.toCharArray())).collect(Collectors.toList());
     }
 
-    public static List<XltCharBuffer> toList(final String[] list)
+    public static List<XltCharBuffer> toList(final String... list)
     {
         return Arrays.stream(list).map(s -> new XltCharBuffer(s.toCharArray())).collect(Collectors.toList());
     }

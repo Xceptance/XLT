@@ -17,7 +17,6 @@ package com.xceptance.xlt.api.engine;
 
 import java.util.List;
 
-import com.xceptance.xlt.api.util.SimpleArrayList;
 import com.xceptance.xlt.api.util.XltCharBuffer;
 
 /**
@@ -32,13 +31,13 @@ import com.xceptance.xlt.api.util.XltCharBuffer;
  * <ul>
  * <li>it must have a name</li>
  * <li>it must have a time stamp</li>
- * <li>it must be serializable to a comma-separated list of values</li>
- * <li>it must be able to reconstruct its state from a comma-separated list of values</li>
+ * <li>it must be able to serialize its state as a list of strings</li>
+ * <li>it must be able to reconstruct its state from a list of strings</li>
  * <li>in order to tell one type of data record from the other, the first entry in the value list must be a type code
  * (e.g. "MyRecordType" or simple "M")</li>
  * </ul>
  * <p>
- * Note that the type codes "A", "C", "E", "J", "R", and "T" are already used by the XLT engine.
+ * Note that the type codes 'A', 'C', 'E', 'J', 'P', 'R', 'T', 'V', and 'W' are already used by the XLT engine.
  * </p>
  * <p>
  * The data record can be logged using the {@link DataManager}.
@@ -49,64 +48,45 @@ import com.xceptance.xlt.api.util.XltCharBuffer;
 public interface Data
 {
     /**
-     * The delimiter character (a comma) used to separate single values in a data record.
+     * Returns the full state of the object as a list of strings. The first three entries have to be: the type code, the
+     * name, and the timestamp. All remaining entries are specific to the concrete implementation class.
+     * <p>
+     * Note that {@link #getAllValues()} and the two methods {@link #initBaseValues(List)} and
+     * {@link #initRemainingValues(List)} work together. It is the programmer's responsibility that the number of values
+     * and their order in the list
+     *
+     * @return the list of values that form the state of this object
+     * @see #initBaseValues(List)
+     * @see #initRemainingValues(List)
      */
-    public static final char DELIMITER = ',';
+    public List<String> getAllValues();
 
     /**
-     * Recreates a partial state of this object by reading the data from a list that is most likely the result of
-     * CSV parsing. The result is an empty reusable object that is here for speed not functionality. The data will be
-     * internally stored and only the most essential state will be recreated first, because later we might filter things
-     * out anyway, so why waste cycles. The passed list must be empty and it will be mutated to hold the full parse
-     * result.
+     * Initializes only the base values of this object (type code, name, and timestamp) from a list of string values. If
+     * needed at all, the remaining values will later be initialized by calling {@link #initRemainingValues(List)} with
+     * the same list of values. Splitting the process of recreating the full object state into two methods is purely for
+     * performance reasons.
      *
-     * @param result
-     *            the data which has been most likely parsed from CSV
+     * @param values
+     *            the string list to recreate the object state from
+     * @see #initRemainingValues(List)
+     * @see #getAllValues()
      */
-    public void initBaseValues(final List<XltCharBuffer> result);
+    public void initBaseValues(final List<XltCharBuffer> values);
 
-    
     /**
-     * Recreates the full state of the object by taking the remaining data from the passed list. It is the programmers
-     * responsibility to make sure that the result list matches the one initially created when calling
-     * initBaseValues. This is an implementation focusing on speed not a nice API.
+     * Initializes the remaining values of this object from a list of string values. Splitting the process of recreating
+     * the full object state into two methods is purely for performance reasons.
      *
+     * @param values
+     *            the string list to recreate the object state from
      * @param result
      *            the previously parsed data as list
+     * @see #initBaseValues(List)
+     * @see #getAllValues()
      */
     public void initRemainingValues(final List<XltCharBuffer> result);
 
-    /**
-     * Recreates a partial state of this object by reading the data from a buffer s and parsing it as comma-delimited
-     * line. The result is an empty reusable object that is here for speed not functionality. The data will be
-     * internally stored and only the most essential state will be recreated first, because later we might filter things
-     * out anyway, so why waste cycles. The passed list must be empty and it will be mutated to hold the full parse
-     * result.
-     *
-     * @param result
-     *            reusable list for the parsing results
-     * @param src
-     *            the csv data as XltCharbuffer
-     *            
-     * @deprecated {@link Data#initBaseValues(List)}
-     */
-    @Deprecated(since = "7.4")
-    public void baseValuesFromCSV(final SimpleArrayList<XltCharBuffer> result, final XltCharBuffer src);
-
-    /**
-     * Recreates the full state of the object by parsing the remaining data of the passed list. It is the programmers
-     * responsibility to make sure that the result list matches the one initially created when calling
-     * baseValuesFromCSV. This is an implementation focusing on speed not a nice API aka you can reuse a list over and
-     * over again as long as the calling order is right.
-     *
-     * @param result
-     *            the previously parsed data as list
-     *            
-     * @deprecated {@link Data#initRemainingValues(List)}
-     */
-    @Deprecated(since = "7.4")
-    public void remainingValuesFromCSV(SimpleArrayList<XltCharBuffer> result);
-    
     /**
      * Returns the name of the agent that produced this data record. Only used during report generation or analysis.
      *
@@ -160,7 +140,8 @@ public interface Data
     public void setName(String name);
 
     /**
-     * Sets the time when this record's event occurred. To obtain the timestamp, please use {@link GlobalClock#millis()}.
+     * Sets the time when this record's event occurred. To obtain the timestamp, please use
+     * {@link GlobalClock#millis()}.
      *
      * @param time
      *            the timestamp
@@ -174,12 +155,4 @@ public interface Data
      *            the transaction's name
      */
     public void setTransactionName(String transactionName);
-
-    /**
-     * Returns the state of this object as a StringBuilder reflecting a list of values separated by the DELIMITER
-     * constant.
-     *
-     * @return the list of values as CSV line
-     */
-    public StringBuilder toCSV();
 }

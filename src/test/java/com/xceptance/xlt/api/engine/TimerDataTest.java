@@ -21,11 +21,9 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.util.List;
-
 import org.junit.Test;
 
-import com.xceptance.xlt.api.util.XltCharBuffer;
+import com.xceptance.xlt.api.util.XltCharBufferUtil;
 
 /**
  * Test the implementation of {@link TimerData}.
@@ -104,16 +102,16 @@ public class TimerDataTest extends AbstractDataTest
         assertEquals(1654632508330L + 1001, d.getEndTime());
     }
 
-    // parse
+    // serialize
     @Test
-    public void addValues()
+    public void getAllValues()
     {
         var d = new TestData("Test", TYPECODE);
         d.setTime(1654632508330L);
         d.setRunTime(1002);
         d.setFailed(true);
 
-        var l = d.addValues();
+        var l = d.getAllValues();
         assertEquals(String.valueOf(TYPECODE), l.get(0));
         assertEquals("Test", l.get(1));
         assertEquals("1654632508330", l.get(2));
@@ -122,7 +120,7 @@ public class TimerDataTest extends AbstractDataTest
 
         d.setFailed(false);
 
-        l = d.addValues();
+        l = d.getAllValues();
         assertEquals(String.valueOf(TYPECODE), l.get(0));
         assertEquals("Test", l.get(1));
         assertEquals("1654632508330", l.get(2));
@@ -130,17 +128,11 @@ public class TimerDataTest extends AbstractDataTest
         assertEquals("false", l.get(4));
     }
 
-    // Serialize
+    // parse
     @Test
     public void parseValues()
     {
-        var list = List.of(
-                           XltCharBuffer.valueOf(String.valueOf(TYPECODE)),
-                           XltCharBuffer.valueOf("Name"),
-                           XltCharBuffer.valueOf("1654632508330"),
-                           XltCharBuffer.valueOf("666"),
-                           XltCharBuffer.valueOf("true")
-                           );
+        var list = XltCharBufferUtil.toList(String.valueOf(TYPECODE), "Name", "1654632508330", "666", "true");
 
         var d = new TestData(TYPECODE);
         d.initBaseValues(list); // inherited
@@ -153,23 +145,17 @@ public class TimerDataTest extends AbstractDataTest
         assertTrue(d.hasFailed());
     }
 
-    // Serialize
+    // parse
     @Test
     public void parseValues_negativeRuntime()
     {
-        var list = List.of(
-                           XltCharBuffer.valueOf(String.valueOf(TYPECODE)),
-                           XltCharBuffer.valueOf("Name"),
-                           XltCharBuffer.valueOf("1654632508330"),
-                           XltCharBuffer.valueOf("-22"),
-                           XltCharBuffer.valueOf("true")
-                           );
+        var list = XltCharBufferUtil.toList(String.valueOf(TYPECODE), "Name", "1654632508330", "-22", "true");
 
         var d = new TestData(TYPECODE);
 
         try
         {
-            d.setupRemainingValues(list);
+            d.initAllValues(list);
             fail();
         }
         catch (IllegalArgumentException e)
@@ -184,6 +170,6 @@ public class TimerDataTest extends AbstractDataTest
     public void getMinNoCSVElements()
     {
         var d = new TestData("Test", TYPECODE);
-        assertEquals(5, d.getMinNoCSVElements());
+        assertEquals(5, d.getMinNoOfValues());
     }
 }
