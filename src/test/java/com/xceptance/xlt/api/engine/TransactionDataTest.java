@@ -26,10 +26,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.xceptance.common.lang.ThrowableUtils;
-import com.xceptance.common.util.CsvUtils;
 import com.xceptance.common.util.ParameterCheckUtils;
-import com.xceptance.xlt.api.util.SimpleArrayList;
-import com.xceptance.xlt.api.util.XltCharBuffer;
+import com.xceptance.xlt.api.util.XltCharBufferUtil;
 
 /**
  * Test the implementation of {@link TransactionData}.
@@ -53,7 +51,7 @@ public class TransactionDataTest extends TimerDataTest
      */
     private static final String TEST_FAILURE_MSG = "ATTENTION, Test failure!";
 
-    private final String commonCSV = getCommonCSV();
+    private final List<String> commonValues = getCommonValues();
 
     private final String name = "TTest";
 
@@ -164,17 +162,14 @@ public class TransactionDataTest extends TimerDataTest
     public void testFromCSV_before_XLT_4_13_2()
     {
         final List<String> elements = new ArrayList<String>();
-        elements.addAll(CsvUtils.decodeToList(commonCSV));
+        elements.addAll(commonValues);
         elements.add(stackTraceWithDirectoryHintEncoded);
         elements.add(failedActionName);
 
-        // construct CSV representation
-        final String csvLine = CsvUtils.encode(elements).toString();
-
         // read in CSV representation and parse it
-        var list = new SimpleArrayList<XltCharBuffer>(10);
-        instance.baseValuesFromCSV(list, XltCharBuffer.valueOf(csvLine));
-        instance.remainingValuesFromCSV(list);
+        var list = XltCharBufferUtil.toList(elements);
+        instance.setBaseValues(list);
+        instance.setRemainingValues(list);
         instance.setAgentName(agentName);
 
         // validate
@@ -193,19 +188,16 @@ public class TransactionDataTest extends TimerDataTest
     public void testFromCSV_XLT_4_13_2()
     {
         final List<String> elements = new ArrayList<String>();
-        elements.addAll(CsvUtils.decodeToList(commonCSV));
+        elements.addAll(commonValues);
         elements.add(stackTraceWithoutDirectoryHintEncoded);
         elements.add(failedActionName);
         elements.add(testUserNumber);
         elements.add(directoryName);
 
-        // construct CSV representation
-        final String csvLine = CsvUtils.encode(elements).toString();
-
         // read in CSV representation and parse it
-        var list = new SimpleArrayList<XltCharBuffer>(10);
-        instance.baseValuesFromCSV(list,  XltCharBuffer.valueOf(csvLine));
-        instance.remainingValuesFromCSV(list);
+        var list = XltCharBufferUtil.toList(elements);
+        instance.setBaseValues(list);
+        instance.setRemainingValues(list);
         instance.setAgentName(agentName);
 
         // validate
@@ -220,17 +212,14 @@ public class TransactionDataTest extends TimerDataTest
      * Tests the implementation of {@link TransactionData#toCSV()}.
      */
     @Test
-    public void testToCSV()
+    public void testGetAllValues()
     {
         final List<String> elements = new ArrayList<String>();
-        elements.addAll(CsvUtils.decodeToList(commonCSV));
+        elements.addAll(commonValues);
         elements.add(stackTraceWithoutDirectoryHintEncoded);
         elements.add(failedActionName);
         elements.add(testUserNumber);
         elements.add(directoryName);
-
-        // construct CSV representation
-        final String csvLine = CsvUtils.encode(elements).toString();
 
         // set data record fields
         instance.setName(name);
@@ -243,27 +232,24 @@ public class TransactionDataTest extends TimerDataTest
         instance.setDirectoryName(directoryName);
 
         // compare CVS output
-        Assert.assertEquals(csvLine, instance.toCSV().toString());
+        Assert.assertEquals(elements, instance.toList());
     }
 
     /**
      * Tests the implementation of {@link TransactionData#toCSV()}.
      */
     @Test
-    public void testToCSVStackTraceIsNull()
+    public void testGetAllValues_StackTraceIsNull()
     {
         // stacktrace of data record
         final String stackTrace = null;
 
         final List<String> elements = new ArrayList<String>();
-        elements.addAll(CsvUtils.decodeToList(commonCSV));
+        elements.addAll(commonValues);
         elements.add("");               // stack trace
         elements.add("");               // failed action
         elements.add(testUserNumber);   // user index
         elements.add(directoryName);    // directory name
-
-        // construct CSV representation
-        String csvLine = CsvUtils.encode(elements).toString();
 
         // set data record fields
         instance.setName(name);
@@ -274,8 +260,8 @@ public class TransactionDataTest extends TimerDataTest
         instance.setTestUserNumber(testUserNumber);
         instance.setDirectoryName(directoryName);
 
-        // compare CVS output
-        Assert.assertEquals(csvLine, instance.toCSV().toString());
+        // compare output
+        Assert.assertEquals(elements, instance.toList());
     }
 
     /**
@@ -319,7 +305,7 @@ public class TransactionDataTest extends TimerDataTest
      *
      * @return common CSV string
      */
-    private String getCommonCSV()
+    private List<String> getCommonValues()
     {
         final TimerData stat = new TimerData(new TransactionData().getTypeCode())
         {
@@ -329,6 +315,6 @@ public class TransactionDataTest extends TimerDataTest
         stat.setRunTime(RUNTIME);
         stat.setFailed(FAILED);
 
-        return stat.toCSV().toString();
+        return stat.toList();
     }
 }

@@ -20,8 +20,7 @@ import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
 
-import com.xceptance.xlt.api.util.SimpleArrayList;
-import com.xceptance.xlt.api.util.XltCharBuffer;
+import com.xceptance.common.util.CsvLineDecoder;
 
 /**
  * Test the implementation of {@link EventData}.
@@ -83,11 +82,11 @@ public class EventDataTest extends AbstractDataTest
     @Test
     public void incrementalParse()
     {
-        var csv = "E,Test42,1602817628282,TCName,A message";
-        var e = new EventData();
-        var result = new SimpleArrayList<XltCharBuffer>(10);
+        var data = CsvLineDecoder.parse("E,Test42,1602817628282,TCName,A message");
 
-        e.baseValuesFromCSV(result, XltCharBuffer.valueOf(csv));
+        var e = new EventData();
+
+        e.setBaseValues(data);
         assertEquals('E', e.getTypeCode());
         assertEquals("Test42", e.getName());
         assertEquals(1602817628282L, e.getTime());
@@ -97,75 +96,8 @@ public class EventDataTest extends AbstractDataTest
         assertNull(e.getTestCaseName());
 
         // ok, now what is really important
-        e.remainingValuesFromCSV(result);
+        e.setRemainingValues(data);
         assertEquals("A message", e.getMessage());
         assertEquals("TCName", e.getTestCaseName());
     }
-
-    /**
-     * Verify valid size
-     */
-    @Test
-    public void size()
-    {
-        var e = new EventData();
-        assertEquals(5, e.getMinNoCSVElements());
-    }
-
-    /**
-     * CSV roundtrip
-     */
-    @Test
-    public void fromCsv()
-    {
-        var e = fromCsv("E,Test,1654462372457,TC,Message");
-        assertEquals('E', e.getTypeCode());
-        assertEquals(1654462372457L, e.getTime());
-        assertEquals("Test", e.getName());
-        assertEquals("TC", e.getTestCaseName());
-        assertEquals("Message", e.getMessage());
-
-        var e2 = fromCsv("E,Test,1654462372458,TC,\"Message with quotes\"");
-        assertEquals('E', e2.getTypeCode());
-        assertEquals(1654462372458L, e2.getTime());
-        assertEquals("Test", e2.getName());
-        assertEquals("TC", e2.getTestCaseName());
-        assertEquals("Message with quotes", e2.getMessage());
-    }
-
-    /**
-     * CSV from ctr
-     */
-    @Test
-    public void toCsv()
-    {
-        var e = new EventData("Test");
-        e.setTime(1654462372456L);
-        e.setMessage("Message");
-        e.setTestCaseName("TC");
-        assertEquals("E,Test,1654462372456,TC,Message", e.toCSV().toString());
-
-        var e2 = new EventData("Test");
-        e2.setTime(1654462372456L);
-        e2.setMessage("Message with ,");
-        e2.setTestCaseName("TC");
-        assertEquals("E,Test,1654462372456,TC,\"Message with ,\"", e2.toCSV().toString());
-    }
-
-    /**
-     * Just a helper to keep the old test cases alive
-     * @param csv
-     * @return
-     */
-    private static EventData fromCsv(final String csv)
-    {
-        var instance = new EventData();
-        var result = new SimpleArrayList<XltCharBuffer>(10);
-
-        instance.baseValuesFromCSV(result, XltCharBuffer.valueOf(csv));
-        instance.remainingValuesFromCSV(result);
-
-        return instance;
-    }
-
 }

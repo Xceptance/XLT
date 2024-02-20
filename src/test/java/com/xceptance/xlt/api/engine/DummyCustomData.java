@@ -24,7 +24,7 @@ import com.xceptance.xlt.api.util.XltCharBufferUtil;
  * The class provides the convenience method {@link #getDefault()} which gives a new instance of this class for each
  * invocation.
  * </p>
- * 
+ *
  * @author Sebastian Oerding
  */
 public class DummyCustomData extends CustomData
@@ -39,14 +39,14 @@ public class DummyCustomData extends CustomData
      * <li>&quot;a (user: 'testUser', output: '1234567890')&quot; as stacktrace</li>
      * <li>&quot;007&quot; as agent name</li>
      * </ul>
-     * 
+     *
      * @return a new instance for each invocation with some hard coded values as described above
      */
     public static DummyCustomData getDefault()
     {
         final DummyCustomData returnValue = new DummyCustomData();
         final String stackTrace = "a (user: 'testUser', output: '1234567890')";
-        returnValue.parseRemainingValues(XltCharBufferUtil.toList(new String[]
+        returnValue.setAllValues(XltCharBufferUtil.toList(new String[]
             {
                 "C", "customName", "2000", "1", "true", stackTrace
             }));

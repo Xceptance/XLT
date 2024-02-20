@@ -22,6 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
+import com.xceptance.common.util.CsvUtils;
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.engine.DataManager;
 import com.xceptance.xlt.api.engine.EventData;
@@ -161,7 +162,9 @@ public class DataManagerImpl implements DataManager
             // write the log line
             try
             {
-                var s = removeLineSeparators(stats.toCSV(), ' ');
+                // convert the values to a CSV line 
+                final StringBuilder csv = CsvUtils.encode(stats.toList());
+                final StringBuilder s = removeLineSeparators(csv, ' ');
                 s.append(LINE_SEPARATOR);
 
                 // this safes us from synchronization, the writer is already synchronized

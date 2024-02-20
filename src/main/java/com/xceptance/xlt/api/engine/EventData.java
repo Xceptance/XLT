@@ -36,7 +36,7 @@ import com.xceptance.xlt.api.util.XltCharBuffer;
  * <p style="color:green">
  * Note that {@link EventData} objects have an "E" as their type code.
  * </p>
- * 
+ *
  * @see ActionData
  * @see CustomData
  * @see RequestData
@@ -71,7 +71,7 @@ public class EventData extends AbstractData
 
     /**
      * Creates a new EventData object and gives it the specified name.
-     * 
+     *
      * @param name
      *            the event name
      */
@@ -82,7 +82,7 @@ public class EventData extends AbstractData
 
     /**
      * Returns the message associated with this event.
-     * 
+     *
      * @return the message
      */
     public String getMessage()
@@ -92,7 +92,7 @@ public class EventData extends AbstractData
 
     /**
      * Returns the name of the test case that generated this event.
-     * 
+     *
      * @return the test case name
      */
     public String getTestCaseName()
@@ -102,7 +102,7 @@ public class EventData extends AbstractData
 
     /**
      * Sets the message associated with this event.
-     * 
+     *
      * @param message
      *            the message to set
      */
@@ -113,7 +113,7 @@ public class EventData extends AbstractData
 
     /**
      * Sets the name of the test case that generated this event.
-     * 
+     *
      * @param testCaseName
      *            the test case name
      */
@@ -126,9 +126,9 @@ public class EventData extends AbstractData
      * {@inheritDoc}
      */
     @Override
-    protected List<String> addValues()
+    public List<String> toList()
     {
-        final List<String> fields = super.addValues();
+        final List<String> fields = super.toList();
 
         fields.add(testCaseName);
         fields.add(message);
@@ -140,25 +140,16 @@ public class EventData extends AbstractData
      * {@inheritDoc}
      */
     @Override
-    protected void parseRemainingValues(final List<XltCharBuffer> values)
+    public void setRemainingValues(final List<XltCharBuffer> values)
     {
         // we don't need to call super, because our two step
         // init process took care of setting the base values
         // typecode - 0
         // name - 1
         // time - 2
-        
+
         // read and check the values
         testCaseName = values.get(3).toString();
         message = values.get(4).toString();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected int getMinNoCSVElements()
-    {
-        return 5;
     }
 }

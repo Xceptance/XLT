@@ -26,7 +26,6 @@ import org.junit.Test;
  */
 public class ActionDataTest extends TimerDataTest
 {
-
     /**
      * ActionData test instance.
      */
@@ -47,7 +46,7 @@ public class ActionDataTest extends TimerDataTest
     @Test
     public void testTypeCode()
     {
-        Assert.assertTrue(instance.toCSV().toString().startsWith(String.valueOf(instance.getTypeCode())));
+        Assert.assertEquals(instance.toList().get(0), String.valueOf(instance.getTypeCode()));
     }
 
     @Test
