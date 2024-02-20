@@ -82,8 +82,7 @@ public class ClientPerformanceMetrics
 
     private static void updateAndLogRequestData(final SessionImpl session, final ClientPerformanceRequest request)
     {
-        final Entry<Long, ActionInfo> entry = session.getWebDriverActionStartTimes().floorEntry(request.getRequestData().getTime());
-        final ActionInfo actionInfo = entry != null ? entry.getValue() : null;
+        final ActionInfo actionInfo = getActionInfo(session, request.getRequestData().getTime());
         if (actionInfo != null)
         {
             actionInfo.requests.add(getRequestInfo(request));
@@ -95,8 +94,7 @@ public class ClientPerformanceMetrics
 
     private static void updateAndLogPageLoadTimingData(final SessionImpl session, final PageLoadTimingData data)
     {
-        final Entry<Long, ActionInfo> entry = session.getWebDriverActionStartTimes().floorEntry(data.getTime());
-        final ActionInfo actionInfo = entry != null ? entry.getValue() : null;
+        final ActionInfo actionInfo = getActionInfo(session, data.getTime());
         if (actionInfo != null)
         {
             actionInfo.events.add(new ActionInfo.PageLoadEventInfo(data.getName(), data.getTime(), data.getRunTime()));
@@ -208,8 +206,7 @@ public class ClientPerformanceMetrics
         {
             if (webVitalData.getName().equals(webVitalName))
             {
-                final Entry<Long, ActionInfo> entry = session.getWebDriverActionStartTimes().floorEntry(webVitalData.getTime());
-                final ActionInfo actionInfo = entry != null ? entry.getValue() : null;
+                final ActionInfo actionInfo = getActionInfo(session, webVitalData.getTime());
 
                 logTimerData(session, actionInfo, webVitalData);
             }
@@ -219,7 +216,8 @@ public class ClientPerformanceMetrics
     /**
      * Post-processes and logs only those web vitals with the given name, such as "CLS".
      */
-    private static void postProcessAndLogWebVitals(final String webVitalName, final List<WebVitalData> webVitalDataList, final SessionImpl session)
+    private static void postProcessAndLogWebVitals(final String webVitalName, final List<WebVitalData> webVitalDataList,
+                                                   final SessionImpl session)
     {
         ActionInfo lastActionInfo = null;
         WebVitalData lastWebVitalData = null;
@@ -229,8 +227,7 @@ public class ClientPerformanceMetrics
         {
             if (webVitalData.getName().equals(webVitalName))
             {
-                final Entry<Long, ActionInfo> entry = session.getWebDriverActionStartTimes().floorEntry(webVitalData.getTime());
-                final ActionInfo actionInfo = entry != null ? entry.getValue() : null;
+                final ActionInfo actionInfo = getActionInfo(session, webVitalData.getTime());
 
                 if (lastWebVitalData != null && lastActionInfo != actionInfo)
                 {
@@ -283,5 +280,22 @@ public class ClientPerformanceMetrics
         data.setName(sb.toString());
 
         session.getDataManager().logDataRecord(data);
+    }
+
+    /**
+     * Returns the {@link ActionInfo} object of the action that was running at the given time.
+     * 
+     * @param session
+     *            the session that knows when which action was run
+     * @param time
+     *            the time in question
+     * @return the action info object or <code>null</code> if no action was active at that time
+     */
+    private static ActionInfo getActionInfo(final SessionImpl session, final long time)
+    {
+        final Entry<Long, ActionInfo> entry = session.getWebDriverActionStartTimes().floorEntry(time);
+        final ActionInfo actionInfo = entry != null ? entry.getValue() : null;
+
+        return actionInfo;
     }
 }

@@ -106,35 +106,43 @@
         <xsl:param name="format" select="'#,##0'"/><!-- the format string to use when formatting scores -->
 
         <xsl:if test="$value">
-            <xsl:variable name="count" select="$value/goodCount + $value/improveCount + $value/poorCount"/>
-            <xsl:variable name="goodPercentage" select="$value/goodCount div $count"/>
-            <xsl:variable name="improvePercentage" select="$value/improveCount div $count"/>
-            <xsl:variable name="poorPercentage" select="$value/poorCount div $count"/>
+            <xsl:variable name="goodCount" select="$value/goodCount"/>
+            <xsl:variable name="improveCount" select="$value/improveCount"/>
+            <xsl:variable name="poorCount" select="$value/poorCount"/>
+            <xsl:variable name="totalCount" select="$goodCount + $improveCount + $poorCount"/>
 
-            <div class="web-vital-score web-vital-score-{$value/rating}">
+            <xsl:variable name="goodRatio" select="$goodCount div $totalCount"/>
+            <xsl:variable name="improveRatio" select="$improveCount div $totalCount"/>
+            <xsl:variable name="poorRatio" select="$poorCount div $totalCount"/>
+
+            <xsl:variable name="rating" select="$value/rating"/>
+
+            <div class="web-vital-score web-vital-score-{$rating}">
                 <xsl:value-of select="format-number($value/score, $format)"/>
-                <xsl:text> </xsl:text>
-                <xsl:value-of select="$unit"/>
+                <xsl:if test="$unit">
+                    <xsl:text> </xsl:text>
+                    <xsl:value-of select="$unit"/>
+                </xsl:if>
             </div>
     
             <div class="web-vital-gauge">
-                <span class="web-vital-gauge-arrow web-vital-gauge-arrow-{$value/rating}"></span>
+                <span class="web-vital-gauge-arrow web-vital-gauge-arrow-{$rating}"></span>
             </div>
     
             <div class="web-vital-bar">
                 <xsl:call-template name="web-vital-bar-segment">
-                    <xsl:with-param name="count" select="$value/goodCount"/>
-                    <xsl:with-param name="percentage" select="$goodPercentage"/>
+                    <xsl:with-param name="count" select="$goodCount"/>
+                    <xsl:with-param name="ratio" select="$goodRatio"/>
                     <xsl:with-param name="rating" select="'good'"/>
                 </xsl:call-template>
                 <xsl:call-template name="web-vital-bar-segment">
-                    <xsl:with-param name="count" select="$value/improveCount"/>
-                    <xsl:with-param name="percentage" select="$improvePercentage"/>
+                    <xsl:with-param name="count" select="$improveCount"/>
+                    <xsl:with-param name="ratio" select="$improveRatio"/>
                     <xsl:with-param name="rating" select="'improve'"/>
                 </xsl:call-template>
                 <xsl:call-template name="web-vital-bar-segment">
-                    <xsl:with-param name="count" select="$value/poorCount"/>
-                    <xsl:with-param name="percentage" select="$poorPercentage"/>
+                    <xsl:with-param name="count" select="$poorCount"/>
+                    <xsl:with-param name="ratio" select="$poorRatio"/>
                     <xsl:with-param name="rating" select="'poor'"/>
                 </xsl:call-template>
             </div>
@@ -143,14 +151,14 @@
 
     <xsl:template name="web-vital-bar-segment">
         <xsl:param name="count"/>
-        <xsl:param name="percentage"/>
+        <xsl:param name="ratio"/>
         <xsl:param name="rating"/>
 
-        <div class="web-vital-bar-segment web-vital-bar-segment-{$rating}" style="flex-grow: {$percentage}">
+        <div class="web-vital-bar-segment web-vital-bar-segment-{$rating}" style="flex-grow: {$ratio}">
             <xsl:attribute name="title">
                 <xsl:value-of select="$count"/>
                 <xsl:text> (</xsl:text>
-                <xsl:value-of select="format-number($percentage * 100, '#,##0.0')"/>
+                <xsl:value-of select="format-number($ratio * 100, '#,##0.0')"/>
                 <xsl:text>%)</xsl:text>
             </xsl:attribute>
         </div>
