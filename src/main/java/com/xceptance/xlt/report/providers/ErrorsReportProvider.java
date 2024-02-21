@@ -73,7 +73,7 @@ public class ErrorsReportProvider extends AbstractReportProvider
     private double directoryReplacementChance;
     
     /**
-     * The maximum number of directory hints remembered for a certain error (stack trace).
+     * The maximum number of errors that will be saved complete with their stack trace.
      */
     private int stackTracesLimit;
 
@@ -436,8 +436,14 @@ public class ErrorsReportProvider extends AbstractReportProvider
                     errorReport.actionName = failedActionName;
                     errorReport.detailChartID = 0;
                     
-                    //if (stackTracesLimit not reached) //TODO
-                    errorReport.trace = trace;
+                    if (errorReports.size() < stackTracesLimit) //only save stacktraces up to limit
+                    {
+                        errorReport.trace = trace;
+                    }
+                    else
+                    {
+                        errorReport.trace = "n/a";
+                    }
 
                     errorValues = new ErrorValues(errorReport);
                     errorReports.put(key, errorValues);

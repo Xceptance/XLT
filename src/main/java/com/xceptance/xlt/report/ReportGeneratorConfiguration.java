@@ -795,7 +795,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     /**
      * The maximum number of directory hints remembered for a certain error (stack trace).
      *
-     * @return the maximum number of error traces to list
+     * @return the maximum number of directories to list
      */
     public int getDirectoryLimitPerError()
     {
@@ -805,7 +805,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     /**
      * The chance to replace directory hints remembered for a certain error (stack trace) when the maximum number is reached.
      *
-     * @return the chance to replace listed error traces
+     * @return the chance to replace listed directory hints
      */
     public double getDirectoryReplacementChance()
     {
@@ -813,9 +813,9 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     }
     
     /**
-     * The maximum number of directory hints remembered for a certain error (stack trace).
+     * The maximum number of errors that will be saved complete with their stack trace.
      *
-     * @return the maximum number of error traces to list
+     * @return the maximum number of error stack traces displayed in the report
      */
     public int getStackTracesLimit()
     {
