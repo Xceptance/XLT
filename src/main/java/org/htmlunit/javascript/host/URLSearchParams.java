@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,27 +25,32 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.htmlunit.FormEncodingType;
 import org.htmlunit.WebRequest;
-import org.htmlunit.javascript.HtmlUnitScriptable;
-import org.htmlunit.javascript.configuration.JsxClass;
-import org.htmlunit.javascript.configuration.JsxConstructor;
-import org.htmlunit.javascript.configuration.JsxFunction;
-import org.htmlunit.util.NameValuePair;
-import org.htmlunit.util.UrlUtils;
-
 import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.ES6Iterator;
+import org.htmlunit.corejs.javascript.EcmaError;
 import org.htmlunit.corejs.javascript.Function;
+import org.htmlunit.corejs.javascript.IteratorLikeIterable;
+import org.htmlunit.corejs.javascript.NativeObject;
 import org.htmlunit.corejs.javascript.ScriptRuntime;
 import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.corejs.javascript.ScriptableObject;
-import org.htmlunit.corejs.javascript.Undefined;
+import org.htmlunit.corejs.javascript.SymbolKey;
+import org.htmlunit.javascript.HtmlUnitScriptable;
+import org.htmlunit.javascript.JavaScriptEngine;
+import org.htmlunit.javascript.configuration.JsxClass;
+import org.htmlunit.javascript.configuration.JsxConstructor;
+import org.htmlunit.javascript.configuration.JsxFunction;
+import org.htmlunit.javascript.configuration.JsxGetter;
+import org.htmlunit.javascript.configuration.JsxSymbol;
+import org.htmlunit.util.NameValuePair;
+import org.htmlunit.util.UrlUtils;
 
 /**
  * A JavaScript object for {@code URLSearchParams}.
@@ -64,13 +69,14 @@ public class URLSearchParams extends HtmlUnitScriptable {
     /** Constant used to register the prototype in the context. */
     public static final String URL_SEARCH_PARMS_TAG = "URLSearchParams";
 
-    private final URL url_;
+    private URL url_;
 
     public static final class NativeParamsIterator extends ES6Iterator {
+        enum Type { KEYS, VALUES, BOTH }
+
         private final Type type_;
         private final String className_;
         private final transient Iterator<NameValuePair> iterator_;
-        enum Type { KEYS, VALUES, BOTH }
 
         public static void init(final ScriptableObject scope, final String className) {
             ES6Iterator.init(scope, false, new NativeParamsIterator(className), URL_SEARCH_PARMS_TAG);
@@ -120,7 +126,6 @@ public class URLSearchParams extends HtmlUnitScriptable {
      * Constructs a new instance.
      */
     public URLSearchParams() {
-        url_ = null;
     }
 
     /**
@@ -136,25 +141,84 @@ public class URLSearchParams extends HtmlUnitScriptable {
      * @param params the params string
      */
     @JsxConstructor
-    public URLSearchParams(final Object params) {
-        // TODO: Pass in a sequence
-        // new URLSearchParams([["foo", 1],["bar", 2]]);
+    public void jsConstructor(final Object params) {
+        url_ = new URL();
+        url_.jsConstructor("http://www.htmlunit.org", "");
 
-        // TODO: Pass in a record
-        // new URLSearchParams({"foo" : 1 , "bar" : 2});
-
-        url_ = new URL("http://www.htmlunit.org", "");
-
-        if (params == null || Undefined.isUndefined(params)) {
+        if (params == null || JavaScriptEngine.isUndefined(params)) {
             return;
         }
 
         try {
-            url_.setSearch(splitQuery(Context.toString(params)));
+            url_.setSearch(resolveParams(params));
+        }
+        catch (final EcmaError e) {
+            throw JavaScriptEngine.typeError("Failed to construct 'URLSearchParams': " + e.getErrorMessage());
         }
         catch (final MalformedURLException e) {
             LOG.error(e.getMessage(), e);
         }
+    }
+
+    /*
+     * Implementation follows https://url.spec.whatwg.org/#urlsearchparams-initialize
+     */
+    private static List<NameValuePair> resolveParams(final Object params) {
+        // if params is a sequence
+        if (params instanceof Scriptable && ScriptableObject.hasProperty((Scriptable) params, SymbolKey.ITERATOR)) {
+
+            final Context cx = Context.getCurrentContext();
+            final Scriptable paramsScriptable = (Scriptable) params;
+
+            final List<NameValuePair> nameValuePairs = new ArrayList<>();
+
+            try (IteratorLikeIterable itr = buildIteratorLikeIterable(cx, paramsScriptable)) {
+                for (final Object nameValue : itr) {
+                    if (!(nameValue instanceof Scriptable)) {
+                        throw JavaScriptEngine.typeError("The provided value cannot be converted to a sequence.");
+                    }
+                    if (!ScriptableObject.hasProperty((Scriptable) nameValue, SymbolKey.ITERATOR)) {
+                        throw JavaScriptEngine.typeError("The object must have a callable @@iterator property.");
+                    }
+
+                    try (IteratorLikeIterable nameValueItr = buildIteratorLikeIterable(cx, (Scriptable) nameValue)) {
+
+                        final Iterator<Object> nameValueIterator = nameValueItr.iterator();
+                        final Object name =
+                                nameValueIterator.hasNext() ? nameValueIterator.next() : Scriptable.NOT_FOUND;
+                        final Object value =
+                                nameValueIterator.hasNext() ? nameValueIterator.next() : Scriptable.NOT_FOUND;
+
+                        if (name == Scriptable.NOT_FOUND
+                                || value == Scriptable.NOT_FOUND
+                                || nameValueIterator.hasNext()) {
+                            throw JavaScriptEngine.typeError("Sequence initializer must only contain pair elements.");
+                        }
+
+                        nameValuePairs.add(new NameValuePair(
+                                JavaScriptEngine.toString(name),
+                                JavaScriptEngine.toString(value)));
+                    }
+                }
+            }
+
+            return nameValuePairs;
+        }
+
+        // if params is a record
+        if (params instanceof NativeObject) {
+            final List<NameValuePair> nameValuePairs = new ArrayList<>();
+            for (final Map.Entry<Object, Object> keyValuePair : ((NativeObject) params).entrySet()) {
+                nameValuePairs.add(
+                        new NameValuePair(
+                                JavaScriptEngine.toString(keyValuePair.getKey()),
+                                JavaScriptEngine.toString(keyValuePair.getValue())));
+            }
+            return nameValuePairs;
+        }
+
+        // otherwise handle it as string
+        return splitQuery(JavaScriptEngine.toString(params));
     }
 
     private List<NameValuePair> splitQuery() {
@@ -189,6 +253,11 @@ public class URLSearchParams extends HtmlUnitScriptable {
         }
         final String value = "";
         return new NameValuePair(singleParam, value);
+    }
+
+    private static IteratorLikeIterable buildIteratorLikeIterable(final Context cx, final Scriptable iterable) {
+        final Object iterator = ScriptRuntime.callIterator(iterable, cx, iterable.getParentScope());
+        return new IteratorLikeIterable(cx, iterable.getParentScope(), iterator);
     }
 
     /**
@@ -284,7 +353,7 @@ public class URLSearchParams extends HtmlUnitScriptable {
             }
         }
 
-        return Context.getCurrentContext().newArray(getWindow(this), result.toArray());
+        return JavaScriptEngine.newArray(getWindow(this), result.toArray());
     }
 
     /**
@@ -354,8 +423,8 @@ public class URLSearchParams extends HtmlUnitScriptable {
     @JsxFunction
     public void forEach(final Object callback) {
         if (!(callback instanceof Function)) {
-            throw ScriptRuntime.typeError(
-                    "Foreach callback '" + ScriptRuntime.toString(callback) + "' is not a function");
+            throw JavaScriptEngine.typeError(
+                    "Foreach callback '" + JavaScriptEngine.toString(callback) + "' is not a function");
         }
 
         final Function fun = (Function) callback;
@@ -387,6 +456,7 @@ public class URLSearchParams extends HtmlUnitScriptable {
      * @return an iterator.
      */
     @JsxFunction
+    @JsxSymbol(value = {CHROME, EDGE, FF, FF_ESR}, symbolName = "iterator")
     public Object entries() {
         final List<NameValuePair> splitted = splitQuery();
 
@@ -423,8 +493,16 @@ public class URLSearchParams extends HtmlUnitScriptable {
     }
 
     /**
-     * Returns the text of the Range.
-     * @return the text
+     * @return the total number of search parameter entries
+     */
+    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    public int getSize() {
+        final List<NameValuePair> splitted = splitQuery();
+        return splitted.size();
+    }
+
+    /**
+     * @return the text of the URLSearchParams
      */
     @JsxFunction(functionName = "toString")
     public String jsToString() {

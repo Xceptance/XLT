@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.htmlunit.html.HtmlPage;
  *
  * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
  * @author Ahmed Ashour
+ * @author Ronald Brill
  */
 public final class Version {
 
@@ -51,7 +52,7 @@ public final class Version {
      */
     private static void runSanityCheck() throws Exception {
         try (WebClient webClient = new WebClient()) {
-            final HtmlPage page = webClient.getPage("http://htmlunit.sourceforge.net/index.html");
+            final HtmlPage page = webClient.getPage("https://www.htmlunit.org/index.html");
             page.executeJavaScript("document.location");
             System.out.println("Sanity check complete.");
         }
@@ -78,6 +79,6 @@ public final class Version {
      * @return the copyright notice
      */
     public static String getCopyright() {
-        return "Copyright (c) 2002-2023 Gargoyle Software Inc. All rights reserved.";
+        return "Copyright (c) 2002-2024 Gargoyle Software Inc. All rights reserved.";
     }
 }

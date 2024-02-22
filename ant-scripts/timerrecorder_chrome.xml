@@ -36,6 +36,7 @@
                 <file name="manifest.json" />
                 <file name="page.js" />
                 <file name="background.js" />
+                <file name="web-vitals.js" />
             </filelist>
             <filterchain>
                 <replacetokens>

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,6 @@
  */
 package org.htmlunit.html.impl;
 
-import org.w3c.dom.Node;
-
 import org.htmlunit.Page;
 
 /**
@@ -25,8 +23,9 @@ import org.htmlunit.Page;
  * This interface is not public because it is an internal contract.
  *
  * @author Daniel Gredler
+ * @author Ronald Brill
  */
-public interface SelectableTextInput extends Node {
+public interface SelectableTextInput {
 
     /**
      * Returns the page which contains this element.

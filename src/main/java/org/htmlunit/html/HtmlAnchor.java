@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,10 +23,10 @@ import java.net.URL;
 import java.util.Locale;
 import java.util.Map;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.HttpHeader;
 import org.htmlunit.HttpMethod;
@@ -172,7 +172,7 @@ public class HtmlAnchor extends HtmlElement {
         // use the page encoding even if this is a GET requests
         webRequest.setCharset(page.getCharset());
 
-        if (!"noreferrer".equals(getRelAttribute().toLowerCase(Locale.ROOT))) {
+        if (!relContainsNoreferrer()) {
             webRequest.setRefererlHeader(page.getUrl());
         }
 
@@ -195,6 +195,15 @@ public class HtmlAnchor extends HtmlElement {
         }
         page.getWebClient().download(page.getEnclosingWindow(), target, webRequest,
                 true, false, ATTRIBUTE_NOT_DEFINED != getDownloadAttribute(), "Link click");
+    }
+
+    private boolean relContainsNoreferrer() {
+        String rel = getRelAttribute();
+        if (rel != null) {
+            rel = rel.toLowerCase(Locale.ROOT);
+            return ArrayUtils.contains(org.htmlunit.util.StringUtils.splitAtBlank(rel), "noreferrer");
+        }
+        return false;
     }
 
     /**
@@ -249,7 +258,7 @@ public class HtmlAnchor extends HtmlElement {
      * @return the value of the attribute {@code type} or an empty string if that attribute isn't defined
      */
     public final String getTypeAttribute() {
-        return getAttributeDirect("type");
+        return getAttributeDirect(TYPE_ATTRIBUTE);
     }
 
     /**
@@ -260,7 +269,7 @@ public class HtmlAnchor extends HtmlElement {
      * @return the value of the attribute {@code name} or an empty string if that attribute isn't defined
      */
     public final String getNameAttribute() {
-        return getAttributeDirect("name");
+        return getAttributeDirect(NAME_ATTRIBUTE);
     }
 
     /**

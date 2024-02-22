@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,14 @@
  */
 package com.xceptance.xlt.api.validators;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.xceptance.xlt.AbstractXLTTestCase;
+import com.xceptance.xlt.api.util.XltProperties;
+import com.xceptance.xlt.engine.XltEngine;
 
 /**
  * Test the implementation of {@link HtmlEndTagValidator}.
@@ -52,7 +55,19 @@ public class HtmlEndTagValidatorTest extends AbstractXLTTestCase
     @Before
     public void setUp() throws Exception
     {
+        // enable validator
+        XltProperties.getInstance().setProperty(HtmlEndTagValidator.PROPERTY_NAME, "true");
+
         instance = HtmlEndTagValidator.getInstance();
+    }
+
+    /**
+     * Test clean-up.
+     */
+    @After
+    public void cleanUp()
+    {
+        XltEngine.reset();
     }
 
     /**
@@ -74,7 +89,6 @@ public class HtmlEndTagValidatorTest extends AbstractXLTTestCase
         {
             failOnUnexpected(t);
         }
-
     }
 
     /**

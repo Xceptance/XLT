@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,13 +19,13 @@ import static org.junit.Assert.fail;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.htmlunit.SimpleWebTestCase;
+import org.htmlunit.WebClient;
+import org.htmlunit.junit.BrowserRunner;
+import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.w3c.dom.NodeList;
-
-import org.htmlunit.SimpleWebTestCase;
-import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
 
 /**
  * Unit tests for {@link HtmlElement}.
@@ -1186,18 +1186,42 @@ public class HtmlElementTest extends SimpleWebTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("false")
-    public void isDisplayed() throws Exception {
+    @Alerts({"true", "false", "false"})
+    public void isDisplayedJsDisabled() throws Exception {
         final String html = "<html><head>\n"
             + "</head>\n"
             + "</body>\n"
             + "<div id='d1'>hello</div>\n"
             + "<div id='d2' hidden>world</div>\n"
+            + "<div id='d3' style='display:none;'>world</div>\n"
             + "</body></html>";
 
         getWebClient().getOptions().setJavaScriptEnabled(false);
         final HtmlPage page = loadPage(html);
-        assertTrue(page.getElementById("d1").isDisplayed());
-        assertEquals(Boolean.parseBoolean(getExpectedAlerts()[0]), page.getElementById("d2").isDisplayed());
+        assertEquals(Boolean.parseBoolean(getExpectedAlerts()[0]), page.getElementById("d1").isDisplayed());
+        assertEquals(Boolean.parseBoolean(getExpectedAlerts()[1]), page.getElementById("d2").isDisplayed());
+        assertEquals(Boolean.parseBoolean(getExpectedAlerts()[2]), page.getElementById("d3").isDisplayed());
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"true", "false", "false"})
+    public void isDisplayedJsEngineDisabled() throws Exception {
+        final String html = "<html><head>\n"
+            + "</head>\n"
+            + "</body>\n"
+            + "<div id='d1'>hello</div>\n"
+            + "<div id='d2' hidden>world</div>\n"
+            + "<div id='d3' style='display:none;'>world</div>\n"
+            + "</body></html>";
+
+        try (WebClient webClient = new WebClient(getBrowserVersion(), false, null, -1)) {
+            final HtmlPage page = loadPage(html);
+            assertEquals(Boolean.parseBoolean(getExpectedAlerts()[0]), page.getElementById("d1").isDisplayed());
+            assertEquals(Boolean.parseBoolean(getExpectedAlerts()[1]), page.getElementById("d2").isDisplayed());
+            assertEquals(Boolean.parseBoolean(getExpectedAlerts()[2]), page.getElementById("d3").isDisplayed());
+        }
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,9 +23,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import org.htmlunit.CollectingAlertHandler;
 import org.htmlunit.ConfirmHandler;
@@ -56,6 +53,8 @@ import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * Tests for {@link Window}.
@@ -1626,14 +1625,14 @@ public class WindowTest extends SimpleWebTestCase {
 
         webClient.setPrintHandler(new PrintHandler() {
             @Override
-            public void handlePrint(final HtmlPage page) {
+            public void handlePrint(final HtmlPage pageToPrint) {
                 try {
                     Thread.sleep(DEFAULT_WAIT_TIME);
                 }
                 catch (final InterruptedException e) {
-                    page.executeJavaScript("log('" + e.getMessage() + "');");
+                    pageToPrint.executeJavaScript("log('" + e.getMessage() + "');");
                 }
-                page.executeJavaScript("log('print handled');");
+                pageToPrint.executeJavaScript("log('print handled');");
             }
         });
 

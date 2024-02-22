@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.htmlunit.javascript.host.media.MediaStreamTrack;
  * A JavaScript object for {@code CanvasCaptureMediaStreamTrack}.
  *
  * @author Ahmed Ashour
+ * @author Ronald Brill
  */
 @JsxClass({CHROME, EDGE})
 public class CanvasCaptureMediaStreamTrack extends MediaStreamTrack {
@@ -32,7 +33,15 @@ public class CanvasCaptureMediaStreamTrack extends MediaStreamTrack {
     /**
      * Default constructor.
      */
-    @JsxConstructor
     public CanvasCaptureMediaStreamTrack() {
+    }
+
+    /**
+     * JavaScript constructor.
+     */
+    @Override
+    @JsxConstructor
+    public void jsConstructor() {
+        super.jsConstructor();
     }
 }

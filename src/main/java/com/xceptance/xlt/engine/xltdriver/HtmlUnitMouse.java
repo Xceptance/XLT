@@ -15,13 +15,18 @@
 // specific language governing permissions and limitations
 // under the License.
 //
-// Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
+// Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
 
 package com.xceptance.xlt.engine.xltdriver;
 
 import java.io.IOException;
 import java.net.SocketTimeoutException;
 
+import org.htmlunit.ScriptException;
+import org.htmlunit.html.DisabledElement;
+import org.htmlunit.html.DomElement;
+import org.htmlunit.html.HtmlOption;
+import org.htmlunit.javascript.host.event.MouseEvent;
 import org.openqa.selenium.ElementNotInteractableException;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.Point;
@@ -30,12 +35,6 @@ import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.interactions.Coordinates;
-
-import org.htmlunit.ScriptException;
-import org.htmlunit.html.DisabledElement;
-import org.htmlunit.html.DomElement;
-import org.htmlunit.html.HtmlOption;
-import org.htmlunit.javascript.host.event.MouseEvent;
 
 import com.xceptance.xlt.engine.scripting.htmlunit.HtmlUnitElementUtils;
 
@@ -184,9 +183,9 @@ public class HtmlUnitMouse {
         {
             final int xPos = currentMousePosition.getX();
             final int yPos = currentMousePosition.getY();
-            HtmlUnitElementUtils.fireMouseEvent(element, "mousedown", xPos, yPos, MouseEvent.BUTTON_RIGHT);
-            HtmlUnitElementUtils.fireMouseEvent(element, "mouseup", xPos, yPos, MouseEvent.BUTTON_RIGHT);
-            HtmlUnitElementUtils.fireMouseEvent(element, "contextmenu", xPos, yPos, MouseEvent.BUTTON_RIGHT);
+            HtmlUnitElementUtils.fireMouseEvent(element, "mousedown", xPos, yPos, MouseEvent.BUTTON_RIGHT, 1);
+            HtmlUnitElementUtils.fireMouseEvent(element, "mouseup", xPos, yPos, MouseEvent.BUTTON_RIGHT, 1);
+            HtmlUnitElementUtils.fireMouseEvent(element, "contextmenu", xPos, yPos, MouseEvent.BUTTON_RIGHT, 0);
         }
         // HA #2142 end
 
@@ -284,14 +283,16 @@ public class HtmlUnitMouse {
         }
       
         {
-            final MouseEvent event = new MouseEvent(element, MouseEvent.TYPE_MOUSE_MOVE, keyboard_.isShiftPressed(), keyboard_.isCtrlPressed(), keyboard_.isAltPressed(), MouseEvent.BUTTON_LEFT);
+            final MouseEvent event = new MouseEvent(element, MouseEvent.TYPE_MOUSE_MOVE, keyboard_.isShiftPressed(),
+                                                    keyboard_.isCtrlPressed(), keyboard_.isAltPressed(), MouseEvent.BUTTON_LEFT, 0);
             event.setClientX((int)coordX);
             event.setClientY((int) coordY);
             element.fireEvent(event);
         }
       
         {
-            final MouseEvent event = new MouseEvent(element, MouseEvent.TYPE_MOUSE_OVER, keyboard_.isShiftPressed(), keyboard_.isCtrlPressed(), keyboard_.isAltPressed(), MouseEvent.BUTTON_LEFT);
+            final MouseEvent event = new MouseEvent(element, MouseEvent.TYPE_MOUSE_OVER, keyboard_.isShiftPressed(),
+                                                    keyboard_.isCtrlPressed(), keyboard_.isAltPressed(), MouseEvent.BUTTON_LEFT, 0);
             event.setClientX((int)coordX);
             event.setClientY((int) coordY);
             element.fireEvent(event);

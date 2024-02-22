@@ -1,12 +1,7 @@
 <?xml version="1.0"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
 
-<xsl:template name="navigation">
-    <xsl:param name="current" />
-
-	<xsl:text disable-output-escaping="yes">
-	<![CDATA[
-
+	<xsl:template name="navigation">
 		<nav>
 			<input class="hamburger-btn" type="checkbox" id="hamburger-btn" />
 			<label class="hamburger-icon" for="hamburger-btn"><span class="navicon"></span></label>
@@ -35,6 +30,7 @@
 					</ul>
 				</li>
 				<li><a href="page-load-timings.html">Page Load Timings</a></li>
+				<li><a href="web-vitals.html">Web Vitals</a></li>
 				<li><a href="custom-timers.html">Custom Timers</a></li>
 				<li><a href="custom-values.html">Custom Values</a></li>
 				<li><a href="external.html">External Data</a></li>
@@ -55,13 +51,12 @@
 				<li><a href="configuration.html">Configuration</a>
 					<ul>
 						<li><a href="configuration.html#load-profile">Load Profile</a></li>
-						<li><a href="configuration.html#configuration">Settings</a></li>
+						<li><a href="configuration.html#configuration">Load Test Settings</a></li>
+						<li><a href="configuration.html#jvm-configuration">Agent JVM Settings</a></li>
 					</ul>
 				</li>
 			</ul>
 		</nav>
-	]]>
-	</xsl:text>
-</xsl:template>
+	</xsl:template>
 
 </xsl:stylesheet>

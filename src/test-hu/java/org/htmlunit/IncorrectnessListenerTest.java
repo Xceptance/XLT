@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,9 @@ package org.htmlunit;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.htmlunit.junit.BrowserRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import org.htmlunit.junit.BrowserRunner;
 
 /**
  * Tests for {@link IncorrectnessListener}.
@@ -61,7 +60,8 @@ public final class IncorrectnessListenerTest extends SimpleWebTestCase {
         webClient.getPage(URL_FIRST);
 
         final String[] expectedIncorrectness = {
-            "Obsolete content type encountered: 'application/x-javascript'."
+            "Obsolete content type encountered: 'application/x-javascript' for "
+                    + "remotely loaded JavaScript element at 'http://localhost:22222/script.js'."
         };
         assertEquals(expectedIncorrectness, collectedIncorrectness);
     }

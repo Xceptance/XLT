@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,18 +19,17 @@ import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import java.io.File;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
 
 /**
  * Tests for {@link URL}.
@@ -588,12 +587,23 @@ public class URLTest extends WebDriverTestCase {
     @Alerts(DEFAULT = {"https:",
                        "http:", "http://mydomain.com/svn/Repos/",
                        "http:", "http://mydomain.com/svn/Repos/",
-                       "axdeg:", "axdeg://mydomain.com/svn/Repos/",
                        "http:", "http://mydomain.com/svn/Repos/",
                        "http:", "http://mydomain.com/svn/Repos/",
                        "http:", "http://mydomain.com/svn/Repos/",
-                       "null:", "null://mydomain.com/svn/Repos/",
+                       "http:", "http://mydomain.com/svn/Repos/",
+                       "http:", "http://mydomain.com/svn/Repos/",
+                       "http:", "http://mydomain.com/svn/Repos/",
                        "ex-unknown"},
+            FF_ESR = {"https:",
+                      "http:", "http://mydomain.com/svn/Repos/",
+                      "http:", "http://mydomain.com/svn/Repos/",
+                      "axdeg:", "axdeg://mydomain.com/svn/Repos/",
+                      "http:", "http://mydomain.com/svn/Repos/",
+                      "http:", "http://mydomain.com/svn/Repos/",
+                      "http:", "http://mydomain.com/svn/Repos/",
+                      "http:", "http://mydomain.com/svn/Repos/",
+                      "null:", "null://mydomain.com/svn/Repos/",
+                      "ex-unknown"},
             IE = {})
     public void protocol() throws Exception {
         final String html =
@@ -622,6 +632,10 @@ public class URLTest extends WebDriverTestCase {
                         + "        log(u.protocol);\n"
                         + "        log(u.toString());\n"
 
+                        + "        u.protocol = ' http ';\n"
+                        + "        log(u.protocol);\n"
+                        + "        log(u.toString());\n"
+
                         + "        u.protocol = 'axdeg ';\n"
                         + "        log(u.protocol);\n"
                         + "        log(u.toString());\n"
@@ -641,6 +655,249 @@ public class URLTest extends WebDriverTestCase {
                         + "        log(u.protocol);\n"
                         + "        log(u.toString());\n"
                         + "        } catch(e) { log('ex-unknown') }\n"
+                        + "      }\n"
+                        + "    }\n"
+                        + "  </script>\n"
+                        + "</head>\n"
+                        + "<body onload='test()'>\n"
+                        + "</body>\n"
+                        + "</html>";
+        loadPageVerifyTitle2(html);
+    }
+
+    @Test
+    @Alerts(DEFAULT = {"https:",
+                       "http:", "http://mydomain.com/svn/Repos/",
+                       "http:", "http://mydomain.com/svn/Repos/",
+                       "http:", "http://mydomain.com/svn/Repos/",
+                       "http:", "http://mydomain.com/svn/Repos/",
+                       "http:", "http://mydomain.com/svn/Repos/",
+                       "http:", "http://mydomain.com/svn/Repos/",
+                       "http:", "http://mydomain.com/svn/Repos/",
+                       "ex-unknown"},
+            FF_ESR = {"https:",
+                      "http:", "http://mydomain.com/svn/Repos/",
+                      "http:", "http://mydomain.com/svn/Repos/",
+                      "axdeg:", "axdeg://mydomain.com/svn/Repos/",
+                      "http:", "http://mydomain.com/svn/Repos/",
+                      "axdeg:", "axdeg://mydomain.com/svn/Repos/",
+                      "axdeg:", "axdeg://mydomain.com/svn/Repos/",
+                      "null:", "null://mydomain.com/svn/Repos/",
+                      "ex-unknown"},
+            IE = {})
+    public void protocol2() throws Exception {
+        final String html =
+                "<html>\n"
+                        + "<head>\n"
+                        + "  <script>\n"
+                        + LOG_TITLE_FUNCTION
+                        + "    function test() {\n"
+                        + "      if (typeof window.URL === 'function') {\n"
+                        + "        var u = new URL('https://mydomain.com:80/svn/Repos/');\n"
+                        + "        log(u.protocol);\n"
+
+                        + "        u.protocol = 'http:';\n"
+                        + "        log(u.protocol);\n"
+                        + "        log(u.toString());\n"
+
+                        + "        u.protocol = '';\n"
+                        + "        log(u.protocol);\n"
+                        + "        log(u.toString());\n"
+
+                        + "        u.protocol = 'axdeg:';\n"
+                        + "        log(u.protocol);\n"
+                        + "        log(u.toString());\n"
+
+                        + "        u.protocol = 'hTTp:';\n"
+                        + "        log(u.protocol);\n"
+                        + "        log(u.toString());\n"
+
+                        + "        u.protocol = 'axdeg: ';\n"
+                        + "        log(u.protocol);\n"
+                        + "        log(u.toString());\n"
+
+                        + "        u.protocol = ' axdeg: ';\n"
+                        + "        log(u.protocol);\n"
+                        + "        log(u.toString());\n"
+
+                        + "        try {\n"
+                        + "        u.protocol = null;\n"
+                        + "        log(u.protocol);\n"
+                        + "        log(u.toString());\n"
+                        + "        } catch(e) { log('ex-null') }\n"
+
+                        + "        try {\n"
+                        + "        u.protocol = unknown;\n"
+                        + "        log(u.protocol);\n"
+                        + "        log(u.toString());\n"
+                        + "        } catch(e) { log('ex-unknown') }\n"
+                        + "      }\n"
+                        + "    }\n"
+                        + "  </script>\n"
+                        + "</head>\n"
+                        + "<body onload='test()'>\n"
+                        + "</body>\n"
+                        + "</html>";
+        loadPageVerifyTitle2(html);
+    }
+
+    @Test
+    @Alerts(DEFAULT = {"https:",
+                       "http:", "http://mydomain.com/svn/Repos/",
+                       "http:", "http://mydomain.com/svn/Repos/",
+                       "http:", "http://mydomain.com/svn/Repos/",
+                       "http:", "http://mydomain.com/svn/Repos/",
+                       "http:", "http://mydomain.com/svn/Repos/",
+                       "http:", "http://mydomain.com/svn/Repos/",
+                       "http:", "http://mydomain.com/svn/Repos/",
+                       "ex-unknown"},
+            FF_ESR = {"https:",
+                      "http:", "http://mydomain.com/svn/Repos/",
+                      "http:", "http://mydomain.com/svn/Repos/",
+                      "axdeg:", "axdeg://mydomain.com/svn/Repos/",
+                      "http:", "http://mydomain.com/svn/Repos/",
+                      "axdeg:", "axdeg://mydomain.com/svn/Repos/",
+                      "axdeg:", "axdeg://mydomain.com/svn/Repos/",
+                      "null:", "null://mydomain.com/svn/Repos/",
+                      "ex-unknown"},
+            IE = {})
+    public void protocol3() throws Exception {
+        final String html =
+                "<html>\n"
+                        + "<head>\n"
+                        + "  <script>\n"
+                        + LOG_TITLE_FUNCTION
+                        + "    function test() {\n"
+                        + "      if (typeof window.URL === 'function') {\n"
+                        + "        var u = new URL('https://mydomain.com:80/svn/Repos/');\n"
+                        + "        log(u.protocol);\n"
+
+                        + "        u.protocol = 'http://www.htmlunit.org';\n"
+                        + "        log(u.protocol);\n"
+                        + "        log(u.toString());\n"
+
+                        + "        u.protocol = '';\n"
+                        + "        log(u.protocol);\n"
+                        + "        log(u.toString());\n"
+
+                        + "        u.protocol = 'axdeg://www.htmlunit.org';\n"
+                        + "        log(u.protocol);\n"
+                        + "        log(u.toString());\n"
+
+                        + "        u.protocol = 'hTTp://www.htmlunit.org';\n"
+                        + "        log(u.protocol);\n"
+                        + "        log(u.toString());\n"
+
+                        + "        u.protocol = 'axdeg://www.htmlunit.org ';\n"
+                        + "        log(u.protocol);\n"
+                        + "        log(u.toString());\n"
+
+                        + "        u.protocol = ' axdeg://www.htmlunit.org ';\n"
+                        + "        log(u.protocol);\n"
+                        + "        log(u.toString());\n"
+
+                        + "        try {\n"
+                        + "        u.protocol = null;\n"
+                        + "        log(u.protocol);\n"
+                        + "        log(u.toString());\n"
+                        + "        } catch(e) { log('ex-null') }\n"
+
+                        + "        try {\n"
+                        + "        u.protocol = unknown;\n"
+                        + "        log(u.protocol);\n"
+                        + "        log(u.toString());\n"
+                        + "        } catch(e) { log('ex-unknown') }\n"
+                        + "      }\n"
+                        + "    }\n"
+                        + "  </script>\n"
+                        + "</head>\n"
+                        + "<body onload='test()'>\n"
+                        + "</body>\n"
+                        + "</html>";
+        loadPageVerifyTitle2(html);
+    }
+
+    @Test
+    @Alerts(DEFAULT = {"https:",
+                       "http:", "http://mydomain.com/svn/Repos/",
+                       "https:", "https://mydomain.com/svn/Repos/",
+                       "ftp:", "ftp://mydomain.com/svn/Repos/",
+                       "ftp:", "ftp://mydomain.com/svn/Repos/",
+                       "ws:", "ws://mydomain.com/svn/Repos/",
+                       "wss:", "wss://mydomain.com/svn/Repos/",
+                       "file:", "file://mydomain.com/svn/Repos/"},
+            FF = {"https:",
+                  "http:", "http://mydomain.com/svn/Repos/",
+                  "https:", "https://mydomain.com/svn/Repos/",
+                  "ftp:", "ftp://mydomain.com/svn/Repos/",
+                  "ftp:", "ftp://mydomain.com/svn/Repos/",
+                  "ws:", "ws://mydomain.com/svn/Repos/",
+                  "wss:", "wss://mydomain.com/svn/Repos/",
+                  "file:", "file:///svn/Repos/"},
+            FF_ESR = {"https:",
+                      "http:", "http://mydomain.com/svn/Repos/",
+                      "https:", "https://mydomain.com/svn/Repos/",
+                      "ftp:", "ftp://mydomain.com/svn/Repos/",
+                      "ftps:", "ftps://mydomain.com/svn/Repos/",
+                      "ws:", "ws://mydomain.com/svn/Repos/",
+                      "wss:", "wss://mydomain.com/svn/Repos/",
+                      "file:", "file:///svn/Repos/"},
+            IE = {})
+    @HtmlUnitNYI(
+            FF = {"https:",
+                  "http:", "http://mydomain.com/svn/Repos/",
+                  "https:", "https://mydomain.com/svn/Repos/",
+                  "ftp:", "ftp://mydomain.com/svn/Repos/",
+                  "ftp:", "ftp://mydomain.com/svn/Repos/",
+                  "ws:", "ws://mydomain.com/svn/Repos/",
+                  "wss:", "wss://mydomain.com/svn/Repos/",
+                  "file:", "file://mydomain.com/svn/Repos/"},
+            FF_ESR = {"https:",
+                      "http:", "http://mydomain.com/svn/Repos/",
+                      "https:", "https://mydomain.com/svn/Repos/",
+                      "ftp:", "ftp://mydomain.com/svn/Repos/",
+                      "ftps:", "ftps://mydomain.com/svn/Repos/",
+                      "ws:", "ws://mydomain.com/svn/Repos/",
+                      "wss:", "wss://mydomain.com/svn/Repos/",
+                      "file:", "file://mydomain.com/svn/Repos/"})
+    public void specialScheme() throws Exception {
+        final String html =
+                "<html>\n"
+                        + "<head>\n"
+                        + "  <script>\n"
+                        + LOG_TITLE_FUNCTION
+                        + "    function test() {\n"
+                        + "      if (typeof window.URL === 'function') {\n"
+                        + "        var u = new URL('https://mydomain.com:80/svn/Repos/');\n"
+                        + "        log(u.protocol);\n"
+
+                        + "        u.protocol = 'http';\n"
+                        + "        log(u.protocol);\n"
+                        + "        log(u.toString());\n"
+
+                        + "        u.protocol = 'https';\n"
+                        + "        log(u.protocol);\n"
+                        + "        log(u.toString());\n"
+
+                        + "        u.protocol = 'ftp';\n"
+                        + "        log(u.protocol);\n"
+                        + "        log(u.toString());\n"
+
+                        + "        u.protocol = 'ftps';\n"
+                        + "        log(u.protocol);\n"
+                        + "        log(u.toString());\n"
+
+                        + "        u.protocol = 'ws';\n"
+                        + "        log(u.protocol);\n"
+                        + "        log(u.toString());\n"
+
+                        + "        u.protocol = 'wss';\n"
+                        + "        log(u.protocol);\n"
+                        + "        log(u.toString());\n"
+
+                        + "        u.protocol = 'file';\n"
+                        + "        log(u.protocol);\n"
+                        + "        log(u.toString());\n"
                         + "      }\n"
                         + "    }\n"
                         + "  </script>\n"
@@ -858,6 +1115,33 @@ public class URLTest extends WebDriverTestCase {
                 + "  }\n"
                 + "</script>\n"
                 + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = {"https://htmlunit.org/", "https://htmlunit.org/", "true"},
+            IE = {})
+    public void webkitURL() throws Exception {
+        final String html
+            = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "function test() {\n"
+            + "  if (typeof window.URL === 'function') {\n"
+            + "    var url = new URL('https://htmlunit.org');\n"
+            + "    var wkUrl = new webkitURL('https://htmlunit.org');\n"
+            + "    log(url);\n"
+            + "    log(wkUrl);\n"
+            + "    log(Object.getPrototypeOf(url) == Object.getPrototypeOf(wkUrl));\n"
+            + "  }\n"
+            + "}\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "</body></html>";
 
         loadPageVerifyTitle2(html);
     }

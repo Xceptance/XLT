@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,6 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// XC: The package "com.sun.org.apache.xerces" is not available in JDK 11, which is our base version.
+// 
 //package org.htmlunit.platform.util;
 //
 //import java.util.ArrayList;
@@ -20,11 +23,11 @@
 //import java.util.Map;
 //import java.util.Objects;
 //
+//import org.htmlunit.platform.XmlUtilsHelperAPI;
 //import org.w3c.dom.Document;
 //import org.w3c.dom.NamedNodeMap;
 //import org.w3c.dom.Node;
 //
-//import org.htmlunit.platform.XmlUtilsHelperAPI;
 //import com.sun.org.apache.xerces.internal.dom.DeferredDocumentImpl;
 //import com.sun.org.apache.xerces.internal.dom.DeferredNode;
 //

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,8 +33,10 @@ import org.htmlunit.html.HtmlEmphasis;
 import org.htmlunit.html.HtmlItalic;
 import org.htmlunit.html.HtmlKeyboard;
 import org.htmlunit.html.HtmlNoBreak;
+import org.htmlunit.html.HtmlRb;
 import org.htmlunit.html.HtmlRp;
 import org.htmlunit.html.HtmlRt;
+import org.htmlunit.html.HtmlRtc;
 import org.htmlunit.html.HtmlRuby;
 import org.htmlunit.html.HtmlS;
 import org.htmlunit.html.HtmlSample;
@@ -70,6 +72,8 @@ import org.htmlunit.javascript.host.ActiveXObject;
 @JsxClass(domClass = HtmlKeyboard.class, value = IE)
 @JsxClass(domClass = HtmlNoBreak.class, value = IE)
 @JsxClass(domClass = HtmlRt.class, value = IE)
+@JsxClass(domClass = HtmlRtc.class, value = IE)
+@JsxClass(domClass = HtmlRb.class, value = IE)
 @JsxClass(domClass = HtmlRp.class, value = IE)
 @JsxClass(domClass = HtmlRuby.class, value = IE)
 @JsxClass(domClass = HtmlS.class, value = IE)

@@ -15,18 +15,17 @@
 // specific language governing permissions and limitations
 // under the License.
 //
-// Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
+// Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
 
 package com.xceptance.xlt.engine.xltdriver.w3;
 
+import org.htmlunit.html.DomElement;
 import com.xceptance.xlt.engine.xltdriver.HtmlUnitInputProcessor.HtmlUnitAction;
 import com.xceptance.xlt.engine.xltdriver.HtmlUnitInputProcessor.KeyDownHtmlUnitAction;
 import com.xceptance.xlt.engine.xltdriver.HtmlUnitInputProcessor.KeyUpHtmlUnitAction;
 import com.xceptance.xlt.engine.xltdriver.HtmlUnitInputProcessor.PointerDownHtmlUnitAction;
 import com.xceptance.xlt.engine.xltdriver.HtmlUnitInputProcessor.PointerMoveHtmlUnitAction;
 import com.xceptance.xlt.engine.xltdriver.HtmlUnitInputProcessor.PointerUpHtmlUnitAction;
-
-import org.htmlunit.html.DomElement;
 
 /**
  * An action object constructed with arguments id, type, and subtype is an

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,8 +37,6 @@ import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.w3c.dom.NodeList;
-
 import org.htmlunit.SgmlPage;
 import org.htmlunit.WebResponse;
 import org.htmlunit.WebResponseData;
@@ -46,6 +44,7 @@ import org.htmlunit.html.DomDocumentFragment;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.html.DomText;
 import org.htmlunit.javascript.HtmlUnitScriptable;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
@@ -54,8 +53,7 @@ import org.htmlunit.javascript.host.dom.DocumentFragment;
 import org.htmlunit.javascript.host.dom.Node;
 import org.htmlunit.util.XmlUtils;
 import org.htmlunit.xml.XmlPage;
-
-import org.htmlunit.corejs.javascript.Context;
+import org.w3c.dom.NodeList;
 
 /**
  * A JavaScript object for {@code XSLTProcessor}.
@@ -72,8 +70,14 @@ public class XSLTProcessor extends HtmlUnitScriptable {
     /**
      * Default constructor.
      */
-    @JsxConstructor
     public XSLTProcessor() {
+    }
+
+    /**
+     * JavaScript constructor.
+     */
+    @JsxConstructor
+    public void jsConstructor() {
     }
 
     /**
@@ -175,6 +179,8 @@ public class XSLTProcessor extends HtmlUnitScriptable {
             }
 
             final Transformer transformer = transformerFactory.newTransformer(xsltSource);
+            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+
             for (final Map.Entry<String, Object> entry : parameters_.entrySet()) {
                 transformer.setParameter(entry.getKey(), entry.getValue());
             }
@@ -204,7 +210,7 @@ public class XSLTProcessor extends HtmlUnitScriptable {
             throw re;
         }
         catch (final Exception e) {
-            throw Context.reportRuntimeError("Exception: " + e);
+            throw JavaScriptEngine.reportRuntimeError("Exception: " + e);
         }
     }
 
@@ -225,23 +231,20 @@ public class XSLTProcessor extends HtmlUnitScriptable {
         rv.setParentScope(getParentScope());
         rv.setDomNode(fragment);
 
-        transform(source, fragment);
-        return rv;
-    }
-
-    private void transform(final Node source, final DomNode parent) {
         final Object result = transform(source);
         if (result instanceof org.w3c.dom.Node) {
-            final SgmlPage parentPage = parent.getPage();
+            final SgmlPage parentPage = fragment.getPage();
             final NodeList children = ((org.w3c.dom.Node) result).getChildNodes();
             for (int i = 0; i < children.getLength(); i++) {
-                XmlUtils.appendChild(parentPage, parent, children.item(i), true);
+                XmlUtils.appendChild(parentPage, fragment, children.item(i), true);
             }
         }
         else {
-            final DomText text = new DomText(parent.getPage(), (String) result);
-            parent.appendChild(text);
+            final DomText text = new DomText(fragment.getPage(), (String) result);
+            fragment.appendChild(text);
         }
+
+        return rv;
     }
 
     /**

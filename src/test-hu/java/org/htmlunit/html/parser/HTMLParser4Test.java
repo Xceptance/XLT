@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,6 @@
  */
 package org.htmlunit.html.parser;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.openqa.selenium.WebDriver;
-
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
@@ -25,6 +21,9 @@ import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.BuggyWebDriver;
 import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.openqa.selenium.WebDriver;
 
 /**
  * Test class for {@link HTMLParser}.
@@ -227,6 +226,8 @@ public class HTMLParser4Test extends WebDriverTestCase {
     @Alerts("<html><head><title>foo</title></head>"
             + "<body><script>window.name += document.documentElement.outerHTML + '\\u00a7';</script></body></html>")
     public void badlyFormedHTML_duplicateHeadStructure() throws Exception {
+        shutDownAll();
+
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html>"
             + "<head>"
@@ -385,40 +386,39 @@ public class HTMLParser4Test extends WebDriverTestCase {
         loadPageVerifyTitle2(html);
     }
 
-// this tests fails and breaks the driver for follow up tests - have to investigate what is going wrong here
-//    /**
-//     * See issue #1830.
-//     * @throws Exception failure
-//     */
-//    @Test
-//    @Alerts({"[object HTMLHeadElement]",
-//                "HEAD,HEAD,http://www.w3.org/1999/xhtml,null,head",
-//                "[object HTMLBodyElement]", "BODY,BODY,http://www.w3.org/1999/xhtml,null,body"})
-//    @NotYetImplemented
-//    public void namespace_svg() throws Exception {
-//        final String html =
-//            "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" "
-//                            + "\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">"
-//            + "<html xmlns=\"http://www.w3.org/2000/svg\">\n"
-//            + "<head>\n"
-//            + "<script>\n"
-//            + "  function test() {\n"
-//            + "    elem = document.getElementsByTagName('head')[0];\n"
-//            + "    debug(elem);\n"
-//            + "    elem = document.getElementsByTagName('body')[0];\n"
-//            + "    debug(elem);\n"
-//            + "  }\n"
-//            + "  function debug(e) {\n"
-//            + "    log(e);\n"
-//            + "    log(e.nodeName + ',' + e.tagName + ',' + e.namespaceURI + ',' + e.prefix + ',' + e.localName);\n"
-//            + "  }\n"
-//            + "</script>\n"
-//            + "</head>\n"
-//            + "<body onload='test()'>\n"
-//            + "</body></html>";
-//
-//        loadPageVerifyTitle2(html);
-//    }
+    /**
+     * See issue #1830.
+     * @throws Exception failure
+     */
+    @Test
+    @Alerts({"[object HTMLHeadElement]",
+                "HEAD,HEAD,http://www.w3.org/1999/xhtml,null,head",
+                "[object HTMLBodyElement]", "BODY,BODY,http://www.w3.org/1999/xhtml,null,body"})
+    public void namespace_svg() throws Exception {
+        final String html =
+            "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" "
+                            + "\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">"
+            + "<html xmlns=\"http://www.w3.org/2000/svg\">\n"
+            + "<head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    elem = document.getElementsByTagName('head')[0];\n"
+            + "    debug(elem);\n"
+            + "    elem = document.getElementsByTagName('body')[0];\n"
+            + "    debug(elem);\n"
+            + "  }\n"
+            + "  function debug(e) {\n"
+            + "    log(e);\n"
+            + "    log(e.nodeName + ',' + e.tagName + ',' + e.namespaceURI + ',' + e.prefix + ',' + e.localName);\n"
+            + "  }\n"
+            + "</script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
 
     /**
      * See issue #1830.
@@ -456,6 +456,34 @@ public class HTMLParser4Test extends WebDriverTestCase {
             + "    <g id='rectangles'>\n"
             + "      <rect x='1' y='11' width='8' height='8'/>\n"
             + "    </g>\n"
+            + "  </svg>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * See issue #719.
+     * @throws Exception failure
+     */
+    @Test
+    @Alerts("5")
+    public void svg_selfClosingTags() throws Exception {
+        final String html =
+            "<html>\n"
+            + "<head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    elem = document.getElementById('tester');\n"
+            + "    log(elem.childNodes.length);\n"
+            + "  }\n"
+            + "</script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "  <svg id='tester' xmlns=\"http://www.w3.org/2000/svg\">\n"
+            + "    <path fill=\"#4285F4\" />\n"
+            + "    <path fill=\"#34A853\" />\n"
             + "  </svg>\n"
             + "</body></html>";
 
@@ -737,12 +765,18 @@ public class HTMLParser4Test extends WebDriverTestCase {
      * @throws Exception failure
      */
     @Test
+    @Alerts("before1after1\\nbefore2after2\\nbefore3after3\\nbefore4after4\\nbefore5after5\\nbefore6<>after6")
+    @HtmlUnitNYI(
+            CHROME = "before1after1\\sbefore2after2\\sbefore3after3\\sbefore4after4\\sbefore5after5\\sbefore6<>after6",
+            EDGE = "before1after1\\sbefore2after2\\sbefore3after3\\sbefore4after4\\sbefore5after5\\sbefore6<>after6",
+            FF = "before1after1\\sbefore2after2\\sbefore3after3\\sbefore4after4\\sbefore5after5\\sbefore6<>after6",
+            FF_ESR = "before1after1\\sbefore2after2\\sbefore3after3\\sbefore4after4\\sbefore5after5\\sbefore6<>after6",
+            IE = "before1after1\\sbefore2after2\\sbefore3after3\\sbefore4after4\\sbefore5after5\\sbefore6<>after6")
     public void specialComments() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
                 + "<html><head>\n"
-                + "  <title>Outer Html</title>\n"
                 + "  <script>\n"
-                + LOG_WINDOW_NAME_FUNCTION
+                + LOG_TITLE_FUNCTION_NORMALIZE
                 + "    function test() {\n"
                 + "      var body = document.getElementById('tester');\n"
                 + "      var text = body.innerText;"
@@ -766,15 +800,7 @@ public class HTMLParser4Test extends WebDriverTestCase {
                 + "</body>\n"
                 + "</html>\n";
 
-        final WebDriver driver = loadPage2(html);
-        final String alerts = getJsVariableValue(driver, "window.name");
-
-        assertTrue(alerts, alerts.contains("before1after1"));
-        assertTrue(alerts, alerts.contains("before2after2"));
-        assertTrue(alerts, alerts.contains("before3after3"));
-        assertTrue(alerts, alerts.contains("before4after4"));
-        assertTrue(alerts, alerts.contains("before5after5"));
-        assertTrue(alerts, alerts.contains("before6<>after6"));
+        loadPageVerifyTitle2(html, getExpectedAlerts());
     }
 
     /**
@@ -881,5 +907,107 @@ public class HTMLParser4Test extends WebDriverTestCase {
             + "</html>";
 
         loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception failure
+     */
+    @Test
+    @Alerts({"1", "[object HTMLElement]", "1", "[object Text]",
+             "<!-- anchor linking to external file -->"
+                     + "<a href='https://www.htmlunit.org/'>External Link</a>"})
+    public void noscript() throws Exception {
+        final String html =
+            "<html>\n"
+            + "  <head>\n"
+            + "    <script>\n"
+            + LOG_TITLE_FUNCTION
+            + "      function test() {\n"
+            + "        var bodyChildren = document.getElementsByTagName('body')[0].childNodes;\n"
+            + "        log(bodyChildren.length);\n"
+            + "        log(bodyChildren[0]);\n"
+
+            + "        var noscript = bodyChildren[0];\n"
+            + "        log(noscript.childNodes.length);\n"
+            + "        log(noscript.childNodes[0]);\n"
+            + "        log(noscript.childNodes[0].textContent);\n"
+            + "      }\n"
+            + "    </script>\n"
+            + "  </head>\n"
+            + "  <body onload='test()'>"
+                    + "<noscript>"
+                    + "<!-- anchor linking to external file -->"
+                    + "<a href='https://www.htmlunit.org/'>External Link</a>"
+                    + "</noscript>"
+            + "</body>"
+            + "</html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception failure
+     */
+    @Test
+    @Alerts({"3", "[object HTMLElement]", "[object HTMLDivElement]", "[object Text]",
+             "1", "[object Text]", "<!-- ",
+             "1", "<div>abc</div>",
+             "0", "-->"})
+    public void noscriptBrokenComment() throws Exception {
+        final String html =
+            "<html>\n"
+            + "  <head>\n"
+            + "    <script>\n"
+            + LOG_TITLE_FUNCTION
+            + "      function test() {\n"
+            + "        var bodyChildren = document.getElementsByTagName('body')[0].childNodes;\n"
+            + "        log(bodyChildren.length);\n"
+            + "        log(bodyChildren[0]);\n"
+            + "        log(bodyChildren[1]);\n"
+            + "        log(bodyChildren[2]);\n"
+
+            + "        var noscript = bodyChildren[0];\n"
+            + "        log(noscript.childNodes.length);\n"
+            + "        log(noscript.childNodes[0]);\n"
+            + "        log(noscript.childNodes[0].textContent);\n"
+
+            + "        var div = bodyChildren[1];\n"
+            + "        log(div.childNodes.length);\n"
+            + "        log(div.outerHTML);\n"
+
+            + "        var txt = bodyChildren[2];\n"
+            + "        log(txt.childNodes.length);\n"
+            + "        log(txt.textContent);\n"
+            + "      }\n"
+            + "    </script>\n"
+            + "  </head>\n"
+            + "  <body onload='test()'>"
+                    + "<noscript>"
+                    + "<!-- </noscript><div>abc</div>-->"
+                    + "</noscript>"
+            + "</body>"
+            + "</html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @exception Exception If the test fails
+     */
+    @Test
+    @Alerts("ti </head> <body> 1234 </body> </html>")
+    public void badTagInHead() throws Exception {
+        final String html =
+                "<html>\n"
+                + "<head><foo/>\n"
+                + "<title>ti\n"
+                + "</head>\n"
+                + "<body>\n"
+                + "1234\n"
+                + "</body>\n"
+                + "</html>";
+
+        final WebDriver driver = loadPage2(html);
+        assertEquals(getExpectedAlerts()[0], driver.getTitle());
     }
 }

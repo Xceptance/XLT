@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 //
-// Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
+// Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
 
 package com.xceptance.xlt.engine.xltdriver.logging;
 
@@ -25,13 +25,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 
+import org.htmlunit.WebClient;
+import org.htmlunit.WebConsole.Logger;
 import org.openqa.selenium.logging.LogEntries;
 import org.openqa.selenium.logging.LogEntry;
 import org.openqa.selenium.logging.LogType;
 import org.openqa.selenium.logging.Logs;
-
-import org.htmlunit.WebClient;
-import org.htmlunit.WebConsole.Logger;
 
 /**
  * An implementation of the {@link Logs} interface for HtmlUnit. At the moment
@@ -64,13 +63,13 @@ public class HtmlUnitLogs implements Logs {
      */
     @Override
     public Set<String> getAvailableLogTypes() {
-        return Collections.<String>emptySet();
+        return Collections.emptySet();
     }
 
     private static class HtmlUnitDriverLogger implements Logger {
         private static final int BUFFER_SIZE = 1000;
 
-        private LogEntry[] buffer_ = new LogEntry[BUFFER_SIZE];
+        private final LogEntry[] buffer_ = new LogEntry[BUFFER_SIZE];
         private int insertPos_ = 0;
         private boolean isFull_ = false;
 

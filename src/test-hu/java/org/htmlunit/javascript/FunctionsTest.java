@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,12 @@
  */
 package org.htmlunit.javascript;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * Tests for Functions.
@@ -117,6 +117,54 @@ public class FunctionsTest extends WebDriverTestCase {
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"foo = undefined", "1"})
+    @NotYetImplemented
+    public void conditionallyCreatedFunction() throws Exception {
+        final String html
+            = "<html><head></head>\n"
+            + "<body>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  log('foo = ' + foo);\n"
+            + "  if (true) {\n"
+            + "    log(foo());\n"
+            + "    function foo() { return 1; }\n"
+            + "  }\n"
+            + "</script>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"error", "1"})
+    public void conditionallyCreatedFunctionStrict() throws Exception {
+        final String html
+            = "<html><head></head>\n"
+            + "<body>\n"
+            + "<script>\n"
+            + "  'use strict';\n"
+            + LOG_TITLE_FUNCTION
+            + "  try {\n"
+            + "    log('foo = ' + foo);\n"
+            + "  } catch(e) { log('error'); }\n"
+            + "  if (true) {\n"
+            + "    log(foo());\n"
+            + "    function foo() { return 1; }\n"
+            + "  }\n"
+            + "</script>\n"
             + "</body></html>";
 
         loadPageVerifyTitle2(html);

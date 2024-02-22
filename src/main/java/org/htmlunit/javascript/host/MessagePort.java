@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import java.net.URL;
 
 import org.htmlunit.Page;
 import org.htmlunit.WebWindow;
+import org.htmlunit.javascript.HtmlUnitContextFactory;
 import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.PostponedAction;
 import org.htmlunit.javascript.configuration.JsxClass;
@@ -33,8 +34,6 @@ import org.htmlunit.javascript.configuration.JsxSetter;
 import org.htmlunit.javascript.host.event.Event;
 import org.htmlunit.javascript.host.event.EventTarget;
 import org.htmlunit.javascript.host.event.MessageEvent;
-
-import org.htmlunit.corejs.javascript.ContextFactory;
 
 /**
  * A JavaScript object for {@code MessagePort}.
@@ -50,8 +49,16 @@ public class MessagePort extends EventTarget {
     /**
      * Default constructor.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public MessagePort() {
+    }
+
+    /**
+     * JavaScript constructor.
+     */
+    @Override
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    public void jsConstructor() {
+        super.jsConstructor();
     }
 
     /**
@@ -110,8 +117,8 @@ public class MessagePort extends EventTarget {
             final JavaScriptEngine jsEngine = (JavaScriptEngine) webWindow.getWebClient().getJavaScriptEngine();
             final PostponedAction action = new PostponedAction(page, "MessagePort.postMessage") {
                 @Override
-                public void execute() throws Exception {
-                    final ContextFactory cf = jsEngine.getContextFactory();
+                public void execute() {
+                    final HtmlUnitContextFactory cf = jsEngine.getContextFactory();
                     cf.call(cx -> port1_.dispatchEvent(event));
                 }
             };

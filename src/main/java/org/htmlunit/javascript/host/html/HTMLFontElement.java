@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,12 +20,11 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import org.htmlunit.html.HtmlFont;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.configuration.JsxSetter;
-
-import org.htmlunit.corejs.javascript.Context;
 
 /**
  * The JavaScript object {@code HTMLFontElement}.
@@ -39,8 +38,16 @@ public class HTMLFontElement extends HTMLElement {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public HTMLFontElement() {
+    }
+
+    /**
+     * JavaScript constructor.
+     */
+    @Override
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    public void jsConstructor() {
+        super.jsConstructor();
     }
 
     /**
@@ -85,7 +92,7 @@ public class HTMLFontElement extends HTMLElement {
      */
     @JsxGetter
     public int getSize() {
-        return (int) Context.toNumber(getDomNodeOrDie().getAttributeDirect("size"));
+        return (int) JavaScriptEngine.toNumber(getDomNodeOrDie().getAttributeDirect("size"));
     }
 
     /**
@@ -94,6 +101,6 @@ public class HTMLFontElement extends HTMLElement {
      */
     @JsxSetter
     public void setSize(final int size) {
-        getDomNodeOrDie().setAttribute("size", Context.toString(size));
+        getDomNodeOrDie().setAttribute("size", JavaScriptEngine.toString(size));
     }
 }

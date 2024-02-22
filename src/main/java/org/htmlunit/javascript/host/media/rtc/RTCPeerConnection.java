@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
+import org.htmlunit.javascript.configuration.JsxConstructorAlias;
 import org.htmlunit.javascript.host.event.EventTarget;
 
 /**
@@ -35,7 +36,16 @@ public class RTCPeerConnection extends EventTarget {
     /**
      * Creates an instance.
      */
-    @JsxConstructor
     public RTCPeerConnection() {
+    }
+
+    /**
+     * JavaScript constructor.
+     */
+    @Override
+    @JsxConstructor
+    @JsxConstructorAlias(value = {CHROME, EDGE}, alias = "webkitRTCPeerConnection")
+    public void jsConstructor() {
+        super.jsConstructor();
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,12 +27,19 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.WebClient;
 import org.htmlunit.WebRequest;
 import org.htmlunit.WebResponse;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.ContextAction;
+import org.htmlunit.corejs.javascript.ContextFactory;
+import org.htmlunit.corejs.javascript.Function;
+import org.htmlunit.corejs.javascript.Script;
+import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.Undefined;
 import org.htmlunit.html.HtmlPage;
+import org.htmlunit.javascript.HtmlUnitContextFactory;
 import org.htmlunit.javascript.HtmlUnitScriptable;
 import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.background.BasicJavaScriptJob;
@@ -50,14 +57,6 @@ import org.htmlunit.javascript.host.event.Event;
 import org.htmlunit.javascript.host.event.EventTarget;
 import org.htmlunit.javascript.host.event.MessageEvent;
 import org.htmlunit.util.MimeType;
-
-import org.htmlunit.corejs.javascript.Context;
-import org.htmlunit.corejs.javascript.ContextAction;
-import org.htmlunit.corejs.javascript.ContextFactory;
-import org.htmlunit.corejs.javascript.Function;
-import org.htmlunit.corejs.javascript.Script;
-import org.htmlunit.corejs.javascript.Scriptable;
-import org.htmlunit.corejs.javascript.Undefined;
 
 /**
  * The scope for the execution of {@link Worker}s.
@@ -190,9 +189,9 @@ public class DedicatedWorkerGlobalScope extends EventTarget implements WindowOrW
             return null;
         };
 
-        final ContextFactory cf = jsEngine.getContextFactory();
+        final HtmlUnitContextFactory cf = jsEngine.getContextFactory();
 
-        final JavaScriptJob job = new WorkerJob(cf, action, "postMessage: " + Context.toString(message));
+        final JavaScriptJob job = new WorkerJob(cf, action, "postMessage: " + JavaScriptEngine.toString(message));
 
         final HtmlPage page = (HtmlPage) owningWindow_.getDocument().getPage();
         owningWindow_.getWebWindow().getJobManager().addJob(job, page);
@@ -212,9 +211,9 @@ public class DedicatedWorkerGlobalScope extends EventTarget implements WindowOrW
             return null;
         };
 
-        final ContextFactory cf = jsEngine.getContextFactory();
+        final HtmlUnitContextFactory cf = jsEngine.getContextFactory();
 
-        final JavaScriptJob job = new WorkerJob(cf, action, "messagePosted: " + Context.toString(message));
+        final JavaScriptJob job = new WorkerJob(cf, action, "messagePosted: " + JavaScriptEngine.toString(message));
 
         final HtmlPage page = (HtmlPage) owningWindow_.getDocument().getPage();
         owningWindow_.getWebWindow().getJobManager().addJob(job, page);
@@ -242,23 +241,24 @@ public class DedicatedWorkerGlobalScope extends EventTarget implements WindowOrW
     /**
      * Import external script(s).
      * @param cx the current context
+     * @param scope the scope
      * @param thisObj this object
      * @param args the script(s) to import
      * @param funObj the JS function called
      * @throws IOException in case of problem loading/executing the scripts
      */
     @JsxFunction
-    public static void importScripts(final Context cx, final Scriptable thisObj,
-        final Object[] args, final Function funObj) throws IOException {
-        final DedicatedWorkerGlobalScope scope = (DedicatedWorkerGlobalScope) thisObj;
+    public static void importScripts(final Context cx, final Scriptable scope,
+            final Scriptable thisObj, final Object[] args, final Function funObj) throws IOException {
+        final DedicatedWorkerGlobalScope workerScope = (DedicatedWorkerGlobalScope) thisObj;
 
-        final WebClient webClient = scope.owningWindow_.getWebWindow().getWebClient();
+        final WebClient webClient = workerScope.owningWindow_.getWebWindow().getWebClient();
         final boolean checkContentType = !webClient.getBrowserVersion()
                 .hasFeature(JS_WORKER_IMPORT_SCRIPTS_ACCEPTS_ALL);
 
         for (final Object arg : args) {
-            final String url = Context.toString(arg);
-            scope.loadAndExecute(webClient, url, cx, checkContentType);
+            final String url = JavaScriptEngine.toString(arg);
+            workerScope.loadAndExecute(webClient, url, cx, checkContentType);
         }
     }
 
@@ -270,7 +270,7 @@ public class DedicatedWorkerGlobalScope extends EventTarget implements WindowOrW
         final WebRequest webRequest = new WebRequest(fullUrl);
         final WebResponse response = webClient.loadWebResponse(webRequest);
         if (checkMimeType && !MimeType.isJavascriptMimeType(response.getContentType())) {
-            throw Context.reportRuntimeError(
+            throw JavaScriptEngine.reportRuntimeError(
                     "NetworkError: importScripts response is not a javascript response");
         }
 
@@ -289,7 +289,7 @@ public class DedicatedWorkerGlobalScope extends EventTarget implements WindowOrW
             return null;
         };
 
-        final ContextFactory cf = javaScriptEngine.getContextFactory();
+        final HtmlUnitContextFactory cf = javaScriptEngine.getContextFactory();
 
         if (context != null) {
             action.run(context);
@@ -309,14 +309,15 @@ public class DedicatedWorkerGlobalScope extends EventTarget implements WindowOrW
      * MDN web docs</a>
      *
      * @param context the JavaScript context
+     * @param scope the scope
      * @param thisObj the scriptable
      * @param args the arguments passed into the method
      * @param function the function
      * @return the id of the created timer
      */
     @JsxFunction
-    public static Object setTimeout(final Context context, final Scriptable thisObj,
-            final Object[] args, final Function function) {
+    public static Object setTimeout(final Context context, final Scriptable scope,
+            final Scriptable thisObj, final Object[] args, final Function function) {
         return WindowOrWorkerGlobalScopeMixin.setTimeout(context,
                 ((DedicatedWorkerGlobalScope) thisObj).owningWindow_, args, function);
     }
@@ -327,14 +328,15 @@ public class DedicatedWorkerGlobalScope extends EventTarget implements WindowOrW
      * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/setInterval">
      * MDN web docs</a>
      * @param context the JavaScript context
+     * @param scope the scope
      * @param thisObj the scriptable
      * @param args the arguments passed into the method
      * @param function the function
      * @return the id of the created interval
      */
     @JsxFunction
-    public static Object setInterval(final Context context, final Scriptable thisObj,
-            final Object[] args, final Function function) {
+    public static Object setInterval(final Context context, final Scriptable scope,
+            final Scriptable thisObj, final Object[] args, final Function function) {
         return WindowOrWorkerGlobalScopeMixin.setInterval(context,
                 ((DedicatedWorkerGlobalScope) thisObj).owningWindow_, args, function);
     }

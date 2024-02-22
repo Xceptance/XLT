@@ -15,27 +15,25 @@
 // specific language governing permissions and limitations
 // under the License.
 //
-// Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
+// Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
 
 package com.xceptance.xlt.engine.xltdriver;
-
-import static org.openqa.selenium.remote.CapabilityType.UNEXPECTED_ALERT_BEHAVIOUR;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.htmlunit.Page;
+import org.htmlunit.WebClient;
+import org.htmlunit.WebWindow;
 import org.openqa.selenium.Alert;
 import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.ElementNotInteractableException;
 import org.openqa.selenium.NoAlertPresentException;
 import org.openqa.selenium.UnexpectedAlertBehaviour;
 import org.openqa.selenium.UnhandledAlertException;
-
-import org.htmlunit.Page;
-import org.htmlunit.WebClient;
-import org.htmlunit.WebWindow;
+import org.openqa.selenium.remote.CapabilityType;
 
 /**
  * Implementation of {@link Alert}.
@@ -46,11 +44,11 @@ import org.htmlunit.WebWindow;
  */
 public class HtmlUnitAlert implements Alert {
 
-    private HtmlUnitDriver driver_;
+    private final HtmlUnitDriver driver_;
     private AlertHolder holder_;
     private boolean quitting_;
-    private Lock lock_ = new ReentrantLock();
-    private Condition condition_ = lock_.newCondition();
+    private final Lock lock_ = new ReentrantLock();
+    private final Condition condition_ = lock_.newCondition();
     private WebWindow webWindow_;
     private UnexpectedAlertBehaviour unexpectedAlertBehaviour_ = UnexpectedAlertBehaviour.DISMISS_AND_NOTIFY;
 
@@ -132,7 +130,7 @@ public class HtmlUnitAlert implements Alert {
 
     public void handleBrowserCapabilities(final Capabilities capabilities) {
         final UnexpectedAlertBehaviour behaviour = (UnexpectedAlertBehaviour) capabilities
-                .getCapability(UNEXPECTED_ALERT_BEHAVIOUR);
+                .getCapability(CapabilityType.UNHANDLED_PROMPT_BEHAVIOUR);
         if (behaviour != null) {
             this.unexpectedAlertBehaviour_ = behaviour;
         }
@@ -232,7 +230,7 @@ public class HtmlUnitAlert implements Alert {
     }
 
     private static class AlertHolder {
-        private String message_;
+        private final String message_;
         private boolean accepted_;
 
         AlertHolder(final String message) {

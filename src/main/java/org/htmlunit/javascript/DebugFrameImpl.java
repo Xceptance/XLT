@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,6 @@ package org.htmlunit.javascript;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
-import org.htmlunit.javascript.host.event.Event;
-
 import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.EcmaError;
 import org.htmlunit.corejs.javascript.Function;
@@ -29,6 +26,7 @@ import org.htmlunit.corejs.javascript.NativeFunction;
 import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.corejs.javascript.ScriptableObject;
 import org.htmlunit.corejs.javascript.debug.DebuggableScript;
+import org.htmlunit.javascript.host.event.Event;
 
 /**
  * <p>
@@ -123,7 +121,7 @@ public class DebugFrameImpl extends DebugFrameAdapter {
         String asString;
         try {
             // try to get the js representation
-            asString = Context.toString(arg);
+            asString = JavaScriptEngine.toString(arg);
             if (arg instanceof Event) {
                 asString += "<" + ((Event) arg).getType() + ">";
             }
@@ -145,14 +143,14 @@ public class DebugFrameImpl extends DebugFrameAdapter {
                 final JavaScriptException e = (JavaScriptException) t;
                 if (LOG.isTraceEnabled()) {
                     LOG.trace(getSourceName(cx) + ":" + getFirstLine(cx)
-                        + " Exception thrown: " + Context.toString(e.details()));
+                        + " Exception thrown: " + JavaScriptEngine.toString(e.details()));
                 }
             }
             else if (t instanceof EcmaError) {
                 final EcmaError e = (EcmaError) t;
                 if (LOG.isTraceEnabled()) {
                     LOG.trace(getSourceName(cx) + ":" + getFirstLine(cx)
-                        + " Exception thrown: " + Context.toString(e.details()));
+                        + " Exception thrown: " + JavaScriptEngine.toString(e.details()));
                 }
             }
             else {

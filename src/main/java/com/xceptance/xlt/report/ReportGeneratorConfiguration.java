@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -276,6 +276,10 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     private final int transactionErrorOverviewChartLimit;
 
     private final int errorDetailsChartLimit;
+    
+    private final int directoryLimitPerError;
+    
+    private final double directoryReplacementChance;
 
     private final Map<Pattern, Double> apdexThresholdsByActionNamePattern = new HashMap<>();
 
@@ -400,6 +404,9 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
                                                             50);
         errorDetailsChartLimit = getIntProperty(XltPropertyNames.ReportGenerator.Errors.TRANSACTION_ERROR_DETAIL_CHARTS_LIMIT, 50);
 
+        directoryLimitPerError = getIntProperty(XltPropertyNames.ReportGenerator.Errors.DIRECTORY_LIMIT_PER_ERROR, 10);
+        directoryReplacementChance = getDoubleProperty(XltPropertyNames.ReportGenerator.Errors.DIRECTORY_REPLACEMENT_CHANCE, 0.1);
+        
         // event settings
         groupEventsByTestCase = getBooleanProperty(PROP_PREFIX + "events.groupByTestCase", true);
         eventLimit = getIntProperty(PROP_PREFIX + "events.eventLimit", 100);
@@ -779,6 +786,26 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     public int getErrorDetailsChartLimit()
     {
         return errorDetailsChartLimit;
+    }
+    
+    /**
+     * The maximum number of directory hints remembered for a certain error (stack trace).
+     *
+     * @return the maximum number of error traces to list
+     */
+    public int getDirectoryLimitPerError()
+    {
+        return directoryLimitPerError;
+    }
+    
+    /**
+     * The chance to replace directory hints remembered for a certain error (stack trace) when the maximum number is reached.
+     *
+     * @return the chance to replace listed error traces
+     */
+    public double getDirectoryReplacementChance()
+    {
+        return directoryReplacementChance;
     }
 
     /**

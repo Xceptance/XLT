@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,13 +32,14 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.function.Supplier;
 
 import javax.imageio.ImageIO;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.SerializationUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.htmlunit.junit.RetryRule;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -71,6 +72,14 @@ public abstract class WebTestCase {
      */
     @Rule
     public TestName testMethodName_ = new TestName();
+
+    /**
+     * Define retry.
+     */
+    @Rule
+    public final RetryRule retryRule_ = new RetryRule(4);
+
+
 
     /** Logging support. */
     // private static final Log LOG = LogFactory.getLog(WebTestCase.class);
@@ -488,7 +497,7 @@ public abstract class WebTestCase {
         while (System.currentTimeMillis() < maxWait) {
             actual = func.get();
 
-            if (StringUtils.equals(expected, actual)) {
+            if (Objects.equals(expected, actual)) {
                 break;
             }
 
@@ -514,7 +523,9 @@ public abstract class WebTestCase {
      */
     @After
     public void releaseResources() {
-        mockWebConnection_ = null;
+        if (mockWebConnection_ != null) {
+            mockWebConnection_.clear();
+        }
     }
 
     /**

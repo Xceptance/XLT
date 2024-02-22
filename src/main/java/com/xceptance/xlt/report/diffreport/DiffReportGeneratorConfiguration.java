@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import com.xceptance.common.util.AbstractConfiguration;
 import com.xceptance.xlt.common.XltConstants;
@@ -34,12 +35,22 @@ public class DiffReportGeneratorConfiguration extends AbstractConfiguration
     private static final String PROP_PREFIX = XltConstants.XLT_PACKAGE_PATH + ".diffreportgenerator.";
 
     private static final String PROP_REPORTS_ROOT_DIR = PROP_PREFIX + "reports";
+    
+    private static final String PROP_TRANSFORMATIONS_PREFIX = PROP_PREFIX + "transformations.";
+
+    private static final String PROP_TRANSFORMATIONS_STYLE_SHEET_FILE_SUFFIX = ".styleSheetFileName";
+
+    private static final String PROP_TRANSFORMATIONS_OUTPUT_FILE_SUFFIX = ".outputFileName";
 
     private final File configDirectory;
 
     private final File homeDirectory;
 
     private final File reportsRootDirectory;
+    
+    private final List<String> styleSheetFileNames;
+
+    private final List<String> outputFileNames;
 
     public DiffReportGeneratorConfiguration() throws IOException
     {
@@ -55,6 +66,12 @@ public class DiffReportGeneratorConfiguration extends AbstractConfiguration
         }
 
         reportsRootDirectory = reportsRootDir;
+        
+        // load the transformation configuration
+        outputFileNames = new ArrayList<String>();
+        styleSheetFileNames = new ArrayList<String>();
+        
+        readTransformations(outputFileNames, styleSheetFileNames);
 
     }
 
@@ -115,5 +132,49 @@ public class DiffReportGeneratorConfiguration extends AbstractConfiguration
     public File getReportsRootDirectory()
     {
         return reportsRootDirectory;
+    }
+    
+    /**
+     * Return a list of output files names
+     * 
+     * @return a list of files names
+     */
+    public List<String> getOutputFileNames()
+    {
+        return outputFileNames;
+    }
+
+    /**
+     * Return a list of style sheets for rendering
+     * 
+     * @return a list of style sheet file names
+     */
+    public List<String> getStyleSheetFileNames()
+    {
+        return styleSheetFileNames;
+    }
+    
+    /**
+     * Reads the transformation configurations. The style sheet file names and output file names for each transformation
+     * are added to the respective lists passed as parameters.
+     * 
+     * @param outputFileNames
+     *            the list of output file names
+     * @param styleSheetFileNames
+     *            the list of style sheet file names
+     */
+    public void readTransformations(final List<String> outputFileNames, final List<String> styleSheetFileNames)
+    {
+        final Set<String> keys = getPropertyKeyFragment(PROP_TRANSFORMATIONS_PREFIX);
+        for (final String key : keys)
+        {
+            final String propertyPrefix = PROP_TRANSFORMATIONS_PREFIX + key;
+
+            final File outputFile = getFileProperty(propertyPrefix + PROP_TRANSFORMATIONS_OUTPUT_FILE_SUFFIX);
+            final File styleSheetFile = getFileProperty(propertyPrefix + PROP_TRANSFORMATIONS_STYLE_SHEET_FILE_SUFFIX);
+
+            outputFileNames.add(outputFile.getPath());
+            styleSheetFileNames.add(styleSheetFile.getPath());
+        }
     }
 }

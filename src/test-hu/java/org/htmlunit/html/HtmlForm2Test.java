@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,9 @@
  */
 package org.htmlunit.html;
 
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -33,13 +33,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.openqa.selenium.By;
-import org.openqa.selenium.By.ById;
-import org.openqa.selenium.By.ByTagName;
-import org.openqa.selenium.WebDriver;
-
 import org.htmlunit.FormEncodingType;
 import org.htmlunit.HttpHeader;
 import org.htmlunit.HttpMethod;
@@ -52,6 +45,12 @@ import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
 import org.htmlunit.util.UrlUtils;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.openqa.selenium.By;
+import org.openqa.selenium.By.ById;
+import org.openqa.selenium.By.ByTagName;
+import org.openqa.selenium.WebDriver;
 
 /**
  * Tests for {@link HtmlForm}, with BrowserRunner.
@@ -271,7 +270,7 @@ public class HtmlForm2Test extends WebDriverTestCase {
      * @throws Exception if the test page can't be loaded
      */
     @Test
-    @Alerts({"1", "val2"})
+    @Alerts({"1", "val2", "3", "3"})
     public void malformedHtml_nestedForms() throws Exception {
         final String html
             = "<html><head>\n"
@@ -280,6 +279,9 @@ public class HtmlForm2Test extends WebDriverTestCase {
             + "  function test() {\n"
             + "    log(document.forms.length);\n"
             + "    log(document.forms[0].field2.value);\n"
+
+            + "    log(document.forms[0].length);\n"
+            + "    log(document.forms[0].elements.length);\n"
             + "  }\n"
             + "</script></head><body onload='test()'>\n"
             + "<form id='form1' method='get' action='foo'>\n"
@@ -396,10 +398,8 @@ public class HtmlForm2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(CHROME = "text/html,application/xhtml+xml,application/xml;q=0.9,"
+    @Alerts(DEFAULT = "text/html,application/xhtml+xml,application/xml;q=0.9,"
                     + "image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
-            EDGE = "text/html,application/xhtml+xml,application/xml;q=0.9,"
-                    + "image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
             FF = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
             FF_ESR = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
             IE = "text/html, application/xhtml+xml, image/jxr, */*")
@@ -1509,7 +1509,9 @@ public class HtmlForm2Test extends WebDriverTestCase {
      * @throws Exception on test failure
      */
     @Test
-    @Alerts("§§URL§§index.html?test")
+    @Alerts(DEFAULT = "§§URL§§index.html?test",
+            FF = "null",
+            FF_ESR = "null")
     public void submit_refererHeaderNoreferrer() throws Exception {
         final String firstHtml
             = "<html><head><title>First</title></head><body>\n"
@@ -1529,7 +1531,7 @@ public class HtmlForm2Test extends WebDriverTestCase {
         driver.findElement(By.id("button")).click();
 
         final Map<String, String> lastAdditionalHeaders = getMockWebConnection().getLastAdditionalHeaders();
-        assertEquals(getExpectedAlerts()[0], lastAdditionalHeaders.get(HttpHeader.REFERER));
+        assertEquals(getExpectedAlerts()[0], "" + lastAdditionalHeaders.get(HttpHeader.REFERER));
     }
 
     /**
@@ -1537,7 +1539,9 @@ public class HtmlForm2Test extends WebDriverTestCase {
      * @throws Exception on test failure
      */
     @Test
-    @Alerts("§§URL§§index.html?test")
+    @Alerts(DEFAULT = "§§URL§§index.html?test",
+            FF = "null",
+            FF_ESR = "null")
     public void submit_refererHeaderNoreferrerCaseSensitive() throws Exception {
         final String firstHtml
             = "<html><head><title>First</title></head><body>\n"
@@ -1557,7 +1561,7 @@ public class HtmlForm2Test extends WebDriverTestCase {
         driver.findElement(By.id("button")).click();
 
         final Map<String, String> lastAdditionalHeaders = getMockWebConnection().getLastAdditionalHeaders();
-        assertEquals(getExpectedAlerts()[0], lastAdditionalHeaders.get(HttpHeader.REFERER));
+        assertEquals(getExpectedAlerts()[0], "" + lastAdditionalHeaders.get(HttpHeader.REFERER));
     }
 
     /**
@@ -1565,7 +1569,9 @@ public class HtmlForm2Test extends WebDriverTestCase {
      * @throws Exception on test failure
      */
     @Test
-    @Alerts("§§URL§§index.html?test")
+    @Alerts(DEFAULT = "§§URL§§index.html?test",
+            FF = "null",
+            FF_ESR = "null")
     public void submit_refererHeaderNoreferrerGet() throws Exception {
         final String firstHtml
             = "<html><head><title>First</title></head><body>\n"
@@ -1585,16 +1591,15 @@ public class HtmlForm2Test extends WebDriverTestCase {
         driver.findElement(By.id("button")).click();
 
         final Map<String, String> lastAdditionalHeaders = getMockWebConnection().getLastAdditionalHeaders();
-        assertEquals(getExpectedAlerts()[0], lastAdditionalHeaders.get(HttpHeader.REFERER));
+        assertEquals(getExpectedAlerts()[0], "" + lastAdditionalHeaders.get(HttpHeader.REFERER));
     }
 
     /**
      * @throws Exception on test failure
      */
     @Test
-    @Alerts(DEFAULT = "undefined",
-            CHROME = "NoReferrer",
-            EDGE = "NoReferrer")
+    @Alerts(DEFAULT = "NoReferrer",
+            IE = "undefined")
     public void relAttribute() throws Exception {
         final String html
             = "<html><head></head>\n"
@@ -1609,5 +1614,140 @@ public class HtmlForm2Test extends WebDriverTestCase {
             + "</body></html>";
 
         loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception on test failure
+     */
+    @Test
+    @Alerts({"[object HTMLFormElement]", "[object HTMLInputElement]", "true",
+             "[object HTMLInputElement]", "true"})
+    public void inputNameProperty() throws Exception {
+        final String html
+            = "<html>\n"
+            + "<head></head>\n"
+            + "<body>\n"
+            + "  <form id='testForm' name='testForm' action='/dosomething\' method='POST'>\n"
+            + "    <input type='submit' name='button' value='PushMe' id='button'/>\n"
+            + "    <input type='hidden' name='hiddenParam' value='hiddenValue'>\n"
+            + "  </form>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  log(testForm);\n"
+            + "  log(testForm.button);\n"
+            + "  log(testForm.button !== undefined);\n"
+            + "  log(testForm.hiddenParam);\n"
+            + "  log(testForm.hiddenParam !== undefined);\n"
+            + "</script>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception on test failure
+     */
+    @Test
+    @Alerts({"[object HTMLFormElement]", "[object HTMLInputElement]", "true",
+             "[object HTMLInputElement]", "true"})
+    public void inputHasOwnProperty() throws Exception {
+        final String html
+            = "<html>\n"
+            + "<head></head>\n"
+            + "<body>\n"
+            + "  <form id='testForm' name='testForm' action='/dosomething\' method='POST'>\n"
+            + "    <input type='submit' name='button' value='PushMe' id='button'/>\n"
+            + "    <input type='hidden' name='hiddenParam' value='hiddenValue'>\n"
+            + "  </form>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  log(testForm);\n"
+            + "  log(testForm.button);\n"
+            + "  log(testForm.hasOwnProperty('button'));\n"
+            + "  log(testForm.hiddenParam);\n"
+            + "  log(testForm.hasOwnProperty('hiddenParam'));\n"
+            + "</script>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+
+    /**
+     * @throws Exception on test failure
+     */
+    @Test
+    @Alerts({"[object HTMLFormElement]", "[object HTMLInputElement]",
+             "undefined", "undefined", "[object HTMLInputElement]", "true", "false", "false",
+             "undefined", "undefined", "[object HTMLInputElement]", "true", "false", "false"})
+    public void inputGetOwnPropertyDescriptor() throws Exception {
+        final String html
+            = "<html>\n"
+            + "<head></head>\n"
+            + "<body>\n"
+            + "  <form id='testForm' name='testForm' action='/dosomething\' method='POST'>\n"
+            + "    <input type='submit' name='button' value='PushMe' id='button'/>\n"
+            + "    <input type='hidden' name='hiddenParam' value='hiddenValue'>\n"
+            + "  </form>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  log(testForm);\n"
+            + "  log(testForm.button);\n"
+
+            + "  var prop = Object.getOwnPropertyDescriptor(testForm, 'button');\n"
+            + "  log(prop.get);\n"
+            + "  log(prop.set);\n"
+            + "  log(prop.value);\n"
+            + "  log(prop.configurable);\n"
+            + "  log(prop.enumerable);\n"
+            + "  log(prop.writable);\n"
+
+            + "  prop = Object.getOwnPropertyDescriptor(testForm, 'hiddenParam');\n"
+            + "  log(prop.get);\n"
+            + "  log(prop.set);\n"
+            + "  log(prop.value);\n"
+            + "  log(prop.configurable);\n"
+            + "  log(prop.enumerable);\n"
+            + "  log(prop.writable);\n"
+
+            + "</script>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("second/?hiddenName=hiddenValue")
+    public void inputHiddenAdded() throws Exception {
+        final String html = "<!DOCTYPE html>\n"
+            + "<html><head></head>\n"
+            + "<body>\n"
+            + "  <p>hello world</p>\n"
+            + "  <form id='myForm' method='GET' action='" + URL_SECOND + "'>\n"
+            + "    <input id='myButton' type='submit' />\n"
+            + "  </form>\n"
+            + "  <script>\n"
+            + "    var i = document.createElement('input');\n"
+            + "    i.setAttribute('type', 'hidden');\n"
+            + "    i.setAttribute('id', 'hiddenId');\n"
+            + "    i.setAttribute('name', 'hiddenName');\n"
+            + "    i.setAttribute('value', 'hiddenValue');\n"
+
+            + "    var f = document.getElementById('myForm');\n"
+            + "    f.appendChild(i);\n"
+            + "  </script>\n"
+            + "</body></html>";
+
+        final String secondContent = "second content";
+        getMockWebConnection().setResponse(URL_SECOND, secondContent);
+
+        final WebDriver driver = loadPage2(html);
+        driver.findElement(By.id("myButton")).click();
+
+        final String url = getMockWebConnection().getLastWebRequest().getUrl().toExternalForm();
+        assertTrue(url.endsWith(getExpectedAlerts()[0]));
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 package org.htmlunit.archunit;
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
+import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.constructors;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.fields;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.methods;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
@@ -23,14 +24,15 @@ import java.lang.reflect.Executable;
 import java.util.function.Supplier;
 
 import org.apache.commons.lang3.StringUtils;
-import org.junit.runner.RunWith;
-
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxClasses;
 import org.htmlunit.javascript.configuration.JsxConstant;
+import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.configuration.JsxSetter;
+import org.junit.runner.RunWith;
+
 import com.tngtech.archunit.base.DescribedPredicate;
 import com.tngtech.archunit.core.domain.JavaMethod;
 import com.tngtech.archunit.core.domain.JavaModifier;
@@ -59,6 +61,13 @@ public class ArchitectureTest {
     public static final ArchRule utilsPackageRule = classes()
         .that().haveNameMatching(".*Util.?")
         .and().doNotHaveFullyQualifiedName("org.htmlunit.cssparser.util.ParserUtils")
+        .and().doNotHaveFullyQualifiedName("org.htmlunit.httpclient.util.HttpDateUtils")
+        .and().doNotHaveFullyQualifiedName("org.htmlunit.platform.font.AwtFontUtil")
+        .and().doNotHaveFullyQualifiedName("org.htmlunit.platform.font.FontUtil")
+        .and().doNotHaveFullyQualifiedName("org.htmlunit.platform.font.NoOpFontUtil")
+
+        .and().doNotHaveFullyQualifiedName("org.htmlunit.csp.Utils")
+
         .should().resideInAPackage("org.htmlunit.util");
 
     /**
@@ -67,17 +76,7 @@ public class ArchitectureTest {
     @ArchTest
     public static final ArchRule awtPackageRule = noClasses()
         .that()
-            .doNotHaveFullyQualifiedName(
-                    "org.htmlunit.javascript.host.canvas.rendering.AwtRenderingBackend")
-            .and().doNotHaveFullyQualifiedName(
-                    "org.htmlunit.javascript.host.canvas.rendering.AwtRenderingBackend$SaveState")
-            .and().doNotHaveFullyQualifiedName(
-                    "org.htmlunit.javascript.host.canvas.rendering.AwtRenderingBackend$1")
-            .and().doNotHaveFullyQualifiedName(
-                    "org.htmlunit.html.DoTypeProcessor")
-            .and().doNotHaveFullyQualifiedName(
-                    "org.htmlunit.javascript.host.css.ComputedCSSStyleDeclaration")
-            .and().doNotHaveFullyQualifiedName("org.htmlunit.html.applets.AppletContextImpl")
+            .doNotHaveFullyQualifiedName("org.htmlunit.html.applets.AppletContextImpl")
             .and().resideOutsideOfPackage("org.htmlunit.platform..")
             .and().resideOutsideOfPackage("org.htmlunit.corejs.javascript.tools..")
         .should().dependOnClassesThat().resideInAnyPackage("java.awt..");
@@ -91,7 +90,7 @@ public class ArchitectureTest {
             .should().resideInAPackage("..javascript..");
 
     /**
-     * Every JsxGetter with propertyName defined has to end in '_js'.
+     * Every JsxConstant should be public static final.
      *
      * AbstractJavaScriptConfiguration.process(ClassConfiguration, String, SupportedBrowser)
      * stores the value.
@@ -111,6 +110,8 @@ public class ArchitectureTest {
             .that().areAnnotatedWith(JsxGetter.class)
                     .or().areAnnotatedWith(JsxSetter.class)
                     .or().areAnnotatedWith(JsxFunction.class)
+                    .or().areAnnotatedWith(JsxConstructor.class)
+                    .or().areAnnotatedWith(JsxConstant.class)
             .should().beDeclaredInClassesThat().resideInAPackage("..javascript..");
 
     /**
@@ -121,8 +122,56 @@ public class ArchitectureTest {
             .that().areAnnotatedWith(JsxGetter.class)
                     .or().areAnnotatedWith(JsxSetter.class)
                     .or().areAnnotatedWith(JsxFunction.class)
+                    .or().areAnnotatedWith(JsxConstructor.class)
+                    .or().areAnnotatedWith(JsxConstant.class)
             .should().beDeclaredInClassesThat().areAnnotatedWith(JsxClass.class)
             .orShould().beDeclaredInClassesThat().areAnnotatedWith(JsxClasses.class);
+
+    /**
+     * JsxConstants should not defined as short.
+     */
+    @ArchTest
+    public static final ArchRule jsxConstantReturnType = fields()
+            .that().areAnnotatedWith(JsxConstant.class)
+            .should().notHaveRawType("short")
+            .andShould().notHaveRawType("float");
+
+    /**
+     * JsxGetter/Setter/Functions should not return a short.
+     */
+    @ArchTest
+    public static final ArchRule jsxAnnotationReturnType = methods()
+            .that().areAnnotatedWith(JsxGetter.class)
+                    .or().areAnnotatedWith(JsxSetter.class)
+                    .or().areAnnotatedWith(JsxFunction.class)
+            .should().notHaveRawReturnType("short")
+            .andShould().notHaveRawReturnType("float");
+
+    /**
+     * JsxConstructor should not used for constructors.
+     */
+    @ArchTest
+    public static final ArchRule jsxAnnotationJsxConstructor = constructors()
+            .should().notBeAnnotatedWith(JsxConstructor.class);
+
+    /**
+     * JsxConstructor should have name jsConstructor.
+     */
+    @ArchTest
+    public static final ArchRule jsxAnnotationJsxConstructorNaming = methods()
+            .that().areAnnotatedWith(JsxConstructor.class)
+            .should().haveName("jsConstructor");
+
+    /**
+     * JsxGetter/Setter/Functions should not use a short as parameter.
+     */
+    @ArchTest
+    public static final ArchRule jsxAnnotationParameterType = methods()
+            .that().areAnnotatedWith(JsxGetter.class)
+                    .or().areAnnotatedWith(JsxSetter.class)
+                    .or().areAnnotatedWith(JsxFunction.class)
+            .should().notHaveRawParameterTypes("short")
+            .andShould().notHaveRawParameterTypes("float");
 
     /**
      * Every JsxGetter has to be named get... or is....
@@ -231,14 +280,9 @@ public class ArchitectureTest {
     @ArchTest
     public static final ArchRule androidTreeWalker = noClasses()
             .that()
-            .doNotHaveFullyQualifiedName(
-                    "org.htmlunit.html.HtmlDomTreeWalker")
-            .and().doNotHaveFullyQualifiedName(
-                    "org.htmlunit.platform.dom.traversal.DomTreeWalker")
-            .and().doNotHaveFullyQualifiedName(
-                    "org.htmlunit.html.DomTreeWalker") // deprecated as of 2.70.0
-            .and().doNotHaveFullyQualifiedName(
-                    "org.htmlunit.SgmlPage")
+                .doNotHaveFullyQualifiedName("org.htmlunit.html.HtmlDomTreeWalker")
+                .and().doNotHaveFullyQualifiedName("org.htmlunit.platform.dom.traversal.DomTreeWalker")
+                .and().doNotHaveFullyQualifiedName("org.htmlunit.SgmlPage")
             .should().dependOnClassesThat().haveFullyQualifiedName("org.w3c.dom.traversal.TreeWalker");
 
     /**
@@ -246,10 +290,15 @@ public class ArchitectureTest {
      */
     @ArchTest
     public static final ArchRule androidDocumentTraversal = noClasses()
-            .that()
-            .doNotHaveFullyQualifiedName(
-                    "org.htmlunit.SgmlPage")
             .should().dependOnClassesThat().haveFullyQualifiedName("org.w3c.dom.traversal.DocumentTraversal");
+
+    /**
+     * Make sure to not use javax.imageio.
+     */
+    @ArchTest
+    public static final ArchRule androidRanges = noClasses()
+        .should().dependOnClassesThat().resideInAnyPackage("org.w3c.dom.ranges..");
+
 
     /**
      * Make sure to not use javax.imageio.
@@ -257,13 +306,8 @@ public class ArchitectureTest {
     @ArchTest
     public static final ArchRule androidImageio = noClasses()
          .that()
-            .doNotHaveFullyQualifiedName(
-                    "org.htmlunit.platform.image.ImageIOImageData")
-            .and().doNotHaveFullyQualifiedName(
-                    "org.htmlunit.platform.canvas.rendering.AwtRenderingBackend")
-            // ToDo
-            .and().doNotHaveFullyQualifiedName(
-                    "org.htmlunit.html.HtmlImage")
+            .doNotHaveFullyQualifiedName("org.htmlunit.platform.image.ImageIOImageData")
+            .and().doNotHaveFullyQualifiedName("org.htmlunit.platform.canvas.rendering.AwtRenderingBackend")
         .should().dependOnClassesThat().resideInAnyPackage("javax.imageio..");
 
     /**
@@ -272,10 +316,8 @@ public class ArchitectureTest {
     @ArchTest
     public static final ArchRule xerces = noClasses()
         .that()
-            .doNotHaveFullyQualifiedName(
-                    "org.htmlunit.platform.util.XmlUtilsXercesHelper")
+            .doNotHaveFullyQualifiedName("org.htmlunit.platform.util.XmlUtilsXercesHelper")
         .should().dependOnClassesThat().resideInAnyPackage("org.apache.xerces..");
-
 
     /**
      * Make sure to not use jdk - Xerces.
@@ -283,7 +325,46 @@ public class ArchitectureTest {
     @ArchTest
     public static final ArchRule jdkXerces = noClasses()
         .that()
-            .doNotHaveFullyQualifiedName(
-                    "org.htmlunit.platform.util.XmlUtilsSunXercesHelper")
+            .doNotHaveFullyQualifiedName("org.htmlunit.platform.util.XmlUtilsSunXercesHelper")
         .should().dependOnClassesThat().resideInAnyPackage("com.sun.org.apache.xerces..");
+
+    /**
+     * Make sure the httpclient is only accessed from the adapter classes.
+     */
+    @ArchTest
+    public static final ArchRule httpClient = noClasses()
+        .that()
+            .doNotHaveFullyQualifiedName("org.htmlunit.HttpWebConnection")
+            .and().areNotInnerClasses()
+            .and().areNotMemberClasses()
+
+            .and().doNotHaveFullyQualifiedName("org.htmlunit.WebClient")
+            .and().doNotHaveFullyQualifiedName("org.htmlunit.WebRequest")
+            .and().doNotHaveFullyQualifiedName("org.htmlunit.util.Cookie")
+            .and().doNotHaveFullyQualifiedName("org.htmlunit.DefaultCredentialsProvider")
+            .and().resideOutsideOfPackage("org.htmlunit.httpclient..")
+        .should().dependOnClassesThat().resideInAnyPackage("org.apache.http..");
+
+    /**
+     * Do not use core-js dependencies outside of the adapter.
+     */
+    @ArchTest
+    public static final ArchRule corejsPackageRule = noClasses()
+        .that()
+            .doNotHaveFullyQualifiedName("org.htmlunit.ProxyAutoConfig")
+            .and().doNotHaveFullyQualifiedName("org.htmlunit.WebConsole")
+            .and().doNotHaveFullyQualifiedName("org.htmlunit.WebConsole$1")
+            .and().doNotHaveFullyQualifiedName("org.htmlunit.ScriptException")
+            .and().doNotHaveFullyQualifiedName("org.htmlunit.html.DomElement")
+            .and().doNotHaveFullyQualifiedName("org.htmlunit.html.HtmlDialog")
+            .and().doNotHaveFullyQualifiedName("org.htmlunit.html.HtmlDialog$1")
+            .and().doNotHaveFullyQualifiedName("org.htmlunit.html.HtmlPage")
+            .and().doNotHaveFullyQualifiedName("org.htmlunit.util.WebClientUtils")
+            .and().doNotHaveFullyQualifiedName("org.htmlunit.websocket.JettyWebSocketAdapter")
+
+            .and().resideOutsideOfPackage("org.htmlunit.javascript..")
+            .and().resideOutsideOfPackage("org.htmlunit.activex.javascript..")
+
+            .and().resideOutsideOfPackage("org.htmlunit.corejs..")
+        .should().dependOnClassesThat().resideInAnyPackage("org.htmlunit.corejs..");
 }

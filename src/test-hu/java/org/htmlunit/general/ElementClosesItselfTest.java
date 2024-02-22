@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,11 @@
  */
 package org.htmlunit.general;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * Unit tests for an element to close itself, which is defined in
@@ -1220,6 +1219,28 @@ public class ElementClosesItselfTest extends WebDriverTestCase {
     }
 
     /**
+     * Test {@link org.htmlunit.html.HtmlRb}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("1")
+    public void rb() throws Exception {
+        test("rb");
+    }
+
+    /**
+     * Test HtmlRbc.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("1")
+    public void rbc() throws Exception {
+        test("rbc");
+    }
+
+    /**
      * Test {@link org.htmlunit.html.HtmlRp}.
      *
      * @throws Exception if the test fails
@@ -1239,6 +1260,17 @@ public class ElementClosesItselfTest extends WebDriverTestCase {
     @Alerts("1")
     public void rt() throws Exception {
         test("rt");
+    }
+
+    /**
+     * Test {@link org.htmlunit.html.HtmlRtc}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("1")
+    public void rtc() throws Exception {
+        test("rtc");
     }
 
     /**
@@ -1703,4 +1735,12 @@ public class ElementClosesItselfTest extends WebDriverTestCase {
         test("slot");
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("1")
+    public void arbitrary() throws Exception {
+        test("abcdefg");
+    }
 }

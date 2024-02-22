@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -132,7 +132,7 @@ abstract class BrowserConfiguration {
 
         @Override
         public boolean matches(final BrowserVersion browserVersion) {
-            return browserVersion.isChrome() || browserVersion == BrowserVersion.EDGE;
+            return browserVersion.isChrome() || browserVersion.isEdge();
         }
 
         @Override
@@ -170,7 +170,7 @@ abstract class BrowserConfiguration {
 
         @Override
         public boolean matches(final BrowserVersion browserVersion) {
-            return browserVersion.isChrome() || browserVersion == BrowserVersion.EDGE;
+            return browserVersion.isChrome() || browserVersion.isEdge();
         }
     }
 
@@ -182,7 +182,7 @@ abstract class BrowserConfiguration {
         @Override
         public boolean matches(final BrowserVersion browserVersion) {
             return browserVersion.isChrome()
-                    || browserVersion == BrowserVersion.EDGE
+                    || browserVersion.isEdge()
                     || browserVersion.isFirefox();
         }
     }

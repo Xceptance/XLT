@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,8 +22,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.w3c.dom.Node;
-
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.Function;
+import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.ScriptableObject;
 import org.htmlunit.html.DomChangeEvent;
 import org.htmlunit.html.DomChangeListener;
 import org.htmlunit.html.DomElement;
@@ -31,14 +33,12 @@ import org.htmlunit.html.DomNode;
 import org.htmlunit.html.HtmlAttributeChangeEvent;
 import org.htmlunit.html.HtmlAttributeChangeListener;
 import org.htmlunit.html.HtmlElement;
+import org.htmlunit.javascript.HtmlUnitScriptable;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
-
-import org.htmlunit.corejs.javascript.Context;
-import org.htmlunit.corejs.javascript.Function;
-import org.htmlunit.corejs.javascript.Scriptable;
-import org.htmlunit.corejs.javascript.ScriptableObject;
+import org.w3c.dom.Node;
 
 /**
  * A JavaScript object for MSXML's (ActiveX) XMLDOMNodeList.<br>
@@ -111,7 +111,7 @@ public class XMLDOMNodeList extends MSXMLScriptable implements Function, org.w3c
      * @param description a text useful for debugging
      */
     public XMLDOMNodeList(final DomNode parentScope, final boolean attributeChangeSensitive, final String description) {
-        this((ScriptableObject) parentScope.getScriptableObject(), attributeChangeSensitive, description);
+        this(parentScope.getScriptableObject(), attributeChangeSensitive, description);
         setDomNode(parentScope, false);
     }
 
@@ -121,7 +121,7 @@ public class XMLDOMNodeList extends MSXMLScriptable implements Function, org.w3c
      * @param initialElements the initial content for the cache
      */
     protected XMLDOMNodeList(final DomNode parentScope, final List<DomNode> initialElements) {
-        this((ScriptableObject) parentScope.getScriptableObject(), true, null);
+        this(parentScope.getScriptableObject(), true, null);
         cachedElements_ = new ArrayList<>(initialElements);
     }
 
@@ -149,8 +149,8 @@ public class XMLDOMNodeList extends MSXMLScriptable implements Function, org.w3c
      * @return the next node in the collection
      */
     @JsxFunction
-    public Object nextNode() {
-        final Object nextNode;
+    public HtmlUnitScriptable nextNode() {
+        final HtmlUnitScriptable nextNode;
         final List<DomNode> elements = getElements();
         if (currentIndex_ >= 0 && currentIndex_ < elements.size()) {
             nextNode = elements.get(currentIndex_).getScriptableObject();
@@ -199,7 +199,7 @@ public class XMLDOMNodeList extends MSXMLScriptable implements Function, org.w3c
     @Override
     public Object call(final Context cx, final Scriptable scope, final Scriptable thisObj, final Object[] args) {
         if (args.length == 0) {
-            throw Context.reportRuntimeError("Zero arguments; need an index or a key.");
+            throw JavaScriptEngine.reportRuntimeError("Zero arguments; need an index or a key.");
         }
         return nullIfNotFound(getIt(args[0]));
     }
@@ -341,7 +341,7 @@ public class XMLDOMNodeList extends MSXMLScriptable implements Function, org.w3c
         // no element found by id, let's search by name
         for (final DomNode next : elements) {
             if (next instanceof DomElement) {
-                final String nodeName = ((DomElement) next).getAttributeDirect("name");
+                final String nodeName = ((DomElement) next).getAttributeDirect(DomElement.NAME_ATTRIBUTE);
                 if (name.equals(nodeName)) {
                     matchingElements.add(next);
                 }
@@ -470,7 +470,7 @@ public class XMLDOMNodeList extends MSXMLScriptable implements Function, org.w3c
         int index = 0;
         for (final DomNode next : elements) {
             final HtmlElement element = (HtmlElement) next;
-            final String name = element.getAttributeDirect("name");
+            final String name = element.getAttributeDirect(DomElement.NAME_ATTRIBUTE);
             if (ATTRIBUTE_NOT_DEFINED  == name) {
                 final String id = element.getId();
                 if (ATTRIBUTE_NOT_DEFINED == id) {

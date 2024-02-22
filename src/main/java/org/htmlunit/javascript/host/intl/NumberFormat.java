@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,20 +22,19 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang3.StringUtils;
-
 import org.htmlunit.BrowserVersion;
-import org.htmlunit.javascript.HtmlUnitScriptable;
-import org.htmlunit.javascript.RecursiveFunctionObject;
-import org.htmlunit.javascript.configuration.JsxClass;
-import org.htmlunit.javascript.configuration.JsxConstructor;
-import org.htmlunit.javascript.configuration.JsxFunction;
-import org.htmlunit.javascript.host.Window;
-
 import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.NativeArray;
 import org.htmlunit.corejs.javascript.ScriptRuntime;
 import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.javascript.HtmlUnitScriptable;
+import org.htmlunit.javascript.JavaScriptEngine;
+import org.htmlunit.javascript.RecursiveFunctionObject;
+import org.htmlunit.javascript.configuration.JsxClass;
+import org.htmlunit.javascript.configuration.JsxConstructor;
+import org.htmlunit.javascript.configuration.JsxFunction;
+import org.htmlunit.javascript.host.Window;
 
 /**
  * A JavaScript object for {@code NumberFormat}.
@@ -55,7 +54,6 @@ public class NumberFormat extends HtmlUnitScriptable {
     private transient NumberFormatHelper formatter_;
 
     static {
-
         final Map<String, String> commonFormats = new HashMap<>();
         commonFormats.put("", "");
         commonFormats.put("ar", "\u066c\u066b\u0660");
@@ -103,13 +101,13 @@ public class NumberFormat extends HtmlUnitScriptable {
         commonFormats.put("ar-SD", "\u066c\u066b\u0660");
         commonFormats.put("ar-SY", "\u066c\u066b\u0660");
         commonFormats.put("ar-YE", "\u066c\u066b\u0660");
+        commonFormats.put("be", ",.");
+        commonFormats.put("mk", ",.");
+        commonFormats.put("is", ",.");
 
         CHROME_FORMATS_.putAll(commonFormats);
         EDGE_FORMATS_.putAll(commonFormats);
 
-        CHROME_FORMATS_.put("be", ",.");
-        CHROME_FORMATS_.put("mk", ",.");
-        CHROME_FORMATS_.put("is", ",.");
         CHROME_FORMATS_.put("sq", ",.");
     }
 
@@ -171,25 +169,26 @@ public class NumberFormat extends HtmlUnitScriptable {
     /**
      * JavaScript constructor.
      * @param cx the current context
+     * @param scope the scope
      * @param args the arguments to the WebSocket constructor
      * @param ctorObj the function object
      * @param inNewExpr Is new or not
      * @return the java object to allow JavaScript to access
      */
     @JsxConstructor
-    public static Scriptable jsConstructor(final Context cx, final Object[] args, final Function ctorObj,
-            final boolean inNewExpr) {
+    public static Scriptable jsConstructor(final Context cx, final Scriptable scope,
+            final Object[] args, final Function ctorObj, final boolean inNewExpr) {
         final String[] locales;
         if (args.length != 0) {
             if (args[0] instanceof NativeArray) {
                 final NativeArray array = (NativeArray) args[0];
                 locales = new String[(int) array.getLength()];
                 for (int i = 0; i < locales.length; i++) {
-                    locales[i] = Context.toString(array.get(i));
+                    locales[i] = JavaScriptEngine.toString(array.get(i));
                 }
             }
             else {
-                locales = new String[] {Context.toString(args[0])};
+                locales = new String[] {JavaScriptEngine.toString(args[0])};
             }
         }
         else {
@@ -209,7 +208,7 @@ public class NumberFormat extends HtmlUnitScriptable {
      */
     @JsxFunction
     public String format(final Object object) {
-        final double number = Context.toNumber(object);
+        final double number = JavaScriptEngine.toNumber(object);
         return formatter_.format(number);
     }
 
@@ -226,7 +225,7 @@ public class NumberFormat extends HtmlUnitScriptable {
      * Helper.
      */
     static final class NumberFormatHelper {
-        private DecimalFormat formatter_;
+        private final DecimalFormat formatter_;
 
         NumberFormatHelper(final String localeName, final BrowserVersion browserVersion, final String pattern) {
             Locale locale = browserVersion.getBrowserLocale();

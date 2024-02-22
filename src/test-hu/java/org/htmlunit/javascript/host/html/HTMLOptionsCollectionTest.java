@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,12 @@
  */
 package org.htmlunit.javascript.host.html;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * Tests for {@link HTMLOptionsCollection}.
@@ -960,7 +960,6 @@ public class HTMLOptionsCollectionTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = {"0", "1", "One", "3", "One", "Two", "Three"},
-            FF_ESR = {"exception", "exception", "exception"},
             IE = {"exception", "exception", "exception"})
     public void setLengthMinusOne() throws Exception {
         setLength("-1");
@@ -1112,6 +1111,7 @@ public class HTMLOptionsCollectionTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"1", "false", "true", "false", "false"},
             IE = {"1", "true", "true", "true", "true"})
+    @HtmlUnitNYI(IE = {"1", "false", "true", "true", "true"})
     public void in() throws Exception {
         final String html
             = "<html><head><script>\n"

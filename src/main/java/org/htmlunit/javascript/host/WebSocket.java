@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,9 +22,13 @@ import java.net.URI;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.htmlunit.WebClient;
 import org.htmlunit.WebWindow;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.Function;
+import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.corejs.javascript.ScriptableObject;
+import org.htmlunit.corejs.javascript.typedarrays.NativeArrayBuffer;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
@@ -39,14 +43,6 @@ import org.htmlunit.javascript.host.event.EventTarget;
 import org.htmlunit.javascript.host.event.MessageEvent;
 import org.htmlunit.websocket.JettyWebSocketAdapter;
 import org.htmlunit.websocket.WebSocketAdapter;
-
-import org.htmlunit.corejs.javascript.Context;
-import org.htmlunit.corejs.javascript.Function;
-import org.htmlunit.corejs.javascript.ScriptRuntime;
-import org.htmlunit.corejs.javascript.Scriptable;
-import org.htmlunit.corejs.javascript.ScriptableObject;
-import org.htmlunit.corejs.javascript.Undefined;
-import org.htmlunit.corejs.javascript.typedarrays.NativeArrayBuffer;
 
 /**
  * A JavaScript object for {@code WebSocket}.
@@ -203,35 +199,35 @@ public class WebSocket extends EventTarget implements AutoCloseable {
             if (LOG.isErrorEnabled()) {
                 LOG.error("WebSocket Error: 'url' parameter '" + url + "' is invalid.", e);
             }
-            throw Context.reportRuntimeError("WebSocket Error: 'url' parameter '" + url + "' is invalid.");
+            throw JavaScriptEngine.reportRuntimeError("WebSocket Error: 'url' parameter '" + url + "' is invalid.");
         }
     }
 
     /**
      * JavaScript constructor.
      * @param cx the current context
+     * @param scope the scope
      * @param args the arguments to the WebSocket constructor
      * @param ctorObj the function object
      * @param inNewExpr Is new or not
      * @return the java object to allow JavaScript to access
      */
     @JsxConstructor
-    public static Scriptable jsConstructor(
-            final Context cx, final Object[] args, final Function ctorObj,
-            final boolean inNewExpr) {
+    public static Scriptable jsConstructor(final Context cx, final Scriptable scope,
+            final Object[] args, final Function ctorObj, final boolean inNewExpr) {
         if (args.length < 1 || args.length > 2) {
-            throw Context.reportRuntimeError(
+            throw JavaScriptEngine.reportRuntimeError(
                     "WebSocket Error: constructor must have one or two String parameters.");
         }
-        if (Undefined.isUndefined(args[0])) {
-            throw Context.reportRuntimeError("WebSocket Error: 'url' parameter is undefined.");
+        if (JavaScriptEngine.isUndefined(args[0])) {
+            throw JavaScriptEngine.reportRuntimeError("WebSocket Error: 'url' parameter is undefined.");
         }
         if (!(args[0] instanceof String)) {
-            throw Context.reportRuntimeError("WebSocket Error: 'url' parameter must be a String.");
+            throw JavaScriptEngine.reportRuntimeError("WebSocket Error: 'url' parameter must be a String.");
         }
         final String url = (String) args[0];
         if (StringUtils.isBlank(url)) {
-            throw Context.reportRuntimeError("WebSocket Error: 'url' parameter must be not empty.");
+            throw JavaScriptEngine.reportRuntimeError("WebSocket Error: 'url' parameter must be not empty.");
         }
         return new WebSocket(url, getWindow(ctorObj));
     }
@@ -328,7 +324,7 @@ public class WebSocket extends EventTarget implements AutoCloseable {
     @JsxGetter
     public String getUrl() {
         if (url_ == null) {
-            throw ScriptRuntime.typeError("invalid call");
+            throw JavaScriptEngine.typeError("invalid call");
         }
         return url_.toString();
     }

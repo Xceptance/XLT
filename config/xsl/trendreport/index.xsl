@@ -45,7 +45,7 @@
 <html lang="en">
 <head>
     <xsl:call-template name="head">
-        <xsl:with-param name="title" select="'XLT Performance Trend Report'" />
+        <xsl:with-param name="title" select="'XLT Performance Trend Report - Overview'" />
         <xsl:with-param name="projectName" select="$projectName" />
     </xsl:call-template>
 </head>
@@ -75,16 +75,14 @@
                 </div>
             </div>
 
-            <!--
-                ************************************
-                * Transactions
-                ************************************
-            -->
-            <xsl:call-template name="transactions"/>
 
         </div> <!-- data-content -->
 
-        <xsl:call-template name="footer" />
+        <xsl:call-template name="footer">
+            <xsl:with-param name="productName" select="$productName" />
+            <xsl:with-param name="productVersion" select="$productVersion" />
+            <xsl:with-param name="productUrl" select="$productUrl" />
+    	</xsl:call-template>
     </div> <!-- data-content -->
 </div> <!-- end container -->    
 

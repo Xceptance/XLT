@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,9 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPOutputStream;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.CollectingAlertHandler;
 import org.htmlunit.FailingHttpStatusCodeException;
@@ -42,6 +39,11 @@ import org.htmlunit.SimpleWebTestCase;
 import org.htmlunit.WebClient;
 import org.htmlunit.WebRequest;
 import org.htmlunit.WebWindow;
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.ContextFactory;
+import org.htmlunit.corejs.javascript.Function;
+import org.htmlunit.corejs.javascript.Script;
+import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.html.HtmlButtonInput;
 import org.htmlunit.html.HtmlElement;
@@ -52,14 +54,11 @@ import org.htmlunit.html.HtmlScript;
 import org.htmlunit.html.HtmlTextInput;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.Retry;
 import org.htmlunit.util.NameValuePair;
 import org.htmlunit.util.UrlUtils;
-
-import org.htmlunit.corejs.javascript.Context;
-import org.htmlunit.corejs.javascript.ContextFactory;
-import org.htmlunit.corejs.javascript.Function;
-import org.htmlunit.corejs.javascript.Script;
-import org.htmlunit.corejs.javascript.Scriptable;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * Tests for the {@link JavaScriptEngine}.
@@ -985,7 +984,8 @@ public class JavaScriptEngineTest extends SimpleWebTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(IE = "2")
+    @Alerts(DEFAULT = {"", "ex thrown"},
+            IE = {"2", "no ex"})
     public void commentNoDoubleSlash() throws Exception {
         final String html =
             "<html><head>\n"
@@ -996,18 +996,18 @@ public class JavaScriptEngineTest extends SimpleWebTestCase {
             + "<body>\n"
             + "</body></html>";
 
-        boolean exceptionThrown = false;
+        final String expectedExThrown = getExpectedAlerts()[1];
+        String exceptionThrown = "no ex";
         try {
+            setExpectedAlerts(getExpectedAlerts()[0]);
             loadPageWithAlerts(html);
         }
         catch (final ScriptException e) {
-            exceptionThrown = true;
+            exceptionThrown = "ex thrown";
             assertEquals(4, e.getFailingLineNumber());
         }
 
-        assertEquals(getBrowserVersion().isFirefox()
-                || getBrowserVersion().isChrome()
-                || getBrowserVersion().isEdge(), exceptionThrown);
+        assertEquals(expectedExThrown, exceptionThrown);
     }
 
     /**
@@ -1127,8 +1127,8 @@ public class JavaScriptEngineTest extends SimpleWebTestCase {
         final WebClient client1 = getWebClient();
         final WebClient client2 = createNewWebClient();
 
-        final ContextFactory cf1 = ((JavaScriptEngine) client1.getJavaScriptEngine()).getContextFactory();
-        final ContextFactory cf2 = ((JavaScriptEngine) client2.getJavaScriptEngine()).getContextFactory();
+        final HtmlUnitContextFactory cf1 = ((JavaScriptEngine) client1.getJavaScriptEngine()).getContextFactory();
+        final HtmlUnitContextFactory cf2 = ((JavaScriptEngine) client2.getJavaScriptEngine()).getContextFactory();
 
         assertFalse(cf1 == cf2);
         assertFalse(cf1 == ContextFactory.getGlobal());
@@ -1243,6 +1243,7 @@ public class JavaScriptEngineTest extends SimpleWebTestCase {
      * @throws Exception if the test fails
      */
     @Test
+    @Retry
     @Alerts("starting")
     public void shutdownShouldKill() throws Exception {
         final String html = "<html>\n"

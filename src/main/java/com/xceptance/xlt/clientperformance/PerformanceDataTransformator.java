@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import com.xceptance.xlt.api.engine.GlobalClock;
 import com.xceptance.xlt.api.engine.PageLoadTimingData;
 import com.xceptance.xlt.api.engine.RequestData;
+import com.xceptance.xlt.api.engine.WebVitalData;
 import com.xceptance.xlt.api.util.XltCharBuffer;
 import com.xceptance.xlt.engine.util.URLCleaner;
 import com.xceptance.xlt.engine.util.UrlUtils;
@@ -110,6 +111,21 @@ public final class PerformanceDataTransformator
                     LOG.debug("Entry without timings data: " + timingData);
                 }
             }
+
+            // get additional timing data from json
+            final JSONArray webVitals = timingData.optJSONArray("webVitals");
+            if (webVitals != null)
+            {
+                performanceData.getWebVitalsList().addAll(getWebVitalsDataList(webVitals));
+            }
+            else
+            {
+                if (LOG.isDebugEnabled())
+                {
+                    LOG.debug("Entry without web-vitals data: " + timingData);
+                }
+            }
+
             dataList.add(performanceData);
         }
         return dataList;
@@ -349,6 +365,41 @@ public final class PerformanceDataTransformator
             }
         }
         return customDataList;
+    }
+
+    private List<WebVitalData> getWebVitalsDataList(final JSONArray webVitalsArray)
+    {
+        final List<WebVitalData> webVitalsDataList = new ArrayList<>();
+
+        for (final Object object : webVitalsArray)
+        {
+            if (object instanceof JSONObject)
+            {
+                final JSONObject webVital = (JSONObject) object;
+
+                final String name = webVital.optString("name", null);
+                final long time = webVital.optLong("time", 0);
+                final Double value = webVital.optDoubleObject("value", null);
+
+                // only process valid records
+                if (name != null && time > 0 && value != null)
+                {
+                    final WebVitalData webVitalData = new WebVitalData();
+                    webVitalData.setName(name);
+                    webVitalData.setTime(time);
+                    webVitalData.setValue(value.doubleValue());
+
+                    // add to list
+                    webVitalsDataList.add(webVitalData);
+                }
+                else
+                {
+                    LOG.debug("Web-vitals entry is incomplete and will be skipped");
+                }
+            }
+        }
+
+        return webVitalsDataList;
     }
 
     private static List<NameValuePair> getNameValuePairs(JSONObject postParameters)

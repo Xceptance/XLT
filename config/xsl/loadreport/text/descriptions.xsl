@@ -513,6 +513,94 @@
         </div>
     </xsl:template>
 
+    <!--- ## Description: Web Vitals Summary ## -->
+    <xsl:template name="headline-web-vitals-summary">
+        <h2>Web Vitals</h2>
+    </xsl:template>
+    <xsl:template name="description-web-vitals-summary">
+        <div class="description">
+            <xsl:variable name="gid" select="concat('web-vitals', generate-id(.))"/>
+            <p>
+                The Web Vitals section helps you evaluate how well your pages perform on aspects that are important for a great user experience.
+                <xsl:call-template name="show-n-hide">
+                    <xsl:with-param name="gid" select="$gid"/>
+                </xsl:call-template>
+            </p>
+            <div id="more-{$gid}" class="more">
+				<p>
+					<a href="https://web.dev/articles/vitals">Web Vitals</a> is
+					a Google initiative to provide unified guidance for web page
+					quality signals that are essential to delivering a great
+					user experience on the web. It aims to simplify the wide
+					variety of available performance-measuring tools, and help
+					site owners focus on the metrics that matter most, the Core
+					Web Vitals.</p>
+
+				<h4>Core Web Vitals</h4>
+
+				<p>
+					<a href="https://web.dev/articles/lcp">Largest
+						Contentful Paint</a> · <i>Perceived Load
+						Speed</i><br/> LCP reports the render time of the
+					largest image or text block visible in the viewport,
+					relative to when the user first navigated to the page.</p>
+
+				<p>
+					<a href="https://web.dev/articles/fid">First Input
+						Delay</a> · <i>Interactivity</i><br/> FID measures the
+					time from when a user first interacts with a page (that is,
+					when they click a link, tap on a button, or use a custom,
+					JavaScript-powered control) to the time when the browser is
+					actually able to begin processing event handlers in response
+					to that interaction.</p>
+
+				<p>
+					<a href="https://web.dev/articles/cls">Cumulative
+						Layout Shift</a> · <i>Visual Stability</i><br/> CLS is a
+					measure of the largest burst of layout shift scores for
+					every unexpected layout shift that occurs during the
+					lifespan of a page.</p>
+
+				<h4>Other Web Vitals</h4>
+
+				<p>
+					<a href="https://web.dev/articles/fcp">First
+						Contentful Paint</a> · <i>Perceived Load
+						Speed</i><br/> The FCP metric measures the time from
+					when the user first navigated to the page to when any part
+					of the page's content is rendered on the screen.</p>
+
+				<p>
+					<a href="https://web.dev/articles/inp">Interaction to
+						Next Paint</a> · <i>Interactivity</i><br/> INP is a
+					metric that assesses a page's overall responsiveness to user
+					interactions by observing the latency of all click, tap, and
+					keyboard interactions that occur throughout the lifespan of
+					a user's visit to a page. The final INP value is the longest
+					interaction observed, ignoring outliers.</p>
+
+				<p>
+					<a href="https://web.dev/articles/ttfb">Time to First
+						Byte</a> · <i>Server Responsiveness</i><br/> TTFB is a
+					metric that measures the time between the request for a
+					resource and when the first byte of a response begins to
+					arrive.</p>
+
+				<h4>Scores</h4>
+
+				<p>
+					The displayed score value for a Web Vital is the 75th
+					percentile (estimated) of all measurements in a given
+					action. In addition, the scores are rated using Web
+					Vital-specific thresholds and colorized accordingly
+					(<span class="web-vital-score-good">good</span>,
+					<span class="web-vital-score-improve">needs improvement</span>,
+					<span class="web-vital-score-poor">poor</span>).
+				</p>
+			</div>
+        </div>
+    </xsl:template>
+
     <!--- ## Description: Custom Timer Summary ## -->
     <xsl:template name="headline-custom-timer-summary">
         <h2>Custom Timers</h2>
@@ -662,13 +750,25 @@
 
     <!--- ## Description: Configuration ## -->
     <xsl:template name="headline-configuration">
-        <h2>Settings</h2>
+        <h2>Load Test Settings</h2>
     </xsl:template>
     <xsl:template name="description-configuration">
         <div class="description">
             <p>
                 See the table below for details on the test configuration used to run this test. It helps to make the test
                 reproducible and preserves the test settings for later test evaluation.
+            </p>
+        </div>
+    </xsl:template>
+    
+    <!--- ## Description: JVM Configuration ## -->
+    <xsl:template name="headline-jvm-configuration">
+        <h2>Agent JVM Settings</h2>
+    </xsl:template>
+    <xsl:template name="description-jvm-configuration">
+        <div class="description">
+            <p>
+                This section lists custom JVM settings for the agents as specified in the <code>jvmargs.cfg</code> file of the test suite.
             </p>
         </div>
     </xsl:template>

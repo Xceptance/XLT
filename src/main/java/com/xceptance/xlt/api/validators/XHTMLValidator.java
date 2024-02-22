@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,9 +47,9 @@ import com.xceptance.xlt.api.util.XltProperties;
 public class XHTMLValidator
 {
     /**
-     * Property name.
+     * Property name that controls the validator.
      */
-    private static final String propertyName = XHTMLValidator.class.getName() + ".enabled";
+    static final String PROPERTY_NAME = XHTMLValidator.class.getName() + ".enabled";
 
     /**
      * Keeps the information whether to break at errors or not.
@@ -60,11 +60,6 @@ public class XHTMLValidator
      * Keeps the information whether to break at warnings or not.
      */
     private final boolean breakOnWarnings;
-
-    /**
-     * Keeps the state to allow control by an external property.
-     */
-    private final boolean enabled;
 
     /**
      * Constructor.
@@ -78,8 +73,6 @@ public class XHTMLValidator
     {
         this.breakOnErrors = breakOnErrors;
         this.breakOnWarnings = breakOnWarnings;
-
-        enabled = XltProperties.getInstance().getProperty(propertyName, true);
     }
 
     /**
@@ -119,12 +112,6 @@ public class XHTMLValidator
      */
     public void validate(final String content) throws Exception
     {
-        // check active?
-        if (!enabled)
-        {
-            return;
-        }
-
         final LocalErrorHandler localErrorHandler = new LocalErrorHandler();
         try
         {
@@ -189,16 +176,17 @@ public class XHTMLValidator
     }
 
     /**
-     * Returns the default instance of this validator.
+     * Returns the an instance of this validator. The validation itself can be switched ON/OFF by property. 
      * <p style="color:green">
-     * Note, that the default validator will stop on ALL errors and ALL warnings.
+     * Note, assuming the validator is enabled by property, it will stop on ALL errors and ALL warnings.
      * </p>
      * 
      * @return the default instance
      */
     public static XHTMLValidator getInstance()
     {
-        return XHTMLValidator_Singleton._instance;
+        final boolean enabled = XltProperties.getInstance().getProperty(PROPERTY_NAME, false);
+        return enabled ? XHTMLValidator_Singleton.instance : XHTMLValidator_Singleton.noopInstance;
     }
 
     /**
@@ -209,13 +197,44 @@ public class XHTMLValidator
         /**
          * The singleton instance.
          */
-        private static final XHTMLValidator _instance;
+        private static final XHTMLValidator instance;
+        private static final XHTMLValidator noopInstance;
 
         // static initializer (synchronized by class loader)
         static
         {
-            _instance = new XHTMLValidator(true, true);
+            instance = new XHTMLValidator(true, true);
+            noopInstance = new DisabledXHTMLValidator();
         }
+    }
+    
+    /**
+     * NoOp implementation of the parent class.
+     */
+    private static final class DisabledXHTMLValidator extends XHTMLValidator
+    {
+        private DisabledXHTMLValidator()
+        {
+            super(false, false);
+        }
+        
+        /** Does nothing. Validation is disabled. */
+        @Override
+        public void validate(final HtmlPage page)
+        {
+        };
+
+        /** Does nothing. Validation is disabled. */
+        @Override
+        public void validate(final LightWeightPage page)
+        {
+        };
+
+        /** Does nothing. Validation is disabled. */
+        @Override
+        public void validate(final String content)
+        {
+        };
     }
 
     /**

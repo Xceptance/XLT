@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
- * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,9 +32,8 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.BOMInputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.http.HttpStatus;
-
 import org.htmlunit.DefaultPageCreator.PageType;
+import org.htmlunit.httpclient.HttpClientConverter;
 import org.htmlunit.util.EncodingSniffer;
 import org.htmlunit.util.NameValuePair;
 
@@ -50,16 +49,40 @@ import org.htmlunit.util.NameValuePair;
  */
 public class WebResponse implements Serializable {
 
-    /** Forwarder to HttpStatus.SC_OK. */
-    public static final int OK = HttpStatus.SC_OK;
-    /** Forwarder to HttpStatus.SC_FORBIDDEN. */
-    public static final int FORBIDDEN = HttpStatus.SC_FORBIDDEN;
-    /** Forwarder to HttpStatus.SC_NOT_FOUND. */
-    public static final int NOT_FOUND = HttpStatus.SC_NOT_FOUND;
-    /** Forwarder to HttpStatus.SC_NO_CONTENT. */
-    public static final int NO_CONTENT = HttpStatus.SC_NO_CONTENT;
-    /** Forwarder to HttpStatus.SC_INTERNAL_SERVER_ERROR. */
-    public static final int INTERNAL_SERVER_ERROR = HttpStatus.SC_INTERNAL_SERVER_ERROR;
+    /**
+     * Forwarder to HttpStatus.SC_OK.
+     * @deprecated as of version 3.1.0; use {@link HttpClientConverter#OK} instead
+     */
+    @Deprecated
+    public static final int OK = HttpClientConverter.OK;
+
+    /**
+     * Forwarder to HttpStatus.SC_FORBIDDEN.
+     * @deprecated as of version 3.1.0; use {@link HttpClientConverter#FORBIDDEN} instead
+     */
+    @Deprecated
+    public static final int FORBIDDEN = HttpClientConverter.FORBIDDEN;
+
+    /**
+     * Forwarder to HttpStatus.SC_NOT_FOUND.
+     * @deprecated as of version 3.1.0; use {@link HttpClientConverter#NOT_FOUND} instead
+     */
+    @Deprecated
+    public static final int NOT_FOUND = HttpClientConverter.NOT_FOUND;
+
+    /**
+     * Forwarder to HttpStatus.SC_NO_CONTENT.
+     * @deprecated as of version 3.1.0; use {@link HttpClientConverter#NO_CONTENT} instead
+     */
+    @Deprecated
+    public static final int NO_CONTENT = HttpClientConverter.NO_CONTENT;
+
+    /**
+     * Forwarder to HttpStatus.SC_INTERNAL_SERVER_ERROR.
+     * @deprecated as of version 3.1.0; use {@link HttpClientConverter#INTERNAL_SERVER_ERROR} instead
+     */
+    @Deprecated
+    public static final int INTERNAL_SERVER_ERROR = HttpClientConverter.INTERNAL_SERVER_ERROR;
 
     private static final Log LOG = LogFactory.getLog(WebResponse.class);
     private static final ByteOrderMark[] BOM_HEADERS = {
@@ -71,6 +94,8 @@ public class WebResponse implements Serializable {
     private final WebResponseData responseData_;
     private final WebRequest request_;
     private boolean defaultCharsetUtf8_;
+    private boolean wasBlocked_;
+    private String blockReason_;
 
     /**
      * Constructs with all data.
@@ -329,7 +354,7 @@ public class WebResponse implements Serializable {
      */
     public boolean isSuccess() {
         final int statusCode = getStatusCode();
-        return statusCode >= HttpStatus.SC_OK && statusCode < HttpStatus.SC_MULTIPLE_CHOICES;
+        return statusCode >= HttpClientConverter.OK && statusCode < HttpClientConverter.MULTIPLE_CHOICES;
     }
 
     /**
@@ -337,8 +362,8 @@ public class WebResponse implements Serializable {
      */
     public boolean isSuccessOrUseProxy() {
         final int statusCode = getStatusCode();
-        return (statusCode >= HttpStatus.SC_OK && statusCode < HttpStatus.SC_MULTIPLE_CHOICES)
-                || statusCode == HttpStatus.SC_USE_PROXY;
+        return (statusCode >= HttpClientConverter.OK && statusCode < HttpClientConverter.MULTIPLE_CHOICES)
+                || statusCode == HttpClientConverter.USE_PROXY;
     }
 
     /**
@@ -346,9 +371,33 @@ public class WebResponse implements Serializable {
      */
     public boolean isSuccessOrUseProxyOrNotModified() {
         final int statusCode = getStatusCode();
-        return (statusCode >= HttpStatus.SC_OK && statusCode < HttpStatus.SC_MULTIPLE_CHOICES)
-                || statusCode == HttpStatus.SC_USE_PROXY
-                || statusCode == HttpStatus.SC_NOT_MODIFIED;
+        return (statusCode >= HttpClientConverter.OK && statusCode < HttpClientConverter.MULTIPLE_CHOICES)
+                || statusCode == HttpClientConverter.USE_PROXY
+                || statusCode == HttpClientConverter.NOT_MODIFIED;
+    }
+
+    /**
+     * @return true if the request was blocked
+     */
+    public boolean wasBlocked() {
+        return wasBlocked_;
+    }
+
+    /**
+     * @return the reason for blocking or null
+     */
+    public String getBlockReason() {
+        return blockReason_;
+    }
+
+    /**
+     * Sets the wasBlocked state to true.
+     *
+     * @param blockReason the reason
+     */
+    public void markAsBlocked(final String blockReason) {
+        wasBlocked_ = true;
+        blockReason_ = blockReason;
     }
 
     // TODO: HA start (XLT#1233)

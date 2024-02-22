@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,24 +14,15 @@
  */
 package org.htmlunit.javascript.host.html;
 
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 import static java.nio.charset.StandardCharsets.UTF_16;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.net.URL;
 
 import org.apache.commons.lang3.StringUtils;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.openqa.selenium.By;
-import org.openqa.selenium.NoSuchWindowException;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.htmlunit.HtmlUnitDriver;
-import org.openqa.selenium.ie.InternetExplorerDriver;
-
 import org.htmlunit.FormEncodingType;
 import org.htmlunit.HttpHeader;
 import org.htmlunit.MockWebConnection;
@@ -40,6 +31,14 @@ import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import org.htmlunit.util.MimeType;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.openqa.selenium.By;
+import org.openqa.selenium.NoSuchWindowException;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.htmlunit.HtmlUnitDriver;
+import org.openqa.selenium.ie.InternetExplorerDriver;
 
 /**
  * Tests for {@link HTMLFormElement}.
@@ -124,6 +123,40 @@ public class HTMLFormElementTest extends WebDriverTestCase {
             + "  <input type='button' name='button1'/>\n"
             + "  <input type='submit' name='submit1'/>\n"
             + "</form>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = {"3", "textInput1", "button1", "textInput3"},
+            IE = {"1", "button1"})
+    public void elementsAccessorFormAttribute() throws Exception {
+        final String html
+            = "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "function doTest() {\n"
+            + "  log(document.form1.length);\n"
+            + "  for (var i = 0; i < document.form1.length; i++) {\n"
+            + "    var element = document.form1.elements[i];\n"
+            + "    log(element.name);\n"
+            + "  }\n"
+            + "}\n"
+            + "</script></head>\n"
+            + "<body onload='doTest()'>\n"
+
+            + "<input type='text' name='textInput1' form='myForm'/>\n"
+            + "<input type='text' name='textInput2' form='form1'/>\n"
+
+            + "<form id='myForm' name='form1'>\n"
+            + "  <input type='button' name='button1' />\n"
+            + "</form>\n"
+
+            + "<input type='text' name='textInput3' form='myForm'/>\n"
+            + "<input type='text' name='textInput4' form='form1'/>\n"
             + "</body></html>";
 
         loadPageVerifyTitle2(html);
@@ -910,14 +943,15 @@ public class HTMLFormElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"before", "2"})
-    public void fieldFoundWithID() throws Exception {
+    @Alerts({"before", "2", "undefined"})
+    public void fieldFoundWithId() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  log(IRForm.IRText.value);\n"
             + "  log(IRForm.myField.length);\n"
+            + "  log(IRForm.myDiv);\n"
             + "}\n"
             + "</script>\n"
             + "</head>\n"
@@ -928,11 +962,37 @@ public class HTMLFormElementTest extends WebDriverTestCase {
             + "    <input type='image' id='myField' src='foo.gif'/>\n"
             + "    <input type='text' name='myField'/>\n"
             + "    <input type='text' id='myField'/>\n"
+            + "    <div id='myDiv'>oooo</div>\n"
             + "  </form>\n"
             + "</body>\n"
             + "</html>";
 
-        getMockWebConnection().setDefaultResponse("Error: not found", 404, "Not Found", MimeType.TEXT_HTML);
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = {"[object HTMLInputElement]", "[object HTMLInputElement]"},
+            IE = {"undefined", "undefined"})
+    public void fieldFoundWithIdByReference() throws Exception {
+        final String html = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "function test() {\n"
+            + "  log(IRForm.IRText);\n"
+            + "  log(IRForm.myField);\n"
+            + "}\n"
+            + "</script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "  <form name='IRForm' id='testForm' action='#'>\n"
+            + "  </form>\n"
+            + "  <input type='text' id='IRText' value='abc' form='testForm' />\n"
+            + "  <input type='text' id='myField' value='xy' form='testForm'/>\n"
+            + "</body>\n"
+            + "</html>";
 
         loadPageVerifyTitle2(html);
     }
@@ -1308,10 +1368,7 @@ public class HTMLFormElementTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "2",
-            CHROME = "3",
-            EDGE = "3",
             IE = "3")
-    // sometimes real chrome returns 2
     public void submit_twice() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -2008,7 +2065,7 @@ public class HTMLFormElementTest extends WebDriverTestCase {
                 + "<script>alert('page" + i + "');</script>\n"
                 + "</head></html>";
             connection.setResponse(new URL(URL_FIRST, "foo" + i), htmlX);
-            connection.setResponse(new URL(URL_FIRST, "script" + i + ".js"), "", MimeType.APPLICATION_JAVASCRIPT);
+            connection.setResponse(new URL(URL_FIRST, "script" + i + ".js"), "", MimeType.TEXT_JAVASCRIPT);
         }
         final String[] expectedRequests = getExpectedAlerts();
 
@@ -2139,14 +2196,20 @@ public class HTMLFormElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"srcElement null: false", "srcElement==form: true",
-             "target null: false", "target==form: true"})
+    @Alerts(DEFAULT = {"type: submit", "submitter: [object HTMLInputElement]",
+                       "srcElement null: false", "srcElement==form: true",
+                       "target null: false", "target==form: true"},
+            IE = {"type: submit", "submitter: undefined",
+                  "srcElement null: false", "srcElement==form: true",
+                  "target null: false", "target==form: true"})
     public void onSubmitEvent() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "function test(_event) {\n"
             + "  var oEvent = _event ? _event : window.event;\n"
+            + "  log('type: ' + oEvent.type);\n"
+            + "  log('submitter: ' + oEvent.submitter);\n"
             + "  log('srcElement null: ' + (oEvent.srcElement == null));\n"
             + "  log('srcElement==form: ' + (oEvent.srcElement == document.forms[0]));\n"
             + "  log('target null: ' + (oEvent.target == null));\n"
@@ -2807,5 +2870,235 @@ public class HTMLFormElementTest extends WebDriverTestCase {
         driver.findElement(By.id("submit")).click();
 
         assertEquals(getExpectedAlerts()[0], driver.getTitle());
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"", "alternate help", "prefetch", "prefetch", "not supported", "notsupported"},
+            IE = {"undefined", "undefined", "prefetch", "prefetch", "not supported", "notsupported"})
+    public void readWriteRel() throws Exception {
+        final String html
+            = "<html><body><form id='f1'>a1</form><form id='f2' rel='alternate help'>a2</form><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "var a1 = document.getElementById('f1'), a2 = document.getElementById('f2');\n"
+
+            + "log(a1.rel);\n"
+            + "log(a2.rel);\n"
+
+            + "a1.rel = 'prefetch';\n"
+            + "a2.rel = 'prefetch';\n"
+            + "log(a1.rel);\n"
+            + "log(a2.rel);\n"
+
+            + "a1.rel = 'not supported';\n"
+            + "a2.rel = 'notsupported';\n"
+            + "log(a1.rel);\n"
+            + "log(a2.rel);\n"
+
+            + "</script></body></html>";
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"0", "2", "alternate", "help"},
+            IE = "exception")
+    public void relList() throws Exception {
+        final String html
+            = "<html><body><form id='f1'>a1</form><form id='f2' rel='alternate help'>a2</form><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "var a1 = document.getElementById('f1'), a2 = document.getElementById('f2');\n"
+
+            + "try {\n"
+            + "  log(a1.relList.length);\n"
+            + "  log(a2.relList.length);\n"
+
+            + "  for (var i = 0; i < a2.relList.length; i++) {\n"
+            + "    log(a2.relList[i]);\n"
+            + "  }\n"
+            + "} catch(e) { log('exception'); }\n"
+
+            + "</script></body></html>";
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"0", "2", "2", "1", "alternate", "help", "abc", "alternate help", "abc"},
+            IE = "exception")
+    public void setRelListString() throws Exception {
+        final String html
+            = "<html><body><form id='f1'>a1</form><form id='f2' rel='alternate help'>a2</form><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "var a1 = document.getElementById('f1'), a2 = document.getElementById('f2');\n"
+
+            + "try {\n"
+            + "  log(a1.relList.length);\n"
+            + "  log(a2.relList.length);\n"
+
+            + "  a1.relList = 'alternate help';\n"
+            + "  a2.relList = 'abc';\n"
+
+            + "  log(a1.relList.length);\n"
+            + "  log(a2.relList.length);\n"
+
+            + "  for (var i = 0; i < a1.relList.length; i++) {\n"
+            + "    log(a1.relList[i]);\n"
+            + "  }\n"
+
+            + "  for (var i = 0; i < a2.relList.length; i++) {\n"
+            + "    log(a2.relList[i]);\n"
+            + "  }\n"
+
+            + "  log(a1.rel);\n"
+            + "  log(a2.rel);\n"
+            + "} catch(e) { log('exception'); }\n"
+
+            + "</script></body></html>";
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"0", "2", "0", "0", "", "\\s\\s\\t"},
+            IE = "exception")
+    public void setRelListStringBlank() throws Exception {
+        final String html
+            = "<html><body><form id='f1'>a1</form><form id='f2' rel='alternate help'>a2</form><script>\n"
+            + LOG_TITLE_FUNCTION_NORMALIZE
+            + "var a1 = document.getElementById('f1'), a2 = document.getElementById('f2');\n"
+
+            + "try {\n"
+            + "  log(a1.relList.length);\n"
+            + "  log(a2.relList.length);\n"
+
+            + "  a1.relList = '';\n"
+            + "  a2.relList = '  \t';\n"
+
+            + "  log(a1.relList.length);\n"
+            + "  log(a2.relList.length);\n"
+
+            + "  log(a1.rel);\n"
+            + "  log(a2.rel);\n"
+            + "} catch(e) { log('exception'); }\n"
+
+            + "</script></body></html>";
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"0", "2", "1", "1", "null", "null", "null", "null"},
+            IE = "exception")
+    public void setRelListNull() throws Exception {
+        final String html
+            = "<html><body><form id='f1'>a1</form><form id='f2' rel='alternate help'>a2</form><script>\n"
+            + LOG_TITLE_FUNCTION_NORMALIZE
+            + "var a1 = document.getElementById('f1'), a2 = document.getElementById('f2');\n"
+
+            + "try {\n"
+            + "  log(a1.relList.length);\n"
+            + "  log(a2.relList.length);\n"
+
+            + "  a1.relList = null;\n"
+            + "  a2.relList = null;\n"
+
+            + "  log(a1.relList.length);\n"
+            + "  log(a2.relList.length);\n"
+
+            + "  for (var i = 0; i < a1.relList.length; i++) {\n"
+            + "    log(a1.relList[i]);\n"
+            + "  }\n"
+
+            + "  for (var i = 0; i < a2.relList.length; i++) {\n"
+            + "    log(a2.relList[i]);\n"
+            + "  }\n"
+
+            + "  log(a1.rel);\n"
+            + "  log(a2.rel);\n"
+            + "} catch(e) { log('exception'); }\n"
+
+            + "</script></body></html>";
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"0", "2", "1", "1", "undefined", "undefined", "undefined", "undefined"},
+            IE = "exception")
+    public void setRelListUndefined() throws Exception {
+        final String html
+            = "<html><body><form id='f1'>a1</form><form id='f2' rel='alternate help'>a2</form><script>\n"
+            + LOG_TITLE_FUNCTION_NORMALIZE
+            + "var a1 = document.getElementById('f1'), a2 = document.getElementById('f2');\n"
+
+            + "try {\n"
+            + "  log(a1.relList.length);\n"
+            + "  log(a2.relList.length);\n"
+
+            + "  a1.relList = undefined;\n"
+            + "  a2.relList = undefined;\n"
+
+            + "  log(a1.relList.length);\n"
+            + "  log(a2.relList.length);\n"
+
+            + "  for (var i = 0; i < a1.relList.length; i++) {\n"
+            + "    log(a1.relList[i]);\n"
+            + "  }\n"
+
+            + "  for (var i = 0; i < a2.relList.length; i++) {\n"
+            + "    log(a2.relList[i]);\n"
+            + "  }\n"
+
+            + "  log(a1.rel);\n"
+            + "  log(a2.rel);\n"
+            + "} catch(e) { log('exception'); }\n"
+
+            + "</script></body></html>";
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"[object HTMLInputElement]", "[object HTMLInputElement]"},
+            IE = "exception")
+    @NotYetImplemented(IE)
+    public void elementsForOf() throws Exception {
+        final String html =
+              "<html>\n"
+            + "<head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var f = document.getElementById('testForm');\n"
+            + "    for (var attr of f) {\n"
+            + "      log(attr);\n"
+            + "    }\n"
+            + "  }\n"
+            + "</script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "  <form name='testForm' id='testForm'>\n"
+            + "    <input type='submit' id='submit'>\n"
+            + "    <input type='text' name='test' value=''>"
+            + "  </form>\n"
+            + "</body>\n"
+            + "</html>";
+
+        loadPageVerifyTitle2(html);
     }
 }
