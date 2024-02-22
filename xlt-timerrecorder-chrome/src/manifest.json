@@ -15,7 +15,7 @@
     {
       "matches": ["<all_urls>"],
       "run_at":"document_start",
-      "js":["page.js"]
+      "js":["web-vitals.js", "page.js"]
     }
   ],
   "permissions": [

@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.engine.PageLoadTimingData;
 import com.xceptance.xlt.api.engine.RequestData;
+import com.xceptance.xlt.api.engine.WebVitalData;
 import com.xceptance.xlt.engine.SessionImpl;
 import com.xceptance.xlt.engine.metrics.Metrics;
 import com.xceptance.xlt.engine.resultbrowser.ActionInfo;
@@ -48,7 +49,7 @@ public class ClientPerformanceMetrics
 
     /**
      * Write a list of {@link Data} entries to a timer data file for the given session.
-     * 
+     *
      * @param session
      *            - for which to write the data to the timer file
      * @param dataList
@@ -58,7 +59,7 @@ public class ClientPerformanceMetrics
     {
         LOG.debug("Writing timer data file and reporting client performance metrics");
 
-        for (ClientPerformanceData eachPerformanceData : dataList)
+        for (final ClientPerformanceData eachPerformanceData : dataList)
         {
             updatePerformanceData(session, eachPerformanceData);
         }
@@ -66,21 +67,22 @@ public class ClientPerformanceMetrics
 
     private static void updatePerformanceData(final SessionImpl session, final ClientPerformanceData data)
     {
-        for (ClientPerformanceRequest eachRequest : data.getRequestList())
+        for (final ClientPerformanceRequest eachRequest : data.getRequestList())
         {
             updateAndLogRequestData(session, eachRequest);
         }
 
-        for (PageLoadTimingData eachData : data.getCustomDataList())
+        for (final PageLoadTimingData eachData : data.getCustomDataList())
         {
             updateAndLogPageLoadTimingData(session, eachData);
         }
+
+        postProcessAndLogWebVitalsData(data.getWebVitalsList(), session);
     }
 
     private static void updateAndLogRequestData(final SessionImpl session, final ClientPerformanceRequest request)
     {
-        final Entry<Long, ActionInfo> entry = session.getWebDriverActionStartTimes().floorEntry(request.getRequestData().getTime());
-        final ActionInfo actionInfo = entry != null ? entry.getValue() : null;
+        final ActionInfo actionInfo = getActionInfo(session, request.getRequestData().getTime());
         if (actionInfo != null)
         {
             actionInfo.requests.add(getRequestInfo(request));
@@ -92,8 +94,7 @@ public class ClientPerformanceMetrics
 
     private static void updateAndLogPageLoadTimingData(final SessionImpl session, final PageLoadTimingData data)
     {
-        final Entry<Long, ActionInfo> entry = session.getWebDriverActionStartTimes().floorEntry(data.getTime());
-        final ActionInfo actionInfo = entry != null ? entry.getValue() : null;
+        final ActionInfo actionInfo = getActionInfo(session, data.getTime());
         if (actionInfo != null)
         {
             actionInfo.events.add(new ActionInfo.PageLoadEventInfo(data.getName(), data.getTime(), data.getRunTime()));
@@ -103,7 +104,7 @@ public class ClientPerformanceMetrics
         logTimerData(session, actionInfo, data);
     }
 
-    private static RequestInfo getRequestInfo(ClientPerformanceRequest request)
+    private static RequestInfo getRequestInfo(final ClientPerformanceRequest request)
     {
         final RequestInfo requestInfo = new RequestInfo();
         final RequestData requestData = request.getRequestData();
@@ -135,10 +136,10 @@ public class ClientPerformanceMetrics
         return requestInfo;
     }
 
-    private static String getRequestName(RequestData requestData)
+    private static String getRequestName(final RequestData requestData)
     {
-        String urlPath = UrlUtils.parseUrlString(requestData.getUrl().toString()).getPath();
-        String pathWithoutEndSeparator = StringUtils.removeEnd(urlPath, "/");
+        final String urlPath = UrlUtils.parseUrlString(requestData.getUrl().toString()).getPath();
+        final String pathWithoutEndSeparator = StringUtils.removeEnd(urlPath, "/");
 
         String name = FilenameUtils.getName(pathWithoutEndSeparator);
         if (!StringUtils.equals(urlPath, pathWithoutEndSeparator))
@@ -153,6 +154,108 @@ public class ClientPerformanceMetrics
         return name;
     }
 
+    /**
+     * Post-processes the passed Web vitals and logs the resulting data.
+     * <p>
+     * Some Web vitals are generated only once after a page load (FCP, FID, TTFB), others may be reported multiple times
+     * (CLS, INP, LCP). The latter happens if the metric has worsened over the lifetime of the page. In these cases, the
+     * metric typically represents an accumulated value. For the statistics, only the last (i.e. highest) reported value
+     * is relevant, hence we will usually log only the last observation.
+     * <p>
+     * But remember that we have actions that trigger a page load and actions that don't (a.k.a. "non-page-view"
+     * actions). This has these two implications:
+     * <ul>
+     * <li>We receive the reportings for the last page-view action and all following non-page-view actions in a single
+     * chunk.</li>
+     * <li>All Web vitals are typically be reported for the page-view action, however, non-page-view actions may cause
+     * additional reportings of CLS/INP/LCP values.</li>
+     * </ul>
+     * <p>
+     * If we would log only the highest reported CLS/INP/LCP value, then we might attribute that value to a later
+     * action, even though the biggest part of the accumulated metric value was contributed by a previous action. To not
+     * blame the wrong action, we "reset" the value when action boundaries have been crossed. This means we introduce
+     * artificial measurements which report the delta to the value from the previous action. This approach is
+     * experimental.
+     *
+     * @param webVitalList
+     *            the web vitals to process
+     * @param session
+     *            the current session object
+     */
+    private static void postProcessAndLogWebVitalsData(final List<WebVitalData> webVitalList, final SessionImpl session)
+    {
+        // LCP, FID, TTFB occur only once, so report them for the action they lie within
+        logWebVitals("FCP", webVitalList, session);
+        logWebVitals("FID", webVitalList, session);
+        logWebVitals("TTFB", webVitalList, session);
+
+        // CLS, INP, and LCP may occur multiple times with ever increasing values
+        // * report only the latest/greatest value per action
+        // * "reset" values at action boundaries
+        postProcessAndLogWebVitals("CLS", webVitalList, session);
+        postProcessAndLogWebVitals("INP", webVitalList, session);
+        postProcessAndLogWebVitals("LCP", webVitalList, session);
+    }
+
+    /**
+     * Logs only those web vitals with the given name, such as "FCP".
+     */
+    private static void logWebVitals(final String webVitalName, final List<WebVitalData> webVitalDataList, final SessionImpl session)
+    {
+        for (final WebVitalData webVitalData : webVitalDataList)
+        {
+            if (webVitalData.getName().equals(webVitalName))
+            {
+                final ActionInfo actionInfo = getActionInfo(session, webVitalData.getTime());
+
+                logTimerData(session, actionInfo, webVitalData);
+            }
+        }
+    }
+
+    /**
+     * Post-processes and logs only those web vitals with the given name, such as "CLS".
+     */
+    private static void postProcessAndLogWebVitals(final String webVitalName, final List<WebVitalData> webVitalDataList,
+                                                   final SessionImpl session)
+    {
+        ActionInfo lastActionInfo = null;
+        WebVitalData lastWebVitalData = null;
+        double lastMaxValue = 0.0;
+
+        for (final WebVitalData webVitalData : webVitalDataList)
+        {
+            if (webVitalData.getName().equals(webVitalName))
+            {
+                final ActionInfo actionInfo = getActionInfo(session, webVitalData.getTime());
+
+                if (lastWebVitalData != null && lastActionInfo != actionInfo)
+                {
+                    // action boundary crossed -> report the last known web vital now
+
+                    // adjust the value and log
+                    final double value = lastWebVitalData.getValue();
+                    lastWebVitalData.setValue(value - lastMaxValue);
+                    logTimerData(session, lastActionInfo, lastWebVitalData);
+
+                    // remember the value
+                    lastMaxValue = value;
+                }
+
+                lastActionInfo = actionInfo;
+                lastWebVitalData = webVitalData;
+            }
+        }
+
+        if (lastWebVitalData != null)
+        {
+            // adjust the value and log
+            final double value = lastWebVitalData.getValue();
+            lastWebVitalData.setValue(value - lastMaxValue);
+            logTimerData(session, lastActionInfo, lastWebVitalData);
+        }
+    }
+
     private static void logTimerData(final SessionImpl session, final ActionInfo actionInfo, final Data data)
     {
         final String actionName = actionInfo != null ? actionInfo.name : "UnknownAction";
@@ -160,7 +263,7 @@ public class ClientPerformanceMetrics
         final StringBuilder sb = new StringBuilder(actionName);
         if (StringUtils.isNotBlank(dName))
         {
-            if (data instanceof PageLoadTimingData)
+            if (data instanceof PageLoadTimingData || data instanceof WebVitalData)
             {
                 sb.append(" [").append(dName).append("]");
             }
@@ -177,5 +280,22 @@ public class ClientPerformanceMetrics
         data.setName(sb.toString());
 
         session.getDataManager().logDataRecord(data);
+    }
+
+    /**
+     * Returns the {@link ActionInfo} object of the action that was running at the given time.
+     * 
+     * @param session
+     *            the session that knows when which action was run
+     * @param time
+     *            the time in question
+     * @return the action info object or <code>null</code> if no action was active at that time
+     */
+    private static ActionInfo getActionInfo(final SessionImpl session, final long time)
+    {
+        final Entry<Long, ActionInfo> entry = session.getWebDriverActionStartTimes().floorEntry(time);
+        final ActionInfo actionInfo = entry != null ? entry.getValue() : null;
+
+        return actionInfo;
     }
 }
