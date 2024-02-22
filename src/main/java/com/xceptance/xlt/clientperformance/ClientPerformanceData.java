@@ -19,12 +19,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.xceptance.xlt.api.engine.PageLoadTimingData;
+import com.xceptance.xlt.api.engine.WebVitalData;
 
 public class ClientPerformanceData
 {
     private final List<PageLoadTimingData> customDataList = new ArrayList<>();
 
     private final List<ClientPerformanceRequest> requestList = new ArrayList<>();
+
+    private final List<WebVitalData> webVitalsList = new ArrayList<>();
 
     public List<PageLoadTimingData> getCustomDataList()
     {
@@ -36,4 +39,8 @@ public class ClientPerformanceData
         return requestList;
     }
 
+    public List<WebVitalData> getWebVitalsList()
+    {
+        return webVitalsList;
+    }
 }

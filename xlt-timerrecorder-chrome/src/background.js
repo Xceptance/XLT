@@ -205,6 +205,7 @@ function newTimingDataEntry(timingData, tabId) {
   }
   const dataEntry = {
     timings: null,
+    webVitals: null,
     entries: null,
     requests: [],
     loaded: false,
@@ -740,6 +741,7 @@ function createRecordEntry(dataEntry) {
   const leftovers = {};
   const record = {
     timings: dataEntry.timings,
+    webVitals: dataEntry.webVitals,
     requests: []
   };
 
@@ -875,6 +877,9 @@ function getRequestContentType(type) {
 function setTimingData(dataEntry, data) {
   if (data.timingData.timings) {
     dataEntry.timings = data.timingData.timings;
+  }
+  if (data.timingData.webVitals) {
+    dataEntry.webVitals = data.timingData.webVitals;
   }
   dataEntry.entries = (dataEntry.entries || []).concat(data.timingData.entries);
 }
