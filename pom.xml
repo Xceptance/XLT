@@ -6,7 +6,7 @@
 
     <groupId>com.xceptance</groupId>
     <artifactId>xlt</artifactId>
-    <version>7.4.0-SNAPSHOT</version>
+    <version>8.0.0</version>
     <packaging>jar</packaging>
 
     <name>XLT</name>
@@ -73,7 +73,7 @@
         <powermock.version>2.0.9</powermock.version>
         <selenium.version>4.17.0</selenium.version>
         <htmlunitdriver.version>4.17.0</htmlunitdriver.version>
-        <copyright>Copyright (c) ${project.inceptionYear}-2023 ${project.organization.name}</copyright>
+        <copyright>Copyright (c) ${project.inceptionYear}-2024 ${project.organization.name}</copyright>
     </properties>
 
     <build>

@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 7.4.0-SNAPSHOT
+#Version 8.0.0
 
 CLSS public abstract com.xceptance.xlt.api.actions.AbstractAction
 cons protected init(com.xceptance.xlt.api.actions.AbstractAction,java.lang.String)
@@ -544,6 +544,16 @@ meth public void setRemainingValues(java.util.List<com.xceptance.xlt.api.util.Xl
 meth public void setTestUserNumber(java.lang.String)
 supr com.xceptance.xlt.api.engine.TimerData
 hfds TYPE_CODE,directoryName,failedActionName,stackTrace,testUserNumber
+
+CLSS public com.xceptance.xlt.api.engine.WebVitalData
+cons public init()
+cons public init(java.lang.String)
+meth public double getValue()
+meth public java.util.List<java.lang.String> toList()
+meth public void setRemainingValues(java.util.List<com.xceptance.xlt.api.util.XltCharBuffer>)
+meth public void setValue(double)
+supr com.xceptance.xlt.api.engine.AbstractData
+hfds TYPE_CODE,value
 
 CLSS public abstract com.xceptance.xlt.api.engine.scripting.AbstractHtmlUnitActionsModule
 cons public init()

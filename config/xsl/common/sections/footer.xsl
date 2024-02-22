@@ -6,7 +6,7 @@
     <xsl:param name="productName" />
     <xsl:param name="productVersion" />
     <footer>
-        Copyright (c) 2005-2023 <a href="http://www.xceptance.com/" title="Visit the Xceptance website">Xceptance Software Technologies GmbH</a><br />
+        Copyright (c) 2005-2024 <a href="http://www.xceptance.com/" title="Visit the Xceptance website">Xceptance Software Technologies GmbH</a><br />
         Created with
                 <a href="{$productUrl}?source=TestReport">
                     <span class="productname">
