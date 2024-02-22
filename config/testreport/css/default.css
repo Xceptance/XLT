@@ -1775,3 +1775,33 @@ tr:hover .infinity { background: linear-gradient(rgb(200,120,120), rgba(0,0,0,0)
         transform: rotate(360deg);
     }
 }
+
+.crosshair {
+  display: block;
+  position: relative;
+  overflow: hidden;
+}
+.crosshair img {
+  width: 100%;
+}
+.crosshair .hair {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  margin-top: -1px;
+  margin-left: -1px;
+  background: transparent;
+  border-top: 1px solid black;
+  border-left: 1px solid black;
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0.3;
+}
+.crosshair .hair.hair-vertical {
+  height: 100%;
+}
+.crosshair .hair.hair-horizontal {
+  width: 100%;
+}
+

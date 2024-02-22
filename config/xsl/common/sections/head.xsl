@@ -36,6 +36,7 @@
         <script src="js/jquery.scrollTo-2.1.3.min.js"/>
         <script src="js/tabs.js"/>
         <script src="js/table.js"/>
+        <script src="js/crosshair.js"/>
 
         <link rel="icon" href="images/favicon.png" sizes="any" />
         <link rel="icon" href="images/favicon.svg" type="image/svg+xml" />
