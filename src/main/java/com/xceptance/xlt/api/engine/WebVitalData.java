@@ -86,9 +86,9 @@ public class WebVitalData extends AbstractData
      * {@inheritDoc}
      */
     @Override
-    protected List<String> addValues()
+    public List<String> toList()
     {
-        final List<String> values = super.addValues();
+        final List<String> values = super.toList();
         values.add(Double.toString(value));
         return values;
     }
@@ -97,16 +97,7 @@ public class WebVitalData extends AbstractData
      * {@inheritDoc}
      */
     @Override
-    protected int getMinNoCSVElements()
-    {
-        return 4;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void parseRemainingValues(final List<XltCharBuffer> values)
+    public void setRemainingValues(final List<XltCharBuffer> values)
     {
         value = Double.parseDouble(values.get(3).toString());
     }
