@@ -323,6 +323,11 @@ bootstrap
   * License: MIT License
   * Homepage: https://getbootstrap.com/
   * More information in folder: doc/3rd-party-licenses/bootstrap
+  
+crosshair
+  * License: MIT License
+  * Homepage: https://eschmann.dev/crosshair.js/
+  * More information in folder: doc/3rd-party-licenses/crosshair
 
 harPreview
 
