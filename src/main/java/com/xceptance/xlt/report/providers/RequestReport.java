@@ -69,12 +69,14 @@ public class RequestReport extends TimerReport
     public StatisticsReport timeToLastBytes;
 
     /**
-     * The number of timer values per configured runtime interval.
+     * The number and percentage of timer values per configured runtime interval.
      */
-    public int[] countPerInterval;
+    public RuntimeIntervalData[] countPerInterval;
 
     /**
      * A list of the top URLs.
      */
     public UrlData urls;
+
+    
 }

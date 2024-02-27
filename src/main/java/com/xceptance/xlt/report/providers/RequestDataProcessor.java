@@ -20,7 +20,6 @@ import java.io.File;
 import java.math.BigInteger;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.annotations.XYPointerAnnotation;
 import org.jfree.chart.axis.NumberAxis;
@@ -263,7 +262,21 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
 
         // just int is safe, more than 2 billion urls is unlikely
         timerReport.urls = getUrlList(distinctUrlSet, (int) distinctUrlsHLL.cardinality());
-        timerReport.countPerInterval = countPerSegment != null ? countPerSegment.getCountPerSegment() : ArrayUtils.EMPTY_INT_ARRAY;
+        if (countPerSegment == null)
+        {
+            timerReport.countPerInterval = new RuntimeIntervalData[]{};
+        }
+        else
+        {
+            timerReport.countPerInterval = new RuntimeIntervalData[countPerSegment.getCountPerSegment().length];
+            for (int n = 0; n < countPerSegment.getCountPerSegment().length; n++)
+            {
+                timerReport.countPerInterval[n] = new RuntimeIntervalData(countPerSegment.getCountPerSegment()[n],
+                              (timerReport.count != 0 
+                              ? ReportUtils.convertToBigDecimal((double) countPerSegment.getCountPerSegment()[n] * 100 / timerReport.count) 
+                              : ReportUtils.convertToBigDecimal(0)));
+            }
+        }
 
         final long duration = Math.max((getConfiguration().getChartEndTime() - getConfiguration().getChartStartTime()) / 1000, 1);
 
