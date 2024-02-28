@@ -163,13 +163,7 @@
                                                 <xsl:if test="transactionErrors &gt; 0">
                                                     <xsl:attribute name="class">value number error</xsl:attribute>
                                                 </xsl:if>
-                                                <xsl:variable name="transactionErrorPercentage">
-                                                    <xsl:call-template name="percentage">
-                                                        <xsl:with-param name="n1" select="transactions" />
-                                                        <xsl:with-param name="n2" select="transactionErrors" />
-                                                    </xsl:call-template>
-                                                </xsl:variable>
-                                                <xsl:value-of select="format-number($transactionErrorPercentage, '#,##0.00')" />
+                                                <xsl:value-of select="format-number(transactionErrorsPercent, '#,##0.00')" />
                                                 <xsl:text>%</xsl:text>
                                             </td>
                                             <td class="value number colgroup1">
