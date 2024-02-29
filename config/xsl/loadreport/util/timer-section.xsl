@@ -8,7 +8,7 @@
         <xsl:param name="runtimeIntervalsNode"/>
         <xsl:param name="type"/>
         
-        <div class="charts overview">
+        <div class="charts">
             <xsl:for-each select="$summaryElement">
                 <!-- There is only one matching node. -->
                 <xsl:call-template name="timer-chart">
@@ -49,7 +49,7 @@
                         <table class="c-tab-content table-autosort:0">
                             <thead>
                                 <tr>
-                                    <th rowspan="2" class="table-sortable:alphanumeric colgroup1">
+                                    <th rowspan="2" class="table-sortable:alphanumeric colgroup1" id="sortByBandwidthName">
                                         <xsl:value-of select="$tableRowHeader"/>
                                         <br/>
                                         <input class="filter" placeholder="Enter filter substrings" title=""/>
@@ -59,23 +59,23 @@
                                     <th colspan="8" class="colgroup1">Bytes Received</th>
                                 </tr>
                                 <tr>
-                                    <th class="table-sortable:numeric">Total</th>
-                                    <th class="table-sortable:numeric">1/s</th>
-                                    <th class="table-sortable:numeric">1/min</th>
-                                    <th class="table-sortable:numeric">1/h*</th>
-                                    <th class="table-sortable:numeric">1/d*</th>
-                                    <th class="table-sortable:numeric" title="The arithmetic mean.">Mean</th>
-                                    <th class="table-sortable:numeric">Min.</th>
-                                    <th class="table-sortable:numeric">Max.</th>
+                                    <th class="table-sortable:numeric" id="sortByBandwidthSentTotal">Total</th>
+                                    <th class="table-sortable:numeric" id="sortByBandwidthSentPerSecond">1/s</th>
+                                    <th class="table-sortable:numeric" id="sortByBandwidthSentPerMinute">1/min</th>
+                                    <th class="table-sortable:numeric" id="sortByBandwidthSentPerHour">1/h*</th>
+                                    <th class="table-sortable:numeric" id="sortByBandwidthSentPerDay">1/d*</th>
+                                    <th class="table-sortable:numeric" title="The arithmetic mean." id="sortByBandwidthSentMean">Mean</th>
+                                    <th class="table-sortable:numeric" id="sortByBandwidthSentMin">Min.</th>
+                                    <th class="table-sortable:numeric" id="sortByBandwidthSentMax">Max.</th>
 
-                                    <th class="table-sortable:numeric colgroup1">Total</th>
-                                    <th class="table-sortable:numeric colgroup1">1/s</th>
-                                    <th class="table-sortable:numeric colgroup1">1/min</th>
-                                    <th class="table-sortable:numeric colgroup1">1/h*</th>
-                                    <th class="table-sortable:numeric colgroup1">1/d*</th>
-                                    <th class="table-sortable:numeric colgroup1" title="The arithmetic mean.">Mean</th>
-                                    <th class="table-sortable:numeric colgroup1">Min.</th>
-                                    <th class="table-sortable:numeric colgroup1">Max.</th>
+                                    <th class="table-sortable:numeric colgroup1" id="sortByBandwidthReceivedTotal">Total</th>
+                                    <th class="table-sortable:numeric colgroup1" id="sortByBandwidthReceivedPerSecond">1/s</th>
+                                    <th class="table-sortable:numeric colgroup1" id="sortByBandwidthReceivedPerMinute">1/min</th>
+                                    <th class="table-sortable:numeric colgroup1" id="sortByBandwidthReceivedPerHour">1/h*</th>
+                                    <th class="table-sortable:numeric colgroup1" id="sortByBandwidthReceivedPerDay">1/d*</th>
+                                    <th class="table-sortable:numeric colgroup1" title="The arithmetic mean." id="sortByBandwidthReceivedMean">Mean</th>
+                                    <th class="table-sortable:numeric colgroup1" id="sortByBandwidthReceivedMin">Min.</th>
+                                    <th class="table-sortable:numeric colgroup1" id="sortByBandwidthReceivedMax">Max.</th>
                                 </tr>
                             </thead>
                             <xsl:variable name="count" select="count($elements)"/>
@@ -258,13 +258,13 @@
                         <table class="c-tab-content table-autosort:0">
                             <thead>
                                 <tr>
-                                    <th rowspan="2" class="table-sortable:alphanumeric colgroup1">
+                                    <th rowspan="2" class="table-sortable:alphanumeric colgroup1" id="sortByNetworkName">
                                         <xsl:value-of select="$tableRowHeader"/>
                                         <br/>
                                         <input class="filter" placeholder="Enter filter substrings" title=""/>
                                         <button class="clear-input" type="clear" title="Click to clear">&#x2715;</button>
                                     </th>
-                                    <th colspan="3">DNS Time [ms]</th>
+                                    <th colspan="3" >DNS Time [ms]</th>
                                     <th colspan="3" class="colgroup1">Connect Time [ms]</th>
                                     <th colspan="3">Send Time [ms]</th>
                                     <th colspan="3" class="colgroup1">Server Busy Time [ms]</th>
@@ -273,33 +273,33 @@
                                     <th colspan="3" title="Time To Last Bytes">Time to Last [ms]</th>
                                 </tr>
                                 <tr>
-                                    <th class="table-sortable:numeric" title="The arithmetic mean.">Mean</th>
-                                    <th class="table-sortable:numeric">Min.</th>
-                                    <th class="table-sortable:numeric">Max.</th>
+                                    <th class="table-sortable:numeric" title="The arithmetic mean." id="sortByDNSMean">Mean</th>
+                                    <th class="table-sortable:numeric" id="sortByDNSMin">Min.</th>
+                                    <th class="table-sortable:numeric" id="sortByDNSMax">Max.</th>
 
-                                    <th class="table-sortable:numeric colgroup1" title="The arithmetic mean.">Mean</th>
-                                    <th class="table-sortable:numeric colgroup1">Min.</th>
-                                    <th class="table-sortable:numeric colgroup1">Max.</th>
+                                    <th class="table-sortable:numeric colgroup1" title="The arithmetic mean." id="sortByConnectTimeMean">Mean</th>
+                                    <th class="table-sortable:numeric colgroup1" id="sortByConnectTimeMin">Min.</th>
+                                    <th class="table-sortable:numeric colgroup1" id="sortByConnectTimeMax">Max.</th>
 
-                                    <th class="table-sortable:numeric" title="The arithmetic mean.">Mean</th>
-                                    <th class="table-sortable:numeric">Min.</th>
-                                    <th class="table-sortable:numeric">Max.</th>
+                                    <th class="table-sortable:numeric" title="The arithmetic mean." id="sortBySendTimeMean">Mean</th>
+                                    <th class="table-sortable:numeric" id="sortBySendTimeMin">Min.</th>
+                                    <th class="table-sortable:numeric" id="sortBySendTimeMax">Max.</th>
 
-                                    <th class="table-sortable:numeric colgroup1" title="The arithmetic mean.">Mean</th>
-                                    <th class="table-sortable:numeric colgroup1">Min.</th>
-                                    <th class="table-sortable:numeric colgroup1">Max.</th>
+                                    <th class="table-sortable:numeric colgroup1" title="The arithmetic mean." id="sortByServerBusyTimeMean">Mean</th>
+                                    <th class="table-sortable:numeric colgroup1" id="sortByServerBusyTimeMin">Min.</th>
+                                    <th class="table-sortable:numeric colgroup1" id="sortByServerBusyTimeMax">Max.</th>
 
-                                    <th class="table-sortable:numeric" title="The arithmetic mean.">Mean</th>
-                                    <th class="table-sortable:numeric">Min.</th>
-                                    <th class="table-sortable:numeric">Max.</th>
+                                    <th class="table-sortable:numeric" title="The arithmetic mean." id="sortByReceiveTimeMean">Mean</th>
+                                    <th class="table-sortable:numeric" id="sortByReceiveTimeMin">Min.</th>
+                                    <th class="table-sortable:numeric" id="sortByReceiveTimeMax">Max.</th>
 
-                                    <th class="table-sortable:numeric colgroup1" title="The arithmetic mean.">Mean</th>
-                                    <th class="table-sortable:numeric colgroup1">Min.</th>
-                                    <th class="table-sortable:numeric colgroup1">Max.</th>
+                                    <th class="table-sortable:numeric colgroup1" title="The arithmetic mean." id="sortByTTFMean">Mean</th>
+                                    <th class="table-sortable:numeric colgroup1" id="sortByTTFMin">Min.</th>
+                                    <th class="table-sortable:numeric colgroup1" id="sortByTTFMax">Max.</th>
 
-                                    <th class="table-sortable:numeric" title="The arithmetic mean.">Mean</th>
-                                    <th class="table-sortable:numeric">Min.</th>
-                                    <th class="table-sortable:numeric">Max.</th>
+                                    <th class="table-sortable:numeric" title="The arithmetic mean." id="sortByTTLMean">Mean</th>
+                                    <th class="table-sortable:numeric" id="sortByTTLMin">Min.</th>
+                                    <th class="table-sortable:numeric" id="sortByTTLMax">Max.</th>
                                 </tr>
                             </thead>
                             <xsl:variable name="count" select="count($elements)"/>

@@ -15,9 +15,9 @@
                     <table class="table-autosort:0">
                         <thead>
                             <tr>
-                                <th class="table-sortable:alphanumeric">Host</th>
-                                <th class="table-sortable:numeric">Count</th>
-                                <th class="table-sortable:numeric">Percentage</th>
+                                <th class="table-sortable:alphanumeric" id="sortByHost">Host</th>
+                                <th class="table-sortable:numeric" id="sortByHostCount">Count</th>
+                                <th class="table-sortable:numeric" id="sortByHostPercentage">Percentage</th>
                             </tr>
                         </thead>
                         <xsl:variable name="count" select="count($rootNode/host)"/>
