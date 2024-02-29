@@ -3,6 +3,7 @@
 
     <xsl:template name="agents">
         <xsl:param name="rootNode"/>
+        <xsl:param name="summaryNode"/>
 
         <div class="section" id="agents">
             <xsl:call-template name="headline-agents"/>
@@ -53,12 +54,6 @@
                         <xsl:choose>
                             <xsl:when test="$count > 0">
                                 <tfoot>
-                                    <xsl:variable name="totalTransactions">
-                                        <xsl:value-of select="sum($rootNode/agent/transactions)" />
-                                    </xsl:variable>
-                                    <xsl:variable name="totalTransactionErrors">
-                                        <xsl:value-of select="sum($rootNode/agent/transactionErrors)" />
-                                    </xsl:variable>
                                     <tr class="totals">
                                         <xsl:call-template name="create-totals-td">
                                             <xsl:with-param name="rows-in-table" select="$count"/>
@@ -66,25 +61,19 @@
                                         </xsl:call-template>
 
                                         <td class="value number">
-                                            <xsl:value-of select="format-number($totalTransactions, '#,##0')"/>
+                                            <xsl:value-of select="format-number($summaryNode/transactions, '#,##0')"/>
                                         </td>
                                         <td class="value number">
-                                            <xsl:if test="$totalTransactionErrors &gt; 0">
+                                            <xsl:if test="$summaryNode/transactionErrors &gt; 0">
                                                 <xsl:attribute name="class">value number error</xsl:attribute>
                                             </xsl:if>
-                                            <xsl:value-of select="format-number($totalTransactionErrors, '#,##0')"/>
+                                            <xsl:value-of select="format-number($summaryNode/transactionErrors, '#,##0')"/>
                                         </td>
                                         <td class="value number">
-                                            <xsl:if test="$totalTransactionErrors &gt; 0">
+                                            <xsl:if test="$summaryNode/transactionErrors &gt; 0">
                                                 <xsl:attribute name="class">value number error</xsl:attribute>
                                             </xsl:if>
-                                            <xsl:variable name="totalTransactionErrorPercentage">
-                                                <xsl:call-template name="percentage">
-                                                    <xsl:with-param name="n1" select="$totalTransactions" />
-                                                    <xsl:with-param name="n2" select="$totalTransactionErrors" />
-                                                </xsl:call-template>
-                                            </xsl:variable>
-                                            <xsl:value-of select="format-number($totalTransactionErrorPercentage, '#,##0.00')" />
+                                            <xsl:value-of select="format-number($summaryNode/transactionErrorsPercent, '#,##0.00')" />
                                             <xsl:text>%</xsl:text>
                                         </td>
                                         <td class="value number colgroup1">

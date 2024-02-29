@@ -94,6 +94,10 @@ public class SummaryReportProvider extends AbstractReportProvider
         else if (data instanceof TransactionData || data instanceof EventData)
         {
             transactionDataProcessor.processDataRecord(data);
+            if (data instanceof TransactionData)
+            {
+                agentDataProcessor.incrementTransactionCounters(((TransactionData) data).hasFailed());
+            }
         }
         else if (data instanceof PageLoadTimingData)
         {
