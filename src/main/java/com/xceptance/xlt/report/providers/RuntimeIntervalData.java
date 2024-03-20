@@ -30,11 +30,11 @@ public class RuntimeIntervalData
     /**
      * The percentage of timer values per configured runtime interval.
      */
-    public BigDecimal percent;
+    public BigDecimal percentage;
     
-    public RuntimeIntervalData(final int count, final BigDecimal percent)
+    public RuntimeIntervalData(final int count, final BigDecimal percentage)
     {
         this.count = count;
-        this.percent = percent;
+        this.percentage = percentage;
     }
 }
