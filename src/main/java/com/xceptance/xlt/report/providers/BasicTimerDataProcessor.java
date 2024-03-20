@@ -126,6 +126,10 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
         {
             timerReport.errorPercentage = ReportUtils.convertToBigDecimal(100 * totalErrors / count);
         }
+        else
+        {
+            timerReport.errorPercentage = ReportUtils.convertToBigDecimal(0);
+        }
 
         timerReport.count = (int) count;
         timerReport.countPerSecond = ReportUtils.convertToBigDecimal(count / duration);
