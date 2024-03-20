@@ -54,36 +54,36 @@
                                         </td>
                                         <xsl:call-template name="timer-cell">
 								            <xsl:with-param name="node" select="fcp/score"/>
-								            <xsl:with-param name="isInverse" select="true()"/>
+								            <xsl:with-param name="isInverse" select="false()"/>
 								            <xsl:with-param name="format" select="'#,##0'"/>
 								            <xsl:with-param name="unit" select="' ms'"/>
 								        </xsl:call-template>
                                        	<xsl:call-template name="timer-cell">
 								            <xsl:with-param name="node" select="lcp/score"/>
-								            <xsl:with-param name="isInverse" select="true()"/>
+								            <xsl:with-param name="isInverse" select="false()"/>
 								            <xsl:with-param name="format" select="'#,##0'"/>
 								            <xsl:with-param name="unit" select="' ms'"/>
 								        </xsl:call-template>
                                        	<xsl:call-template name="timer-cell">
 								            <xsl:with-param name="node" select="cls/score"/>
-								            <xsl:with-param name="isInverse" select="true()"/>
+								            <xsl:with-param name="isInverse" select="false()"/>
 								            <xsl:with-param name="format" select="'#,##0.000'"/>
 								        </xsl:call-template>
                                        	<xsl:call-template name="timer-cell">
 								            <xsl:with-param name="node" select="fid/score"/>
-								            <xsl:with-param name="isInverse" select="true()"/>
+								            <xsl:with-param name="isInverse" select="false()"/>
 								            <xsl:with-param name="format" select="'#,##0'"/>
 								            <xsl:with-param name="unit" select="' ms'"/>
 								        </xsl:call-template>
                                        	<xsl:call-template name="timer-cell">
 								            <xsl:with-param name="node" select="inp/score"/>
-								            <xsl:with-param name="isInverse" select="true()"/>
+								            <xsl:with-param name="isInverse" select="false()"/>
 								            <xsl:with-param name="format" select="'#,##0'"/>
 								            <xsl:with-param name="unit" select="' ms'"/>
 								        </xsl:call-template>
                                        	<xsl:call-template name="timer-cell">
 								            <xsl:with-param name="node" select="ttfb/score"/>
-								            <xsl:with-param name="isInverse" select="true()"/>
+								            <xsl:with-param name="isInverse" select="false()"/>
 								            <xsl:with-param name="format" select="'#,##0'"/>
 								            <xsl:with-param name="unit" select="' ms'"/>
 								        </xsl:call-template>
