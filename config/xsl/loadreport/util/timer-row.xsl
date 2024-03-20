@@ -213,7 +213,7 @@
 							<xsl:call-template name="colorize">
 								<xsl:with-param name="classNames" select="$classNames" />
 								<xsl:with-param name="inverted" select="not($count = $position)" />
-								<xsl:with-param name="runtime" select="number(current()/percent)" />
+								<xsl:with-param name="runtime" select="number(current()/percentage)" />
 								<xsl:with-param name="targetAverage"
 									select="number($colorizationConfig/rules/rule[@type='segmentation' and @id=$id]/@target)" />
 								<xsl:with-param name="targetFrom"
@@ -229,10 +229,10 @@
 								select="format-number(current()/count, '#,##0')" />
                                 <xsl:text> (</xsl:text>
                                 <xsl:value-of
-								select="format-number(current()/percent, '#,##0.00')" />
+								select="format-number(current()/percentage, '#,##0.00')" />
                                 <xsl:text>%)</xsl:text>
                             </xsl:attribute>
-							<xsl:value-of select="format-number(current()/percent, '#,##0.00')" />
+							<xsl:value-of select="format-number(current()/percentage, '#,##0.00')" />
 							<xsl:text>%</xsl:text>
 						</span>
 					</td>

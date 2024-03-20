@@ -114,12 +114,12 @@
                         </xsl:variable>
                         <span>
                             <xsl:attribute name="title">
-                                <xsl:value-of select="format-number(current(), '#,##0')"/>
+                                <xsl:value-of select="format-number(current()/count, '#,##0')"/>
                                 <xsl:text> (</xsl:text>
-                                <xsl:value-of select="format-number($percentage, '#,##0.00')"/>
+                                <xsl:value-of select="format-number(current()/percentage, '#,##0.00')"/>
                                 <xsl:text>%)</xsl:text>
                             </xsl:attribute>
-                            <xsl:value-of select="format-number($percentage, '#,##0.00')"/>
+                            <xsl:value-of select="format-number(current()/percentage, '#,##0.00')"/>
                             <xsl:text>%</xsl:text>
                         </span>
                     </td>

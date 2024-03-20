@@ -73,7 +73,7 @@
                                             <xsl:if test="$summaryNode/transactionErrors &gt; 0">
                                                 <xsl:attribute name="class">value number error</xsl:attribute>
                                             </xsl:if>
-                                            <xsl:value-of select="format-number($summaryNode/transactionErrorsPercent, '#,##0.00')" />
+                                            <xsl:value-of select="format-number($summaryNode/transactionErrorsPercentage, '#,##0.00')" />
                                             <xsl:text>%</xsl:text>
                                         </td>
                                         <td class="value number colgroup1">
@@ -152,7 +152,7 @@
                                                 <xsl:if test="transactionErrors &gt; 0">
                                                     <xsl:attribute name="class">value number error</xsl:attribute>
                                                 </xsl:if>
-                                                <xsl:value-of select="format-number(transactionErrorsPercent, '#,##0.00')" />
+                                                <xsl:value-of select="format-number(transactionErrorsPercentage, '#,##0.00')" />
                                                 <xsl:text>%</xsl:text>
                                             </td>
                                             <td class="value number colgroup1">
