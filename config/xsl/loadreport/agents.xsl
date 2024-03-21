@@ -61,6 +61,7 @@
         	-->
 			<xsl:call-template name="agents">
 				<xsl:with-param name="rootNode" select="agents" />
+				<xsl:with-param name="summaryNode" select="summary/agents" />
 			</xsl:call-template>
 
         </div> <!-- data-content -->

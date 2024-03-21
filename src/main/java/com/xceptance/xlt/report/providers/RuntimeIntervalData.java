@@ -19,32 +19,22 @@ import java.math.BigDecimal;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
-/**
- */
-@XStreamAlias("agent")
-public class AgentReport
+@XStreamAlias("int")
+public class RuntimeIntervalData
 {
-    public DoubleStatisticsReport totalCpuUsage;
+    /**
+     * The number of timer values per configured runtime interval.
+     */
+    public int count;
 
-    public DoubleStatisticsReport cpuUsage;
-
-    public long fullGcCount;
-
-    public BigDecimal fullGcCpuUsage;
-
-    public long fullGcTime;
-
-    public long minorGcCount;
-
-    public BigDecimal minorGcCpuUsage;
-
-    public long minorGcTime;
-
-    public String name;
-
-    public int transactions;
-
-    public int transactionErrors;
-
-    public BigDecimal transactionErrorsPercentage;
+    /**
+     * The percentage of timer values per configured runtime interval.
+     */
+    public BigDecimal percentage;
+    
+    public RuntimeIntervalData(final int count, final BigDecimal percentage)
+    {
+        this.count = count;
+        this.percentage = percentage;
+    }
 }

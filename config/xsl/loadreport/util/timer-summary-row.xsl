@@ -45,19 +45,11 @@
                 </xsl:if>
                 <xsl:value-of select="format-number(errors, '#,##0')"/>
             </td>
-
-            <!-- % errors -->
-            <xsl:variable name="error-percentage">
-                <xsl:call-template name="percentage">
-                    <xsl:with-param name="n1" select="count"/>
-                    <xsl:with-param name="n2" select="errors"/>
-                </xsl:call-template>
-            </xsl:variable>
             <td class="value number colgroup1">
                 <xsl:if test="errors &gt; 0">
                     <xsl:attribute name="class">value number colgroup1 error</xsl:attribute>
                 </xsl:if>
-                <xsl:value-of select="format-number($error-percentage, '#,##0.00')"/>
+                <xsl:value-of select="format-number(errorPercentage, '#,##0.00')"/>
                 <xsl:text>%</xsl:text>
             </td>
 
@@ -122,12 +114,12 @@
                         </xsl:variable>
                         <span>
                             <xsl:attribute name="title">
-                                <xsl:value-of select="format-number(current(), '#,##0')"/>
+                                <xsl:value-of select="format-number(current()/count, '#,##0')"/>
                                 <xsl:text> (</xsl:text>
-                                <xsl:value-of select="format-number($percentage, '#,##0.00')"/>
+                                <xsl:value-of select="format-number(current()/percentage, '#,##0.00')"/>
                                 <xsl:text>%)</xsl:text>
                             </xsl:attribute>
-                            <xsl:value-of select="format-number($percentage, '#,##0.00')"/>
+                            <xsl:value-of select="format-number(current()/percentage, '#,##0.00')"/>
                             <xsl:text>%</xsl:text>
                         </span>
                     </td>
