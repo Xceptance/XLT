@@ -159,7 +159,7 @@ public class AgentDataProcessor extends AbstractDataProcessor
         agentReport.transactions = transactions;
         agentReport.transactionErrors = transactionErrors;
         
-        agentReport.transactionErrorsPercentage = (transactions != 0 ? ReportUtils.convertToBigDecimal(100 * (double) transactionErrors/transactions) : ReportUtils.convertToBigDecimal(0));
+        agentReport.transactionErrorsPercentage = ReportUtils.calculatePercentage(transactionErrors, transactions);
 
         return agentReport;
     }

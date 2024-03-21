@@ -272,9 +272,7 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
             for (int n = 0; n < countPerSegment.getCountPerSegment().length; n++)
             {
                 timerReport.countPerInterval[n] = new RuntimeIntervalData(countPerSegment.getCountPerSegment()[n],
-                              (timerReport.count != 0 
-                              ? ReportUtils.convertToBigDecimal((double) countPerSegment.getCountPerSegment()[n] * 100 / timerReport.count) 
-                              : ReportUtils.convertToBigDecimal(0)));
+                              ReportUtils.calculatePercentage(countPerSegment.getCountPerSegment()[n], timerReport.count));
             }
         }
 
