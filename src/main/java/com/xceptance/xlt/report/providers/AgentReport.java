@@ -46,5 +46,5 @@ public class AgentReport
 
     public int transactionErrors;
 
-    public BigDecimal transactionErrorsPercentage;
+    public BigDecimal transactionErrorPercentage;
 }
