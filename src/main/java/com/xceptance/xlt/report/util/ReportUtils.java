@@ -351,7 +351,7 @@ public final class ReportUtils
      */
     public static BigDecimal calculatePercentage(int count, int total)
     {
-        if (count == 0)
+        if (total == 0)
         {
             return new BigDecimal(0);
         }
