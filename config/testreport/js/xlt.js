@@ -466,7 +466,8 @@
                 hiddenContent.classList.remove("hidden");
             }
 
-            registerSortAndFilterListeners();
+            // We have to wait for the table.js to finish processing before we call switchToTargetTabIfRequired
+            addEventListener("load", (event) => {registerSortAndFilterListeners();});
         })();
 
         // the table filters
