@@ -18,9 +18,11 @@ package com.xceptance.xlt.report;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
@@ -42,6 +44,8 @@ import com.xceptance.xlt.engine.XltEngine;
 import com.xceptance.xlt.engine.util.TimerUtils;
 import com.xceptance.xlt.mastercontroller.TestCaseLoadProfileConfiguration;
 import com.xceptance.xlt.mastercontroller.TestLoadProfileConfiguration;
+import com.xceptance.xlt.report.evaluation.Evaluation;
+import com.xceptance.xlt.report.evaluation.Evaluator;
 import com.xceptance.xlt.report.external.ExternalReportGenerator;
 import com.xceptance.xlt.report.util.ConcurrentUsersTable;
 import com.xceptance.xlt.report.util.JFreeChartUtils;
@@ -49,6 +53,8 @@ import com.xceptance.xlt.report.util.ReportUtils;
 import com.xceptance.xlt.report.util.TaskManager;
 import com.xceptance.xlt.util.Timer;
 import com.xceptance.xlt.util.XltPropertiesImpl;
+
+import dev.harrel.jsonschema.providers.OrgJsonNode;
 
 /**
  *
@@ -272,8 +278,17 @@ public class ReportGenerator
             // drop providers
             reportProviders.clear();
 
+            // evaluate test report if desired
+            final File evaluationXml  = evaluateReport(xmlReport);
+            
             // create the html report
-            transformReport(xmlReport, outputDir);
+            transformReport(xmlReport, outputDir, evaluationXml != null);
+
+            // create the evaluation HTML report (if evaluation took place)
+            if(evaluationXml != null)
+            {
+                transformEvaluation(evaluationXml);
+            }
 
             // output the path to the report either as file path (Win) or as clickable file URL
             final File reportFile = new File(outputDir, "index.html");
@@ -621,7 +636,7 @@ public class ReportGenerator
      * @throws Exception
      *             if anything goes wrong during transformation
      */
-    public void transformReport(final File inputXmlFile, final File outputDir) throws Exception
+    public void transformReport(final File inputXmlFile, final File outputDir, final boolean evaluationPresent) throws Exception
     {
         XltLogger.reportLogger.info(Console.horizontalBar());
         XltLogger.reportLogger.info(Console.startSection("Creating HTML Report..."));
@@ -656,6 +671,7 @@ public class ReportGenerator
         parameters.put("productName", ProductInformation.getProductInformation().getProductName());
         parameters.put("productVersion", ProductInformation.getProductInformation().getVersion());
         parameters.put("productUrl", ProductInformation.getProductInformation().getProductURL());
+        parameters.put("evaluationPresent", Boolean.valueOf(evaluationPresent));
 
         // transform the report
         final ReportTransformer reportTransformer = new ReportTransformer(outputFiles, styleSheetFiles, parameters);
@@ -728,6 +744,108 @@ public class ReportGenerator
         }
 
         return inputDirName;
+    }
+
+    private File evaluateReport(final File reportXMLFile)
+    {
+        final String evaluationConfig = config.getStringProperty(XltConstants.EVALUATION_CONFIG_FILE_PROPERTY, null);
+        final File evaluationConfigFile = evaluationConfig != null ? new File(new File(outputDir, XltConstants.CONFIG_DIR_NAME), evaluationConfig) : null; 
+        if (evaluationConfigFile != null)
+        {
+            XltLogger.reportLogger.debug("Evaluating test report using configuration file '{}'", evaluationConfigFile.getAbsolutePath());
+
+            final String errMessage = "Failed to evaluate test report";
+            try
+            {
+                final File evaluationXMLFile = new File(outputDir, XltConstants.EVALUATION_REPORT_XML_FILENAME);
+                final Evaluator evaluator = new Evaluator(evaluationConfigFile);
+                final Evaluation outcome = evaluator.evaluate(reportXMLFile);
+
+                final String error = outcome.result.getError();
+                if (StringUtils.isNotBlank(error))
+                {
+                    System.err.println(errMessage + ": " + error);
+                }
+
+                evaluator.storeEvaluationToFile(outcome, evaluationXMLFile);
+                return evaluationXMLFile;
+            }
+            catch (final Throwable t)
+            {
+                XltLogger.reportLogger.error(errMessage, t);
+            }
+        }
+        
+        return null;
+    }
+
+    private void transformEvaluation(final File inputXmlFile) throws Exception
+    {
+        XltLogger.reportLogger.info(Console.horizontalBar());
+        XltLogger.reportLogger.info(Console.startSection("Creating Evaluation Report..."));
+
+        final File styleSheetFile = new File(new File(config.getConfigDirectory(), XltConstants.EVALUATION_REPORT_XSL_PATH),
+                                             XltConstants.EVALUATION_REPORT_XSL_FILENAME);
+        final File outputFile = new File(outputDir, XltConstants.EVALUATION_REPORT_HTML_FILENAME);
+
+        // determine the name of the project from configuration
+        final String projectName;
+        {
+            final String projectNamePropValue = config.getStringProperty(XltConstants.PROJECT_NAME_PROPERTY, null);
+            projectName = StringUtils.trimToEmpty(projectNamePropValue);
+        }
+
+        // XTC specific parameters
+        final String organization, project, loadTestId, resultId, reportId;
+        {
+            final String organizationPropValue = config.getStringProperty("com.xceptance.xtc.organization", null);
+            organization = StringUtils.trimToEmpty(organizationPropValue);
+
+            final String projectPropValue = config.getStringProperty("com.xceptance.xtc.project", null);
+            project = StringUtils.trimToEmpty(projectPropValue);
+
+            final String loadTestIdPropValue = config.getStringProperty("com.xceptance.xtc.loadtest.run.id", null);
+            loadTestId = StringUtils.trimToEmpty(loadTestIdPropValue);
+
+            final String resultIdPropValue = config.getStringProperty("com.xceptance.xtc.loadtest.result.id", null);
+            resultId = StringUtils.trimToEmpty(resultIdPropValue);
+
+            final String reportIdPropValue = config.getStringProperty("com.xceptance.xtc.loadtest.report.id", null);
+            reportId = StringUtils.trimToEmpty(reportIdPropValue);
+        }
+
+        // create some dynamic parameters
+        final Map<String, Object> parameters = Map.of("productName", ProductInformation.getProductInformation().getProductName(),
+                                                      "productVersion", ProductInformation.getProductInformation().getVersion(),
+                                                      "productUrl", ProductInformation.getProductInformation().getProductURL(),
+                                                      "projectName", projectName, "evaluationPresent", Boolean.TRUE, "xtcOrganization",
+                                                      organization, "xtcProject", project, "xtcLoadTestId", loadTestId, "xtcResultId",
+                                                      resultId, "xtcReportId", reportId);
+
+        // transform the report
+        final ReportTransformer reportTransformer = new ReportTransformer(List.of(outputFile), List.of(styleSheetFile), parameters);
+
+        final long start = TimerUtils.get().getStartTime();
+
+        try
+        {
+
+            // ok, we want to avoid high memory usage
+            TaskManager.getInstance().setMaximumThreadCount(1);
+
+            TaskManager.getInstance().startProgress("Creating");
+            reportTransformer.run(inputXmlFile, outputDir);
+
+        }
+        finally
+        {
+            // wait for any asynchronous task to complete
+            TaskManager.getInstance().waitForAllTasksToComplete();
+            TaskManager.getInstance().stopProgress();
+
+            XltLogger.reportLogger.info(String.format("...finished - %,d ms", TimerUtils.get().getElapsedTime(start)));
+            XltLogger.reportLogger.info(Console.endSection());
+        }
     }
 
     // TODO: Check if the similar method {@link TestLoadProfileConfiguration#getTotalRampUpPeriod()} is still needed.

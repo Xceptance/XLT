@@ -1,0 +1,168 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Xceptance/XLT/someschema.json",
+  "title": "Some Title",
+  "description": "Schema for XLT's Auto-Rating definition files'",
+  "type": "object",
+  "$defs": {
+    "boolDefaultFalse": {
+      "type": "boolean",
+      "default": false
+    },
+    "boolDefaultTrue": {
+      "type": "boolean",
+      "default": true
+    },
+    "nonEmptyString": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "properties": {
+    "rules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/$defs/nonEmptyString"
+          },
+          "enabled": {
+            "$ref": "#/$defs/boolDefaultTrue"
+          },
+          "description": {
+            "type": "string"
+          },
+          "failsTest": {
+            "$ref": "#/$defs/boolDefaultFalse"
+          },
+          "checks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "$ref": "#/$defs/boolDefaultTrue"
+                },
+                "displayValue": {
+                  "$ref": "#/$defs/boolDefaultFalse"
+                },
+                "selector": {
+                  "$ref": "#/$defs/nonEmptyString"
+                },
+                "condition": {
+                  "$ref": "#/$defs/nonEmptyString"
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "selector",
+                "condition"
+              ]
+            },
+            "minItems": 1,
+            "uniqueItems": true
+          },
+          "messages": {
+            "type": "object",
+            "properties": {
+              "success": {
+                "type": "string"
+              },
+              "fail": {
+                "type": "string"
+              }
+            },
+            "minProperties": 1,
+            "additionalProperties": false
+          },
+          "points": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "checks"
+        ]
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "groups": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/$defs/nonEmptyString"
+          },
+          "description": {
+            "type": "string"
+          },
+          "enabled": {
+            "$ref": "#/$defs/boolDefaultTrue"
+          },
+          "pointsSource": {
+            "enum": [
+              "first",
+              "last",
+              "all"
+            ],
+            "default": "first"
+          },
+          "rules": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "uniqueItems": true
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "rules"
+        ]
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "ratings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "$ref": "#/$defs/nonEmptyString"
+          },
+          "description": {
+            "type": "string"
+          },
+          "value": {
+            "type": "number",
+            "minimum": 0.0,
+            "maximum": 100.0
+          },
+          "enabled": {
+            "$ref": "#/$defs/boolDefaultTrue"
+          },
+          "failsTest": {
+            "$ref": "#/$defs/boolDefaultFalse"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "value"
+        ]
+      }
+    }
+  },
+  "required": [
+    "rules",
+    "groups"
+  ]
+}
