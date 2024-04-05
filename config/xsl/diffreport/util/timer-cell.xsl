@@ -71,6 +71,7 @@
 		</xsl:variable>
 
 		<td>
+			<xsl:if test="count($node) > 0">
 			<xsl:attribute name="title">
 				<xsl:value-of select="format-number($node/oldValue, $format)"/> <xsl:value-of select="$unit"/>
 				<xsl:text> -> </xsl:text>
@@ -80,6 +81,7 @@
 				<xsl:value-of select="format-number($node/absoluteDifference, $format)"/> <xsl:value-of select="$unit"/>
 				<xsl:text>)</xsl:text>
 			</xsl:attribute>
+			</xsl:if>
 			<xsl:attribute name="class">
 				<xsl:text>value number </xsl:text>
 				<xsl:value-of select="$colorClass"/>
