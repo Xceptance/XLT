@@ -14,6 +14,7 @@
 				<li><a href="page-load-timings.html">Page Load Timings</a></li>
 				<li><a href="web-vitals.html">Web Vitals</a></li>
 				<li><a href="custom-timers.html">Custom Timers</a></li>
+				<li><a href="custom-values.html">Custom Values</a></li>
 			</ul>
 		</nav>
 		

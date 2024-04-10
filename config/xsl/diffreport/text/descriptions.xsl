@@ -265,6 +265,19 @@
     </div>
 </xsl:template>
 
+<!--- ## Description: Custom Value Summary ## -->
+<xsl:template name="headline-custom-values-summary">
+    <h2>Custom Values</h2>
+</xsl:template>
+<xsl:template name="description-custom-values-summary">
+    <div class="description">
+        <p>
+            The custom values include all values that have been recorded by your custom samplers.
+        </p>
+        <p>*) numbers might be projected</p>
+    </div>
+</xsl:template>
+
 <!-- The show and hide part -->
 <xsl:template name="show-n-hide">
     <xsl:param name="gid"/>
