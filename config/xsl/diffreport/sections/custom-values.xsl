@@ -82,49 +82,49 @@
                                         </td>
                                         <xsl:call-template name="timer-cell">
 								            <xsl:with-param name="node" select="count"/>
-								            <xsl:with-param name="isInverse" select="false()"/>
 								            <xsl:with-param name="format" select="'#,##0'"/>
+								            <xsl:with-param name="neutral" select="true()"/>
 								        </xsl:call-template>
 								        <xsl:call-template name="timer-cell">
 								            <xsl:with-param name="node" select="countPerSecond"/>
-								            <xsl:with-param name="isInverse" select="false()"/>
 								            <xsl:with-param name="format" select="'#,##0'"/>
+								            <xsl:with-param name="neutral" select="true()"/>
 								        </xsl:call-template>
                                         <xsl:call-template name="timer-cell">
 								            <xsl:with-param name="node" select="countPerHour"/>
-								            <xsl:with-param name="isInverse" select="false()"/>
 								            <xsl:with-param name="format" select="'#,##0'"/>
+								            <xsl:with-param name="neutral" select="true()"/>
 								        </xsl:call-template>
 										<xsl:call-template name="timer-cell">
 								            <xsl:with-param name="node" select="countPerDay"/>
-								            <xsl:with-param name="isInverse" select="false()"/>
 								            <xsl:with-param name="format" select="'#,##0'"/>
+								            <xsl:with-param name="neutral" select="true()"/>
 								        </xsl:call-template>
 								        <xsl:call-template name="timer-cell">
 								            <xsl:with-param name="node" select="mean"/>
-								            <xsl:with-param name="isInverse" select="false()"/>
 								            <xsl:with-param name="format" select="'#,##0.###'"/>
+								            <xsl:with-param name="neutral" select="true()"/>
 								        </xsl:call-template>
 								        <xsl:call-template name="timer-cell">
 								            <xsl:with-param name="node" select="min"/>
-								            <xsl:with-param name="isInverse" select="false()"/>
 								            <xsl:with-param name="format" select="'#,##0.###'"/>
+								            <xsl:with-param name="neutral" select="true()"/>
 								        </xsl:call-template>	
 								        <xsl:call-template name="timer-cell">
 								            <xsl:with-param name="node" select="max"/>
-								            <xsl:with-param name="isInverse" select="false()"/>
 								            <xsl:with-param name="format" select="'#,##0.###'"/>
+								            <xsl:with-param name="neutral" select="true()"/>
 								        </xsl:call-template>
 								        <xsl:call-template name="timer-cell">
 								            <xsl:with-param name="node" select="standardDeviation"/>
-								            <xsl:with-param name="isInverse" select="false()"/>
 								            <xsl:with-param name="format" select="'#,##0.###'"/>
+								            <xsl:with-param name="neutral" select="true()"/>
 								        </xsl:call-template>							        
                                         <xsl:for-each select="percentiles/*">
                                         	<xsl:call-template name="timer-cell">
 									            <xsl:with-param name="node" select="current()"/>
-									            <xsl:with-param name="isInverse" select="false()"/>
 									            <xsl:with-param name="format" select="'#,##0.###'"/>
+									            <xsl:with-param name="neutral" select="true()"/>
 									        </xsl:call-template>
                                         </xsl:for-each>
                                     </tr>
