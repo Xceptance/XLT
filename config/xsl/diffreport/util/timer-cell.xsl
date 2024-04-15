@@ -34,9 +34,6 @@
 
 		<xsl:variable name="colorClass">
 			<xsl:choose>
-				<xsl:when test="$neutral">
-					<xsl:value-of select="'neutral'"/>
-				</xsl:when>
 				<xsl:when test="count($node/newValue) = 0">
 					<xsl:value-of select="'removed'"/>
 				</xsl:when>
@@ -61,6 +58,10 @@
 						</xsl:choose>
 					</xsl:variable>
 					<xsl:choose>
+						<xsl:when test="$neutral">
+							<xsl:text>a</xsl:text>
+							<xsl:value-of select="$classNumber"/>
+						</xsl:when>
 						<xsl:when test="($node/relativeDifference &lt; 0) = $isInverse">
 							<xsl:text>n</xsl:text>
 							<xsl:value-of select="$classNumber"/>
@@ -90,6 +91,7 @@
 				<xsl:text>value number </xsl:text>
 				<xsl:value-of select="$colorClass"/>
 				<xsl:text> colorized</xsl:text>
+				<xsl:if test="$neutral"> neutral</xsl:if>
 			</xsl:attribute>
 			<xsl:value-of select="$value" disable-output-escaping="yes"/>
 		</td>
