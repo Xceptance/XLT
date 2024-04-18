@@ -1575,6 +1575,19 @@ table * {
 .n90, .n91, .n92, .n93, .n94, .n95, .n96, .n97, .n98, .n99 { background-color: rgb(206,134,134) !important; }
 .n100                                                      { background-color: rgb(200,120,120) !important; }
 
+.a0                                                        { background-color: rgba(238,242,246,0.7) !important; }
+.a1, .a2, .a3, .a4, .a5, .a6, .a7, .a8, .a9                { background-color: rgba(222,230,237,0.7) !important; }
+.a10, .a11, .a12, .a13, .a14, .a15, .a16, .a17, .a18, .a19 { background-color: rgba(206,217,228,0.7) !important; }
+.a20, .a21, .a22, .a23, .a24, .a25, .a26, .a27, .a28, .a29 { background-color: rgba(189,204,219,0.7) !important; }
+.a30, .a31, .a32, .a33, .a34, .a35, .a36, .a37, .a38, .a39 { background-color: rgba(173,191,210,0.7) !important; }
+.a40, .a41, .a42, .a43, .a44, .a45, .a46, .a47, .a48, .a49 { background-color: rgba(156,178,201,0.7) !important; }
+.a50, .a51, .a52, .a53, .a54, .a55, .a56, .a57, .a58, .a59 { background-color: rgba(140,165,192,0.7) !important; }
+.a60, .a61, .a62, .a63, .a64, .a65, .a66, .a67, .a68, .a69 { background-color: rgba(123,152,183,0.7) !important; }
+.a70, .a71, .a72, .a73, .a74, .a75, .a76, .a77, .a78, .a79 { background-color: rgba(107,139,174,0.7) !important; }
+.a80, .a81, .a82, .a83, .a84, .a85, .a86, .a87, .a88, .a89 { background-color: rgba(91,126,164,0.7) !important; }
+.a90, .a91, .a92, .a93, .a94, .a95, .a96, .a97, .a98, .a99 { background-color: rgba(81,114,148,0.7) !important; }
+.a100, .infinity.neutral                                   { background-color: rgba(72,102,132,0.7) !important; }
+
 tr:hover td.p0, tr:hover td.n0 { background: linear-gradient(rgb(188, 203, 220), rgba(0,0,0,0), rgb(188, 203, 220)) !important; }
 
 tr:hover td.p1, tr:hover td.p2, tr:hover td.p3, tr:hover td.p4, tr:hover td.p5, tr:hover td.p6, tr:hover td.p7, tr:hover td.p8, tr:hover td.p9                           { background: linear-gradient(rgb(235,250,235), rgba(0,0,0,0), rgb(235,250,235)) !important; }
@@ -1599,7 +1612,19 @@ tr:hover td.n60 , tr:hover td.n61 , tr:hover td.n62 , tr:hover td.n63 , tr:hover
 tr:hover td.n70 , tr:hover td.n71 , tr:hover td.n72 , tr:hover td.n73 , tr:hover td.n74 , tr:hover td.n75 , tr:hover td.n76 , tr:hover td.n77 , tr:hover td.n78 , tr:hover td.n79  { background: linear-gradient(rgb(217,161,161), rgba(0,0,0,0), rgb(217,161,161)) !important; }
 tr:hover td.n80 , tr:hover td.n81 , tr:hover td.n82 , tr:hover td.n83 , tr:hover td.n84 , tr:hover td.n85 , tr:hover td.n86 , tr:hover td.n87 , tr:hover td.n88 , tr:hover td.n89  { background: linear-gradient(rgb(211,147,147), rgba(0,0,0,0), rgb(211,147,147)) !important; }
 tr:hover td.n90 , tr:hover td.n91 , tr:hover td.n92 , tr:hover td.n93 , tr:hover td.n94 , tr:hover td.n95 , tr:hover td.n96 , tr:hover td.n97 , tr:hover td.n98 , tr:hover td.n99  { background: linear-gradient(rgb(206,134,134), rgba(0,0,0,0), rgb(206,134,134)) !important; }
-tr:hover td.n100                                                                                                                                                                   { background: linear-gradient(rgb(200,120,120), rgba(0,0,0,0), rgb(200,120,120)) !important; }
+tr:hover td.n100  																																								   { background: linear-gradient(rgb(200,120,120), rgba(0,0,0,0), rgb(200,120,120)) !important; }
+
+tr:hover td.a0, tr:hover td.a1, tr:hover td.a2, tr:hover td.a3, tr:hover td.a4, tr:hover td.a5, tr:hover td.a6, tr:hover td.a7, tr:hover td.a8, tr:hover td.a9           { background: linear-gradient(rgba(238,242,246,0.7), rgba(0,0,0,0), rgba(238,242,246,0.7)) !important; }
+tr:hover td.a10, tr:hover td.a11, tr:hover td.a12, tr:hover td.a13, tr:hover td.a14, tr:hover td.a15, tr:hover td.a16, tr:hover td.a17, tr:hover td.a18, tr:hover td.a19 { background: linear-gradient(rgba(222,230,237,0.7), rgba(0,0,0,0), rgba(222,230,237,0.7)) !important; }
+tr:hover td.a20, tr:hover td.a21, tr:hover td.a22, tr:hover td.a23, tr:hover td.a24, tr:hover td.a25, tr:hover td.a26, tr:hover td.a27, tr:hover td.a28, tr:hover td.a29 { background: linear-gradient(rgba(206,217,228,0.7), rgba(0,0,0,0), rgba(206,217,228,0.7)) !important; }
+tr:hover td.a30, tr:hover td.a31, tr:hover td.a32, tr:hover td.a33, tr:hover td.a34, tr:hover td.a35, tr:hover td.a36, tr:hover td.a37, tr:hover td.a38, tr:hover td.a39 { background: linear-gradient(rgba(189,204,219,0.7), rgba(0,0,0,0), rgba(189,204,219,0.7)) !important; }
+tr:hover td.a40, tr:hover td.a41, tr:hover td.a42, tr:hover td.a43, tr:hover td.a44, tr:hover td.a45, tr:hover td.a46, tr:hover td.a47, tr:hover td.a48, tr:hover td.a49 { background: linear-gradient(rgba(173,191,210,0.7), rgba(0,0,0,0), rgba(173,191,210,0.7)) !important; }
+tr:hover td.a50, tr:hover td.a51, tr:hover td.a52, tr:hover td.a53, tr:hover td.a54, tr:hover td.a55, tr:hover td.a56, tr:hover td.a57, tr:hover td.a58, tr:hover td.a59 { background: linear-gradient(rgba(156,178,201,0.7), rgba(0,0,0,0), rgba(156,178,201,0.7)) !important; }
+tr:hover td.a60, tr:hover td.a61, tr:hover td.a62, tr:hover td.a63, tr:hover td.a64, tr:hover td.a65, tr:hover td.a66, tr:hover td.a67, tr:hover td.a68, tr:hover td.a69 { background: linear-gradient(rgba(140,165,192,0.7), rgba(0,0,0,0), rgba(140,165,192,0.7)) !important; }
+tr:hover td.a70, tr:hover td.a71, tr:hover td.a72, tr:hover td.a73, tr:hover td.a74, tr:hover td.a75, tr:hover td.a76, tr:hover td.a77, tr:hover td.a78, tr:hover td.a79 { background: linear-gradient(rgba(123,152,183,0.7), rgba(0,0,0,0), rgba(123,152,183,0.7)) !important; }
+tr:hover td.a80, tr:hover td.a81, tr:hover td.a82, tr:hover td.a83, tr:hover td.a84, tr:hover td.a85, tr:hover td.a86, tr:hover td.a87, tr:hover td.a88, tr:hover td.a89 { background: linear-gradient(rgba(107,139,174,0.7), rgba(0,0,0,0), rgba(107,139,174,0.7)) !important; }
+tr:hover td.a90, tr:hover td.a91, tr:hover td.a92, tr:hover td.a93, tr:hover td.a94, tr:hover td.a95, tr:hover td.a96, tr:hover td.a97, tr:hover td.a98, tr:hover td.a99 { background: linear-gradient(rgba(91,126,164,0.7), rgba(0,0,0,0), rgba(91,126,164,0.7)) !important; }
+tr:hover td.a100, tr:hover .infinity.neutral                                   																						     { background: linear-gradient(rgba(81,114,148,0.7), rgba(0,0,0,0), rgba(81,114,148,0.7)) !important; }                                                                                                                                                              
 
 
 .added    { color: #888 !important; }

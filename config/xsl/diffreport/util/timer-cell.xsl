@@ -3,9 +3,10 @@
 
 	<xsl:template name="timer-cell">
 		<xsl:param name="node"/>
-		<xsl:param name="isInverse"/>
+		<xsl:param name="isInverse"/><!-- if true(): increase in value is marked as improvement/good/green -->
 		<xsl:param name="format"/>
-		<xsl:param name="unit" select="''" />
+		<xsl:param name="unit" select="''" /><!-- add a unit to the value in the table cell -->
+		<xsl:param name="neutral" select="false()" /><!-- use neutral colorization on value cells -->
 
 		<xsl:variable name="value">
 			<xsl:choose>
@@ -41,7 +42,7 @@
 				</xsl:when>
 				<xsl:when test="contains($node/relativeDifference, 'Infinity')">
 					<xsl:value-of select="'infinity'"/>
-				</xsl:when>
+				</xsl:when>				
 				<xsl:otherwise>
 					<xsl:variable name="classNumber">
 						<xsl:choose>
@@ -57,6 +58,10 @@
 						</xsl:choose>
 					</xsl:variable>
 					<xsl:choose>
+						<xsl:when test="$neutral">
+							<xsl:text>a</xsl:text>
+							<xsl:value-of select="$classNumber"/>
+						</xsl:when>
 						<xsl:when test="($node/relativeDifference &lt; 0) = $isInverse">
 							<xsl:text>n</xsl:text>
 							<xsl:value-of select="$classNumber"/>
@@ -86,6 +91,7 @@
 				<xsl:text>value number </xsl:text>
 				<xsl:value-of select="$colorClass"/>
 				<xsl:text> colorized</xsl:text>
+				<xsl:if test="$neutral"> neutral</xsl:if>
 			</xsl:attribute>
 			<xsl:value-of select="$value" disable-output-escaping="yes"/>
 		</td>
