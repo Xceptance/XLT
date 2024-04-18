@@ -8,6 +8,8 @@
 		<xsl:param name="unit" select="''" /><!-- add a unit to the value in the table cell -->
 		<xsl:param name="neutral" select="false()" /><!-- use neutral colorization on value cells -->
 
+		<xsl:variable name="isInfinity" select="contains($node/relativeDifference, 'Infinity')"/>
+
 		<xsl:variable name="value">
 			<xsl:choose>
 				<xsl:when test="count($node) = 0">
@@ -19,7 +21,7 @@
 				<xsl:when test="count($node/oldValue) = 0">
 					<xsl:value-of select="'(added)'"/>
 				</xsl:when>
-				<xsl:when test="contains($node/relativeDifference, 'Infinity')">
+				<xsl:when test="$isInfinity">
 					<![CDATA[&infin;]]>
 				</xsl:when>
 				<xsl:otherwise>
@@ -40,13 +42,10 @@
 				<xsl:when test="count($node/oldValue) = 0">
 					<xsl:value-of select="'added'"/>
 				</xsl:when>
-				<xsl:when test="contains($node/relativeDifference, 'Infinity')">
-					<xsl:value-of select="'infinity'"/>
-				</xsl:when>				
 				<xsl:otherwise>
 					<xsl:variable name="classNumber">
 						<xsl:choose>
-							<xsl:when test="$node/relativeDifference &lt; -99 or $node/relativeDifference &gt; 99">
+							<xsl:when test="$node/relativeDifference &lt; -99 or $node/relativeDifference &gt; 99 or $isInfinity">
 								<xsl:value-of select="100"/>
 							</xsl:when>
 							<xsl:when test="$node/relativeDifference &lt; 0">
@@ -77,21 +76,21 @@
 
 		<td>
 			<xsl:if test="count($node) > 0">
-			<xsl:attribute name="title">
-				<xsl:value-of select="format-number($node/oldValue, $format)"/> <xsl:value-of select="$unit"/>
-				<xsl:text> -> </xsl:text>
-				<xsl:value-of select="format-number($node/newValue, $format)"/> <xsl:value-of select="$unit"/>
-				<xsl:text> (</xsl:text>
-				<xsl:if test="$node/absoluteDifference > 0">+</xsl:if>
-				<xsl:value-of select="format-number($node/absoluteDifference, $format)"/> <xsl:value-of select="$unit"/>
-				<xsl:text>)</xsl:text>
-			</xsl:attribute>
+				<xsl:attribute name="title">
+					<xsl:value-of select="format-number($node/oldValue, $format)"/> <xsl:value-of select="$unit"/>
+					<xsl:text> -> </xsl:text>
+					<xsl:value-of select="format-number($node/newValue, $format)"/> <xsl:value-of select="$unit"/>
+					<xsl:text> (</xsl:text>
+					<xsl:if test="$node/absoluteDifference > 0">+</xsl:if>
+					<xsl:value-of select="format-number($node/absoluteDifference, $format)"/> <xsl:value-of select="$unit"/>
+					<xsl:text>)</xsl:text>
+				</xsl:attribute>
 			</xsl:if>
 			<xsl:attribute name="class">
 				<xsl:text>value number </xsl:text>
 				<xsl:value-of select="$colorClass"/>
 				<xsl:text> colorized</xsl:text>
-				<xsl:if test="$neutral"> neutral</xsl:if>
+				<xsl:if test="$isInfinity"> infinity</xsl:if>
 			</xsl:attribute>
 			<xsl:value-of select="$value" disable-output-escaping="yes"/>
 		</td>
