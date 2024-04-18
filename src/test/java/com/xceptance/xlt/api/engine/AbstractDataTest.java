@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,9 +22,10 @@ import static org.junit.Assert.fail;
 
 import java.util.List;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
-import com.xceptance.xlt.api.util.SimpleArrayList;
+import com.xceptance.common.util.CsvLineDecoder;
 import com.xceptance.xlt.api.util.XltCharBuffer;
 
 /**
@@ -54,22 +55,15 @@ public class AbstractDataTest
         }
 
         @Override
-        protected int getMinNoCSVElements()
-        {
-            // typeCode, name, time, myData
-            return super.getMinNoCSVElements() + 1;
-        }
-
-        @Override
-        protected void parseRemainingValues(List<XltCharBuffer> values)
+        public void setRemainingValues(List<XltCharBuffer> values)
         {
             myData = values.get(3);
         }
 
         @Override
-        protected List<String> addValues()
+        public List<String> toList()
         {
-            var l = super.addValues();
+            var l = super.toList();
             l.add(myData.toString());
 
             return l;
@@ -127,15 +121,14 @@ public class AbstractDataTest
     @Test
     public void complainTypeCode()
     {
-        var l = new SimpleArrayList<XltCharBuffer>(3);
-        var data = XltCharBuffer.valueOf("Y,Name,123456789,MyData");
+        var data = CsvLineDecoder.parse("Y,Name,123456789,MyData");
 
         var d = new TestData(TYPECODE);
 
         try
         {
-            d.baseValuesFromCSV(l, data);
-            fail("No exceptioon raised");
+            d.setBaseValues(data);
+            fail("No exception raised");
         }
         catch (IllegalArgumentException e)
         {
@@ -147,15 +140,14 @@ public class AbstractDataTest
     @Test
     public void complainNegativeTime()
     {
-        var l = new SimpleArrayList<XltCharBuffer>(3);
-        var data = XltCharBuffer.valueOf("X,Name,-5,MyData");
+        var data = CsvLineDecoder.parse("X,Name,-5,MyData");
 
         var d = new TestData(TYPECODE);
 
         try
         {
-            d.baseValuesFromCSV(l, data);
-            fail("No exceptioon raised");
+            d.setBaseValues(data);
+            fail("No exception raised");
         }
         catch (IllegalArgumentException e)
         {
@@ -164,70 +156,46 @@ public class AbstractDataTest
     }
 
     // too little fields
-    @Test
+    @Ignore("At the moment, SimpleArrayList does not make range checks for performance reasons")
+    @Test(expected = IndexOutOfBoundsException.class)
     public void complainFieldCount()
     {
-        var l = new SimpleArrayList<XltCharBuffer>(3);
-        var data = XltCharBuffer.valueOf("X,Name,87654345");
+        var data = CsvLineDecoder.parse("X,Name,87654345");
 
         var d = new TestData(TYPECODE);
 
-        try
-        {
-            d.baseValuesFromCSV(l, data);
-            fail("No exceptioon raised");
-        }
-        catch (IllegalArgumentException e)
-        {
-            assertTrue(e.getMessage().contains("Expected at least 4 fields"));
-        }
+        d.setBaseValues(data);
+        d.setRemainingValues(data);
     }
 
     // initial value parsing
     @Test
     public void base()
     {
-        var l = new SimpleArrayList<XltCharBuffer>(3);
-        var data = XltCharBuffer.valueOf("X,Name,123456789,MyData");
+        var data = CsvLineDecoder.parse("X,Name,123456789,MyData");
 
         var d = new TestData(TYPECODE);
-        d.baseValuesFromCSV(l, data);
+        d.setBaseValues(data);
 
         assertEquals('X', d.getTypeCode());
         assertEquals("Name", d.getName());
         assertEquals(123456789L, d.getTime());
+        assertNull(d.myData);
     }
 
     // additional data parsing
     @Test
     public void additionalData()
     {
-        var l = new SimpleArrayList<XltCharBuffer>(3);
-        var data = XltCharBuffer.valueOf("X,Name,123456789,MyData");
+        var data = CsvLineDecoder.parse("X,Name,123456789,MyData");
 
         var d = new TestData(TYPECODE);
-        d.baseValuesFromCSV(l, data);
-        d.remainingValuesFromCSV(l);
+        d.setBaseValues(data);
+        d.setRemainingValues(data);
 
         assertEquals('X', d.getTypeCode());
         assertEquals("Name", d.getName());
         assertEquals(123456789L, d.getTime());
         assertEquals("MyData", d.myData.toString());
-    }
-
-    // csv record creation
-    @Test
-    public void toCsv()
-    {
-        var csv = "X,Name,123456789,MyData";
-        var data = XltCharBuffer.valueOf(csv);
-
-        var l = new SimpleArrayList<XltCharBuffer>(4);
-
-        var d = new TestData(TYPECODE);
-        d.baseValuesFromCSV(l, data);
-        d.remainingValuesFromCSV(l);
-
-        assertEquals(csv, d.toCSV().toString());
     }
 }

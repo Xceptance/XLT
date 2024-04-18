@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,6 +51,7 @@ import org.htmlunit.WebWindow;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.parser.HTMLParser;
 import org.htmlunit.javascript.HtmlUnitScriptable;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
@@ -58,9 +59,6 @@ import org.htmlunit.javascript.host.html.HTMLDocument;
 import org.htmlunit.javascript.host.xml.XMLDocument;
 import org.htmlunit.util.UrlUtils;
 import org.htmlunit.xml.XmlPage;
-
-import org.htmlunit.corejs.javascript.Context;
-import org.htmlunit.corejs.javascript.Undefined;
 
 /**
  * A JavaScript object for {@code DOMImplementation}.
@@ -79,8 +77,14 @@ public class DOMImplementation extends HtmlUnitScriptable {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public DOMImplementation() {
+    }
+
+    /**
+     * JavaScript constructor.
+     */
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    public void jsConstructor() {
     }
 
     /**
@@ -263,9 +267,9 @@ public class DOMImplementation extends HtmlUnitScriptable {
      */
     @JsxFunction
     public HTMLDocument createHTMLDocument(final Object titleObj) {
-        if (Undefined.isUndefined(titleObj)
+        if (JavaScriptEngine.isUndefined(titleObj)
                 && getBrowserVersion().hasFeature(JS_DOMIMPLEMENTATION_CREATE_HTMLDOCOMENT_REQUIRES_TITLE)) {
-            throw Context.reportRuntimeError("Title is required");
+            throw JavaScriptEngine.reportRuntimeError("Title is required");
         }
 
         // a similar impl is in
@@ -273,12 +277,12 @@ public class DOMImplementation extends HtmlUnitScriptable {
         try {
             final WebWindow webWindow = getWindow().getWebWindow();
             final String html;
-            if (Undefined.isUndefined(titleObj)) {
+            if (JavaScriptEngine.isUndefined(titleObj)) {
                 html = "<html><head></head><body></body></html>";
             }
             else {
                 html = "<html><head><title>"
-                        + Context.toString(titleObj)
+                        + JavaScriptEngine.toString(titleObj)
                         + "</title></head><body></body></html>";
             }
             final WebResponse webResponse = new StringWebResponse(html, UrlUtils.URL_ABOUT_BLANK);
@@ -299,7 +303,7 @@ public class DOMImplementation extends HtmlUnitScriptable {
             return page.getScriptableObject();
         }
         catch (final IOException e) {
-            throw Context.reportRuntimeError("Parsing failed" + e.getMessage());
+            throw JavaScriptEngine.reportRuntimeError("Parsing failed" + e.getMessage());
         }
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,16 +24,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.htmlunit.WebClient;
-import org.htmlunit.html.DomNode;
-import org.htmlunit.javascript.HtmlUnitContextFactory;
-import org.htmlunit.javascript.HtmlUnitScriptable;
-import org.htmlunit.javascript.JavaScriptEngine;
-import org.htmlunit.javascript.configuration.JsxClass;
-import org.htmlunit.javascript.configuration.JsxConstructor;
-import org.htmlunit.javascript.configuration.JsxFunction;
-import org.htmlunit.javascript.configuration.JsxGetter;
-import org.htmlunit.javascript.configuration.JsxSymbol;
-
 import org.htmlunit.corejs.javascript.Callable;
 import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.ContextAction;
@@ -43,6 +33,15 @@ import org.htmlunit.corejs.javascript.NativeArrayIterator;
 import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.corejs.javascript.ScriptableObject;
 import org.htmlunit.corejs.javascript.Undefined;
+import org.htmlunit.html.DomNode;
+import org.htmlunit.javascript.HtmlUnitContextFactory;
+import org.htmlunit.javascript.HtmlUnitScriptable;
+import org.htmlunit.javascript.JavaScriptEngine;
+import org.htmlunit.javascript.configuration.JsxClass;
+import org.htmlunit.javascript.configuration.JsxConstructor;
+import org.htmlunit.javascript.configuration.JsxFunction;
+import org.htmlunit.javascript.configuration.JsxGetter;
+import org.htmlunit.javascript.configuration.JsxSymbol;
 
 /**
  * An array of elements. Used for the element arrays returned by <code>document.all</code>,
@@ -56,6 +55,7 @@ import org.htmlunit.corejs.javascript.Undefined;
  * @author Ahmed Ashour
  * @author Frank Danek
  * @author Ronald Brill
+ * @author Lai Quang Duong
  */
 @JsxClass
 public class NodeList extends AbstractList implements Callable {
@@ -63,8 +63,14 @@ public class NodeList extends AbstractList implements Callable {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public NodeList() {
+    }
+
+    /**
+     * JavaScript constructor.
+     */
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    public void jsConstructor() {
     }
 
     /**
@@ -127,6 +133,7 @@ public class NodeList extends AbstractList implements Callable {
      * @return an {@link NativeArrayIterator}
      */
     @JsxFunction({CHROME, EDGE, FF, FF_ESR})
+    @JsxSymbol(value = {CHROME, EDGE, FF, FF_ESR}, symbolName = "iterator")
     public ES6Iterator values() {
         return new NativeArrayIterator(getParentScope(), this, NativeArrayIterator.ARRAY_ITERATOR_TYPE.VALUES);
     }
@@ -138,11 +145,6 @@ public class NodeList extends AbstractList implements Callable {
     @JsxFunction({CHROME, EDGE, FF, FF_ESR})
     public ES6Iterator entries() {
         return new NativeArrayIterator(getParentScope(), this, NativeArrayIterator.ARRAY_ITERATOR_TYPE.ENTRIES);
-    }
-
-    @JsxSymbol({CHROME, EDGE, FF, FF_ESR})
-    public ES6Iterator iterator() {
-        return values();
     }
 
     /**
@@ -198,7 +200,7 @@ public class NodeList extends AbstractList implements Callable {
     @Override
     public Object call(final Context cx, final Scriptable scope, final Scriptable thisObj, final Object[] args) {
         if (args.length == 0) {
-            throw Context.reportRuntimeError("Zero arguments; need an index or a key.");
+            throw JavaScriptEngine.reportRuntimeError("Zero arguments; need an index or a key.");
         }
         final Object object = getIt(args[0]);
         if (object == NOT_FOUND) {

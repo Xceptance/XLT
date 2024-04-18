@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,16 +17,15 @@ package org.htmlunit.javascript.host.html;
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import org.htmlunit.util.MimeType;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
 
 /**
  * Tests for {@link HTMLDocument}'s write(ln) function.
@@ -210,6 +209,8 @@ public class HTMLDocumentWrite2Test extends WebDriverTestCase {
     @Test
     @Alerts("HelloHello")
     public void writeExternalScriptAfterClick() throws Exception {
+        shutDownAll();
+
         final String html = "<html><head>\n"
             + "<script>\n"
             + "document.write('<scr'+'ipt src=\"script.js\"></scr'+'ipt>');\n"
@@ -224,7 +225,7 @@ public class HTMLDocumentWrite2Test extends WebDriverTestCase {
             + "</body>\n"
             + "</html>";
 
-        getMockWebConnection().setDefaultResponse("window.foo = 'Hello'", MimeType.APPLICATION_JAVASCRIPT);
+        getMockWebConnection().setDefaultResponse("window.foo = 'Hello'", MimeType.TEXT_JAVASCRIPT);
         final WebDriver driver = loadPage2(html);
         driver.findElement(By.linkText("a link")).click();
         driver.findElement(By.id("clickMe")).click();
@@ -394,7 +395,7 @@ public class HTMLDocumentWrite2Test extends WebDriverTestCase {
             + "</form></body></html>";
 
         final String script = "document.write(\"<div id='div1'>hello</div>\");\n";
-        getMockWebConnection().setDefaultResponse(script, MimeType.APPLICATION_JAVASCRIPT);
+        getMockWebConnection().setDefaultResponse(script, MimeType.TEXT_JAVASCRIPT);
 
         final WebDriver driver = loadPage2(html);
         assertTitle(driver, "First");
@@ -440,7 +441,7 @@ public class HTMLDocumentWrite2Test extends WebDriverTestCase {
         final String js = "document.write('from external script');\n"
                     + "document.title = 'done';";
 
-        getMockWebConnection().setDefaultResponse(js, MimeType.APPLICATION_JAVASCRIPT);
+        getMockWebConnection().setDefaultResponse(js, MimeType.TEXT_JAVASCRIPT);
         final WebDriver driver = loadPage2(html);
 
         assertTitle(driver, "done");

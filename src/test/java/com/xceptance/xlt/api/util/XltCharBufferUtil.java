@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ public class XltCharBufferUtil
         return list.stream().map(s -> new XltCharBuffer(s.toCharArray())).collect(Collectors.toList());
     }
 
-    public static List<XltCharBuffer> toList(final String[] list)
+    public static List<XltCharBuffer> toList(final String... list)
     {
         return Arrays.stream(list).map(s -> new XltCharBuffer(s.toCharArray())).collect(Collectors.toList());
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,12 @@
  */
 package org.htmlunit.general;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * Tests the result of {@code element.childNodes.length}.
@@ -418,10 +417,7 @@ public class ElementChildNodesTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"1", "0", "1", "1", "0", "1"},
             IE = {"3", "2", "2", "3", "2", "2"})
-    @HtmlUnitNYI(CHROME = {"3", "2", "2", "3", "2", "2"},
-            EDGE = {"3", "2", "2", "3", "2", "2"},
-            FF = {"3", "2", "2", "3", "2", "2"},
-            FF_ESR = {"3", "2", "2", "3", "2", "2"})
+    @HtmlUnitNYI(IE = {"1", "0", "1", "1", "0", "1"})
     public void dialog() throws Exception {
         loadPageVerifyTitle2(test("dialog"));
     }
@@ -1165,6 +1161,39 @@ public class ElementChildNodesTest extends WebDriverTestCase {
     }
 
     /**
+     * Test {@link org.htmlunit.html.HtmlRtc}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"3", "2", "2", "3", "2", "2"})
+    public void rtc() throws Exception {
+        loadPageVerifyTitle2(test("rtc"));
+    }
+
+    /**
+     * Test {@link org.htmlunit.html.HtmlRb}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"3", "2", "2", "3", "2", "2"})
+    public void rb() throws Exception {
+        loadPageVerifyTitle2(test("rb"));
+    }
+
+    /**
+     * Test HtmlRbc.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"3", "2", "2", "3", "2", "2"})
+    public void rbc() throws Exception {
+        loadPageVerifyTitle2(test("rbc"));
+    }
+
+    /**
      * Test {@link org.htmlunit.html.HtmlRp}.
      *
      * @throws Exception if the test fails
@@ -1633,5 +1662,14 @@ public class ElementChildNodesTest extends WebDriverTestCase {
     @Alerts({"3", "2", "2", "3", "2", "2"})
     public void slot() throws Exception {
         loadPageVerifyTitle2(test("slot"));
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"3", "2", "2", "3", "2", "2"})
+    public void arbitrary() throws Exception {
+        loadPageVerifyTitle2(test("abcdefg"));
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import org.apache.commons.codec.binary.Base64;
-
 import org.htmlunit.Page;
 import org.htmlunit.WebWindow;
-import org.htmlunit.javascript.background.BackgroundJavaScriptFactory;
-import org.htmlunit.javascript.background.JavaScriptJob;
-
 import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.EvaluatorException;
 import org.htmlunit.corejs.javascript.Function;
@@ -31,6 +27,9 @@ import org.htmlunit.corejs.javascript.FunctionObject;
 import org.htmlunit.corejs.javascript.ScriptRuntime;
 import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.corejs.javascript.Undefined;
+import org.htmlunit.javascript.JavaScriptEngine;
+import org.htmlunit.javascript.background.BackgroundJavaScriptFactory;
+import org.htmlunit.javascript.background.JavaScriptJob;
 
 /**
  * The implementation of {@code WindowOrWorkerGlobalScope}
@@ -101,10 +100,10 @@ public final class WindowOrWorkerGlobalScopeMixin {
     public static Object setTimeout(final Context context, final Scriptable thisObj,
             final Object[] args, final Function function) {
         if (args.length < 1) {
-            throw ScriptRuntime.typeError("Function not provided");
+            throw JavaScriptEngine.typeError("Function not provided");
         }
 
-        final int timeout = ScriptRuntime.toInt32((args.length > 1) ? args[1] : Undefined.instance);
+        final int timeout = JavaScriptEngine.toInt32((args.length > 1) ? args[1] : Undefined.instance);
         final Object[] params = (args.length > 2)
                 ? Arrays.copyOfRange(args, 2, args.length)
                 : ScriptRuntime.emptyArgs;
@@ -125,10 +124,10 @@ public final class WindowOrWorkerGlobalScopeMixin {
     public static Object setInterval(final Context context, final Scriptable thisObj,
             final Object[] args, final Function function) {
         if (args.length < 1) {
-            throw ScriptRuntime.typeError("Function not provided");
+            throw JavaScriptEngine.typeError("Function not provided");
         }
 
-        final int timeout = ScriptRuntime.toInt32((args.length > 1) ? args[1] : Undefined.instance);
+        final int timeout = JavaScriptEngine.toInt32((args.length > 1) ? args[1] : Undefined.instance);
         final Object[] params = (args.length > 2)
                 ? Arrays.copyOfRange(args, 2, args.length)
                 : ScriptRuntime.emptyArgs;
@@ -176,6 +175,6 @@ public final class WindowOrWorkerGlobalScopeMixin {
             return webWindow.getJobManager().addJob(job, page);
         }
 
-        throw Context.reportRuntimeError("Unknown type for function.");
+        throw JavaScriptEngine.reportRuntimeError("Unknown type for function.");
     }
 }

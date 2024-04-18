@@ -323,6 +323,11 @@ bootstrap
   * License: MIT License
   * Homepage: https://getbootstrap.com/
   * More information in folder: doc/3rd-party-licenses/bootstrap
+  
+crosshair
+  * License: MIT License
+  * Homepage: https://eschmann.dev/crosshair.js/
+  * More information in folder: doc/3rd-party-licenses/crosshair
 
 harPreview
 
@@ -420,11 +425,17 @@ toc
   * Homepage: http://projects.jga.me/toc/
   * More information in folder: doc/3rd-party-licenses/toc
 
+web-vitals
+
+  * License: Apache License 2.0
+  * Homepage: https://github.com/GoogleChrome/web-vitals
+  * More information in folder: doc/3rd-party-licenses/web-vitals
+
 -------------------------------------------------------------------------------
 
 roboto
 
   * License: Apache License 2.0
   * Homepage: https://fonts.google.com/specimen/Roboto
-  * More information in folder: doc/3rd-party-licenses/Roboto
+  * More information in folder: doc/3rd-party-licenses/roboto
 

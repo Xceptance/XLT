@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,9 +27,6 @@ import java.util.List;
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import org.htmlunit.CollectingAlertHandler;
 import org.htmlunit.HttpHeader;
 import org.htmlunit.HttpMethod;
@@ -46,6 +43,8 @@ import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import org.htmlunit.util.MimeType;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * Tests for {@link HtmlAnchor}.
@@ -925,7 +924,7 @@ public class HtmlAnchor2Test extends SimpleWebTestCase {
 
         getMockWebConnection().setResponse(URL_SECOND, "{name: \"Test\"};", MimeType.APPLICATION_JSON);
 
-        final LinkedList<Page> pages = new LinkedList<Page>();
+        final LinkedList<Page> pages = new LinkedList<>();
         getWebClient().setAttachmentHandler(new AttachmentHandler() {
 
             @Override
@@ -965,7 +964,7 @@ public class HtmlAnchor2Test extends SimpleWebTestCase {
 
         getMockWebConnection().setResponse(URL_SECOND, "{name: \"Test\"};", MimeType.APPLICATION_JSON);
 
-        final LinkedList<Page> pages = new LinkedList<Page>();
+        final LinkedList<Page> pages = new LinkedList<>();
         getWebClient().setAttachmentHandler(new AttachmentHandler() {
 
             @Override
@@ -1010,7 +1009,7 @@ public class HtmlAnchor2Test extends SimpleWebTestCase {
 
         getMockWebConnection().setResponse(URL_SECOND, "{name: \"Test\"};", MimeType.APPLICATION_JSON);
 
-        final LinkedList<WebResponse> pages = new LinkedList<WebResponse>();
+        final LinkedList<WebResponse> pages = new LinkedList<>();
         getWebClient().setAttachmentHandler(new AttachmentHandler() {
 
             @Override
@@ -1054,7 +1053,7 @@ public class HtmlAnchor2Test extends SimpleWebTestCase {
 
         getMockWebConnection().setResponse(URL_SECOND, "{name: \"Test\"};", MimeType.APPLICATION_JSON);
 
-        final LinkedList<WebResponse> pages = new LinkedList<WebResponse>();
+        final LinkedList<WebResponse> pages = new LinkedList<>();
         getWebClient().setAttachmentHandler(new AttachmentHandler() {
 
             @Override
@@ -1128,7 +1127,7 @@ public class HtmlAnchor2Test extends SimpleWebTestCase {
 
         getMockWebConnection().setResponse(URL_SECOND, "{name: \"Test\"};", MimeType.APPLICATION_JSON);
 
-        final LinkedList<Page> pages = new LinkedList<Page>();
+        final LinkedList<Page> pages = new LinkedList<>();
         getWebClient().setAttachmentHandler(new AttachmentHandler() {
             @Override
             public void handleAttachment(final Page page) {
@@ -1168,7 +1167,7 @@ public class HtmlAnchor2Test extends SimpleWebTestCase {
 
         getMockWebConnection().setResponse(URL_SECOND, "{name: \"Test\"};", MimeType.APPLICATION_JSON);
 
-        final LinkedList<WebResponse> pages = new LinkedList<WebResponse>();
+        final LinkedList<WebResponse> pages = new LinkedList<>();
         getWebClient().setAttachmentHandler(new AttachmentHandler() {
             @Override
             public boolean handleAttachment(final WebResponse response) {

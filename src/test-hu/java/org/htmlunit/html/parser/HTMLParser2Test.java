@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,13 @@
  */
 package org.htmlunit.html.parser;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * Test class for {@link HTMLParser}.
@@ -54,11 +52,6 @@ public class HTMLParser2Test extends WebDriverTestCase {
      */
     @Test
     @Alerts({"\\nbeforeafter", "undefined", "undefined"})
-    @HtmlUnitNYI(CHROME = {"beforeafter", "undefined", "undefined"},
-            EDGE = {"beforeafter", "undefined", "undefined"},
-            FF = {"beforeafter", "undefined", "undefined"},
-            FF_ESR = {"beforeafter", "undefined", "undefined"},
-            IE = {"beforeafter", "undefined", "undefined"})
     public void htmlTableTextAroundTD() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -76,6 +69,76 @@ public class HTMLParser2Test extends WebDriverTestCase {
             + "</head>\n"
             + "<body onload='test()'><div id='testDiv'>\n"
             + "<table><tr>before<td></td>after</tr></table>\n"
+            + "</div></body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * Malformed HTML:
+     * &lt;/td&gt;some text&lt;/tr&gt; =&gt; text comes before the table.
+     *
+     * @throws Exception on test failure
+     */
+    @Test
+    @Alerts({"\\nabcbeforeafter", "undefined", "undefined"})
+    public void htmlTableTextAroundTD2() throws Exception {
+        final String html = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION_NORMALIZE
+            + "function test() {\n"
+            + "  var tmp = document.getElementById('testDiv');\n"
+            + "  tmp = tmp.firstChild;\n"
+            + "  log(tmp.data);\n"
+            + "  tmp = tmp.nextSibling;\n"
+            + "  log(tmp.data);\n"
+            + "  tmp = tmp.nextSibling;\n"
+            + "  log(tmp.tagName);\n"
+            + "}\n"
+            + "</script>\n"
+            + "</head>\n"
+            + "<body onload='test()'><div id='testDiv'>\n"
+            + "abc<table><tr>before<td></td>after</tr></table>\n"
+            + "</div></body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * Malformed HTML:
+     * &lt;/td&gt;some text&lt;/tr&gt; =&gt; text comes before the table.
+     *
+     * @throws Exception on test failure
+     */
+    @Test
+    @Alerts({"\\nbe", "B-for", "e", "STRONG-aft", "er", "[object\\sHTMLTableElement]"})
+    public void htmlTableTagsAroundTD() throws Exception {
+        final String html = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION_NORMALIZE
+            + "function test() {\n"
+            + "  var tmp = document.getElementById('testDiv');\n"
+            + "  tmp = tmp.firstChild;\n"
+            + "  log(tmp.data);\n"
+
+            + "  tmp = tmp.nextSibling;\n"
+            + "  log(tmp.nodeName + '-' + tmp.firstChild.data);\n"
+
+            + "  tmp = tmp.nextSibling;\n"
+            + "  log(tmp.data);\n"
+
+            + "  tmp = tmp.nextSibling;\n"
+            + "  log(tmp.nodeName + '-' + tmp.firstChild.data);\n"
+
+            + "  tmp = tmp.nextSibling;\n"
+            + "  log(tmp.data);\n"
+
+            + "  log(tmp.nextSibling);\n"
+            + "}\n"
+            + "</script>\n"
+            + "</head>\n"
+            + "<body onload='test()'><div id='testDiv'>\n"
+            + "<table><tr>be<b>for</b>e<td></td><strong>aft</strong>er</tr></table>\n"
             + "</div></body></html>";
 
         loadPageVerifyTitle2(html);
@@ -557,7 +620,6 @@ public class HTMLParser2Test extends WebDriverTestCase {
      */
     @Test
     @Alerts("Hi!")
-    @NotYetImplemented
     public void unclosedCommentsInScript() throws Exception {
         final String html = "<html><body>\n"
             + "<script><!--\n"

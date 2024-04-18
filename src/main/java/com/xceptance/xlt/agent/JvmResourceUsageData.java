@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -519,9 +519,9 @@ public class JvmResourceUsageData extends AbstractData
      * {@inheritDoc}
      */
     @Override
-    protected List<String> addValues()
+    public List<String> toList()
     {
-        final List<String> fields = super.addValues();
+        final List<String> fields = super.toList();
 
         fields.add(Double.toString(cpuUsage));
         fields.add(Long.toString(committedMemorySize));
@@ -554,7 +554,7 @@ public class JvmResourceUsageData extends AbstractData
      * {@inheritDoc}
      */
     @Override
-    protected void parseRemainingValues(final List<XltCharBuffer> values)
+    public void setRemainingValues(final List<XltCharBuffer> values)
     {
         // read and check the values
         cpuUsage = Double.parseDouble(values.get(3).toString());

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import com.xceptance.xlt.api.util.XltCharBufferUtil;
  * The class provides the convenience method {@link #getDefault()} which gives a new instance of this class for each
  * invocation.
  * </p>
- * 
+ *
  * @author Sebastian Oerding
  */
 public class DummyActionData extends ActionData
@@ -39,14 +39,14 @@ public class DummyActionData extends ActionData
      * <li>&quot;a (user: 'testUser', output: '1234567890')&quot; as stacktrace</li>
      * <li>&quot;007&quot; as agent name</li>
      * </ul>
-     * 
+     *
      * @return a new instance for each invocation with some hard coded values as described above
      */
     public static DummyActionData getDefault()
     {
         final DummyActionData returnValue = new DummyActionData();
         final String stackTrace = "a (user: 'testUser', output: '1234567890')";
-        returnValue.parseRemainingValues(XltCharBufferUtil.toList(new String[]
+        returnValue.setAllValues(XltCharBufferUtil.toList(new String[]
             {
                 "A", "actionName", "1000", "1", "true", stackTrace
             }));

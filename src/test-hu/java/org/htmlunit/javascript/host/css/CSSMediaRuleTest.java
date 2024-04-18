@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,12 @@
  */
 package org.htmlunit.javascript.host.css;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * Tests for {@link CSSMediaRule}.
@@ -533,11 +532,9 @@ public class CSSMediaRuleTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"1", "exception"},
-            FF = {"1", "0", "2", "span { color: rgb(0, 0, 0); }", "[object CSSMediaRule]",
-                  "p { background-color: rgb(255, 255, 255); }", "[object CSSMediaRule]"},
-            FF_ESR = {"1", "0", "2", "span { color: rgb(0, 0, 0); }", "[object CSSMediaRule]",
-                      "p { background-color: rgb(255, 255, 255); }", "[object CSSMediaRule]"})
+    @Alerts(DEFAULT = {"1", "0", "2", "span { color: rgb(0, 0, 0); }", "[object CSSMediaRule]",
+                       "p { background-color: rgb(255, 255, 255); }", "[object CSSMediaRule]"},
+            IE = {"1", "exception"})
     public void insertRule() throws Exception {
         final String html
             = "<html><body>\n"

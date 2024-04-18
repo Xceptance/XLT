@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,15 +19,14 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
+import org.htmlunit.corejs.javascript.Function;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.configuration.JsxSetter;
 import org.htmlunit.javascript.host.event.Event;
 import org.htmlunit.javascript.host.event.EventTarget;
-
-import org.htmlunit.corejs.javascript.Function;
-import org.htmlunit.corejs.javascript.ScriptRuntime;
 
 /**
  * A JavaScript object for {@code XMLHttpRequestEventTarget}.
@@ -47,11 +46,12 @@ public class XMLHttpRequestEventTarget extends EventTarget {
     }
 
     /**
-     * @return the constructed object
+     * JavaScript constructor.
      */
+    @Override
     @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
-    public static XMLHttpRequestEventTarget ctor() {
-        throw ScriptRuntime.typeError("Illegal constructor.");
+    public void jsConstructor() {
+        throw JavaScriptEngine.typeError("Illegal constructor.");
     }
 
     /**

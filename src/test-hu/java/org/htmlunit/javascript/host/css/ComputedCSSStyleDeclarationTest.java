@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,17 +26,17 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-
 import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import org.htmlunit.util.NameValuePair;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
 
 /**
  * Tests for {@link ComputedCSSStyleDeclaration}.
@@ -866,9 +866,7 @@ public class ComputedCSSStyleDeclarationTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"inline", "block", "none"},
-            FF = {"ruby", "ruby-text", "none"},
-            FF_ESR = {"ruby", "ruby-text", "none"},
+    @Alerts(DEFAULT = {"ruby", "ruby-text", "none"},
             IE = {"ruby", "ruby-text", "inline"})
     public void defaultDisplayValues_R() throws Exception {
         final String html = "<!DOCTYPE HTML>\n<html><body>\n"
@@ -904,10 +902,14 @@ public class ComputedCSSStyleDeclarationTest extends WebDriverTestCase {
                        "inline", "inline", "inline", "inline", "inline", "block", "inline"},
             FF = {"inline", "inline", "none", "block", "inline-block", "inline",
                   "", "inline", "inline", "inline", "inline", "block", "inline"},
+            FF_ESR = {"inline", "inline", "none", "block", "inline-block", "inline",
+                      "", "inline", "inline", "inline", "inline", "block", "inline"},
             IE = {"inline", "inline", "none", "block", "inline-block", "inline",
                   "inline", "inline", "inline", "inline", "inline", "inline", "inline"})
     @HtmlUnitNYI(FF = {"inline", "inline", "none", "block", "inline-block", "inline",
-                       "inline", "inline", "inline", "inline", "inline", "block", "inline"})
+                       "inline", "inline", "inline", "inline", "inline", "block", "inline"},
+            FF_ESR = {"inline", "inline", "none", "block", "inline-block", "inline",
+                      "inline", "inline", "inline", "inline", "inline", "block", "inline"})
     public void defaultDisplayValues_S() throws Exception {
         final String html = "<!DOCTYPE HTML>\n<html><body>\n"
             + "  <p>\n"
@@ -969,9 +971,13 @@ public class ComputedCSSStyleDeclarationTest extends WebDriverTestCase {
     @Alerts(DEFAULT = {"table", "table-row-group", "table-cell", "inline-block", "table-footer-group",
                        "table-cell", "table-header-group", "inline", "table-row", "inline", "inline"},
             FF = {"table", "table-row-group", "table-cell", "inline-block", "table-footer-group",
-                  "table-cell", "table-header-group", "inline", "table-row", "", "inline"})
+                  "table-cell", "table-header-group", "inline", "table-row", "", "inline"},
+            FF_ESR = {"table", "table-row-group", "table-cell", "inline-block", "table-footer-group",
+                      "table-cell", "table-header-group", "inline", "table-row", "", "inline"})
     @HtmlUnitNYI(FF = {"table", "table-row-group", "table-cell", "inline-block", "table-footer-group",
-                       "table-cell", "table-header-group", "inline", "table-row", "inline", "inline"})
+                       "table-cell", "table-header-group", "inline", "table-row", "inline", "inline"},
+            FF_ESR = {"table", "table-row-group", "table-cell", "inline-block", "table-footer-group",
+                      "table-cell", "table-header-group", "inline", "table-row", "inline", "inline"})
     public void defaultDisplayValues_T() throws Exception {
         final String html = "<!DOCTYPE HTML>\n<html><body>\n"
             + "  <table id='table'>\n"
@@ -1146,8 +1152,8 @@ public class ComputedCSSStyleDeclarationTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "4.05px",
-            CHROME = "3.81px",
-            EDGE = "3.822px",
+            CHROME = "3.78px",
+            EDGE = "3.78px",
             IE = "0px")
     @HtmlUnitNYI(CHROME = "1px",
             EDGE =  "1px",
@@ -1179,7 +1185,7 @@ public class ComputedCSSStyleDeclarationTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "7.55px",
             CHROME = "7.536px",
-            EDGE = "7.254px",
+            EDGE = "7.248px",
             IE = "0px")
     @HtmlUnitNYI(CHROME = "1px",
             EDGE =  "1px",
@@ -2474,7 +2480,8 @@ public class ComputedCSSStyleDeclarationTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("0 17")
+    @Alerts(DEFAULT = "0 17",
+            EDGE = "0 15")
     @HtmlUnitNYI(CHROME = "0 0",
             EDGE = "0 0",
             FF = "0 0",
@@ -2903,6 +2910,46 @@ public class ComputedCSSStyleDeclarationTest extends WebDriverTestCase {
             + "</script>\n"
 
             + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception on test failure
+     */
+    @Test
+    @Alerts(DEFAULT = {"function values() { [native code] }", "no for..of", "true"},
+            IE = "no for..of")
+    public void iterator() throws Exception {
+        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_ + "<html><head>\n"
+                + "</head>\n"
+                + "<script>\n"
+                + LOG_TITLE_FUNCTION
+                + "  function test() {\n"
+                + "    var style = window.getComputedStyle(document.body, null);\n"
+
+                + "    if (typeof Symbol != 'undefined') {\n"
+                + "      log(style[Symbol.iterator]);\n"
+                + "    }\n"
+
+                + "    if (!style.forEach) {\n"
+                + "      log('no for..of');\n"
+                + "    }\n"
+
+                + "    if (typeof Symbol === 'undefined') {\n"
+                + "      return;\n"
+                + "    }\n"
+
+                + "    var count = 0;\n"
+                + "    for (var i of style) {\n"
+                + "      count++;\n"
+                + "    }\n"
+                + "    log(count > 0);"
+                + "  }\n"
+                + "</script>\n"
+                + "</head><body onload='test()' style='display: inline'>\n"
+                + "  <div></div>\n"
+                + "</body></html>";
 
         loadPageVerifyTitle2(html);
     }

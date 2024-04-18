@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,22 +14,18 @@
  */
 package org.htmlunit.javascript;
 
-import static org.htmlunit.BrowserVersionFeatures.JS_WEBGL_CONTEXT_EVENT_CONSTANTS;
-
 import java.lang.reflect.Member;
-import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.htmlunit.BrowserVersion;
-import org.htmlunit.javascript.configuration.AbstractJavaScriptConfiguration;
-import org.htmlunit.javascript.configuration.ClassConfiguration;
-import org.htmlunit.javascript.configuration.ClassConfiguration.ConstantInfo;
-
 import org.htmlunit.corejs.javascript.FunctionObject;
 import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.corejs.javascript.ScriptableObject;
+import org.htmlunit.javascript.configuration.AbstractJavaScriptConfiguration;
+import org.htmlunit.javascript.configuration.ClassConfiguration;
+import org.htmlunit.javascript.configuration.ClassConfiguration.ConstantInfo;
 
 /**
  * A FunctionObject that returns IDs of this object and all its parent classes.
@@ -77,54 +73,21 @@ public class RecursiveFunctionObject extends FunctionObject {
      */
     @Override
     public Object[] getIds() {
-        final Set<Object> objects = new LinkedHashSet<>(Arrays.asList(super.getIds()));
+        final Set<Object> objects = new LinkedHashSet<>();
+        for (final Object obj : super.getIds()) {
+            objects.add(obj);
+        }
+
         for (Class<?> c = getMethodOrConstructor().getDeclaringClass().getSuperclass();
                 c != null; c = c.getSuperclass()) {
             final Object scripatble = getParentScope().get(c.getSimpleName(), this);
             if (scripatble instanceof Scriptable) {
-                objects.addAll(Arrays.asList(((Scriptable) scripatble).getIds()));
+                for (final Object obj : ((Scriptable) scripatble).getIds()) {
+                    objects.add(obj);
+                }
             }
         }
         return objects.toArray(new Object[0]);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getFunctionName() {
-        final String functionName = super.getFunctionName();
-        switch (functionName) {
-            case "webkitRTCPeerConnection":
-                return "RTCPeerConnection";
-
-            case "webkitSpeechRecognition":
-                return "SpeechRecognition";
-
-            case "WebKitMutationObserver":
-                return "MutationObserver";
-
-            case "webkitMediaStream":
-                return "MediaStream";
-
-            case "webkitSpeechGrammar":
-                return "SpeechGrammar";
-
-            case "webkitSpeechGrammarList":
-                return "SpeechGrammarList";
-
-            case "webkitSpeechRecognitionError":
-                return "SpeechRecognitionErrorEvent";
-
-            case "webkitSpeechRecognitionEvent":
-                return "SpeechRecognitionEvent";
-
-            case "webkitURL":
-                return "URL";
-
-            default:
-        }
-        return functionName;
     }
 
     /**
@@ -137,28 +100,23 @@ public class RecursiveFunctionObject extends FunctionObject {
             return value;
         }
 
-        final String superFunctionName = super.getFunctionName();
-        if (!"Image".equals(superFunctionName) && !"Option".equals(superFunctionName)
-                && (!"WebGLContextEvent".equals(superFunctionName)
-                        || browserVersion_.hasFeature(JS_WEBGL_CONTEXT_EVENT_CONSTANTS))) {
-            Class<?> klass = getPrototypeProperty().getClass();
+        Class<?> klass = getPrototypeProperty().getClass();
 
-            while (value == NOT_FOUND && HtmlUnitScriptable.class.isAssignableFrom(klass)) {
-                final ClassConfiguration config = AbstractJavaScriptConfiguration.getClassConfiguration(
-                        klass.asSubclass(HtmlUnitScriptable.class), browserVersion_);
-                if (config != null) {
-                    final List<ConstantInfo> constants = config.getConstants();
-                    if (constants != null) {
-                        for (final ConstantInfo constantInfo : constants) {
-                            if (constantInfo.getName().equals(name)) {
-                                value = ScriptableObject.getProperty((Scriptable) getPrototypeProperty(), name);
-                                break;
-                            }
+        while (value == NOT_FOUND && HtmlUnitScriptable.class.isAssignableFrom(klass)) {
+            final ClassConfiguration config = AbstractJavaScriptConfiguration.getClassConfiguration(
+                    klass.asSubclass(HtmlUnitScriptable.class), browserVersion_);
+            if (config != null) {
+                final List<ConstantInfo> constants = config.getConstants();
+                if (constants != null) {
+                    for (final ConstantInfo constantInfo : constants) {
+                        if (constantInfo.getName().equals(name)) {
+                            value = ScriptableObject.getProperty((Scriptable) getPrototypeProperty(), name);
+                            break;
                         }
                     }
                 }
-                klass = klass.getSuperclass();
             }
+            klass = klass.getSuperclass();
         }
         return value;
     }

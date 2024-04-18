@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,18 +19,16 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.Test;
-
 import org.htmlunit.html.DefaultElementFactory;
 import org.htmlunit.html.HtmlTitle;
 import org.htmlunit.javascript.configuration.ClassConfiguration;
 import org.htmlunit.javascript.configuration.JavaScriptConfiguration;
+import org.junit.Test;
 
 /**
  * Tests for various test cases.
@@ -69,7 +67,7 @@ public final class TestCaseTest {
                             final String relativePath = file.getAbsolutePath().substring(
                                     new File(".").getAbsolutePath().length() - 1);
                             final HashSet<String> tags =
-                                    new HashSet<String>(Arrays.asList(DefaultElementFactory.SUPPORTED_TAGS_));
+                                    new HashSet<>(DefaultElementFactory.SUPPORTED_TAGS_);
                             // title tag is special
                             tags.remove(HtmlTitle.TAG_NAME);
                             checkLines(relativePath, line, lines, "xmp", tags);
@@ -99,6 +97,34 @@ public final class TestCaseTest {
                 names.add(config.getClassName());
             }
         }
+        return names;
+    }
+
+    /**
+     * Returns list of all constructors defined.
+     * @return the list
+     * @throws Exception if an error occurs.
+     */
+    public static Set<String> getAllConstructorNames() throws Exception {
+        final Set<String> names = new HashSet<>();
+
+        for (final BrowserVersion browser : BrowserVersion.ALL_SUPPORTED_BROWSERS) {
+            final JavaScriptConfiguration jsConfig = JavaScriptConfiguration.getInstance(browser);
+            for (final ClassConfiguration config : jsConfig.getAll()) {
+                if (config.getJsConstructor() != null) {
+                    names.add(config.getJsConstructor().getKey());
+                }
+                else {
+                    names.add(config.getClassName());
+                }
+                if (config.getJsConstructorAlias() != null) {
+                    names.add(config.getJsConstructorAlias());
+                }
+            }
+        }
+
+        names.add("Image");
+        names.add("Option");
 
         return names;
     }

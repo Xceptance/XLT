@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,17 +21,15 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import java.nio.charset.StandardCharsets;
 
+import org.htmlunit.corejs.javascript.ScriptableObject;
+import org.htmlunit.corejs.javascript.typedarrays.NativeArrayBuffer;
+import org.htmlunit.corejs.javascript.typedarrays.NativeUint8Array;
 import org.htmlunit.javascript.HtmlUnitScriptable;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
-
-import org.htmlunit.corejs.javascript.Context;
-import org.htmlunit.corejs.javascript.ScriptableObject;
-import org.htmlunit.corejs.javascript.Undefined;
-import org.htmlunit.corejs.javascript.typedarrays.NativeArrayBuffer;
-import org.htmlunit.corejs.javascript.typedarrays.NativeUint8Array;
 
 /**
  * A JavaScript object for {@code TextEncoder}.
@@ -45,8 +43,14 @@ public class TextEncoder extends HtmlUnitScriptable {
     /**
      * Creates an instance.
      */
-    @JsxConstructor
     public TextEncoder() {
+    }
+
+    /**
+     * JavaScript constructor.
+     */
+    @JsxConstructor
+    public void jsConstructor() {
     }
 
     /**
@@ -63,7 +67,7 @@ public class TextEncoder extends HtmlUnitScriptable {
      */
     @JsxFunction
     public NativeUint8Array encode(final Object toEncode) {
-        if (Undefined.isUndefined(toEncode)) {
+        if (JavaScriptEngine.isUndefined(toEncode)) {
             final NativeUint8Array result = new NativeUint8Array(0);
             result.setParentScope(getParentScope());
             result.setPrototype(ScriptableObject.getClassPrototype(getWindow(this), result.getClassName()));
@@ -75,7 +79,7 @@ public class TextEncoder extends HtmlUnitScriptable {
             txt = "null";
         }
         else {
-            txt = Context.toString(toEncode);
+            txt = JavaScriptEngine.toString(toEncode);
         }
 
         final byte[] bytes = txt.getBytes(StandardCharsets.UTF_8);

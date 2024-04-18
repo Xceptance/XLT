@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,14 +53,14 @@ public class HtmlTestViaFile
             final StringWebResponse webResponse = new StringWebResponse(IOUtils.toString(in), new URL("http://www.goo.com"));
 
             // create new web client instance
-            try (final WebClient webClient = new WebClient(BrowserVersion.CHROME))
-            {
-                // deactivate JS
-                webClient.getOptions().setJavaScriptEnabled(false);
+            @SuppressWarnings("resource")
+            final WebClient webClient = new WebClient(BrowserVersion.CHROME);
 
-                // return page created by the web client's page creator
-                return (HtmlPage) webClient.getPageCreator().createPage(webResponse, webClient.getCurrentWindow());
-            }
+            // deactivate JS
+            webClient.getOptions().setJavaScriptEnabled(false);
+
+            // return page created by the web client's page creator
+            return (HtmlPage) webClient.getPageCreator().createPage(webResponse, webClient.getCurrentWindow());
         }
     }
 }

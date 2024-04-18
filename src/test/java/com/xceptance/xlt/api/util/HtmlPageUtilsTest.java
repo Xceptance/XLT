@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1681,14 +1681,14 @@ public class HtmlPageUtilsTest
      */
     public HtmlPage getHtmlPage(final String htmlSource) throws FailingHttpStatusCodeException, MalformedURLException, IOException
     {
-        try (final WebClient webClient = new WebClient(BrowserVersion.CHROME))
-        {
-            final MockWebConnection connection = new MockWebConnection();
-            connection.setDefaultResponse(htmlSource);
-            webClient.setWebConnection(connection);
+        @SuppressWarnings("resource")
+        final WebClient webClient = new WebClient(BrowserVersion.CHROME);
 
-            return webClient.getPage("http://localhost/");
-        }
+        final MockWebConnection connection = new MockWebConnection();
+        connection.setDefaultResponse(htmlSource);
+        webClient.setWebConnection(connection);
+
+        return webClient.getPage("http://localhost/");
     }
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -95,6 +95,8 @@ public class DiffReportGeneratorConfiguration extends AbstractConfiguration
         specs.add(new ElementSpecification("/testreport/requests/request", "name"));
         specs.add(new ElementSpecification("/testreport/pageLoadTimings/pageLoadTiming", "name"));
         specs.add(new ElementSpecification("/testreport/customTimers/customTimer", "name"));
+        specs.add(new ElementSpecification("/testreport/customValues/customValue", "name"));
+        specs.add(new ElementSpecification("/testreport/webVitalsList/webVitals", "name"));
         specs.add(new ElementSpecification("/testreport/summary/*", "name"));
 
         return specs;

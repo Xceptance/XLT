@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,16 +24,14 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.htmlunit.corejs.javascript.ScriptableObject;
 import org.htmlunit.html.DomNode;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstant;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
-
-import org.htmlunit.corejs.javascript.ScriptRuntime;
-import org.htmlunit.corejs.javascript.ScriptableObject;
-import org.htmlunit.corejs.javascript.Undefined;
 
 /**
  * JavaScript object representing a Keyboard Event.
@@ -818,7 +816,7 @@ public class KeyboardEvent extends UIEvent {
     public static final int DOM_VK_WIN_OEM_CLEAR = 254;
 
     /**
-     * For {@link #KEYDOWN} and {@link #KEYUP}, this map stores {@link #setKeyCode(int)} associated with
+     * For {@link #TYPE_KEY_DOWN} and {@link #TYPE_KEY_UP}, this map stores {@link #setKeyCode(int)} associated with
      * the character (if they are not the same).
      * You can verify this <a href="http://www.asquare.net/javascript/tests/KeyCode.html">here</a>
      */
@@ -1061,67 +1059,67 @@ public class KeyboardEvent extends UIEvent {
     public void jsConstructor(final String type, final ScriptableObject details) {
         super.jsConstructor(type, details);
 
-        if (details != null && !Undefined.isUndefined(details)) {
+        if (details != null && !JavaScriptEngine.isUndefined(details)) {
 
             final Object key = details.get("key", details);
             if (!isMissingOrUndefined(key)) {
-                setKey(ScriptRuntime.toString(key));
+                setKey(JavaScriptEngine.toString(key));
             }
 
             final Object code = details.get("code", details);
             if (!isMissingOrUndefined(code)) {
-                setCode(ScriptRuntime.toString(code));
+                setCode(JavaScriptEngine.toString(code));
             }
 
             final Object location = details.get("location", details);
             if (!isMissingOrUndefined(location)) {
-                setLocation(ScriptRuntime.toInt32(location));
+                setLocation(JavaScriptEngine.toInt32(location));
             }
 
             final Object ctrlKey = details.get("ctrlKey", details);
             if (!isMissingOrUndefined(ctrlKey)) {
-                setCtrlKey(ScriptRuntime.toBoolean(ctrlKey));
+                setCtrlKey(JavaScriptEngine.toBoolean(ctrlKey));
             }
 
             final Object shiftKey = details.get("shiftKey", details);
             if (!isMissingOrUndefined(shiftKey)) {
-                setShiftKey(ScriptRuntime.toBoolean(shiftKey));
+                setShiftKey(JavaScriptEngine.toBoolean(shiftKey));
             }
 
             final Object altKey = details.get("altKey", details);
             if (!isMissingOrUndefined(altKey)) {
-                setAltKey(ScriptRuntime.toBoolean(altKey));
+                setAltKey(JavaScriptEngine.toBoolean(altKey));
             }
 
             final Object metaKey = details.get("metaKey", details);
             if (!isMissingOrUndefined(metaKey)) {
-                setMetaKey(ScriptRuntime.toBoolean(metaKey));
+                setMetaKey(JavaScriptEngine.toBoolean(metaKey));
             }
 
             final Object repeat = details.get("repeat", details);
             if (!isMissingOrUndefined(repeat)) {
-                setRepeat(ScriptRuntime.toBoolean(repeat));
+                setRepeat(JavaScriptEngine.toBoolean(repeat));
             }
 
             final Object isComposing = details.get("isComposing", details);
             if (!isMissingOrUndefined(isComposing)) {
-                setIsComposing(ScriptRuntime.toBoolean(isComposing));
+                setIsComposing(JavaScriptEngine.toBoolean(isComposing));
             }
 
             final Object charCode = details.get("charCode", details);
             if (!isMissingOrUndefined(charCode)) {
-                setCharCode(ScriptRuntime.toInt32(charCode));
+                setCharCode(JavaScriptEngine.toInt32(charCode));
             }
 
             final Object keyCode = details.get("keyCode", details);
             if (!isMissingOrUndefined(keyCode)) {
-                setKeyCode(ScriptRuntime.toInt32(keyCode));
+                setKeyCode(JavaScriptEngine.toInt32(keyCode));
             }
 
             if (getBrowserVersion().hasFeature(JS_EVENT_KEYBOARD_CTOR_WHICH)) {
                 final Object which = details.get("which", details);
                 if (!isMissingOrUndefined(which)) {
-                    setWhich(ScriptRuntime.toInt32(which));
+                    setWhich(JavaScriptEngine.toInt32(which));
                 }
             }
         }
@@ -1186,7 +1184,8 @@ public class KeyboardEvent extends UIEvent {
      * Returns the numeric keyCode of the key pressed, or the charCode for an alphanumeric key pressed.
      * @return the numeric keyCode of the key pressed, or the charCode for an alphanumeric key pressed
      */
-    @JsxGetter
+    @JsxGetter(IE)
+    @Override
     public int getWhich() {
         return which_;
     }

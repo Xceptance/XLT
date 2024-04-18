@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,8 @@
  */
 package org.htmlunit;
 
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 import static org.junit.Assert.assertArrayEquals;
 
 import java.net.URL;
@@ -27,19 +27,18 @@ import java.util.List;
 import java.util.zip.Deflater;
 
 import org.apache.commons.io.IOUtils;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.htmlunit.HtmlUnitDriver;
-
 import org.htmlunit.html.HtmlInlineFrame;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 
 /**
  * Tests for {@link WebClient} using WebDriverTestCase.
@@ -543,7 +542,7 @@ public class WebClient3Test extends WebDriverTestCase {
     @NotYetImplemented
     public void javascriptContentDetectorContentTypeApplicationJavascript() throws Exception {
         final MockWebConnection conn = getMockWebConnection();
-        conn.setDefaultResponse("<script>alert('executed')</script>", 200, "OK", MimeType.APPLICATION_JAVASCRIPT);
+        conn.setDefaultResponse("<script>alert('executed')</script>", 200, "OK", MimeType.TEXT_JAVASCRIPT);
         loadPageWithAlerts2(URL_FIRST);
     }
 

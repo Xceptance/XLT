@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -236,9 +236,9 @@ public final class HtmlUnitCommandAdapter extends AbstractCommandAdapter impleme
         final HtmlElement element = finder.findElement(page, elementLocator);
         checkIsTrue("Cannot interact with invisible elements", HtmlUnitElementUtils.isVisible(element));
 
-        page = HtmlUnitElementUtils.fireMouseEvent(element, "mousedown", coordX, coordY, MouseEvent.BUTTON_RIGHT);
-        page = HtmlUnitElementUtils.fireMouseEvent(element, "mouseup", coordX, coordY, MouseEvent.BUTTON_RIGHT);
-        page = HtmlUnitElementUtils.fireMouseEvent(element, "contextmenu", coordX, coordY, MouseEvent.BUTTON_RIGHT);
+        page = HtmlUnitElementUtils.fireMouseEvent(element, "mousedown", coordX, coordY, MouseEvent.BUTTON_RIGHT, 1);
+        page = HtmlUnitElementUtils.fireMouseEvent(element, "mouseup", coordX, coordY, MouseEvent.BUTTON_RIGHT, 1);
+        page = HtmlUnitElementUtils.fireMouseEvent(element, "contextmenu", coordX, coordY, MouseEvent.BUTTON_RIGHT, 0);
 
         return page;
     }
@@ -408,7 +408,7 @@ public final class HtmlUnitCommandAdapter extends AbstractCommandAdapter impleme
         final HtmlElement element = finder.findElement(getCurrentPage(), elementLocator);
         checkIsTrue("Cannot interact with invisible elements", HtmlUnitElementUtils.isVisible(element));
 
-        return HtmlUnitElementUtils.fireMouseEvent(element, MouseEvent.TYPE_MOUSE_DOWN, coordX, coordY);
+        return HtmlUnitElementUtils.fireMouseEvent(element, MouseEvent.TYPE_MOUSE_DOWN, coordX, coordY, MouseEvent.BUTTON_LEFT, 1);
     }
 
     /**
@@ -448,7 +448,7 @@ public final class HtmlUnitCommandAdapter extends AbstractCommandAdapter impleme
         final HtmlElement element = finder.findElement(getCurrentPage(), elementLocator);
         checkIsTrue("Cannot interact with invisible elements", HtmlUnitElementUtils.isVisible(element));
 
-        return HtmlUnitElementUtils.fireMouseEvent(element, MouseEvent.TYPE_MOUSE_MOVE, coordX, coordY);
+        return HtmlUnitElementUtils.fireMouseEvent(element, MouseEvent.TYPE_MOUSE_MOVE, coordX, coordY, 0, 0);
     }
 
     /**
@@ -516,7 +516,7 @@ public final class HtmlUnitCommandAdapter extends AbstractCommandAdapter impleme
         final HtmlElement element = finder.findElement(getCurrentPage(), elementLocator);
         checkIsTrue("Cannot interact with invisible elements", HtmlUnitElementUtils.isVisible(element));
 
-        return HtmlUnitElementUtils.fireMouseEvent(element, MouseEvent.TYPE_MOUSE_UP, coordX, coordY);
+        return HtmlUnitElementUtils.fireMouseEvent(element, MouseEvent.TYPE_MOUSE_UP, coordX, coordY, MouseEvent.BUTTON_LEFT, 1);
     }
 
     /**

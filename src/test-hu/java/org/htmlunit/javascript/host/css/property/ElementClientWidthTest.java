@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,12 @@
  */
 package org.htmlunit.javascript.host.css.property;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * Unit tests for {@code offsetWidth} of an element.
@@ -1291,6 +1290,17 @@ public class ElementClientWidthTest extends WebDriverTestCase {
     }
 
     /**
+     * Test {@link org.htmlunit.html.HtmlRb}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("0")
+    public void rb() throws Exception {
+        loadPageVerifyTitle2(test("rb"));
+    }
+
+    /**
      * Test {@link org.htmlunit.html.HtmlRp}.
      *
      * @throws Exception if the test fails
@@ -1308,10 +1318,19 @@ public class ElementClientWidthTest extends WebDriverTestCase {
      */
     @Test
     @Alerts("0")
-    @HtmlUnitNYI(CHROME = "-16",
-            EDGE = "-16")
     public void rt() throws Exception {
         loadPageVerifyTitle2(test("rt"));
+    }
+
+    /**
+     * Test {@link org.htmlunit.html.HtmlRtc}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("0")
+    public void rtc() throws Exception {
+        loadPageVerifyTitle2(test("rtc"));
     }
 
     /**
@@ -1364,7 +1383,8 @@ public class ElementClientWidthTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "22",
+    @Alerts(CHROME = "22",
+            EDGE = "20",
             FF = "26",
             FF_ESR = "26",
             IE = "23")
@@ -1598,7 +1618,8 @@ public class ElementClientWidthTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "168",
+    @Alerts(CHROME = "168",
+            EDGE = "166",
             FF = "161",
             FF_ESR = "161",
             IE = "164")
@@ -1759,8 +1780,8 @@ public class ElementClientWidthTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "173",
-            FF = "145",
-            FF_ESR = "145",
+            FF = "154",
+            FF_ESR = "154",
             IE = "143")
     public void input() throws Exception {
         loadPageVerifyTitle2(test("input"));
@@ -1835,8 +1856,8 @@ public class ElementClientWidthTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "173",
-            FF = "145",
-            FF_ESR = "145",
+            FF = "154",
+            FF_ESR = "154",
             IE = "145")
     @HtmlUnitNYI(IE = "143")
     public void inputPassword() throws Exception {
@@ -1882,8 +1903,8 @@ public class ElementClientWidthTest extends WebDriverTestCase {
     @Test
     @Alerts(CHROME = "173",
             EDGE = "173",
-            FF = "145",
-            FF_ESR = "145",
+            FF = "154",
+            FF_ESR = "154",
             IE = "143")
     public void inputSelect() throws Exception {
         loadPageVerifyTitle2(testInput("select"));
@@ -1915,8 +1936,8 @@ public class ElementClientWidthTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "173",
-            FF = "145",
-            FF_ESR = "145",
+            FF = "154",
+            FF_ESR = "154",
             IE = "143")
     public void inputText() throws Exception {
         loadPageVerifyTitle2(testInput("text"));

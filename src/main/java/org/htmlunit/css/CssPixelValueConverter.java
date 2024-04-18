@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import static org.htmlunit.css.CssStyleSheet.AUTO;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.math.NumberUtils;
-
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.html.HtmlCanvas;
@@ -51,7 +50,10 @@ public final class CssPixelValueConverter {
      * @see #pixelValue(String)
      */
     public static int pixelValue(final DomElement element, final CssValue value) {
-        return pixelValue(element, value, false);
+        final ComputedCssStyleDeclaration style =
+                element.getPage().getEnclosingWindow().getComputedStyle(element, null);
+        final String s = value.get(style);
+        return pixelValue(element, s, value, false);
     }
 
     /**
@@ -66,11 +68,11 @@ public final class CssPixelValueConverter {
     public static String pixelString(final DomElement element, final CssValue value) {
         final ComputedCssStyleDeclaration style =
                 element.getPage().getEnclosingWindow().getComputedStyle(element, null);
-        final String s = value.get(style);
-        if (s.endsWith("px")) {
-            return s;
+        final String styleValue = value.get(style);
+        if (styleValue.endsWith("px")) {
+            return styleValue;
         }
-        return pixelValue(element, value) + "px";
+        return pixelValue(element, styleValue, value, false) + "px";
     }
 
     /**
@@ -118,22 +120,29 @@ public final class CssPixelValueConverter {
         return Math.round(i);
     }
 
-    private static int pixelValue(final DomElement element, final CssValue value, final boolean percentMode) {
-        final ComputedCssStyleDeclaration style =
-                element.getPage().getEnclosingWindow().getComputedStyle(element, null);
-        final String s = value.get(style);
-        if (s.endsWith("%") || (s.isEmpty() && element instanceof HtmlHtml)) {
-            final float i = NumberUtils.toFloat(TO_FLOAT_PATTERN.matcher(s).replaceAll("$1"), 100);
+    private static int pixelValue(final DomElement element,
+            final String styleValue, final CssValue value, final boolean percentMode) {
+        if (styleValue.endsWith("%") || (styleValue.isEmpty() && element instanceof HtmlHtml)) {
+            final float i = NumberUtils.toFloat(TO_FLOAT_PATTERN.matcher(styleValue).replaceAll("$1"), 100);
 
             final DomNode parent = element.getParentNode();
-            final int absoluteValue = (parent instanceof DomElement)
-                            ? pixelValue((DomElement) parent, value, true) : value.getWindowDefaultValue();
+            final int absoluteValue;
+            if (parent instanceof DomElement) {
+                final DomElement parentElem = (DomElement) parent;
+                final ComputedCssStyleDeclaration style =
+                        parentElem.getPage().getEnclosingWindow().getComputedStyle(parentElem, null);
+                final String parentStyleValue = value.get(style);
+                absoluteValue = pixelValue((DomElement) parent, parentStyleValue, value, true);
+            }
+            else {
+                absoluteValue = value.getWindowDefaultValue();
+            }
             return  Math.round((i / 100f) * absoluteValue);
         }
-        if (AUTO.equals(s)) {
+        if (AUTO.equals(styleValue)) {
             return value.getDefaultValue();
         }
-        if (s.isEmpty()) {
+        if (styleValue.isEmpty()) {
             if (element instanceof HtmlCanvas) {
                 return value.getWindowDefaultValue();
             }
@@ -145,12 +154,16 @@ public final class CssPixelValueConverter {
                 if (parent == null || parent instanceof HtmlHtml) {
                     return value.getWindowDefaultValue();
                 }
-                return pixelValue((DomElement) parent, value, true);
+                final DomElement parentElem = (DomElement) parent;
+                final ComputedCssStyleDeclaration style =
+                        parentElem.getPage().getEnclosingWindow().getComputedStyle(parentElem, null);
+                final String parentStyleValue = value.get(style);
+                return pixelValue(parentElem, parentStyleValue, value, true);
             }
 
             return 0;
         }
-        return pixelValue(s);
+        return pixelValue(styleValue);
     }
 
     /**

@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 7.0.0
+#Version 8.0.0
 
 CLSS public abstract com.xceptance.xlt.api.actions.AbstractAction
 cons protected init(com.xceptance.xlt.api.actions.AbstractAction,java.lang.String)
@@ -275,20 +275,15 @@ CLSS public abstract com.xceptance.xlt.api.engine.AbstractData
 cons public init(char)
 cons public init(java.lang.String,char)
 intf com.xceptance.xlt.api.engine.Data
-meth protected abstract void parseRemainingValues(java.util.List<com.xceptance.xlt.api.util.XltCharBuffer>)
-meth protected int getMinNoCSVElements()
-meth protected java.util.List<java.lang.String> addValues()
-meth protected void parseBaseValues(java.util.List<com.xceptance.xlt.api.util.XltCharBuffer>)
 meth public char getTypeCode()
-meth public final java.lang.StringBuilder toCSV()
-meth public final void baseValuesFromCSV(com.xceptance.xlt.api.util.SimpleArrayList<com.xceptance.xlt.api.util.XltCharBuffer>,com.xceptance.xlt.api.util.XltCharBuffer)
-meth public final void parseValues(com.xceptance.xlt.api.util.SimpleArrayList<com.xceptance.xlt.api.util.XltCharBuffer>)
-meth public final void remainingValuesFromCSV(com.xceptance.xlt.api.util.SimpleArrayList<com.xceptance.xlt.api.util.XltCharBuffer>)
+meth public final void setAllValues(java.util.List<com.xceptance.xlt.api.util.XltCharBuffer>)
 meth public java.lang.String getAgentName()
 meth public java.lang.String getName()
 meth public java.lang.String getTransactionName()
+meth public java.util.List<java.lang.String> toList()
 meth public long getTime()
 meth public void setAgentName(java.lang.String)
+meth public void setBaseValues(java.util.List<com.xceptance.xlt.api.util.XltCharBuffer>)
 meth public void setName(java.lang.String)
 meth public void setTime(long)
 meth public void setTransactionName(java.lang.String)
@@ -310,26 +305,24 @@ hfds TYPE_CODE
 CLSS public com.xceptance.xlt.api.engine.CustomValue
 cons public init()
 cons public init(java.lang.String)
-meth protected int getMinNoCSVElements()
-meth protected java.util.List<java.lang.String> addValues()
-meth protected void parseRemainingValues(java.util.List<com.xceptance.xlt.api.util.XltCharBuffer>)
 meth public double getValue()
+meth public java.util.List<java.lang.String> toList()
+meth public void setRemainingValues(java.util.List<com.xceptance.xlt.api.util.XltCharBuffer>)
 meth public void setValue(double)
 supr com.xceptance.xlt.api.engine.AbstractData
 hfds TYPE_CODE,value
 
 CLSS public abstract interface com.xceptance.xlt.api.engine.Data
-fld public final static char DELIMITER = ','
 meth public abstract char getTypeCode()
 meth public abstract java.lang.String getAgentName()
 meth public abstract java.lang.String getName()
 meth public abstract java.lang.String getTransactionName()
-meth public abstract java.lang.StringBuilder toCSV()
+meth public abstract java.util.List<java.lang.String> toList()
 meth public abstract long getTime()
-meth public abstract void baseValuesFromCSV(com.xceptance.xlt.api.util.SimpleArrayList<com.xceptance.xlt.api.util.XltCharBuffer>,com.xceptance.xlt.api.util.XltCharBuffer)
-meth public abstract void remainingValuesFromCSV(com.xceptance.xlt.api.util.SimpleArrayList<com.xceptance.xlt.api.util.XltCharBuffer>)
 meth public abstract void setAgentName(java.lang.String)
+meth public abstract void setBaseValues(java.util.List<com.xceptance.xlt.api.util.XltCharBuffer>)
 meth public abstract void setName(java.lang.String)
+meth public abstract void setRemainingValues(java.util.List<com.xceptance.xlt.api.util.XltCharBuffer>)
 meth public abstract void setTime(long)
 meth public abstract void setTransactionName(java.lang.String)
 
@@ -354,12 +347,11 @@ meth public abstract !hasdefault int value()
 CLSS public com.xceptance.xlt.api.engine.EventData
 cons public init()
 cons public init(java.lang.String)
-meth protected int getMinNoCSVElements()
-meth protected java.util.List<java.lang.String> addValues()
-meth protected void parseRemainingValues(java.util.List<com.xceptance.xlt.api.util.XltCharBuffer>)
 meth public java.lang.String getMessage()
 meth public java.lang.String getTestCaseName()
+meth public java.util.List<java.lang.String> toList()
 meth public void setMessage(java.lang.String)
+meth public void setRemainingValues(java.util.List<com.xceptance.xlt.api.util.XltCharBuffer>)
 meth public void setTestCaseName(java.lang.String)
 supr com.xceptance.xlt.api.engine.AbstractData
 hfds TYPE_CODE,message,testCaseName
@@ -409,9 +401,6 @@ CLSS public com.xceptance.xlt.api.engine.RequestData
 cons public init()
 cons public init(java.lang.String)
 fld public final static com.xceptance.xlt.api.util.XltCharBuffer UNKNOWN_HOST
-meth protected int getMinNoCSVElements()
-meth protected java.util.List<java.lang.String> addValues()
-meth protected void parseRemainingValues(java.util.List<com.xceptance.xlt.api.util.XltCharBuffer>)
 meth public com.xceptance.xlt.api.util.XltCharBuffer getContentType()
 meth public com.xceptance.xlt.api.util.XltCharBuffer getFormData()
 meth public com.xceptance.xlt.api.util.XltCharBuffer getFormDataEncoding()
@@ -433,6 +422,7 @@ meth public int hashCodeOfUrlWithoutFragment()
 meth public java.lang.String getRequestId()
 meth public java.lang.String getResponseId()
 meth public java.lang.String[] getIpAddresses()
+meth public java.util.List<java.lang.String> toList()
 meth public void setBytesReceived(int)
 meth public void setBytesSent(int)
 meth public void setConnectTime(int)
@@ -447,6 +437,7 @@ meth public void setHttpMethod(com.xceptance.xlt.api.util.XltCharBuffer)
 meth public void setHttpMethod(java.lang.String)
 meth public void setIpAddresses(java.lang.String[])
 meth public void setReceiveTime(int)
+meth public void setRemainingValues(java.util.List<com.xceptance.xlt.api.util.XltCharBuffer>)
 meth public void setRequestId(com.xceptance.xlt.api.util.XltCharBuffer)
 meth public void setRequestId(java.lang.String)
 meth public void setResponseCode(int)
@@ -524,13 +515,12 @@ meth public abstract void shutdown()
 CLSS public abstract com.xceptance.xlt.api.engine.TimerData
 cons public init(char)
 cons public init(java.lang.String,char)
-meth protected int getMinNoCSVElements()
-meth protected java.util.List<java.lang.String> addValues()
-meth protected void parseRemainingValues(java.util.List<com.xceptance.xlt.api.util.XltCharBuffer>)
 meth public boolean hasFailed()
 meth public int getRunTime()
+meth public java.util.List<java.lang.String> toList()
 meth public long getEndTime()
 meth public void setFailed(boolean)
+meth public void setRemainingValues(java.util.List<com.xceptance.xlt.api.util.XltCharBuffer>)
 meth public void setRunTime(int)
 meth public void setRunTime(long)
 supr com.xceptance.xlt.api.engine.AbstractData
@@ -539,22 +529,31 @@ hfds failed,runTime
 CLSS public com.xceptance.xlt.api.engine.TransactionData
 cons public init()
 cons public init(java.lang.String)
-meth protected int getMinNoCSVElements()
-meth protected java.util.List<java.lang.String> addValues()
-meth protected void parseRemainingValues(java.util.List<com.xceptance.xlt.api.util.XltCharBuffer>)
 meth public java.lang.String getDirectoryName()
 meth public java.lang.String getDumpDirectoryPath()
 meth public java.lang.String getFailedActionName()
 meth public java.lang.String getFailureMessage()
 meth public java.lang.String getFailureStackTrace()
 meth public java.lang.String getTestUserNumber()
+meth public java.util.List<java.lang.String> toList()
 meth public void setDirectoryName(java.lang.String)
 meth public void setFailedActionName(java.lang.String)
 meth public void setFailureStackTrace(java.lang.String)
 meth public void setFailureStackTrace(java.lang.Throwable)
+meth public void setRemainingValues(java.util.List<com.xceptance.xlt.api.util.XltCharBuffer>)
 meth public void setTestUserNumber(java.lang.String)
 supr com.xceptance.xlt.api.engine.TimerData
 hfds TYPE_CODE,directoryName,failedActionName,stackTrace,testUserNumber
+
+CLSS public com.xceptance.xlt.api.engine.WebVitalData
+cons public init()
+cons public init(java.lang.String)
+meth public double getValue()
+meth public java.util.List<java.lang.String> toList()
+meth public void setRemainingValues(java.util.List<com.xceptance.xlt.api.util.XltCharBuffer>)
+meth public void setValue(double)
+supr com.xceptance.xlt.api.engine.AbstractData
+hfds TYPE_CODE,value
 
 CLSS public abstract com.xceptance.xlt.api.engine.scripting.AbstractHtmlUnitActionsModule
 cons public init()
@@ -1977,6 +1976,8 @@ meth public static com.xceptance.xlt.api.validators.ContentLengthValidator getIn
 meth public void validate(com.xceptance.xlt.api.htmlunit.LightWeightPage)
 meth public void validate(org.htmlunit.html.HtmlPage)
 supr java.lang.Object
+hfds PROPERTY_NAME
+hcls ContentLengthValidator_Singleton,DisabledContentLengthValidator
 
 CLSS public com.xceptance.xlt.api.validators.HtmlEndTagValidator
 meth public static com.xceptance.xlt.api.validators.HtmlEndTagValidator getInstance()
@@ -1984,8 +1985,8 @@ meth public void validate(com.xceptance.xlt.api.htmlunit.LightWeightPage)
 meth public void validate(java.lang.String)
 meth public void validate(org.htmlunit.html.HtmlPage)
 supr java.lang.Object
-hfds CL_HTML_REGEX,REGULAR_TRAILING_CONTENT_REGEX,pattern,trailingContentPattern
-hcls HtmlEndTagValidator_Singleton
+hfds CL_HTML_REGEX,PROPERTY_NAME,REGULAR_TRAILING_CONTENT_REGEX,pattern,trailingContentPattern
+hcls DisabledHtmlEndTagValidator,HtmlEndTagValidator_Singleton
 
 CLSS public com.xceptance.xlt.api.validators.HttpResponseCodeValidator
 cons public init()
@@ -2014,8 +2015,8 @@ meth public void validate(com.xceptance.xlt.api.htmlunit.LightWeightPage) throws
 meth public void validate(java.lang.String) throws java.lang.Exception
 meth public void validate(org.htmlunit.html.HtmlPage) throws java.lang.Exception
 supr java.lang.Object
-hfds breakOnErrors,breakOnWarnings,enabled,propertyName
-hcls LocalEntityResolver,LocalErrorHandler,XHTMLValidator_Singleton
+hfds PROPERTY_NAME,breakOnErrors,breakOnWarnings
+hcls DisabledXHTMLValidator,LocalEntityResolver,LocalErrorHandler,XHTMLValidator_Singleton
 
 CLSS public com.xceptance.xlt.api.webdriver.XltChromeDriver
 cons public init()
@@ -2029,7 +2030,7 @@ meth public static com.xceptance.xlt.api.webdriver.XltChromeDriver$Builder xltBu
 meth public void close()
 meth public void quit()
 supr org.openqa.selenium.chrome.ChromeDriver
-hfds CONNECT_RETRY_BASE_TIMEOUT,CONNECT_RETRY_COUNT,CONNECT_RETRY_TIMEOUT_FACTOR,EXTENSION_FILE_ENDING,EXTENSION_FILE_NAME,FIELD_NAME_ENVIRONMENT,HEADLESS_ENABLED,IGNORE_MISSING_DATA,LOG,PROPERTY_DOMAIN,PROPERTY_HEADLESS,PROPERTY_IGNORE_MISSING_DATA,PROPERTY_RECORD_INCOMPLETE,RECORD_INCOMPLETE_ENABLED,connectionHandler,extensionFile
+hfds CONNECT_RETRY_BASE_TIMEOUT,CONNECT_RETRY_COUNT,CONNECT_RETRY_TIMEOUT_FACTOR,EXTENSION_FILE_ENDING,EXTENSION_FILE_NAME,FIELD_NAME_ENVIRONMENT,HEADLESS_ENABLED,IGNORE_MISSING_DATA,LOG,PROPERTY_DOMAIN,PROPERTY_HEADLESS,PROPERTY_IGNORE_MISSING_DATA,PROPERTY_RECORD_INCOMPLETE,PROPERTY_USE_SESSION_STORAGE,RECORD_INCOMPLETE_ENABLED,USE_SESSION_STORAGE,connectionHandler,extensionFile
 
 CLSS public final static com.xceptance.xlt.api.webdriver.XltChromeDriver$Builder
  outer com.xceptance.xlt.api.webdriver.XltChromeDriver
@@ -2368,6 +2369,12 @@ meth public void register(java.util.function.Supplier<org.openqa.selenium.Creden
 CLSS public abstract interface org.openqa.selenium.HasCapabilities
 meth public abstract org.openqa.selenium.Capabilities getCapabilities()
 
+CLSS public abstract interface org.openqa.selenium.HasDownloads
+meth public abstract java.util.List<java.lang.String> getDownloadableFiles()
+meth public abstract void deleteDownloadableFiles()
+meth public abstract void downloadFile(java.lang.String,java.nio.file.Path) throws java.io.IOException
+meth public void requireDownloadsEnabled(org.openqa.selenium.Capabilities)
+
 CLSS public abstract interface org.openqa.selenium.JavascriptExecutor
 meth public !varargs java.lang.Object executeScript(org.openqa.selenium.ScriptKey,java.lang.Object[])
 meth public abstract !varargs java.lang.Object executeAsyncScript(java.lang.String,java.lang.Object[])
@@ -2428,6 +2435,7 @@ fld protected org.openqa.selenium.chromium.HasCasting casting
 fld protected org.openqa.selenium.chromium.HasCdp cdp
 fld public final static java.util.function.Predicate<java.lang.String> IS_CHROMIUM_BROWSER
 intf org.openqa.selenium.HasAuthentication
+intf org.openqa.selenium.bidi.HasBiDi
 intf org.openqa.selenium.chromium.HasCasting
 intf org.openqa.selenium.chromium.HasCdp
 intf org.openqa.selenium.chromium.HasLaunchApp
@@ -2438,18 +2446,27 @@ intf org.openqa.selenium.html5.LocationContext
 intf org.openqa.selenium.html5.WebStorage
 intf org.openqa.selenium.logging.HasLogEvents
 intf org.openqa.selenium.mobile.NetworkConnection
+meth public !varargs java.lang.Object executeScript(org.openqa.selenium.ScriptKey,java.lang.Object[])
 meth public <%0 extends java.lang.Object> void onLogEvent(org.openqa.selenium.logging.EventType<{%%0}>)
 meth public java.lang.String getCastIssueMessage()
 meth public java.util.List<java.util.Map<java.lang.String,java.lang.String>> getCastSinks()
 meth public java.util.Map<java.lang.String,java.lang.Object> executeCdpCommand(java.lang.String,java.util.Map<java.lang.String,java.lang.Object>)
+meth public java.util.Optional<org.openqa.selenium.bidi.BiDi> maybeGetBiDi()
 meth public java.util.Optional<org.openqa.selenium.devtools.DevTools> maybeGetDevTools()
+meth public java.util.Set<org.openqa.selenium.ScriptKey> getPinnedScripts()
 meth public org.openqa.selenium.Capabilities getCapabilities()
+meth public org.openqa.selenium.ScriptKey pin(java.lang.String)
 meth public org.openqa.selenium.chromium.ChromiumNetworkConditions getNetworkConditions()
 meth public org.openqa.selenium.html5.LocalStorage getLocalStorage()
+ anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
 meth public org.openqa.selenium.html5.Location location()
+ anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
 meth public org.openqa.selenium.html5.SessionStorage getSessionStorage()
+ anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
 meth public org.openqa.selenium.mobile.NetworkConnection$ConnectionType getNetworkConnection()
+ anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
 meth public org.openqa.selenium.mobile.NetworkConnection$ConnectionType setNetworkConnection(org.openqa.selenium.mobile.NetworkConnection$ConnectionType)
+ anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
 meth public void deleteNetworkConditions()
 meth public void launchApp(java.lang.String)
 meth public void quit()
@@ -2457,13 +2474,15 @@ meth public void register(java.util.function.Predicate<java.net.URI>,java.util.f
 meth public void selectCastSink(java.lang.String)
 meth public void setFileDetector(org.openqa.selenium.remote.FileDetector)
 meth public void setLocation(org.openqa.selenium.html5.Location)
+ anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
 meth public void setNetworkConditions(org.openqa.selenium.chromium.ChromiumNetworkConditions)
 meth public void setPermission(java.lang.String,java.lang.String)
 meth public void startDesktopMirroring(java.lang.String)
 meth public void startTabMirroring(java.lang.String)
 meth public void stopCasting(java.lang.String)
+meth public void unpin(org.openqa.selenium.ScriptKey)
 supr org.openqa.selenium.remote.RemoteWebDriver
-hfds LOG,capabilities,connection,devTools,launch,locationContext,networkConditions,networkConnection,permissions,webStorage
+hfds LOG,biDi,biDiUri,capabilities,connection,devTools,launch,locationContext,networkConditions,networkConnection,permissions,scriptKeys,webStorage
 
 CLSS public abstract interface org.openqa.selenium.chromium.HasCasting
  anno 0 org.openqa.selenium.Beta()
@@ -2496,6 +2515,12 @@ CLSS public abstract interface org.openqa.selenium.devtools.HasDevTools
 meth public abstract java.util.Optional<org.openqa.selenium.devtools.DevTools> maybeGetDevTools()
 meth public org.openqa.selenium.devtools.DevTools getDevTools()
 
+CLSS public abstract interface org.openqa.selenium.federatedcredentialmanagement.HasFederatedCredentialManagement
+ anno 0 org.openqa.selenium.Beta()
+meth public abstract org.openqa.selenium.federatedcredentialmanagement.FederatedCredentialManagementDialog getFederatedCredentialManagementDialog()
+meth public abstract void resetCooldown()
+meth public abstract void setDelayEnabled(boolean)
+
 CLSS public org.openqa.selenium.firefox.FirefoxDriver
 cons public init()
 cons public init(org.openqa.selenium.firefox.FirefoxDriverService)
@@ -2521,7 +2546,9 @@ meth public org.openqa.selenium.devtools.DevTools getDevTools()
  anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
 meth public org.openqa.selenium.firefox.FirefoxCommandContext getContext()
 meth public org.openqa.selenium.html5.LocalStorage getLocalStorage()
+ anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
 meth public org.openqa.selenium.html5.SessionStorage getSessionStorage()
+ anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
 meth public static org.openqa.selenium.remote.RemoteWebDriverBuilder builder()
  anno 0 org.openqa.selenium.Beta()
 meth public void quit()
@@ -2548,10 +2575,12 @@ CLSS public abstract interface org.openqa.selenium.firefox.HasFullPageScreenshot
 meth public abstract <%0 extends java.lang.Object> {%%0} getFullPageScreenshotAs(org.openqa.selenium.OutputType<{%%0}>)
 
 CLSS public abstract interface org.openqa.selenium.html5.LocationContext
+ anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
 meth public abstract org.openqa.selenium.html5.Location location()
 meth public abstract void setLocation(org.openqa.selenium.html5.Location)
 
 CLSS public abstract interface org.openqa.selenium.html5.WebStorage
+ anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
 meth public abstract org.openqa.selenium.html5.LocalStorage getLocalStorage()
 meth public abstract org.openqa.selenium.html5.SessionStorage getSessionStorage()
 
@@ -2563,6 +2592,7 @@ CLSS public abstract interface org.openqa.selenium.logging.HasLogEvents
 meth public abstract <%0 extends java.lang.Object> void onLogEvent(org.openqa.selenium.logging.EventType<{%%0}>)
 
 CLSS public abstract interface org.openqa.selenium.mobile.NetworkConnection
+ anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
 innr public static ConnectionType
 meth public abstract org.openqa.selenium.mobile.NetworkConnection$ConnectionType getNetworkConnection()
 meth public abstract org.openqa.selenium.mobile.NetworkConnection$ConnectionType setNetworkConnection(org.openqa.selenium.mobile.NetworkConnection$ConnectionType)
@@ -2583,16 +2613,14 @@ innr protected RemoteTargetLocator
 innr protected RemoteWebDriverOptions
 innr public final static !enum When
 intf org.openqa.selenium.HasCapabilities
+intf org.openqa.selenium.HasDownloads
 intf org.openqa.selenium.JavascriptExecutor
 intf org.openqa.selenium.PrintsPage
 intf org.openqa.selenium.TakesScreenshot
 intf org.openqa.selenium.WebDriver
+intf org.openqa.selenium.federatedcredentialmanagement.HasFederatedCredentialManagement
 intf org.openqa.selenium.interactions.Interactive
 intf org.openqa.selenium.virtualauthenticator.HasVirtualAuthenticator
-meth protected java.util.List<org.openqa.selenium.WebElement> findElements(java.lang.String,java.lang.String)
- anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
-meth protected org.openqa.selenium.WebElement findElement(java.lang.String,java.lang.String)
- anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
 meth protected org.openqa.selenium.remote.ExecuteMethod getExecuteMethod()
 meth protected org.openqa.selenium.remote.JsonToWebElementConverter getElementConverter()
 meth protected org.openqa.selenium.remote.Response execute(java.lang.String)
@@ -2612,6 +2640,7 @@ meth public java.lang.String getPageSource()
 meth public java.lang.String getTitle()
 meth public java.lang.String getWindowHandle()
 meth public java.lang.String toString()
+meth public java.util.List<java.lang.String> getDownloadableFiles()
 meth public java.util.List<org.openqa.selenium.WebElement> findElements(org.openqa.selenium.By)
 meth public java.util.List<org.openqa.selenium.WebElement> findElements(org.openqa.selenium.SearchContext,java.util.function.BiFunction<java.lang.String,java.lang.Object,org.openqa.selenium.remote.CommandPayload>,org.openqa.selenium.By)
 meth public java.util.Set<java.lang.String> getWindowHandles()
@@ -2621,6 +2650,7 @@ meth public org.openqa.selenium.WebDriver$Navigation navigate()
 meth public org.openqa.selenium.WebDriver$Options manage()
 meth public org.openqa.selenium.WebDriver$TargetLocator switchTo()
 meth public org.openqa.selenium.WebElement findElement(org.openqa.selenium.By)
+meth public org.openqa.selenium.federatedcredentialmanagement.FederatedCredentialManagementDialog getFederatedCredentialManagementDialog()
 meth public org.openqa.selenium.remote.CommandExecutor getCommandExecutor()
 meth public org.openqa.selenium.remote.ErrorHandler getErrorHandler()
 meth public org.openqa.selenium.remote.FileDetector getFileDetector()
@@ -2629,16 +2659,20 @@ meth public org.openqa.selenium.virtualauthenticator.VirtualAuthenticator addVir
 meth public static org.openqa.selenium.remote.RemoteWebDriverBuilder builder()
  anno 0 org.openqa.selenium.Beta()
 meth public void close()
+meth public void deleteDownloadableFiles()
+meth public void downloadFile(java.lang.String,java.nio.file.Path) throws java.io.IOException
 meth public void get(java.lang.String)
 meth public void perform(java.util.Collection<org.openqa.selenium.interactions.Sequence>)
 meth public void quit()
 meth public void removeVirtualAuthenticator(org.openqa.selenium.virtualauthenticator.VirtualAuthenticator)
+meth public void resetCooldown()
 meth public void resetInputState()
+meth public void setDelayEnabled(boolean)
 meth public void setErrorHandler(org.openqa.selenium.remote.ErrorHandler)
 meth public void setFileDetector(org.openqa.selenium.remote.FileDetector)
 meth public void setLogLevel(java.util.logging.Level)
 supr java.lang.Object
-hfds capabilities,converter,elementLocation,errorHandler,executeMethod,executor,fileDetector,level,localLogs,logger,remoteLogs,sessionId
+hfds LOG,capabilities,converter,elementLocation,errorHandler,executeMethod,executor,fileDetector,level,localLogs,remoteLogs,sessionId
 hcls RemoteAlert,RemoteNavigation,RemoteVirtualAuthenticator
 
 CLSS public abstract interface org.openqa.selenium.virtualauthenticator.HasVirtualAuthenticator

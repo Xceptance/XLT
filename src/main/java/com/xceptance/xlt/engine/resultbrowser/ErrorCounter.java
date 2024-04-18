@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -201,7 +201,7 @@ public class ErrorCounter
         if (session.hasFailed())
         {
             // get the error key
-            final String key = getErrorKey(session.getUserName(), session.getFailReason());
+            final String key = getErrorKey(session.getUserName() + "|" + session.getFailedActionName(), session.getFailReason());
 
             // check if we know it
             AtomicInteger count = errorCounter.get(key);

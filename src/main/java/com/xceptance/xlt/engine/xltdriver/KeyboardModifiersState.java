@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 //
-// Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
+// Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
 
 package com.xceptance.xlt.engine.xltdriver;
 
@@ -32,7 +32,7 @@ import org.openqa.selenium.Keys;
  * @author Ronald Brill
  */
 class KeyboardModifiersState {
-    private Set<Character> set_ = new HashSet<>();
+    private final Set<Character> set_ = new HashSet<>();
     private boolean shiftPressed_;
     private boolean ctrlPressed_;
     private boolean altPressed_;

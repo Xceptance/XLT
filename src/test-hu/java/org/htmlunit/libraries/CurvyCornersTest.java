@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,15 +17,14 @@ package org.htmlunit.libraries;
 import java.net.URL;
 
 import org.eclipse.jetty.server.Server;
+import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.WebServerTestCase;
+import org.htmlunit.junit.BrowserRunner;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.WebDriver;
-
-import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.WebServerTestCase;
-import org.htmlunit.junit.BrowserRunner;
 
 /**
  * Tests for compatibility with <a href="http://www.curvycorners.net">curvyCorners</a>.

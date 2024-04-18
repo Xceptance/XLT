@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,9 +30,9 @@ public class CustomValueTest
     @Test
     public void testAddValues()
     {
-        final TestCustomValue value = new TestCustomValue();
+        final CustomValue value = new CustomValue();
         value.setValue(0.0);
-        final List<String> strings = value.addValues();
+        final List<String> strings = value.toList();
         Assert.assertEquals("Wrong number of values!", 4, strings.size());
         Assert.assertEquals("Wrong double value!", "0.0", strings.get(3));
     }
@@ -40,8 +40,8 @@ public class CustomValueTest
     @Test
     public void testParseValues()
     {
-        final TestCustomValue value = new TestCustomValue();
-        value.parseRemainingValues(XltCharBufferUtil.toList(new String[]
+        final CustomValue value = new CustomValue();
+        value.setAllValues(XltCharBufferUtil.toList(new String[]
             {
                 "V", "null", "123000", "0.0"
             }));
@@ -53,14 +53,5 @@ public class CustomValueTest
     {
         final CustomValue cv = new CustomValue("Huhu");
         Assert.assertEquals("Wrong name, ", "Huhu", cv.getName());
-    }
-
-    private class TestCustomValue extends CustomValue
-    {
-        @Override
-        protected List<String> addValues()
-        {
-            return super.addValues();
-        }
     }
 }

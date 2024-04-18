@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ import java.nio.charset.Charset;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.FailingHttpStatusCodeException;
 import org.htmlunit.SgmlPage;
@@ -43,8 +42,6 @@ import org.htmlunit.protocol.javascript.JavaScriptURLConnection;
 import org.htmlunit.util.EncodingSniffer;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.xml.XmlPage;
-
-import org.htmlunit.corejs.javascript.BaseFunction;
 
 /**
  * <span style="color:red">INTERNAL API - SUBJECT TO CHANGE AT ANY TIME - USE AT YOUR OWN RISK.</span><br>
@@ -91,8 +88,8 @@ public final class ScriptElementSupport {
 
         final ScriptElement script = (ScriptElement) element;
         final String srcAttrib = script.getSrcAttribute();
-        if (ATTRIBUTE_NOT_DEFINED != srcAttrib
-                && script.isDeferred()) {
+        final boolean hasSrcAttrib = ATTRIBUTE_NOT_DEFINED == srcAttrib;
+        if (!hasSrcAttrib && script.isDeferred()) {
             return;
         }
 
@@ -100,9 +97,9 @@ public final class ScriptElementSupport {
         if (webWindow != null) {
             final StringBuilder description = new StringBuilder()
                     .append("Execution of ")
-                    .append(srcAttrib == ATTRIBUTE_NOT_DEFINED ? "inline " : "external ")
+                    .append(hasSrcAttrib ? "inline " : "external ")
                     .append(element.getClass().getSimpleName());
-            if (srcAttrib != ATTRIBUTE_NOT_DEFINED) {
+            if (!hasSrcAttrib) {
                 description.append(" (").append(srcAttrib).append(')');
             }
             final PostponedAction action = new PostponedAction(element.getPage(), description.toString()) {
@@ -363,7 +360,7 @@ public final class ScriptElementSupport {
                 && element.hasFeature(JS_SCRIPT_SUPPORTS_FOR_AND_EVENT_WINDOW)
                 && "window".equals(forr)) {
             final Window window = element.getPage().getEnclosingWindow().getScriptableObject();
-            final BaseFunction function = new EventHandler(element, event, scriptCode);
+            final EventHandler function = new EventHandler(element, event, scriptCode);
             window.getEventListenersContainer().addEventListener(StringUtils.substring(event, 2), function, false);
             return;
         }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,9 @@
  */
 package org.htmlunit.javascript.host.css;
 
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 
 import java.net.URL;
 import java.nio.charset.Charset;
@@ -27,19 +27,18 @@ import java.util.List;
 
 import org.apache.commons.io.ByteOrderMark;
 import org.apache.commons.lang3.ArrayUtils;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebDriverException;
-
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserParameterizedRunner;
 import org.htmlunit.junit.BrowserParameterizedRunner.Default;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import org.htmlunit.util.MimeType;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebDriverException;
 
 /**
  * Tests encoding handling for {@link CSSStyleSheet}.
@@ -134,7 +133,7 @@ public class CSSStyleSheet3Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts({"\"a\"", "\"ä\"", "\"أهلاً\"", "\"мир\"", "\"房间\""})
+    @Alerts({"\"a\"", "\"\u00E4\"", "\"\u0623\u0647\u0644\u0627\u064B\"", "\"\u043C\u0438\u0440\"", "\"\u623F\u95F4\""})
     @Default
     public void charset() throws Exception {
         charset(charsetHtmlResponseHeader_, charsetResponseHeader_, charsetResponseEncoding_, bom_);
@@ -192,10 +191,10 @@ public class CSSStyleSheet3Test extends WebDriverTestCase {
                                     + charsetCssResponseHeader.getCharset().name().toLowerCase();
         }
         final String css = ".c1::before { content: \"a\"}"
-                + ".c2::before { content: \"ä\"}"
-                + ".c3::before { content: \"أهلاً\"}"
-                + ".c4::before { content: \"мир\"}"
-                + ".c5::before { content: \"房间\"}";
+                + ".c2::before { content: \"\u00E4\"}"
+                + ".c3::before { content: \"\u0623\u0647\u0644\u0627\u064B\"}"
+                + ".c4::before { content: \"\u043C\u0438\u0440\"}"
+                + ".c5::before { content: \"\u623F\u95F4\"}";
 
         byte[] style = null;
         if (charsetCssResponseEncoding == null) {
@@ -236,7 +235,7 @@ public class CSSStyleSheet3Test extends WebDriverTestCase {
             }
             final WebDriver driver = loadPage2(html, URL_FIRST, htmlContentType, htmlResponseCharset, null);
 
-            assertEquals(String.join("§", getExpectedAlerts()) + '§', driver.getTitle());
+            assertEquals(String.join("\u00A7", getExpectedAlerts()) + '\u00A7', driver.getTitle());
         }
         catch (final WebDriverException e) {
             if (!e.getCause().getMessage().contains("illegal character")

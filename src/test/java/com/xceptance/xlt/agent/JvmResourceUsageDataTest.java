@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,7 +62,7 @@ public class JvmResourceUsageDataTest
 
         final JvmResourceUsageData data = new JvmResourceUsageData();
 
-        data.parseValues(XltCharBufferUtil.toSimpleArrayList(values));
+        data.setAllValues(XltCharBufferUtil.toSimpleArrayList(values));
 
         checkDoubleIsEqual("CPU", cpuUsage, data.getCpuUsage());
         checkLongIsEqual("committed memory size", committedMemorySize, data.getCommittedMemorySize());
@@ -90,7 +90,7 @@ public class JvmResourceUsageDataTest
 
         checkDoubleIsEqual("total CPU", totalCpuUsage, data.getTotalCpuUsage());
 
-        var a = data.addValues().toArray();
+        var a = data.toList().toArray();
         Assert.assertArrayEquals(values, a);
     }
 

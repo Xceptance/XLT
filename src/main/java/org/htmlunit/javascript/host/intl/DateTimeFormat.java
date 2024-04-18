@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,18 +30,18 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.htmlunit.BrowserVersion;
-import org.htmlunit.javascript.HtmlUnitScriptable;
-import org.htmlunit.javascript.RecursiveFunctionObject;
-import org.htmlunit.javascript.configuration.JsxClass;
-import org.htmlunit.javascript.configuration.JsxConstructor;
-import org.htmlunit.javascript.configuration.JsxFunction;
-import org.htmlunit.javascript.host.Window;
-
 import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.NativeArray;
 import org.htmlunit.corejs.javascript.ScriptRuntime;
 import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.javascript.HtmlUnitScriptable;
+import org.htmlunit.javascript.JavaScriptEngine;
+import org.htmlunit.javascript.RecursiveFunctionObject;
+import org.htmlunit.javascript.configuration.JsxClass;
+import org.htmlunit.javascript.configuration.JsxConstructor;
+import org.htmlunit.javascript.configuration.JsxFunction;
+import org.htmlunit.javascript.host.Window;
 
 /**
  * A JavaScript object for {@code DateTimeFormat}.
@@ -86,6 +86,7 @@ public class DateTimeFormat extends HtmlUnitScriptable {
         commonFormats.put("da", ddDot);
         commonFormats.put("de", ddDot);
         commonFormats.put("el", ddSlash);
+        commonFormats.put("en-CA", yyyyDash);
         commonFormats.put("en-NZ", ddSlash);
         commonFormats.put("en-PA", ddSlash);
         commonFormats.put("en-PR", ddSlash);
@@ -141,25 +142,22 @@ public class DateTimeFormat extends HtmlUnitScriptable {
         commonFormats.put("zh", yyyySlash);
         commonFormats.put("zh-HK", ddSlash);
         commonFormats.put("zh-SG", "\u200EYYYY\u200E\u5E74\u200EMM\u200E\u6708\u200Edd\u200E\u65E5");
-        commonFormats.put("en-CA", mmSlash);
         commonFormats.put("fr-CH", ddDot);
-
-        CHROME_FORMATS_.putAll(commonFormats);
-        EDGE_FORMATS_.putAll(commonFormats);
 
         IE_FORMATS_.putAll(commonFormats);
 
         FF_FORMATS_.putAll(commonFormats);
         FF_ESR_FORMATS_.putAll(commonFormats);
 
-        CHROME_FORMATS_.put("be", mmSlash);
-        CHROME_FORMATS_.put("ga", mmSlash);
-        CHROME_FORMATS_.put("is", mmSlash);
-        CHROME_FORMATS_.put("mk", mmSlash);
-        CHROME_FORMATS_.put("sq", mmSlash);
+        commonFormats.put("be", mmSlash);
+        commonFormats.put("ga", mmSlash);
+        commonFormats.put("is", mmSlash);
+        commonFormats.put("mk", mmSlash);
 
-        FF_ESR_FORMATS_.put("en-CA", yyyyDash);
-        FF_ESR_FORMATS_.put("sr", ddDotDot);
+        EDGE_FORMATS_.putAll(commonFormats);
+
+        CHROME_FORMATS_.putAll(commonFormats);
+        CHROME_FORMATS_.put("sq", mmSlash);
 
         IE_FORMATS_.put("ar", rightToLeft);
         IE_FORMATS_.put("ar-AE", rightToLeft);
@@ -253,25 +251,26 @@ public class DateTimeFormat extends HtmlUnitScriptable {
     /**
      * JavaScript constructor.
      * @param cx the current context
+     * @param scope the scope
      * @param args the arguments to the WebSocket constructor
      * @param ctorObj the function object
      * @param inNewExpr Is new or not
      * @return the java object to allow JavaScript to access
      */
     @JsxConstructor
-    public static Scriptable jsConstructor(final Context cx, final Object[] args, final Function ctorObj,
-            final boolean inNewExpr) {
+    public static Scriptable jsConstructor(final Context cx, final Scriptable scope,
+            final Object[] args, final Function ctorObj, final boolean inNewExpr) {
         final String[] locales;
         if (args.length != 0) {
             if (args[0] instanceof NativeArray) {
                 final NativeArray array = (NativeArray) args[0];
                 locales = new String[(int) array.getLength()];
                 for (int i = 0; i < locales.length; i++) {
-                    locales[i] = Context.toString(array.get(i));
+                    locales[i] = JavaScriptEngine.toString(array.get(i));
                 }
             }
             else {
-                locales = new String[] {Context.toString(args[0])};
+                locales = new String[] {JavaScriptEngine.toString(args[0])};
             }
         }
         else {

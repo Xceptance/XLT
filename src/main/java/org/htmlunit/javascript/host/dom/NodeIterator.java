@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
-import org.htmlunit.SgmlPage;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.html.DomNodeIterator;
 import org.htmlunit.javascript.HtmlUnitScriptable;
@@ -42,22 +41,27 @@ public class NodeIterator extends HtmlUnitScriptable {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
     public NodeIterator() {
+    }
+
+    /**
+     * JavaScript constructor.
+     */
+    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    public void jsConstructor() {
     }
 
     /**
      * Creates a new instance.
      *
-     * @param page the page
      * @param root The root node at which to begin the {@link NodeIterator}'s traversal
      * @param whatToShow an optional long representing a bitmask created by combining
      * the constant properties of {@link NodeFilter}
      * @param filter an object implementing the {@link NodeFilter} interface
      */
-    public NodeIterator(final SgmlPage page, final Node root, final int whatToShow,
+    public NodeIterator(final Node root, final int whatToShow,
             final org.w3c.dom.traversal.NodeFilter filter) {
-        iterator_ = page.createNodeIterator(root.getDomNodeOrDie(), whatToShow, filter, true);
+        iterator_ = new DomNodeIterator(root.getDomNodeOrDie(), whatToShow, filter, true);
     }
 
     /**

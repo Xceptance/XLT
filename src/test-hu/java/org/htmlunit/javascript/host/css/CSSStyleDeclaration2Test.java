@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,15 +15,15 @@
 package org.htmlunit.javascript.host.css;
 
 import org.apache.commons.lang3.StringUtils;
+import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.html.HtmlPageTest;
+import org.htmlunit.junit.BrowserRunner;
+import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-
-import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 
 /**
  * Tests for {@link CSSStyleDeclaration}.
@@ -443,6 +443,44 @@ public class CSSStyleDeclaration2Test extends WebDriverTestCase {
             + "</script></head>\n"
             + "<body onload='test()'>\n"
             + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception on test failure
+     */
+    @Test
+    @Alerts(DEFAULT = {"function values() { [native code] }", "no for..of", "display"},
+            IE = "no for..of")
+    public void iterator() throws Exception {
+        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_ + "<html><head>\n"
+                + "</head>\n"
+                + "<script>\n"
+                + LOG_TITLE_FUNCTION
+                + "  function test() {\n"
+                + "    var style = document.body.style;\n"
+
+                + "    if (typeof Symbol != 'undefined') {\n"
+                + "      log(style[Symbol.iterator]);\n"
+                + "    }\n"
+
+                + "    if (!style.forEach) {\n"
+                + "      log('no for..of');\n"
+                + "    }\n"
+
+                + "    if (typeof Symbol === 'undefined') {\n"
+                + "      return;\n"
+                + "    }\n"
+
+                + "    for (var i of style) {\n"
+                + "      log(i);\n"
+                + "    }\n"
+                + "  }\n"
+                + "</script>\n"
+                + "</head><body onload='test()' style='display: inline'>\n"
+                + "  <div></div>\n"
+                + "</body></html>";
 
         loadPageVerifyTitle2(html);
     }
