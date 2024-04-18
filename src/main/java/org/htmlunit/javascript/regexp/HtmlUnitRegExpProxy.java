@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
- * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.htmlunit.BrowserVersion;
+import org.htmlunit.NotYetImplementedException;
 import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.RegExpProxy;
 import org.htmlunit.corejs.javascript.ScriptRuntime;
@@ -37,6 +38,7 @@ import org.htmlunit.corejs.javascript.Undefined;
 import org.htmlunit.corejs.javascript.regexp.NativeRegExp;
 import org.htmlunit.corejs.javascript.regexp.RegExpImpl;
 import org.htmlunit.corejs.javascript.regexp.SubString;
+import org.htmlunit.javascript.JavaScriptEngine;
 
 import com.xceptance.common.collection.ConcurrentLRUCache;
 
@@ -98,21 +100,30 @@ public class HtmlUnitRegExpProxy extends RegExpImpl {
     private Object doAction(final Context cx, final Scriptable scope, final Scriptable thisObj,
         final Object[] args, final int actionType) {
         // in a first time just improve replacement with a String (not a function)
-        if (RA_REPLACE == actionType && args.length == 2 && args[1] instanceof String) {
-            final String thisString = Context.toString(thisObj);
+        if ((RA_REPLACE == actionType || RA_REPLACE_ALL == actionType)
+                && args.length == 2 && args[1] instanceof String) {
+            final String thisString = JavaScriptEngine.toString(thisObj);
             final String replacement = (String) args[1];
             final Object arg0 = args[0];
             if (arg0 instanceof String) {
                 // arg0 should *not* be interpreted as a RegExp
-                return doStringReplacement(thisString, (String) arg0, replacement);
+                return doStringReplacement(thisString, (String) arg0, replacement, RA_REPLACE_ALL == actionType);
             }
 
             if (arg0 instanceof NativeRegExp) {
                 try {
                     final NativeRegExp regexp = (NativeRegExp) arg0;
+
+                    if (RA_REPLACE_ALL == actionType
+                            && (regexp.getFlags() & NativeRegExp.JSREG_GLOB) == 0) {
+                        throw ScriptRuntime.typeError(
+                                "replaceAll must be called with a global RegExp");
+                    }
+
                     final RegExpData reData = new RegExpData(regexp);
                     final Matcher matcher = reData.getPattern().matcher(thisString);
-                    return doReplacement(thisString, replacement, matcher, reData.isGlobal());
+                    return doReplacement(thisString, replacement, matcher,
+                                            reData.isGlobal() || RA_REPLACE_ALL == actionType);
                 }
                 catch (final PatternSyntaxException e) {
                     LOG.warn(e.getMessage(), e);
@@ -124,13 +135,13 @@ public class HtmlUnitRegExpProxy extends RegExpImpl {
                 return null;
             }
             final Object arg0 = args[0];
-            final String thisString = Context.toString(thisObj);
+            final String thisString = JavaScriptEngine.toString(thisObj);
             final RegExpData reData;
             if (arg0 instanceof NativeRegExp) {
                 reData = new RegExpData((NativeRegExp) arg0);
             }
             else {
-                reData = new RegExpData(Context.toString(arg0));
+                reData = new RegExpData(JavaScriptEngine.toString(arg0));
             }
 
             final Matcher matcher = reData.getPattern().matcher(thisString);
@@ -180,25 +191,33 @@ public class HtmlUnitRegExpProxy extends RegExpImpl {
     }
 
     private String doStringReplacement(final String originalString,
-                        final String searchString, final String replacement) {
+                        final String searchString, final String replacement,
+                        final boolean replaceAll) {
         if (originalString == null) {
             return "";
         }
 
         final StaticStringMatcher matcher = new StaticStringMatcher(originalString, searchString);
-        if (matcher.start() > -1) {
-            final StringBuilder sb = new StringBuilder()
-                .append(originalString, 0, matcher.start_);
+
+        final StringBuilder sb = new StringBuilder();
+        int previousIndex = 0;
+
+        while (matcher.find()) {
+            sb.append(originalString, previousIndex, matcher.start());
 
             String localReplacement = replacement;
             if (replacement.contains("$")) {
                 localReplacement = computeReplacementValue(localReplacement, originalString, matcher, false);
             }
-            sb.append(localReplacement)
-                .append(originalString, matcher.end_, originalString.length());
-            return sb.toString();
+            sb.append(localReplacement);
+            previousIndex = matcher.end();
+
+            if (!replaceAll) {
+                break;
+            }
         }
-        return originalString;
+        sb.append(originalString, previousIndex, originalString.length());
+        return sb.toString();
     }
 
     private String doReplacement(final String originalString, final String replacement, final Matcher matcher,
@@ -464,6 +483,9 @@ public class HtmlUnitRegExpProxy extends RegExpImpl {
             if (jsFlags.contains("m")) {
                 flags |= Pattern.MULTILINE;
             }
+            if (jsFlags.contains("s")) {
+                flags |= Pattern.DOTALL;
+            }
             return flags;
         }
 
@@ -490,20 +512,40 @@ public class HtmlUnitRegExpProxy extends RegExpImpl {
      * Simple helper.
      */
     private static final class StaticStringMatcher implements MatchResult {
-        private final String group_;
-        private final int start_;
-        private final int end_;
+        private final String original_;
+        private final String search_;
+
+        private int start_;
+        private int end_;
 
         StaticStringMatcher(final String originalString, final String searchString) {
-            final int pos = originalString.indexOf(searchString);
-            group_ = searchString;
-            start_ = pos;
-            end_ = pos + searchString.length();
+            original_ = originalString;
+            search_ = searchString;
+
+            start_ = -1;
+            end_ = 0;
+        }
+
+        public boolean find() {
+            if (start_ == end_) {
+                end_++;
+            }
+            if (end_ > original_.length()) {
+                return false;
+            }
+
+            final int pos = original_.indexOf(search_, end_);
+            if (pos != -1) {
+                start_ = pos;
+                end_ = pos + search_.length();
+                return true;
+            }
+            return false;
         }
 
         @Override
         public String group() {
-            return group_;
+            return search_;
         }
 
         @Override
@@ -518,25 +560,21 @@ public class HtmlUnitRegExpProxy extends RegExpImpl {
 
         @Override
         public int start(final int group) {
-            // not used so far
-            return 0;
+            throw new NotYetImplementedException("StaticStringMatcher.start(int)");
         }
 
         @Override
         public int end(final int group) {
-            // not used so far
-            return 0;
+            throw new NotYetImplementedException("StaticStringMatcher.end(int)");
         }
 
         @Override
         public String group(final int group) {
-            // not used so far
-            return null;
+            throw new NotYetImplementedException("StaticStringMatcher.group(int)");
         }
 
         @Override
         public int groupCount() {
-            // not used so far
             return 0;
         }
     }

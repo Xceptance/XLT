@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
- * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -92,9 +92,12 @@ import org.openqa.selenium.chrome.ChromeDriverService;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.edge.EdgeDriver;
 import org.openqa.selenium.edge.EdgeDriverService;
+import org.openqa.selenium.edge.EdgeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.firefox.FirefoxDriverService;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.firefox.FirefoxProfile;
+import org.openqa.selenium.firefox.GeckoDriverService;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitWebElement;
 import org.openqa.selenium.ie.InternetExplorerDriver;
@@ -161,7 +164,7 @@ public abstract class WebDriverTestCase extends WebTestCase {
                     + "msg = msg.replace(/\\r/g, '\\\\r'); "
                     + "msg = msg.replace(/\\t/g, '\\\\t'); "
                     + "msg = msg.replace(/\\u001e/g, '\\\\u001e'); "
-                    + "window.document.title += msg + '§';}\n";
+                    + "window.document.title += msg + '\u00A7';}\n";
 
     /**
      * Function used in many tests.
@@ -174,12 +177,12 @@ public abstract class WebDriverTestCase extends WebTestCase {
      * Function used in many tests.
      */
     public static final String LOG_TEXTAREA_FUNCTION = "  function log(msg) { "
-            + "document.getElementById('myLog').value += msg + '§';}\n";
+            + "document.getElementById('myLog').value += msg + '\u00A7';}\n";
 
     /**
      * HtmlSniped to insert text area used for logging.
      */
-    public static final String LOG_TEXTAREA = "  <textarea id='myLog' cols='80' rows='42'></textarea>\n";
+    public static final String LOG_TEXTAREA = "  <textarea id='myLog' cols='80' rows='22'></textarea>\n";
 
     /**
      * The system property for automatically fixing the test case expectations.
@@ -510,21 +513,37 @@ public abstract class WebDriverTestCase extends WebTestCase {
             }
 
             if (BrowserVersion.EDGE == getBrowserVersion()) {
-                if (EDGE_BIN_ != null) {
-                    System.setProperty(EdgeDriverService.EDGE_DRIVER_EXE_PROPERTY, EDGE_BIN_);
-                }
-                return new EdgeDriver();
+                final EdgeDriverService service = new EdgeDriverService.Builder()
+                        .withLogOutput(System.out)
+                        .usingDriverExecutable(new File(EDGE_BIN_))
+
+                        .withAppendLog(true)
+                        .withReadableTimestamp(true)
+
+                        .build();
+
+                final EdgeOptions options = new EdgeOptions();
+                // options.addArguments("--lang=en-US");
+                // options.addArguments("--remote-allow-origins=*");
+
+                return new EdgeDriver(service, options);
             }
 
             if (BrowserVersion.CHROME == getBrowserVersion()) {
-                if (CHROME_BIN_ != null) {
-                    System.setProperty(ChromeDriverService.CHROME_DRIVER_EXE_PROPERTY, CHROME_BIN_);
-                }
+                final ChromeDriverService service = new ChromeDriverService.Builder()
+                        .withLogOutput(System.out)
+                        .usingDriverExecutable(new File(CHROME_BIN_))
+
+                        .withAppendLog(true)
+                        .withReadableTimestamp(true)
+
+                        .build();
+
                 final ChromeOptions options = new ChromeOptions();
                 options.addArguments("--lang=en-US");
                 options.addArguments("--remote-allow-origins=*");
 
-                return new ChromeDriver(options);
+                return new ChromeDriver(service, options);
             }
 
             if (BrowserVersion.FIREFOX == getBrowserVersion()) {
@@ -537,6 +556,7 @@ public abstract class WebDriverTestCase extends WebTestCase {
 
             throw new RuntimeException("Unexpected BrowserVersion: " + getBrowserVersion());
         }
+
         if (webDriver_ == null) {
             final DesiredCapabilities capabilities = new DesiredCapabilities();
             capabilities.setBrowserName(Browser.HTMLUNIT.browserName());
@@ -562,22 +582,18 @@ public abstract class WebDriverTestCase extends WebTestCase {
     }
 
     private static FirefoxDriver createFirefoxDriver(final String geckodriverBinary, final String binary) {
-        if (geckodriverBinary != null
-                && !geckodriverBinary.equals(System.getProperty("webdriver.gecko.driver"))) {
-            System.setProperty("webdriver.gecko.driver", geckodriverBinary);
-        }
+        final FirefoxDriverService service = new GeckoDriverService.Builder()
+                .withLogOutput(System.out)
+                .usingDriverExecutable(new File(geckodriverBinary))
+                .build();
 
-        if (binary != null) {
-            final FirefoxOptions options = new FirefoxOptions();
-            options.setBinary(binary);
+        final FirefoxOptions options = new FirefoxOptions();
+        options.setBinary(binary);
 
-            final FirefoxProfile profile = new FirefoxProfile();
-            profile.setPreference("intl.accept_languages", "en-US,en");
-            options.setProfile(profile);
-            return new FirefoxDriver(options);
-        }
-
-        return new FirefoxDriver();
+        final FirefoxProfile profile = new FirefoxProfile();
+        profile.setPreference("intl.accept_languages", "en-US,en");
+        options.setProfile(profile);
+        return new FirefoxDriver(service, options);
     }
 
     private static String getBrowserName(final BrowserVersion browserVersion) {
@@ -1078,7 +1094,7 @@ public abstract class WebDriverTestCase extends WebTestCase {
 
         final StringBuilder expected = new StringBuilder();
         for (int i = 0; i < expectedAlerts.length; i++) {
-            expected.append(expectedAlerts[i]).append('§');
+            expected.append(expectedAlerts[i]).append('\u00A7');
         }
 
         final String title = driver.getTitle();
@@ -1118,7 +1134,7 @@ public abstract class WebDriverTestCase extends WebTestCase {
                 && expectedAlerts.length == 1
                 && expectedAlerts[0].startsWith("data:image/png;base64,")) {
             String value = textArea.getAttribute("value");
-            if (value.endsWith("§")) {
+            if (value.endsWith("\u00A7")) {
                 value = value.substring(0, value.length() - 1);
             }
             compareImages(expectedAlerts[0], value);
@@ -1127,7 +1143,7 @@ public abstract class WebDriverTestCase extends WebTestCase {
 
         final StringBuilder expected = new StringBuilder();
         for (int i = 0; i < expectedAlerts.length; i++) {
-            expected.append(expectedAlerts[i]).append('§');
+            expected.append(expectedAlerts[i]).append('\u00A7');
         }
         assertEquals(expected.toString(), textArea.getAttribute("value"));
 
@@ -1170,7 +1186,7 @@ public abstract class WebDriverTestCase extends WebTestCase {
             final String... expectedAlerts) throws Exception {
         final StringBuilder expected = new StringBuilder();
         for (int i = 0; i < expectedAlerts.length; i++) {
-            expected.append(expectedAlerts[i]).append('§');
+            expected.append(expectedAlerts[i]).append('\u00A7');
         }
 
         return verifyJsVariable(driver, "window.top.name", expected.toString());

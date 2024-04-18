@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
- * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,12 +75,9 @@ import org.htmlunit.WebResponse;
 import org.htmlunit.WebWindow;
 import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.ContextAction;
-import org.htmlunit.corejs.javascript.ContextFactory;
 import org.htmlunit.corejs.javascript.Function;
-import org.htmlunit.corejs.javascript.ScriptRuntime;
 import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.corejs.javascript.ScriptableObject;
-import org.htmlunit.corejs.javascript.Undefined;
 import org.htmlunit.corejs.javascript.json.JsonParser;
 import org.htmlunit.corejs.javascript.json.JsonParser.ParseException;
 import org.htmlunit.corejs.javascript.typedarrays.NativeArrayBuffer;
@@ -88,6 +85,7 @@ import org.htmlunit.corejs.javascript.typedarrays.NativeArrayBufferView;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.httpclient.HtmlUnitUsernamePasswordCredentials;
 import org.htmlunit.httpclient.HttpClientConverter;
+import org.htmlunit.javascript.HtmlUnitContextFactory;
 import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.background.BackgroundJavaScriptFactory;
 import org.htmlunit.javascript.background.JavaScriptJob;
@@ -189,9 +187,17 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
     /**
      * Creates a new instance.
      */
-    @JsxConstructor
     public XMLHttpRequest() {
         this(true);
+    }
+
+    /**
+     * JavaScript constructor.
+     */
+    @Override
+    @JsxConstructor
+    public void jsConstructor() {
+        // don't call super here
     }
 
     /**
@@ -298,11 +304,11 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
     @JsxSetter
     public void setResponseType(final String responseType) {
         if (state_ == LOADING || state_ == DONE) {
-            throw Context.reportRuntimeError("InvalidStateError");
+            throw JavaScriptEngine.reportRuntimeError("InvalidStateError");
         }
 
         if (state_ == UNSENT && getBrowserVersion().hasFeature(XHR_RESPONSE_TYPE_THROWS_UNSENT)) {
-            throw Context.reportRuntimeError("InvalidStateError");
+            throw JavaScriptEngine.reportRuntimeError("InvalidStateError");
         }
 
         if (RESPONSE_TYPE_DEFAULT.equals(responseType)
@@ -314,7 +320,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
                 || RESPONSE_TYPE_TEXT.equals(responseType)) {
 
             if (state_ == OPENED && !async_ && !getBrowserVersion().hasFeature(XHR_RESPONSE_TYPE_THROWS_UNSENT)) {
-                throw Context.reportRuntimeError(
+                throw JavaScriptEngine.reportRuntimeError(
                         "InvalidAccessError: synchronous XMLHttpRequests do not support responseType");
             }
 
@@ -458,7 +464,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
         }
 
         if (!RESPONSE_TYPE_DEFAULT.equals(responseType_) && !RESPONSE_TYPE_TEXT.equals(responseType_)) {
-            throw Context.reportRuntimeError(
+            throw JavaScriptEngine.reportRuntimeError(
                     "InvalidStateError: Failed to read the 'responseText' property from 'XMLHttpRequest': "
                     + "The value is only accessible if the object's 'responseType' is '' or 'text' "
                     + "(was '" + getResponseType() + "').");
@@ -604,7 +610,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
             fireJavascriptEvent(Event.TYPE_LOAD_END);
         }
 
-        // ScriptRuntime.constructError("NetworkError",
+        // JavaScriptEngine.constructError("NetworkError",
         //         "Failed to execute 'send' on 'XMLHttpRequest': Failed to load '" + webRequest_.getUrl() + "'");
 
         setState(UNSENT);
@@ -680,16 +686,16 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
     public void open(final String method, final Object urlParam, final Object asyncParam,
         final Object user, final Object password) {
         if ((urlParam == null || "".equals(urlParam)) && !getBrowserVersion().hasFeature(XHR_OPEN_ALLOW_EMTPY_URL)) {
-            throw Context.reportRuntimeError("URL for XHR.open can't be empty!");
+            throw JavaScriptEngine.reportRuntimeError("URL for XHR.open can't be empty!");
         }
 
         // async defaults to true if not specified
         boolean async = true;
-        if (!Undefined.isUndefined(asyncParam)) {
-            async = ScriptRuntime.toBoolean(asyncParam);
+        if (!JavaScriptEngine.isUndefined(asyncParam)) {
+            async = JavaScriptEngine.toBoolean(asyncParam);
         }
 
-        final String url = Context.toString(urlParam);
+        final String url = JavaScriptEngine.toString(urlParam);
 
         // (URL + Method + User + Password) become a WebRequest instance.
         final HtmlPage containingPage = (HtmlPage) getWindow().getWebWindow().getEnclosedPage();
@@ -697,7 +703,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
         try {
             final URL fullUrl = containingPage.getFullyQualifiedUrl(url);
             if (!isAllowCrossDomainsFor(fullUrl)) {
-                throw Context.reportRuntimeError("Access to restricted URI denied");
+                throw JavaScriptEngine.reportRuntimeError("Access to restricted URI denied");
             }
 
             final WebRequest request = new WebRequest(fullUrl, getBrowserVersion().getXmlHttpRequestAcceptHeader(),
@@ -731,11 +737,11 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
             }
 
             // password is ignored if no user defined
-            if (user != null && !Undefined.isUndefined(user)) {
+            if (user != null && !JavaScriptEngine.isUndefined(user)) {
                 final String userCred = user.toString();
 
                 String passwordCred = "";
-                if (password != null && !Undefined.isUndefined(password)) {
+                if (password != null && !JavaScriptEngine.isUndefined(password)) {
                     passwordCred = password.toString();
                 }
 
@@ -789,8 +795,8 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
             return;
         }
         if (!async_ && timeout_ > 0) {
-            Context.throwAsScriptRuntimeEx(new RuntimeException("Synchronous requests must not set a timeout."));
-            return;
+            throw JavaScriptEngine.throwAsScriptRuntimeEx(
+                    new RuntimeException("Synchronous requests must not set a timeout."));
         }
 
         prepareRequestContent(content);
@@ -809,7 +815,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
         }
         else {
             // Create and start a thread in which to execute the request.
-            final ContextFactory cf = ((JavaScriptEngine) client.getJavaScriptEngine()).getContextFactory();
+            final HtmlUnitContextFactory cf = ((JavaScriptEngine) client.getJavaScriptEngine()).getContextFactory();
             final ContextAction<Object> action = new ContextAction<Object>() {
                 @Override
                 public Object run(final Context cx) {
@@ -864,7 +870,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
             && (HttpMethod.POST == webRequest_.getHttpMethod()
                     || HttpMethod.PUT == webRequest_.getHttpMethod()
                     || HttpMethod.PATCH == webRequest_.getHttpMethod())
-            && !Undefined.isUndefined(content)) {
+            && !JavaScriptEngine.isUndefined(content)) {
 
             final boolean setEncodingType = webRequest_.getAdditionalHeader(HttpHeader.CONTENT_TYPE) == null;
 
@@ -902,7 +908,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
                     }
                 }
                 catch (final Exception e) {
-                    Context.throwAsScriptRuntimeEx(e);
+                    throw JavaScriptEngine.throwAsScriptRuntimeEx(e);
                 }
             }
             else if (content instanceof FormData) {
@@ -923,7 +929,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
                 ((Blob) content).fillRequest(webRequest_);
             }
             else {
-                final String body = Context.toString(content);
+                final String body = JavaScriptEngine.toString(content);
                 if (!body.isEmpty()) {
                     if (LOG.isDebugEnabled()) {
                         LOG.debug("Setting request body to: " + body);
@@ -974,7 +980,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
                 for (final Entry<String, String> header
                         : new TreeMap<>(webRequest_.getAdditionalHeaders()).entrySet()) {
                     final String name = org.htmlunit.util.StringUtils
-                                            .toRootLowerCaseWithCache(header.getKey());
+                                            .toRootLowerCase(header.getKey());
                     if (isPreflightHeader(name, header.getValue())) {
                         if (builder.length() != 0) {
                             builder.append(',');
@@ -1005,9 +1011,8 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
                     if (LOG.isDebugEnabled()) {
                         LOG.debug("No permitted request for URL " + webRequest_.getUrl());
                     }
-                    Context.throwAsScriptRuntimeEx(
+                    throw JavaScriptEngine.throwAsScriptRuntimeEx(
                             new RuntimeException("No permitted \"Access-Control-Allow-Origin\" header."));
-                    return;
                 }
             }
 
@@ -1074,9 +1079,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
             setState(HEADERS_RECEIVED);
             if (async_) {
                 fireJavascriptEvent(Event.TYPE_READY_STATE_CHANGE);
-            }
 
-            if (async_) {
                 setState(LOADING);
                 fireJavascriptEvent(Event.TYPE_READY_STATE_CHANGE);
                 fireJavascriptEvent(Event.TYPE_PROGRESS);
@@ -1087,7 +1090,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
 
             if (!async_ && aborted_
                     && browserVersion.hasFeature(XHR_SEND_NETWORK_ERROR_IF_ABORTED)) {
-                throw ScriptRuntime.constructError("Error",
+                throw JavaScriptEngine.constructError("Error",
                         "Failed to execute 'send' on 'XMLHttpRequest': Failed to load '" + webRequest_.getUrl() + "'");
             }
 
@@ -1150,7 +1153,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
                     fireJavascriptEvent(Event.TYPE_LOAD_END);
                 }
 
-                Context.throwAsScriptRuntimeEx(e);
+                throw JavaScriptEngine.throwAsScriptRuntimeEx(e);
             }
         }
     }
@@ -1182,8 +1185,8 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
             if (HttpHeader.ACCESS_CONTROL_ALLOW_HEADERS.equalsIgnoreCase(pair.getName())) {
                 String value = pair.getValue();
                 if (value != null) {
-                    value = org.htmlunit.util.StringUtils.toRootLowerCaseWithCache(value);
-                    final String[] values = StringUtils.split(value, ',');
+                    value = org.htmlunit.util.StringUtils.toRootLowerCase(value);
+                    final String[] values = org.htmlunit.util.StringUtils.splitAtComma(value);
                     for (String part : values) {
                         part = part.trim();
                         if (StringUtils.isNotEmpty(part)) {
@@ -1195,7 +1198,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
         }
 
         for (final Entry<String, String> header : webRequest_.getAdditionalHeaders().entrySet()) {
-            final String key = org.htmlunit.util.StringUtils.toRootLowerCaseWithCache(header.getKey());
+            final String key = org.htmlunit.util.StringUtils.toRootLowerCase(header.getKey());
             if (isPreflightHeader(key, header.getValue())
                     && !accessControlValues.contains(key)) {
                 return false;
@@ -1246,7 +1249,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
             webRequest_.setAdditionalHeader(name, value);
         }
         else {
-            throw Context.reportRuntimeError("The open() method must be called before setRequestHeader().");
+            throw JavaScriptEngine.reportRuntimeError("The open() method must be called before setRequestHeader().");
         }
     }
 
@@ -1257,7 +1260,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
      * @return {@code true} if the header can be set from JavaScript
      */
     static boolean isAuthorizedHeader(final String name) {
-        final String nameLowerCase = org.htmlunit.util.StringUtils.toRootLowerCaseWithCache(name);
+        final String nameLowerCase = org.htmlunit.util.StringUtils.toRootLowerCase(name);
         if (PROHIBITED_HEADERS_.contains(nameLowerCase)) {
             return false;
         }
@@ -1277,7 +1280,7 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
     @JsxFunction
     public void overrideMimeType(final String mimeType) {
         if (state_ != UNSENT && state_ != OPENED) {
-            throw Context.reportRuntimeError("Property 'overrideMimeType' not writable after sent.");
+            throw JavaScriptEngine.reportRuntimeError("Property 'overrideMimeType' not writable after sent.");
         }
         overriddenMimeType_ = mimeType;
     }

@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
- * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,7 +63,7 @@ public class SocksProxyTest extends WebServerTestCase {
         doHttpTest(getWebClientWithWrongSocksProxy());
     }
 
-    private void doHttpTest(final WebClient client) throws Exception, IOException, MalformedURLException {
+    private static void doHttpTest(final WebClient client) throws Exception, IOException, MalformedURLException {
         final URL http = new URL("http://localhost:" + PORT + "/");
         final HtmlPage page = client.getPage(http);
         assertEquals("hello", page.getTitleText());

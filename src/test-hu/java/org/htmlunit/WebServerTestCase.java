@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
- * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -92,7 +92,7 @@ public abstract class WebServerTestCase extends WebTestCase {
         final ResourceHandler resourceHandler = new ResourceHandler();
         resourceHandler.setResourceBase(resourceBase);
         final MimeTypes mimeTypes = new MimeTypes();
-        mimeTypes.addMimeMapping("js", MimeType.APPLICATION_JAVASCRIPT);
+        mimeTypes.addMimeMapping("js", MimeType.TEXT_JAVASCRIPT);
         resourceHandler.setMimeTypes(mimeTypes);
 
         final HandlerList handlers = new HandlerList();
@@ -522,7 +522,7 @@ public abstract class WebServerTestCase extends WebTestCase {
 
         final Server server = new Server(threadPool);
 
-        final ServerConnector connector = new ServerConnector(server);
+        final ServerConnector connector = new ServerConnector(server, 1, -1, new HttpConnectionFactory());
         connector.setPort(port);
         server.setConnectors(new Connector[] {connector});
 

@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2002-2023 Gargoyle Software Inc.
- * Copyright (c) 2005-2023 Xceptance Software Technologies GmbH
+ * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Writer;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -44,6 +45,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.ProtocolVersion;
 import org.apache.http.StatusLine;
+import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -54,6 +56,7 @@ import org.htmlunit.httpclient.HttpClientConverter;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.util.KeyDataPair;
 import org.htmlunit.util.MimeType;
+import org.htmlunit.util.NameValuePair;
 import org.htmlunit.util.ServletContentWrapper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -165,39 +168,6 @@ public class HttpWebConnectionTest extends WebServerTestCase {
                 }
             }
         }
-    }
-
-    /**
-     * Tests creation of a web response.
-     * @throws Exception if the test fails
-     */
-    @Test
-    public void makeWebResponse() throws Exception {
-        final URL url = new URL("http://htmlunit.sourceforge.net/");
-        final String content = "<html><head></head><body></body></html>";
-        final DownloadedContent downloadedContent = new DownloadedContent.InMemory(content.getBytes());
-        final long loadTime = 500L;
-
-        final ProtocolVersion protocolVersion = new ProtocolVersion("HTTP", 1, 0);
-        final StatusLine statusLine = new BasicStatusLine(protocolVersion, HttpClientConverter.OK, null);
-        final HttpResponse httpResponse = new BasicHttpResponse(statusLine);
-
-        final HttpEntity responseEntity = new StringEntity(content);
-        httpResponse.setEntity(responseEntity);
-
-        final HttpWebConnection connection = new HttpWebConnection(getWebClient());
-        final Method method = connection.getClass().getDeclaredMethod("makeWebResponse",
-                HttpResponse.class, WebRequest.class, DownloadedContent.class, long.class);
-        method.setAccessible(true);
-        final WebResponse response = (WebResponse) method.invoke(connection,
-                httpResponse, new WebRequest(url), downloadedContent, new Long(loadTime));
-
-        assertEquals(HttpClientConverter.OK, response.getStatusCode());
-        assertEquals(url, response.getWebRequest().getUrl());
-        assertEquals(loadTime, response.getLoadTime());
-        assertEquals(content, response.getContentAsString());
-        assertEquals(content.getBytes(), IOUtils.toByteArray(response.getContentAsStream()));
-        assertEquals(new ByteArrayInputStream(content.getBytes()), response.getContentAsStream());
     }
 
     /**
@@ -563,4 +533,158 @@ public class HttpWebConnectionTest extends WebServerTestCase {
         return (T) field.get(o);
     }
 
+    /**
+     * Tests creation of a web response.
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void makeWebResponse() throws Exception {
+        final URL url = new URL("http://htmlunit.sourceforge.net/");
+        final String content = "<html><head></head><body></body></html>";
+        final DownloadedContent downloadedContent = new DownloadedContent.InMemory(content.getBytes());
+        final long loadTime = 500L;
+
+        final ProtocolVersion protocolVersion = new ProtocolVersion("HTTP", 1, 0);
+        final StatusLine statusLine = new BasicStatusLine(protocolVersion, HttpClientConverter.OK, null);
+        final HttpResponse httpResponse = new BasicHttpResponse(statusLine);
+
+        final HttpEntity responseEntity = new StringEntity(content);
+        httpResponse.setEntity(responseEntity);
+
+        try (HttpWebConnection connection = new HttpWebConnection(getWebClient())) {
+            final Method method = connection.getClass().getDeclaredMethod("makeWebResponse",
+                    HttpResponse.class, WebRequest.class, DownloadedContent.class, long.class);
+            final WebResponse response = (WebResponse) method.invoke(connection,
+                    httpResponse, new WebRequest(url), downloadedContent, Long.valueOf(loadTime));
+
+            assertEquals(HttpClientConverter.OK, response.getStatusCode());
+            assertEquals(url, response.getWebRequest().getUrl());
+            assertEquals(loadTime, response.getLoadTime());
+            assertEquals(content, response.getContentAsString());
+            try (InputStream is = response.getContentAsStream()) {
+                assertEquals(content.getBytes(), IOUtils.toByteArray(is));
+            }
+            try (InputStream is = response.getContentAsStream()) {
+                assertEquals(new ByteArrayInputStream(content.getBytes()), is);
+            }
+        }
+    }
+
+    /**
+     * Test for overwriting the
+     * {@link HttpWebConnection#downloadResponse(HttpUriRequest, WebRequest, HttpResponse, long)}
+     * method.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void contentBlocking() throws Exception {
+        final byte[] content = new byte[] {77, 44};
+        final List<NameValuePair> headers = new ArrayList<>();
+        headers.add(new NameValuePair("Content-Encoding", "gzip"));
+        headers.add(new NameValuePair(HttpHeader.CONTENT_LENGTH, String.valueOf(content.length)));
+
+        final MockWebConnection conn = getMockWebConnection();
+        conn.setResponse(URL_FIRST, content, 200, "OK", MimeType.APPLICATION_JSON, headers);
+
+        startWebServer(conn);
+
+        final WebClient client = getWebClient();
+        client.setWebConnection(new HttpWebConnection(client) {
+            @Override
+            protected WebResponse downloadResponse(final HttpUriRequest httpMethod,
+                    final WebRequest webRequest, final HttpResponse httpResponse,
+                    final long startTime) {
+
+                httpMethod.abort();
+
+                final DownloadedContent downloaded = new DownloadedContent.InMemory(null);
+                final long endTime = System.currentTimeMillis();
+                final WebResponse response = makeWebResponse(httpResponse, webRequest, downloaded, endTime - startTime);
+                response.markAsBlocked("test blocking");
+                return response;
+            }
+        });
+
+        final UnexpectedPage page = client.getPage(URL_FIRST);
+        assertTrue(page.getWebResponse().wasBlocked());
+        assertEquals("test blocking", page.getWebResponse().getBlockReason());
+    }
+
+    /**
+     * Test for overwriting the
+     * {@link HttpWebConnection#downloadResponse(HttpUriRequest, WebRequest, HttpResponse, long)}
+     * method.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void contentSizeBlocking() throws Exception {
+        stopWebServer();
+
+        final Map<String, Class<? extends Servlet>> servlets = new HashMap<>();
+        servlets.put("/big", BigContentServlet.class);
+        startWebServer("./", null, servlets);
+
+        final WebClient client = getWebClient();
+        client.setWebConnection(new HttpWebConnection(client) {
+            @Override
+            protected WebResponse downloadResponse(final HttpUriRequest httpMethod,
+                    final WebRequest webRequest, final HttpResponse httpResponse,
+                    final long startTime) throws IOException {
+
+                final int contentLenght = Integer.parseInt(
+                        httpResponse.getFirstHeader(HttpHeader.CONTENT_LENGTH).getValue());
+
+                if (contentLenght < 1_000) {
+                    return super.downloadResponse(httpMethod, webRequest, httpResponse, startTime);
+                }
+
+                httpMethod.abort();
+
+                final DownloadedContent downloaded = new DownloadedContent.InMemory(null);
+                final long endTime = System.currentTimeMillis();
+                final WebResponse response = makeWebResponse(httpResponse, webRequest, downloaded, endTime - startTime);
+                response.markAsBlocked("blocking " + contentLenght);
+                return response;
+            }
+        });
+
+        final TextPage page = client.getPage(URL_FIRST + "big");
+        assertTrue(page.getWebResponse().wasBlocked());
+        assertEquals("blocking 10240000", page.getWebResponse().getBlockReason());
+        assertTrue("blocks sent " + BigContentServlet.SENT_, BigContentServlet.SENT_ < 5000);
+
+        BigContentServlet.CANCEL_ = true;
+    }
+
+    /**
+     * Servlet for bigContent().
+     */
+    public static class BigContentServlet extends HttpServlet {
+
+        /** Helper. */
+        public static int SENT_;
+        /** Helper. */
+        public static boolean CANCEL_;
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        protected void doGet(final HttpServletRequest request, final HttpServletResponse response) throws IOException {
+            final int blockSize = 1024;
+            final int blockCount = 10_000;
+
+            response.setHeader(HttpHeader.CONTENT_LENGTH, String.valueOf(blockSize * blockCount));
+
+            final byte[] buffer = new byte[blockSize];
+            try (OutputStream out = response.getOutputStream()) {
+                for (int i = 0; i < blockCount && !CANCEL_; i++) {
+                    SENT_++;
+                    out.write(buffer);
+                }
+            }
+        }
+    }
 }
