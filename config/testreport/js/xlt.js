@@ -466,8 +466,16 @@
                 hiddenContent.classList.remove("hidden");
             }
 
-            // We have to wait for the table.js to finish processing before we call switchToTargetTabIfRequired
-            addEventListener("load", (event) => {registerSortAndFilterListeners();});
+            // We have to wait for the table.js to finish processing before registering events and
+            // may be calling switchToTargetTabIfRequired in sort
+            if (document.readyState === 'complete') {
+                // console.log("load already done");
+                registerSortAndFilterListeners();
+            }
+            else {
+                // console.log("attach event listener");
+                window.addEventListener("load", registerSortAndFilterListeners);
+            }
         })();
 
         // the table filters
