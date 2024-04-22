@@ -15,12 +15,32 @@
  */
 package com.xceptance.xlt.engine;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.security.InvalidKeyException;
+import java.security.KeyFactory;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+import java.security.interfaces.RSAPrivateKey;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -33,6 +53,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.crypto.EncryptedPrivateKeyInfo;
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
+
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.htmlunit.AjaxController;
@@ -73,6 +99,8 @@ import org.htmlunit.javascript.host.css.StyleSheetList;
 import org.htmlunit.javascript.host.html.HTMLDocument;
 import org.htmlunit.util.UrlUtils;
 
+import com.google.api.client.util.PemReader;
+import com.google.api.client.util.PemReader.Section;
 import com.xceptance.common.collection.ConcurrentLRUCache;
 import com.xceptance.common.util.ProductInformation;
 import com.xceptance.common.util.RegExUtils;
@@ -2044,4 +2072,182 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
             return mode;
         }
     }
+
+
+    private void setupKeyStore(WebClient webClient)
+        throws IOException, CertificateException, InvalidKeySpecException, NoSuchAlgorithmException, KeyStoreException, InvalidKeyException
+    {
+        // KeyStore keyStore = createKeyStore(new File("config/jw-enc.pem"), "aaaaa");
+        KeyStore keyStore = createKeyStore(new File("config/jw.pem"), "aaaaa");
+
+        webClient.getOptions().setSSLClientCertificateKeyStore(keyStore, "".toCharArray());
+    }
+
+    private KeyStore createKeyStore2(File pemFile)
+        throws IOException, CertificateException, InvalidKeySpecException, NoSuchAlgorithmException, KeyStoreException
+    {
+        String certAndKey = FileUtils.readFileToString(pemFile, StandardCharsets.US_ASCII);
+        byte[] certBytes = parsePEM(certAndKey, "-----BEGIN CERTIFICATE-----", "-----END CERTIFICATE-----");
+        byte[] keyBytes = parsePEM(certAndKey, "-----BEGIN PRIVATE KEY-----", "-----END PRIVATE KEY-----");
+
+        X509Certificate cert = generateCertificate(certBytes);
+        RSAPrivateKey key = generatePrivateKey(keyBytes);
+
+        KeyStore keystore = KeyStore.getInstance("JKS");
+        keystore.load(null);
+        keystore.setCertificateEntry("cert-alias", cert);
+        keystore.setKeyEntry("key-alias", key, "topsecret".toCharArray(), new Certificate[]
+            {
+                cert
+            });
+
+        return keystore;
+    }
+
+    private KeyStore createKeyStore(File pemFile, String password)
+        throws IOException, CertificateException, InvalidKeySpecException, NoSuchAlgorithmException, KeyStoreException, InvalidKeyException
+    {
+        ArrayList<X509Certificate> certifcateList = new ArrayList<>();
+        PrivateKey key = null;
+
+        PemReader pemReader = new PemReader(new FileReader(pemFile, StandardCharsets.US_ASCII));
+        try
+        {
+            Section pemSection;
+            while ((pemSection = pemReader.readNextSection()) != null)
+            {
+                if (pemSection.getTitle().equals("CERTIFICATE"))
+                {
+                    X509Certificate certificate = generateCertificate(pemSection.getBase64DecodedBytes());
+                    certifcateList.add(certificate);
+                }
+                else if (StringUtils.equalsAny(pemSection.getTitle(), "PRIVATE KEY", "ENCRYPTED PRIVATE KEY"))
+                {
+                    if (key == null)
+                    {
+                        if (pemSection.getTitle().equals("ENCRYPTED PRIVATE KEY") && password == null)
+                        {
+                            // log error that no password given
+                        }
+                        else if (pemSection.getTitle().equals("PRIVATE KEY") && password != null)
+                        {
+                            // clear password
+                            password = null;
+                        }
+
+                        key = generatePrivateKey(pemSection.getBase64DecodedBytes(), password);
+                    }
+                    else
+                    {
+                        // log warn
+                        System.out.println("More than one PRIVATE KEY section found in file");
+                    }
+                }
+                else
+                {
+                    // log warn
+                    System.out.println("Unknown section found in file");
+                }
+            }
+        }
+        finally
+        {
+            if (pemReader != null)
+            {
+                pemReader.close();
+            }
+        }
+
+        // create the key store (in memory only)
+        KeyStore keyStore = KeyStore.getInstance("JKS");
+        keyStore.load(null);
+
+        // add the certificates attached to the private key
+        for (int i = 0; i < certifcateList.size(); i++)
+        {
+            keyStore.setCertificateEntry("cert-" + i, certifcateList.get(i));
+        }
+
+        // add the private key
+        if (key == null)
+        {
+            // log warn
+            System.out.println("No PRIVATE KEY section found in file");
+        }
+        else
+        {
+            X509Certificate[] certificateArray = certifcateList.toArray(new X509Certificate[certifcateList.size()]);
+            keyStore.setKeyEntry("key", key, "".toCharArray(), certificateArray);
+        }
+
+        return keyStore;
+    }
+
+    private void setupTrustStore(WebClient webClient)
+        throws IOException, CertificateException, InvalidKeySpecException, NoSuchAlgorithmException, KeyStoreException
+    {
+        String certAndKey = FileUtils.readFileToString(new File("config/jw_root_ca.cer"), StandardCharsets.US_ASCII);
+        byte[] certBytes = parsePEM(certAndKey, "-----BEGIN CERTIFICATE-----", "-----END CERTIFICATE-----");
+
+        X509Certificate cert = generateCertificate(certBytes);
+
+        KeyStore trustStore = KeyStore.getInstance("JKS");
+        trustStore.load(null);
+        trustStore.setCertificateEntry("cert-alias", cert);
+
+        webClient.getOptions().setSSLTrustStore(trustStore);
+    }
+
+    protected static byte[] parsePEM(String certAndKey, String beginDelimiter, String endDelimiter)
+    {
+        String[] tokens = certAndKey.split(beginDelimiter);
+        tokens = tokens[1].split(endDelimiter);
+        return Base64.getMimeDecoder().decode(tokens[0]);
+    }
+
+    protected static RSAPrivateKey generatePrivateKey(byte[] keyBytes) throws InvalidKeySpecException, NoSuchAlgorithmException
+    {
+        KeyFactory factory = KeyFactory.getInstance("RSA");
+        PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyBytes);
+
+        return (RSAPrivateKey) factory.generatePrivate(spec);
+    }
+
+    public PrivateKey generatePrivateKey(byte[] pkcs8Data, String password)
+        throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException
+    {
+        PKCS8EncodedKeySpec keySpec;
+
+        if (password == null)
+        {
+            keySpec = new PKCS8EncodedKeySpec(pkcs8Data);
+        }
+        else
+        {
+            PBEKeySpec pbeSpec = new PBEKeySpec(password.toCharArray());
+            EncryptedPrivateKeyInfo pkinfo = new EncryptedPrivateKeyInfo(pkcs8Data);
+            SecretKeyFactory skf = SecretKeyFactory.getInstance(pkinfo.getAlgName());
+            SecretKey secret = skf.generateSecret(pbeSpec);
+            keySpec = pkinfo.getKeySpec(secret);
+        }
+
+        return KeyFactory.getInstance("RSA").generatePrivate(keySpec);
+    }
+
+    protected static X509Certificate generateCertificate(byte[] certBytes) throws CertificateException
+    {
+        CertificateFactory factory = CertificateFactory.getInstance("X.509");
+
+        return (X509Certificate) factory.generateCertificate(new ByteArrayInputStream(certBytes));
+    }
+
+    @SuppressWarnings("unchecked")
+    protected static Collection<X509Certificate> generateCertificates(File file) throws CertificateException, FileNotFoundException
+    {
+        CertificateFactory factory = CertificateFactory.getInstance("X.509");
+
+        return (Collection<X509Certificate>) factory.generateCertificates(new FileInputStream(file));
+    }
+
+
 }
