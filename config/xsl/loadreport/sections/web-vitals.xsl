@@ -13,18 +13,18 @@
                 <table class="c-tab-content table-autosort:0">
                     <thead>
                         <tr>
-                            <th class="table-sortable:alphanumeric">
+                            <th class="table-sortable:alphanumeric" id="sortByName">
                                 Action Name
                                 <br/>
                                 <input class="filter" placeholder="Enter filter substrings" title=""/>
                                 <button class="clear-input" type="clear" title="Click to clear">&#x2715;</button>
                             </th>
-                            <th class="table-sortable:numeric">First Contentful Paint<br/>(FCP)</th>
-                            <th class="table-sortable:numeric">Largest Contentful Paint<br/>(LCP)</th>
-                            <th class="table-sortable:numeric">Cumulative Layout Shift<br/>(CLS)</th>
-                            <th class="table-sortable:numeric">First Input Delay<br/>(FID)</th>
-                            <th class="table-sortable:numeric">Interaction to Next Paint<br/>(INP)</th>
-                            <th class="table-sortable:numeric">Time to First Byte<br/>(TTFB)</th>
+                            <th class="table-sortable:numeric" id="sortByFCP">First Contentful Paint<br/>(FCP)</th>
+                            <th class="table-sortable:numeric" id="sortByLCP">Largest Contentful Paint<br/>(LCP)</th>
+                            <th class="table-sortable:numeric" id="sortByCLS">Cumulative Layout Shift<br/>(CLS)</th>
+                            <th class="table-sortable:numeric" id="sortByFID">First Input Delay<br/>(FID)</th>
+                            <th class="table-sortable:numeric" id="sortByINP">Interaction to Next Paint<br/>(INP)</th>
+                            <th class="table-sortable:numeric" id="sortByTTFB">Time to First Byte<br/>(TTFB)</th>
                         </tr>
                     </thead>
                     <tfoot>

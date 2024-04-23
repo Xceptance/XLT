@@ -12,6 +12,7 @@
                 <thead>
                     <tr>
                         <th rowspan="2" class="table-sortable:alphanumeric colgroup1">
+                            <xsl:attribute name="id">sortByName</xsl:attribute>
                             <xsl:value-of select="$tableRowHeader"/>
                             <br/>
                             <input class="filter" placeholder="Enter filter substrings" title=""/>
@@ -36,23 +37,27 @@
                     </tr>
                     <tr>
                         <xsl:if test="$type = 'request'">
-                            <th class="table-sortable:numeric">Distinct**</th>
+                            <th class="table-sortable:numeric" id="sortByCountDistinct">Distinct**</th>
                         </xsl:if>
-                        <th class="table-sortable:numeric">Total</th>
-                        <th class="table-sortable:numeric">1/s</th>
-                        <th class="table-sortable:numeric">1/min</th>
-                        <th class="table-sortable:numeric">1/h*</th>
-                        <th class="table-sortable:numeric colgroup1">Total</th>
+                        <th class="table-sortable:numeric" id="sortByCountTotal">Total</th>
+                        <th class="table-sortable:numeric" id="sortByCountPerSecond">1/s</th>
+                        <th class="table-sortable:numeric" id="sortByCountPerMinute">1/min</th>
+                        <th class="table-sortable:numeric" id="sortByCountPerHour">1/h*</th>
+                        <th class="table-sortable:numeric colgroup1" id="sortByErrorsTotal">Total</th>
                         <xsl:if test="$type = 'transaction'">
-                            <th class="table-sortable:numeric colgroup1">Total</th>
+                            <th class="table-sortable:numeric colgroup1"  id="sortByEventsTotal">Total</th>
                         </xsl:if>
-                        <th class="table-sortable:numeric" title="The arithmetic mean of the data series.">Mean</th>
-                        <th class="table-sortable:numeric" title="The smallest value of the data series.">Min.</th>
-                        <th class="table-sortable:numeric" title="The largest value of the data series.">Max.</th>
-                        <th class="table-sortable:numeric" title="The standard deviation of all data within this data series.">Dev.</th>
+                        <th class="table-sortable:numeric" title="The arithmetic mean of the data series." id="sortByRuntimeMean">Mean</th>
+                        <th class="table-sortable:numeric" title="The smallest value of the data series." id="sortByRuntimeMin">Min.</th>
+                        <th class="table-sortable:numeric" title="The largest value of the data series." id="sortByRuntimeMax">Max.</th>
+                        <th class="table-sortable:numeric" title="The standard deviation of all data within this data series." id="sortByRuntimeDev">Dev.</th>
                         <xsl:for-each select="$summaryElement/percentiles/*">
 	                        <th class="table-sortable:numeric colgroup1" title="The nth percentile of the data series.">
-	                            <xsl:value-of select="translate(name(), 'p', 'P')"/>
+	                            <!-- <xsl:value-of select="translate(name(), 'p', 'P')"/> -->
+                                <xsl:attribute name="id">
+                                    <xsl:value-of select="concat('sortByPercentile', translate(name(), 'p', 'P'))" />
+                                </xsl:attribute>
+                                <xsl:value-of select="translate(name(), 'p', 'P')"/>
 	                        </th>
 	                    </xsl:for-each>
                     </tr>
