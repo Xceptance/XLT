@@ -88,7 +88,7 @@ public class GroupDefinition
         }
     }
 
-    public static GroupDefinition fromJSON(JSONObject jsonObject) throws ValidationError
+    public static GroupDefinition fromJSON(final JSONObject jsonObject) throws ValidationError
     {
         final String id = jsonObject.getString("id");
         final String description = jsonObject.optString("description", null);
@@ -117,20 +117,20 @@ public class GroupDefinition
 
     public static class RuleIdConverter extends AbstractCollectionConverter
     {
-        public RuleIdConverter(Mapper mapper)
+        public RuleIdConverter(final Mapper mapper)
         {
             super(mapper);
         }
 
         @SuppressWarnings("rawtypes")
         @Override
-        public boolean canConvert(Class type)
+        public boolean canConvert(final Class type)
         {
             return List.class.isAssignableFrom(type);
         }
 
         @Override
-        public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context)
+        public void marshal(final Object source, final HierarchicalStreamWriter writer, final MarshallingContext context)
         {
             for (final Object o : (List<?>) source)
             {
@@ -141,7 +141,7 @@ public class GroupDefinition
         }
 
         @Override
-        public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context)
+        public Object unmarshal(final HierarchicalStreamReader reader, final UnmarshallingContext context)
         {
             return null;
         }

@@ -43,7 +43,7 @@ public class RuleDefinition
         return enabled;
     }
 
-    public void setEnabled(boolean enabled)
+    public void setEnabled(final boolean enabled)
     {
         this.enabled = enabled;
     }
@@ -53,7 +53,7 @@ public class RuleDefinition
         return description;
     }
 
-    public void setDescription(String description)
+    public void setDescription(final String description)
     {
         this.description = description;
     }
@@ -63,7 +63,7 @@ public class RuleDefinition
         return failsTest;
     }
 
-    public void setFailsTest(boolean failsTest)
+    public void setFailsTest(final boolean failsTest)
     {
         this.failsTest = failsTest;
     }
@@ -73,7 +73,7 @@ public class RuleDefinition
         return points;
     }
 
-    public void setPoints(int points)
+    public void setPoints(final int points)
     {
         this.points = points;
     }
@@ -83,7 +83,7 @@ public class RuleDefinition
         return successMessage;
     }
 
-    public void setSuccessMessage(String successMessage)
+    public void setSuccessMessage(final String successMessage)
     {
         this.successMessage = successMessage;
     }
@@ -93,7 +93,7 @@ public class RuleDefinition
         return failMessage;
     }
 
-    public void setFailMessage(String failMessage)
+    public void setFailMessage(final String failMessage)
     {
         this.failMessage = failMessage;
     }
@@ -160,7 +160,7 @@ public class RuleDefinition
 
     }
 
-    static RuleDefinition fromJSON(JSONObject jsonObject) throws ValidationError
+    static RuleDefinition fromJSON(final JSONObject jsonObject) throws ValidationError
     {
         final String ruleId = jsonObject.getString("id");
         final String ruleDesc = jsonObject.optString("description");

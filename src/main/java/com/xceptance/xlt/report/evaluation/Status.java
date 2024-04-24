@@ -2,10 +2,10 @@ package com.xceptance.xlt.report.evaluation;
 
 enum Status
 {
+    SKIPPED,
     PASSED,
     FAILED,
-    ERROR,
-    SKIPPED;
+    ERROR;
 
     public boolean isPassed()
     {

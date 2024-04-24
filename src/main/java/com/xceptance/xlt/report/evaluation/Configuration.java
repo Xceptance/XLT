@@ -10,7 +10,6 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.thoughtworks.xstream.annotations.XStreamConverter;
@@ -175,7 +174,7 @@ public class Configuration
 
         @SuppressWarnings("rawtypes")
         @Override
-        public boolean canConvert(Class type)
+        public boolean canConvert(final Class type)
         {
             if (Map.class.isAssignableFrom(type))
             {
@@ -186,7 +185,7 @@ public class Configuration
         }
 
         @Override
-        public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context)
+        public void marshal(final Object source, final HierarchicalStreamWriter writer, final MarshallingContext context)
         {
             final Map<?, ?> m = (Map<?, ?>) source;
             for (final Object o : m.values())
@@ -197,7 +196,7 @@ public class Configuration
         }
 
         @Override
-        public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context)
+        public Object unmarshal(final HierarchicalStreamReader reader, final UnmarshallingContext context)
         {
             return null;
         }
