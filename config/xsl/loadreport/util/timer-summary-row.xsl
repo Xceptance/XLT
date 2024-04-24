@@ -105,21 +105,18 @@
             <!-- runtime segmentation -->
             <xsl:if test="$type = 'request'">
                 <xsl:for-each select="countPerInterval/int">
+                	<xsl:variable name="position" select="position()" />
+                	<xsl:variable name="percentage"
+						select="../../percentagePerInterval/big-decimal[$position]" />
                     <td class="value number">
-                        <xsl:variable name="percentage">
-                            <xsl:call-template name="percentage">
-                                <xsl:with-param name="n1" select="../../count"/>
-                                <xsl:with-param name="n2" select="current()"/>
-                            </xsl:call-template>
-                        </xsl:variable>
                         <span>
                             <xsl:attribute name="title">
-                                <xsl:value-of select="format-number(current()/count, '#,##0')"/>
+                                <xsl:value-of select="format-number(current(), '#,##0')"/>
                                 <xsl:text> (</xsl:text>
-                                <xsl:value-of select="format-number(current()/percentage, '#,##0.00')"/>
+                                <xsl:value-of select="format-number($percentage, '#,##0.00')"/>
                                 <xsl:text>%)</xsl:text>
                             </xsl:attribute>
-                            <xsl:value-of select="format-number(current()/percentage, '#,##0.00')"/>
+                            <xsl:value-of select="format-number($percentage, '#,##0.00')"/>
                             <xsl:text>%</xsl:text>
                         </span>
                     </td>
