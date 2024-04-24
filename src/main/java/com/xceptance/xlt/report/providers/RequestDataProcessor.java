@@ -17,9 +17,11 @@ package com.xceptance.xlt.report.providers;
 
 import java.awt.Color;
 import java.io.File;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.annotations.XYPointerAnnotation;
 import org.jfree.chart.axis.NumberAxis;
@@ -262,17 +264,13 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
 
         // just int is safe, more than 2 billion urls is unlikely
         timerReport.urls = getUrlList(distinctUrlSet, (int) distinctUrlsHLL.cardinality());
-        if (countPerSegment == null)
+        timerReport.countPerInterval = countPerSegment != null ? countPerSegment.getCountPerSegment() : ArrayUtils.EMPTY_INT_ARRAY;
+        timerReport.percentagePerInterval = countPerSegment != null ? new BigDecimal[countPerSegment.getCountPerSegment().length] : new BigDecimal[]{};
+        if (countPerSegment != null)
         {
-            timerReport.countPerInterval = new RuntimeIntervalData[]{};
-        }
-        else
-        {
-            timerReport.countPerInterval = new RuntimeIntervalData[countPerSegment.getCountPerSegment().length];
             for (int n = 0; n < countPerSegment.getCountPerSegment().length; n++)
             {
-                timerReport.countPerInterval[n] = new RuntimeIntervalData(countPerSegment.getCountPerSegment()[n],
-                              ReportUtils.calculatePercentage(countPerSegment.getCountPerSegment()[n], timerReport.count));
+                timerReport.percentagePerInterval[n] = ReportUtils.calculatePercentage(countPerSegment.getCountPerSegment()[n], timerReport.count);
             }
         }
 

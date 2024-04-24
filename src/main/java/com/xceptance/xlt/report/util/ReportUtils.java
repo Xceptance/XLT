@@ -41,8 +41,6 @@ import com.xceptance.common.util.ParameterCheckUtils;
 import com.xceptance.xlt.api.util.XltException;
 import com.xceptance.xlt.common.XltConstants;
 
-import io.opencensus.stats.Aggregation.Count;
-
 /**
  * A collection of functionality which is used throughout the report generator.
  */
