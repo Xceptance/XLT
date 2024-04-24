@@ -36,6 +36,8 @@ public class XltPropertyNames
             public static final String DIRECTORY_LIMIT_PER_ERROR = BASE + "directoryLimitPerError";
             
             public static final String DIRECTORY_REPLACEMENT_CHANCE = BASE + "directoryReplacementChance";
+            
+            public static final String STACKTRACES_LIMIT = BASE + "stackTracesLimit";
         }
     }
 }

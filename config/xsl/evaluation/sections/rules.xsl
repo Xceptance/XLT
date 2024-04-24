@@ -221,7 +221,7 @@
 </xsl:template>
 
 <xsl:template name="multiRowCell">
-    <xsl:param name="numRows" select="1"/>
+    <xsl:param name="numRows" select="1" />
     <xsl:param name="cellContent" />
     <xsl:param name="class" />
 
@@ -237,7 +237,7 @@
             </xsl:attribute>
         </xsl:if>
         <xsl:value-of select="$cellContent" />
-    </xsl:element> 
+    </xsl:element>
 </xsl:template>
 
 </xsl:stylesheet>

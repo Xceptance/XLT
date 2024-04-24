@@ -95,6 +95,8 @@ public class DiffReportGeneratorConfiguration extends AbstractConfiguration
         specs.add(new ElementSpecification("/testreport/requests/request", "name"));
         specs.add(new ElementSpecification("/testreport/pageLoadTimings/pageLoadTiming", "name"));
         specs.add(new ElementSpecification("/testreport/customTimers/customTimer", "name"));
+        specs.add(new ElementSpecification("/testreport/customValues/customValue", "name"));
+        specs.add(new ElementSpecification("/testreport/webVitalsList/webVitals", "name"));
         specs.add(new ElementSpecification("/testreport/summary/*", "name"));
 
         return specs;

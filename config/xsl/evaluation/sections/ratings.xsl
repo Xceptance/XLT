@@ -25,7 +25,7 @@
                     </thead>
                     <xsl:variable name="count" select="count($elements)"/>
                     <xsl:choose>
-                        <xsl:when test="$count > 0">
+                        <xsl:when test="$count &gt; 0">
                             <tbody>
                                 <xsl:for-each select="$elements">
                                     <xsl:element name="tr">

@@ -1,12 +1,11 @@
 <?xml version="1.0"?>
-<xsl:stylesheet 
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
 
 <!--
     This file contains the description sections for the report as well as
     the headlines for the section.
-    
-    The format is always <h2> as main headline, <h3> as description headline 
+
+    The format is always <h2> as main headline, <h3> as description headline
     and some <p> or <ul> as text.
 -->
 
@@ -59,7 +58,7 @@
         </xsl:call-template>
     </p>
     <div id="more-{$gid}" class="more">
-        <p>A rule passes if all its conditions evaluate to <code>true</code>, otherwise it fails.</p> 
+        <p>A rule passes if all its conditions evaluate to <code>true</code>, otherwise it fails.</p>
         <p>If a rule is marked as "Error", the evaluation statement was incorrect and the rule is ignored. A rule can mark the entire test as failed, regardless of the rating result, if the "fails test" attribute is set to <code>true</code>.</p>
     </div>
 </div>

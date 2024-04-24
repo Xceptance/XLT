@@ -121,7 +121,8 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
         // set the counts
         final double count = runTimeStatistics.getCount();
         final long duration = Math.max((getEndTime() - getStartTime()) / 1000, 1);
-
+        
+        timerReport.errorPercentage = ReportUtils.calculatePercentage(totalErrors, (int) count);
         timerReport.count = (int) count;
         timerReport.countPerSecond = ReportUtils.convertToBigDecimal(count / duration);
         timerReport.countPerMinute = ReportUtils.convertToBigDecimal(count * 60 / duration);

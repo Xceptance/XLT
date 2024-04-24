@@ -26,7 +26,7 @@
                     </thead>
                     <xsl:variable name="count" select="count($results)"/>
                     <xsl:choose>
-                        <xsl:when test="$count > 0">
+                        <xsl:when test="$count &gt; 0">
                             <tfoot>
                                 <tr class="totals">
                                     <td class="key">Totals</td>

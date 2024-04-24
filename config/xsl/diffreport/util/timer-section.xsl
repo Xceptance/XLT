@@ -45,23 +45,23 @@
                                     <th colspan="8" class="colgroup1">Bytes Received</th>
                                 </tr>
                                 <tr>
-                                    <th class="table-sortable:numeric">Total</th>
-                                    <th class="table-sortable:numeric">1/s</th>
-                                    <th class="table-sortable:numeric">1/min</th>
-                                    <th class="table-sortable:numeric">1/h*</th>
-                                    <th class="table-sortable:numeric">1/d*</th>
-                                    <th class="table-sortable:numeric" title="The arithmetic mean.">Mean</th>
-                                    <th class="table-sortable:numeric">Min.</th>
-                                    <th class="table-sortable:numeric">Max.</th>
+                                    <th class="table-sortable:numeric" id="sortByBandwidthSentTotal">Total</th>
+                                    <th class="table-sortable:numeric" id="sortByBandwidthSentPerSecond">1/s</th>
+                                    <th class="table-sortable:numeric" id="sortByBandwidthSentPerMinute">1/min</th>
+                                    <th class="table-sortable:numeric" id="sortByBandwidthSentPerHour">1/h*</th>
+                                    <th class="table-sortable:numeric" id="sortByBandwidthSentPerDay">1/d*</th>
+                                    <th class="table-sortable:numeric" title="The arithmetic mean." id="sortByBandwidthSentMean">Mean</th>
+                                    <th class="table-sortable:numeric" id="sortByBandwidthSentMin">Min.</th>
+                                    <th class="table-sortable:numeric" id="sortByBandwidthSentMax">Max.</th>
 
-                                    <th class="table-sortable:numeric colgroup1">Total</th>
-                                    <th class="table-sortable:numeric colgroup1">1/s</th>
-                                    <th class="table-sortable:numeric colgroup1">1/min</th>
-                                    <th class="table-sortable:numeric colgroup1">1/h*</th>
-                                    <th class="table-sortable:numeric colgroup1">1/d*</th>
-                                    <th class="table-sortable:numeric colgroup1" title="The arithmetic mean.">Mean</th>
-                                    <th class="table-sortable:numeric colgroup1">Min.</th>
-                                    <th class="table-sortable:numeric colgroup1">Max.</th>
+                                    <th class="table-sortable:numeric colgroup1" id="sortByBandwidthReceivedTotal">Total</th>
+                                    <th class="table-sortable:numeric colgroup1" id="sortByBandwidthReceivedPerSecond">1/s</th>
+                                    <th class="table-sortable:numeric colgroup1" id="sortByBandwidthReceivedPerMinute">1/min</th>
+                                    <th class="table-sortable:numeric colgroup1" id="sortByBandwidthReceivedPerHour">1/h*</th>
+                                    <th class="table-sortable:numeric colgroup1" id="sortByBandwidthReceivedPerDay">1/d*</th>
+                                    <th class="table-sortable:numeric colgroup1" title="The arithmetic mean." id="sortByBandwidthReceivedMean">Mean</th>
+                                    <th class="table-sortable:numeric colgroup1" id="sortByBandwidthReceivedMin">Min.</th>
+                                    <th class="table-sortable:numeric colgroup1" id="sortByBandwidthReceivedMax">Max.</th>
                                 </tr>
                             </thead>
                             <xsl:variable name="count" select="count($elements)"/>

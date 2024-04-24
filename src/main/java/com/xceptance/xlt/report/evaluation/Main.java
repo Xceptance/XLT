@@ -33,7 +33,6 @@ public final class Main
                     final StringWriter sw = new StringWriter();
                     evaluator.storeEvaluation(result, sw);
                     System.out.println(sw.toString());
-//                    System.out.println("Evaluation result: " + result);
                 }
             }
             catch (final Throwable t)

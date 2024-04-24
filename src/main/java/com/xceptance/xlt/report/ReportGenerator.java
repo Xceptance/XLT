@@ -18,7 +18,6 @@ package com.xceptance.xlt.report;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -53,8 +52,6 @@ import com.xceptance.xlt.report.util.ReportUtils;
 import com.xceptance.xlt.report.util.TaskManager;
 import com.xceptance.xlt.util.Timer;
 import com.xceptance.xlt.util.XltPropertiesImpl;
-
-import dev.harrel.jsonschema.providers.OrgJsonNode;
 
 /**
  *
@@ -278,9 +275,9 @@ public class ReportGenerator
             // drop providers
             reportProviders.clear();
 
-            // evaluate test report if desired
+            // evaluate test if desired
             final File evaluationXml  = evaluateReport(xmlReport);
-            
+
             // create the html report
             transformReport(xmlReport, outputDir, evaluationXml != null);
 
@@ -768,6 +765,7 @@ public class ReportGenerator
                 }
 
                 evaluator.storeEvaluationToFile(outcome, evaluationXMLFile);
+
                 return evaluationXMLFile;
             }
             catch (final Throwable t)
@@ -775,7 +773,7 @@ public class ReportGenerator
                 XltLogger.reportLogger.error(errMessage, t);
             }
         }
-        
+
         return null;
     }
 

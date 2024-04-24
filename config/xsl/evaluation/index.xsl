@@ -3,9 +3,7 @@
 
 <xsl:output method="html" indent="yes" omit-xml-declaration="yes" encoding="UTF-8" />
 
-<!-- 
-    Generate the page frame 
--->
+<!--  Generate the page frame -->
 
 
 <xsl:include href="../common/sections/head.xsl" />
@@ -105,7 +103,7 @@
         </div> <!-- /data-content -->
 
         <xsl:call-template name="footer">
-        	<xsl:with-param name="productName" select="$productName" />
+            <xsl:with-param name="productName" select="$productName" />
             <xsl:with-param name="productVersion" select="$productVersion" />
             <xsl:with-param name="productUrl" select="$productUrl" />
         </xsl:call-template>

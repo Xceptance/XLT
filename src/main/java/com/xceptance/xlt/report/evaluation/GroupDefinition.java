@@ -114,7 +114,7 @@ public class GroupDefinition
 
         return new GroupDefinition(id, description, ruleIds, enabled, Optional.ofNullable(source).orElse(PointsSource.FIRST));
     }
-    
+
     public static class RuleIdConverter extends AbstractCollectionConverter
     {
         public RuleIdConverter(Mapper mapper)
@@ -128,18 +128,18 @@ public class GroupDefinition
         {
             return List.class.isAssignableFrom(type);
         }
-        
+
         @Override
         public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context)
         {
-            for(final Object o : (List<?>) source)
+            for (final Object o : (List<?>) source)
             {
                 writer.startNode("rule");
                 writer.addAttribute("ref-id", Objects.toString(o));
                 writer.endNode();
             }
         }
-        
+
         @Override
         public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context)
         {

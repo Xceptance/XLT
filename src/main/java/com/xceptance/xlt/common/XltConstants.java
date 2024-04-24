@@ -484,7 +484,7 @@ public final class XltConstants
      * The name of the XSL file for rendering the auto-evaluation report.
      */
     public static final String EVALUATION_REPORT_XSL_FILENAME = "index.xsl";
-    
+
     /**
      * The name of the HTML output file for rendering the auto-evaluation report.
      */
