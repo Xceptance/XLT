@@ -62,5 +62,10 @@ When you build XLT by yourself, the following limitations apply.
 
 * Depending on the distribution you use, you might need to adjust the path to your Chrome/Chromium executable in `build.properties` on Linux as well.
 
+# XLT as a Service - XTC
+If you are looking for a hosted version of XLT with all the bells and whistles, look no further. Xceptance offers XTC - The Xceptance Test Center, a fully hosted, multi-project, infinitely scalable version of XLT in the cloud. [Contact](https://www.xceptance.com/en/contact/) us for more details.
+
+![image](https://github.com/Xceptance/XLT/assets/1793856/7a8efb7b-caef-4aaf-9321-cdcaba673d8a)
+
 # Jobs
-Do you like the code and architecture of XLT? Do you have ideas for new features or just like to work with it? Why not considering to apply for a job at Xceptance? We are always hiring developers and testers. Just drop us a line. You can find more information on our career page [Jobs at Xceptance](https://www.xceptance.com/en/careers/).
+Do you like XLT's code and architecture? Do you have ideas for new features or just enjoy working with it? Consider applying for a job at Xceptance. We are always hiring developers and testers. Just drop us a line. You can find more information on our career page [Jobs at Xceptance] (https://www.xceptance.com/en/careers/).
