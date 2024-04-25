@@ -31,7 +31,7 @@ public final class Main
                 if (result != null)
                 {
                     final StringWriter sw = new StringWriter();
-                    evaluator.storeEvaluation(result, sw);
+                    evaluator.writeEvaluation(result, sw);
                     System.out.println(sw.toString());
                 }
             }

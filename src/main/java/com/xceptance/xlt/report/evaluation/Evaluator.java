@@ -10,6 +10,7 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -42,6 +43,12 @@ public class Evaluator
 
     private final Processor processor;
 
+    /**
+     * Creates a new evaluator instance that uses the given configuration JSON file.
+     *
+     * @param configFile
+     *            the evaluation configuration JSON file to use
+     */
     public Evaluator(final File configFile)
     {
         ParameterCheckUtils.isReadableFile(configFile, "configFile");
@@ -50,6 +57,13 @@ public class Evaluator
         this.processor = new Processor(false);
     }
 
+    /**
+     * Evaluates the given XML file and returns the evaluations outcome.
+     *
+     * @param documentFile
+     *            the XML file to evaluate
+     * @return evaluation outcome
+     */
     public Evaluation evaluate(final File documentFile)
     {
         ParameterCheckUtils.isNotNull(documentFile, "documentFile");
@@ -66,15 +80,35 @@ public class Evaluator
 
     }
 
-    public void storeEvaluationToFile(final Evaluation evaluation, final File outputFile) throws IOException
+    /**
+     * Writes the given evaluation outcome as serialized XML to the given output file.
+     *
+     * @param evaluation
+     *            the evaluation outcome to be written
+     * @param outputFile
+     *            the target output file
+     * @throws IOException
+     *             thrown when evaluation outcome could be not be written to the given file
+     */
+    public void writeeEvaluationToFile(final Evaluation evaluation, final File outputFile) throws IOException
     {
         try (final OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream(outputFile), XltConstants.UTF8_ENCODING))
         {
-            storeEvaluation(evaluation, osw);
+            writeEvaluation(evaluation, osw);
         }
     }
 
-    public void storeEvaluation(final Evaluation evaluation, final Writer writer) throws IOException
+    /**
+     * Writes the given evaluation outcome as serialized XML to the given destination writer.
+     *
+     * @param evaluation
+     *            the evaluation outcome to be written
+     * @param writer
+     *            the destination to write serialized XML to
+     * @throws IOException
+     *             thrown evaluation outcome could not be written
+     */
+    public void writeEvaluation(final Evaluation evaluation, final Writer writer) throws IOException
     {
         // writer the XML preamble
         writer.write(XltConstants.XML_HEADER);
@@ -89,6 +123,50 @@ public class Evaluator
         xstream.toXML(evaluation, writer);
     }
 
+    protected Configuration parseConfiguration() throws ValidationError, FileNotFoundException, IOException
+    {
+        final JSONObject schemaJSON;
+        try (final InputStream is = getClass().getResourceAsStream(SCHEMA_RESOURCE_PATH))
+        {
+            schemaJSON = new JSONObject(new JSONTokener(is));
+        }
+        catch (final JSONException je)
+        {
+            throw new ValidationError("Failed to parse JSON schema file", je);
+        }
+
+        final JSONObject configJSON;
+        try (final BufferedReader reader = Files.newReader(configFile, StandardCharsets.UTF_8))
+        {
+            configJSON = new JSONObject(new JSONTokener(reader));
+        }
+        catch (final JSONException je)
+        {
+            throw new ValidationError("Could not parse configuration file '" + configFile.getName() + "' as JSON", je);
+        }
+
+        final Validator validator = new ValidatorFactory().withJsonNodeFactory(new OrgJsonNode.Factory()).createValidator();
+
+        final URI schemaURI = validator.registerSchema(schemaJSON);
+        final Validator.Result validationResult = validator.validate(schemaURI, configJSON);
+        if (!validationResult.isValid())
+        {
+            throw new ValidationError("Configuration file '" + configFile.getName() + "' is malformed -> " +
+                                      validationResult.getErrors().stream().map(e -> e.getInstanceLocation() + ": " + e.getError())
+                                                      .collect(Collectors.joining(", ")));
+        }
+
+        try
+        {
+            return Configuration.fromJSON(configJSON);
+        }
+        catch (final Exception e)
+        {
+            throw new ValidationError("Configuration file '" + configFile.getName() + "' is malformed", e);
+        }
+
+    }
+
     protected Evaluation doEvaluate(final Configuration config, final File documentFile) throws SaxonApiException
     {
         final XdmNode docNode = processor.newDocumentBuilder().build(documentFile);
@@ -96,50 +174,64 @@ public class Evaluator
         xpathCompiler.setUnprefixedElementMatchingPolicy(UnprefixedElementMatchingPolicy.DEFAULT_NAMESPACE);
         xpathCompiler.setCaching(true);
 
-        int points = 0, totalPoints = 0;
-        boolean testFailed = false;
+        int points = 0, totalPoints = 0; // counters for achieved and achievable points
+        boolean testFailed = false; // whether to mark test as failed (due to "hard rule fail" or due to "rating fail")
+
+        // initialize evaluation and its result objects
         final Evaluation evaluation = new Evaluation(config);
         final Evaluation.Result result = evaluation.result;
+
+        // loop through the list of configured groups (in definition order)
         for (final GroupDefinition groupDef : config.getGroups())
         {
+            // create a group result object
             final Evaluation.Group group = new Evaluation.Group(groupDef);
-
+            // loop through the group's rule IDs (in definition order)
             for (final String ruleId : groupDef.getRuleIds())
             {
+                // lookup the rule's definition for this ID
                 final RuleDefinition ruleDef = config.getRule(ruleId);
+                // create a rule result object
                 final Evaluation.Rule rule = new Evaluation.Rule(ruleDef, groupDef.isEnabled());
-
+                // evaluate the rule
                 evaluateRule(rule, xpathCompiler, docNode);
-
+                // check for "hard rule fail"
                 if (rule.getStatus().isFailed() && rule.getDefinition().isFailsTest())
                 {
                     testFailed = true;
                 }
 
+                // add rule result to group result
                 group.addRule(rule);
 
             }
 
-            group.computePoints();
+            // conclude the evaluation of the group
+            conclude(group);
+
+            // add number of group's achieved and achievable points to the counters
             points += group.getPoints();
             totalPoints += group.getTotalPoints();
 
+            // add group result to evaluation result
             result.addGroup(group);
         }
 
+        // set overall number of achieved and achievable points
         result.setPoints(points);
         result.setTotalPoints(totalPoints);
 
+        // compute final score
         final double pointsPercentage = getPercentage(points, totalPoints);
 
         // determine the test's rating and whether it has failed
         String rating = null;
-        for (final RatingDefinition ratingDef : config.getRatings())
+        for (final RatingDefinition ratingDefn : config.getRatings())
         {
-            if (ratingDef.isEnabled() && pointsPercentage <= ratingDef.getValue())
+            if (ratingDefn.isEnabled() && pointsPercentage <= ratingDefn.getValue())
             {
-                rating = ratingDef.getName();
-                testFailed = testFailed || ratingDef.isFailsTest();
+                rating = ratingDefn.getName();
+                testFailed = testFailed || ratingDefn.isFailsTest();
 
                 break;
             }
@@ -166,7 +258,7 @@ public class Evaluator
             rule.addCheck(ruleCheck);
         }
 
-        rule.conclude();
+        conclude(rule);
     }
 
     private void evaluateRuleCheck(final Evaluation.Rule.Check check, final XPathCompiler compiler, final XdmNode document)
@@ -240,48 +332,120 @@ public class Evaluator
         }
     }
 
-    private Configuration parseConfiguration() throws ValidationError, FileNotFoundException, IOException
+    private void conclude(final Evaluation.Rule rule)
     {
-        final JSONObject schemaJSON;
-        try (final InputStream is = getClass().getResourceAsStream(SCHEMA_RESOURCE_PATH))
+        // nothing to do for disabled rules
+        if (!rule.isEnabled())
         {
-            schemaJSON = new JSONObject(new JSONTokener(is));
-        }
-        catch (final JSONException je)
-        {
-            throw new ValidationError("Failed to parse JSON schema file", je);
+            return;
         }
 
-        final JSONObject configJSON;
-        try (final BufferedReader reader = Files.newReader(configFile, StandardCharsets.UTF_8))
+        Status lastStatus = null;
+        // loop through rule's checks
+        for (final Evaluation.Rule.Check c : rule.getChecks())
         {
-            configJSON = new JSONObject(new JSONTokener(reader));
+            final Status checkStatus = c.getStatus();
+            // ignore skipped checks
+            if (checkStatus.isSkipped())
+            {
+                continue;
+            }
+
+            // remember most recent check status that doesn't indicate a passed check or just the very first check
+            // status if all checks did pass
+            if (lastStatus == null || !checkStatus.isPassed())
+            {
+                lastStatus = checkStatus;
+                // encountered erroneous check -> set rule message to the check's error message and stop looping
+                if (checkStatus.isError())
+                {
+                    rule.setMessage(c.getErrorMessage());
+                    break;
+                }
+            }
         }
-        catch (final JSONException je)
+        // take action according to rule's final status
+        // (pass: set message to success message and points to all achievable points, fail: set message to fail message)
+        if (lastStatus != null)
         {
-            throw new ValidationError("Could not parse configuration file '" + configFile.getName() + "' as JSON", je);
+            rule.setStatus(lastStatus);
+            if (lastStatus.isPassed())
+            {
+                rule.setMessage(rule.getDefinition().getSuccessMessage());
+                rule.setPoints(rule.getDefinition().getPoints());
+            }
+            else if (lastStatus.isFailed())
+            {
+                rule.setMessage(rule.getDefinition().getFailMessage());
+            }
         }
 
-        final Validator validator = new ValidatorFactory().withJsonNodeFactory(new OrgJsonNode.Factory()).createValidator();
+    }
 
-        final URI schemaURI = validator.registerSchema(schemaJSON);
-        final Validator.Result validationResult = validator.validate(schemaURI, configJSON);
-        if (!validationResult.isValid())
+    private void conclude(final Evaluation.Group group)
+    {
+        // nothing to do for disabled groups
+        if (!group.getDefinition().isEnabled())
         {
-            throw new ValidationError("Configuration file '" + configFile.getName() + "' is malformed -> " +
-                                      validationResult.getErrors().stream().map(e -> e.getInstanceLocation() + ": " + e.getError())
-                                                      .collect(Collectors.joining(", ")));
+            return;
         }
 
-        try
+        Integer firstMatch = null, lastMatch = null;
+        int maxPoints = 0, sumPoints = 0, sumPointsMatching = 0;
+        // loop through group's rule and determine
+        // - the points of the first matching rule,
+        // - the points of the last matching rule,
+        // - the points of all matching rules (sum of),
+        // - the maximum number of all rules' points and
+        // - the overall sum of all rules' points
+        for (final Evaluation.Rule rule : group.getRules())
         {
-            return Configuration.fromJSON(configJSON);
-        }
-        catch (final Exception e)
-        {
-            throw new ValidationError("Configuration file '" + configFile.getName() + "' is malformed", e);
+            // rules must be enabled in order to participate in point calculation
+            if (!rule.getDefinition().isEnabled())
+            {
+                continue;
+            }
+
+            final int rulePoints = rule.getPoints();
+            final int rulePointsMax = rule.getDefinition().getPoints();
+            maxPoints = Math.max(maxPoints, rulePointsMax);
+            if (rule.getStatus().isPassed())
+            {
+                if (firstMatch == null)
+                {
+                    firstMatch = Integer.valueOf(rulePoints);
+                }
+                lastMatch = Integer.valueOf(rulePoints);
+
+                sumPointsMatching += rulePoints;
+            }
+
+            sumPoints += rulePointsMax;
         }
 
+        // pick the correct values for group's points and total points according to its points source
+        final int points, totalPoints;
+        switch (group.getDefinition().getPointSource())
+        {
+            case FIRST:
+                points = Optional.ofNullable(firstMatch).orElse(0);
+                totalPoints = maxPoints;
+                break;
+            case LAST:
+                points = Optional.ofNullable(lastMatch).orElse(0);
+                totalPoints = maxPoints;
+                break;
+            case ALL:
+                points = sumPointsMatching;
+                totalPoints = sumPoints;
+                break;
+            default:
+                points = 0;
+                totalPoints = 0;
+        }
+
+        group.setPoints(points);
+        group.setTotalPoints(totalPoints);
     }
 
     /**

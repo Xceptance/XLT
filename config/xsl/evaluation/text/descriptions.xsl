@@ -15,7 +15,7 @@
 
 <xsl:template name="description-scorecard">
 <div class="description">
-    <xsl:variable name="gid" select="concat('scorecard-',generate-id(.))" />
+    <xsl:variable name="gid" select="concat('scorecard-',generate-id())" />
     <p>A performance test scorecard is a quick and easy way to evaluate a test result.
         <xsl:call-template name="show-n-hide">
             <xsl:with-param name="gid" select="$gid"/>
@@ -34,7 +34,7 @@
 
 <xsl:template name="description-ratings">
 <div class="description">
-    <xsl:variable name="gid" select="concat('ratings-',generate-id(.))" />
+    <xsl:variable name="gid" select="concat('ratings-',generate-id())" />
     <p>A rating defines the result of the scoring. It is basically a quick verdict on the created scorecard.
         <xsl:call-template name="show-n-hide">
             <xsl:with-param name="gid" select="$gid"/>
@@ -49,9 +49,10 @@
 <xsl:template name="headline-rules">
 <h2>Rules</h2>
 </xsl:template>
+
 <xsl:template name="description-rules">
 <div class="description">
-    <xsl:variable name="gid" select="concat('rules-', generate-id(.))" />
+    <xsl:variable name="gid" select="concat('rules-', generate-id())" />
     <p>Rules consist of data checks on the test result. A rule must be assigned to at least one group to be effective.
         <xsl:call-template name="show-n-hide">
             <xsl:with-param name="gid" select="$gid" />
@@ -67,9 +68,10 @@
 <xsl:template name="headline-rulechecks">
 <h3>Rule Checks</h3>
 </xsl:template>
+
 <xsl:template name="description-rulechecks">
 <div class="description">
-    <xsl:variable name="gid" select="concat('rulechecks-',generate-id(.))" />
+    <xsl:variable name="gid" select="concat('rulechecks-',generate-id())" />
     <p>Rule checks act as queries against the load test result data.
         <xsl:call-template name="show-n-hide">
             <xsl:with-param name="gid" select="$gid" />
@@ -84,11 +86,13 @@
 <xsl:template name="headline-groups">
 <h2>Groups</h2>
 </xsl:template>
+
 <xsl:template name="description-groups">
 <div class="description">
     <p>Groups define which rules are evaluated and how the overall result of multiple related rules is determined. A rule may be used in more than one group. Each group requires at least one rule to be considered.</p>
 </div>
 </xsl:template>
+
 <!-- The show and hide part -->
 <xsl:template name="show-n-hide">
     <xsl:param name="gid"/>

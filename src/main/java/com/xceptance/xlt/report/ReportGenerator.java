@@ -276,13 +276,13 @@ public class ReportGenerator
             reportProviders.clear();
 
             // evaluate test if desired
-            final File evaluationXml  = evaluateReport(xmlReport);
+            final File evaluationXml = evaluateReport(xmlReport);
 
             // create the html report
             transformReport(xmlReport, outputDir, evaluationXml != null);
 
             // create the evaluation HTML report (if evaluation took place)
-            if(evaluationXml != null)
+            if (evaluationXml != null)
             {
                 transformEvaluation(evaluationXml);
             }
@@ -743,10 +743,21 @@ public class ReportGenerator
         return inputDirName;
     }
 
+    /**
+     * Evaluates the given test report XML file and writes its outcome to file named
+     * {@value XltConstants#EVALUATION_REPORT_XML_FILENAME}. N.B. No evaluation is done if there is no evaluation
+     * configuration file configured.
+     *
+     * @param reportXMLFile
+     *            the test report XML to evaluate
+     * @return the evaluation report XML file if evaluation took place, or {@code null} otherwise.
+     */
     private File evaluateReport(final File reportXMLFile)
     {
         final String evaluationConfig = config.getStringProperty(XltConstants.EVALUATION_CONFIG_FILE_PROPERTY, null);
-        final File evaluationConfigFile = evaluationConfig != null ? new File(new File(outputDir, XltConstants.CONFIG_DIR_NAME), evaluationConfig) : null; 
+        final File evaluationConfigFile = evaluationConfig != null ? new File(new File(outputDir, XltConstants.CONFIG_DIR_NAME),
+                                                                              evaluationConfig)
+                                                                   : null;
         if (evaluationConfigFile != null)
         {
             XltLogger.reportLogger.debug("Evaluating test report using configuration file '{}'", evaluationConfigFile.getAbsolutePath());
@@ -764,7 +775,7 @@ public class ReportGenerator
                     System.err.println(errMessage + ": " + error);
                 }
 
-                evaluator.storeEvaluationToFile(outcome, evaluationXMLFile);
+                evaluator.writeeEvaluationToFile(outcome, evaluationXMLFile);
 
                 return evaluationXMLFile;
             }
@@ -777,6 +788,16 @@ public class ReportGenerator
         return null;
     }
 
+    /**
+     * Transform the given evaluation report XML file using the XSL stylesheet
+     * {@value XltConstants#EVALUATION_REPORT_XSL_FILENAME} that is expected to reside in report generator's
+     * configuration sub-directory {@value XltConstants#EVALUATION_REPORT_XSL_PATH}
+     *
+     * @param inputXmlFile
+     *            the evaluation report XML to transform
+     * @throws Exception
+     *             thrown when transformation failed for any reason
+     */
     private void transformEvaluation(final File inputXmlFile) throws Exception
     {
         XltLogger.reportLogger.info(Console.horizontalBar());

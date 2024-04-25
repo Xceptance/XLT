@@ -213,59 +213,6 @@ public class Evaluation
         {
             this.totalPoints = Math.max(0, totalPoints);
         }
-
-        public void computePoints()
-        {
-            if (!definition.isEnabled())
-            {
-                return;
-            }
-
-            Integer firstMatch = null, lastMatch = null;
-            int maxPoints = 0, sumPoints = 0, sumPointsMatching = 0;
-            for (final Rule rule : rules)
-            {
-                // rules must be enabled in order to participate in point calculation
-                if (!rule.definition.isEnabled())
-                {
-                    continue;
-                }
-
-                final int rulePoints = rule.points;
-                final int rulePointsMax = rule.definition.getPoints();
-                maxPoints = Math.max(maxPoints, rulePointsMax);
-                if (rule.status.isPassed())
-                {
-                    if (firstMatch == null)
-                    {
-                        firstMatch = Integer.valueOf(rulePoints);
-                    }
-                    lastMatch = Integer.valueOf(rulePoints);
-
-                    sumPointsMatching += rulePoints;
-                }
-
-                sumPoints += rulePointsMax;
-            }
-
-            switch (definition.getPointSource())
-            {
-                case FIRST:
-                    points = Optional.ofNullable(firstMatch).orElse(0);
-                    totalPoints = maxPoints;
-                    break;
-                case LAST:
-                    points = Optional.ofNullable(lastMatch).orElse(0);
-                    totalPoints = maxPoints;
-                    break;
-                case ALL:
-                    points = sumPointsMatching;
-                    totalPoints = sumPoints;
-                    break;
-            }
-
-        }
-
     }
 
     @XStreamAlias("rule")
@@ -323,7 +270,7 @@ public class Evaluation
 
         void setStatus(final Status status)
         {
-            this.status = status;
+            this.status = Objects.requireNonNull(status);
         }
 
         public String getMessage()
@@ -344,48 +291,6 @@ public class Evaluation
         void setPoints(final int points)
         {
             this.points = Math.max(0, Math.min(definition.getPoints(), points));
-        }
-
-        void conclude()
-        {
-            if (!isEnabled())
-            {
-                return;
-            }
-
-            Status lastStatus = null;
-            for (final Check c : checks)
-            {
-
-                if (c.status.isSkipped())
-                {
-                    continue;
-                }
-                if (lastStatus == null || !c.status.isPassed())
-                {
-                    lastStatus = c.status;
-                    if (c.status.isError())
-                    {
-                        message = c.errorMessage;
-                        break;
-                    }
-                }
-            }
-
-            if (lastStatus != null)
-            {
-                status = lastStatus;
-                if (lastStatus.isPassed())
-                {
-                    message = definition.getSuccessMessage();
-                    points = definition.getPoints();
-                }
-                else if (lastStatus.isFailed())
-                {
-                    message = definition.getFailMessage();
-                }
-            }
-
         }
 
         public boolean isEnabled()
