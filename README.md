@@ -1,5 +1,5 @@
 # XLT
-XLT is an extensive load and performance test tool developed and maintained by Xceptance. If you need more information, here is the current [website](https://www.xceptance.com/xlt/) and the current [documentation portal](https://xltdoc.xceptance.com/). There is also a [forum](https://ask.xceptance.de/) available to discuss load testing and test automation with XLT.
+XLT is an extensive load and performance test tool developed and maintained by Xceptance. If you need more information, here is the current [website](https://www.xceptance.com/xlt/) and the current [documentation portal](https://docs.xceptance.com/).
 
 The documentation was fully rewritten in 2020 and it is continuously updated. We appreciate your feedback. You can also directly contribute on GitHub at https://github.com/Xceptance/xlt-documentation. If you need any information from the legacy documentation, you can still find it at https://lab.xceptance.de/releases/xlt/5.7.1/index.html
 
