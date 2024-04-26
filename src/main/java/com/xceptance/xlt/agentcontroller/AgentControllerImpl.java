@@ -1090,7 +1090,8 @@ public class AgentControllerImpl implements AgentController
                         final IOFileFilter propertiesFilesFilter = FileFilterUtils.suffixFileFilter(XltConstants.PROPERTY_FILE_EXTENSION);
                         final IOFileFilter cfgFilesFilter = FileFilterUtils.suffixFileFilter(XltConstants.CFG_FILE_EXTENSION);
                         final IOFileFilter xmlFilesFilter = FileFilterUtils.suffixFileFilter(XltConstants.XML_FILE_EXTENSION);
-                        final IOFileFilter extensionFilter = FileFilterUtils.or(propertiesFilesFilter, cfgFilesFilter, xmlFilesFilter);
+                        final IOFileFilter jsonFilesFilter = FileFilterUtils.suffixFileFilter(XltConstants.JSON_FILE_EXTENSION);
+                        final IOFileFilter extensionFilter = FileFilterUtils.or(propertiesFilesFilter, cfgFilesFilter, xmlFilesFilter, jsonFilesFilter);
                         final IOFileFilter filter = FileFilterUtils.and(FileFileFilter.INSTANCE, extensionFilter);
 
                         ZipOutputStream out = null;

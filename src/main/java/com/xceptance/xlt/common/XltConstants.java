@@ -80,6 +80,11 @@ public final class XltConstants
     public static final String XML_FILE_EXTENSION = ".xml";
 
     /**
+     * The extension of JSON files, such as my-config.json.
+     */
+    public static final String JSON_FILE_EXTENSION = ".json";
+
+    /**
      * The name of the system property which holds the agent configuration directory.
      */
     public static final String CONFIG_DIR_PROPERTY = XLT_PACKAGE_PATH + ".agent.config";
