@@ -23,7 +23,8 @@ body {
  * The header
  */
 #header {
-    background-color: #A50000;
+    /*background-color: #A50000;*/
+    background-color: green;
 }
 
 #header .logo {
@@ -627,3 +628,28 @@ table.key-value-table td.value .csep {
         transform: rotate(360deg);
     }
 }
+
+/********************************************************************************************
+ *
+ * Responsive
+ *
+ ********************************************************************************************/
+
+#wrapper, #mainContent {
+	flex-flow: row;
+	width: 100vw !important;
+}
+
+@media only screen and (max-width: 699px) {
+	
+	#wrapper, #mainContent {
+		flex-flow:column;
+ 	}
+ 	
+ 	#actionlist {
+ 		flex-basis: auto !important;
+ 	}
+	
+}
+ 
+ 

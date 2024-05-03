@@ -1002,11 +1002,31 @@
                 activateTab(this);
             }));
 
-            Split(['#leftSideMenu', '#content'], {
-                sizes: [15, 85],
-                minSize: [300, 600],
-                gutterSize: 3
-            })
+			function splitContent(mm) {
+				if (mm.matches) { // If media query matches / is large screen
+			    	Split(['#leftSideMenu', '#content'], {
+			        	sizes: [15, 85],
+			            minSize: [300, 600],
+			            gutterSize: 3
+			        });
+				} 
+				else { //on small screens/mobile: revert changes made by Split
+					document.getElementById("leftSideMenu").removeAttribute("style");
+					document.getElementById("content").removeAttribute("style");
+					var gutter = document.getElementsByClassName('gutter-horizontal');
+					while(gutter[0]) {
+    					gutter[0].parentNode.removeChild(gutter[0]);
+					}
+				}
+			}		
+			// Create a MediaQueryList object
+			var mm = window.matchMedia("(min-width: 700px)")
+			// Call listener function at run time
+			splitContent(mm);
+			// Attach listener function on state changes
+			mm.addEventListener("change", function() {
+				splitContent(mm);
+			}); 
 
             // activate first request-tab
             activateTab(requestContent.querySelector(".tabs-nav li"));
