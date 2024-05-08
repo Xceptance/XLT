@@ -23,8 +23,7 @@ body {
  * The header
  */
 #header {
-    /*background-color: #A50000;*/
-    background-color: green;
+	background-color: #A50000;
 }
 
 #header .logo {
@@ -212,7 +211,7 @@ body {
     cursor: pointer;
 }
 
-#navigation .expander::after {
+#navigation .expander::before {
     font-style: normal;
     content: "◢";
     margin-right: 0.5em;
@@ -221,7 +220,7 @@ body {
     transform: translateY(-10%) rotate(-45deg);
 }
 
-#navigation .expander.expanded::after {
+#navigation .expander.expanded::before {
     transform: translateY(-10%) rotate(0deg);
 }
 
@@ -640,16 +639,107 @@ table.key-value-table td.value .csep {
 	width: 100vw !important;
 }
 
-@media only screen and (max-width: 699px) {
+@media (max-width: 699px) {
 	
 	#wrapper, #mainContent {
 		flex-flow:column;
  	}
  	
+ 	#header .logo h1 {
+ 		font-size: 22px;
+ 	}
+ 	
+ 	 	#header .expander {
+	    cursor: pointer;
+	}
+	
+	#header .expander::before {
+	    font-style: normal;
+	    content: "◢";
+	    margin-top: 0.5em;
+	    font-size: 20px;
+	    color: #fff;
+	    display: inline-block;
+	    transform: translateY(-10%) rotate(-45deg);
+	}
+	
+	#header .expander.expanded::before {
+	    transform: translateY(-10%) rotate(0deg);
+	}
+	
+	#leftSideMenu {
+ 		height: 90px;
+ 		overflow: hidden;
+ 		transition: height .2s;
+ 	} 	
+ 	
+ 	#leftSideMenu.expanded {
+ 		height: 80vh;
+ 		overflow: scroll;
+ 	}
+ 	
+ 	#content {
+ 		height: 20vh;
+ 		transition: height .2s;
+ 	}
+ 	
+ 	#content.expanded {
+ 		height: 100vh;
+ 	}
+ 	
+ 	#navigation {
+ 		font-size: 16px;
+ 		padding: 0px;
+ 	}
+ 	
+ 	#navigation li.action {
+ 		padding-top: 6px;
+ 		padding-bottom: 6px;
+ 	}
+ 	
+ 	#navigation ul li ul li {
+ 		font-size: 16px;
+ 		padding: 4px;
+ 	}	
+ 	
+ 	#transaction {
+ 		overflow: visible;
+ 		font-size: 19px;
+ 	}
+ 	
  	#actionlist {
  		flex-basis: auto !important;
+ 		margin: 0px;
  	}
+ 	
+ 	#responseContentActions {
+	    position: fixed;
+	    bottom: 10px;
+	    right: 10px;
+	    top: auto;
+	}
 	
+	#beautify, #highlightSyntax, #selectResponseContent {
+		background-color: #666;
+		border: none;
+		border-radius: 13px;
+		color: #fff;
+		padding: 8px;
+		text-align: center;
+		text-decoration: none;
+		display: inline-block;
+		font-size: 16px;
+		cursor: pointer;
+	}
+	
+	#transactionContent {
+		border-top: 2px solid #666;
+	}
+	
+	#transactionContent h1 {
+		margin: 8px 2px;
+		font-size: 12pt;
+	}	
 }
  
  
