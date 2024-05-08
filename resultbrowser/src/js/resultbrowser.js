@@ -326,7 +326,7 @@
         document.getElementById("leftSideMenu").classList.toggle("expanded");
         document.getElementById("content").classList.toggle("expanded");
         // switch the menu toggle
-        document.getElementById("tExpander").classList.toggle("expanded");
+        document.getElementById("mExpander").classList.toggle("expanded");
     }
 
     function createRequestsForAction(actionElement) {
@@ -1017,7 +1017,6 @@
 			            minSize: [300, 600],
 			            gutterSize: 3
 			        });
-			        document.removeChild(document.getElementById("tExpander"));
 				} 
 				else { //on small screens/mobile: revert changes made by Split
 					document.getElementById("leftSideMenu").removeAttribute("style");
@@ -1027,20 +1026,23 @@
     					gutter[0].parentNode.removeChild(gutter[0]);
 					}
 					
-					const tExpander = document.createElement("span");
-        			tExpander.classList.add("expander");
-        			tExpander.classList.add("expanded");
-        			tExpander.id = "tExpander";
-        			tExpander.title = "Single-click to show/hide menu.";
-        			document.getElementById("header").appendChild(tExpander);
-        
-			        // setup click to show/hide requests
-			        tExpander.addEventListener(
-			        	"click",
-			            function () {
-			                showHideMenu();
-			            }
-			        );
+					if (document.getElementById("mExpander") === null)
+					{
+						const mExpander = document.createElement("span");
+	        			mExpander.classList.add("expander");
+	        			mExpander.classList.add("expanded");
+	        			mExpander.id = "mExpander";
+	        			mExpander.title = "Single-click to show/hide menu.";
+	        			document.getElementById("header").appendChild(mExpander);
+	        
+				        // setup click to show/hide requests
+				        mExpander.addEventListener(
+				        	"click",
+				            function () {
+				                showHideMenu();
+				            }
+				        );
+			        }
 				}
 			}		
 			// Create a MediaQueryList object
