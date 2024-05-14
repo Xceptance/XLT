@@ -275,7 +275,7 @@
 				element.classList.add('full');
 				element.title = "Click to enlarge to 100%";
 				element.style = "font-size:20px";
-				actionImage.style = "width: 100vw;"
+				actionImage.style = "width: 100%;"
 			}
 			else if (element.classList.contains('full'))
 			{
