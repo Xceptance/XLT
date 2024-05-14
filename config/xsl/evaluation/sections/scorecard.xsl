@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0">
 
 <xsl:template name="scorecard">
     <xsl:param name="rootNode" />
@@ -33,12 +33,19 @@
 
                             Based on the result, the test
                                     <xsl:choose>
-                                        <xsl:when test="$rootNode[@testFailed='false']">
+                                        <xsl:when test="$rootNode[not(@testFailed='true')]">
                                         succeeded with <xsl:value-of select="$ratingDescription" />.
                                         </xsl:when>
-                                        <xsl:when test="$ratingDefinition[@failsTest='false']">
-                                        would have succeeded with <xsl:value-of select="$ratingDescription" /> but a rule still qualifies this test as failed (
-                                        <xsl:value-of select="$rootNode/groups/group/rule[normalize-space(status)='FAILED' or normalize-space(status)='ERROR']/@ref-id" />).
+                                        <xsl:when test="$ratingDefinition[not(@failsTest='true')]">
+                                            <!--
+                                                Lookup all 'rule' definitions in configuration that have 'failsTest' attribute set to 'true',
+                                                collect the value of their 'id' attribute and filter out those that are not used as value for
+                                                the 'ref-id' attribute of at least one 'rule' element node reachable via '$rootNode' having
+                                                status 'FAILED'.
+                                            -->
+                                            <xsl:variable name="hardFails" select="filter($rootNode/preceding-sibling::configuration/rules/rule[@failsTest='true']/@id, function($a){ count($rootNode//rule[normalize-space(status) = 'FAILED'][@ref-id=$a]) &gt; 0 })" />
+                                        would have succeeded with <xsl:value-of select="$ratingDescription" /> but at least one rule still qualifies this test as failed
+                                            <xsl:value-of select="concat('(',string-join($hardFails, ', '),').')" />
                                         </xsl:when>
                                         <xsl:otherwise>
                                         failed with <xsl:value-of select="$ratingDescription" />.
@@ -59,5 +66,6 @@
         </div><!-- /content -->
     </div><!-- /section -->
 </xsl:template>
+
 
 </xsl:stylesheet>

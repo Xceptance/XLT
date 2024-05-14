@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0">
 
 <xsl:template name="groups">
     <xsl:param name="definitions" />
@@ -19,6 +19,7 @@
                             <th>Description</th>
                             <th>Enabled</th>
                             <th>Rule Count</th>
+                            <th>Message</th>
                             <th>Points Source</th>
                             <th>Max Points</th>
                             <th>Points</th>
@@ -33,6 +34,7 @@
                                     <td />
                                     <td />
                                     <td class="value number"><xsl:value-of select="count($definitions//rule)" /></td>
+                                    <td />
                                     <td />
                                     <td class="value number"><xsl:value-of select="sum($results/@totalPoints)" /></td>
                                     <td class="value number"><xsl:value-of select="sum($results/@points)" /></td>
@@ -49,7 +51,7 @@
                                             <xsl:value-of select="$groupId" />
                                         </td>
                                         <!-- Description -->
-                                        <td>
+                                        <td class="value text">
                                             <xsl:value-of select="$groupDef/description" />
                                         </td>
                                         <!-- Enabled -->
@@ -59,6 +61,10 @@
                                         <!-- Rule Count -->
                                         <td class="value number">
                                             <xsl:value-of select="count($groupDef/rules/rule)" />
+                                        </td>
+                                        <!-- Message -->
+                                        <td class="value text">
+                                            <xsl:value-of select="message" separator=";" />
                                         </td>
                                         <!-- Points Source -->
                                         <td class="value">
@@ -79,7 +85,7 @@
                         <xsl:otherwise>
                             <tbody>
                                 <tr>
-                                    <td class="no-data" colspan="7">No data available</td>
+                                    <td class="no-data" colspan="8">No data available</td>
                                 </tr>
                             </tbody>
                         </xsl:otherwise>

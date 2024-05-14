@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0">
 
 <xsl:output method="html" indent="yes" omit-xml-declaration="yes" encoding="UTF-8" />
 
@@ -56,7 +56,7 @@
         border: 1px solid var(--main-color);
         padding: 16px;
     }
-    #scorecard-ratings table tr.inactive td {
+    #scorecard-ratings .inactive, #scorecard-rules .inactive {
         color: #5f5f5f;
     }
     </style>

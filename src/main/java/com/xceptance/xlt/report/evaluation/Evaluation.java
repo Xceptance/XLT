@@ -4,14 +4,15 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
+import com.thoughtworks.xstream.annotations.XStreamImplicit;
 
 @XStreamAlias("evaluation")
 public class Evaluation
@@ -32,21 +33,9 @@ public class Evaluation
 
         private List<Group> groups;
 
-        private String message;
-
         private String error;
 
         private String rating;
-
-        public String getMessage()
-        {
-            return message;
-        }
-
-        void setMessage(final String message)
-        {
-            this.message = Objects.requireNonNull(message);
-        }
 
         public String getError()
         {
@@ -100,11 +89,12 @@ public class Evaluation
 
         void addGroup(final Group group)
         {
+            Objects.requireNonNull(group);
             if (groups == null)
             {
                 groups = new LinkedList<>();
             }
-            groups.add(Objects.requireNonNull(group));
+            groups.add(group);
         }
 
         public List<Group> getGroups()
@@ -168,6 +158,9 @@ public class Evaluation
         @XStreamAsAttribute
         private int totalPoints;
 
+        @XStreamImplicit(itemFieldName = "message")
+        private List<String> messages;
+
         Group(final GroupDefinition definition)
         {
             this.definition = definition;
@@ -212,6 +205,28 @@ public class Evaluation
         void setTotalPoints(final int totalPoints)
         {
             this.totalPoints = Math.max(0, totalPoints);
+        }
+
+        public List<String> getMessages()
+        {
+            if (messages == null)
+            {
+                return Collections.emptyList();
+            }
+            return Collections.unmodifiableList(messages);
+        }
+
+        void addMessage(final String message)
+        {
+            final String msg = StringUtils.trimToNull(message);
+            if (msg != null)
+            {
+                if (messages == null)
+                {
+                    messages = new LinkedList<>();
+                }
+                messages.add(msg);
+            }
         }
     }
 
@@ -280,7 +295,7 @@ public class Evaluation
 
         void setMessage(final String message)
         {
-            this.message = message;
+            this.message = StringUtils.trimToNull(message);
         }
 
         public int getPoints()
@@ -348,7 +363,7 @@ public class Evaluation
 
             void setErrorMessage(final String errorMessage)
             {
-                this.errorMessage = errorMessage;
+                this.errorMessage = StringUtils.trimToNull(errorMessage);
             }
 
             public String getValue()

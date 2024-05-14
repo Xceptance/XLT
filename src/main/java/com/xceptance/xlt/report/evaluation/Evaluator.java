@@ -10,6 +10,8 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -90,7 +92,7 @@ public class Evaluator
      * @throws IOException
      *             thrown when evaluation outcome could be not be written to the given file
      */
-    public void writeeEvaluationToFile(final Evaluation evaluation, final File outputFile) throws IOException
+    public void writeEvaluationToFile(final Evaluation evaluation, final File outputFile) throws IOException
     {
         try (final OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream(outputFile), XltConstants.UTF8_ENCODING))
         {
@@ -398,6 +400,8 @@ public class Evaluator
         // - the points of all matching rules (sum of),
         // - the maximum number of all rules' points and
         // - the overall sum of all rules' points
+        // - the rules' messages
+        final List<String> messages = new LinkedList<String>();
         for (final Evaluation.Rule rule : group.getRules())
         {
             // rules must be enabled in order to participate in point calculation
@@ -418,9 +422,17 @@ public class Evaluator
                 lastMatch = Integer.valueOf(rulePoints);
 
                 sumPointsMatching += rulePoints;
+
+                // TODO Clarify why rule's fail-message is not considered
+                if(rule.getMessage() != null)
+                {
+                    messages.add(rule.getMessage());
+                }
+
             }
 
             sumPoints += rulePointsMax;
+            
         }
 
         // pick the correct values for group's points and total points according to its points source
@@ -430,14 +442,23 @@ public class Evaluator
             case FIRST:
                 points = Optional.ofNullable(firstMatch).orElse(0);
                 totalPoints = maxPoints;
+                if(!messages.isEmpty())
+                {
+                    group.addMessage(messages.get(0));
+                }
                 break;
             case LAST:
                 points = Optional.ofNullable(lastMatch).orElse(0);
                 totalPoints = maxPoints;
+                if(!messages.isEmpty())
+                {
+                    group.addMessage(messages.get(messages.size()-1));
+                }
                 break;
             case ALL:
                 points = sumPointsMatching;
                 totalPoints = sumPoints;
+                messages.forEach(group::addMessage);
                 break;
             default:
                 points = 0;
