@@ -628,6 +628,26 @@ table.key-value-table td.value .csep {
     }
 }
 
+.actionimgScale {
+	position: absolute;
+    z-index: 10;
+    bottom: 10px;
+    width: 50px;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.5);
+    align-content: center;
+    text-align: center;
+    font-size: 30px;
+    border-radius: 5px;
+    border: 1px solid #bbb;
+    cursor: pointer;
+}
+
+.actionimgScale#actionimgSwitch{
+	right: 10px;
+}
+
+
 /********************************************************************************************
  *
  * Responsive
@@ -681,6 +701,7 @@ table.key-value-table td.value .csep {
  	#content {
  		height: 20vh;
  		transition: height .2s;
+ 		border-top: 1px solid #bbb;
  	}
  	
  	#content.expanded {
@@ -740,6 +761,8 @@ table.key-value-table td.value .csep {
 		margin: 8px 2px;
 		font-size: 12pt;
 	}	
+	
+
 }
  
  

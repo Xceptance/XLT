@@ -50,7 +50,12 @@
 
                 <div id="content" class="flexContainer flexFlowColumn">
                     <!-- the action's page goes here -->
-                    <iframe id="actioncontent"></iframe>
+                    <iframe id="actioncontent" name="actioncontent"></iframe>
+                    
+                    <div id="actioncontent_image" class="hide">
+                    	<img id="actionimage" />
+                    	<div id="actionimgSwitch" title="Click to fit image to screen width" class="actionimgScale fit">&llcorner;&urcorn;</div>
+                    </div>
 
                     <!-- Container necessary to prevent overlap with left menu on resize -->
                     <div id="errorcontent" class="errorContent heightFull hide">

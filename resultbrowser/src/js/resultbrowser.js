@@ -5,6 +5,8 @@
         requestContent = null,
         requestText = null,
         actionContent = null,
+        actionContentImage = null,
+        actionImage = null,
         errorContent = null,
         postRequestParam = null,
         requestBodySmall = null,
@@ -20,7 +22,8 @@
         menu = null,
         menuIcon = null,
         transactionContent = null,
-        valueLog = null;
+        valueLog = null,
+        zoomLevel = 100;
 
     // function aliases
     const getElementById = id => document.getElementById(id),
@@ -127,6 +130,8 @@
         requestContent = getElementById("requestcontent");
         requestText = getElementById("requesttext");
         actionContent = getElementById("actioncontent");
+        actionContentImage = getElementById("actioncontent_image");
+        actionImage = getElementById("actionimage");
         errorContent = getElementById("errorcontent");
         postRequestParam = getElementById("postrequestparameters");
         requestBodySmall = getElementById("requestBodySmall");
@@ -211,6 +216,11 @@
                 }
                 setText(requestText, s);
             });
+            
+        	const actionimgSwitch = getElementById("actionimgSwitch");
+        	actionimgSwitch.addEventListener("click", function () {
+                zoomImage(actionimgSwitch);
+            });
         }
 
         const selectResponseContent = getElementById("selectResponseContent");
@@ -254,6 +264,30 @@
         // transaction page
         transaction.addEventListener("click", showTransaction);
     }
+    
+    function zoomImage(element) {
+
+		if (element.id == "actionimgSwitch")
+		{
+			if (element.classList.contains('fit'))
+			{				
+				element.classList.remove('fit');
+				element.classList.add('full');
+				element.title = "Click to enlarge to 100%";
+				element.style = "font-size:20px";
+				actionImage.style = "width: 100vw;"
+			}
+			else if (element.classList.contains('full'))
+			{
+				element.classList.remove('full');
+				element.classList.add('fit');
+				element.title = "Click to fit image to screen width";
+				element.style = "";
+				actionImage.style = "size: 100%;"
+				zoomLevel = 100;
+			}
+		}
+	}
 
     function toggleContent(element) {
         // show the given content pane and hide the others
@@ -294,8 +328,18 @@
             const data = dataStore.fetchData(element),
                 actionFile = data.fileName;
             if (actionFile) {
-                actionContent.setAttribute("src", actionFile);
-                toggleContent(actionContent);
+				if (actionFile.indexOf(".png") > -1)
+				{
+					// put page screenshots in div
+					actionImage.setAttribute("src", actionFile);
+                	toggleContent(actionContentImage);
+				}
+				else
+				{
+					// put html pages in iframe
+                	actionContent.setAttribute("src", actionFile);
+                	toggleContent(actionContent);
+                }
             }
             else {
                 toggleContent(errorContent);
@@ -306,6 +350,14 @@
             forEachElement(actionlist.querySelectorAll(".current"), (el) => el.classList.remove("current"));
             element.classList.add("current");
         }
+    }
+    
+    function showHideMenu(element) {
+        // show/hide the menu
+        document.getElementById("leftSideMenu").classList.toggle("expanded");
+        document.getElementById("content").classList.toggle("expanded");
+        // switch the menu toggle
+        document.getElementById("mExpander").classList.toggle("expanded");
     }
 
     function expandCollapseAction(element) {
@@ -319,14 +371,6 @@
 
         // show/hide the requests
         element.querySelector(".expander").classList.toggle("expanded");
-    }
-    
-    function showHideMenu(element) {
-        // show/hide the menu
-        document.getElementById("leftSideMenu").classList.toggle("expanded");
-        document.getElementById("content").classList.toggle("expanded");
-        // switch the menu toggle
-        document.getElementById("mExpander").classList.toggle("expanded");
     }
 
     function createRequestsForAction(actionElement) {
