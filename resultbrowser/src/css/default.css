@@ -631,7 +631,6 @@ table.key-value-table td.value .csep {
 .actionimgScale {
 	position: absolute;
     z-index: 10;
-    bottom: 10px;
     width: 50px;
     height: 50px;
     background: rgba(255, 255, 255, 0.5);
@@ -644,7 +643,8 @@ table.key-value-table td.value .csep {
 }
 
 .actionimgScale#actionimgSwitch{
-	right: 10px;
+	right: 20px;
+	bottom: 20px;
 }
 
 
@@ -661,15 +661,15 @@ table.key-value-table td.value .csep {
 
 @media (max-width: 699px) {
 	
+	#header .logo h1 {
+ 		font-size: 22px;
+ 	}
+ 	
 	#wrapper, #mainContent {
 		flex-flow:column;
  	}
  	
- 	#header .logo h1 {
- 		font-size: 22px;
- 	}
- 	
- 	 	#header .expander {
+ 	#header .expander {
 	    cursor: pointer;
 	}
 	
@@ -708,6 +708,20 @@ table.key-value-table td.value .csep {
  		height: 100vh;
  	}
  	
+ 	#transaction {
+ 		overflow: visible;
+ 		font-size: 19px;
+ 	}
+ 	
+ 	#actionlist {
+ 		flex-basis: auto !important;
+ 		margin: 0px;
+ 	}
+}
+ 
+/*responsive behavior for phones in portrait and landscape mode*/
+@media (max-width: 699px), (max-height: 400px) {
+	 	
  	#navigation {
  		font-size: 16px;
  		padding: 0px;
@@ -722,16 +736,6 @@ table.key-value-table td.value .csep {
  		font-size: 16px;
  		padding: 4px;
  	}	
- 	
- 	#transaction {
- 		overflow: visible;
- 		font-size: 19px;
- 	}
- 	
- 	#actionlist {
- 		flex-basis: auto !important;
- 		margin: 0px;
- 	}
  	
  	#responseContentActions {
 	    position: fixed;
@@ -760,9 +764,26 @@ table.key-value-table td.value .csep {
 	#transactionContent h1 {
 		margin: 8px 2px;
 		font-size: 12pt;
-	}	
+	}
+ 	
+ 	.actionimgScale#actionimgSwitch {
+		right: 10px;
+		bottom: 10px;
+	}
+ 	
+ 	.tabs .tabs-nav {
+		padding: 4px;
+	}
 	
-
+	.tabs .tabs-nav li {
+		border-radius: 4px;
+		background-color: #db0009;
+		border: 0px;
+		margin: 2px;
+	}
+	
+	.tabs .tabs-nav li.selected { 
+		border: 0px;
+	}
 }
- 
  

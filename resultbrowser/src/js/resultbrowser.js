@@ -1086,6 +1086,14 @@
 				                showHideMenu();
 				            }
 				        );
+				        
+				        // content click also shows/hides menu
+				        content.addEventListener(
+				        	"click",
+				            function () {
+				                showHideMenu();
+				            }
+						);
 			        }
 				}
 			}		
