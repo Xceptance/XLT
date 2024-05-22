@@ -1075,7 +1075,8 @@
 	        			mExpander.classList.add("expanded");
 	        			mExpander.id = "mExpander";
 	        			mExpander.title = "Single-click to show/hide menu.";
-	        			document.getElementById("header").appendChild(mExpander);
+	        			mExpander.textContent = "☰";
+	        			document.getElementById("header").insertBefore(mExpander, document.getElementById("header").firstChild);
 	        
 				        // setup click to show/hide requests
 				        mExpander.addEventListener(

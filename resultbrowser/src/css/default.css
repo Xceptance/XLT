@@ -680,18 +680,21 @@ table.key-value-table td.value .csep {
 	    cursor: pointer;
 	}
 	
-	#header .expander::before {
-	    font-style: normal;
-	    content: "◢";
-	    margin-top: 0.5em;
-	    font-size: 20px;
+	#header .expander {
+	    font-weight: bold;
+	    font-size: 22px;
 	    color: #fff;
 	    display: inline-block;
-	    transform: translateY(-10%) rotate(-45deg);
+	    text-align: center;
+	    align-content: center;
+	    width: 35px;
+	    transform: rotate(0deg);
+	    transition: transform .2s;
+	    
 	}
 	
-	#header .expander.expanded::before {
-	    transform: translateY(-10%) rotate(0deg);
+	#header .expander.expanded {
+	    transform: rotate(90deg);
 	}
 	
 	#leftSideMenu {
