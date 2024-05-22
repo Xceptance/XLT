@@ -66,6 +66,7 @@ body {
     color: white;
     margin-left: 8px;
     cursor: pointer;
+    transform: rotate(90deg);
 }
 
 #menu {
@@ -666,7 +667,19 @@ table.key-value-table td.value .csep {
 	width: 100vw !important;
 }
 
+#header .expander {
+	display: none;
+}
+
+/*responsive behavior for phones in portrait mode*/
 @media (max-width: 699px) {
+	
+	#header {
+		position: fixed;
+  		top: 0;
+  		width: 100%;
+  		z-index: 2;
+	}
 	
 	#header .logo h1 {
  		font-size: 22px;
@@ -708,6 +721,10 @@ table.key-value-table td.value .csep {
  		overflow: scroll;
  	}
  	
+ 	#navigation {
+ 		padding-top: 50px;
+ 	}
+ 	
  	#content {
  		height: 20vh;
  		transition: height .2s;
@@ -732,9 +749,13 @@ table.key-value-table td.value .csep {
 /*responsive behavior for phones in portrait and landscape mode*/
 @media (max-width: 699px), (max-height: 400px) {
 	 	
+	#header .logo h1 {
+ 		align-content: center;
+ 		margin: 0px;
+ 	}
+ 	
  	#navigation {
  		font-size: 16px;
- 		padding: 0px;
  	}
  	
  	#navigation li.action {
