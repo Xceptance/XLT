@@ -636,7 +636,6 @@ table.key-value-table td.value .csep {
     background: rgba(255, 255, 255, 0.5);
     align-content: center;
     text-align: center;
-    font-size: 30px;
     border-radius: 5px;
     border: 1px solid #bbb;
     cursor: pointer;
@@ -645,6 +644,14 @@ table.key-value-table td.value .csep {
 .actionimgScale#actionimgSwitch{
 	right: 20px;
 	bottom: 20px;
+}
+
+.actionimgScale#actionimgSwitch.full {
+	font-size: 30px;
+}
+
+.actionimgScale#actionimgSwitch.fit {
+	font-size: 20px;
 }
 
 

@@ -274,7 +274,6 @@
 				element.classList.remove('fit');
 				element.classList.add('full');
 				element.title = "Click to enlarge to 100%";
-				element.style = "font-size:20px";
 				actionImage.style = "width: 100%;"
 			}
 			else if (element.classList.contains('full'))
@@ -282,7 +281,6 @@
 				element.classList.remove('full');
 				element.classList.add('fit');
 				element.title = "Click to fit image to screen width";
-				element.style = "";
 				actionImage.style = "size: 100%;"
 				zoomLevel = 100;
 			}
@@ -352,7 +350,7 @@
         }
     }
     
-    function showHideMenu(element) {
+    function showHideMenu() {
         // show/hide the menu
         document.getElementById("leftSideMenu").classList.toggle("expanded");
         document.getElementById("content").classList.toggle("expanded");
@@ -1088,12 +1086,12 @@
 				        );
 				        
 				        // content click also shows/hides menu
-				        content.addEventListener(
+				        /*content.addEventListener(
 				        	"click",
 				            function () {
 				                showHideMenu();
 				            }
-						);
+						);*/
 			        }
 				}
 			}		
