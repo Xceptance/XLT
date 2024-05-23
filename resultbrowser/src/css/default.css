@@ -40,6 +40,7 @@ body {
 #header .logo h1 {
     font-size: 16px;
     color: white;
+    align-content: center;
 }
 
 /*
@@ -64,7 +65,9 @@ body {
 
 #menu-icon {
     color: white;
-    margin-left: 8px;
+    margin: 8px;
+    font-size: 16px;
+    font-weight: bold;
     cursor: pointer;
     transform: rotate(90deg);
 }
@@ -672,7 +675,7 @@ table.key-value-table td.value .csep {
 }
 
 /*responsive behavior for phones in portrait mode*/
-@media (max-width: 699px) {
+@media (max-width: 599px) {
 	
 	#header {
 		position: fixed;
@@ -708,6 +711,10 @@ table.key-value-table td.value .csep {
 	
 	#header .expander.expanded {
 	    transform: rotate(90deg);
+	}	
+	 	
+ 	#menu-icon {
+	    font-size: 22px;
 	}
 	
 	#leftSideMenu {
@@ -747,7 +754,7 @@ table.key-value-table td.value .csep {
 }
  
 /*responsive behavior for phones in portrait and landscape mode*/
-@media (max-width: 699px), (max-height: 400px) {
+@media (max-width: 599px), (max-height: 400px) {
 	 	
 	#header .logo h1 {
  		align-content: center;
@@ -815,6 +822,18 @@ table.key-value-table td.value .csep {
 	
 	.tabs .tabs-nav li.selected { 
 		border: 0px;
+	}
+	
+	#menu {
+		width: 100%;
+    	height: 100%;
+    	background-color: rgba(255, 255, 255, 0.8);
+    	border: 0px;
+	}
+	
+	#menu li:nth-of-type(2n) .menu-group {
+	    border-left: 0px;
+	    border-right: 0px;
 	}
 }
  

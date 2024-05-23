@@ -944,10 +944,23 @@
             hide(menu);
         }
         else {
+			
             menu.style.position = "absolute";
-            menu.style.top = `${menuIcon.offsetTop}px`;
-            menu.style.left = `${menuIcon.offsetLeft + 17}px`;
             menu.style.zIndex = "200001";
+            var mm = window.matchMedia("(max-width: 599px), (max-height: 400px) ")
+			if (mm.matches)
+			{
+				//mobile: use full screen for menu overlay
+				menu.style.top = `0px`;
+            	menu.style.left = `0px`;
+			}
+			else
+			{
+				//desktop: pop up menu next to icon
+				menu.style.top = `${menuIcon.offsetTop}px`;
+            	menu.style.left = `${menuIcon.offsetLeft + 17}px`;
+			}
+				
 
             show(menu);
         }
@@ -1097,7 +1110,7 @@
 				}
 			}		
 			// Create a MediaQueryList object
-			var mm = window.matchMedia("(min-width: 700px)")
+			var mm = window.matchMedia("(min-width: 600px)")
 			// Call listener function at run time
 			splitContent(mm);
 			// Attach listener function on state changes
