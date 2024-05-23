@@ -783,6 +783,10 @@ table.key-value-table td.value .csep {
  		padding: 4px;
  	}	
  	
+ 	#navigation .expander {
+    	margin: 0px 5px;
+ 	}
+ 	
  	#responseContentActions {
 	    position: fixed;
 	    bottom: 10px;
