@@ -659,7 +659,6 @@ table.key-value-table td.value .csep {
 	font-size: 20px;
 }
 
-
 /********************************************************************************************
  *
  * Responsive
@@ -672,6 +671,10 @@ table.key-value-table td.value .csep {
 }
 
 #header .expander {
+	display: none;
+}
+
+#menu-close {
 	display: none;
 }
 
@@ -853,6 +856,14 @@ table.key-value-table td.value .csep {
 	
 	.menu-group {
 		width: -webkit-fill-available;
+	}
+	
+	.open #menu-close {
+		display: block;
+		position: absolute;
+		top: 5px;
+		right: 10px;
+		font-size: 20px;		
 	}
 }
  

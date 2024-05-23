@@ -21,6 +21,7 @@
         },
         menu = null,
         menuIcon = null,
+        menuClose = null,
         transactionContent = null,
         valueLog = null,
         zoomLevel = 100;
@@ -144,6 +145,7 @@
 
         menu = getElementById("menu");
         menuIcon = getElementById("menu-icon");
+        menuClose = getElementById("menu-close");
 
         extras.highlight = !!window.hljs;
         extras.beautify.js = !!window.js_beautify;
@@ -234,6 +236,7 @@
 
         // menu button
         menuIcon.addEventListener("click", showMenu);
+        menuClose.addEventListener("click", showMenu);
         document.addEventListener("click", function (e) {
             const x = e.target;
             if (filterElements(getParents(x), parent => parent.id == "menu").length === 0 && x.id != "menu-icon") {
