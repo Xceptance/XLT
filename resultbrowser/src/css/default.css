@@ -65,8 +65,9 @@ body {
 
 #menu-icon {
     color: white;
-    margin: 8px;
-    font-size: 16px;
+    margin: 5px;
+    margin-left: auto;
+    font-size: 20px;
     font-weight: bold;
     cursor: pointer;
     transform: rotate(90deg);
@@ -714,7 +715,7 @@ table.key-value-table td.value .csep {
 	}	
 	 	
  	#menu-icon {
-	    font-size: 22px;
+	    font-size: 24px;
 	}
 	
 	#leftSideMenu {
