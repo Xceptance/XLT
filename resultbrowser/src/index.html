@@ -1,8 +1,9 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
 
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>XLT Result Browser</title>
     <link href="https://xlt.xceptance.com/static/highlightjs/7.5/styles/xc.min.css" rel="stylesheet" type="text/css" />
     <link href="css/default.css" rel="stylesheet" type="text/css" inline />
@@ -24,16 +25,17 @@
         <div class="loader"></div>
     </div>
     <div id="container" class="visibilityHidden">
-        <div id="wrapper" class="flexContainer flexFlowColumn">
+        <div id="wrapper" class="flexContainer">
             <div id="mainContent" class="flexContainer heightFull">
                 <!-- frame the whole left menu side for splitting with vertical split bar-->
-                <div id="leftSideMenu" class="flexContainer flexFlowColumn">
+                <div id="leftSideMenu" class="flexContainer flexFlowColumn expanded">
                     <div id="header" class="flexContainer">
                         <div class="logo flexContainer">
                             <img alt="xlt logo" border="0" src="data-url:images/xlt-logo.svg" halign="left" width="85" height="20" />
-                            <h1>Result Browser <span id="menu-icon">&#9776;</span></h1>
+                            <h1>Result Browser</h1>
                         </div>
-                    </div>
+                        <span id="menu-icon">&hellip;</span>
+                    </div>                    
 
                     <div id="navigation" class="flexContainer flexFlowColumn flexItem-fill">
                         <!-- transaction will come here dynamically -->
@@ -49,7 +51,12 @@
 
                 <div id="content" class="flexContainer flexFlowColumn">
                     <!-- the action's page goes here -->
-                    <iframe id="actioncontent"></iframe>
+                    <iframe id="actioncontent" name="actioncontent"></iframe>
+                    
+                    <div id="actioncontent_image" class="hide">
+                    	<img id="actionimage" style="width: 100%;" />
+                    	<div id="actionimgSwitch" title="Click to enlarge to 100%" class="actionimgScale full">&llcorner;&urcorn;</div>
+                    </div>
 
                     <!-- Container necessary to prevent overlap with left menu on resize -->
                     <div id="errorcontent" class="errorContent heightFull hide">
@@ -342,6 +349,7 @@
                     </div>
                 </li>
             </ul>
+            <span id="menu-close">X</span>
         </div>
     </div>
     <script type="text/javascript" src="js/json-tree.js" inline></script>

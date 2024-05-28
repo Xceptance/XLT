@@ -5,6 +5,8 @@
         requestContent = null,
         requestText = null,
         actionContent = null,
+        actionContentImage = null,
+        actionImage = null,
         errorContent = null,
         postRequestParam = null,
         requestBodySmall = null,
@@ -19,8 +21,10 @@
         },
         menu = null,
         menuIcon = null,
+        menuClose = null,
         transactionContent = null,
-        valueLog = null;
+        valueLog = null,
+        zoomLevel = 100;
 
     // function aliases
     const getElementById = id => document.getElementById(id),
@@ -127,6 +131,8 @@
         requestContent = getElementById("requestcontent");
         requestText = getElementById("requesttext");
         actionContent = getElementById("actioncontent");
+        actionContentImage = getElementById("actioncontent_image");
+        actionImage = getElementById("actionimage");
         errorContent = getElementById("errorcontent");
         postRequestParam = getElementById("postrequestparameters");
         requestBodySmall = getElementById("requestBodySmall");
@@ -139,6 +145,7 @@
 
         menu = getElementById("menu");
         menuIcon = getElementById("menu-icon");
+        menuClose = getElementById("menu-close");
 
         extras.highlight = !!window.hljs;
         extras.beautify.js = !!window.js_beautify;
@@ -211,6 +218,11 @@
                 }
                 setText(requestText, s);
             });
+            
+        	const actionimgSwitch = getElementById("actionimgSwitch");
+        	actionimgSwitch.addEventListener("click", function () {
+                zoomImage(actionimgSwitch);
+            });
         }
 
         const selectResponseContent = getElementById("selectResponseContent");
@@ -224,6 +236,7 @@
 
         // menu button
         menuIcon.addEventListener("click", showMenu);
+        menuClose.addEventListener("click", showMenu);
         document.addEventListener("click", function (e) {
             const x = e.target;
             if (filterElements(getParents(x), parent => parent.id == "menu").length === 0 && x.id != "menu-icon") {
@@ -254,6 +267,28 @@
         // transaction page
         transaction.addEventListener("click", showTransaction);
     }
+    
+    function zoomImage(element) {
+
+		if (element.id == "actionimgSwitch")
+		{
+			if (element.classList.contains('fit'))
+			{				
+				element.classList.remove('fit');
+				element.classList.add('full');
+				element.title = "Click to enlarge to 100%";
+				actionImage.style = "width: 100%;"
+			}
+			else if (element.classList.contains('full'))
+			{
+				element.classList.remove('full');
+				element.classList.add('fit');
+				element.title = "Click to fit image to screen width";
+				actionImage.style = "size: 100%;"
+				zoomLevel = 100;
+			}
+		}
+	}
 
     function toggleContent(element) {
         // show the given content pane and hide the others
@@ -294,8 +329,18 @@
             const data = dataStore.fetchData(element),
                 actionFile = data.fileName;
             if (actionFile) {
-                actionContent.setAttribute("src", actionFile);
-                toggleContent(actionContent);
+				if (actionFile.indexOf(".png") > -1)
+				{
+					// put page screenshots in div
+					actionImage.setAttribute("src", actionFile);
+                	toggleContent(actionContentImage);
+				}
+				else
+				{
+					// put html pages in iframe
+                	actionContent.setAttribute("src", actionFile);
+                	toggleContent(actionContent);
+                }
             }
             else {
                 toggleContent(errorContent);
@@ -306,6 +351,14 @@
             forEachElement(actionlist.querySelectorAll(".current"), (el) => el.classList.remove("current"));
             element.classList.add("current");
         }
+    }
+    
+    function showHideMenu() {
+        // show/hide the menu
+        document.getElementById("leftSideMenu").classList.toggle("expanded");
+        document.getElementById("content").classList.toggle("expanded");
+        // switch the menu toggle
+        document.getElementById("mExpander").classList.toggle("expanded");
     }
 
     function expandCollapseAction(element) {
@@ -894,10 +947,23 @@
             hide(menu);
         }
         else {
+			
             menu.style.position = "absolute";
-            menu.style.top = `${menuIcon.offsetTop}px`;
-            menu.style.left = `${menuIcon.offsetLeft + 17}px`;
             menu.style.zIndex = "200001";
+            var mm = window.matchMedia("(max-width: 599px), (max-height: 400px) ")
+			if (mm.matches)
+			{
+				//mobile: use full screen for menu overlay
+				menu.style.top = `0px`;
+            	menu.style.left = `0px`;
+			}
+			else
+			{
+				//desktop: pop up menu next to icon
+				menu.style.top = `${menuIcon.offsetTop}px`;
+            	menu.style.left = `${menuIcon.offsetLeft + 17}px`;
+			}
+				
 
             show(menu);
         }
@@ -1002,11 +1068,58 @@
                 activateTab(this);
             }));
 
-            Split(['#leftSideMenu', '#content'], {
-                sizes: [15, 85],
-                minSize: [300, 600],
-                gutterSize: 3
-            })
+			function splitContent(mm) {
+				if (mm.matches) { // If media query matches / is large screen
+			    	Split(['#leftSideMenu', '#content'], {
+			        	sizes: [15, 85],
+			            minSize: [300, 600],
+			            gutterSize: 3
+			        });
+				} 
+				else { //on small screens/mobile: revert changes made by Split
+					document.getElementById("leftSideMenu").removeAttribute("style");
+					document.getElementById("content").removeAttribute("style");
+					var gutter = document.getElementsByClassName('gutter-horizontal');
+					while(gutter[0]) {
+    					gutter[0].parentNode.removeChild(gutter[0]);
+					}
+					
+					if (document.getElementById("mExpander") === null)
+					{
+						const mExpander = document.createElement("span");
+	        			mExpander.classList.add("expander");
+	        			mExpander.classList.add("expanded");
+	        			mExpander.id = "mExpander";
+	        			mExpander.title = "Single-click to show/hide menu.";
+	        			mExpander.textContent = "☰";
+	        			document.getElementById("header").insertBefore(mExpander, document.getElementById("header").firstChild);
+	        
+				        // setup click to show/hide requests
+				        mExpander.addEventListener(
+				        	"click",
+				            function () {
+				                showHideMenu();
+				            }
+				        );
+				        
+				        // content click also shows/hides menu
+				        /*content.addEventListener(
+				        	"click",
+				            function () {
+				                showHideMenu();
+				            }
+						);*/
+			        }
+				}
+			}		
+			// Create a MediaQueryList object
+			var mm = window.matchMedia("(min-width: 600px)")
+			// Call listener function at run time
+			splitContent(mm);
+			// Attach listener function on state changes
+			mm.addEventListener("change", function() {
+				splitContent(mm);
+			}); 
 
             // activate first request-tab
             activateTab(requestContent.querySelector(".tabs-nav li"));
