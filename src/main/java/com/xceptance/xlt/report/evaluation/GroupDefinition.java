@@ -7,6 +7,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import org.apache.commons.lang3.EnumUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -27,6 +28,9 @@ public class GroupDefinition
     @XStreamAsAttribute
     private final String id;
 
+    @XStreamAsAttribute
+    private final String name;
+    
     private final String description;
 
     @XStreamAlias("rules")
@@ -37,17 +41,29 @@ public class GroupDefinition
     private final boolean enabled;
 
     @XStreamAsAttribute
-    @XStreamConverter(EnumToStringConverter.class)
-    private final PointsSource pointsSource;
+    private final boolean failsTest;
 
-    public GroupDefinition(final String id, final String description, final List<String> ruleIds, final boolean enabled,
-                           final PointsSource pointsSource)
+    @XStreamAsAttribute
+    @XStreamConverter(EnumToStringConverter.class)
+    private final Mode mode;
+
+    private final String successMessage;
+
+    private final String failMessage;
+
+
+    public GroupDefinition(final String id, final String name, final String description, final List<String> ruleIds, final boolean enabled,
+                           final boolean failsTest, final Mode mode, final String successMessage, final String failMessage)
     {
-        this.id = id;
+        this.id = Objects.requireNonNull(id, "Group ID must not be null");
+        this.name = name;
         this.description = description;
         this.ruleIds = ruleIds;
         this.enabled = enabled;
-        this.pointsSource = pointsSource;
+        this.failsTest = failsTest;
+        this.mode = Objects.requireNonNull(mode, "Group mode must not be null");
+        this.successMessage = successMessage;
+        this.failMessage = failMessage;
     }
 
     public boolean isEnabled()
@@ -55,9 +71,9 @@ public class GroupDefinition
         return enabled;
     }
 
-    public PointsSource getPointSource()
+    public Mode getMode()
     {
-        return pointsSource;
+        return mode;
     }
 
     public String getId()
@@ -75,27 +91,43 @@ public class GroupDefinition
         return Collections.unmodifiableList(ruleIds);
     }
 
-    public static enum PointsSource
+    public String getSuccessMessage()
     {
-        FIRST,
-        LAST,
-        ALL;
+        return successMessage;
+    }
 
-        @Override
-        public String toString()
-        {
-            return name().toLowerCase();
-        }
+    public String getFailMessage()
+    {
+        return failMessage;
+    }
+
+    public boolean isFailsTest()
+    {
+        return failsTest;
+    }
+    
+    public static enum Mode
+    {
+        firstPassed,
+        lastPassed,
+        allPassed;
+
     }
 
     public static GroupDefinition fromJSON(final JSONObject jsonObject) throws ValidationError
     {
         final String id = jsonObject.getString("id");
+        final String name = StringUtils.trimToNull(jsonObject.optString("name"));
         final String description = jsonObject.optString("description", null);
         final JSONArray ruleArr = jsonObject.getJSONArray("rules");
         final boolean enabled = jsonObject.optBoolean("enabled", true);
-        final String pointsSourceStr = jsonObject.optString("pointsSource", null);
-        final PointsSource source = pointsSourceStr != null ? EnumUtils.getEnumIgnoreCase(PointsSource.class, pointsSourceStr) : null;
+        final boolean failsTest = jsonObject.optBoolean("failsTest", false);
+        final String modeStr = StringUtils.trimToNull(jsonObject.optString("mode"));
+        final Mode source = EnumUtils.getEnumIgnoreCase(Mode.class, modeStr);
+
+        final JSONObject messageObj = jsonObject.optJSONObject("message");
+        final String successMessage = messageObj != null ? StringUtils.trimToNull(messageObj.optString("success")) : null;
+        final String failMessage = messageObj != null ? StringUtils.trimToNull(messageObj.optString("fail")) : null;
 
         final LinkedList<String> ruleIds = new LinkedList<>();
         for (int i = 0; i < ruleArr.length(); i++)
@@ -112,7 +144,8 @@ public class GroupDefinition
             throw new ValidationError("Property 'rules' must contain distinct values");
         }
 
-        return new GroupDefinition(id, description, ruleIds, enabled, Optional.ofNullable(source).orElse(PointsSource.FIRST));
+        return new GroupDefinition(id, name, description, ruleIds, enabled, failsTest, Optional.ofNullable(source).orElse(Mode.firstPassed),
+                                   successMessage, failMessage);
     }
 
     public static class RuleIdConverter extends AbstractCollectionConverter

@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/Xceptance/XLT/someschema.json",
-  "title": "Some Title",
+  "title": "XLT Auto-Rating",
   "description": "Schema for XLT's Auto-Rating definition files'",
   "type": "object",
   "$defs": {
@@ -16,9 +16,44 @@
     "nonEmptyString": {
       "type": "string",
       "minLength": 1
+    },
+    "messageDict": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "string"
+        },
+        "fail": {
+          "type": "string"
+        }
+      },
+      "minProperties": 1,
+      "additionalProperties": false
     }
   },
   "properties": {
+    "selectors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "ref": "#/$defs/nonEmptyString"
+          },
+          "expression": {
+            "ref": "#/$defs/nonEmptyString"
+          },
+          "comment": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "expression"
+        ]
+      }
+    },
     "rules": {
       "type": "array",
       "items": {
@@ -30,15 +65,49 @@
           "enabled": {
             "$ref": "#/$defs/boolDefaultTrue"
           },
+          "comment": {
+            "type": "string"
+          },
           "description": {
             "type": "string"
           },
           "failsTest": {
             "$ref": "#/$defs/boolDefaultFalse"
           },
+          "messages": {
+            "$ref": "#/$defs/messageDict"
+          },
+          "name": {
+            "$ref": "#/$defs/nonEmptyString"
+          },
+          "negateResult": {
+            "$ref": "#/$defs/boolDefaultFalse"
+          },
           "checks": {
             "type": "array",
             "items": {
+              "oneOf": [
+                {
+                  "properties": {
+                    "selectorId": {
+                      "$ref": "#/$defs/nonEmptyString"
+                    }
+                  },
+                  "required": [
+                    "selectorId"
+                  ]
+                },
+                {
+                  "properties": {
+                    "selector": {
+                      "$ref": "#/$defs/nonEmptyString"
+                    }
+                  },
+                  "required": [
+                    "selector"
+                  ]
+                }
+              ],
               "type": "object",
               "properties": {
                 "enabled": {
@@ -47,34 +116,19 @@
                 "displayValue": {
                   "$ref": "#/$defs/boolDefaultFalse"
                 },
-                "selector": {
-                  "$ref": "#/$defs/nonEmptyString"
-                },
                 "condition": {
                   "$ref": "#/$defs/nonEmptyString"
+                },
+                "comment": {
+                  "type": "string"
                 }
               },
-              "additionalProperties": false,
+              "unevaluatedProperties": false,
               "required": [
-                "selector",
                 "condition"
               ]
             },
-            "minItems": 1,
             "uniqueItems": true
-          },
-          "messages": {
-            "type": "object",
-            "properties": {
-              "success": {
-                "type": "string"
-              },
-              "fail": {
-                "type": "string"
-              }
-            },
-            "minProperties": 1,
-            "additionalProperties": false
           },
           "points": {
             "type": "integer",
@@ -83,8 +137,7 @@
         },
         "additionalProperties": false,
         "required": [
-          "id",
-          "checks"
+          "id"
         ]
       },
       "minItems": 1,
@@ -98,19 +151,31 @@
           "id": {
             "$ref": "#/$defs/nonEmptyString"
           },
+          "name": {
+            "$ref": "#/$defs/nonEmptyString"
+          },
+          "comment": {
+            "type": "string"
+          },
           "description": {
             "type": "string"
           },
           "enabled": {
             "$ref": "#/$defs/boolDefaultTrue"
           },
-          "pointsSource": {
+          "failsTest": {
+            "$ref": "#/$defs/boolDefaultFalse"
+          },
+          "messages": {
+            "$ref": "#/$defs/messageDict"
+          },
+          "mode": {
             "enum": [
-              "first",
-              "last",
-              "all"
+              "firstPassed",
+              "lastPassed",
+              "allPassed"
             ],
-            "default": "first"
+            "default": "firstPassed"
           },
           "rules": {
             "type": "array",
@@ -135,8 +200,14 @@
       "items": {
         "type": "object",
         "properties": {
+          "id": {
+            "$ref": "#/$defs/nonEmptyString"
+          },
           "name": {
             "$ref": "#/$defs/nonEmptyString"
+          },
+          "comment": {
+            "type": "string"
           },
           "description": {
             "type": "string"
@@ -155,7 +226,7 @@
         },
         "additionalProperties": false,
         "required": [
-          "name",
+          "id",
           "value"
         ]
       }

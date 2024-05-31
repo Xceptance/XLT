@@ -15,11 +15,12 @@
                 <table class="no-auto-stripe">
                     <thead>
                         <tr>
-                            <th>Group ID</th>
-                            <th>Rule ID</th>
+                            <th>Group</th>
+                            <th>Rule</th>
                             <th>Description</th>
                             <th>Enabled</th>
                             <th>Fails Test</th>
+                            <th>Negate Result</th>
                             <th>Check Count</th>
                             <th>Status</th>
                             <th>Message</th>
@@ -43,34 +44,41 @@
                                             </xsl:otherwise>
                                         </xsl:choose>
                                     </xsl:variable>
-                                    <xsl:variable name="pointsSource" select="ancestor-or-self::result/preceding-sibling::configuration/groups/group[@id=current()/ancestor-or-self::group/@ref-id]/@pointsSource" />
-                                    <xsl:comment>Points Source<xsl:value-of select="$pointsSource" /></xsl:comment>
+                                    <xsl:variable name="groupDef" select="ancestor-or-self::result/preceding-sibling::configuration/groups/group[@id=current()/ancestor-or-self::group/@ref-id]" />
+                                    <xsl:variable name="groupMode" select="normalize-space($groupDef/@mode)" />
                                     <xsl:variable name="passedRules" select="rule[normalize-space(status)='PASSED']" />
                                     <xsl:for-each select="rule">
                                         <xsl:variable name="groupRule" select="current()" />
                                         <xsl:variable name="ruleId" select="$groupRule/@ref-id" />
+                                        <xsl:variable name="ruleStatus" select="normalize-space($groupRule/status)" />
                                         <xsl:variable name="isFirstRuleOfGroup" select="position() = 1" />
                                         <xsl:variable name="ruleDef" select="$definitions[@id=$ruleId]" />
                                         <xsl:variable name="numRuleChecks" select="count(checks/check)" />
 
                                         <xsl:variable name="activeClass">
-                                            <xsl:if test="not(normalize-space(status)='PASSED') or ($pointsSource='first' and not($passedRules[1]/@ref-id=$ruleId)) or ($pointsSource='last' and not($passedRules[last()]/@ref-id=$ruleId))">
+                                            <xsl:if test="not($ruleDef/@enabled='true') or ($groupMode='firstPassed' and not($passedRules[1]/@ref-id=$ruleId)) or ($groupMode='lastPassed' and not($passedRules[last()]/@ref-id=$ruleId)) or ($groupMode='allPassed' and count($passedRules)!=$numRules)">
                                                 <xsl:value-of select="'inactive'" />
                                             </xsl:if>
                                         </xsl:variable>
 
                                         <tr class="{$stripeClass}">
-                                            <!-- Group ID -->
+                                            <!-- Group Name/ID -->
                                             <xsl:if test="$isFirstRuleOfGroup">
                                                 <xsl:call-template name="multiRowCell">
                                                     <xsl:with-param name="numRows" select="$numRules" />
-                                                    <xsl:with-param name="cellContent" select="$groupRule/ancestor::group/@ref-id" />
+                                                    <xsl:with-param name="cellContent">
+                                                        <xsl:call-template name="name-or-id">
+                                                            <xsl:with-param name="node" select="$groupDef" />
+                                                        </xsl:call-template>
+                                                    </xsl:with-param>
                                                     <xsl:with-param name="class" select="'key'" />
                                                 </xsl:call-template>
                                             </xsl:if>
-                                            <!-- Rule ID -->
+                                            <!-- Rule Name/ID -->
                                             <td class="{string-join(('key', $activeClass), ' ')}">
-                                                <xsl:value-of select="$ruleId" />
+                                                <xsl:call-template name="name-or-id">
+                                                    <xsl:with-param name="node" select="$ruleDef" />
+                                                </xsl:call-template>
                                             </td>
                                             <!-- Rule Description -->
                                             <td class="{string-join(('value','text', $activeClass), ' ')}">
@@ -84,22 +92,27 @@
                                             <td class="{string-join(('value', $activeClass), ' ')}">
                                                 <xsl:value-of select="$ruleDef/@failsTest = 'true'" />
                                             </td>
+                                            <!-- Negate Result -->
+                                            <td class="{string-join(('value', $activeClass), ' ')}">
+                                                <xsl:value-of select="$ruleDef/@negateResult = 'true'"></xsl:value-of>
+                                            </td>
                                             <!-- Rule Check Count -->
                                             <td class="{string-join(('value', 'number', $activeClass), ' ')}">
                                                 <xsl:value-of select="$numRuleChecks" />
                                             </td>
                                             <!-- Rule Status -->
-                                            <td class="{string-join(('value', 'text', $activeClass), ' ')}">
-                                                <xsl:value-of select="$groupRule/status" />
+                                            <td class="{string-join(('value', $activeClass), ' ')}">
+                                                <xsl:value-of select="$ruleStatus" />
                                             </td>
                                             <!-- Rule Message -->
                                             <td class="{string-join(('value', 'text', $activeClass), ' ')}">
                                                 <xsl:value-of select="$groupRule/message" />
                                             </td>
-                                            <!-- Max Points + Points-->
+                                            <!-- Max Points -->
                                             <td class="{string-join(('value', 'number', $activeClass), ' ')}">
                                                 <xsl:value-of select="$ruleDef/@points" />
                                             </td>
+                                            <!-- Points -->
                                             <td class="{string-join(('value', 'number', $activeClass), ' ')}">
                                                 <xsl:value-of select="$groupRule/@points" />
                                             </td>
@@ -111,7 +124,7 @@
                         <xsl:otherwise>
                             <tbody>
                                 <tr>
-                                    <td class="no-data" colspan="9">No data available</td>
+                                    <td class="no-data" colspan="11">No data available</td>
                                 </tr>
                             </tbody>
                         </xsl:otherwise>
@@ -131,7 +144,7 @@
                 <table class="no-auto-stripe">
                     <thead>
                         <tr>
-                            <th>Rule ID</th>
+                            <th>Rule</th>
                             <th>Check Number</th>
                             <th>Enabled</th>
                             <th>Display Value</th>
@@ -165,13 +178,28 @@
 
                                     <xsl:for-each select="$ruleResult[1]/checks/check">
                                         <xsl:variable name="checkDef" select="$ruleDef/checks/check[@index=current()/@index]" />
+                                        <xsl:variable name="checkSelector" select="$checkDef/selector" />
+                                        <xsl:variable name="checkSelectorResolved">
+                                            <xsl:choose>
+                                                <xsl:when test="string-length($checkSelector/@ref-id) &gt; 0">
+                                                    <xsl:value-of select="ancestor-or-self::result/preceding-sibling::configuration/selectors/selector[@id=$checkSelector/@ref-id]/expression" />
+                                                </xsl:when>
+                                                <xsl:otherwise>
+                                                    <xsl:value-of select="$checkSelector" />
+                                                </xsl:otherwise>
+                                            </xsl:choose>
+                                        </xsl:variable>
 
                                         <tr class="{$stripeClass}">
                                             <!-- Rule ID -->
                                             <xsl:if test="position() = 1" >
                                                 <xsl:call-template name="multiRowCell">
                                                     <xsl:with-param name="numRows" select="$numChecks" />
-                                                    <xsl:with-param name="cellContent" select="$ruleId" />
+                                                    <xsl:with-param name="cellContent">
+                                                        <xsl:call-template name="name-or-id">
+                                                            <xsl:with-param name="node" select="$ruleDef" />
+                                                        </xsl:call-template>
+                                                    </xsl:with-param>
                                                     <xsl:with-param name="class" select="'key'" />
                                                 </xsl:call-template>
                                             </xsl:if>
@@ -189,7 +217,7 @@
                                             </td>
                                             <!-- Check Selector -->
                                             <td class="value text">
-                                                <xsl:value-of select="$checkDef/selector" />
+                                                <xsl:value-of select="$checkSelectorResolved" />
                                             </td>
                                             <!-- Check Condition -->
                                             <td class="value text">

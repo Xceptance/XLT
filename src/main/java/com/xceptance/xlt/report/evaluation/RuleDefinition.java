@@ -3,11 +3,18 @@ package com.xceptance.xlt.report.evaluation;
 import java.util.LinkedList;
 import java.util.Objects;
 
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
+import com.thoughtworks.xstream.annotations.XStreamConverter;
+import com.thoughtworks.xstream.converters.Converter;
+import com.thoughtworks.xstream.converters.MarshallingContext;
+import com.thoughtworks.xstream.converters.UnmarshallingContext;
+import com.thoughtworks.xstream.io.HierarchicalStreamReader;
+import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 
 @XStreamAlias("rule")
 public class RuleDefinition
@@ -16,12 +23,18 @@ public class RuleDefinition
     private final String id;
 
     @XStreamAsAttribute
+    private final String name;
+
+    @XStreamAsAttribute
     private boolean enabled = true;
 
     private String description;
 
     @XStreamAsAttribute
     private boolean failsTest;
+
+    @XStreamAsAttribute
+    private boolean negateResult;
 
     private final Check[] checks;
 
@@ -32,9 +45,10 @@ public class RuleDefinition
 
     private String failMessage;
 
-    public RuleDefinition(final String id, final Check[] checks)
+    public RuleDefinition(final String id, final String name, final Check[] checks)
     {
         this.id = Objects.requireNonNull(id, "Rule ID must not be null");
+        this.name = name;
         this.checks = Objects.requireNonNull(checks, "Rule checks must not be null");
     }
 
@@ -66,6 +80,16 @@ public class RuleDefinition
     public void setFailsTest(final boolean failsTest)
     {
         this.failsTest = failsTest;
+    }
+
+    public boolean isNegateResult()
+    {
+        return negateResult;
+    }
+
+    public void setNegateResult(boolean negateResult)
+    {
+        this.negateResult = negateResult;
     }
 
     public int getPoints()
@@ -103,6 +127,11 @@ public class RuleDefinition
         return id;
     }
 
+    public String getName()
+    {
+        return name;
+    }
+
     public Check[] getChecks()
     {
         return checks;
@@ -116,6 +145,10 @@ public class RuleDefinition
 
         private final String selector;
 
+        @XStreamConverter(SelectorIdConverter.class)
+        @XStreamAlias("selector")
+        private final String selectorId;
+
         private final String condition;
 
         @XStreamAsAttribute
@@ -124,10 +157,12 @@ public class RuleDefinition
         @XStreamAsAttribute
         private final boolean displayValue;
 
-        public Check(final int index, final String selector, final String condition, final boolean enabled, final boolean displayValue)
+        public Check(final int index, final String selector, final String selectorId, final String condition, final boolean enabled,
+                     final boolean displayValue)
         {
             this.index = Math.max(0, index);
-            this.selector = Objects.requireNonNull(selector, "Rule check selector must not be null");
+            this.selectorId = selectorId;
+            this.selector = selector;
             this.condition = Objects.requireNonNull(condition, "Rule check condition must not be null");
             this.enabled = enabled;
             this.displayValue = displayValue;
@@ -153,6 +188,11 @@ public class RuleDefinition
             return selector;
         }
 
+        public String getSelectorId()
+        {
+            return selectorId;
+        }
+
         public String getCondition()
         {
             return condition;
@@ -163,43 +203,77 @@ public class RuleDefinition
     static RuleDefinition fromJSON(final JSONObject jsonObject) throws ValidationError
     {
         final String ruleId = jsonObject.getString("id");
-        final String ruleDesc = jsonObject.optString("description");
+        final String ruleName = StringUtils.trimToNull(jsonObject.optString("name"));
+        final String ruleDesc = jsonObject.optString("description", null);
         final boolean enabled = jsonObject.optBoolean("enabled", true);
         final boolean failsTest = jsonObject.optBoolean("failsTest", false);
+        final boolean negateResult = jsonObject.optBoolean("negateResult", false);
         final JSONObject messages = jsonObject.optJSONObject("messages");
-        final JSONArray checks = jsonObject.getJSONArray("checks");
+        final JSONArray checks = jsonObject.optJSONArray("checks");
         final int rulePoints = jsonObject.optInt("points");
 
         final LinkedList<Check> checkList = new LinkedList<>();
-        for (int i = 0; i < checks.length(); i++)
+        if (checks != null)
         {
-            final JSONObject checkObj = checks.getJSONObject(i);
-            final String selector = checkObj.getString("selector");
-            final String condition = checkObj.getString("condition");
+            for (int i = 0; i < checks.length(); i++)
+            {
+                final JSONObject checkObj = checks.getJSONObject(i);
+                final String selector = checkObj.optString("selector", null);
+                final String selectorId = checkObj.optString("selectorId", null);
+                final String condition = checkObj.getString("condition");
 
-            final boolean displayValue = checkObj.optBoolean("displayValue", true);
-            final boolean checkEnabled = checkObj.optBoolean("enabled", true);
+                final boolean displayValue = checkObj.optBoolean("displayValue", true);
+                final boolean checkEnabled = checkObj.optBoolean("enabled", true);
 
-            checkList.add(new Check(i, selector, condition, checkEnabled, displayValue));
+                if (!(selector == null ^ selectorId == null))
+                {
+                    throw new ValidationError("Check #" + i + " is ambiguous: either 'selector' or 'selectorId' property must be given");
+                }
+
+                checkList.add(new Check(i, selector, selectorId, condition, checkEnabled, displayValue));
+            }
         }
-
         if (rulePoints < 0)
         {
             throw new ValidationError("Property 'points' must be a non-negative integer");
         }
-        if (!checkList.stream().anyMatch(Check::isEnabled))
+        if (!checkList.isEmpty() && !checkList.stream().anyMatch(Check::isEnabled))
         {
             throw new ValidationError("Property 'checks' must contain at least one enabled check definition");
         }
 
-        final RuleDefinition ruleDef = new RuleDefinition(ruleId, checkList.toArray(Check[]::new));
+        final RuleDefinition ruleDef = new RuleDefinition(ruleId, ruleName, checkList.toArray(Check[]::new));
         ruleDef.setDescription(ruleDesc);
         ruleDef.setEnabled(enabled);
         ruleDef.setFailsTest(failsTest);
+        ruleDef.setNegateResult(negateResult);
         ruleDef.setPoints(rulePoints);
-        ruleDef.setSuccessMessage(messages != null ? messages.optString("success") : null);
-        ruleDef.setFailMessage(messages != null ? messages.optString("fail") : null);
+        ruleDef.setSuccessMessage(messages != null ? StringUtils.trimToNull(messages.optString("success")) : null);
+        ruleDef.setFailMessage(messages != null ? StringUtils.trimToNull(messages.optString("fail")) : null);
 
         return ruleDef;
+    }
+
+    public static class SelectorIdConverter implements Converter
+    {
+        @SuppressWarnings("rawtypes")
+        @Override
+        public boolean canConvert(Class type)
+        {
+            return type == String.class;
+        }
+
+        @Override
+        public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context)
+        {
+            writer.addAttribute("ref-id", Objects.toString(source));
+        }
+
+        @Override
+        public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context)
+        {
+            return null;
+        }
+
     }
 }

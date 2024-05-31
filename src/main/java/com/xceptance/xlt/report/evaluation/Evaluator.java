@@ -10,9 +10,9 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -24,6 +24,7 @@ import com.google.common.io.Files;
 import com.thoughtworks.xstream.XStream;
 import com.xceptance.common.util.ParameterCheckUtils;
 import com.xceptance.xlt.common.XltConstants;
+import com.xceptance.xlt.report.evaluation.GroupDefinition.Mode;
 import com.xceptance.xlt.report.util.xstream.SanitizingDomDriver;
 
 import dev.harrel.jsonschema.Validator;
@@ -177,7 +178,8 @@ public class Evaluator
         xpathCompiler.setCaching(true);
 
         int points = 0, totalPoints = 0; // counters for achieved and achievable points
-        boolean testFailed = false; // whether to mark test as failed (due to "hard rule fail" or due to "rating fail")
+        boolean testFailed = false; // whether to mark test as failed (due to "hard rule/group fail" or due to "rating
+                                    // fail")
 
         // initialize evaluation and its result objects
         final Evaluation evaluation = new Evaluation(config);
@@ -196,12 +198,7 @@ public class Evaluator
                 // create a rule result object
                 final Evaluation.Rule rule = new Evaluation.Rule(ruleDef, groupDef.isEnabled());
                 // evaluate the rule
-                evaluateRule(rule, xpathCompiler, docNode);
-                // check for "hard rule fail"
-                if (rule.getStatus().isFailed() && rule.getDefinition().isFailsTest())
-                {
-                    testFailed = true;
-                }
+                evaluateRule(rule, xpathCompiler, docNode, config::getSelector);
 
                 // add rule result to group result
                 group.addRule(rule);
@@ -209,7 +206,7 @@ public class Evaluator
             }
 
             // conclude the evaluation of the group
-            conclude(group);
+            testFailed = conclude(group) || testFailed;
 
             // add number of group's achieved and achievable points to the counters
             points += group.getPoints();
@@ -228,12 +225,12 @@ public class Evaluator
 
         // determine the test's rating and whether it has failed
         String rating = null;
-        for (final RatingDefinition ratingDefn : config.getRatings())
+        for (final RatingDefinition ratingDef : config.getRatings())
         {
-            if (ratingDefn.isEnabled() && pointsPercentage <= ratingDefn.getValue())
+            if (ratingDef.isEnabled() && pointsPercentage <= ratingDef.getValue())
             {
-                rating = ratingDefn.getName();
-                testFailed = testFailed || ratingDefn.isFailsTest();
+                rating = ratingDef.getId();
+                testFailed = testFailed || ratingDef.isFailsTest();
 
                 break;
             }
@@ -245,17 +242,31 @@ public class Evaluator
         result.setPointsPercentage(pointsPercentage);
         result.setRating(rating);
 
+        // do not "overwrite" any previous error
+        if (StringUtils.isBlank(result.getError()))
+        {
+            // collect error messages from erroneous groups/rules and join them with two new-line characters
+            final String errorMessagesJoined = result.getGroups().stream().filter(g -> g.getStatus().isError())
+                                                     .flatMap(g -> g.getRules().stream()).filter(r -> r.getStatus().isError() && StringUtils.isNotBlank(r.getMessage()))
+                                                     .map(r -> String.format("Error evaluating rule '%s': %s", r.getId(), r.getMessage()))
+                                                     .collect(Collectors.joining("\n\n"));
+            if (StringUtils.isNotBlank(errorMessagesJoined))
+            {
+                result.setError(errorMessagesJoined);
+            }
+        }
         return evaluation;
     }
 
-    private void evaluateRule(final Evaluation.Rule rule, final XPathCompiler compiler, final XdmNode document)
+    private void evaluateRule(final Evaluation.Rule rule, final XPathCompiler compiler, final XdmNode document,
+                              final Function<String, SelectorDefinition> selectorLookup)
     {
         for (final RuleDefinition.Check check : rule.getDefinition().getChecks())
         {
             final Evaluation.Rule.Check ruleCheck = new Evaluation.Rule.Check(check, rule.isEnabled());
             if (ruleCheck.isEnabled())
             {
-                evaluateRuleCheck(ruleCheck, compiler, document);
+                evaluateRuleCheck(ruleCheck, compiler, document, selectorLookup);
             }
             rule.addCheck(ruleCheck);
         }
@@ -263,13 +274,26 @@ public class Evaluator
         conclude(rule);
     }
 
-    private void evaluateRuleCheck(final Evaluation.Rule.Check check, final XPathCompiler compiler, final XdmNode document)
+    private void evaluateRuleCheck(final Evaluation.Rule.Check check, final XPathCompiler compiler, final XdmNode document,
+                                   final Function<String, SelectorDefinition> selectorLookup)
     {
+        final String selector;
+        // pick the right selector (specified inline or referenced by ID)
+        {
+            final String selectorId = check.getDefinition().getSelectorId();
+            if (selectorId != null)
+            {
+                selector = selectorLookup.apply(selectorId).getExpression();
+            }
+            else
+            {
+                selector = check.getDefinition().getSelector();
+            }
+        }
         Status status = Status.FAILED;
         String message = null, value = null;
         try
         {
-            final String selector = check.getDefinition().getSelector();
             final XdmValue result = compiler.evaluate(selector, document);
             if (result.isEmpty())
             {
@@ -342,7 +366,7 @@ public class Evaluator
             return;
         }
 
-        Status lastStatus = null;
+        Status lastStatus = Status.PASSED;
         // loop through rule's checks
         for (final Evaluation.Rule.Check c : rule.getChecks())
         {
@@ -355,118 +379,160 @@ public class Evaluator
 
             // remember most recent check status that doesn't indicate a passed check or just the very first check
             // status if all checks did pass
-            if (lastStatus == null || !checkStatus.isPassed())
+            if (!checkStatus.isPassed())
             {
                 lastStatus = checkStatus;
                 // encountered erroneous check -> set rule message to the check's error message and stop looping
                 if (checkStatus.isError())
                 {
-                    rule.setMessage(c.getErrorMessage());
+                    rule.setMessage(String.format("[Check #%d] %s", c.getIndex() ,c.getErrorMessage()));
                     break;
                 }
             }
         }
         // take action according to rule's final status
         // (pass: set message to success message and points to all achievable points, fail: set message to fail message)
-        if (lastStatus != null)
+
+        // negate rule status if desired
+        if (rule.getDefinition().isNegateResult())
         {
-            rule.setStatus(lastStatus);
-            if (lastStatus.isPassed())
-            {
-                rule.setMessage(rule.getDefinition().getSuccessMessage());
-                rule.setPoints(rule.getDefinition().getPoints());
-            }
-            else if (lastStatus.isFailed())
-            {
-                rule.setMessage(rule.getDefinition().getFailMessage());
-            }
+            lastStatus = lastStatus.negate();
+        }
+        rule.setStatus(lastStatus);
+        if (lastStatus.isPassed())
+        {
+            rule.setMessage(rule.getDefinition().getSuccessMessage());
+            rule.setPoints(rule.getDefinition().getPoints());
+        }
+        else if (lastStatus.isFailed())
+        {
+            rule.setMessage(rule.getDefinition().getFailMessage());
         }
 
     }
 
-    private void conclude(final Evaluation.Group group)
+    private boolean conclude(final Evaluation.Group group)
     {
         // nothing to do for disabled groups
         if (!group.getDefinition().isEnabled())
         {
-            return;
+            return false;
         }
 
-        Integer firstMatch = null, lastMatch = null;
-        int maxPoints = 0, sumPoints = 0, sumPointsMatching = 0;
-        // loop through group's rule and determine
+        Evaluation.Rule firstMatch = null, lastMatch = null;
+        int maxPoints = 0, sumPointsTotal = 0, sumPointsMatching = 0;
+
+        boolean somePassed = false, someFailed = false, someError = false;
+
+        // loop through group's rules and determine
         // - the points of the first matching rule,
         // - the points of the last matching rule,
         // - the points of all matching rules (sum of),
         // - the maximum number of all rules' points and
         // - the overall sum of all rules' points
         // - the rules' messages
-        final List<String> messages = new LinkedList<String>();
-        for (final Evaluation.Rule rule : group.getRules())
+        // - the overall status of the group
+        // - + PASSED if at least one rule passed and mode is 'first' or 'last' OR if all rules did pass and mode is
+        // 'all'
+        // - + FAILED if at least one rule failed if mode is 'all' OR all rules did fail and mode is 'first' or 'last'
+        // - + ERROR if some rule was erroneous
+        final List<Evaluation.Rule> rules = group.getRules();
+        for (final Evaluation.Rule rule : rules)
         {
             // rules must be enabled in order to participate in point calculation
-            if (!rule.getDefinition().isEnabled())
+            // N.B. Rule status is SKIPPED if and only if rule is disabled
+            if (!rule.getDefinition().isEnabled()) // no need to check group for being enabled
             {
                 continue;
             }
 
-            final int rulePoints = rule.getPoints();
-            final int rulePointsMax = rule.getDefinition().getPoints();
-            maxPoints = Math.max(maxPoints, rulePointsMax);
-            if (rule.getStatus().isPassed())
+            final int pointsAchieved = rule.getPoints();
+            final int rulePoints = rule.getDefinition().getPoints();
+            final Status ruleStatus = rule.getStatus();
+
+            if (ruleStatus.isError())
             {
-                if (firstMatch == null)
-                {
-                    firstMatch = Integer.valueOf(rulePoints);
-                }
-                lastMatch = Integer.valueOf(rulePoints);
-
-                sumPointsMatching += rulePoints;
-
-                // TODO Clarify why rule's fail-message is not considered
-                if(rule.getMessage() != null)
-                {
-                    messages.add(rule.getMessage());
-                }
-
+                someError = true;
+                continue;
             }
 
-            sumPoints += rulePointsMax;
-            
+            maxPoints = Math.max(maxPoints, rulePoints);
+            sumPointsTotal += rulePoints;
+
+            if (ruleStatus.isPassed())
+            {
+                somePassed = true;
+                if (firstMatch == null)
+                {
+                    firstMatch = rule;
+                }
+                lastMatch = rule;
+
+                sumPointsMatching += pointsAchieved;
+
+            }
+            else if (ruleStatus.isFailed())
+            {
+                someFailed = true;
+            }
+
         }
 
-        // pick the correct values for group's points and total points according to its points source
-        final int points, totalPoints;
-        switch (group.getDefinition().getPointSource())
+        if (someError)
         {
-            case FIRST:
-                points = Optional.ofNullable(firstMatch).orElse(0);
-                totalPoints = maxPoints;
-                if(!messages.isEmpty())
-                {
-                    group.addMessage(messages.get(0));
-                }
-                break;
-            case LAST:
-                points = Optional.ofNullable(lastMatch).orElse(0);
-                totalPoints = maxPoints;
-                if(!messages.isEmpty())
-                {
-                    group.addMessage(messages.get(messages.size()-1));
-                }
-                break;
-            case ALL:
-                points = sumPointsMatching;
-                totalPoints = sumPoints;
-                messages.forEach(group::addMessage);
-                break;
-            default:
-                points = 0;
-                totalPoints = 0;
+            group.setStatus(Status.ERROR);
+            group.setPoints(0);
+            group.setTotalPoints(0);
+
+            return false;
         }
 
+        // pick the correct values for group's points and total points according to its mode
+        final int points, totalPoints;
+        final Status groupStatus;
+        final boolean testFailed;
+
+        final Mode mode = group.getDefinition().getMode();
+        if (mode == Mode.allPassed)
+        {
+            groupStatus = someFailed ? Status.FAILED : somePassed ? Status.PASSED : Status.SKIPPED;
+            points = sumPointsMatching;
+            totalPoints = sumPointsTotal;
+
+            testFailed = rules.stream().anyMatch(Evaluation.Rule::isTestFailed);
+        }
+        else if (mode == Mode.firstPassed || mode == Mode.lastPassed)
+        {
+            final Evaluation.Rule triggerRule = (mode == Mode.firstPassed) ? firstMatch : lastMatch;
+            final int idx = triggerRule != null ? rules.indexOf(triggerRule) : -1;
+
+            groupStatus = somePassed ? Status.PASSED : someFailed ? Status.FAILED : Status.SKIPPED;
+            points = Optional.ofNullable(triggerRule).map(Evaluation.Rule::getPoints).orElse(0);
+            totalPoints = maxPoints;
+
+            testFailed = idx > 0 ? rules.subList(0, idx).stream().anyMatch(Evaluation.Rule::isTestFailed) : false;
+        }
+        else
+        {
+            groupStatus = Status.ERROR;
+            points = 0;
+            totalPoints = 0;
+
+            testFailed = false;
+        }
+
+        group.setStatus(groupStatus);
         group.setPoints(points);
         group.setTotalPoints(totalPoints);
+
+        final String groupMessage = groupStatus.isPassed() ? group.getDefinition().getSuccessMessage()
+                                                           : groupStatus.isFailed() ? group.getDefinition().getFailMessage() : null;
+        if (groupMessage != null)
+        {
+            group.setMessage(groupMessage);
+        }
+
+        return testFailed;
     }
 
     /**

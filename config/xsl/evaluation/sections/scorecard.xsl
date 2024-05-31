@@ -5,7 +5,9 @@
     <xsl:param name="rootNode" />
 
     <xsl:variable name="error" select="$rootNode/error" />
-    <xsl:variable name="rating" select="normalize-space($rootNode/rating)" />
+    <xsl:variable name="ratingId" select="$rootNode/rating" />
+    <xsl:variable name="config" select="$rootNode/preceding-sibling::configuration" />
+    <xsl:variable name="ratingDefinition" select="$config/ratings/rating[@id=$ratingId]" />
 
     <div class="section" id="scorecard-result">
         <xsl:call-template name="headline-scorecard" />
@@ -27,8 +29,7 @@
                             The rating result is <xsl:value-of select="concat($rootNode/@pointsPercentage, '%')" />.
 
                             <xsl:choose>
-                                <xsl:when test="string-length($rating) &gt; 0">
-                                    <xsl:variable name="ratingDefinition" select="$rootNode/preceding-sibling::configuration/ratings/rating[@name=$rating]" />
+                                <xsl:when test="count($ratingDefinition) &gt; 0">
                                     <xsl:variable name="ratingDescription" select="concat('&quot;', normalize-space($ratingDefinition/description), '&quot;')" />
 
                             Based on the result, the test
@@ -43,9 +44,30 @@
                                                 the 'ref-id' attribute of at least one 'rule' element node reachable via '$rootNode' having
                                                 status 'FAILED'.
                                             -->
-                                            <xsl:variable name="hardFails" select="filter($rootNode/preceding-sibling::configuration/rules/rule[@failsTest='true']/@id, function($a){ count($rootNode//rule[normalize-space(status) = 'FAILED'][@ref-id=$a]) &gt; 0 })" />
-                                        would have succeeded with <xsl:value-of select="$ratingDescription" /> but at least one rule still qualifies this test as failed
-                                            <xsl:value-of select="concat('(',string-join($hardFails, ', '),').')" />
+                                            <xsl:variable name="failedRules" select="filter($config//rule[@failsTest='true'], function($a){ count($rootNode//rule[normalize-space(status)='FAILED'][@ref-id=$a/@id]) &gt; 0 })" />
+                                           <!--
+                                                Lookup all 'group' definitions in configuration that have 'failsTest' attribute set to 'true',
+                                                collect the value of their 'id' attribute and filter out those that are not used as value for
+                                                the 'ref-id' attribute of at least one 'group' element node reachable via '$rootNode' having
+                                                status 'FAILED'.
+                                            -->
+                                            <xsl:variable name="failedGroups" select="filter($config//group[@failsTest='true'], function($a){ count($rootNode//group[normalize-space(status)='FAILED'][@ref-id=$a/@id]) &gt; 0 })" />
+                                            <xsl:choose>
+                                                <xsl:when test="count($failedRules) &gt; 0">
+                                        would have succeeded with <xsl:value-of select="$ratingDescription" /> but at least one rule still qualifies this test as failed:
+                                                    <xsl:call-template name="items-quoted">
+                                                        <xsl:with-param name="separator" select="', '" />
+                                                        <xsl:with-param name="items" select="$failedRules" />
+                                                    </xsl:call-template>
+                                                </xsl:when>
+                                                <xsl:otherwise>
+                                        would have succeeded with <xsl:value-of select="$ratingDescription" /> but at least one group still qualifies this test as failed:
+                                                    <xsl:call-template name="items-quoted">
+                                                        <xsl:with-param name="separator" select="', '" />
+                                                        <xsl:with-param name="items" select="$failedGroups" />
+                                                    </xsl:call-template>
+                                                </xsl:otherwise>
+                                            </xsl:choose>
                                         </xsl:when>
                                         <xsl:otherwise>
                                         failed with <xsl:value-of select="$ratingDescription" />.
@@ -54,7 +76,7 @@
                                 </xsl:when>
                                 <xsl:otherwise>
                                     <xsl:if test="$rootNode[@testFailed='true']">
-                                The test failed due to a rule qualifying the test as failed.
+                                The test failed due to a rule or group qualifying the test as failed.
                                     </xsl:if>
                                 </xsl:otherwise>
                             </xsl:choose>
@@ -67,5 +89,28 @@
     </div><!-- /section -->
 </xsl:template>
 
+<xsl:template name="items-quoted">
+    <xsl:param name="separator" select="''" />
+    <xsl:param name="items" select="/.." />
+
+    <xsl:for-each select="$items">
+        <xsl:variable name="itemId" select="normalize-space(current()/@id)" />
+        <xsl:variable name="itemName" select="normalize-space(current()/@name)" />
+
+        <xsl:choose>
+            <xsl:when test="string-length($itemName) &gt; 0">
+                <span title="{$itemId}">&quot;{$itemName}&quot;</span>
+            </xsl:when>
+            <xsl:otherwise>
+                <span>&quot;{$itemId}&quot;</span>
+            </xsl:otherwise>
+        </xsl:choose>
+
+        <xsl:if test="position() &lt; last()">
+            <xsl:value-of select="$separator" />
+        </xsl:if>
+
+    </xsl:for-each>
+</xsl:template>
 
 </xsl:stylesheet>

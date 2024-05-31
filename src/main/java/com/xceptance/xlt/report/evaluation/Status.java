@@ -26,4 +26,23 @@ enum Status
     {
         return Status.SKIPPED == this;
     }
+
+    /**
+     * Returns the negated status of this status (PASSED &rarr; FAILED; FAILED &rarr; PASSED; SKIPPED and ERROR stay as
+     * is),
+     * 
+     * @return this status negated
+     */
+    Status negate()
+    {
+        if (isPassed())
+        {
+            return FAILED;
+        }
+        if (isFailed())
+        {
+            return PASSED;
+        }
+        return this;
+    }
 }

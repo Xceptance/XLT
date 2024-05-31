@@ -15,6 +15,8 @@
 
 <xsl:include href="text/descriptions.xsl" />
 
+
+<xsl:include href="sections/util.xsl" />
 <xsl:include href="sections/scorecard.xsl" />
 <xsl:include href="sections/ratings.xsl" />
 <xsl:include href="sections/rules.xsl" />

@@ -16,7 +16,7 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>Name</th>
+                            <th>Rating</th>
                             <th>Description</th>
                             <th>Enabled</th>
                             <th>Fails Test</th>
@@ -29,12 +29,14 @@
                             <tbody>
                                 <xsl:for-each select="$elements">
                                     <xsl:element name="tr">
-                                        <xsl:if test="@name != $active or @enabled != 'true'">
+                                        <xsl:if test="not(@id = $active and @enabled = 'true')">
                                             <xsl:attribute name="class" select="'inactive'" />
                                         </xsl:if>
-                                        <!-- Name -->
+                                        <!-- Rating Name/ID -->
                                         <td class="key">
-                                            <xsl:value-of select="@name" />
+                                            <xsl:call-template name="name-or-id">
+                                                <xsl:with-param name="node" select="current()" />
+                                            </xsl:call-template>
                                         </td>
                                         <!-- Description -->
                                         <td class="value text">

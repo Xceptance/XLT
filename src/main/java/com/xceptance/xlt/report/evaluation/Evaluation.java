@@ -12,7 +12,6 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
-import com.thoughtworks.xstream.annotations.XStreamImplicit;
 
 @XStreamAlias("evaluation")
 public class Evaluation
@@ -158,12 +157,13 @@ public class Evaluation
         @XStreamAsAttribute
         private int totalPoints;
 
-        @XStreamImplicit(itemFieldName = "message")
-        private List<String> messages;
+        private String message;
+
+        private Status status = Status.SKIPPED;
 
         Group(final GroupDefinition definition)
         {
-            this.definition = definition;
+            this.definition = Objects.requireNonNull(definition, "Group definition must not be null");
             this.id = definition.getId();
         }
 
@@ -207,26 +207,24 @@ public class Evaluation
             this.totalPoints = Math.max(0, totalPoints);
         }
 
-        public List<String> getMessages()
+        public String getMessage()
         {
-            if (messages == null)
-            {
-                return Collections.emptyList();
-            }
-            return Collections.unmodifiableList(messages);
+            return message;
         }
 
-        void addMessage(final String message)
+        void setMessage(final String message)
         {
-            final String msg = StringUtils.trimToNull(message);
-            if (msg != null)
-            {
-                if (messages == null)
-                {
-                    messages = new LinkedList<>();
-                }
-                messages.add(msg);
-            }
+            this.message = StringUtils.trimToNull(message);
+        }
+
+        void setStatus(final Status status)
+        {
+            this.status = Objects.requireNonNull(status);
+        }
+
+        public Status getStatus()
+        {
+            return status;
         }
     }
 
@@ -252,7 +250,7 @@ public class Evaluation
 
         Rule(final RuleDefinition definition, final boolean groupEnabled)
         {
-            this.definition = definition;
+            this.definition = Objects.requireNonNull(definition, "Rule definition must not be null");
             this.groupEnabled = groupEnabled;
 
             this.id = definition.getId();
@@ -312,6 +310,12 @@ public class Evaluation
         {
             return groupEnabled && definition.isEnabled();
         }
+        
+        boolean isTestFailed()
+        {
+            return getStatus().isFailed() && getDefinition().isFailsTest();
+        }
+        
 
         @XStreamAlias("check")
         public static class Check
@@ -331,9 +335,10 @@ public class Evaluation
 
             Check(final RuleDefinition.Check definition, final boolean ruleEnabled)
             {
-                this.definition = definition;
-                this.index = definition.getIndex();
+                this.definition = Objects.requireNonNull(definition, "Check definition must not be null");
                 this.ruleEnabled = ruleEnabled;
+
+                this.index = definition.getIndex();
             }
 
             public int getIndex()
