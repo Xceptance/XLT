@@ -1,5 +1,5 @@
 # XLT
-XLT is an extensive load and performance test tool developed and maintained by Xceptance. If you need more information, here is the current [website](https://www.xceptance.com/xlt/) and the current [documentation portal](https://xltdoc.xceptance.com/). There is also a [forum](https://ask.xceptance.de/) available to discuss load testing and test automation with XLT.
+XLT is an extensive load and performance test tool developed and maintained by Xceptance. If you need more information, here is the current [website](https://www.xceptance.com/xlt/) and the current [documentation portal](https://docs.xceptance.com/).
 
 The documentation was fully rewritten in 2020 and it is continuously updated. We appreciate your feedback. You can also directly contribute on GitHub at https://github.com/Xceptance/xlt-documentation. If you need any information from the legacy documentation, you can still find it at https://lab.xceptance.de/releases/xlt/5.7.1/index.html
 
@@ -62,5 +62,10 @@ When you build XLT by yourself, the following limitations apply.
 
 * Depending on the distribution you use, you might need to adjust the path to your Chrome/Chromium executable in `build.properties` on Linux as well.
 
+# XLT as a Service - XTC
+If you are looking for a hosted version of XLT with all the bells and whistles, look no further. Xceptance offers XTC - The Xceptance Test Center, a fully hosted, multi-project, infinitely scalable version of XLT in the cloud. [Contact](https://www.xceptance.com/en/contact/) us for more details.
+
+![image](https://github.com/Xceptance/XLT/assets/1793856/7a8efb7b-caef-4aaf-9321-cdcaba673d8a)
+
 # Jobs
-Do you like the code and architecture of XLT? Do you have ideas for new features or just like to work with it? Why not considering to apply for a job at Xceptance? We are always hiring developers and testers. Just drop us a line. You can find more information on our career page [Jobs at Xceptance](https://www.xceptance.com/en/careers/).
+Do you like XLT's code and architecture? Do you have ideas for new features or just enjoy working with it? Consider applying for a job at Xceptance. We are always hiring developers and testers. Just drop us a line. You can find more information on our career page [Jobs at Xceptance] (https://www.xceptance.com/en/careers/).

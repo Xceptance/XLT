@@ -15,10 +15,12 @@
  */
 package com.xceptance.xlt.engine;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -33,6 +35,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.htmlunit.AjaxController;
@@ -81,6 +84,7 @@ import com.xceptance.xlt.api.engine.Session;
 import com.xceptance.xlt.api.engine.SessionShutdownListener;
 import com.xceptance.xlt.api.htmlunit.LightWeightPage;
 import com.xceptance.xlt.api.util.ResponseProcessor;
+import com.xceptance.xlt.api.util.XltException;
 import com.xceptance.xlt.api.util.XltLogger;
 import com.xceptance.xlt.api.util.XltProperties;
 import com.xceptance.xlt.engine.htmlunit.apache.XltApacheHttpWebConnection;
@@ -128,9 +132,14 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
     private static final XltCache globalCache;
 
     /**
+     * The global cache for key and trust stores. The cache is shared among all {@link XltWebClient} instances.
+     */
+    private static final ConcurrentHashMap<String, KeyStore> storeCache;
+
+    /**
      * Holds the URLs and responses of static resources that have been loaded so far for a page.
      */
-    private final ConcurrentHashMap<String, WebResponse> pageLocalCache = new ConcurrentHashMap<String, WebResponse>();
+    private final ConcurrentHashMap<String, WebResponse> pageLocalCache = new ConcurrentHashMap<>();
 
     /**
      * Enabled flag for static content loading.
@@ -166,7 +175,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
     /**
      * The list of response processors.
      */
-    private final List<ResponseProcessor> responseProcessors = new ArrayList<ResponseProcessor>();
+    private final List<ResponseProcessor> responseProcessors = new ArrayList<>();
 
     /**
      * JS Beautifying response processor (separate instance field since its (omni)presence is configuration-dependent).
@@ -181,7 +190,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
     /**
      * Mapping of base URLs to relative CSS resource URLs.
      */
-    private final ConcurrentHashMap<String, Collection<String>> cssResourceUrlCache = new ConcurrentHashMap<String, Collection<String>>();
+    private final ConcurrentHashMap<String, Collection<String>> cssResourceUrlCache = new ConcurrentHashMap<>();
 
     /**
      * The maximum number of download threads.
@@ -224,6 +233,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
         cssCacheSize = Math.max(cssCacheSize, ConcurrentLRUCache.MIN_SIZE);
 
         globalCache = new XltCache(jsCacheSize, cssCacheSize);
+        storeCache = new ConcurrentHashMap<>();
 
         // configure the XPath engine to use
         final String xpathEngine = props.getProperty("com.xceptance.xlt.xpath.engine", "jaxen");
@@ -404,7 +414,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
         getOptions().setUseInsecureSSL(props.getProperty("com.xceptance.xlt.ssl.easyMode", false));
 
         // the SSL protocol (family) to use when in easy mode
-        String easyModeProtocol = StringUtils.defaultIfBlank(props.getProperty("com.xceptance.xlt.ssl.easyModeProtocol"), "TLS");
+        final String easyModeProtocol = StringUtils.defaultIfBlank(props.getProperty("com.xceptance.xlt.ssl.easyModeProtocol"), "TLS");
         getOptions().setSSLInsecureProtocol(easyModeProtocol.trim());
 
         // the SSL handshake protocols to enable at an SSL socket
@@ -464,6 +474,10 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
 
         final XltHttpWebConnection connection = new XltHttpWebConnection(this, underlyingWebConnection);
         setWebConnection(connection);
+
+        // load key/trust material for client/server authentication
+        setUpKeyStore(props);
+        setUpTrustStore(props);
     }
 
     /**
@@ -683,7 +697,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
                 final RequestStack requestStack = RequestStack.getCurrent();
                 requestStack.setTimerName(getTimerName());
 
-                final Set<String> urlStrings = new TreeSet<String>();
+                final Set<String> urlStrings = new TreeSet<>();
                 // No need to select img elements too -> they are automatically downloaded (#1379)
                 // Scripts can be skipped as well -> automatically downloaded as needed
                 elements = htmlPage.getByXPath("//input[@type='image']");
@@ -743,7 +757,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
             }
 
             // use of copy of the frame list to minimize the chance of ConcurrentModificationException's (#1676)
-            final List<FrameWindow> frames = new ArrayList<FrameWindow>(htmlPage.getFrames());
+            final List<FrameWindow> frames = new ArrayList<>(htmlPage.getFrames());
             for (final WebWindow frame : frames)
             {
                 final Page framePage = frame.getEnclosedPage();
@@ -787,7 +801,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
 
         // use a sorted set to hold the links -> this way each resource will be
         // loaded only once and in the same order
-        final Set<String> urlStrings = new TreeSet<String>();
+        final Set<String> urlStrings = new TreeSet<>();
 
         final boolean isCssModeAlways = CssMode.ALWAYS.equals(getCssMode());
 
@@ -1073,7 +1087,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
     {
         // use a hash map to avoid URL duplicates since given collection of URL strings may also contain absolute URL
         // strings
-        final HashMap<String, URL> resolvedURLs = new HashMap<String, URL>(urlStrings.size());
+        final HashMap<String, URL> resolvedURLs = new HashMap<>(urlStrings.size());
         for (final String urlString : urlStrings)
         {
             final URL absoluteURL = makeUrlAbsolute(baseURL, urlString);
@@ -1097,7 +1111,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
      */
     private List<String> getAllowedLinkURIs(final String pageContent)
     {
-        final List<String> links = new ArrayList<String>();
+        final List<String> links = new ArrayList<>();
         final String relAttRegex = loadStaticContent ? LINKTYPE_WHITELIST_PATTERN : "(?i)stylesheet";
         for (final String attributeList : LWPageUtilities.getAllLinkAttributes(pageContent))
         {
@@ -1447,8 +1461,8 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
         evalCss(body, cssRulesWithUrls, browserVersion, cssText);
 
         // create absolute URLs
-        final Collection<URL> urls = new ArrayList<URL>();
-        final Set<String> alreadyLoadedUrls = new HashSet<String>(pageLocalCache.keySet());
+        final Collection<URL> urls = new ArrayList<>();
+        final Set<String> alreadyLoadedUrls = new HashSet<>(pageLocalCache.keySet());
         final List<URL> pageBaseURLs = Arrays.asList(baseURL);
 
         for (final String urlString : CssUtils.getUrlStrings(cssText.toString()))
@@ -1486,7 +1500,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
      */
     private List<URL> getCssBaseUrls(final String urlString)
     {
-        final List<URL> urls = new ArrayList<URL>();
+        final List<URL> urls = new ArrayList<>();
         for (final Map.Entry<String, Collection<String>> entry : cssResourceUrlCache.entrySet())
         {
             if (entry.getValue().contains(urlString))
@@ -1579,7 +1593,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
      */
     private List<CSSStyleRuleImpl> getCssRulesWithUrls(final HtmlPage page)
     {
-        final List<CSSStyleRuleImpl> cssRules = new ArrayList<CSSStyleRuleImpl>();
+        final List<CSSStyleRuleImpl> cssRules = new ArrayList<>();
 
         if (isJavaScriptEnabled())
         {
@@ -1685,7 +1699,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
             {
                 // get the embedded CSS rules and process them recursively
                 final List<AbstractCSSRuleImpl> rules = mediaRule.getCssRules().getRules();
-                for (AbstractCSSRuleImpl r : rules)
+                for (final AbstractCSSRuleImpl r : rules)
                 {
                     addCssStyleRulesWithUrls(sheet, r, cssStyleRules);
                 }
@@ -1714,7 +1728,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
      */
     private List<WebWindow> getAllWebWindows(final Page page)
     {
-        final List<WebWindow> webWindows = new ArrayList<WebWindow>();
+        final List<WebWindow> webWindows = new ArrayList<>();
 
         if (page != null)
         {
@@ -1951,20 +1965,20 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
 
     enum CssMode
     {
-     /**
-      * Always download images references in CSS files.
-      */
-     ALWAYS,
+        /**
+         * Always download images references in CSS files.
+         */
+        ALWAYS,
 
-     /**
-      * Resolve and download image references on demand.
-      */
-     ONDEMAND,
+        /**
+         * Resolve and download image references on demand.
+         */
+        ONDEMAND,
 
-     /**
-      * Never resolve or download any image reference.
-      */
-     NEVER;
+        /**
+         * Never resolve or download any image reference.
+         */
+        NEVER;
 
         /**
          * Returns the CSSMode instance for the given mode string.
@@ -1995,25 +2009,25 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
 
     enum AjaxMode
     {
-     /**
-      * Perform AJAX calls always asynchronously.
-      */
-     ASYNC,
+        /**
+         * Perform AJAX calls always asynchronously.
+         */
+        ASYNC,
 
-     /**
-      * Perform AJAX calls always synchronously.
-      */
-     SYNC,
+        /**
+         * Perform AJAX calls always synchronously.
+         */
+        SYNC,
 
-     /**
-      * Perform AJAX calls as intended by programmer.
-      */
-     NORMAL,
+        /**
+         * Perform AJAX calls as intended by programmer.
+         */
+        NORMAL,
 
-     /**
-      * Re-synchronize asynchronous AJAX calls calling from the main thread.
-      */
-     RESYNC;
+        /**
+         * Re-synchronize asynchronous AJAX calls calling from the main thread.
+         */
+        RESYNC;
 
         /**
          * Returns the AjaxMode instance for the given mode string.
@@ -2042,6 +2056,102 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
                 }
             }
             return mode;
+        }
+    }
+
+    /**
+     * Sets up the key store with the client key to be used by this web client. The store is read from a file specified
+     * in the test suite configuration.
+     *
+     * @param props
+     *            the configuration
+     */
+    private void setUpKeyStore(final XltProperties props)
+    {
+        final String storeFilePath = props.getProperty("com.xceptance.xlt.tls.keyStore.file");
+        if (StringUtils.isNotBlank(storeFilePath))
+        {
+            final String storePassword = props.getProperty("com.xceptance.xlt.tls.keyStore.password");
+            final char[] storePasswordChars = getPasswordChars(storePassword);
+
+            final KeyStore store = getStore(storeFilePath, storePasswordChars);
+            getOptions().setSSLClientCertificateKeyStore(store, storePasswordChars);
+        }
+    }
+
+    /**
+     * Sets up the trust store with the server certificate to be used by this web client. The store is read from a file
+     * specified in the test suite configuration.
+     *
+     * @param props
+     *            the configuration
+     */
+    private void setUpTrustStore(final XltProperties props)
+    {
+        final String storeFilePath = props.getProperty("com.xceptance.xlt.tls.trustStore.file");
+        if (StringUtils.isNotBlank(storeFilePath))
+        {
+            final String storePassword = props.getProperty("com.xceptance.xlt.tls.trustStore.password");
+            final char[] storePasswordChars = getPasswordChars(storePassword);
+
+            final KeyStore store = getStore(storeFilePath, storePasswordChars);
+            getOptions().setSSLTrustStore(store);
+        }
+    }
+
+    /**
+     * Returns the given password string as a char array.
+     *
+     * @param password
+     *            the password
+     * @return the password as char array (will be empty if the password was <code>null)</code>
+     */
+    private static char[] getPasswordChars(final String password)
+    {
+        return password == null ? ArrayUtils.EMPTY_CHAR_ARRAY : password.toCharArray();
+    }
+
+    /**
+     * Returns the key/trust store for the given file path from the internal store cache. If the store has not been
+     * loaded so far, it will be loaded and put in the cache.
+     *
+     * @param storeFilePath
+     *            the path to the store file, relative to the test suite root directory
+     * @param storePassword
+     *            the store password
+     * @return the store
+     */
+    private static KeyStore getStore(final String storeFilePath, final char[] storePassword)
+    {
+        XltLogger.runTimeLogger.debug("Getting store for path '{}'", storeFilePath);
+
+        return storeCache.computeIfAbsent(storeFilePath, path -> loadStore(path, storePassword));
+    }
+
+    /**
+     * Loads a key/trust store from the given path and opens it with the provided password.
+     *
+     * @param storeFilePath
+     *            the path to the store file, relative to the test suite root directory
+     * @param storePassword
+     *            the store password
+     * @return the loaded store
+     * @throws XltException
+     *             if anything went wrong
+     */
+    private static KeyStore loadStore(final String storeFilePath, final char[] storePassword)
+    {
+        try
+        {
+            XltLogger.runTimeLogger.debug("Loading store from '{}'", storeFilePath);
+
+            final File storeFile = new File(storeFilePath);
+
+            return KeyStore.getInstance(storeFile, storePassword);
+        }
+        catch (final Exception e)
+        {
+            throw new XltException("Failed to read key/trust store from: " + storeFilePath, e);
         }
     }
 }

@@ -40,29 +40,34 @@ public class TimerReport
     public int count;
 
     /**
-     * The number how often the timer has fired.
+     * The calculated number how often the timer has fired per second.
      */
     public BigDecimal countPerSecond;
 
     /**
-     * The number how often the timer has fired.
+     * The calculated number how often the timer has fired per minute.
      */
     public BigDecimal countPerMinute;
 
     /**
-     * The number how often the timer has fired.
+     * The calculated number how often the timer has fired per hour.
      */
     public BigDecimal countPerHour;
 
     /**
-     * The number how often the timer has fired.
+     * The calculated number how often the timer has fired per day.
      */
     public BigDecimal countPerDay;
 
     /**
-     * The number how often the request has failed.
+     * The number how often the timed item has failed.
      */
     public int errors;
+    
+    /**
+     * The calculated number which percentage of the total timed items (see count) has failed.
+     */
+    public BigDecimal errorPercentage;
 
     /**
      * The minimum timer runtime.

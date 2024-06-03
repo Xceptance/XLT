@@ -23,6 +23,7 @@
             <thead>
                 <tr>
                     <th class="table-sortable:alphanumeric" rowspan="2">
+                        <xsl:attribute name="id">sortBy<xsl:value-of select="$valueName"/><xsl:value-of select="$mode"/>Name</xsl:attribute>
                         <xsl:value-of select="$tableRowHeader"/>
                         <br/>
                         <input class="filter" placeholder="Enter filter substrings" title=""/>
@@ -40,9 +41,11 @@
 									</xsl:attribute>
                                     <xsl:choose>
                                         <xsl:when test="$mode = 'absolute'">
+                                            <xsl:attribute name="id">sortBy<xsl:value-of select="$valueName"/><xsl:value-of select="$mode"/>Baseline</xsl:attribute>
                                             <xsl:call-template name="table-headline-absolute-base"/>
                                         </xsl:when>
                                         <xsl:otherwise>
+                                            <xsl:attribute name="id">sortBy<xsl:value-of select="$valueName"/><xsl:value-of select="$mode"/>Baseline</xsl:attribute>
                                             <xsl:call-template name="table-headline-relative-base"/>
                                         </xsl:otherwise>
                                     </xsl:choose>
@@ -70,6 +73,7 @@
                             <xsl:if test="position() > 1">
                                 <th class="cluetip">
                                     <xsl:attribute name="data-rel">#ReportInfo-<xsl:value-of select="generate-id(.)"/></xsl:attribute>
+                                    <xsl:attribute name="id">sortBy<xsl:value-of select="$valueName"/><xsl:value-of select="$mode"/>Run<xsl:value-of select="position()"/> </xsl:attribute>
                                     <xsl:if test="$showValues">
                                         <xsl:attribute name="class">
 											<xsl:text>table-sortable:numeric cluetip</xsl:text>

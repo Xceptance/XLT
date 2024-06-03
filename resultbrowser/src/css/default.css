@@ -23,7 +23,7 @@ body {
  * The header
  */
 #header {
-    background-color: #A50000;
+	background-color: #A50000;
 }
 
 #header .logo {
@@ -40,6 +40,7 @@ body {
 #header .logo h1 {
     font-size: 16px;
     color: white;
+    align-content: center;
 }
 
 /*
@@ -64,8 +65,12 @@ body {
 
 #menu-icon {
     color: white;
-    margin-left: 8px;
+    margin: 5px;
+    margin-left: auto;
+    font-size: 20px;
+    font-weight: bold;
     cursor: pointer;
+    transform: rotate(90deg);
 }
 
 #menu {
@@ -211,7 +216,7 @@ body {
     cursor: pointer;
 }
 
-#navigation .expander::after {
+#navigation .expander::before {
     font-style: normal;
     content: "◢";
     margin-right: 0.5em;
@@ -220,7 +225,7 @@ body {
     transform: translateY(-10%) rotate(-45deg);
 }
 
-#navigation .expander.expanded::after {
+#navigation .expander.expanded::before {
     transform: translateY(-10%) rotate(0deg);
 }
 
@@ -627,3 +632,242 @@ table.key-value-table td.value .csep {
         transform: rotate(360deg);
     }
 }
+
+.actionimgScale {
+	position: absolute;
+    z-index: 10;
+    width: 50px;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.5);
+    align-content: center;
+    text-align: center;
+    border-radius: 5px;
+    border: 1px solid #bbb;
+    cursor: pointer;
+}
+
+.actionimgScale#actionimgSwitch{
+	right: 20px;
+	bottom: 20px;
+}
+
+.actionimgScale#actionimgSwitch.full {
+	font-size: 30px;
+}
+
+.actionimgScale#actionimgSwitch.fit {
+	font-size: 20px;
+}
+
+/********************************************************************************************
+ *
+ * Responsive
+ *
+ ********************************************************************************************/
+
+#wrapper, #mainContent {
+	flex-flow: row;
+	width: 100vw !important;
+}
+
+#header .expander {
+	display: none;
+}
+
+#menu-close {
+	display: none;
+}
+
+/*responsive behavior for phones in portrait mode*/
+@media (max-width: 599px) {
+	
+	#header {
+		position: fixed;
+  		top: 0;
+  		width: 100%;
+  		z-index: 2;
+	}
+	
+	#header .logo h1 {
+ 		font-size: 22px;
+ 	}
+ 	
+	#wrapper, #mainContent {
+		flex-flow:column;
+ 	}
+ 	
+ 	#header .expander {
+	    cursor: pointer;
+	}
+	
+	#header .expander {
+	    font-weight: bold;
+	    font-size: 22px;
+	    color: #fff;
+	    display: inline-block;
+	    text-align: center;
+	    align-content: center;
+	    width: 35px;
+	    transform: rotate(0deg);
+	    transition: transform .2s;
+	    
+	}
+	
+	#header .expander.expanded {
+	    transform: rotate(90deg);
+	}	
+	 	
+ 	#menu-icon {
+	    font-size: 24px;
+	}
+	
+	#leftSideMenu {
+ 		height: 90px;
+ 		overflow: hidden;
+ 		transition: height .2s;
+ 	} 	
+ 	
+ 	#leftSideMenu.expanded {
+ 		height: 80vh;
+ 		overflow: scroll;
+ 	}
+ 	
+ 	#navigation {
+ 		padding-top: 50px;
+ 	}
+ 	
+ 	#content {
+ 		height: 20vh;
+ 		transition: height .2s;
+ 		border-top: 1px solid #bbb;
+ 	}
+ 	
+ 	#content.expanded {
+ 		height: 100vh;
+ 	}
+ 	
+ 	#transaction {
+ 		overflow: visible;
+ 		font-size: 19px;
+ 	}
+ 	
+ 	#actionlist {
+ 		flex-basis: auto !important;
+ 		margin: 0px;
+ 	}
+ 	
+ 	#menu > ul {
+ 		flex-flow: column;
+ 	}
+}
+ 
+/*responsive behavior for phones in portrait and landscape mode*/
+@media (max-width: 599px), (max-height: 400px) {
+	 	
+	#header .logo h1 {
+ 		align-content: center;
+ 		margin: 0px;
+ 	}
+ 	
+ 	#navigation {
+ 		font-size: 16px;
+ 	}
+ 	
+ 	#navigation li.action {
+ 		padding-top: 6px;
+ 		padding-bottom: 6px;
+ 	}
+ 	
+ 	#navigation ul li ul li {
+ 		font-size: 16px;
+ 		padding: 4px;
+ 	}	
+ 	
+ 	#navigation .expander {
+    	margin: 0px 5px;
+ 	}
+ 	
+ 	#responseContentActions {
+	    position: fixed;
+	    bottom: 10px;
+	    right: 10px;
+	    top: auto;
+	}
+	
+	#beautify, #highlightSyntax, #selectResponseContent {
+		background-color: #666;
+		border: none;
+		border-radius: 13px;
+		color: #fff;
+		padding: 8px;
+		text-align: center;
+		text-decoration: none;
+		display: inline-block;
+		font-size: 16px;
+		cursor: pointer;
+	}
+	
+	#transactionContent {
+		border-top: 2px solid #666;
+	}
+	
+	#transactionContent h1 {
+		margin: 8px 2px;
+		font-size: 12pt;
+	}
+ 	
+ 	.actionimgScale#actionimgSwitch {
+		right: 10px;
+		bottom: 10px;
+	}
+ 	
+ 	.tabs .tabs-nav {
+		padding: 4px;
+	}
+	
+	.tabs .tabs-nav li {
+		border-radius: 4px;
+		background-color: #db0009;
+		border: 0px;
+		margin: 2px;
+	}
+	
+	.tabs .tabs-nav li.selected { 
+		border: 0px;
+	}
+	
+	#menu {
+		width: 100%;
+    	height: 100%;
+    	overflow: hidden;
+    	background-color: #fffd;
+    	border: 0px;
+	}
+	
+	#menu > ul {
+		display: flex;
+		align-items: stretch;
+	}
+	
+	#menu li:nth-of-type(2n) .menu-group {
+	    border-left: 0px;
+	    border-right: 0px;
+	}
+	
+	#menu > ul > li {
+		flex-grow: 1;
+	}
+	
+	.menu-group {
+		width: -webkit-fill-available;
+	}
+	
+	.open #menu-close {
+		display: block;
+		position: absolute;
+		top: 5px;
+		right: 10px;
+		font-size: 20px;		
+	}
+}
+ 

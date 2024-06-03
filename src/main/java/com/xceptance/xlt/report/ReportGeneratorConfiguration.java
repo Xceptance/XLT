@@ -280,6 +280,8 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     private final int directoryLimitPerError;
     
     private final double directoryReplacementChance;
+    
+    private final int stackTracesLimit;
 
     private final Map<Pattern, Double> apdexThresholdsByActionNamePattern = new HashMap<>();
 
@@ -406,6 +408,8 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
         directoryLimitPerError = getIntProperty(XltPropertyNames.ReportGenerator.Errors.DIRECTORY_LIMIT_PER_ERROR, 10);
         directoryReplacementChance = getDoubleProperty(XltPropertyNames.ReportGenerator.Errors.DIRECTORY_REPLACEMENT_CHANCE, 0.1);
+        
+        stackTracesLimit = getIntProperty(XltPropertyNames.ReportGenerator.Errors.STACKTRACES_LIMIT, 500);
         
         // event settings
         groupEventsByTestCase = getBooleanProperty(PROP_PREFIX + "events.groupByTestCase", true);
@@ -791,7 +795,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     /**
      * The maximum number of directory hints remembered for a certain error (stack trace).
      *
-     * @return the maximum number of error traces to list
+     * @return the maximum number of directories to list
      */
     public int getDirectoryLimitPerError()
     {
@@ -801,11 +805,21 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     /**
      * The chance to replace directory hints remembered for a certain error (stack trace) when the maximum number is reached.
      *
-     * @return the chance to replace listed error traces
+     * @return the chance to replace listed directory hints
      */
     public double getDirectoryReplacementChance()
     {
         return directoryReplacementChance;
+    }
+    
+    /**
+     * The maximum number of errors that will be saved complete with their stack trace.
+     *
+     * @return the maximum number of error stack traces displayed in the report
+     */
+    public int getStackTracesLimit()
+    {
+        return stackTracesLimit;
     }
 
     /**

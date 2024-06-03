@@ -652,7 +652,12 @@ public class WebClientOptions implements Serializable {
         }
     }
 
+    // GH#497 start
+    /*
     void setSSLTrustStore(final KeyStore keyStore) {
+    */
+    public void setSSLTrustStore(final KeyStore keyStore) {
+    // GH#497 end
         sslTrustStore_ = keyStore;
     }
 

@@ -10,20 +10,21 @@
 <!-- 
     Generate the page frame 
 -->
-<xsl:include href="../common/util/convertIllegalCharactersInFileName.xsl" />
-<xsl:include href="../common/util/string-replace-all.xsl" />
+
 <xsl:include href="../common/util/percentage.xsl" />
-<xsl:include href="../common/util/format-bytes.xsl" />
 <xsl:include href="../common/util/format-msec-to-h.xsl" />
 <xsl:include href="../common/util/create-totals-td.xsl" />
 <xsl:include href="../common/util/filtered-footer-row.xsl" />
-<xsl:include href="../common/util/max.xsl" />
+<xsl:include href="../common/util/load-profile-table.xsl" />
 
-<xsl:include href="util/agent-chart.xsl" />
+<xsl:include href="util/timer-row.xsl" />
+<xsl:include href="util/timer-section.xsl" />
+<xsl:include href="util/timer-table.xsl" />
+<xsl:include href="util/timer-cell.xsl" />
 
 <xsl:include href="text/descriptions.xsl" />
 
-<xsl:include href="sections/agents.xsl" />
+<xsl:include href="sections/custom-values.xsl" />
 
 <xsl:include href="../common/sections/head.xsl" />
 <xsl:include href="../common/sections/header.xsl" />
@@ -37,42 +38,45 @@
 <xsl:param name="productUrl" />
 <xsl:param name="projectName" />
 
-<xsl:template match="/testreport">
+<xsl:template match="testreport">
 
 <xsl:text disable-output-escaping="yes">&lt;!</xsl:text><xsl:text>DOCTYPE html</xsl:text><xsl:text disable-output-escaping="yes">&gt;&#13;</xsl:text>
-<html lang="en">    
+<html lang="en">
 <head>
     <xsl:call-template name="head">
-        <xsl:with-param name="title" select="'XLT Report - Agents'" />
-        <xsl:with-param name="projectName" select="configuration/projectName" />
+        <xsl:with-param name="title" select="'XLT Performance Comparison Report - Custom Values'"/>
+        <xsl:with-param name="projectName" select="$projectName" />
     </xsl:call-template>
 </head>
-<body id="loadtestreport">
+<body id="diffreport">
 <div id="container">
     <div id="content">
-        <xsl:call-template name="header" />
+        <xsl:call-template name="header">
+            <xsl:with-param name="title" select="'Performance Comparison Report'" />
+            <xsl:with-param name="productName" select="$productName" />
+            <xsl:with-param name="productVersion" select="$productVersion" />
+            <xsl:with-param name="productUrl" select="$productUrl" />
+            <xsl:with-param name="projectName" select="$projectName" />
+        </xsl:call-template>
 
         <div id="data-content">
 
-        	<!--
-        		************************************
-        		* Agents
-        		************************************
-        	-->
-			<xsl:call-template name="agents">
-				<xsl:with-param name="rootNode" select="agents" />
-				<xsl:with-param name="summaryNode" select="summary/agents" />
-			</xsl:call-template>
+            <!--
+                ************************************
+                * Custom Values
+                ************************************
+            -->
+            <xsl:call-template name="custom-values"/>
 
         </div> <!-- data-content -->
 
         <xsl:call-template name="footer">
-            <xsl:with-param name="productName" select="$productName" />
+        	<xsl:with-param name="productName" select="$productName" />
             <xsl:with-param name="productVersion" select="$productVersion" />
             <xsl:with-param name="productUrl" select="$productUrl" />
-    	</xsl:call-template>
+        </xsl:call-template>
     </div> <!-- data-content -->
-</div> <!-- end container -->    
+</div> <!-- end container -->
 
 <xsl:call-template name="javascript" />
 

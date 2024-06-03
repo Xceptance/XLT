@@ -15,6 +15,8 @@
  */
 package com.xceptance.xlt.report.providers;
 
+import java.math.BigDecimal;
+
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
 /**
@@ -72,9 +74,15 @@ public class RequestReport extends TimerReport
      * The number of timer values per configured runtime interval.
      */
     public int[] countPerInterval;
-
+    
+    /**
+     * The percentage of timer values per configured runtime interval.
+     */
+    public BigDecimal[] percentagePerInterval; 
     /**
      * A list of the top URLs.
      */
     public UrlData urls;
+
+    
 }

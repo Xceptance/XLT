@@ -71,6 +71,11 @@ public class ErrorsReportProvider extends AbstractReportProvider
      * which is given in percent.
      */
     private double directoryReplacementChance;
+    
+    /**
+     * The maximum number of errors that will be saved complete with their stack trace.
+     */
+    private int stackTracesLimit;
 
     /**
      * The root directory of the result set.
@@ -137,6 +142,7 @@ public class ErrorsReportProvider extends AbstractReportProvider
         // cache some configuration values
         directoryLimitPerError = getConfiguration().getDirectoryLimitPerError();
         directoryReplacementChance = getConfiguration().getDirectoryReplacementChance();
+        stackTracesLimit = getConfiguration().getStackTracesLimit();
         resultsDirectory = getConfiguration().getResultsDirectory();
     }
 
@@ -425,11 +431,19 @@ public class ErrorsReportProvider extends AbstractReportProvider
                 if (errorValues == null)
                 {
                     final ErrorReport errorReport = new ErrorReport();
-                    errorReport.trace = trace;
                     errorReport.message = txnStats.getFailureMessage();
                     errorReport.testCaseName = testCaseName;
                     errorReport.actionName = failedActionName;
                     errorReport.detailChartID = 0;
+                    
+                    if (errorReports.size() < stackTracesLimit) //only save stacktraces up to limit
+                    {
+                        errorReport.trace = trace;
+                    }
+                    else
+                    {
+                        errorReport.trace = "n/a";
+                    }
 
                     errorValues = new ErrorValues(errorReport);
                     errorReports.put(key, errorValues);
