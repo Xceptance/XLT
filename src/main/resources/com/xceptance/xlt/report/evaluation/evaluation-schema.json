@@ -32,16 +32,23 @@
     }
   },
   "properties": {
+    "comment": {
+      "type": "string"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    },
     "selectors": {
       "type": "array",
       "items": {
         "type": "object",
         "properties": {
           "id": {
-            "ref": "#/$defs/nonEmptyString"
+            "$ref": "#/$defs/nonEmptyString"
           },
           "expression": {
-            "ref": "#/$defs/nonEmptyString"
+            "$ref": "#/$defs/nonEmptyString"
           },
           "comment": {
             "type": "string"
