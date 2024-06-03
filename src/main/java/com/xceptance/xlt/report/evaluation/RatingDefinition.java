@@ -69,7 +69,7 @@ public class RatingDefinition
         return failsTest;
     }
 
-    static RatingDefinition fromJSON(final JSONObject jsonObject) throws ValidationError
+    static RatingDefinition fromJSON(final JSONObject jsonObject) throws ValidationException
     {
         final String id = jsonObject.getString("id");
         final String name = StringUtils.trimToNull(jsonObject.optString("name"));
@@ -80,7 +80,7 @@ public class RatingDefinition
 
         if (Math.min(Math.max(0.0, value), 100.0) != value)
         {
-            throw new ValidationError("Property 'value' must be greater than or equal to 0.0 and less than or equal to 100.0");
+            throw new ValidationException("Property 'value' must be greater than or equal to 0.0 and less than or equal to 100.0");
         }
 
         return new RatingDefinition(id, name, desc, value, enabled, failsTest);

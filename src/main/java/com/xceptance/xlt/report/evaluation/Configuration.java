@@ -45,7 +45,7 @@ public class Configuration
         this.version = Math.max(1, version);
     }
 
-    public void addSelector(final SelectorDefinition selector) throws ValidationError
+    public void addSelector(final SelectorDefinition selector) throws ValidationException
     {
         final String selectorId = selector.getId();
         validateId(selectorId);
@@ -68,7 +68,7 @@ public class Configuration
         return Collections.unmodifiableCollection(selectors.values());
     }
 
-    void addRule(final RuleDefinition rule) throws ValidationError
+    void addRule(final RuleDefinition rule) throws ValidationException
     {
         final String ruleId = rule.getId();
         validateId(ruleId);
@@ -77,7 +77,7 @@ public class Configuration
                                                     .filter(Predicate.not(this::containsSelector)).collect(Collectors.toList());
         if (!unknownSelectors.isEmpty())
         {
-            throw new ValidationError(String.format("Rule '%s' references unknown selector%s: %s", ruleId,
+            throw new ValidationException(String.format("Rule '%s' references unknown selector%s: %s", ruleId,
                                                     (unknownSelectors.size() > 1 ? "s" : ""), StringUtils.join(unknownSelectors)));
         }
 
@@ -99,7 +99,7 @@ public class Configuration
         return rules.get(ruleId);
     }
 
-    void addGroup(final GroupDefinition group) throws ValidationError
+    void addGroup(final GroupDefinition group) throws ValidationException
     {
         final String groupId = group.getId();
         validateId(groupId);
@@ -108,7 +108,7 @@ public class Configuration
                                                .collect(Collectors.toList());
         if (!unknownRules.isEmpty())
         {
-            throw new ValidationError(String.format("Group '%s' references unknown rule%s: %s", groupId,
+            throw new ValidationException(String.format("Group '%s' references unknown rule%s: %s", groupId,
                                                     (unknownRules.size() > 1 ? "s" : ""), StringUtils.join(unknownRules)));
         }
 
@@ -130,7 +130,7 @@ public class Configuration
         return Collections.unmodifiableCollection(groups.values());
     }
 
-    void addRating(final RatingDefinition rating) throws ValidationError
+    void addRating(final RatingDefinition rating) throws ValidationException
     {
         final String ratingId = rating.getId();
         validateId(ratingId);
@@ -158,28 +158,28 @@ public class Configuration
         return version;
     }
 
-    private void validateId(final String id) throws ValidationError
+    private void validateId(final String id) throws ValidationException
     {
         final String ambigousUDErrorMsg = "Some other %s shares the same ID: '%s'. IDs must be unique.";
         if (containsSelector(id))
         {
-            throw new ValidationError(String.format(ambigousUDErrorMsg, "selector", id));
+            throw new ValidationException(String.format(ambigousUDErrorMsg, "selector", id));
         }
         if (containsRule(id))
         {
-            throw new ValidationError(String.format(ambigousUDErrorMsg, "rule", id));
+            throw new ValidationException(String.format(ambigousUDErrorMsg, "rule", id));
         }
         if (containsGroup(id))
         {
-            throw new ValidationError(String.format(ambigousUDErrorMsg, "group", id));
+            throw new ValidationException(String.format(ambigousUDErrorMsg, "group", id));
         }
         if (containsRating(id))
         {
-            throw new ValidationError(String.format(ambigousUDErrorMsg, "rating", id));
+            throw new ValidationException(String.format(ambigousUDErrorMsg, "rating", id));
         }
     }
 
-    static Configuration fromJSON(final JSONObject jsonObject) throws ValidationError
+    static Configuration fromJSON(final JSONObject jsonObject) throws ValidationException
     {
         final Configuration config = new Configuration(jsonObject.optInt("version", -1));
         final JSONArray selectorArr = jsonObject.optJSONArray("selectors");
@@ -195,7 +195,7 @@ public class Configuration
                 }
                 catch (final Exception e)
                 {
-                    throw new ValidationError(String.format("Selector #%d is invalid: %s", i, e.getMessage()));
+                    throw new ValidationException(String.format("Selector #%d is invalid: %s", i, e.getMessage()));
                 }
             }
         }
@@ -213,7 +213,7 @@ public class Configuration
                 }
                 catch (final Exception e)
                 {
-                    throw new ValidationError(String.format("Rule #%d is invalid: %s", i, e.getMessage()));
+                    throw new ValidationException(String.format("Rule #%d is invalid: %s", i, e.getMessage()));
                 }
             }
         }
@@ -229,7 +229,7 @@ public class Configuration
             }
             catch (final Exception e)
             {
-                throw new ValidationError(String.format("Group #%d is invalid: %s", i, e.getMessage()));
+                throw new ValidationException(String.format("Group #%d is invalid: %s", i, e.getMessage()));
             }
         }
 
@@ -246,19 +246,19 @@ public class Configuration
                 }
                 catch (final Exception e)
                 {
-                    throw new ValidationError(String.format("Rating #%d is invalid: %s", i, e.getMessage()));
+                    throw new ValidationException(String.format("Rating #%d is invalid: %s", i, e.getMessage()));
                 }
             }
         }
 
         if (!config.rules.values().stream().anyMatch(RuleDefinition::isEnabled))
         {
-            throw new ValidationError("Configuration must contain at least one enabled rule");
+            throw new ValidationException("Configuration must contain at least one enabled rule");
         }
 
         if (!config.groups.values().stream().anyMatch((groupDef) -> groupDef.isEnabled() && !groupDef.getRuleIds().isEmpty()))
         {
-            throw new ValidationError("Configuration must contain at least one enabled and non-empty group");
+            throw new ValidationException("Configuration must contain at least one enabled and non-empty group");
         }
 
         return config;

@@ -200,7 +200,7 @@ public class RuleDefinition
 
     }
 
-    static RuleDefinition fromJSON(final JSONObject jsonObject) throws ValidationError
+    static RuleDefinition fromJSON(final JSONObject jsonObject) throws ValidationException
     {
         final String ruleId = jsonObject.getString("id");
         final String ruleName = StringUtils.trimToNull(jsonObject.optString("name"));
@@ -227,7 +227,7 @@ public class RuleDefinition
 
                 if (!(selector == null ^ selectorId == null))
                 {
-                    throw new ValidationError("Check #" + i + " is ambiguous: either 'selector' or 'selectorId' property must be given");
+                    throw new ValidationException("Check #" + i + " is ambiguous: either 'selector' or 'selectorId' property must be given");
                 }
 
                 checkList.add(new Check(i, selector, selectorId, condition, checkEnabled, displayValue));
@@ -235,11 +235,11 @@ public class RuleDefinition
         }
         if (rulePoints < 0)
         {
-            throw new ValidationError("Property 'points' must be a non-negative integer");
+            throw new ValidationException("Property 'points' must be a non-negative integer");
         }
         if (!checkList.isEmpty() && !checkList.stream().anyMatch(Check::isEnabled))
         {
-            throw new ValidationError("Property 'checks' must contain at least one enabled check definition");
+            throw new ValidationException("Property 'checks' must contain at least one enabled check definition");
         }
 
         final RuleDefinition ruleDef = new RuleDefinition(ruleId, ruleName, checkList.toArray(Check[]::new));

@@ -269,7 +269,7 @@
                 <xsl:value-of select="$class" />
             </xsl:attribute>
         </xsl:if>
-        <xsl:value-of select="$cellContent" />
+        <xsl:copy-of select="$cellContent" />
     </xsl:element>
 </xsl:template>
 

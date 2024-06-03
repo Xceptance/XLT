@@ -31,7 +31,7 @@ public class SelectorDefinition
         return expression;
     }
 
-    static SelectorDefinition fromJSON(final JSONObject jsonObject) throws ValidationError
+    static SelectorDefinition fromJSON(final JSONObject jsonObject) throws ValidationException
     {
         final String id = jsonObject.getString("id");
         final String expression = jsonObject.getString("expression");

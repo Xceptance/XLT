@@ -19,13 +19,13 @@ public class Evaluation
     public static class Result
     {
         @XStreamAsAttribute
-        private double pointsPercentage;
+        private Double pointsPercentage;
 
         @XStreamAsAttribute
-        private int points;
+        private Integer points;
 
         @XStreamAsAttribute
-        private int totalPoints;
+        private Integer totalPoints;
 
         @XStreamAsAttribute
         private boolean testFailed;
@@ -46,22 +46,22 @@ public class Evaluation
             this.error = Objects.requireNonNull(error);
         }
 
-        public int getPoints()
+        public Integer getPoints()
         {
             return points;
         }
 
-        void setPoints(final int points)
+        void setPoints(final Integer points)
         {
             this.points = points;
         }
 
-        public double getPointsPercentage()
+        public Double getPointsPercentage()
         {
             return pointsPercentage;
         }
 
-        void setPointsPercentage(final double pointsPercentage)
+        void setPointsPercentage(final Double pointsPercentage)
         {
             this.pointsPercentage = pointsPercentage;
         }
@@ -76,12 +76,12 @@ public class Evaluation
             this.testFailed = testFailed;
         }
 
-        public int getTotalPoints()
+        public Integer getTotalPoints()
         {
             return totalPoints;
         }
 
-        void setTotalPoints(final int totalPoints)
+        void setTotalPoints(final Integer totalPoints)
         {
             this.totalPoints = totalPoints;
         }

@@ -10,6 +10,7 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -126,7 +127,7 @@ public class Evaluator
         xstream.toXML(evaluation, writer);
     }
 
-    protected Configuration parseConfiguration() throws ValidationError, FileNotFoundException, IOException
+    protected Configuration parseConfiguration() throws ValidationException, FileNotFoundException, IOException
     {
         final JSONObject schemaJSON;
         try (final InputStream is = getClass().getResourceAsStream(SCHEMA_RESOURCE_PATH))
@@ -135,7 +136,7 @@ public class Evaluator
         }
         catch (final JSONException je)
         {
-            throw new ValidationError("Failed to parse JSON schema file", je);
+            throw new ValidationException("Failed to parse JSON schema file", je);
         }
 
         final JSONObject configJSON;
@@ -145,7 +146,7 @@ public class Evaluator
         }
         catch (final JSONException je)
         {
-            throw new ValidationError("Could not parse configuration file '" + configFile.getName() + "' as JSON", je);
+            throw new ValidationException("Could not parse configuration file '" + configFile.getName() + "' as JSON", je);
         }
 
         final Validator validator = new ValidatorFactory().withJsonNodeFactory(new OrgJsonNode.Factory()).createValidator();
@@ -154,9 +155,9 @@ public class Evaluator
         final Validator.Result validationResult = validator.validate(schemaURI, configJSON);
         if (!validationResult.isValid())
         {
-            throw new ValidationError("Configuration file '" + configFile.getName() + "' is malformed -> " +
-                                      validationResult.getErrors().stream().map(e -> e.getInstanceLocation() + ": " + e.getError())
-                                                      .collect(Collectors.joining(", ")));
+            throw new ValidationException("Configuration file '" + configFile.getName() + "' is malformed -> " +
+                                          validationResult.getErrors().stream().map(e -> e.getInstanceLocation() + ": " + e.getError())
+                                                          .collect(Collectors.joining(", ")));
         }
 
         try
@@ -165,7 +166,7 @@ public class Evaluator
         }
         catch (final Exception e)
         {
-            throw new ValidationError("Configuration file '" + configFile.getName() + "' is malformed", e);
+            throw new ValidationException("Configuration file '" + configFile.getName() + "' is malformed", e);
         }
 
     }
@@ -177,13 +178,14 @@ public class Evaluator
         xpathCompiler.setUnprefixedElementMatchingPolicy(UnprefixedElementMatchingPolicy.DEFAULT_NAMESPACE);
         xpathCompiler.setCaching(true);
 
-        int points = 0, totalPoints = 0; // counters for achieved and achievable points
-        boolean testFailed = false; // whether to mark test as failed (due to "hard rule/group fail" or due to "rating
-                                    // fail")
+        Integer points = 0, totalPoints = 0; // counters for achieved and achievable points
+        boolean testFailed = false; // whether to mark test as failed
 
         // initialize evaluation and its result objects
         final Evaluation evaluation = new Evaluation(config);
         final Evaluation.Result result = evaluation.result;
+        // remember the erroneous groups to decide whether evaluation has a meaningful result later on
+        final List<Evaluation.Group> erroneousGroups = new ArrayList<>();
 
         // loop through the list of configured groups (in definition order)
         for (final GroupDefinition groupDef : config.getGroups())
@@ -206,55 +208,70 @@ public class Evaluator
             }
 
             // conclude the evaluation of the group
-            testFailed = conclude(group) || testFailed;
+            testFailed = conclude(group) | testFailed;
 
             // add number of group's achieved and achievable points to the counters
             points += group.getPoints();
             totalPoints += group.getTotalPoints();
 
+            if (group.getStatus().isError())
+            {
+                erroneousGroups.add(group);
+            }
+
             // add group result to evaluation result
             result.addGroup(group);
         }
 
-        // set overall number of achieved and achievable points
-        result.setPoints(points);
-        result.setTotalPoints(totalPoints);
-
-        // compute final score
-        final double pointsPercentage = getPercentage(points, totalPoints);
-
-        // determine the test's rating and whether it has failed
-        String rating = null;
-        for (final RatingDefinition ratingDef : config.getRatings())
+        final boolean evaluationFailed = !erroneousGroups.isEmpty();
+        if (evaluationFailed)
         {
-            if (ratingDef.isEnabled() && pointsPercentage <= ratingDef.getValue())
+            // do not "overwrite" any previous error
+            if (StringUtils.isBlank(result.getError()))
             {
-                rating = ratingDef.getId();
-                testFailed = testFailed || ratingDef.isFailsTest();
-
-                break;
+                // collect error messages from erroneous groups/rules and join them with two new-line characters
+                final String errorMessagesJoined = erroneousGroups.stream().flatMap(g -> g.getRules().stream())
+                                                                  .filter(r -> r.getStatus().isError() &&
+                                                                               StringUtils.isNotBlank(r.getMessage()))
+                                                                  .map(r -> String.format("Error evaluating rule '%s': %s", r.getId(),
+                                                                                          r.getMessage()))
+                                                                  .collect(Collectors.joining("\n\n"));
+                if (StringUtils.isNotBlank(errorMessagesJoined))
+                {
+                    result.setError(errorMessagesJoined);
+                }
             }
 
         }
-
-        // set final values
-        result.setTestFailed(testFailed);
-        result.setPointsPercentage(pointsPercentage);
-        result.setRating(rating);
-
-        // do not "overwrite" any previous error
-        if (StringUtils.isBlank(result.getError()))
+        else
         {
-            // collect error messages from erroneous groups/rules and join them with two new-line characters
-            final String errorMessagesJoined = result.getGroups().stream().filter(g -> g.getStatus().isError())
-                                                     .flatMap(g -> g.getRules().stream()).filter(r -> r.getStatus().isError() && StringUtils.isNotBlank(r.getMessage()))
-                                                     .map(r -> String.format("Error evaluating rule '%s': %s", r.getId(), r.getMessage()))
-                                                     .collect(Collectors.joining("\n\n"));
-            if (StringUtils.isNotBlank(errorMessagesJoined))
+            // set overall number of achieved and achievable points
+            result.setPoints(points);
+            result.setTotalPoints(totalPoints);
+
+            // compute final score
+            final double pointsPercentage = getPercentage(points, totalPoints);
+
+            // determine the test's rating and whether it has failed
+            String rating = null;
+            for (final RatingDefinition ratingDef : config.getRatings())
             {
-                result.setError(errorMessagesJoined);
+                if (ratingDef.isEnabled() && pointsPercentage <= ratingDef.getValue())
+                {
+                    rating = ratingDef.getId();
+                    testFailed = testFailed || ratingDef.isFailsTest();
+
+                    break;
+                }
+
             }
+
+            // set final values
+            result.setTestFailed(testFailed);
+            result.setPointsPercentage(pointsPercentage);
+            result.setRating(rating);
         }
+
         return evaluation;
     }
 
@@ -278,7 +295,7 @@ public class Evaluator
                                    final Function<String, SelectorDefinition> selectorLookup)
     {
         final String selector;
-        // pick the right selector (specified inline or referenced by ID)
+        // pick the right selector (specified directly or referenced by ID)
         {
             final String selectorId = check.getDefinition().getSelectorId();
             if (selectorId != null)
@@ -385,7 +402,7 @@ public class Evaluator
                 // encountered erroneous check -> set rule message to the check's error message and stop looping
                 if (checkStatus.isError())
                 {
-                    rule.setMessage(String.format("[Check #%d] %s", c.getIndex() ,c.getErrorMessage()));
+                    rule.setMessage(String.format("[Check #%d] %s", c.getIndex(), c.getErrorMessage()));
                     break;
                 }
             }
@@ -510,7 +527,7 @@ public class Evaluator
             points = Optional.ofNullable(triggerRule).map(Evaluation.Rule::getPoints).orElse(0);
             totalPoints = maxPoints;
 
-            testFailed = idx > 0 ? rules.subList(0, idx).stream().anyMatch(Evaluation.Rule::isTestFailed) : false;
+            testFailed = (idx > 0 ? rules.subList(0, idx) : rules).stream().anyMatch(Evaluation.Rule::isTestFailed);
         }
         else
         {

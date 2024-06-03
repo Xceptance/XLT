@@ -114,7 +114,7 @@ public class GroupDefinition
 
     }
 
-    public static GroupDefinition fromJSON(final JSONObject jsonObject) throws ValidationError
+    public static GroupDefinition fromJSON(final JSONObject jsonObject) throws ValidationException
     {
         final String id = jsonObject.getString("id");
         final String name = StringUtils.trimToNull(jsonObject.optString("name"));
@@ -137,11 +137,11 @@ public class GroupDefinition
 
         if (ruleIds.isEmpty())
         {
-            throw new ValidationError("Property 'rules' must contain at least one value");
+            throw new ValidationException("Property 'rules' must contain at least one value");
         }
         if (ruleIds.stream().distinct().count() != ruleIds.size())
         {
-            throw new ValidationError("Property 'rules' must contain distinct values");
+            throw new ValidationException("Property 'rules' must contain distinct values");
         }
 
         return new GroupDefinition(id, name, description, ruleIds, enabled, failsTest, Optional.ofNullable(source).orElse(Mode.firstPassed),
