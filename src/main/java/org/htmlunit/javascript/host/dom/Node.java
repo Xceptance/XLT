@@ -14,14 +14,6 @@
  */
 package org.htmlunit.javascript.host.dom;
 
-import static org.htmlunit.BrowserVersionFeatures.JS_NODE_CONTAINS_RETURNS_FALSE_FOR_INVALID_ARG;
-import static org.htmlunit.BrowserVersionFeatures.JS_NODE_INSERT_BEFORE_REF_OPTIONAL;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,11 +25,7 @@ import java.util.function.Supplier;
 import org.htmlunit.SgmlPage;
 import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.Function;
-import org.htmlunit.corejs.javascript.Interpreter;
-import org.htmlunit.corejs.javascript.JavaScriptException;
-import org.htmlunit.corejs.javascript.RhinoException;
 import org.htmlunit.corejs.javascript.Scriptable;
-import org.htmlunit.corejs.javascript.Undefined;
 import org.htmlunit.html.DomDocumentFragment;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.DomNode;
@@ -53,7 +41,6 @@ import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.configuration.JsxSetter;
 import org.htmlunit.javascript.host.Element;
 import org.htmlunit.javascript.host.NamedNodeMap;
-import org.htmlunit.javascript.host.Window;
 import org.htmlunit.javascript.host.event.EventTarget;
 import org.htmlunit.javascript.host.html.HTMLCollection;
 import org.htmlunit.javascript.host.html.HTMLDocument;
@@ -164,7 +151,7 @@ public class Node extends EventTarget {
      * JavaScript constructor.
      */
     @Override
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
         super.jsConstructor();
     }
@@ -218,9 +205,10 @@ public class Node extends EventTarget {
 
             // is the node allowed here?
             if (!isNodeInsertable(childNode)) {
-                throw asJavaScriptException(
-                    new DOMException("Node cannot be inserted at the specified point in the hierarchy",
-                        DOMException.HIERARCHY_REQUEST_ERR));
+                throw JavaScriptEngine.asJavaScriptException(
+                        getWindow(),
+                        new DOMException("Node cannot be inserted at the specified point in the hierarchy",
+                            DOMException.HIERARCHY_REQUEST_ERR));
             }
 
             // Get XML node for the DOM node passed in
@@ -253,37 +241,6 @@ public class Node extends EventTarget {
                 frame.loadInnerPage();
             }
         }
-    }
-
-    /**
-     * Encapsulates the given {@link DOMException} into a Rhino-compatible exception.
-     *
-     * @param exception the exception to encapsulate
-     * @return the created exception
-     */
-    protected RhinoException asJavaScriptException(final DOMException exception) {
-        final Window w = getWindow();
-        exception.setPrototype(w.getPrototype(exception.getClass()));
-        exception.setParentScope(w);
-
-        // get current line and file name
-        // this method can only be used in interpreted mode. If one day we choose to use compiled mode,
-        // then we'll have to find an other way here.
-        final String fileName;
-        final int lineNumber;
-        if (Context.getCurrentContext().getOptimizationLevel() == -1) {
-            final int[] linep = new int[1];
-            final String sourceName = new Interpreter().getSourcePositionFromStack(Context.getCurrentContext(), linep);
-            fileName = sourceName.replaceFirst("script in (.*) from .*", "$1");
-            lineNumber = linep[0];
-        }
-        else {
-            throw new Error("HtmlUnit not ready to run in compiled mode");
-        }
-
-        exception.setLocation(fileName, lineNumber);
-
-        return new JavaScriptException(exception, fileName, lineNumber);
     }
 
     /**
@@ -320,7 +277,7 @@ public class Node extends EventTarget {
             refChildObject = args[1];
         }
         else {
-            refChildObject = Undefined.instance;
+            refChildObject = JavaScriptEngine.Undefined;
         }
         Object insertedChild = null;
 
@@ -338,8 +295,10 @@ public class Node extends EventTarget {
                 final DomDocumentFragment fragment = (DomDocumentFragment) newChildNode;
                 for (final DomNode child : fragment.getChildren()) {
                     if (!isNodeInsertable(child.getScriptableObject())) {
-                        throw JavaScriptEngine.constructError("ReferenceError",
-                                "Node cannot be inserted at the specified point in the hierarchy");
+                        throw JavaScriptEngine.asJavaScriptException(
+                                getWindow(),
+                                new DOMException("Node cannot be inserted at the specified point in the hierarchy",
+                                    DOMException.HIERARCHY_REQUEST_ERR));
                     }
                 }
             }
@@ -347,7 +306,7 @@ public class Node extends EventTarget {
             // extract refChild
             final DomNode refChildNode;
             if (JavaScriptEngine.isUndefined(refChildObject)) {
-                if (args.length == 2 || getBrowserVersion().hasFeature(JS_NODE_INSERT_BEFORE_REF_OPTIONAL)) {
+                if (args.length == 2) {
                     refChildNode = null;
                 }
                 else {
@@ -740,7 +699,7 @@ public class Node extends EventTarget {
      * Returns the owner document.
      * @return the document
      */
-    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
+    @JsxFunction
     public Object getRootNode() {
         Node parent = this;
         while (parent != null) {
@@ -798,7 +757,7 @@ public class Node extends EventTarget {
      * @return the parent element
      * @see #getParentNode()
      */
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxGetter
     public Element getParentElement() {
         final Node parent = getParent();
         if (!(parent instanceof Element)) {
@@ -812,7 +771,6 @@ public class Node extends EventTarget {
      * @see <a href="https://developer.mozilla.org/en-US/docs/DOM/Node.attributes">Gecko DOM Reference</a>
      * @return the attributes of this XML element
      */
-    @JsxGetter(IE)
     public Object getAttributes() {
         return null;
     }
@@ -822,26 +780,14 @@ public class Node extends EventTarget {
      * @param element element object that specifies the element to check
      * @return true if the element is contained within this object
      */
-    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
+    @JsxFunction
     public boolean contains(final Object element) {
         if (element == null || JavaScriptEngine.isUndefined(element)) {
             return false;
         }
 
         if (!(element instanceof Node)) {
-            if (getBrowserVersion().hasFeature(JS_NODE_CONTAINS_RETURNS_FALSE_FOR_INVALID_ARG)) {
-                return false;
-            }
             throw JavaScriptEngine.reportRuntimeError("Could not convert JavaScript argument arg 0");
-        }
-
-        if (getBrowserVersion().hasFeature(JS_NODE_CONTAINS_RETURNS_FALSE_FOR_INVALID_ARG)) {
-            if (element instanceof CharacterData) {
-                return false;
-            }
-            if (this instanceof CharacterData) {
-                throw JavaScriptEngine.reportRuntimeError("Function 'contains' not available for text nodes.");
-            }
         }
 
         for (Node parent = (Node) element; parent != null; parent = parent.getParentElement()) {
@@ -856,7 +802,7 @@ public class Node extends EventTarget {
      * Returns the Base URI as a string.
      * @return the Base URI as a string
      */
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxGetter
     public String getBaseURI() {
         return getDomNodeOrDie().getBaseURI();
     }
@@ -865,7 +811,6 @@ public class Node extends EventTarget {
      * Returns true when the current element has any attributes or not.
      * @return true if an attribute is specified on this element
      */
-    @JsxFunction(IE)
     public boolean hasAttributes() {
         return getDomNodeOrDie().hasAttributes();
     }
@@ -874,7 +819,6 @@ public class Node extends EventTarget {
      * Returns the namespace prefix.
      * @return the namespace prefix
      */
-    @JsxGetter(IE)
     public Object getPrefix() {
         return getDomNodeOrDie().getPrefix();
     }
@@ -883,7 +827,6 @@ public class Node extends EventTarget {
      * Returns the local name of this attribute.
      * @return the local name of this attribute
      */
-    @JsxGetter(IE)
     public Object getLocalName() {
         return getDomNodeOrDie().getLocalName();
     }
@@ -892,7 +835,6 @@ public class Node extends EventTarget {
      * Returns the URI that identifies an XML namespace.
      * @return the URI that identifies an XML namespace
      */
-    @JsxGetter(IE)
     public Object getNamespaceURI() {
         return getDomNodeOrDie().getNamespaceURI();
     }

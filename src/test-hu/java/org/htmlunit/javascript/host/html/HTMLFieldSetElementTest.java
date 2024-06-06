@@ -14,13 +14,9 @@
  */
 package org.htmlunit.javascript.host.html;
 
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
-
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -38,11 +34,8 @@ public class HTMLFieldSetElementTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "undefined", "undefined", "undefined", "undefined", "undefined",
-                       "undefined", "undefined", "undefined", "undefined", "undefined"},
-            IE = {"left", "right", "bottom", "middle",
-                  "top", "absBottom", "absMiddle", "baseline", "textTop", "", ""})
-    @HtmlUnitNYI(IE = {"left", "right", "", "", "", "", "", "", "", "", ""})
+    @Alerts({"undefined", "undefined", "undefined", "undefined", "undefined", "undefined",
+             "undefined", "undefined", "undefined", "undefined", "undefined"})
     public void getAlign() throws Exception {
         final String html
             = "<html><body>\n"
@@ -75,11 +68,8 @@ public class HTMLFieldSetElementTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"CenTer", "8", "foo", "left", "right",
-                       "bottom", "middle", "top", "absbottom", "absmiddle", "baseline", "texttop"},
-           IE = {"center", "error", "center", "error", "center", "left", "right",
-                 "bottom", "middle", "top", "absBottom", "absMiddle", "baseline", "textTop"})
-    @NotYetImplemented(IE)
+    @Alerts({"CenTer", "8", "foo", "left", "right",
+             "bottom", "middle", "top", "absbottom", "absmiddle", "baseline", "texttop"})
     public void setAlign() throws Exception {
         final String html
             = "<html><body>\n"

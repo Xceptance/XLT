@@ -14,13 +14,6 @@
  */
 package org.htmlunit.javascript.host.html;
 
-import static org.htmlunit.BrowserVersionFeatures.JS_TABLE_ROW_DELETE_CELL_REQUIRES_INDEX;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -60,7 +53,7 @@ public class HTMLTableRowElement extends HTMLTableComponent {
      * JavaScript constructor.
      */
     @Override
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
         super.jsConstructor();
     }
@@ -170,7 +163,7 @@ public class HTMLTableRowElement extends HTMLTableComponent {
 
     /**
      * Deletes the cell at the specified index in the element's cells collection. If the index
-     * is -1 (or while simulating IE, when there is no index specified), then the last cell is deleted.
+     * is -1, then the last cell is deleted.
      * @see <a href="http://msdn.microsoft.com/en-us/library/ms536406.aspx">MSDN Documentation</a>
      * @see <a href="http://www.w3.org/TR/2003/REC-DOM-Level-2-HTML-20030109/html.html#ID-11738598">W3C DOM Level2</a>
      * @param index specifies the cell to delete.
@@ -181,7 +174,7 @@ public class HTMLTableRowElement extends HTMLTableComponent {
         if (!JavaScriptEngine.isUndefined(index)) {
             position = (int) JavaScriptEngine.toNumber(index);
         }
-        else if (getBrowserVersion().hasFeature(JS_TABLE_ROW_DELETE_CELL_REQUIRES_INDEX)) {
+        else {
             throw JavaScriptEngine.reportRuntimeError("No enough arguments");
         }
 
@@ -205,59 +198,5 @@ public class HTMLTableRowElement extends HTMLTableComponent {
     @Override
     public void setOuterHTML(final Object value) {
         throw JavaScriptEngine.reportRuntimeError("outerHTML is read-only for tag 'tr'");
-    }
-
-    /**
-     * Gets the {@code borderColor} attribute.
-     * @return the attribute
-     */
-    @JsxGetter(IE)
-    public String getBorderColor() {
-        return getDomNodeOrDie().getAttribute("borderColor");
-    }
-
-    /**
-     * Sets the {@code borderColor} attribute.
-     * @param borderColor the new attribute
-     */
-    @JsxSetter(IE)
-    public void setBorderColor(final String borderColor) {
-        setColorAttribute("borderColor", borderColor);
-    }
-
-    /**
-     * Gets the {@code borderColor} attribute.
-     * @return the attribute
-     */
-    @JsxGetter(IE)
-    public String getBorderColorDark() {
-        return getDomNodeOrDie().getAttribute("borderColorDark");
-    }
-
-    /**
-     * Sets the {@code borderColor} attribute.
-     * @param borderColor the new attribute
-     */
-    @JsxSetter(IE)
-    public void setBorderColorDark(final String borderColor) {
-        setColorAttribute("borderColorDark", borderColor);
-    }
-
-    /**
-     * Gets the {@code borderColor} attribute.
-     * @return the attribute
-     */
-    @JsxGetter(IE)
-    public String getBorderColorLight() {
-        return getDomNodeOrDie().getAttribute("borderColorLight");
-    }
-
-    /**
-     * Sets the {@code borderColor} attribute.
-     * @param borderColor the new attribute
-     */
-    @JsxSetter(IE)
-    public void setBorderColorLight(final String borderColor) {
-        setColorAttribute("borderColorLight", borderColor);
     }
 }

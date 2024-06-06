@@ -15,9 +15,7 @@
 package org.htmlunit.html;
 
 import static org.htmlunit.BrowserVersionFeatures.EVENT_CONTEXT_MENU_HAS_DETAIL_1;
-import static org.htmlunit.BrowserVersionFeatures.EVENT_ONCLICK_POINTEREVENT_DETAIL_0;
 import static org.htmlunit.BrowserVersionFeatures.EVENT_ONCLICK_USES_POINTEREVENT;
-import static org.htmlunit.BrowserVersionFeatures.EVENT_ONDOUBLECLICK_USES_POINTEREVENT;
 import static org.htmlunit.BrowserVersionFeatures.JS_AREA_WITHOUT_HREF_FOCUSABLE;
 
 import java.io.IOException;
@@ -54,7 +52,6 @@ import org.htmlunit.cssparser.parser.selector.SelectorList;
 import org.htmlunit.cssparser.parser.selector.SelectorSpecificity;
 import org.htmlunit.cyberneko.util.FastHashMap;
 import org.htmlunit.javascript.AbstractJavaScriptEngine;
-import org.htmlunit.javascript.HtmlUnitContextFactory;
 import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.host.event.Event;
 import org.htmlunit.javascript.host.event.EventTarget;
@@ -975,7 +972,8 @@ public class DomElement extends DomNamespaceNode implements Element {
 
         // make enclosing window the current one
         final SgmlPage page = getPage();
-        page.getWebClient().setCurrentWindow(page.getEnclosingWindow());
+        final WebClient webClient = page.getWebClient();
+        webClient.setCurrentWindow(page.getEnclosingWindow());
 
         if (!ignoreVisibility) {
             if (!(page instanceof HtmlPage)) {
@@ -1003,57 +1001,58 @@ public class DomElement extends DomNamespaceNode implements Element {
                 mouseDown(shiftKey, ctrlKey, altKey, MouseEvent.BUTTON_LEFT);
             }
 
-            if (handleFocus) {
-                // give focus to current element (if possible) or only remove it from previous one
-                DomElement elementToFocus = null;
-                if (this instanceof SubmittableElement
-                    || this instanceof HtmlAnchor
-                        && ATTRIBUTE_NOT_DEFINED != ((HtmlAnchor) this).getHrefAttribute()
-                    || this instanceof HtmlArea
-                        && (ATTRIBUTE_NOT_DEFINED != ((HtmlArea) this).getHrefAttribute()
-                            || getPage().getWebClient().getBrowserVersion().hasFeature(JS_AREA_WITHOUT_HREF_FOCUSABLE))
-                    || this instanceof HtmlElement && ((HtmlElement) this).getTabIndex() != null) {
-                    elementToFocus = this;
-                }
-                else if (this instanceof HtmlOption) {
-                    elementToFocus = ((HtmlOption) this).getEnclosingSelect();
-                }
+            final AbstractJavaScriptEngine<?> jsEngine = webClient.getJavaScriptEngine();
+            jsEngine.holdPosponedActions();
+            try {
+                if (handleFocus) {
+                    // give focus to current element (if possible) or only remove it from previous one
+                    DomElement elementToFocus = null;
+                    if (this instanceof SubmittableElement
+                        || this instanceof HtmlAnchor
+                            && ATTRIBUTE_NOT_DEFINED != ((HtmlAnchor) this).getHrefAttribute()
+                        || this instanceof HtmlArea
+                            && (ATTRIBUTE_NOT_DEFINED != ((HtmlArea) this).getHrefAttribute()
+                                || webClient.getBrowserVersion().hasFeature(JS_AREA_WITHOUT_HREF_FOCUSABLE))
+                        || this instanceof HtmlElement && ((HtmlElement) this).getTabIndex() != null) {
+                        elementToFocus = this;
+                    }
+                    else if (this instanceof HtmlOption) {
+                        elementToFocus = ((HtmlOption) this).getEnclosingSelect();
+                    }
 
-                if (elementToFocus == null) {
-                    ((HtmlPage) page).setFocusedElement(null);
-                }
-                else {
-                    elementToFocus.focus();
-                }
-            }
-
-            if (triggerMouseEvents) {
-                mouseUp(shiftKey, ctrlKey, altKey, MouseEvent.BUTTON_LEFT);
-            }
-
-            MouseEvent event = null;
-            if (page.getWebClient().isJavaScriptEnabled()) {
-                final BrowserVersion browser = page.getWebClient().getBrowserVersion();
-                if (browser.hasFeature(EVENT_ONCLICK_USES_POINTEREVENT)) {
-                    if (browser.hasFeature(EVENT_ONCLICK_POINTEREVENT_DETAIL_0)) {
-                        event = new PointerEvent(getEventTargetElement(), MouseEvent.TYPE_CLICK, shiftKey,
-                                ctrlKey, altKey, MouseEvent.BUTTON_LEFT, 0);
+                    if (elementToFocus == null) {
+                        ((HtmlPage) page).setFocusedElement(null);
                     }
                     else {
+                        elementToFocus.focus();
+                    }
+                }
+
+                if (triggerMouseEvents) {
+                    mouseUp(shiftKey, ctrlKey, altKey, MouseEvent.BUTTON_LEFT);
+                }
+
+                MouseEvent event = null;
+                if (webClient.isJavaScriptEnabled()) {
+                    final BrowserVersion browser = webClient.getBrowserVersion();
+                    if (browser.hasFeature(EVENT_ONCLICK_USES_POINTEREVENT)) {
                         event = new PointerEvent(getEventTargetElement(), MouseEvent.TYPE_CLICK, shiftKey,
                                 ctrlKey, altKey, MouseEvent.BUTTON_LEFT, 1);
                     }
-                }
-                else {
-                    event = new MouseEvent(getEventTargetElement(), MouseEvent.TYPE_CLICK, shiftKey,
-                            ctrlKey, altKey, MouseEvent.BUTTON_LEFT, 1);
-                }
+                    else {
+                        event = new MouseEvent(getEventTargetElement(), MouseEvent.TYPE_CLICK, shiftKey,
+                                ctrlKey, altKey, MouseEvent.BUTTON_LEFT, 1);
+                    }
 
-                if (disableProcessLabelAfterBubbling) {
-                    event.disableProcessLabelAfterBubbling();
+                    if (disableProcessLabelAfterBubbling) {
+                        event.disableProcessLabelAfterBubbling();
+                    }
                 }
+                return click(event, shiftKey, ctrlKey, altKey, ignoreVisibility);
             }
-            return click(event, shiftKey, ctrlKey, altKey, ignoreVisibility);
+            finally {
+                jsEngine.processPostponedActions();
+            }
         }
     }
 
@@ -1240,14 +1239,9 @@ public class DomElement extends DomNamespaceNode implements Element {
 
         final Event event;
         final WebClient webClient = getPage().getWebClient();
-        if (webClient.getBrowserVersion().hasFeature(EVENT_ONDOUBLECLICK_USES_POINTEREVENT)) {
-            event = new PointerEvent(this, MouseEvent.TYPE_DBL_CLICK, shiftKey, ctrlKey, altKey,
-                    MouseEvent.BUTTON_LEFT, 0);
-        }
-        else {
-            event = new MouseEvent(this, MouseEvent.TYPE_DBL_CLICK, shiftKey, ctrlKey, altKey,
-                    MouseEvent.BUTTON_LEFT, 2);
-        }
+        event = new MouseEvent(this, MouseEvent.TYPE_DBL_CLICK, shiftKey, ctrlKey, altKey,
+                MouseEvent.BUTTON_LEFT, 2);
+
         final ScriptResult scriptResult = fireEvent(event);
         if (scriptResult == null) {
             return clickPage;
@@ -1527,8 +1521,8 @@ public class DomElement extends DomNamespaceNode implements Element {
         }
 
         final EventTarget jsElt = getScriptableObject();
-        final HtmlUnitContextFactory cf = ((JavaScriptEngine) client.getJavaScriptEngine()).getContextFactory();
-        final ScriptResult result = cf.callSecured(cx -> jsElt.fireEvent(event), getHtmlPageOrNull());
+        final ScriptResult result = ((JavaScriptEngine) client.getJavaScriptEngine())
+                                        .callSecured(cx -> jsElt.fireEvent(event), getHtmlPageOrNull());
         if (event.isAborted(result)) {
             preventDefault();
         }
@@ -1536,8 +1530,7 @@ public class DomElement extends DomNamespaceNode implements Element {
     }
 
     /**
-     * This method is called if the current fired event is canceled by <code>preventDefault()</code> in FireFox,
-     * or by returning {@code false} in Internet Explorer.
+     * This method is called if the current fired event is canceled by <code>preventDefault()</code>.
      *
      * <p>The default implementation does nothing.</p>
      */

@@ -15,13 +15,10 @@
 package org.htmlunit.javascript.host.xml;
 
 import static org.htmlunit.BrowserVersionFeatures.JS_XSLT_TRANSFORM_INDENT;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import java.io.ByteArrayOutputStream;
-import java.io.StringWriter;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,7 +26,6 @@ import java.util.Map;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
@@ -43,6 +39,7 @@ import org.htmlunit.WebResponseData;
 import org.htmlunit.html.DomDocumentFragment;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.html.DomText;
+import org.htmlunit.http.HttpStatus;
 import org.htmlunit.javascript.HtmlUnitScriptable;
 import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
@@ -51,6 +48,7 @@ import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.host.dom.Document;
 import org.htmlunit.javascript.host.dom.DocumentFragment;
 import org.htmlunit.javascript.host.dom.Node;
+import org.htmlunit.util.EncodingSniffer;
 import org.htmlunit.util.XmlUtils;
 import org.htmlunit.xml.XmlPage;
 import org.w3c.dom.NodeList;
@@ -61,7 +59,7 @@ import org.w3c.dom.NodeList;
  * @author Ahmed Ashour
  * @author Ronald Brill
  */
-@JsxClass({CHROME, EDGE, FF, FF_ESR})
+@JsxClass
 public class XSLTProcessor extends HtmlUnitScriptable {
 
     private Node style_;
@@ -169,9 +167,22 @@ public class XSLTProcessor extends HtmlUnitScriptable {
                         // the StreamResult is used
                         try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
                             transformer.transform(xmlSource, new StreamResult(out));
-                            final WebResponseData data =
-                                    new WebResponseData(out.toByteArray(), 200, null, Collections.emptyList());
-                            final WebResponse response = new WebResponse(data, null, 0);
+                            final WebResponseData data = new WebResponseData(out.toByteArray(),
+                                    HttpStatus.OK_200, HttpStatus.OK_200_MSG, Collections.emptyList());
+                            final WebResponse response = new WebResponse(data, null, 0) {
+
+                                // XmlUtils.buildDocument reads the out stream using the contentCharset
+                                // we have to provide the correct one
+                                @Override
+                                public Charset getContentCharset() {
+                                    final Charset cs = EncodingSniffer.toCharset(
+                                            transformer.getOutputProperty(OutputKeys.ENCODING));
+                                    if (cs == null) {
+                                        return StandardCharsets.UTF_8;
+                                    }
+                                    return cs;
+                                }
+                            };
                             return XmlUtils.buildDocument(response);
                         }
                     }
@@ -201,10 +212,15 @@ public class XSLTProcessor extends HtmlUnitScriptable {
 
             // output is not DOM (text)
             xmlSource = new DOMSource(source.getDomNodeOrDie());
-            final StringWriter writer = new StringWriter();
-            final Result streamResult = new StreamResult(writer);
-            transformer.transform(xmlSource, streamResult);
-            return writer.toString();
+            try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+                transformer.transform(xmlSource, new StreamResult(out));
+
+                final Charset cs = EncodingSniffer.toCharset(transformer.getOutputProperty(OutputKeys.ENCODING));
+                if (cs == null) {
+                    return new String(out.toByteArray(), StandardCharsets.UTF_8);
+                }
+                return new String(out.toByteArray(), cs);
+            }
         }
         catch (final RuntimeException re) {
             throw re;

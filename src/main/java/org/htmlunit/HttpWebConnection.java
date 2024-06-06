@@ -14,9 +14,6 @@
  */
 package org.htmlunit;
 
-import static org.htmlunit.BrowserVersionFeatures.CONNECTION_KEEP_ALIVE_IE;
-import static org.htmlunit.BrowserVersionFeatures.URL_AUTH_CREDENTIALS;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
@@ -108,11 +105,11 @@ import org.apache.http.protocol.RequestTargetHost;
 import org.apache.http.ssl.SSLContexts;
 import org.apache.http.util.TextUtils;
 import org.htmlunit.WebRequest.HttpHint;
+import org.htmlunit.http.HttpUtils;
 import org.htmlunit.httpclient.HtmlUnitCookieSpecProvider;
 import org.htmlunit.httpclient.HtmlUnitCookieStore;
 import org.htmlunit.httpclient.HtmlUnitRedirectStrategie;
 import org.htmlunit.httpclient.HtmlUnitSSLConnectionSocketFactory;
-import org.htmlunit.httpclient.HttpClientConverter;
 import org.htmlunit.httpclient.SocksConnectionSocketFactory;
 import org.htmlunit.util.KeyDataPair;
 import org.htmlunit.util.MimeType;
@@ -287,7 +284,7 @@ public class HttpWebConnection implements WebConnection {
         // URLs; because of this we allow some Unicode chars in URLs. However, at this point we're
         // handing things over the HttpClient, and HttpClient will blow up if we leave these Unicode
         // chars in the URL.
-        final URL url = UrlUtils.encodeUrl(webRequest.getUrl(), false, charset);
+        final URL url = UrlUtils.encodeUrl(webRequest.getUrl(), charset);
 
         URI uri = UrlUtils.toURI(url, escapeQuery(url.getQuery()));
         if (getVirtualHost() != null) {
@@ -299,8 +296,7 @@ public class HttpWebConnection implements WebConnection {
         // POST, PUT and PATCH
         if (httpMethod instanceof HttpEntityEnclosingRequest) {
             // developer note:
-            // this has to be in sync with
-            // org.htmlunit.WebRequest.getRequestParameters()
+            // this has to be in sync with org.htmlunit.WebRequest.getRequestParameters()
 
             final HttpEntityEnclosingRequest method = (HttpEntityEnclosingRequest) httpMethod;
 
@@ -308,8 +304,7 @@ public class HttpWebConnection implements WebConnection {
                 final HttpPost postMethod = (HttpPost) method;
                 if (webRequest.getRequestBody() == null) {
                     final List<NameValuePair> pairs = webRequest.getRequestParameters();
-                    final String query = URLEncodedUtils.format(
-                                            HttpClientConverter.nameValuePairsToHttpClient(pairs), charset);
+                    final String query = HttpUtils.toQueryFormFields(pairs, charset);
 
                     final StringEntity urlEncodedEntity;
                     if (webRequest.hasHint(HttpHint.IncludeCharsetInContentTypeHeader)) {
@@ -378,8 +373,7 @@ public class HttpWebConnection implements WebConnection {
             // this is the case for GET as well as TRACE, DELETE, OPTIONS and HEAD
             if (!webRequest.getRequestParameters().isEmpty()) {
                 final List<NameValuePair> pairs = webRequest.getRequestParameters();
-                final String query = URLEncodedUtils.format(
-                                        HttpClientConverter.nameValuePairsToHttpClient(pairs), charset);
+                final String query = HttpUtils.toQueryFormFields(pairs, charset);
                 uri = UrlUtils.toURI(url, query);
                 httpMethod.setURI(uri);
             }
@@ -393,8 +387,7 @@ public class HttpWebConnection implements WebConnection {
 
         // if the used url contains credentials, we have to add this
         final Credentials requestUrlCredentials = webRequest.getUrlCredentials();
-        if (null != requestUrlCredentials
-                && webClient_.getBrowserVersion().hasFeature(URL_AUTH_CREDENTIALS)) {
+        if (null != requestUrlCredentials) {
             final URL requestUrl = webRequest.getUrl();
             final AuthScope authScope = new AuthScope(requestUrl.getHost(), requestUrl.getPort());
             // updating our client to keep the credentials for the next request
@@ -930,6 +923,12 @@ public class HttpWebConnection implements WebConnection {
                     list.add(new SecClientHintUserAgentPlatformHeaderHttpRequestInterceptor(headerValue));
                 }
             }
+            else if (HttpHeader.PRIORITY.equals(header)) {
+                final String headerValue = webRequest.getAdditionalHeader(HttpHeader.PRIORITY);
+                if (headerValue != null) {
+                    list.add(new PriorityHeaderHttpRequestInterceptor(headerValue));
+                }
+            }
             else if (HttpHeader.UPGRADE_INSECURE_REQUESTS.equals(header)) {
                 final String headerValue = webRequest.getAdditionalHeader(HttpHeader.UPGRADE_INSECURE_REQUESTS);
                 if (headerValue != null) {
@@ -943,8 +942,7 @@ public class HttpWebConnection implements WebConnection {
                 }
             }
             else if (HttpHeader.CONNECTION.equals(header)) {
-                list.add(new RequestClientConnControl(
-                                webClient_.getBrowserVersion().hasFeature(CONNECTION_KEEP_ALIVE_IE)));
+                list.add(new RequestClientConnControl());
             }
             else if (HttpHeader.COOKIE.equals(header)) {
                 if (!webRequest.hasHint(HttpHint.BlockCookies)) {
@@ -1166,6 +1164,20 @@ public class HttpWebConnection implements WebConnection {
         }
     }
 
+    private static final class PriorityHeaderHttpRequestInterceptor
+            implements HttpRequestInterceptor {
+        private final String value_;
+
+        PriorityHeaderHttpRequestInterceptor(final String value) {
+            value_ = value;
+        }
+
+        @Override
+        public void process(final HttpRequest request, final HttpContext context) throws HttpException, IOException {
+            request.setHeader(HttpHeader.PRIORITY, value_);
+        }
+    }
+
     private static class MultiHttpRequestInterceptor implements HttpRequestInterceptor {
         private final Map<String, String> map_;
 
@@ -1187,12 +1199,8 @@ public class HttpWebConnection implements WebConnection {
         private static final String PROXY_CONN_DIRECTIVE = "Proxy-Connection";
         private static final String CONN_DIRECTIVE = "Connection";
         private static final String CONN_KEEP_ALIVE = "keep-alive";
-        private static final String CONN_KEEP_ALIVE_IE = "Keep-Alive";
 
-        private final boolean ie_;
-
-        RequestClientConnControl(final boolean ie) {
-            ie_ = ie;
+        RequestClientConnControl() {
         }
 
         @Override
@@ -1200,7 +1208,7 @@ public class HttpWebConnection implements WebConnection {
             throws HttpException, IOException {
             final String method = request.getRequestLine().getMethod();
             if ("CONNECT".equalsIgnoreCase(method)) {
-                request.setHeader(PROXY_CONN_DIRECTIVE, ie_ ? CONN_KEEP_ALIVE_IE : CONN_KEEP_ALIVE);
+                request.setHeader(PROXY_CONN_DIRECTIVE, CONN_KEEP_ALIVE);
                 return;
             }
 
@@ -1214,11 +1222,11 @@ public class HttpWebConnection implements WebConnection {
 
             if ((route.getHopCount() == 1 || route.isTunnelled())
                     && !request.containsHeader(CONN_DIRECTIVE)) {
-                request.addHeader(CONN_DIRECTIVE, ie_ ? CONN_KEEP_ALIVE_IE : CONN_KEEP_ALIVE);
+                request.addHeader(CONN_DIRECTIVE, CONN_KEEP_ALIVE);
             }
             if ((route.getHopCount() == 2 && !route.isTunnelled())
                     && !request.containsHeader(PROXY_CONN_DIRECTIVE)) {
-                request.addHeader(PROXY_CONN_DIRECTIVE, ie_ ? CONN_KEEP_ALIVE_IE : CONN_KEEP_ALIVE);
+                request.addHeader(PROXY_CONN_DIRECTIVE, CONN_KEEP_ALIVE);
             }
         }
     }

@@ -16,7 +16,6 @@ package org.htmlunit.html;
 
 import static org.htmlunit.junit.BrowserRunner.TestedBrowser.CHROME;
 import static org.htmlunit.junit.BrowserRunner.TestedBrowser.EDGE;
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 
 import java.io.InputStream;
 import java.net.URL;
@@ -53,9 +52,8 @@ public class HtmlImageInputTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "§§URL§§?button.x=0&button.y=0",
             CHROME = "§§URL§§?button.x=16&button.y=8",
-            EDGE = "§§URL§§?button.x=16&button.y=8",
-            IE = "§§URL§§?button.x=14&button.y=15")
-    @NotYetImplemented({CHROME, EDGE, IE})
+            EDGE = "§§URL§§?button.x=16&button.y=8")
+    @NotYetImplemented({CHROME, EDGE})
     public void click_NoPosition() throws Exception {
         final String html
             = "<html><head><title>foo</title></head><body>\n"
@@ -77,9 +75,8 @@ public class HtmlImageInputTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "§§URL§§?button.x=0&button.y=0",
             CHROME = "§§URL§§?button.x=28&button.y=8",
-            EDGE = "§§URL§§?button.x=28&button.y=8",
-            IE = "§§URL§§?button.x=14&button.y=15")
-    @NotYetImplemented({CHROME, EDGE, IE})
+            EDGE = "§§URL§§?button.x=28&button.y=8")
+    @NotYetImplemented({CHROME, EDGE})
     public void click_NoPosition_NoValue() throws Exception {
         final String html
             = "<html><head><title>foo</title></head><body>\n"
@@ -408,8 +405,7 @@ public class HtmlImageInputTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = {"§§URL§§abcd/img.gif", "1"},
             EDGE = {"§§URL§§abcd/img.gif", "1"},
             FF = {"§§URL§§abcd/img.gif", "1"},
-            FF_ESR = {"§§URL§§abcd/img.gif", "1"},
-            IE = {"§§URL§§abcd/img.gif", "1"})
+            FF_ESR = {"§§URL§§abcd/img.gif", "1"})
     public void resolveImage() throws Exception {
         try (InputStream is = getClass().getClassLoader().getResourceAsStream("testfiles/tiny-gif.img")) {
             final byte[] directBytes = IOUtils.toByteArray(is);
@@ -451,8 +447,7 @@ public class HtmlImageInputTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = {"§§URL§§abcd/img.gif", "1"},
             EDGE = {"§§URL§§abcd/img.gif", "1"},
             FF = {"§§URL§§abcd/img.gif", "1"},
-            FF_ESR = {"§§URL§§abcd/img.gif", "1"},
-            IE = {"§§URL§§abcd/img.gif", "1"})
+            FF_ESR = {"§§URL§§abcd/img.gif", "1"})
     public void resolveImageRelative() throws Exception {
         try (InputStream is = getClass().getClassLoader().getResourceAsStream("testfiles/tiny-gif.img")) {
             final byte[] directBytes = IOUtils.toByteArray(is);
@@ -629,8 +624,7 @@ public class HtmlImageInputTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = {"", "§§URL§§abcd/img.gif", "1", "1"},
             EDGE = {"", "§§URL§§abcd/img.gif", "1", "1"},
             FF = {"", "§§URL§§abcd/img.gif", "1", "1"},
-            FF_ESR = {"", "§§URL§§abcd/img.gif", "1", "1"},
-            IE = {"", "§§URL§§abcd/img.gif", "1", "1"})
+            FF_ESR = {"", "§§URL§§abcd/img.gif", "1", "1"})
     public void resolveImageOnChange() throws Exception {
         try (InputStream is = getClass().getClassLoader().getResourceAsStream("testfiles/tiny-gif.img")) {
             final byte[] directBytes = IOUtils.toByteArray(is);

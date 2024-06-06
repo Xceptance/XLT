@@ -62,8 +62,7 @@ public class HTMLHtmlElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object HTMLHtmlElement]", "function HTMLHtmlElement() { [native code] }"},
-            IE = {"[object HTMLHtmlElement]", "[object HTMLHtmlElement]"})
+    @Alerts({"[object HTMLHtmlElement]", "function HTMLHtmlElement() { [native code] }"})
     public void HTMLHtmlElement_toString() throws Exception {
         final String html = "<html id='myId'><head><script>\n"
             + LOG_TITLE_FUNCTION
@@ -180,13 +179,11 @@ public class HTMLHtmlElementTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"8", "16", "13", "0"},
             FF = {"8", "16", "0", "0"},
-            FF_ESR = {"8", "16", "0", "0"},
-            IE = {"687", "16", "0", "0"})
+            FF_ESR = {"8", "16", "0", "0"})
     @HtmlUnitNYI(CHROME = {"613", "1256", "13", "0"},
             EDGE = {"613", "1256", "13", "0"},
             FF = {"613", "1256", "13", "0"},
-            FF_ESR = {"613", "1256", "13", "0"},
-            IE = {"613", "1256", "13", "0"})
+            FF_ESR = {"613", "1256", "13", "0"})
     public void offsetsHtmlAbsoluteLeft() throws Exception {
         offsetsHtml("position: absolute; left: 13px;");
     }
@@ -202,13 +199,11 @@ public class HTMLHtmlElementTest extends WebDriverTestCase {
     @Alerts(CHROME = {"8", "16", "1227", "0"},
             EDGE = {"8", "16", "1179", "0"},
             FF = {"8", "16", "0", "0"},
-            FF_ESR = {"8", "16", "0", "0"},
-            IE = {"687", "16", "0", "0"})
+            FF_ESR = {"8", "16", "0", "0"})
     @HtmlUnitNYI(CHROME = {"613", "1256", "1243", "0"},
             EDGE = {"613", "1256", "1243", "0"},
             FF = {"613", "1256", "1243", "0"},
-            FF_ESR = {"613", "1256", "1243", "0"},
-            IE = {"613", "1256", "1243", "0"})
+            FF_ESR = {"613", "1256", "1243", "0"})
     public void offsetsHtmlAbsoluteRight() throws Exception {
         offsetsHtml("position: absolute; right: 13px;");
     }
@@ -221,13 +216,11 @@ public class HTMLHtmlElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"8", "16", "0", "0"},
-            IE = {"687", "16", "0", "0"})
+    @Alerts({"8", "16", "0", "0"})
     @HtmlUnitNYI(CHROME = {"613", "1256", "0", "0"},
             EDGE = {"613", "1256", "0", "0"},
             FF = {"613", "1256", "0", "0"},
-            FF_ESR = {"613", "1256", "0", "0"},
-            IE = {"613", "1256", "0", "0"})
+            FF_ESR = {"613", "1256", "0", "0"})
     public void offsetsHtmlFixed() throws Exception {
         offsetsHtml("position: fixed;");
     }
@@ -243,13 +236,11 @@ public class HTMLHtmlElementTest extends WebDriverTestCase {
     @Alerts(CHROME = {"8", "16", "1227", "0"},
             EDGE = {"8", "16", "1179", "0"},
             FF = {"8", "16", "0", "0"},
-            FF_ESR = {"8", "16", "0", "0"},
-            IE = {"687", "16", "0", "0"})
+            FF_ESR = {"8", "16", "0", "0"})
     @HtmlUnitNYI(CHROME = {"613", "1256", "1243", "0"},
             EDGE = {"613", "1256", "1243", "0"},
             FF = {"613", "1256", "1243", "0"},
-            FF_ESR = {"613", "1256", "1243", "0"},
-            IE = {"613", "1256", "1243", "0"})
+            FF_ESR = {"613", "1256", "1243", "0"})
     public void offsetsHtmlFixedRight() throws Exception {
         offsetsHtml("position: fixed; right: 13px;");
     }

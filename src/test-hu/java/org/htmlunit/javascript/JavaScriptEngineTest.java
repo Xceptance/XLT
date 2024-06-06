@@ -14,7 +14,6 @@
  */
 package org.htmlunit.javascript;
 
-import static org.htmlunit.BrowserVersionFeatures.JS_XML_SUPPORT_VIA_ACTIVEXOBJECT;
 import static org.junit.Assert.fail;
 
 import java.io.ByteArrayOutputStream;
@@ -23,9 +22,7 @@ import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.zip.GZIPOutputStream;
 
 import org.htmlunit.BrowserVersion;
@@ -685,79 +682,6 @@ public class JavaScriptEngineTest extends SimpleWebTestCase {
         }
     }
 
-    /**
-     * Test that Java objects placed in the active x map can be instantiated and used within
-     * JavaScript using the IE specific ActiveXObject constructor.
-     * @throws Exception if the test fails
-     */
-    @Test
-    public void activeXObjectWithMap() throws Exception {
-        if (!getBrowserVersion().hasFeature(JS_XML_SUPPORT_VIA_ACTIVEXOBJECT)) {
-            return;
-        }
-
-        final Map<String, String> activexToJavaMapping = new HashMap<>();
-        activexToJavaMapping.put(
-                "MockActiveXObject",
-                "org.htmlunit.javascript.MockActiveXObject");
-        activexToJavaMapping.put(
-                "FakeObject",
-                "org.htmlunit.javascript.NoSuchObject");
-        activexToJavaMapping.put("BadObject", null);
-
-        final WebClient client = getWebClient();
-        final MockWebConnection webConnection = new MockWebConnection();
-        client.setWebConnection(webConnection);
-        client.setActiveXObjectMap(activexToJavaMapping);
-        final List<String> collectedAlerts = new ArrayList<>();
-        client.setAlertHandler(new CollectingAlertHandler(collectedAlerts));
-
-        webConnection.setDefaultResponse(getJavaScriptContent("new ActiveXObject('UnknownObject')"));
-        try {
-            client.getPage("http://www.yahoo.com");
-            fail("An exception should be thrown for non existent object in the map.");
-        }
-        catch (final ScriptException e) {
-            // Success
-        }
-
-        webConnection.setDefaultResponse(getJavaScriptContent("new ActiveXObject('BadObject', 'server')"));
-        try {
-            client.getPage("http://www.yahoo.com");
-            fail("An exception should be thrown for an invalid object in the map.");
-        }
-        catch (final ScriptException e) {
-            // Success
-        }
-
-        // Test for a non existent class in the map
-        webConnection.setDefaultResponse(getJavaScriptContent("new ActiveXObject('FakeObject')"));
-        try {
-            client.getPage("http://www.yahoo.com");
-            fail("An exception should be thrown for a non existent object in the map.");
-        }
-        catch (final ScriptException e) {
-            // Success
-        }
-
-        assertEquals("should no alerts yet", Collections.EMPTY_LIST, collectedAlerts);
-
-        // Try a valid object in the map
-        webConnection.setDefaultResponse(getJavaScriptContent(
-                "var t = new ActiveXObject('MockActiveXObject'); alert(t.MESSAGE);\n"));
-        client.getPage("http://www.yahoo.com");
-        assertEquals("The active x object did not bind to the object.",
-                new String[] {MockActiveXObject.MESSAGE}, collectedAlerts);
-
-        collectedAlerts.clear();
-
-        webConnection.setDefaultResponse(getJavaScriptContent(
-                "var t = new ActiveXObject('MockActiveXObject', 'server'); alert(t.GetMessage());\n"));
-        client.getPage("http://www.yahoo.com");
-        assertEquals("The active x object did not bind to the object.",
-                new String[] {new MockActiveXObject().GetMessage()}, collectedAlerts);
-    }
-
     private static String getJavaScriptContent(final String javascript) {
         return "<html><head><title>foo</title><script>\n"
              + javascript
@@ -928,25 +852,25 @@ public class JavaScriptEngineTest extends SimpleWebTestCase {
         /** {@inheritDoc} */
         @Override
         public Object execute(
-                final HtmlPage page, final String sourceCode,
-                final String sourceName, final int startLine) {
+                final HtmlPage page, final Scriptable scope,
+                final String sourceCode, final String sourceName, final int startLine) {
             scriptExecutionCount_++;
-            return super.execute(page, sourceCode, sourceName, startLine);
+            return super.execute(page, scope, sourceCode, sourceName, startLine);
         }
 
         /** {@inheritDoc} */
         @Override
-        public Object execute(final HtmlPage page, final Script script) {
+        public Object execute(final HtmlPage page, final Scriptable scope, final Script script) {
             scriptExecuteScriptCount_++;
-            return super.execute(page, script);
+            return super.execute(page, scope, script);
         }
 
         /** {@inheritDoc} */
         @Override
-        public Script compile(final HtmlPage page, final String sourceCode,
-                final String sourceName, final int startLine) {
+        public Script compile(final HtmlPage page, final Scriptable scope,
+                final String sourceCode, final String sourceName, final int startLine) {
             scriptCompileCount_++;
-            return super.compile(page, sourceCode, sourceName, startLine);
+            return super.compile(page, scope, sourceCode, sourceName, startLine);
         }
 
         /** {@inheritDoc} */
@@ -984,8 +908,7 @@ public class JavaScriptEngineTest extends SimpleWebTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"", "ex thrown"},
-            IE = {"2", "no ex"})
+    @Alerts({"", "ex thrown"})
     public void commentNoDoubleSlash() throws Exception {
         final String html =
             "<html><head>\n"
@@ -1091,8 +1014,8 @@ public class JavaScriptEngineTest extends SimpleWebTestCase {
         final WebClient client = getWebClient();
         client.setJavaScriptEngine(new JavaScriptEngine(client) {
             @Override
-            public Object execute(final HtmlPage htmlPage, final String sourceCode,
-                    final String sourceName, final int startLine) {
+            public Object execute(final HtmlPage htmlPage, final Scriptable scope,
+                    final String sourceCode, final String sourceName, final int startLine) {
                 collectedScripts.add(sourceCode);
                 return null;
             }
@@ -1127,8 +1050,8 @@ public class JavaScriptEngineTest extends SimpleWebTestCase {
         final WebClient client1 = getWebClient();
         final WebClient client2 = createNewWebClient();
 
-        final HtmlUnitContextFactory cf1 = ((JavaScriptEngine) client1.getJavaScriptEngine()).getContextFactory();
-        final HtmlUnitContextFactory cf2 = ((JavaScriptEngine) client2.getJavaScriptEngine()).getContextFactory();
+        final HtmlUnitContextFactory cf1 = client1.getJavaScriptEngine().getContextFactory();
+        final HtmlUnitContextFactory cf2 = client2.getJavaScriptEngine().getContextFactory();
 
         assertFalse(cf1 == cf2);
         assertFalse(cf1 == ContextFactory.getGlobal());
@@ -1300,8 +1223,8 @@ public class JavaScriptEngineTest extends SimpleWebTestCase {
      */
     @Test
     public void nonStandardBrowserVersion() throws Exception {
-        final BrowserVersion browser = new BrowserVersion.BrowserVersionBuilder(BrowserVersion.INTERNET_EXPLORER)
-                .setApplicationName("Mozilla")
+        final BrowserVersion browser = new BrowserVersion.BrowserVersionBuilder(BrowserVersion.CHROME)
+                .setApplicationName("Explorer")
                 .setApplicationVersion("5.0")
                 .build();
 

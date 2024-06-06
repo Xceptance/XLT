@@ -14,18 +14,8 @@
  */
 package org.htmlunit.javascript.host.dom;
 
-import static org.htmlunit.BrowserVersionFeatures.JS_ATTR_FIRST_LAST_CHILD_RETURNS_NULL;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
-
-import org.htmlunit.corejs.javascript.Scriptable;
-import org.htmlunit.corejs.javascript.ScriptableObject;
 import org.htmlunit.html.DomAttr;
 import org.htmlunit.html.DomElement;
-import org.htmlunit.html.DomText;
 import org.htmlunit.javascript.HtmlUnitScriptable;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
@@ -57,7 +47,7 @@ public class Attr extends Node {
      * JavaScript constructor.
      */
     @Override
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
         super.jsConstructor();
     }
@@ -72,19 +62,6 @@ public class Attr extends Node {
             domNode.setValue(parent.getAttribute(getName()));
         }
         domNode.remove();
-    }
-
-    /**
-     * Returns {@code true} if the attribute is a custom property.
-     * @return {@code true} if the attribute is a custom property
-     */
-    @JsxGetter(IE)
-    public boolean isExpando() {
-        final Object owner = getOwnerElement();
-        if (null == owner) {
-            return false;
-        }
-        return !ScriptableObject.hasProperty((Scriptable) owner, getName());
     }
 
     /**
@@ -167,12 +144,7 @@ public class Attr extends Node {
      */
     @Override
     public Node getLastChild() {
-        if (getBrowserVersion().hasFeature(JS_ATTR_FIRST_LAST_CHILD_RETURNS_NULL)) {
-            return null;
-        }
-
-        final DomText text = new DomText(getDomNodeOrDie().getPage(), getNodeValue());
-        return text.getScriptableObject();
+        return null;
     }
 
     /**

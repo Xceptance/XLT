@@ -17,7 +17,6 @@ package org.htmlunit.javascript;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -113,8 +112,7 @@ public class NativeFunctionTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "function\\sanonymous(\\n)\\s{\\n\\s\\s\\s\\svar\\sx\\s=\\s1;\\n}",
-            IE = "function\\sanonymous()\\s{\\n\\s\\s\\s\\svar\\sx\\s=\\s1;\\n}")
+    @Alerts("function\\sanonymous(\\n)\\s{\\n\\s\\s\\s\\svar\\sx\\s=\\s1;\\n}")
     public void newFunctionToString() throws Exception {
         final String html
             = "<html><head><script>\n"
@@ -131,8 +129,7 @@ public class NativeFunctionTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "function\\sanonymous(\\n)\\s{\\n\\n}",
-            IE = "function\\sanonymous()\\s{\\n\\n}")
+    @Alerts("function\\sanonymous(\\n)\\s{\\n\\n}")
     public void newEmptyFunctionToString() throws Exception {
         final String html
             = "<html><head><script>\n"
@@ -527,9 +524,7 @@ public class NativeFunctionTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"configurable: true", "enumerable: false", "writable: false"},
-            IE = "no values")
-    @HtmlUnitNYI(IE = {"configurable: true", "enumerable: false", "writable: false"})
+    @Alerts({"configurable: true", "enumerable: false", "writable: false"})
     public void functionLength() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"

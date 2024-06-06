@@ -14,14 +14,6 @@
  */
 package org.htmlunit.javascript.host.css;
 
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
-
-import java.util.regex.Pattern;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.htmlunit.cssparser.dom.AbstractCSSRuleImpl;
@@ -53,13 +45,9 @@ public class CSSRule extends HtmlUnitScriptable {
 
     private static final Log LOG = LogFactory.getLog(CSSRule.class);
 
-    /** RegEx to fix css text for IE. */
-    protected static final Pattern REPLACEMENT_IE = Pattern.compile("url\\(\"([^;]*)\"\\)");
-
     /**
      * The rule is a {@code CSSUnknownRule}.
      */
-    @JsxConstant(IE)
     public static final int UNKNOWN_RULE              = org.w3c.dom.css.CSSRule.UNKNOWN_RULE;
 
     /**
@@ -119,25 +107,24 @@ public class CSSRule extends HtmlUnitScriptable {
     /**
      * The rule is a {@code CSSCounterStyleRule}.
      */
-    @JsxConstant({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstant
     public static final int COUNTER_STYLE_RULE        = 11;
 
     /**
      * The rule is a {@code CSSSupportsRule}.
      */
-    @JsxConstant({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstant
     public static final int SUPPORTS_RULE             = 12;
 
     /**
      * The rule is a {@code CSSCounterStyleRule}.
      */
-    @JsxConstant({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstant
     public static final int FONT_FEATURE_VALUES_RULE  = 14;
 
     /**
      * The rule is a {@code CSSViewportRule}.
      */
-    @JsxConstant(IE)
     public static final int VIEWPORT_RULE  = 15;
 
     private final CSSStyleSheet stylesheet_;
@@ -155,7 +142,7 @@ public class CSSRule extends HtmlUnitScriptable {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
         throw JavaScriptEngine.reportRuntimeError("Illegal constructor.");
     }

@@ -14,12 +14,9 @@
  */
 package org.htmlunit.css;
 
-import static org.htmlunit.BrowserVersionFeatures.CSS_STYLE_PROP_DISCONNECTED_IS_EMPTY;
-import static org.htmlunit.BrowserVersionFeatures.CSS_STYLE_PROP_FONT_DISCONNECTED_IS_EMPTY;
 import static org.htmlunit.BrowserVersionFeatures.JS_CLIENTHEIGHT_INPUT_17;
 import static org.htmlunit.BrowserVersionFeatures.JS_CLIENTHEIGHT_INPUT_18;
 import static org.htmlunit.BrowserVersionFeatures.JS_CLIENTHEIGHT_RADIO_CHECKBOX_10;
-import static org.htmlunit.BrowserVersionFeatures.JS_CLIENTWIDTH_INPUT_TEXT_143;
 import static org.htmlunit.BrowserVersionFeatures.JS_CLIENTWIDTH_INPUT_TEXT_173;
 import static org.htmlunit.BrowserVersionFeatures.JS_CLIENTWIDTH_RADIO_CHECKBOX_10;
 import static org.htmlunit.css.CssStyleSheet.ABSOLUTE;
@@ -45,6 +42,7 @@ import org.htmlunit.BrowserVersion;
 import org.htmlunit.BrowserVersionFeatures;
 import org.htmlunit.Page;
 import org.htmlunit.WebWindow;
+import org.htmlunit.css.CssPixelValueConverter.CssValue;
 import org.htmlunit.css.StyleAttributes.Definition;
 import org.htmlunit.cssparser.dom.AbstractCSSRuleImpl;
 import org.htmlunit.cssparser.dom.CSSStyleDeclarationImpl;
@@ -136,6 +134,7 @@ import org.htmlunit.html.HtmlUnknownElement;
 import org.htmlunit.html.HtmlVariable;
 import org.htmlunit.html.HtmlWordBreak;
 import org.htmlunit.javascript.host.Element;
+import org.htmlunit.javascript.host.css.CSSStyleDeclaration;
 import org.htmlunit.javascript.host.html.HTMLElement;
 import org.htmlunit.platform.Platform;
 
@@ -155,14 +154,12 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
 
     /** The set of 'inheritable' definitions. */
     private static final Set<Definition> INHERITABLE_DEFINITIONS = EnumSet.of(
-        Definition.AZIMUTH,
         Definition.BORDER_COLLAPSE,
         Definition.BORDER_SPACING,
         Definition.CAPTION_SIDE,
         Definition.COLOR,
         Definition.CURSOR,
         Definition.DIRECTION,
-        Definition.ELEVATION,
         Definition.EMPTY_CELLS,
         Definition.FONT_FAMILY,
         Definition.FONT_SIZE,
@@ -177,22 +174,12 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
         Definition.LIST_STYLE_TYPE,
         Definition.LIST_STYLE,
         Definition.ORPHANS,
-        Definition.PITCH_RANGE,
-        Definition.PITCH,
         Definition.QUOTES,
-        Definition.RICHNESS,
-        Definition.SPEAK_HEADER,
-        Definition.SPEAK_NUMERAL,
-        Definition.SPEAK_PUNCTUATION,
         Definition.SPEAK,
-        Definition.SPEECH_RATE,
-        Definition.STRESS,
         Definition.TEXT_ALIGN,
         Definition.TEXT_INDENT,
         Definition.TEXT_TRANSFORM,
         Definition.VISIBILITY,
-        Definition.VOICE_FAMILY,
-        Definition.VOLUME,
         Definition.WHITE_SPACE,
         Definition.WIDOWS,
         Definition.WORD_SPACING);
@@ -283,7 +270,6 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
     @Override
     public String getStyleAttribute(final Definition definition, final boolean getDefaultValueIfEmpty) {
         final BrowserVersion browserVersion = getDomElement().getPage().getWebClient().getBrowserVersion();
-        final boolean feature = hasFeature(CSS_STYLE_PROP_DISCONNECTED_IS_EMPTY);
         final boolean isDefInheritable = INHERITABLE_DEFINITIONS.contains(definition);
 
         // to make the fuzzer happy the recursion was removed
@@ -291,7 +277,7 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
         String value = null;
         while (queue[0] != null) {
             value = getStyleAttributeWorker(definition, getDefaultValueIfEmpty,
-                        browserVersion, feature, isDefInheritable, queue);
+                        browserVersion, true, isDefInheritable, queue);
         }
 
         return value;
@@ -334,12 +320,10 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
             final String defaultValue) {
         final DomElement domElement = getDomElement();
 
-        if (!domElement.isAttachedToPage()
-                && hasFeature(CSS_STYLE_PROP_DISCONNECTED_IS_EMPTY)) {
+        if (!domElement.isAttachedToPage()) {
             return ComputedCssStyleDeclaration.EMPTY_FINAL;
         }
 
-        final boolean feature = hasFeature(CSS_STYLE_PROP_DISCONNECTED_IS_EMPTY);
         final boolean isDefInheritable = INHERITABLE_DEFINITIONS.contains(definition);
 
         // to make the fuzzer happy the recursion was removed
@@ -348,7 +332,7 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
         String value = null;
         while (queue[0] != null) {
             value = getStyleAttributeWorker(definition, false,
-                    browserVersion, feature, isDefInheritable, queue);
+                    browserVersion, true, isDefInheritable, queue);
         }
 
         if (value == null || value.isEmpty() || value.equals(defaultValue)) {
@@ -402,12 +386,7 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
 
         final DomElement domElem = getDomElement();
         if (!domElem.isAttachedToPage()) {
-            if (hasFeature(CSS_STYLE_PROP_DISCONNECTED_IS_EMPTY)) {
-                return "";
-            }
-            if (getStyleAttribute(Definition.WIDTH, true).isEmpty()) {
-                return AUTO;
-            }
+            return "";
         }
 
         final int windowWidth = domElem.getPage().getEnclosingWindow().getInnerWidth();
@@ -514,14 +493,6 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
 
     public DomElement getDomElement() {
         return elementStyleDeclaration_.getDomElement();
-    }
-
-    /**
-     * @return the accelerator setting
-     */
-    @Override
-    public String getAccelerator() {
-        return getStyleAttribute(Definition.ACCELERATOR, true);
     }
 
     /**
@@ -697,9 +668,7 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
     public String getDisplay() {
         final DomElement domElem = getDomElement();
         if (!domElem.isAttachedToPage()) {
-            if (hasFeature(CSS_STYLE_PROP_DISCONNECTED_IS_EMPTY)) {
-                return "";
-            }
+            return "";
         }
 
         // don't use defaultIfEmpty for performance
@@ -721,9 +690,7 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
     public String getFont() {
         final DomElement domElem = getDomElement();
         if (domElem.isAttachedToPage()) {
-            if (hasFeature(CSS_STYLE_PROP_FONT_DISCONNECTED_IS_EMPTY)) {
-                return getStyleAttribute(Definition.FONT, true);
-            }
+            return getStyleAttribute(Definition.FONT, true);
         }
         return "";
     }
@@ -767,12 +734,7 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
 
         final DomElement elem = getDomElement();
         if (!elem.isAttachedToPage()) {
-            if (hasFeature(CSS_STYLE_PROP_DISCONNECTED_IS_EMPTY)) {
-                return "";
-            }
-            if (getStyleAttribute(Definition.HEIGHT, true).isEmpty()) {
-                return AUTO;
-            }
+            return "";
         }
         final int windowHeight = elem.getPage().getEnclosingWindow().getInnerHeight();
         return CssPixelValueConverter
@@ -853,7 +815,7 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
             return pixelString(defaultIfEmpty(superMarginX, "0px", null));
         }
         final DomElement element = getDomElement();
-        if (!element.isAttachedToPage() && hasFeature(CSS_STYLE_PROP_DISCONNECTED_IS_EMPTY)) {
+        if (!element.isAttachedToPage()) {
             return "";
         }
 
@@ -996,7 +958,7 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
     @Override
     public String getTop() {
         final DomElement element = getDomElement();
-        if (!element.isAttachedToPage() && hasFeature(CSS_STYLE_PROP_DISCONNECTED_IS_EMPTY)) {
+        if (!element.isAttachedToPage()) {
             return "";
         }
         final String superTop = super.getTop();
@@ -1442,7 +1404,7 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
             if (includeBorder) {
                 height += getBorderVertical();
             }
-            else if (isScrollable(false, true) && !(element instanceof HtmlBody)) {
+            else if (isScrollable(true, true) && !(element instanceof HtmlBody)) {
                 height -= 17;
             }
 
@@ -1498,7 +1460,7 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
             if (includeBorder) {
                 width += getBorderHorizontal();
             }
-            else if (isScrollable(true, true) && !(element instanceof HtmlBody)) {
+            else if (isScrollable(false, true) && !(element instanceof HtmlBody)) {
                 width -= 17;
             }
 
@@ -1574,9 +1536,6 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
             }
             else if (element instanceof HtmlTextInput || element instanceof HtmlPasswordInput) {
                 final BrowserVersion browserVersion = getDomElement().getPage().getWebClient().getBrowserVersion();
-                if (browserVersion.hasFeature(JS_CLIENTWIDTH_INPUT_TEXT_143)) {
-                    return 143;
-                }
                 if (browserVersion.hasFeature(JS_CLIENTWIDTH_INPUT_TEXT_173)) {
                     return 173;
                 }
@@ -1934,14 +1893,30 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
     private boolean isScrollable(final boolean horizontal, final boolean ignoreSize) {
         final boolean scrollable;
         final DomElement element = getDomElement();
-        final String overflow = getStyleAttribute(Definition.OVERFLOW, true);
+
+        String overflow;
         if (horizontal) {
-            // TODO: inherit, overflow-x
+            overflow = getStyleAttribute(Definition.OVERFLOW_X_, false);
+            if (StringUtils.isEmpty(overflow)) {
+                overflow = getStyleAttribute(Definition.OVERFLOW_X, false);
+            }
+            // fall back to default
+            if (StringUtils.isEmpty(overflow)) {
+                overflow = getStyleAttribute(Definition.OVERFLOW, true);
+            }
             scrollable = (element instanceof HtmlBody || SCROLL.equals(overflow) || AUTO.equals(overflow))
                 && (ignoreSize || getContentWidth() > getCalculatedWidth());
         }
         else {
-            // TODO: inherit, overflow-y
+            overflow = getStyleAttribute(Definition.OVERFLOW_Y_, false);
+            if (StringUtils.isEmpty(overflow)) {
+                overflow = getStyleAttribute(Definition.OVERFLOW_Y, false);
+            }
+            // fall back to default
+            if (StringUtils.isEmpty(overflow)) {
+                overflow = getStyleAttribute(Definition.OVERFLOW, true);
+            }
+
             scrollable = (element instanceof HtmlBody || SCROLL.equals(overflow) || AUTO.equals(overflow))
                 && (ignoreSize || getContentHeight() > getEmptyHeight());
         }
@@ -2278,8 +2253,7 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
 
     private String defaultIfEmpty(final String str, final StyleAttributes.Definition definition,
             final boolean isPixel) {
-        if (!getDomElement().isAttachedToPage()
-                && hasFeature(CSS_STYLE_PROP_DISCONNECTED_IS_EMPTY)) {
+        if (!getDomElement().isAttachedToPage()) {
             return ComputedCssStyleDeclaration.EMPTY_FINAL;
         }
         if (str == null || str.isEmpty()) {
@@ -2297,8 +2271,7 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
      * @return the string, or {@code toReturnIfEmptyOrDefault}
      */
     private String defaultIfEmpty(final String str, final String toReturnIfEmptyOrDefault, final String defaultValue) {
-        if (!getDomElement().isAttachedToPage()
-                && hasFeature(CSS_STYLE_PROP_DISCONNECTED_IS_EMPTY)) {
+        if (!getDomElement().isAttachedToPage()) {
             return ComputedCssStyleDeclaration.EMPTY_FINAL;
         }
         if (str == null || str.isEmpty() || str.equals(defaultValue)) {
@@ -2308,7 +2281,7 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
     }
 
     /**
-     * Returns the specified length value as a pixel length value, as long as we're not emulating IE.
+     * Returns the specified length value as a pixel length value.
      * This method does <b>NOT</b> handle percentages correctly; use {@link #pixelValue(Element, CssValue)}
      * if you need percentage support).
      * @param value the length value to convert to a pixel length value

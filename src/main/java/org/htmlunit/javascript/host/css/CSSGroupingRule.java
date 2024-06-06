@@ -14,13 +14,6 @@
  */
 package org.htmlunit.javascript.host.css;
 
-import static org.htmlunit.BrowserVersionFeatures.JS_GROUPINGRULE_INSERTRULE_INDEX_OPTIONAL;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,8 +36,7 @@ import org.w3c.dom.DOMException;
  * @author Frank Danek
  * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/CSSGroupingRule">MDN doc</a>
  */
-@JsxClass({CHROME, EDGE, FF, FF_ESR})
-@JsxClass(isJSObject = false, value = IE)
+@JsxClass
 public class CSSGroupingRule extends CSSRule {
 
     /** The collection of rules defined in this rule. */
@@ -60,7 +52,7 @@ public class CSSGroupingRule extends CSSRule {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     @Override
     public void jsConstructor() {
         super.jsConstructor();
@@ -98,13 +90,7 @@ public class CSSGroupingRule extends CSSRule {
             positionInt = 0;
         }
         else if (JavaScriptEngine.isUndefined(position)) {
-            if (getBrowserVersion().hasFeature(JS_GROUPINGRULE_INSERTRULE_INDEX_OPTIONAL)) {
-                positionInt = 0;
-            }
-            else {
-                throw JavaScriptEngine.typeError("Failed to execute 'insertRule' on 'CSSGroupingRule':"
-                        + " 2 arguments required, but only 1 present.");
-            }
+            positionInt = 0;
         }
         else {
             positionInt = JavaScriptEngine.toInt32(position);

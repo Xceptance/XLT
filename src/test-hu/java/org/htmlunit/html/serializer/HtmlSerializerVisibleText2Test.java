@@ -22,7 +22,6 @@ import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.serializer.HtmlSerializerVisibleText.HtmlSerializerTextBuilder;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.BuggyWebDriver;
 import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import org.htmlunit.xml.XmlPage;
 import org.junit.Test;
@@ -50,13 +49,11 @@ public class HtmlSerializerVisibleText2Test extends WebDriverTestCase {
     @Alerts(CHROME = "",
             EDGE = "",
             FF = "\n    baz\n  ",
-            FF_ESR = "\n    baz\n  ",
-            IE = "<foo>\n<bar>baz</bar>\n</foo>")
+            FF_ESR = "\n    baz\n  ")
     @HtmlUnitNYI(CHROME = "baz",
             EDGE = "baz",
             FF = "baz",
-            FF_ESR = "baz",
-            IE = "baz")
+            FF_ESR = "baz")
     public void xmlPage() throws Exception {
         final String xml = "<xml>\n"
                 + "  <foo>\n"
@@ -804,11 +801,9 @@ public class HtmlSerializerVisibleText2Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "A B C D EF G H I\nSecond",
             CHROME = "       A B C D EF G H I\n      Second\n    ",
-            EDGE = "       A B C D EF G H I\n      Second\n    ",
-            IE = "A B C D EF G H I Second")
+            EDGE = "       A B C D EF G H I\n      Second\n    ")
     @HtmlUnitNYI(CHROME = "A B C D EF G H I\nSecond",
-            EDGE = "A B C D EF G H I\nSecond",
-            IE = "A B C D EF G H I\nSecond")
+            EDGE = "A B C D EF G H I\nSecond")
     public void getVisibleTextWhiteSpaceSelect() throws Exception {
         getVisibleTextWhiteSpaceSelect(null);
     }
@@ -818,9 +813,7 @@ public class HtmlSerializerVisibleText2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "A B C D EF G H I\nSecond",
-            IE = "A B C D EF G H I Second")
-    @HtmlUnitNYI(IE = "A B C D EF G H I\nSecond")
+    @Alerts("A B C D EF G H I\nSecond")
     public void getVisibleTextWhiteSpaceSelectNormal() throws Exception {
         getVisibleTextWhiteSpaceSelect("normal");
     }
@@ -830,9 +823,7 @@ public class HtmlSerializerVisibleText2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "A B C D EF G H I\nSecond",
-            IE = "A B C D EF G H I Second")
-    @HtmlUnitNYI(IE = "A B C D EF G H I\nSecond")
+    @Alerts("A B C D EF G H I\nSecond")
     public void getVisibleTextWhiteSpaceSelectNowrap() throws Exception {
         getVisibleTextWhiteSpaceSelect("nowrap");
     }
@@ -844,8 +835,7 @@ public class HtmlSerializerVisibleText2Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "       A B C D EF G H I\n      Second\n    ",
             FF = "A B C D EF G H I\nSecond",
-            FF_ESR = "A B C D EF G H I\nSecond",
-            IE = "        A B  C     D \nEF\nG \n H   I  \n      Second\n    ")
+            FF_ESR = "A B C D EF G H I\nSecond")
     @HtmlUnitNYI(CHROME = "        A B  C     D \nEF\nG \n H   I  \n      Second\n    ",
             EDGE = "        A B  C     D \nEF\nG \n H   I  \n      Second\n    ",
             FF = "        A B  C     D \nEF\nG \n H   I  \n      Second\n    ",
@@ -861,8 +851,7 @@ public class HtmlSerializerVisibleText2Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "       A B C D EF G H I\n      Second\n    ",
             FF = "A B C D EF G H I\nSecond",
-            FF_ESR = "A B C D EF G H I\nSecond",
-            IE = "        A B  C     D \nEF\nG \n H   I  \n      Second\n    ")
+            FF_ESR = "A B C D EF G H I\nSecond")
     @HtmlUnitNYI(CHROME = "        A B  C     D \nEF\nG \n H   I  \n      Second\n    ",
             EDGE = "        A B  C     D \nEF\nG \n H   I  \n      Second\n    ",
             FF = "        A B  C     D \nEF\nG \n H   I  \n      Second\n    ",
@@ -876,13 +865,11 @@ public class HtmlSerializerVisibleText2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "A B C D EF G H I\nSecond",
-            IE = "A B C D \nEF\nG \n H I \n Second")
+    @Alerts("A B C D EF G H I\nSecond")
     @HtmlUnitNYI(CHROME = "A B C D \nEF\nG \n H I\n Second",
             EDGE = "A B C D \nEF\nG \n H I\n Second",
             FF = "A B C D \nEF\nG \n H I\n Second",
-            FF_ESR = "A B C D \nEF\nG \n H I\n Second",
-            IE = "A B C D \nEF\nG \n H I\n Second")
+            FF_ESR = "A B C D \nEF\nG \n H I\n Second")
     public void getVisibleTextWhiteSpaceSelectPreLine() throws Exception {
         getVisibleTextWhiteSpaceSelect("pre-line");
     }
@@ -1412,8 +1399,7 @@ public class HtmlSerializerVisibleText2Test extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = "first item\n A B C D \nEF\nG \n H\nI\n third item\n4. item\n some text \n\nlast item",
             EDGE = "first item\n A B C D \nEF\nG \n H\nI\n third item\n4. item\n some text \n\nlast item",
             FF = "first item\n A B C D \nEF\nG \n H\nI\n third item\n4. item\n some text \n\nlast item",
-            FF_ESR = "first item\n A B C D \nEF\nG \n H\nI\n third item\n4. item\n some text \n\nlast item",
-            IE = "first item\n A B C D \nEF\nG \n H\nI\n third item\n4. item\n some text \n\nlast item")
+            FF_ESR = "first item\n A B C D \nEF\nG \n H\nI\n third item\n4. item\n some text \n\nlast item")
     public void getVisibleTextWhiteSpaceOrderedListPreLine() throws Exception {
         getVisibleTextWhiteSpaceOrderedList("pre-line");
     }
@@ -1504,8 +1490,7 @@ public class HtmlSerializerVisibleText2Test extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = "first item\n A B C D \nEF\nG \n H\nI\n third item\n4. item\n some text \n\nlast item",
             EDGE = "first item\n A B C D \nEF\nG \n H\nI\n third item\n4. item\n some text \n\nlast item",
             FF = "first item\n A B C D \nEF\nG \n H\nI\n third item\n4. item\n some text \n\nlast item",
-            FF_ESR = "first item\n A B C D \nEF\nG \n H\nI\n third item\n4. item\n some text \n\nlast item",
-            IE = "first item\n A B C D \nEF\nG \n H\nI\n third item\n4. item\n some text \n\nlast item")
+            FF_ESR = "first item\n A B C D \nEF\nG \n H\nI\n third item\n4. item\n some text \n\nlast item")
     public void getVisibleTextWhiteSpaceUnorderedListPreLine() throws Exception {
         getVisibleTextWhiteSpaceUnorderedList("pre-line");
     }
@@ -1747,7 +1732,6 @@ public class HtmlSerializerVisibleText2Test extends WebDriverTestCase {
      */
     @Test
     @Alerts("Sum")
-    @HtmlUnitNYI(IE = "Sum\ndetail")
     public void getVisibleTextDetails() throws Exception {
         getVisibleTextFormated("<details id='tester'>"
                 + "<summary>Sum</summary>"
@@ -1759,9 +1743,7 @@ public class HtmlSerializerVisibleText2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "Sum\nSum2",
-            IE = "SumSum2")
-    @HtmlUnitNYI(IE = "SumSum2\ndetail")
+    @Alerts("Sum\nSum2")
     public void getVisibleTextDetailsTwoSums() throws Exception {
         getVisibleTextFormated("<details id='tester'>"
                 + "<summary>Sum</summary>"
@@ -1775,7 +1757,6 @@ public class HtmlSerializerVisibleText2Test extends WebDriverTestCase {
      */
     @Test
     @Alerts("Sum\ndetail")
-    @BuggyWebDriver(IE = "Sum")
     public void getVisibleTextDetailsOpen() throws Exception {
         getVisibleTextFormated("<details id='tester' open=true>"
                 + "<summary>Sum</summary>"

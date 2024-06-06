@@ -44,9 +44,7 @@ public class HTMLMediaElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "maybe",
-            IE = "")
-    @HtmlUnitNYI(IE = "maybe")
+    @Alerts("maybe")
     public void canPlayTypeVideoOgg() throws Exception {
         canPlayType("video/ogg");
     }
@@ -64,9 +62,7 @@ public class HTMLMediaElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "maybe",
-            IE = "")
-    @HtmlUnitNYI(IE = "maybe")
+    @Alerts("maybe")
     public void canPlayTypeVideoWebm() throws Exception {
         canPlayType("video/webm");
     }
@@ -97,9 +93,7 @@ public class HTMLMediaElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "probably",
-            IE = "")
-    @HtmlUnitNYI(IE = "probably")
+    @Alerts("probably")
     public void canPlayTypeVideoOggCodecs() throws Exception {
         canPlayType("video/ogg; codecs=\"theora, vorbis\"");
     }
@@ -117,9 +111,7 @@ public class HTMLMediaElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "probably",
-            IE = "")
-    @HtmlUnitNYI(IE = "probably")
+    @Alerts("probably")
     public void canPlayTypeAudioWebmCodecs() throws Exception {
         canPlayType("video/webm; codecs=\"vp8.0, vorbis\"");
     }
@@ -128,9 +120,7 @@ public class HTMLMediaElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "probably",
-            IE = "")
-    @HtmlUnitNYI(IE = "probably")
+    @Alerts("probably")
     public void canPlayTypeAudioOggCodecs() throws Exception {
         canPlayType("audio/ogg; codecs=\"vorbis\"");
     }

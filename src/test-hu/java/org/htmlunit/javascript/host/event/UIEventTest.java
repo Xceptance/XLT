@@ -48,8 +48,7 @@ public class UIEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object UIEvent]", "event", "false", "false", "false", "false"},
-            IE = "exception")
+    @Alerts({"[object UIEvent]", "event", "false", "false", "false", "false"})
     public void create_ctor() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"
@@ -71,8 +70,7 @@ public class UIEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object UIEvent]", "event", "true", "false", "false", "true"},
-            IE = "exception")
+    @Alerts({"[object UIEvent]", "event", "true", "false", "false", "true"})
     public void create_ctorWithDetails() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"
@@ -170,9 +168,7 @@ public class UIEventTest extends WebDriverTestCase {
             FF = {"[object Event]", "undefined", "[object MouseEvent]", "1",
                   "[object MouseEvent]", "2", "[object MouseEvent]", "1"},
             FF_ESR = {"[object Event]", "undefined", "[object MouseEvent]", "1",
-                      "[object MouseEvent]", "2", "[object MouseEvent]", "2"},
-            IE = {"[object Event]", "undefined", "[object PointerEvent]", "0",
-                  "[object PointerEvent]", "0", "[object PointerEvent]", "0"})
+                      "[object MouseEvent]", "2", "[object MouseEvent]", "2"})
     public void detail() throws Exception {
         final String html =
               "<html><head><script>\n"
@@ -221,9 +217,7 @@ public class UIEventTest extends WebDriverTestCase {
             FF = {"[object Event]", "undefined", "[object MouseEvent]", "1",
                   "[object MouseEvent]", "2", "[object MouseEvent]", "1"},
             FF_ESR = {"[object Event]", "undefined", "[object MouseEvent]", "1",
-                      "[object MouseEvent]", "2", "[object MouseEvent]", "2"},
-            IE = {"[object Event]", "undefined", "[object PointerEvent]", "0",
-                  "[object PointerEvent]", "0", "[object PointerEvent]", "0"})
+                      "[object MouseEvent]", "2", "[object MouseEvent]", "2"})
     public void detailInputText() throws Exception {
         final String html =
               "<html><head><script>\n"
@@ -273,9 +267,7 @@ public class UIEventTest extends WebDriverTestCase {
             FF = {"[object Event]", "undefined", "[object MouseEvent]", "1",
                   "[object MouseEvent]", "2", "[object MouseEvent]", "1"},
             FF_ESR = {"[object Event]", "undefined", "[object MouseEvent]", "1",
-                      "[object MouseEvent]", "2", "[object MouseEvent]", "2"},
-            IE = {"[object Event]", "undefined", "[object PointerEvent]", "0",
-                  "[object PointerEvent]", "0", "[object PointerEvent]", "0"})
+                      "[object MouseEvent]", "2", "[object MouseEvent]", "2"})
     public void detailInputRadio() throws Exception {
         final String html =
               "<html><head><script>\n"
@@ -320,8 +312,7 @@ public class UIEventTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"[object Event]", "undefined", "[object MouseEvent]", "[object Window]"},
             CHROME = {"[object Event]", "undefined", "[object PointerEvent]", "[object Window]"},
-            EDGE = {"[object Event]", "undefined", "[object PointerEvent]", "[object Window]"},
-            IE = {"[object Event]", "undefined", "[object PointerEvent]", "[object Window]"})
+            EDGE = {"[object Event]", "undefined", "[object PointerEvent]", "[object Window]"})
     public void view() throws Exception {
         final String html =
               "<html><body onload='alertView(event)'><script>\n"

@@ -132,8 +132,7 @@ public class HTMLBodyElementTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"", "#0000aa", "x"},
-            IE = {"", "#0000aa", "#0"})
+    @Alerts({"", "#0000aa", "x"})
     public void aLink() throws Exception {
         final String html =
             "<html>\n"
@@ -188,8 +187,7 @@ public class HTMLBodyElementTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"", "#0000aa", "x"},
-            IE = {"", "#0000aa", "#0"})
+    @Alerts({"", "#0000aa", "x"})
     public void bgColor() throws Exception {
         final String html =
             "<html>\n"
@@ -216,8 +214,7 @@ public class HTMLBodyElementTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"", "#0000aa", "x"},
-            IE = {"", "#0000aa", "#0"})
+    @Alerts({"", "#0000aa", "x"})
     public void link() throws Exception {
         final String html =
             "<html>\n"
@@ -244,8 +241,7 @@ public class HTMLBodyElementTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"", "#0000aa", "x"},
-            IE = {"", "#0000aa", "#0"})
+    @Alerts({"", "#0000aa", "x"})
     public void text() throws Exception {
         final String html =
             "<html>\n"
@@ -272,8 +268,7 @@ public class HTMLBodyElementTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"", "#0000aa", "x"},
-            IE = {"", "#0000aa", "#0"})
+    @Alerts({"", "#0000aa", "x"})
     public void vLink() throws Exception {
         final String html =
             "<html>\n"
@@ -300,14 +295,13 @@ public class HTMLBodyElementTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"function HTMLBodyElement() { [native code] }", ""
+    @Alerts({"function HTMLBodyElement() { [native code] }", ""
                     + "ELEMENT_NODE, ATTRIBUTE_NODE, TEXT_NODE, CDATA_SECTION_NODE, ENTITY_REFERENCE_NODE, "
                     + "ENTITY_NODE, PROCESSING_INSTRUCTION_NODE, COMMENT_NODE, DOCUMENT_NODE, DOCUMENT_TYPE_NODE, "
                     + "DOCUMENT_FRAGMENT_NODE, NOTATION_NODE, DOCUMENT_POSITION_DISCONNECTED, "
                     + "DOCUMENT_POSITION_PRECEDING, "
                     + "DOCUMENT_POSITION_FOLLOWING, DOCUMENT_POSITION_CONTAINS, DOCUMENT_POSITION_CONTAINED_BY, "
-                    + "DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC, "},
-            IE = {"[object HTMLBodyElement]", ""})
+                    + "DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC, "})
     public void enumeratedProperties() throws Exception {
         final String html
             = "<html><head>\n"
@@ -372,8 +366,7 @@ public class HTMLBodyElementTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = {"0", "0"},
             EDGE = {"0", "0"},
             FF = {"0", "0"},
-            FF_ESR = {"0", "0"},
-            IE = {"0", "0"})
+            FF_ESR = {"0", "0"})
     public void top() throws Exception {
         final String html =
             "<html>\n"

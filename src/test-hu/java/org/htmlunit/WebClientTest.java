@@ -15,7 +15,6 @@
 package org.htmlunit;
 
 import static java.util.Arrays.asList;
-import static org.htmlunit.BrowserVersion.INTERNET_EXPLORER;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.fail;
 
@@ -40,7 +39,6 @@ import org.apache.commons.lang3.mutable.MutableInt;
 import org.htmlunit.cssparser.parser.CSSErrorHandler;
 import org.htmlunit.cssparser.parser.CSSException;
 import org.htmlunit.cssparser.parser.CSSParseException;
-import org.htmlunit.html.DomElement;
 import org.htmlunit.html.HtmlAnchor;
 import org.htmlunit.html.HtmlButton;
 import org.htmlunit.html.HtmlButtonInput;
@@ -49,7 +47,7 @@ import org.htmlunit.html.HtmlInlineFrame;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.parser.HTMLParser;
 import org.htmlunit.html.parser.neko.HtmlUnitNekoHtmlParser;
-import org.htmlunit.httpclient.HttpClientConverter;
+import org.htmlunit.http.HttpStatus;
 import org.htmlunit.javascript.host.html.HTMLStyleElement;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
@@ -637,7 +635,7 @@ public class WebClientTest extends SimpleWebTestCase {
         }
         else {
             // A redirect should have happened
-            assertEquals(HttpClientConverter.OK, webResponse.getStatusCode());
+            assertEquals(HttpStatus.OK_200, webResponse.getStatusCode());
             assertEquals(newLocation, webResponse.getWebRequest().getUrl());
             assertEquals("Second", page.getTitleText());
             assertEquals(expectedRedirectedRequestMethod, webConnection.getLastMethod());
@@ -930,199 +928,6 @@ public class WebClientTest extends SimpleWebTestCase {
 
         final HtmlPage page = webClient.getPage(url);
         assertEquals("Second", page.getTitleText());
-    }
-
-    /**
-     * Test tabbing where there are no tabbable elements.
-     * @throws Exception if something goes wrong
-     */
-    @Test
-    public void keyboard_NoTabbableElements() throws Exception {
-        final WebClient webClient = getWebClient();
-        final HtmlPage page = getPageForKeyboardTest(webClient, new String[0]);
-        final List<String> collectedAlerts = new ArrayList<>();
-        webClient.setAlertHandler(new CollectingAlertHandler(collectedAlerts));
-
-        DomElement focus = page.getFocusedElement();
-        assertTrue("original", (focus == null)
-                || (focus == page.getDocumentElement())
-                || (focus == page.getBody()));
-
-        focus = page.tabToPreviousElement();
-        assertNull("previous", focus);
-
-        focus = page.tabToNextElement();
-        assertNull("next", focus);
-
-        focus = page.pressAccessKey('a');
-        assertNull("accesskey", focus);
-
-        final String[] expectedAlerts = {};
-        assertEquals(expectedAlerts, collectedAlerts);
-    }
-
-    /**
-     * Test tabbing where there is only one tabbable element.
-     * @throws Exception if something goes wrong
-     */
-    @Test
-    public void keyboard_OneTabbableElement() throws Exception {
-        final WebClient webClient = getWebClient();
-        final List<String> collectedAlerts = new ArrayList<>();
-        webClient.setAlertHandler(new CollectingAlertHandler(collectedAlerts));
-
-        final HtmlPage page = getPageForKeyboardTest(webClient, new String[]{null});
-        final HtmlElement element = page.getHtmlElementById("submit0");
-
-        final DomElement focus = page.getFocusedElement();
-        assertTrue("original", (focus == null)
-                || (focus == page.getDocumentElement())
-                || (focus == page.getBody()));
-
-        final DomElement accessKey = page.pressAccessKey('x');
-        assertEquals("accesskey", focus, accessKey);
-
-        assertEquals("next", element, page.tabToNextElement());
-        assertEquals("nextAgain", element, page.tabToNextElement());
-
-        page.getFocusedElement().blur();
-        assertNull("original", page.getFocusedElement());
-
-        assertEquals("previous", element, page.tabToPreviousElement());
-        assertEquals("previousAgain", element, page.tabToPreviousElement());
-
-        assertEquals("accesskey", element, page.pressAccessKey('z'));
-
-        final String[] expectedAlerts = {"focus-0", "blur-0", "focus-0"};
-        assertEquals(expectedAlerts, collectedAlerts);
-    }
-
-    /**
-     * Test pressing an accesskey.
-     * @throws Exception if something goes wrong
-     */
-    @Test
-    public void accessKeys() throws Exception {
-        final WebClient webClient = getWebClient();
-        final List<String> collectedAlerts = new ArrayList<>();
-        webClient.setAlertHandler(new CollectingAlertHandler(collectedAlerts));
-
-        final HtmlPage page = getPageForKeyboardTest(webClient, new String[]{"1", "2", "3"});
-
-        assertEquals("submit0", page.pressAccessKey('a').getAttribute("name"));
-        assertEquals("submit2", page.pressAccessKey('c').getAttribute("name"));
-        assertEquals("submit1", page.pressAccessKey('b').getAttribute("name"));
-
-        final String[] expectedAlerts = {"focus-0", "blur-0", "focus-2", "blur-2", "focus-1"};
-        assertEquals(expectedAlerts, collectedAlerts);
-    }
-
-    /**
-     * Test tabbing to the next element.
-     * @throws Exception if something goes wrong
-     */
-    @Test
-    public void tabNext() throws Exception {
-        final WebClient webClient = getWebClient();
-        final List<String> collectedAlerts = new ArrayList<>();
-        webClient.setAlertHandler(new CollectingAlertHandler(collectedAlerts));
-
-        final HtmlPage page = getPageForKeyboardTest(webClient, new String[]{"1", "2", "3"});
-
-        assertEquals("submit0", page.tabToNextElement().getAttribute("name"));
-        assertEquals("submit1", page.tabToNextElement().getAttribute("name"));
-        assertEquals("submit2", page.tabToNextElement().getAttribute("name"));
-
-        final String[] expectedAlerts = {"focus-0", "blur-0", "focus-1", "blur-1", "focus-2"};
-        assertEquals(expectedAlerts, collectedAlerts);
-    }
-
-    /**
-     * Test tabbing to the previous element.
-     * @throws Exception if something goes wrong
-     */
-    @Test
-    public void tabPrevious() throws Exception {
-        final WebClient webClient = getWebClient();
-        final List<String> collectedAlerts = new ArrayList<>();
-        webClient.setAlertHandler(new CollectingAlertHandler(collectedAlerts));
-
-        final HtmlPage page = getPageForKeyboardTest(webClient, new String[]{"1", "2", "3"});
-
-        assertEquals("submit2", page.tabToPreviousElement().getAttribute("name"));
-        assertEquals("submit1", page.tabToPreviousElement().getAttribute("name"));
-        assertEquals("submit0", page.tabToPreviousElement().getAttribute("name"));
-
-        final String[] expectedAlerts = {"focus-2", "blur-2", "focus-1", "blur-1", "focus-0"};
-        assertEquals(expectedAlerts, collectedAlerts);
-    }
-
-    /**
-     * Test that a button can be selected via accesskey.
-     * @throws Exception if something goes wrong
-     */
-    @Test
-    public void pressAccessKey_Button() throws Exception {
-        final WebClient webClient = getWebClient();
-        final List<String> collectedAlerts = new ArrayList<>();
-        webClient.setAlertHandler(new CollectingAlertHandler(collectedAlerts));
-
-        final HtmlPage page = getPageForKeyboardTest(webClient, new String[]{"1", "2", "3"});
-        final HtmlElement button = page.getHtmlElementById("button1");
-
-        final String[] expectedAlerts = {"buttonPushed"};
-        collectedAlerts.clear();
-
-        button.removeAttribute("disabled");
-        page.pressAccessKey('1');
-
-        assertEquals(expectedAlerts, collectedAlerts);
-    }
-
-    /**
-     * Returns a loaded page for one of the keyboard tests.
-     * @param webClient the WebClient to load the page from
-     * @param tabIndexValues the tab index values; one input will be created for each item
-     *        in this list
-     * @return the loaded page
-     * @throws Exception if something goes wrong
-     */
-    private static HtmlPage getPageForKeyboardTest(
-            final WebClient webClient, final String[] tabIndexValues) throws Exception {
-
-        final StringBuilder builder = new StringBuilder();
-        builder.append("<html><head><title>First</title></head><body>")
-                .append("<form name='form1' method='post' onsubmit='return false;'>");
-
-        for (int i = 0; i < tabIndexValues.length; i++) {
-            builder.append("<input type='submit' name='submit");
-            builder.append(i);
-            builder.append("' id='submit");
-            builder.append(i);
-            builder.append("'");
-            if (tabIndexValues[i] != null) {
-                builder.append(" tabindex='");
-                builder.append(tabIndexValues[i]);
-                builder.append("'");
-            }
-            builder.append(" onblur='alert(\"blur-" + i + "\")'");
-            builder.append(" onfocus='alert(\"focus-" + i + "\")'");
-            builder.append(" accesskey='" + (char) ('a' + i) + "'");
-            builder.append(">\n");
-        }
-        builder.append("<div id='div1'>foo</div>\n"); // something that isn't tabbable
-
-        // Elements that are tabbable but are disabled
-        builder.append("<button name='button1' id='button1' disabled onclick='alert(\"buttonPushed\")' ");
-        builder.append("accesskey='1'>foo</button>\n");
-
-        builder.append("</form></body></html>");
-
-        final MockWebConnection webConnection = new MockWebConnection();
-        webConnection.setResponse(URL_FIRST, builder.toString());
-        webClient.setWebConnection(webConnection);
-
-        return webClient.getPage(URL_FIRST);
     }
 
     /**
@@ -1474,7 +1279,7 @@ public class WebClientTest extends SimpleWebTestCase {
 
         // tests XHTML files, types will be determined based on a mixture of file suffixes and contents
         // note that "xhtml.php" returns content type "text/xml" in Firefox, but "application/xml" is good enough...
-        assertEquals("xhtml.php", "application/xml", c.guessContentType(getTestFile("xhtml.php")));
+        assertEquals("xhtml.php", MimeType.APPLICATION_XML, c.guessContentType(getTestFile("xhtml.php")));
         assertEquals("xhtml.htm", MimeType.TEXT_HTML, c.guessContentType(getTestFile("xhtml.htm")));
         assertEquals("xhtml.html", MimeType.TEXT_HTML, c.guessContentType(getTestFile("xhtml.html")));
         assertEquals("xhtml.xhtml", MimeType.APPLICATION_XHTML, c.guessContentType(getTestFile("xhtml.xhtml")));
@@ -1710,7 +1515,7 @@ public class WebClientTest extends SimpleWebTestCase {
 
         webConnection.setResponse(URL_FIRST, content, "Text/Xml");
         assertTrue(XmlPage.class.isInstance(client.getPage(URL_FIRST)));
-        webConnection.setResponse(URL_FIRST, content, "ApplicaTion/Xml");
+        webConnection.setResponse(URL_FIRST, content, MimeType.APPLICATION_XML);
         assertTrue(XmlPage.class.isInstance(client.getPage(URL_FIRST)));
 
         webConnection.setResponse(URL_FIRST, content, MimeType.TEXT_PLAIN);
@@ -1789,9 +1594,9 @@ public class WebClientTest extends SimpleWebTestCase {
     @Test
     public void urlEncoding2() throws Exception {
         final URL url = new URL("http://host/x+y\u00E9/a\u00E9 b?c \u00E9 d");
-        final HtmlPage page = loadPage(INTERNET_EXPLORER, "<html></html>", new ArrayList<String>(), url);
+        final HtmlPage page = loadPage(BrowserVersion.BEST_SUPPORTED, "<html></html>", new ArrayList<String>(), url);
         final WebRequest wrs = page.getWebResponse().getWebRequest();
-        assertEquals("http://host/x+y%C3%A9/a%C3%A9%20b?c%20\u00E9%20d", wrs.getUrl());
+        assertEquals("http://host/x+y%C3%A9/a%C3%A9%20b?c%20%C3%A9%20d", wrs.getUrl());
     }
 
     /**
@@ -2080,8 +1885,7 @@ public class WebClientTest extends SimpleWebTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {},
-            IE = "Third page loaded")
+    @Alerts({})
     public void windowTracking_SpecialCase3() throws Exception {
         final WebClient webClient = getWebClient();
         final MockWebConnection conn = new MockWebConnection();

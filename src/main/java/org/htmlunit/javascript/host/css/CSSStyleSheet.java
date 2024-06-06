@@ -14,13 +14,6 @@
  */
 package org.htmlunit.javascript.host.css;
 
-import static org.htmlunit.BrowserVersionFeatures.STYLESHEET_ADD_RULE_RETURNS_POS;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
-
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -83,7 +76,7 @@ public class CSSStyleSheet extends StyleSheet {
      * Creates a new empty stylesheet.
      */
     @Override
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
         super.jsConstructor();
         styleSheet_ = new CssStyleSheet(null, (InputSource) null, null);
@@ -153,25 +146,6 @@ public class CSSStyleSheet extends StyleSheet {
     }
 
     /**
-     * Returns the owner node.
-     * @return the owner node
-     */
-    @JsxGetter(IE)
-    @Override
-    public HTMLElement getOwnerNode() {
-        return super.getOwnerNode();
-    }
-
-    /**
-     * Returns the owner element, same as {@link #getOwnerNode()}.
-     * @return the owner element
-     */
-    @JsxGetter(IE)
-    public HTMLElement getOwningElement() {
-        return getOwnerNode();
-    }
-
-    /**
      * Retrieves the collection of rules defined in this style sheet.
      * @return the collection of rules defined in this style sheet
      */
@@ -188,15 +162,6 @@ public class CSSStyleSheet extends StyleSheet {
     public CSSRuleList getCssRules() {
         initCssRules();
         return cssRules_;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @JsxGetter(IE)
-    @Override
-    public String getHref() {
-        return super.getHref();
     }
 
     /**
@@ -317,9 +282,6 @@ public class CSSStyleSheet extends StyleSheet {
             catch (final DOMException ex) {
                 throw JavaScriptEngine.throwAsScriptRuntimeEx(ex);
             }
-        }
-        if (getBrowserVersion().hasFeature(STYLESHEET_ADD_RULE_RETURNS_POS)) {
-            return getCssStyleSheet().getWrappedSheet().getCssRules().getLength() - 1;
         }
         return -1;
     }

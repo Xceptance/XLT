@@ -16,7 +16,6 @@ package org.htmlunit.javascript.host.dom;
 
 import static org.htmlunit.junit.BrowserRunner.TestedBrowser.FF;
 import static org.htmlunit.junit.BrowserRunner.TestedBrowser.FF_ESR;
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 
 import java.net.URL;
 
@@ -207,8 +206,7 @@ public class Document2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"parent", "child"},
-            IE = "evaluate not available")
+    @Alerts({"parent", "child"})
     public void importNodeWithNamespace() throws Exception {
         final MockWebConnection conn = getMockWebConnection();
         conn.setDefaultResponse(
@@ -250,8 +248,7 @@ public class Document2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"parent", "child", "child3"},
-            IE = "evaluate not available")
+    @Alerts({"parent", "child", "child3"})
     public void importNodesWithNamespace() throws Exception {
         final MockWebConnection conn = getMockWebConnection();
         conn.setDefaultResponse(
@@ -343,9 +340,7 @@ public class Document2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object HTMLBodyElement]", "§§URL§§#", "§§URL§§#"},
-            IE = {"null", "§§URL§§#", "§§URL§§#"})
-    @NotYetImplemented(IE)
+    @Alerts({"[object HTMLBodyElement]", "§§URL§§#", "§§URL§§#"})
     public void activeElement_iframe() throws Exception {
         final String html =
                 "<html>\n"

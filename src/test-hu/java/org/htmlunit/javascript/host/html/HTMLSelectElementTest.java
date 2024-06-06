@@ -14,8 +14,6 @@
  */
 package org.htmlunit.javascript.host.html;
 
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
-
 import java.util.List;
 
 import org.htmlunit.HttpMethod;
@@ -24,8 +22,6 @@ import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.BuggyWebDriver;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
@@ -1038,8 +1034,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"0", "0", "-1"},
-            IE = {"0", "exception"})
+    @Alerts({"0", "0", "-1"})
     public void removeOptionMethodIndexMinusOneEmptySelect() throws Exception {
         removeOptionMethod("-1", true, false);
     }
@@ -1048,8 +1043,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"0", "0", "-1"},
-            IE = {"0", "exception"})
+    @Alerts({"0", "0", "-1"})
     public void removeOptionMethodIndexMinusOneEmptySelectMulti() throws Exception {
         removeOptionMethod("-1", true, true);
     }
@@ -1112,8 +1106,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"3", "3", "1", "One", "Two*", "Three"},
-            IE = {"3", "exception"})
+    @Alerts({"3", "3", "1", "One", "Two*", "Three"})
     public void removeOptionMethodIndexMinusOne() throws Exception {
         removeOptionMethod("-1", false, false);
     }
@@ -1122,8 +1115,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"3", "3", "1", "One", "Two*", "Three*"},
-            IE = {"3", "exception"})
+    @Alerts({"3", "3", "1", "One", "Two*", "Three*"})
     public void removeOptionMethodIndexMinusOneMulti() throws Exception {
         removeOptionMethod("-1", false, true);
     }
@@ -1674,8 +1666,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "exception",
-            IE = {"2-2", "1-1", "2-2", "0-0", "2-2", "1-1"})
+    @Alerts("exception")
     public void optionsDelegateToSelect() throws Exception {
         final String html =
             HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -2297,8 +2288,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"two", "One"},
-            IE = {"two", ""})
+    @Alerts({"two", "One"})
     public void valueByText() throws Exception {
         final String html =
             HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -2328,8 +2318,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"two", "One"},
-            IE = {"two", ""})
+    @Alerts({"two", "One"})
     public void valueByTextTrim() throws Exception {
         final String html =
             HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -2490,8 +2479,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "mouse over",
-            IE = "")
+    @Alerts("mouse over")
     @BuggyWebDriver(FF = "mouse overmouse overmouse over",
             FF_ESR = "mouse overmouse overmouse over")
     public void mouseOverDisabledSelect() throws Exception {
@@ -2526,8 +2514,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"0", "2", "1", "2", "1", "1"},
-            IE = {"undefined", "undefined", "undefined", "undefined", "undefined", "undefined"})
+    @Alerts({"0", "2", "1", "2", "1", "1"})
     public void labels() throws Exception {
         final String html =
             "<html><head>\n"
@@ -2564,9 +2551,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"1", "false", "true", "false", "false"},
-            IE = {"1", "true", "true", "true", "true"})
-    @HtmlUnitNYI(IE = {"1", "false", "true", "true", "true"})
+    @Alerts({"1", "false", "true", "false", "false"})
     public void in() throws Exception {
         final String html =
             "<html>\n"
@@ -2598,8 +2583,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "[object HTMLOptionElement]", "2"},
-            IE = {"null", "[object HTMLOptionElement]", "2"})
+    @Alerts({"undefined", "[object HTMLOptionElement]", "2"})
     public void addOptionByAssigningViaIndex() throws Exception {
         final String html =
             "<html>\n"
@@ -2628,8 +2612,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "[object HTMLOptionElement]", "8"},
-            IE = {"null", "[object HTMLOptionElement]", "8"})
+    @Alerts({"undefined", "[object HTMLOptionElement]", "8"})
     public void addOptionByAssigningViaIndex2() throws Exception {
         final String html =
             "<html>\n"
@@ -2770,9 +2753,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"[object HTMLOptionElement]", "[object HTMLOptionElement]", "[object HTMLOptionElement]"},
-            IE = "exception")
-    @NotYetImplemented(IE)
+    @Alerts({"[object HTMLOptionElement]", "[object HTMLOptionElement]", "[object HTMLOptionElement]"})
     public void optionsForOf() throws Exception {
         final String html =
               "<html>\n"

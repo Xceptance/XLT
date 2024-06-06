@@ -32,8 +32,7 @@ public class HTMLPreElementTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"0", "number", "100", "77", "number", "123"},
-            IE = {"", "string", "100", "77", "string", "123"})
+    @Alerts({"0", "number", "100", "77", "number", "123"})
     public void width() throws Exception {
         final String html =
             "<html>\n"
@@ -68,10 +67,8 @@ public class HTMLPreElementTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "undefined", "undefined", "undefined", "undefined", "undefined",
-                       "undefined", "left", "none", "right", "all", "2", "abc", "8"},
-            IE = {"", "left", "all", "right", "none", "", "", "!", "!", "!", "left", "none", "right", "all", "none",
-                  "", ""})
+    @Alerts({"undefined", "undefined", "undefined", "undefined", "undefined", "undefined",
+             "undefined", "left", "none", "right", "all", "2", "abc", "8"})
     public void clear() throws Exception {
         final String html
             = "<html><body>\n"

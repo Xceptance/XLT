@@ -14,23 +14,11 @@
  */
 package org.htmlunit.javascript.host.event;
 
-import static org.htmlunit.BrowserVersionFeatures.JS_POP_STATE_EVENT_CLONE_STATE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
-
-import org.htmlunit.WebClient;
-import org.htmlunit.corejs.javascript.ContextAction;
-import org.htmlunit.corejs.javascript.NativeObject;
 import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.corejs.javascript.ScriptableObject;
-import org.htmlunit.javascript.HtmlUnitContextFactory;
 import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
-import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
 
 /**
@@ -56,7 +44,7 @@ public class PopStateEvent extends Event {
      * {@inheritDoc}
      */
     @Override
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor(final String type, final ScriptableObject details) {
         super.jsConstructor(type, details);
 
@@ -74,40 +62,6 @@ public class PopStateEvent extends Event {
      */
     public PopStateEvent(final EventTarget target, final String type, final Object state) {
         super(target, type);
-        if (state instanceof NativeObject && getBrowserVersion().hasFeature(JS_POP_STATE_EVENT_CLONE_STATE)) {
-            final NativeObject old = (NativeObject) state;
-            final NativeObject newState = new NativeObject();
-
-            final WebClient client = getWindow().getWebWindow().getWebClient();
-            final HtmlUnitContextFactory cf = ((JavaScriptEngine) client.getJavaScriptEngine()).getContextFactory();
-
-            final ContextAction<Object> contextAction = cx -> {
-                for (final Object o : ScriptableObject.getPropertyIds(old)) {
-                    final String property = JavaScriptEngine.toString(o);
-                    newState.defineProperty(property, ScriptableObject.getProperty(old, property),
-                            ScriptableObject.EMPTY);
-                }
-                return null;
-            };
-            cf.call(contextAction);
-            state_ = newState;
-        }
-        else {
-            state_ = state;
-        }
-    }
-
-    /**
-     * Initializes this event.
-     * @param type the event type
-     * @param bubbles whether or not the event should bubble
-     * @param cancelable whether or not the event the event should be cancelable
-     * @param state the state
-     */
-    @JsxFunction(IE)
-    public void initPopStateEvent(final String type, final boolean bubbles,
-            final boolean cancelable, final Object state) {
-        initEvent(type, bubbles, cancelable);
         state_ = state;
     }
 

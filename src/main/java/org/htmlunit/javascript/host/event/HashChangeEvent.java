@@ -14,9 +14,6 @@
  */
 package org.htmlunit.javascript.host.event;
 
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import org.htmlunit.corejs.javascript.ScriptableObject;
@@ -35,7 +32,7 @@ import org.htmlunit.javascript.configuration.JsxGetter;
  * @author Marc Guillemot
  * @author Frank Danek
  */
-@JsxClass({CHROME, EDGE, FF, FF_ESR})
+@JsxClass
 public class HashChangeEvent extends Event {
 
     private String oldURL_ = "";
@@ -70,7 +67,7 @@ public class HashChangeEvent extends Event {
      * {@inheritDoc}
      */
     @Override
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor(final String type, final ScriptableObject details) {
         super.jsConstructor(type, details);
 
@@ -93,7 +90,7 @@ public class HashChangeEvent extends Event {
      * @param oldURL the old URL
      * @param newURL the new URL
      */
-    @JsxFunction({FF, FF_ESR})
+    @JsxFunction(FF_ESR)
     public void initHashChangeEvent(final String type, final boolean bubbles, final boolean cancelable,
         final String oldURL, final String newURL) {
         initEvent(type, bubbles, cancelable);
@@ -105,7 +102,7 @@ public class HashChangeEvent extends Event {
      * Returns the old URL.
      * @return the old URL
      */
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxGetter
     public Object getOldURL() {
         return oldURL_;
     }
@@ -114,7 +111,7 @@ public class HashChangeEvent extends Event {
      * Returns the new URL.
      * @return the new URL
      */
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxGetter
     public Object getNewURL() {
         return newURL_;
     }

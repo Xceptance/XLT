@@ -14,9 +14,6 @@
  */
 package org.htmlunit.javascript.host.html;
 
-import static org.htmlunit.BrowserVersionFeatures.HTMLELEMENT_ALIGN_INVALID;
-import static org.htmlunit.BrowserVersionFeatures.JS_TABLE_VALIGN_SUPPORTS_IE_VALUES;
-
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.configuration.JsxSetter;
@@ -29,9 +26,6 @@ import org.htmlunit.javascript.configuration.JsxSetter;
 @JsxClass(isJSObject = false)
 public class HTMLTableComponent extends HTMLElement {
 
-    /** The valid "vAlign" values for this element, when emulating IE. */
-    private static final String[] VALIGN_VALID_VALUES_IE = {"top", "bottom", "middle", "baseline"};
-
     /** The default value of the "vAlign" property. */
     private static final String VALIGN_DEFAULT_VALUE = "top";
 
@@ -41,8 +35,7 @@ public class HTMLTableComponent extends HTMLElement {
      */
     @JsxGetter
     public String getAlign() {
-        final boolean invalidValues = getBrowserVersion().hasFeature(HTMLELEMENT_ALIGN_INVALID);
-        return getAlign(invalidValues);
+        return getAlign(true);
     }
 
     /**
@@ -77,14 +70,7 @@ public class HTMLTableComponent extends HTMLElement {
      * @return the valid "vAlign" values for this element, depending on the browser being emulated
      */
     private String[] getValidVAlignValues() {
-        final String[] valid;
-        if (getBrowserVersion().hasFeature(JS_TABLE_VALIGN_SUPPORTS_IE_VALUES)) {
-            valid = VALIGN_VALID_VALUES_IE;
-        }
-        else {
-            valid = null;
-        }
-        return valid;
+        return null;
     }
 
     /**

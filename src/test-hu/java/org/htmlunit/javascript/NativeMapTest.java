@@ -14,12 +14,9 @@
  */
 package org.htmlunit.javascript;
 
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
-
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -36,9 +33,7 @@ public class NativeMapTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"key type string", "value type object"},
-            IE = {})
-    @NotYetImplemented(IE)
+    @Alerts({"key type string", "value type object"})
     public void entries() throws Exception {
         final String html =
             "<html>\n"

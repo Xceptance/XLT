@@ -14,13 +14,10 @@
  */
 package org.htmlunit.javascript.host.html;
 
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
-
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -104,9 +101,7 @@ public class HTMLCollectionTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"string 0", "string item", "string length", "string namedItem"},
-            IE = {"string item", "string length", "string myForm", "string namedItem"})
-    @NotYetImplemented(IE)
+    @Alerts({"string 0", "string item", "string length", "string namedItem"})
     public void for_in() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -133,12 +128,8 @@ public class HTMLCollectionTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"string 0", "string 1", "string 2", "string 3", "string 4", "string 5",
-                       "string item", "string length", "string namedItem"},
-            IE = {"string 1", "string action", "string first_submit", "string item",
-                  "string length", "string namedItem", "string second_submit", "string val1",
-                  "string val2"})
-    @NotYetImplemented(IE)
+    @Alerts({"string 0", "string 1", "string 2", "string 3", "string 4", "string 5",
+             "string item", "string length", "string namedItem"})
     public void for_in2() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -174,8 +165,7 @@ public class HTMLCollectionTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"false", "false"},
-            IE = {"true", "true"})
+    @Alerts({"false", "false"})
     public void tags() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -196,8 +186,7 @@ public class HTMLCollectionTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"null", "null", "undefined", "exception"},
-            IE = {"null", "null", "undefined", "undefined"})
+    @Alerts({"null", "null", "undefined", "exception"})
     public void outOfBoundAccess() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -363,8 +352,7 @@ public class HTMLCollectionTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"myForm", "mySecondForm"},
-            IE = "exception")
+    @Alerts({"myForm", "mySecondForm"})
     public void forOf() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -390,8 +378,7 @@ public class HTMLCollectionTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"myForm", "mySecondForm", "dynamicForm", "-", "myForm", "mySecondForm", "dynamicForm"},
-            IE = "exception")
+    @Alerts({"myForm", "mySecondForm", "dynamicForm", "-", "myForm", "mySecondForm", "dynamicForm"})
     public void forOfDynamicAtEnd() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -429,8 +416,7 @@ public class HTMLCollectionTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"myForm", "myForm", "mySecondForm", "-", "dynamicForm", "myForm", "mySecondForm"},
-            IE = "exception")
+    @Alerts({"myForm", "myForm", "mySecondForm", "-", "dynamicForm", "myForm", "mySecondForm"})
     public void forOfDynamicAtStart() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -468,8 +454,7 @@ public class HTMLCollectionTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "b1-button1",
-            IE = "null")
+    @Alerts("b1-button1")
     public void item_Unknown() throws Exception {
         item("'foo'");
     }
@@ -478,8 +463,7 @@ public class HTMLCollectionTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "b1-button1",
-            IE = "b2-button2")
+    @Alerts("b1-button1")
     public void item_ById() throws Exception {
         item("'b2'");
     }
@@ -488,8 +472,7 @@ public class HTMLCollectionTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "b1-button1",
-            IE = "b2-button2")
+    @Alerts("b1-button1")
     public void item_ByName() throws Exception {
         item("'button2'");
     }
@@ -543,8 +526,7 @@ public class HTMLCollectionTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "b2-button2",
-            IE = "null")
+    @Alerts("b2-button2")
     public void item_IndexAsString() throws Exception {
         item("'1'");
     }
@@ -553,8 +535,7 @@ public class HTMLCollectionTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "b2-button2",
-            IE = "null")
+    @Alerts("b2-button2")
     public void item_IndexDoubleAsString() throws Exception {
         item("'1.1'");
     }
@@ -653,8 +634,7 @@ public class HTMLCollectionTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "undefined",
-            IE = "b2-button2")
+    @Alerts("undefined")
     public void arrayIndex_DoubleIndex() throws Exception {
         arrayIndex("1.1");
     }
@@ -717,8 +697,7 @@ public class HTMLCollectionTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "exception",
-            IE = "undefined")
+    @Alerts("exception")
     public void functionIndex_Unknown() throws Exception {
         functionIndex("'foo'");
     }
@@ -727,8 +706,7 @@ public class HTMLCollectionTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "exception",
-            IE = "b2-button2")
+    @Alerts("exception")
     public void functionIndex_ById() throws Exception {
         functionIndex("'b2'");
     }
@@ -737,8 +715,7 @@ public class HTMLCollectionTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "exception",
-            IE = "b2-button2")
+    @Alerts("exception")
     public void functionIndex_ByName() throws Exception {
         functionIndex("'button2'");
     }
@@ -747,8 +724,7 @@ public class HTMLCollectionTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "exception",
-            IE = "undefined")
+    @Alerts("exception")
     public void functionIndex_NegativIndex() throws Exception {
         functionIndex("-1");
     }
@@ -757,8 +733,7 @@ public class HTMLCollectionTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "exception",
-            IE = "b1-button1")
+    @Alerts("exception")
     public void functionIndex_ZeroIndex() throws Exception {
         functionIndex("0");
     }
@@ -767,8 +742,7 @@ public class HTMLCollectionTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "exception",
-            IE = "b2-button2")
+    @Alerts("exception")
     public void functionIndex_ValidIndex() throws Exception {
         functionIndex("1");
     }
@@ -777,8 +751,7 @@ public class HTMLCollectionTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "exception",
-            IE = "b2-button2")
+    @Alerts("exception")
     public void functionIndex_DoubleIndex() throws Exception {
         functionIndex("1.1");
     }
@@ -787,8 +760,7 @@ public class HTMLCollectionTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "exception",
-            IE = "undefined")
+    @Alerts("exception")
     public void functionIndex_InvalidIndex() throws Exception {
         functionIndex("2");
     }
@@ -797,8 +769,7 @@ public class HTMLCollectionTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "exception",
-            IE = "undefined")
+    @Alerts("exception")
     public void functionIndex_IndexAsString() throws Exception {
         functionIndex("'2'");
     }
@@ -944,8 +915,7 @@ public class HTMLCollectionTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "b2-button2",
-            IE = "null")
+    @Alerts("b2-button2")
     public void namedItem_IndexAsString() throws Exception {
         item("'1'");
     }
@@ -954,8 +924,7 @@ public class HTMLCollectionTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "b2-button2",
-            IE = "null")
+    @Alerts("b2-button2")
     public void namedItem_IndexDoubleAsString() throws Exception {
         item("'1.1'");
     }
@@ -1003,8 +972,7 @@ public class HTMLCollectionTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"1", "1"},
-            IE = "Type error")
+    @Alerts({"1", "1"})
     public void setLength() throws Exception {
         final String html
             = "<html>\n"
@@ -1030,8 +998,7 @@ public class HTMLCollectionTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"1", "Type error"},
-            IE = "Type error")
+    @Alerts({"1", "Type error"})
     public void setLengthStrictMode() throws Exception {
         final String html
             = "<html>\n"

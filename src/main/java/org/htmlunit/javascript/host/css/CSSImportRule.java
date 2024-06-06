@@ -14,12 +14,6 @@
  */
 package org.htmlunit.javascript.host.css;
 
-import static org.htmlunit.BrowserVersionFeatures.CSS_CSSTEXT_IE_STYLE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-
 import org.htmlunit.css.CssMediaList;
 import org.htmlunit.css.CssStyleSheet;
 import org.htmlunit.cssparser.dom.CSSImportRuleImpl;
@@ -51,7 +45,7 @@ public class CSSImportRule extends CSSRule {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     @Override
     public void jsConstructor() {
         super.jsConstructor();
@@ -111,17 +105,5 @@ public class CSSImportRule extends CSSRule {
      */
     private CSSImportRuleImpl getImportRule() {
         return (CSSImportRuleImpl) getRule();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getCssText() {
-        String cssText = super.getCssText();
-        if (getBrowserVersion().hasFeature(CSS_CSSTEXT_IE_STYLE)) {
-            cssText = REPLACEMENT_IE.matcher(cssText).replaceFirst("url( $1 )");
-        }
-        return cssText;
     }
 }

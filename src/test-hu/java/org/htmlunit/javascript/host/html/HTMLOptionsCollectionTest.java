@@ -17,7 +17,6 @@ package org.htmlunit.javascript.host.html;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -458,8 +457,7 @@ public class HTMLOptionsCollectionTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "undefined",
-            IE = "null")
+    @Alerts("undefined")
     public void getThree() throws Exception {
         get("3", false);
     }
@@ -468,8 +466,7 @@ public class HTMLOptionsCollectionTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "undefined",
-            IE = "null")
+    @Alerts("undefined")
     public void getTenEmpty() throws Exception {
         get("10", true);
     }
@@ -478,8 +475,7 @@ public class HTMLOptionsCollectionTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "undefined",
-            IE = "null")
+    @Alerts("undefined")
     public void getTen() throws Exception {
         get("10", false);
     }
@@ -738,8 +734,7 @@ public class HTMLOptionsCollectionTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "0",
-            IE = "exception")
+    @Alerts("0")
     public void removeMinusOneEmpty() throws Exception {
         remove("-1", true, false);
     }
@@ -748,8 +743,7 @@ public class HTMLOptionsCollectionTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "0",
-            IE = "exception")
+    @Alerts("0")
     public void removeMinusOneEmptyMulti() throws Exception {
         remove("-1", true, true);
     }
@@ -758,8 +752,7 @@ public class HTMLOptionsCollectionTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"3", "One", "Two*", "Three"},
-            IE = "exception")
+    @Alerts({"3", "One", "Two*", "Three"})
     public void removeMinusOne() throws Exception {
         remove("-1", false, false);
     }
@@ -768,8 +761,7 @@ public class HTMLOptionsCollectionTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"3", "One", "Two*", "Three*"},
-            IE = "exception")
+    @Alerts({"3", "One", "Two*", "Three*"})
     public void removeMinusOneMulti() throws Exception {
         remove("-1", false, true);
     }
@@ -959,8 +951,7 @@ public class HTMLOptionsCollectionTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"0", "1", "One", "3", "One", "Two", "Three"},
-            IE = {"exception", "exception", "exception"})
+    @Alerts({"0", "1", "One", "3", "One", "Two", "Three"})
     public void setLengthMinusOne() throws Exception {
         setLength("-1");
     }
@@ -1109,9 +1100,7 @@ public class HTMLOptionsCollectionTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"1", "false", "true", "false", "false"},
-            IE = {"1", "true", "true", "true", "true"})
-    @HtmlUnitNYI(IE = {"1", "false", "true", "true", "true"})
+    @Alerts({"1", "false", "true", "false", "false"})
     public void in() throws Exception {
         final String html
             = "<html><head><script>\n"

@@ -34,8 +34,7 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"102", "111", "111", "160", "97", "110", "100", "160", "102", "111", "111"},
-            IE = "error")
+    @Alerts({"102", "111", "111", "160", "97", "110", "100", "160", "102", "111", "111"})
     public void optionText() throws Exception {
         final String content = "<html><head>\n"
             + "<script>\n"
@@ -62,8 +61,7 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "[object HTMLParagraphElement][object HTMLDivElement]",
-            IE = "error")
+    @Alerts("[object HTMLParagraphElement][object HTMLDivElement]")
     public void pipe() throws Exception {
         final String content = "<html>\n"
             + "<head>\n"
@@ -93,8 +91,7 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "a",
-            IE = "error")
+    @Alerts("a")
     public void math() throws Exception {
         final String content = "<html>\n"
             + "<head>\n"
@@ -126,8 +123,7 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "b",
-            IE = "error")
+    @Alerts("b")
     public void gt() throws Exception {
         compare("//p[position()>1]");
     }
@@ -136,8 +132,7 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "ab",
-            IE = "error")
+    @Alerts("ab")
     public void gte() throws Exception {
         compare("//p[position()>=1]");
     }
@@ -146,8 +141,7 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "a",
-            IE = "error")
+    @Alerts("a")
     public void lt() throws Exception {
         compare("//p[position()<2]");
     }
@@ -156,8 +150,7 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "ab",
-            IE = "error")
+    @Alerts("ab")
     public void lte() throws Exception {
         compare("//p[position()<=2]");
     }
@@ -166,8 +159,7 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "b",
-            IE = "error")
+    @Alerts("b")
     public void eq() throws Exception {
         compare("//p[position()=2]");
     }
@@ -176,8 +168,7 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "b",
-            IE = "error")
+    @Alerts("b")
     public void neq() throws Exception {
         compare("//p[position()!=1]");
     }
@@ -186,8 +177,7 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "a",
-            IE = "error")
+    @Alerts("a")
     public void and() throws Exception {
         compare("//p[@x>= 0 and @y=7]");
     }
@@ -196,8 +186,7 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "ab",
-            IE = "error")
+    @Alerts("ab")
     public void or() throws Exception {
         compare("//p[@x>= 0 or @y>4]");
     }
@@ -206,8 +195,7 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "ab",
-            IE = "error")
+    @Alerts("ab")
     public void mod() throws Exception {
         compare("//p[@y mod 6 = 1]");
     }
@@ -216,8 +204,7 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "'adc'",
-            IE = "error")
+    @Alerts("'adc'")
     public void translate() throws Exception {
         compareStringValue("translate(\"abc\", \"b\", \"d\")");
     }
@@ -226,8 +213,7 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "error")
+    @Alerts("true")
     public void trueTest() throws Exception {
         compareBooleanValue("true()");
     }
@@ -236,8 +222,7 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "false",
-            IE = "error")
+    @Alerts("false")
     public void falseTest() throws Exception {
         compareBooleanValue("false()");
     }
@@ -246,8 +231,7 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "error")
+    @Alerts("true")
     public void booleanTest() throws Exception {
         compareBooleanValue("boolean(7)");
     }
@@ -256,8 +240,7 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "false",
-            IE = "error")
+    @Alerts("false")
     public void booleanTestFalse() throws Exception {
         compareBooleanValue("boolean(0)");
     }
@@ -266,8 +249,7 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "b",
-            IE = "error")
+    @Alerts("b")
     public void number() throws Exception {
         compare("//p[@y=number(\"  13\t \")]");
     }
@@ -276,8 +258,7 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "'tml'",
-            IE = "error")
+    @Alerts("'tml'")
     public void substring() throws Exception {
         compareStringValue("substring(\"HtmlUnit\", 2, 3)");
     }
@@ -286,16 +267,14 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "''",
-            IE = "error")
+    @Alerts("''")
     public void substringWithNegativeLength() throws Exception {
         compareStringValue("substring(\"HtmlUnit\", 2, -1)");
     }
 
     /** @throws Exception in case of problems */
     @Test
-    @Alerts(DEFAULT = "''",
-            IE = "error")
+    @Alerts("''")
     public void substringNegativeStartWithLength() throws Exception {
         compareStringValue("substring(\"HtmlUnit\", -50, 20)");
     }
@@ -304,8 +283,7 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "'Unit'",
-            IE = "error")
+    @Alerts("'Unit'")
     public void substringAfter() throws Exception {
         compareStringValue("substring-after(\"HtmlUnit\", \"tml\")");
     }
@@ -314,8 +292,7 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "'Html'",
-            IE = "error")
+    @Alerts("'Html'")
     public void substringBefore() throws Exception {
         compareStringValue("substring-before(\"HtmlUnit\", \"Uni\")");
     }
@@ -324,8 +301,7 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "false",
-            IE = "error")
+    @Alerts("false")
     public void not() throws Exception {
         compareBooleanValue("not(\"HtmlUnit\")");
     }
@@ -334,8 +310,7 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "a",
-            IE = "error")
+    @Alerts("a")
     public void attrib() throws Exception {
         compare("//p[@x=1]");
     }
@@ -428,8 +403,7 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "mySpan",
-            IE = "error")
+    @Alerts("mySpan")
     public void minimalParameters() throws Exception {
         final String content = "<html>\n"
             + "<head>\n"
@@ -458,8 +432,7 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "mySpan",
-            IE = "error")
+    @Alerts("mySpan")
     public void undefinedResult() throws Exception {
         final String content = "<html>\n"
             + "<head>\n"
@@ -519,8 +492,7 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "mySpan",
-            IE = "error")
+    @Alerts("mySpan")
     public void objectResult() throws Exception {
         final String content = "<html>\n"
             + "<head>\n"
@@ -552,8 +524,7 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "mySpan - - myDiv",
             FF = "mySpan - myDiv - ",
-            FF_ESR = "mySpan - myDiv - ",
-            IE = "error")
+            FF_ESR = "mySpan - myDiv - ")
     public void reuseResult() throws Exception {
         final String content = "<html>\n"
             + "<head>\n"
@@ -596,8 +567,7 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "myDiv1",
-            IE = "error")
+    @Alerts("myDiv1")
     public void documentEvaluateFirst() throws Exception {
         final String content = "<html>\n"
             + "<head>\n"

@@ -19,7 +19,6 @@ import org.htmlunit.javascript.host.css.CSSStyleDeclaration;
 import org.htmlunit.javascript.host.css.ComputedCSSStyleDeclaration;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -39,9 +38,7 @@ public class StyleAttributesIterable2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "done",
-            IE = {"in style", "done"})
-    @HtmlUnitNYI(IE = {"in style", "in computed style", "done"})
+    @Alerts("done")
     public void notInComputed() throws Exception {
         styleVsComputed("pixelBottom");
     }

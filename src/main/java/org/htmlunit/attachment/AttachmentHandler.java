@@ -20,6 +20,7 @@ import java.util.Locale;
 import org.htmlunit.HttpHeader;
 import org.htmlunit.Page;
 import org.htmlunit.WebResponse;
+import org.htmlunit.util.MimeType;
 
 /**
  * <p>A handler for attachments, which represent pages received from the server which contain
@@ -41,6 +42,7 @@ import org.htmlunit.WebResponse;
  * @author Daniel Gredler
  * @author Ronald Brill
  * @author Alex Gorbatovsky
+ * @author Lai Quang Duong
  * @see org.htmlunit.WebClient#setAttachmentHandler(AttachmentHandler)
  * @see org.htmlunit.WebClient#getAttachmentHandler()
  * @see <a href="http://www.ietf.org/rfc/rfc2183.txt">RFC 2183</a>
@@ -50,11 +52,12 @@ public interface AttachmentHandler extends Serializable {
     /**
      * Handles the specified attached page. This is some kind of information
      * that the page was handled as attachment.
-     * This method will only be called if {@link #handleAttachment(WebResponse)}
+     * This method will only be called if {@link #handleAttachment(WebResponse, String)}
      * has returned false for the response.
      * @param page an attached page, which doesn't get loaded inline
+     * @param attachmentFilename the filename to use for the attachment or {@code null} if unspecified
      */
-    void handleAttachment(Page page);
+    void handleAttachment(Page page, String attachmentFilename);
 
     /**
      * Process the specified attachment. If this method returns false,
@@ -63,10 +66,11 @@ public interface AttachmentHandler extends Serializable {
      * Overwrite this method (and return true) if you do not need to create
      * a new window for the response.
      * @param response the response to process
+     * @param attachmentFilename the filename to use for the attachment or {@code null} if unspecified
      * @return {@code true} if the specified response represents is handled by this method
      * @see <a href="http://www.ietf.org/rfc/rfc2183.txt">RFC 2183</a>
      */
-    default boolean handleAttachment(final WebResponse response) {
+    default boolean handleAttachment(final WebResponse response, final String attachmentFilename) {
         return false;
     }
 
@@ -79,7 +83,12 @@ public interface AttachmentHandler extends Serializable {
     default boolean isAttachment(final WebResponse response) {
         final String disp = response.getResponseHeaderValue(HttpHeader.CONTENT_DISPOSITION);
         if (disp == null) {
-            return false;
+            // if there is no content disposition header and content type 'application/octet-stream'
+            // is handled like an attachment by the browsers
+            // https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types#applicationoctet-stream
+            // They treat it as if the Content-Disposition header was set to attachment, and propose a "Save As" dialog.
+            final String contentType = response.getResponseHeaderValue(HttpHeader.CONTENT_TYPE);
+            return MimeType.APPLICATION_OCTET_STREAM.equals(contentType.toLowerCase(Locale.ROOT));
         }
         return disp.toLowerCase(Locale.ROOT).startsWith("attachment");
     }

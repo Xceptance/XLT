@@ -148,8 +148,7 @@ public class JavaScriptEngine2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "function foo() {}", "function foo() {}", "function foo() {}"},
-            IE = {"function foo() {}", "function foo() {}", "function foo() {}", "function foo() {}"})
+    @Alerts({"undefined", "function foo() {}", "function foo() {}", "function foo() {}"})
     @HtmlUnitNYI(CHROME = {"function foo() {}", "function foo() {}", "function foo() {}", "function foo() {}"},
             EDGE = {"function foo() {}", "function foo() {}", "function foo() {}", "function foo() {}"},
             FF = {"function foo() {}", "function foo() {}", "function foo() {}", "function foo() {}"},
@@ -213,11 +212,9 @@ public class JavaScriptEngine2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"function Window() { [native code] }", "function Window() { [native code] }", "true",
-                       "function HTMLDocument() { [native code] }", "function HTMLDocument() { [native code] }",
-                       "true", "function"},
-            IE = {"[object Window]", "[object Window]", "true",
-                  "[object HTMLDocument]", "[object HTMLDocument]", "true", "function"})
+    @Alerts({"function Window() { [native code] }", "function Window() { [native code] }", "true",
+             "function HTMLDocument() { [native code] }", "function HTMLDocument() { [native code] }",
+             "true", "function"})
     public void constructor() throws Exception {
         final String html = "<html><head></head><body>\n"
             + "<script>\n"
@@ -449,8 +446,7 @@ public class JavaScriptEngine2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"0", "false", "0"},
-            IE = {"1", "true", "1"})
+    @Alerts({"0", "false", "0"})
     public void nativeFunction_toStringValue() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -476,8 +472,7 @@ public class JavaScriptEngine2Test extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = "1",
             EDGE = "1",
             FF = "1",
-            FF_ESR = "1",
-            IE = "1")
+            FF_ESR = "1")
     public void onloadJavascriptFunction() throws Exception {
         final String html
             = "<html><head>\n"
@@ -917,9 +912,7 @@ public class JavaScriptEngine2Test extends WebDriverTestCase {
                     "f10", "f11", "f12", "f10", "f11", "f12", "f13"},
             FF = {"f1", "f2", "f3", "!f4", "f5", "!f6", "!f7", "!f8", "f10", "f11", "f12", "f10", "f11", "f12", "f13"},
             FF_ESR = {"f1", "f2", "f3", "!f4", "f5", "!f6", "!f7", "!f8",
-                      "f10", "f11", "f12", "f10", "f11", "f12", "f13"},
-            IE = {"f1", "f2", "f3", "!f4", "f5", "!f6", "!f7", "!f8",
-                  "f10", "f11", "f12", "f10", "f11", "f12", "f13"})
+                      "f10", "f11", "f12", "f10", "f11", "f12", "f13"})
     public void functioNamesExceptionsStrict() throws Exception {
         final String html = "<html><head>\n"
                 + "<script>\n"
@@ -1111,9 +1104,7 @@ public class JavaScriptEngine2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"1", "2"},
-            IE = {})
-    @HtmlUnitNYI(IE = {"1", "2"})
+    @Alerts({"1", "2"})
     public void constInOfLoop() throws Exception {
         final String html = "<html><head>\n"
                 + "<script>\n"

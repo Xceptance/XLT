@@ -16,7 +16,6 @@ package org.htmlunit;
 
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.htmlunit.BrowserVersion.INTERNET_EXPLORER;
 import static org.junit.Assert.fail;
 
 import java.io.File;
@@ -53,6 +52,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
@@ -99,9 +99,6 @@ import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.firefox.GeckoDriverService;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitWebElement;
-import org.openqa.selenium.ie.InternetExplorerDriver;
-import org.openqa.selenium.ie.InternetExplorerDriverService;
-import org.openqa.selenium.ie.InternetExplorerOptions;
 import org.openqa.selenium.remote.Browser;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.UnreachableBrowserException;
@@ -123,7 +120,7 @@ import org.openqa.selenium.remote.UnreachableBrowserException;
  * The file could contain some properties:
  * <ul>
  *   <li>browsers: is a comma separated list contains any combination of "hu" (for HtmlUnit with all browser versions),
- *   "hu-ie", "hu-ff-esr", "ff", "ie", "chrome", which will be used to drive real browsers</li>
+ *   "hu-ff", "hu-ff-esr", "ff", "chrome", which will be used to drive real browsers</li>
  *
  *   <li>chrome.bin (mandatory if it does not exist in the <i>path</i>): is the location of the ChromeDriver binary (see
  *   <a href="http://chromedriver.storage.googleapis.com/index.html">Chrome Driver downloads</a>)</li>
@@ -171,6 +168,13 @@ public abstract class WebDriverTestCase extends WebTestCase {
     public static final String LOG_WINDOW_NAME_FUNCTION =
             "  function log(msg) { window.top.name += msg + '\\u00a7'; }\n  window.top.name = '';";
 
+    /**
+     * Function used in many tests.
+     */
+    public static final String LOG_SESSION_STORAGE_FUNCTION =
+            "  function log(msg) { "
+            + "var l = sessionStorage.getItem('Log');"
+            + "sessionStorage.setItem('Log', (null === l?'':l) + msg + '\\u00a7'); }\n";
 
     /**
      * Function used in many tests.
@@ -195,8 +199,7 @@ public abstract class WebDriverTestCase extends WebTestCase {
             Arrays.asList(BrowserVersion.CHROME,
                     BrowserVersion.EDGE,
                     BrowserVersion.FIREFOX,
-                    BrowserVersion.FIREFOX_ESR,
-                    BrowserVersion.INTERNET_EXPLORER));
+                    BrowserVersion.FIREFOX_ESR));
 
     /**
      * Browsers which run by default.
@@ -205,14 +208,12 @@ public abstract class WebDriverTestCase extends WebTestCase {
         {BrowserVersion.CHROME,
             BrowserVersion.EDGE,
             BrowserVersion.FIREFOX,
-            BrowserVersion.FIREFOX_ESR,
-            BrowserVersion.INTERNET_EXPLORER};
+            BrowserVersion.FIREFOX_ESR};
 
     private static final Log LOG = LogFactory.getLog(WebDriverTestCase.class);
 
     private static Set<String> BROWSERS_PROPERTIES_;
     private static String CHROME_BIN_;
-    private static String IE_BIN_;
     private static String EDGE_BIN_;
     private static String GECKO_BIN_;
     private static String FF_BIN_;
@@ -270,7 +271,6 @@ public abstract class WebDriverTestCase extends WebTestCase {
                     BROWSERS_PROPERTIES_ = new HashSet<>(Arrays.asList(browsersValue.replaceAll(" ", "")
                             .toLowerCase(Locale.ROOT).split(",")));
                     CHROME_BIN_ = properties.getProperty("chrome.bin");
-                    IE_BIN_ = properties.getProperty("ie.bin");
                     EDGE_BIN_ = properties.getProperty("edge.bin");
 
                     GECKO_BIN_ = properties.getProperty("geckodriver.bin");
@@ -426,13 +426,6 @@ public abstract class WebDriverTestCase extends WebTestCase {
     }
 
     /**
-     * Closes the real IE browser drivers.
-     */
-    protected static void shutDownRealIE() {
-        shutDownReal(INTERNET_EXPLORER);
-    }
-
-    /**
      * Asserts all static servers are null.
      * @throws Exception if it fails
      */
@@ -497,20 +490,6 @@ public abstract class WebDriverTestCase extends WebTestCase {
      */
     protected WebDriver buildWebDriver() throws IOException {
         if (useRealBrowser()) {
-            if (BrowserVersion.INTERNET_EXPLORER == getBrowserVersion()) {
-                if (IE_BIN_ != null) {
-                    System.setProperty(InternetExplorerDriverService.IE_DRIVER_EXE_PROPERTY, IE_BIN_);
-                }
-
-                final InternetExplorerOptions options = new InternetExplorerOptions();
-                options.ignoreZoomSettings();
-
-                // clear the cookies - seems to be not done by the driver
-                final InternetExplorerDriver ieDriver = new InternetExplorerDriver(options);
-                ieDriver.manage().deleteAllCookies();
-                return ieDriver;
-            }
-
             if (BrowserVersion.EDGE == getBrowserVersion()) {
                 final EdgeDriverService service = new EdgeDriverService.Builder()
                         .withLogOutput(System.out)
@@ -838,8 +817,17 @@ public abstract class WebDriverTestCase extends WebTestCase {
 
             if (requestParameters.isEmpty() && request.getContentLength() > 0) {
                 final byte[] buffer = new byte[request.getContentLength()];
-                request.getInputStream().read(buffer, 0, buffer.length);
-                webRequest.setRequestBody(new String(buffer, webRequest.getCharset()));
+                IOUtils.read(request.getInputStream(), buffer, 0, buffer.length);
+
+                final String encoding = request.getCharacterEncoding();
+                if (encoding == null) {
+                    webRequest.setRequestBody(new String(buffer, ISO_8859_1));
+                    webRequest.setCharset(null);
+                }
+                else {
+                    webRequest.setRequestBody(new String(buffer, encoding));
+                    webRequest.setCharset(Charset.forName(encoding));
+                }
             }
             else {
                 webRequest.setRequestParameters(requestParameters);
@@ -1144,7 +1132,7 @@ public abstract class WebDriverTestCase extends WebTestCase {
         for (int i = 0; i < expectedAlerts.length; i++) {
             expected.append(expectedAlerts[i]).append('\u00A7');
         }
-        assertEquals(expected.toString(), textArea.getAttribute("value"));
+        verify(() -> textArea.getAttribute("value"), expected.toString());
 
         return driver;
     }
@@ -1189,6 +1177,16 @@ public abstract class WebDriverTestCase extends WebTestCase {
         }
 
         return verifyJsVariable(driver, "window.top.name", expected.toString());
+    }
+
+    protected final WebDriver verifySessionStorage2(final WebDriver driver,
+            final String... expectedAlerts) throws Exception {
+        final StringBuilder expected = new StringBuilder();
+        for (int i = 0; i < expectedAlerts.length; i++) {
+            expected.append(expectedAlerts[i]).append('\u00A7');
+        }
+
+        return verifyJsVariable(driver, "sessionStorage.getItem('Log')", expected.toString());
     }
 
     /**
@@ -1385,13 +1383,6 @@ public abstract class WebDriverTestCase extends WebTestCase {
                 // handling of alerts requires some time
                 // at least for tests with many alerts we have to take this into account
                 maxWait += 100;
-
-                if (useRealBrowser()) {
-                    if (getBrowserVersion().isIE()) {
-                        // alerts for real IE are really slow
-                        maxWait += 5000;
-                    }
-                }
             }
             catch (final NoAlertPresentException e) {
                 Thread.sleep(10);

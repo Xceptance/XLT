@@ -14,17 +14,10 @@
  */
 package org.htmlunit.javascript.host.dom;
 
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
-
 import java.util.HashSet;
 
 import org.apache.commons.logging.LogFactory;
 import org.htmlunit.SgmlPage;
-import org.htmlunit.corejs.javascript.Undefined;
 import org.htmlunit.html.DomDocumentFragment;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.html.impl.SimpleRange;
@@ -80,7 +73,7 @@ public class Range extends AbstractRange {
      * JavaScript constructor.
      */
     @Override
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
         super.jsConstructor();
     }
@@ -98,46 +91,6 @@ public class Range extends AbstractRange {
                 simpleRange.getEndContainer().getScriptableObject(),
                 simpleRange.getStartOffset(),
                 simpleRange.getEndOffset());
-    }
-
-    /**
-     * Gets the node within which the Range begins.
-     * @return <code>undefined</code> if not initialized
-     */
-    @JsxGetter(IE)
-    @Override
-    public Object getStartContainer() {
-        return super.getStartContainer();
-    }
-
-    /**
-     * Gets the node within which the Range ends.
-     * @return <code>undefined</code> if not initialized
-     */
-    @JsxGetter(IE)
-    @Override
-    public Object getEndContainer() {
-        return super.getEndContainer();
-    }
-
-    /**
-     * Gets the offset within the starting node of the Range.
-     * @return <code>0</code> if not initialized
-     */
-    @JsxGetter(IE)
-    @Override
-    public int getStartOffset() {
-        return super.getStartOffset();
-    }
-
-    /**
-     * Gets the offset within the end node of the Range.
-     * @return <code>0</code> if not initialized
-     */
-    @JsxGetter(IE)
-    @Override
-    public int getEndOffset() {
-        return super.getEndOffset();
     }
 
     /**
@@ -188,16 +141,6 @@ public class Range extends AbstractRange {
             i++;
         }
         return i;
-    }
-
-    /**
-     * Indicates if the range is collapsed.
-     * @return {@code true} if the range is collapsed
-     */
-    @JsxGetter(IE)
-    @Override
-    public boolean isCollapsed() {
-        return super.isCollapsed();
     }
 
     /**
@@ -299,7 +242,7 @@ public class Range extends AbstractRange {
             ancestor = ancestor.getParent();
         }
 
-        return Undefined.instance;
+        return JavaScriptEngine.Undefined;
     }
 
     /**

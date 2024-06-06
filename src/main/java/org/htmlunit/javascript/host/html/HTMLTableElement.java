@@ -14,18 +14,9 @@
  */
 package org.htmlunit.javascript.host.html;
 
-import static org.htmlunit.BrowserVersionFeatures.JS_TABLE_VALIGN_SUPPORTS_IE_VALUES;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
-
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 import java.util.function.Supplier;
 
 import org.htmlunit.html.DomNode;
@@ -57,8 +48,6 @@ import org.htmlunit.javascript.configuration.JsxSetter;
 @JsxClass(domClass = HtmlTable.class)
 public class HTMLTableElement extends RowContainer {
 
-    private static final List<String> VALID_RULES_ = Arrays.asList("none", "groups", "rows", "cols");
-
     /**
      * Creates an instance.
      */
@@ -69,7 +58,7 @@ public class HTMLTableElement extends RowContainer {
      * JavaScript constructor.
      */
     @Override
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
         super.jsConstructor();
     }
@@ -388,60 +377,6 @@ public class HTMLTableElement extends RowContainer {
     }
 
     /**
-     * Gets the {@code borderColor} property.
-     * @return the property
-     */
-    @JsxGetter(IE)
-    public String getBorderColor() {
-        return getDomNodeOrDie().getAttribute("borderColor");
-    }
-
-    /**
-     * Sets the {@code borderColor} property.
-     * @param borderColor the new property
-     */
-    @JsxSetter(IE)
-    public void setBorderColor(final String borderColor) {
-        setColorAttribute("borderColor", borderColor);
-    }
-
-    /**
-     * Gets the {@code borderColor} property.
-     * @return the property
-     */
-    @JsxGetter(IE)
-    public String getBorderColorDark() {
-        return getDomNodeOrDie().getAttribute("borderColorDark");
-    }
-
-    /**
-     * Sets the {@code borderColor} property.
-     * @param borderColor the new property
-     */
-    @JsxSetter(IE)
-    public void setBorderColorDark(final String borderColor) {
-        setColorAttribute("borderColorDark", borderColor);
-    }
-
-    /**
-     * Gets the {@code borderColor} property.
-     * @return the property
-     */
-    @JsxGetter(IE)
-    public String getBorderColorLight() {
-        return getDomNodeOrDie().getAttribute("borderColorLight");
-    }
-
-    /**
-     * Sets the {@code borderColor} property.
-     * @param borderColor the new property
-     */
-    @JsxSetter(IE)
-    public void setBorderColorLight(final String borderColor) {
-        setColorAttribute("borderColorLight", borderColor);
-    }
-
-    /**
      * {@inheritDoc}
      */
     @Override
@@ -485,12 +420,7 @@ public class HTMLTableElement extends RowContainer {
      */
     @JsxGetter
     public String getRules() {
-        String rules = getDomNodeOrDie().getAttributeDirect("rules");
-        if (getBrowserVersion().hasFeature(JS_TABLE_VALIGN_SUPPORTS_IE_VALUES)
-                && !VALID_RULES_.contains(rules)) {
-            rules = "";
-        }
-        return rules;
+        return getDomNodeOrDie().getAttributeDirect("rules");
     }
 
     /**
@@ -498,13 +428,7 @@ public class HTMLTableElement extends RowContainer {
      * @param rules the new property
      */
     @JsxSetter
-    public void setRules(String rules) {
-        if (getBrowserVersion().hasFeature(JS_TABLE_VALIGN_SUPPORTS_IE_VALUES)) {
-            rules = rules.toLowerCase(Locale.ROOT);
-            if (!rules.isEmpty() && !VALID_RULES_.contains(rules)) {
-                throw JavaScriptEngine.throwAsScriptRuntimeEx(new Exception("Invalid argument"));
-            }
-        }
+    public void setRules(final String rules) {
         setAttribute("rules", rules);
     }
 
