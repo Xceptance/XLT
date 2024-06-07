@@ -80,6 +80,11 @@ public final class XltConstants
     public static final String XML_FILE_EXTENSION = ".xml";
 
     /**
+     * The extension of JSON files, such as my-config.json.
+     */
+    public static final String JSON_FILE_EXTENSION = ".json";
+
+    /**
      * The name of the system property which holds the agent configuration directory.
      */
     public static final String CONFIG_DIR_PROPERTY = XLT_PACKAGE_PATH + ".agent.config";
@@ -460,4 +465,33 @@ public final class XltConstants
      * The name if we want to clean the user info
      */
     public static final String PROP_REMOVE_USERINFO_FROM_REQUEST_URL = XltConstants.XLT_PACKAGE_PATH + ".results.data.request.removeUserInfoFromURL";
+
+    /*
+     * Auto-evaluation configuration values
+     */
+
+    /**
+     * The property name for path to auto-evaluation configuration file.
+     */
+    public static final String EVALUATION_CONFIG_FILE_PROPERTY = XLT_PACKAGE_PATH + ".evaluation.config";
+
+    /**
+     * The XML file name for auto-evaluation.
+     */
+    public static final String EVALUATION_REPORT_XML_FILENAME = "evaluation.xml";
+
+    /**
+     * The path of the directory with all XSL files for auto-evaluation rendering.
+     */
+    public static final String EVALUATION_REPORT_XSL_PATH = "xsl/evaluation";
+
+    /**
+     * The name of the XSL file for rendering the auto-evaluation report.
+     */
+    public static final String EVALUATION_REPORT_XSL_FILENAME = "index.xsl";
+
+    /**
+     * The name of the HTML output file for rendering the auto-evaluation report.
+     */
+    public static final String EVALUATION_REPORT_HTML_FILENAME = "evaluation.html";
 }

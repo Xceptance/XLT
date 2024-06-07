@@ -40,11 +40,11 @@
 <xsl:param name="productVersion" />
 <xsl:param name="productUrl" />
 <xsl:param name="projectName" />
+<xsl:param name="evaluationPresent" />
 
 <xsl:template match="/testreport">
 
-<xsl:text disable-output-escaping="yes">&lt;!</xsl:text><xsl:text>DOCTYPE html</xsl:text><xsl:text disable-output-escaping="yes">&gt;&#13;</xsl:text>
-<html lang="en">    
+<html lang="en">
 <head>
     <xsl:call-template name="head">
         <xsl:with-param name="title" select="'XLT Report - Page Load Timings'" />
@@ -54,7 +54,9 @@
 <body id="loadtestreport">
 <div id="container">
     <div id="content">
-        <xsl:call-template name="header" />
+        <xsl:call-template name="header">
+            <xsl:with-param name="evaluationPresent" select="$evaluationPresent" />
+        </xsl:call-template>
 
         <div id="data-content">
 
