@@ -63,12 +63,10 @@ public final class BrowserVersionDeterminer {
         if (browserName.equalsIgnoreCase(BrowserVersion.CHROME.getNickname())
                 || "googlechrome".equalsIgnoreCase(browserName)) {
             browserVersionObject = BrowserVersion.CHROME;
-
         }
         else if (browserName.equalsIgnoreCase(BrowserVersion.EDGE.getNickname())
                 || "MicrosoftEdge".equalsIgnoreCase(browserName)) {
             browserVersionObject = BrowserVersion.EDGE;
-
         }
         else if (browserName.equalsIgnoreCase(BrowserVersion.FIREFOX.getNickname())
                 || "firefox".equalsIgnoreCase(browserName)) {

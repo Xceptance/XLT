@@ -33,10 +33,12 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.WeakHashMap;
@@ -51,6 +53,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import javax.net.ssl.SSLHandshakeException;
 
 import org.htmlunit.BrowserVersion;
+import org.htmlunit.CookieManager;
 import org.htmlunit.Page;
 import org.htmlunit.ProxyConfig;
 import org.htmlunit.ScriptResult;
@@ -88,7 +91,9 @@ import org.htmlunit.platform.AwtClipboardHandler;
 import org.htmlunit.util.UrlUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Capabilities;
+import org.openqa.selenium.Cookie;
 import org.openqa.selenium.HasCapabilities;
+import org.openqa.selenium.InvalidCookieDomainException;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.NoSuchSessionException;
 import org.openqa.selenium.NoSuchWindowException;
@@ -96,14 +101,17 @@ import org.openqa.selenium.Platform;
 import org.openqa.selenium.Proxy;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.TimeoutException;
+import org.openqa.selenium.UnableToSetCookieException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.WrapsElement;
+import com.xceptance.xlt.engine.xltdriver.logging.HtmlUnitLogs;
 import com.xceptance.xlt.engine.xltdriver.w3.Action;
 import com.xceptance.xlt.engine.xltdriver.w3.Algorithms;
 import org.openqa.selenium.interactions.Interactive;
 import org.openqa.selenium.interactions.Sequence;
+import org.openqa.selenium.logging.Logs;
 import org.openqa.selenium.remote.Browser;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
@@ -210,8 +218,7 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor, HasCapabil
     /**
      * The browserName is {@link Browser#HTMLUNIT} "htmlunit" and the
      * browserVersion denotes the required browser AND its version. For example
-     * "chrome" for Chrome, "firefox-100" for Firefox 100 or "internet explorer" for
-     * IE.
+     * "chrome" for Chrome, "firefox-100" for Firefox 100.
      *
      * @param capabilities desired capabilities requested for the htmlunit driver
      *                     session
@@ -278,7 +285,7 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor, HasCapabil
         get(clientOptions.getHomePage());
         */
 
-        options_ = new HtmlUnitOptions(this);
+        options_ = new HtmlUnitWebDriverOptions(this);
         targetLocator_ = new HtmlUnitTargetLocator(this);
 
         webClient_.addWebWindowListener(new WebWindowListener() {
@@ -1280,7 +1287,7 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor, HasCapabil
         return currentWindow_;
     }
 
-    private class HtmlUnitNavigation implements Navigation {
+    private final class HtmlUnitNavigation implements Navigation {
 
         @Override
         public void back() {
@@ -1417,5 +1424,174 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor, HasCapabil
     public void openNewWindow() {
         final WebWindow newWindow = webClient_.openWindow(UrlUtils.URL_ABOUT_BLANK, "");
         currentWindow_ = new HtmlUnitWindow(newWindow);
+    }
+
+    protected class HtmlUnitWebDriverOptions implements WebDriver.Options {
+        private final HtmlUnitLogs logs_;
+        private final HtmlUnitDriver driver_;
+        private final HtmlUnitTimeouts timeouts_;
+
+        protected HtmlUnitWebDriverOptions(final HtmlUnitDriver driver) {
+            driver_ = driver;
+            logs_ = new HtmlUnitLogs(getWebClient());
+            timeouts_ = new HtmlUnitTimeouts(getWebClient());
+        }
+
+        @Override
+        public Logs logs() {
+            return logs_;
+        }
+
+        @Override
+        public void addCookie(final Cookie cookie) {
+            final Page page = window().lastPage();
+            if (!(page instanceof HtmlPage)) {
+                throw new UnableToSetCookieException("You may not set cookies on a page that is not HTML");
+            }
+
+            final String domain = getDomainForCookie();
+            verifyDomain(cookie, domain);
+
+            getWebClient().getCookieManager().addCookie(
+                    new org.htmlunit.util.Cookie(
+                            domain,
+                            cookie.getName(),
+                            cookie.getValue(),
+                            cookie.getPath(),
+                            cookie.getExpiry(),
+                            cookie.isSecure(),
+                            cookie.isHttpOnly(),
+                            cookie.getSameSite()));
+        }
+
+        private void verifyDomain(final Cookie cookie, String expectedDomain) {
+            String domain = cookie.getDomain();
+            if (domain == null) {
+                return;
+            }
+
+            if ("".equals(domain)) {
+                throw new InvalidCookieDomainException(
+                        "Domain must not be an empty string. Consider using null instead");
+            }
+
+            // Line-noise-tastic
+            if (domain.matches(".*[^:]:\\d+$")) {
+                domain = domain.replaceFirst(":\\d+$", "");
+            }
+
+            expectedDomain = expectedDomain.startsWith(".") ? expectedDomain : "." + expectedDomain;
+            domain = domain.startsWith(".") ? domain : "." + domain;
+
+            if (!expectedDomain.endsWith(domain)) {
+                throw new InvalidCookieDomainException(
+                        String.format("You may only add cookies that would be visible to the current domain: %s => %s",
+                                domain, expectedDomain));
+            }
+        }
+
+        @Override
+        public Cookie getCookieNamed(final String name) {
+            final Set<Cookie> allCookies = getCookies();
+            for (final Cookie cookie : allCookies) {
+                if (name.equals(cookie.getName())) {
+                    return cookie;
+                }
+            }
+
+            return null;
+        }
+
+        @Override
+        public void deleteCookieNamed(final String name) {
+            final CookieManager cookieManager = getWebClient().getCookieManager();
+
+            final URL url = getRawUrl();
+            final Set<org.htmlunit.util.Cookie> rawCookies = getWebClient().getCookies(url);
+            for (final org.htmlunit.util.Cookie cookie : rawCookies) {
+                if (name.equals(cookie.getName())) {
+                    cookieManager.removeCookie(cookie);
+                }
+            }
+        }
+
+        @Override
+        public void deleteCookie(final Cookie cookie) {
+            getWebClient().getCookieManager().removeCookie(convertSeleniumCookieToHtmlUnit(cookie));
+        }
+
+        @Override
+        public void deleteAllCookies() {
+            final CookieManager cookieManager = getWebClient().getCookieManager();
+
+            final URL url = getRawUrl();
+            final Set<org.htmlunit.util.Cookie> rawCookies = getWebClient().getCookies(url);
+            for (final org.htmlunit.util.Cookie cookie : rawCookies) {
+                cookieManager.removeCookie(cookie);
+            }
+        }
+
+        @Override
+        public Set<Cookie> getCookies() {
+            final URL url = getRawUrl();
+
+            // The about:blank URL (the default in case no navigation took place)
+            // does not have a valid 'hostname' part and cannot be used for creating
+            // cookies based on it - return an empty set.
+
+            if (!url.toString().startsWith("http")) {
+                return Collections.emptySet();
+            }
+
+            final Set<Cookie> result = new HashSet<>();
+            for (final org.htmlunit.util.Cookie c : getWebClient().getCookies(url)) {
+                result .add(
+                        new Cookie.Builder(c.getName(), c.getValue())
+                        .domain(c.getDomain())
+                        .path(c.getPath())
+                        .expiresOn(c.getExpires())
+                        .isSecure(c.isSecure())
+                        .isHttpOnly(c.isHttpOnly())
+                        .sameSite(c.getSameSite())
+                        .build());
+            }
+
+            return Collections.unmodifiableSet(result);
+        }
+
+        private org.htmlunit.util.Cookie convertSeleniumCookieToHtmlUnit(final Cookie cookie) {
+            return new org.htmlunit.util.Cookie(
+                    cookie.getDomain(),
+                    cookie.getName(),
+                    cookie.getValue(),
+                    cookie.getPath(),
+                    cookie.getExpiry(),
+                    cookie.isSecure(),
+                    cookie.isHttpOnly(),
+                    cookie.getSameSite());
+        }
+
+        private String getDomainForCookie() {
+            final URL current = getRawUrl();
+            return current.getHost();
+        }
+
+        private WebClient getWebClient() {
+            return driver_.getWebClient();
+        }
+
+        @Override
+        public WebDriver.Timeouts timeouts() {
+            return timeouts_;
+        }
+
+        @Override
+        public HtmlUnitWindow window() {
+            return driver_.getCurrentWindow();
+        }
+
+        private URL getRawUrl() {
+            return Optional.ofNullable(window().lastPage()).map(Page::getUrl).orElse(null);
+        }
     }
 }

@@ -167,8 +167,7 @@ public class HtmlUnitAlert implements Alert {
             throw new NoAlertPresentException();
         }
         String msg = holder_.message_;
-        msg = msg.replace("\r\n", "\n");
-        msg = msg.replace('\r', '\n');
+        msg = msg.replace("\r\n", "\n").replace('\r', '\n');
         return msg;
     }
 
