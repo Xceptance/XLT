@@ -86,7 +86,7 @@ public class LoadTest
 
             // create runner for configuration
             final LoadTestRunner runner = new LoadTestRunner(config, agentInfo, timer);
-            runner.setDaemon(true);
+            //runner.setDaemon(true);
 
             // add runner to list of known runners
             testRunners.add(runner);

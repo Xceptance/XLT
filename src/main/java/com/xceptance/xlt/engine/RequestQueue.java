@@ -22,7 +22,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
 import com.xceptance.common.util.SynchronizingCounter;
-import com.xceptance.common.util.concurrent.DaemonThreadFactory;
 import com.xceptance.xlt.api.engine.Session;
 import com.xceptance.xlt.api.util.XltLogger;
 
@@ -81,7 +80,8 @@ public class RequestQueue
         this.threadCount = threadCount;
         parallelModeEnabled = true;
 
-        final ThreadFactory threadFactory = new DaemonThreadFactory(i -> Session.getCurrent().getUserID() + "-pool-" + i);
+        // final ThreadFactory threadFactory = new DaemonThreadFactory(i -> Session.getCurrent().getUserID() + "-pool-" + i);
+        final ThreadFactory threadFactory = new XltThreadFactory(true, Session.getCurrent().getUserID() + "-pool-");
 
         executorService = Executors.newFixedThreadPool(threadCount, threadFactory);
         ongoingRequestsCount = new SynchronizingCounter(0);

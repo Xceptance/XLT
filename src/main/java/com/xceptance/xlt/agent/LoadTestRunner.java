@@ -30,6 +30,7 @@ import com.xceptance.xlt.api.engine.DataManager;
 import com.xceptance.xlt.api.engine.GlobalClock;
 import com.xceptance.xlt.engine.DataManagerImpl;
 import com.xceptance.xlt.engine.SessionImpl;
+import com.xceptance.xlt.engine.XltThreadFactory;
 import com.xceptance.xlt.engine.util.TimerUtils;
 
 /**
@@ -40,12 +41,17 @@ import com.xceptance.xlt.engine.util.TimerUtils;
  *
  * @author Jörg Werner (Xceptance Software Technologies GmbH)
  */
-public class LoadTestRunner extends Thread
+public class LoadTestRunner
 {
     /**
      * Class logger instance.
      */
     private static final Logger log = LoggerFactory.getLogger(LoadTestRunner.class);
+
+    /**
+     * Class logger instance.
+     */
+    private static final XltThreadFactory XLT_THREAD_FACTORY = new XltThreadFactory(false, null);
 
     /**
      * Configuration.
@@ -73,6 +79,11 @@ public class LoadTestRunner extends Thread
     private volatile boolean aborted;
 
     /**
+     * The main thread of this user runner.
+     */
+    private final Thread thread;
+
+    /**
      * Creates a new LoadTestRunner object for the given load test configuration. Typically, multiple runners are
      * started for one test case configuration, so the number of the current runner is passed as well.
      *
@@ -85,16 +96,25 @@ public class LoadTestRunner extends Thread
      */
     public LoadTestRunner(final TestUserConfiguration config, final AgentInfo agentInfo, final AbstractExecutionTimer timer)
     {
-        // create a new thread group for each LoadTestRunner as a means
-        // to keep the main thread and any supporting threads together
-        super(new ThreadGroup(config.getUserId()), config.getUserId());
-
         this.config = config;
         this.agentInfo = agentInfo;
         this.timer = timer;
 
         status = new TestUserStatus();
         status.setUserName(config.getUserId());
+
+        thread = XLT_THREAD_FACTORY.newThread(this::run);
+        thread.setName(config.getUserId());
+    }
+
+    public void start()
+    {
+        thread.start();
+    }
+
+    public void join() throws InterruptedException
+    {
+        thread.join();
     }
 
     /**
@@ -110,8 +130,7 @@ public class LoadTestRunner extends Thread
     /**
      * Runs the test case as configured in the test case configuration.
      */
-    @Override
-    public void run()
+    private void run()
     {
         try
         {
@@ -196,7 +215,7 @@ public class LoadTestRunner extends Thread
         }
         catch (final Exception ex)
         {
-            log.error("Failed to run test as user: " + getName(), ex);
+            log.error("Failed to run test as user: " + thread.getName(), ex);
 
             status.setState(TestUserStatus.State.Failed);
             status.setException(ex);

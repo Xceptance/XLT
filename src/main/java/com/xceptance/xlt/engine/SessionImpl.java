@@ -83,14 +83,23 @@ public class SessionImpl extends Session
     private static final String UNKNOWN_USER_NAME = "UnknownUser";
 
     /**
-     * The Session instances keyed by thread group.
+     * All Session instances keyed by thread.
      */
-    private static final Map<ThreadGroup, SessionImpl> sessions = new ConcurrentHashMap<ThreadGroup, SessionImpl>(101);
+    private static final Map<Thread, SessionImpl> sessions = new ConcurrentHashMap<>(101);
 
     /**
-     * Name of the removeUserInfoFromURL property.
+     * The Session instance of the current thread.
      */
+    private static final InheritableThreadLocal<SessionImpl> session = new InheritableThreadLocal<>() {
 
+        @Override
+        protected SessionImpl initialValue()
+        {
+            // Thread.dumpStack();
+            return new SessionImpl(XltPropertiesImpl.getInstance());
+        }
+    };
+    
     /**
      * Returns the Session instance for the calling thread. If no such instance exists yet, it will be created.
      *
@@ -98,7 +107,11 @@ public class SessionImpl extends Session
      */
     public static SessionImpl getCurrent()
     {
-        return getSessionForThread(Thread.currentThread());
+        final SessionImpl sessionImpl = session.get();
+        
+        sessions.putIfAbsent(Thread.currentThread(), sessionImpl);
+        
+        return sessionImpl;
     }
 
     /**
@@ -109,44 +122,22 @@ public class SessionImpl extends Session
      */
     public static SessionImpl removeCurrent()
     {
-        return sessions.remove(Thread.currentThread().getThreadGroup());
+        final SessionImpl sess = session.get();
+
+        session.set(null);
+        sessions.remove(Thread.currentThread());
+        
+        return sess;
     }
 
     /**
-     * Returns the Session instance for the given thread. If no such instance exists yet, it will be created.
+     * Returns the Session instance for the given thread.
      *
      * @return the Session instance for the given thread
      */
     public static SessionImpl getSessionForThread(final Thread thread)
     {
-        final ThreadGroup threadGroup = thread.getThreadGroup();
-
-        if (threadGroup == null)
-        {
-            // the thread died in between so there is no session
-            return null;
-        }
-        else
-        {
-            SessionImpl s = sessions.get(threadGroup);
-
-            if (s == null)
-            {
-                synchronized (threadGroup)
-                {
-                    // check again because two threads might have waited at the
-                    // sync block and the first one created the session already
-                    s = sessions.get(threadGroup);
-                    if (s == null)
-                    {
-                        s = new SessionImpl(XltPropertiesImpl.getInstance());
-                        sessions.put(threadGroup, s);
-                    }
-                }
-            }
-
-            return s;
-        }
+        return sessions.get(thread);
     }
 
     /**
