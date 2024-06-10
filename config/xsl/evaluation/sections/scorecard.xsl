@@ -44,14 +44,14 @@
                                                 the 'ref-id' attribute of at least one 'rule' element node reachable via '$rootNode' having
                                                 status 'FAILED'.
                                             -->
-                                            <xsl:variable name="failedRules" select="filter($config//rule[@failsTest='true'], function($a){ count($rootNode//rule[normalize-space(status)='FAILED'][@ref-id=$a/@id]) &gt; 0 })" />
+                                            <xsl:variable name="failedRules" select="filter($config//rule[@failsTest='true' and @enabled='true'], function($a){ count($rootNode//rule[@testFailed='true'][@ref-id=$a/@id]) &gt; 0 })" />
                                            <!--
                                                 Lookup all 'group' definitions in configuration that have 'failsTest' attribute set to 'true',
                                                 collect the value of their 'id' attribute and filter out those that are not used as value for
                                                 the 'ref-id' attribute of at least one 'group' element node reachable via '$rootNode' having
                                                 status 'FAILED'.
                                             -->
-                                            <xsl:variable name="failedGroups" select="filter($config//group[@failsTest='true'], function($a){ count($rootNode//group[normalize-space(status)='FAILED'][@ref-id=$a/@id]) &gt; 0 })" />
+                                            <xsl:variable name="failedGroups" select="filter($config//group[@failsTest='true' and @enabled='true'], function($a){ count($rootNode//group[@testFailed='true'][@ref-id=$a/@id]) &gt; 0 })" />
                                             <xsl:choose>
                                                 <xsl:when test="count($failedRules) &gt; 0">
                                         would have succeeded with <xsl:value-of select="$ratingDescription" /> but at least one rule still qualifies this test as failed:

@@ -11,6 +11,7 @@ import java.io.Writer;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -431,7 +432,7 @@ public class Evaluator
     private boolean conclude(final Evaluation.Group group)
     {
         // nothing to do for disabled groups
-        if (!group.getDefinition().isEnabled())
+        if (!group.isEnabled())
         {
             return false;
         }
@@ -470,7 +471,7 @@ public class Evaluator
             if (ruleStatus.isError())
             {
                 someError = true;
-                continue;
+                break;
             }
 
             maxPoints = Math.max(maxPoints, rulePoints);
@@ -507,8 +508,8 @@ public class Evaluator
         // pick the correct values for group's points and total points according to its mode
         final int points, totalPoints;
         final Status groupStatus;
-        final boolean testFailed;
 
+        final List<Evaluation.Rule> rulesOfInterest;
         final Mode mode = group.getDefinition().getMode();
         if (mode == Mode.allPassed)
         {
@@ -516,7 +517,7 @@ public class Evaluator
             points = sumPointsMatching;
             totalPoints = sumPointsTotal;
 
-            testFailed = rules.stream().anyMatch(Evaluation.Rule::isTestFailed);
+            rulesOfInterest = rules;
         }
         else if (mode == Mode.firstPassed || mode == Mode.lastPassed)
         {
@@ -527,7 +528,7 @@ public class Evaluator
             points = Optional.ofNullable(triggerRule).map(Evaluation.Rule::getPoints).orElse(0);
             totalPoints = maxPoints;
 
-            testFailed = (idx > 0 ? rules.subList(0, idx) : rules).stream().anyMatch(Evaluation.Rule::isTestFailed);
+            rulesOfInterest = idx > 0 ? rules.subList(0, idx) : rules;
         }
         else
         {
@@ -535,7 +536,22 @@ public class Evaluator
             points = 0;
             totalPoints = 0;
 
-            testFailed = false;
+            rulesOfInterest = Collections.emptyList();
+        }
+
+        boolean testFailed = rulesOfInterest.stream().filter((rule) -> {
+            final boolean ruleFailedTest = rule.mayFailTest();
+            if (ruleFailedTest)
+            {
+                rule.setTestFailed();
+            }
+            return ruleFailedTest;
+        }).count() > 0L;
+
+        if (group.mayFailTest())
+        {
+            group.setTestFailed();
+            testFailed = true;
         }
 
         group.setStatus(groupStatus);

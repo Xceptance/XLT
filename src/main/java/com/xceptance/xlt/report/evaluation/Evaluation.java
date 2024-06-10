@@ -161,6 +161,9 @@ public class Evaluation
 
         private Status status = Status.SKIPPED;
 
+        @XStreamAsAttribute
+        private boolean testFailed;
+
         Group(final GroupDefinition definition)
         {
             this.definition = Objects.requireNonNull(definition, "Group definition must not be null");
@@ -226,6 +229,21 @@ public class Evaluation
         {
             return status;
         }
+
+        void setTestFailed()
+        {
+            this.testFailed = true;
+        }
+
+        public boolean isEnabled()
+        {
+            return getDefinition().isEnabled();
+        }
+
+        public boolean mayFailTest()
+        {
+            return isEnabled() && getStatus().isFailed() && getDefinition().isFailsTest();
+        }
     }
 
     @XStreamAlias("rule")
@@ -247,6 +265,9 @@ public class Evaluation
         @XStreamAsAttribute
         @XStreamAlias("ref-id")
         private final String id;
+
+        @XStreamAsAttribute
+        private boolean testFailed;
 
         Rule(final RuleDefinition definition, final boolean groupEnabled)
         {
@@ -310,12 +331,16 @@ public class Evaluation
         {
             return groupEnabled && definition.isEnabled();
         }
-        
-        boolean isTestFailed()
+
+        boolean mayFailTest()
         {
-            return getStatus().isFailed() && getDefinition().isFailsTest();
+            return isEnabled() && getStatus().isFailed() && getDefinition().isFailsTest();
         }
-        
+
+        void setTestFailed()
+        {
+            this.testFailed = true;
+        }
 
         @XStreamAlias("check")
         public static class Check
@@ -386,5 +411,6 @@ public class Evaluation
                 return ruleEnabled && definition.isEnabled();
             }
         }
+
     }
 }
