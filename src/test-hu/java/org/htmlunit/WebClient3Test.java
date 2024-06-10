@@ -15,7 +15,6 @@
 package org.htmlunit;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 import static org.junit.Assert.assertArrayEquals;
 
 import java.net.URL;
@@ -185,9 +184,6 @@ public class WebClient3Test extends WebDriverTestCase {
     @Test
     @Alerts({"open", "first", "second"})
     public void windowOpenedByAnchorTargetIsAttachedToJavascriptEventLoop() throws Exception {
-        // TODO [IE]SINGLE-VS-BULK test runs when executed as single but breaks as bulk
-        shutDownRealIE();
-
         final String firstContent = "<html>\n"
             + "<head>\n"
             + "<script type='text/javascript'>\n"
@@ -231,9 +227,6 @@ public class WebClient3Test extends WebDriverTestCase {
     @Test
     @Alerts({"open", "first", "second"})
     public void windowOpenedByFormTargetIsAttachedToJavascriptEventLoop() throws Exception {
-        // TODO [IE]SINGLE-VS-BULK test runs when executed as single but breaks as bulk
-        shutDownRealIE();
-
         final String firstContent = "<html>\n"
             + "<head>\n"
             + "<script type='text/javascript'>\n"
@@ -368,7 +361,6 @@ public class WebClient3Test extends WebDriverTestCase {
      */
     @Test
     @Alerts({"Executed", "later"})
-    // TODO [IE]ERRORPAGE real IE displays own error page if response is to small
     public void execJavascriptOnErrorPages() throws Exception {
         final String errorHtml = "<html>\n"
                 + "<head>\n"
@@ -413,9 +405,6 @@ public class WebClient3Test extends WebDriverTestCase {
     @Test
     @Alerts("modified")
     public void deflateCompressionGZipCompatible() throws Exception {
-        // TODO [IE]SINGLE-VS-BULK test runs when executed as single but breaks as bulk
-        shutDownRealIE();
-
         doTestDeflateCompression(true);
     }
 
@@ -424,9 +413,7 @@ public class WebClient3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "modified",
-            IE = "Hello world")
-    @NotYetImplemented(IE)
+    @Alerts("modified")
     // IE does not support deflate compression anymore but I couldn't find a way to disable it in HttpClient
     public void deflateCompressionNonGZipCompatible() throws Exception {
         doTestDeflateCompression(false);
@@ -473,9 +460,7 @@ public class WebClient3Test extends WebDriverTestCase {
      * @throws Exception if something goes wrong
      */
     @Test
-    @Alerts(DEFAULT = "executed",
-             IE = "")
-    @NotYetImplemented(IE)
+    @Alerts("executed")
     public void javascriptContentDetectorWithoutContentType500() throws Exception {
         final MockWebConnection conn = getMockWebConnection();
         conn.setDefaultResponse("<script>alert('executed')</script>", 500, "OK", null);

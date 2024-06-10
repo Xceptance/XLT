@@ -5,6 +5,7 @@ alignItems
 alignSelf
 alignmentBaseline
 all
+anchorName
 animation
 animationComposition
 animationDelay
@@ -156,6 +157,7 @@ display
 dominantBaseline
 emptyCells
 fallback
+fieldSizing
 fill
 fillOpacity
 fillRule
@@ -224,6 +226,7 @@ initialLetter
 initialValue
 inlineSize
 inset
+insetArea
 insetBlock
 insetBlockEnd
 insetBlockStart
@@ -337,6 +340,11 @@ placeItems
 placeSelf
 pointerEvents
 position
+positionAnchor
+positionTry
+positionTryOptions
+positionTryOrder
+positionVisibility
 prefix
 quotes
 r
@@ -426,6 +434,7 @@ textOverflow
 textRendering
 textShadow
 textSizeAdjust
+textSpacingTrim
 textTransform
 textUnderlineOffset
 textUnderlinePosition
@@ -453,6 +462,7 @@ viewTimeline
 viewTimelineAxis
 viewTimelineInset
 viewTimelineName
+viewTransitionClass
 viewTransitionName
 visibility
 webkitAlignContent

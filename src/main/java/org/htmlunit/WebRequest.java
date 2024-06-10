@@ -15,8 +15,6 @@
  */
 package org.htmlunit;
 
-import static java.nio.charset.StandardCharsets.ISO_8859_1;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -25,18 +23,20 @@ import java.net.IDN;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.apache.http.auth.Credentials;
+import org.htmlunit.http.HttpUtils;
 import org.htmlunit.httpclient.HtmlUnitUsernamePasswordCredentials;
-import org.htmlunit.httpclient.HttpClientConverter;
 import org.htmlunit.util.NameValuePair;
 import org.htmlunit.util.UrlUtils;
 
@@ -79,8 +79,12 @@ public class WebRequest implements Serializable {
     private Credentials urlCredentials_;
     private Credentials credentials_;
     private int timeout_;
-    private transient Charset charset_ = ISO_8859_1;
     private transient Set<HttpHint> httpHints_;
+
+    private transient Charset charset_ = StandardCharsets.ISO_8859_1;
+    // https://datatracker.ietf.org/doc/html/rfc6838#section-4.2.1
+    // private transient Charset defaultResponseContentCharset_ = StandardCharsets.UTF_8;
+    private transient Charset defaultResponseContentCharset_ = StandardCharsets.ISO_8859_1;
 
     /* These two are mutually exclusive; additionally, requestBody_ should only be set for POST requests. */
     private List<NameValuePair> requestParameters_ = Collections.emptyList();
@@ -229,14 +233,16 @@ public class WebRequest implements Serializable {
         else if (path.contains("/.")) {
             url = buildUrlWithNewPath(url, removeDots(path));
         }
-        final String idn = IDN.toASCII(url.getHost());
-        if (!idn.equals(url.getHost())) {
-            try {
+
+        try {
+            final String idn = IDN.toASCII(url.getHost());
+            if (!idn.equals(url.getHost())) {
                 url = UrlUtils.getUrlWithNewHost(url, idn);
             }
-            catch (final Exception e) {
-                throw new RuntimeException("Cannot change hostname of URL: " + url.toExternalForm(), e);
-            }
+        }
+        catch (final Exception e) {
+            throw new IllegalArgumentException(
+                    "Cannot convert the hostname of URL: '" + url.toExternalForm() + "' to ASCII.", e);
         }
 
         try {
@@ -415,8 +421,7 @@ public class WebRequest implements Serializable {
                 return normalize(getRequestParameters());
             }
 
-            return normalize(HttpClientConverter.parseUrlQuery(getUrl().getQuery(), getCharset()));
-
+            return normalize(HttpUtils.parseUrlQuery(getUrl().getQuery(), getCharset()));
         }
 
         if (getEncodingType() == FormEncodingType.URL_ENCODED && HttpMethod.POST == getHttpMethod()) {
@@ -424,7 +429,7 @@ public class WebRequest implements Serializable {
                 return normalize(getRequestParameters());
             }
 
-            return normalize(HttpClientConverter.parseUrlQuery(getRequestBody(), getCharset()));
+            return normalize(HttpUtils.parseUrlQuery(getRequestBody(), getCharset()));
         }
 
         if (getEncodingType() == FormEncodingType.TEXT_PLAIN  && HttpMethod.POST == getHttpMethod()) {
@@ -673,6 +678,23 @@ public class WebRequest implements Serializable {
      */
     public void setCharset(final Charset charset) {
         charset_ = charset;
+    }
+
+    /**
+     * @return the default character set to use for the response when it does not specify one.
+     */
+    public Charset getDefaultResponseContentCharset() {
+        return defaultResponseContentCharset_;
+    }
+
+    /**
+     * Sets the default character set to use for the response when it does not specify one.
+     * <p>
+     * Unless set, the default is {@link java.nio.charset.StandardCharsets#UTF_8}.
+     * @param defaultResponseContentCharset the default character set of the response
+     */
+    public void setDefaultResponseContentCharset(final Charset defaultResponseContentCharset) {
+        this.defaultResponseContentCharset_ = Objects.requireNonNull(defaultResponseContentCharset);
     }
 
     public boolean hasHint(final HttpHint hint) {

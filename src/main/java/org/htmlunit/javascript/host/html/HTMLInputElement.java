@@ -14,23 +14,14 @@
  */
 package org.htmlunit.javascript.host.html;
 
-import static org.htmlunit.BrowserVersionFeatures.HTMLINPUT_FILES_UNDEFINED;
-import static org.htmlunit.BrowserVersionFeatures.HTMLINPUT_FILE_SELECTION_START_END_NULL;
-import static org.htmlunit.BrowserVersionFeatures.JS_ALIGN_FOR_INPUT_IGNORES_VALUES;
 import static org.htmlunit.BrowserVersionFeatures.JS_INPUT_NUMBER_DOT_AT_END_IS_DOUBLE;
-import static org.htmlunit.BrowserVersionFeatures.JS_INPUT_NUMBER_SELECTION_START_END_NULL;
-import static org.htmlunit.BrowserVersionFeatures.JS_SELECT_FILE_THROWS;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import java.io.IOException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
-import org.htmlunit.corejs.javascript.Undefined;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.html.HtmlCheckBoxInput;
@@ -47,7 +38,6 @@ import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.configuration.JsxSetter;
 import org.htmlunit.javascript.host.dom.NodeList;
-import org.htmlunit.javascript.host.dom.TextRange;
 import org.htmlunit.javascript.host.event.Event;
 import org.htmlunit.javascript.host.file.FileList;
 
@@ -80,7 +70,7 @@ public class HTMLInputElement extends HTMLElement {
      * JavaScript constructor.
      */
     @Override
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
         super.jsConstructor();
     }
@@ -120,7 +110,7 @@ public class HTMLInputElement extends HTMLElement {
 
         final String val = JavaScriptEngine.toString(newValue);
         if ("file".equalsIgnoreCase(getType())) {
-            if (StringUtils.isNotEmpty(val) &&  getBrowserVersion().hasFeature(JS_SELECT_FILE_THROWS)) {
+            if (StringUtils.isNotEmpty(val)) {
                 throw JavaScriptEngine.reportRuntimeError("InvalidStateError: "
                         + "Failed to set the 'value' property on 'HTMLInputElement'.");
             }
@@ -234,20 +224,14 @@ public class HTMLInputElement extends HTMLElement {
     public Object getSelectionStart() {
         final DomNode dom = getDomNodeOrDie();
         if (dom instanceof SelectableTextInput) {
-            if ("number".equalsIgnoreCase(getType())
-                    && getBrowserVersion().hasFeature(JS_INPUT_NUMBER_SELECTION_START_END_NULL)) {
+            if ("number".equalsIgnoreCase(getType())) {
                 return null;
             }
 
             return ((SelectableTextInput) dom).getSelectionStart();
         }
 
-        if (getBrowserVersion().hasFeature(HTMLINPUT_FILE_SELECTION_START_END_NULL)) {
-            return null;
-        }
-        throw JavaScriptEngine.reportRuntimeError(
-                "Failed to read the 'selectionStart' property from 'HTMLInputElement': "
-                + "The input element's type (" + getType() + ") does not support selection.");
+        return null;
     }
 
     /**
@@ -258,8 +242,7 @@ public class HTMLInputElement extends HTMLElement {
     public void setSelectionStart(final int start) {
         final DomNode dom = getDomNodeOrDie();
         if (dom instanceof SelectableTextInput) {
-            if ("number".equalsIgnoreCase(getType())
-                    && getBrowserVersion().hasFeature(JS_INPUT_NUMBER_SELECTION_START_END_NULL)) {
+            if ("number".equalsIgnoreCase(getType())) {
                 throw JavaScriptEngine.reportRuntimeError("Failed to set the 'selectionStart' property"
                         + "from 'HTMLInputElement': "
                         + "The input element's type ('number') does not support selection.");
@@ -282,19 +265,14 @@ public class HTMLInputElement extends HTMLElement {
     public Object getSelectionEnd() {
         final DomNode dom = getDomNodeOrDie();
         if (dom instanceof SelectableTextInput) {
-            if ("number".equalsIgnoreCase(getType())
-                    && getBrowserVersion().hasFeature(JS_INPUT_NUMBER_SELECTION_START_END_NULL)) {
+            if ("number".equalsIgnoreCase(getType())) {
                 return null;
             }
 
             return ((SelectableTextInput) dom).getSelectionEnd();
         }
 
-        if (getBrowserVersion().hasFeature(HTMLINPUT_FILE_SELECTION_START_END_NULL)) {
-            return null;
-        }
-        throw JavaScriptEngine.reportRuntimeError("Failed to read the 'selectionEnd' property from 'HTMLInputElement': "
-                + "The input element's type (" + getType() + ") does not support selection.");
+        return null;
     }
 
     /**
@@ -305,8 +283,7 @@ public class HTMLInputElement extends HTMLElement {
     public void setSelectionEnd(final int end) {
         final DomNode dom = getDomNodeOrDie();
         if (dom instanceof SelectableTextInput) {
-            if ("number".equalsIgnoreCase(getType())
-                    && getBrowserVersion().hasFeature(JS_INPUT_NUMBER_SELECTION_START_END_NULL)) {
+            if ("number".equalsIgnoreCase(getType())) {
                 throw JavaScriptEngine.reportRuntimeError("Failed to set the 'selectionEnd' property"
                         + "from 'HTMLInputElement': "
                         + "The input element's type ('number') does not support selection.");
@@ -343,7 +320,7 @@ public class HTMLInputElement extends HTMLElement {
      * Gets the {@code minLength}.
      * @return the {@code minLength}
      */
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxGetter
     public int getMinLength() {
         final String attrValue = getDomNodeOrDie().getAttribute("minLength");
         return NumberUtils.toInt(attrValue, -1);
@@ -353,7 +330,7 @@ public class HTMLInputElement extends HTMLElement {
      * Sets the value of {@code minLength} attribute.
      * @param length the new value
      */
-    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxSetter
     public void setMinLength(final int length) {
         getDomNodeOrDie().setMinLength(length);
     }
@@ -460,32 +437,11 @@ public class HTMLInputElement extends HTMLElement {
     }
 
     /**
-     * Gets the {@code border} attribute.
-     * @return the {@code border} attribute
-     */
-    @JsxGetter(IE)
-    public String getBorder() {
-        return getDomNodeOrDie().getAttributeDirect("border");
-    }
-
-    /**
-     * Sets the {@code border} attribute.
-     * @param border the {@code border} attribute
-     */
-    @JsxSetter(IE)
-    public void setBorder(final String border) {
-        getDomNodeOrDie().setAttribute("border", border);
-    }
-
-    /**
      * Returns the value of the {@code align} property.
      * @return the value of the {@code align} property
      */
     @JsxGetter
     public String getAlign() {
-        if (getBrowserVersion().hasFeature(JS_ALIGN_FOR_INPUT_IGNORES_VALUES)) {
-            return "";
-        }
         return getAlign(true);
     }
 
@@ -495,8 +451,7 @@ public class HTMLInputElement extends HTMLElement {
      */
     @JsxSetter
     public void setAlign(final String align) {
-        final boolean ignoreIfNoError = getBrowserVersion().hasFeature(JS_ALIGN_FOR_INPUT_IGNORES_VALUES);
-        setAlign(align, ignoreIfNoError);
+        setAlign(align, false);
     }
 
     /**
@@ -556,8 +511,8 @@ public class HTMLInputElement extends HTMLElement {
      * {@inheritDoc}
      */
     @Override
-    public String getAttribute(final String attributeName, final Integer flags) {
-        final String superAttribute = super.getAttribute(attributeName, flags);
+    public String getAttribute(final String attributeName) {
+        final String superAttribute = super.getAttribute(attributeName);
         if (DomElement.VALUE_ATTRIBUTE.equalsIgnoreCase(attributeName)) {
             if ((superAttribute == null || !superAttribute.isEmpty())
                     && getDefaultValue().isEmpty()) {
@@ -681,9 +636,6 @@ public class HTMLInputElement extends HTMLElement {
             list.setPrototype(getPrototype(list.getClass()));
             return list;
         }
-        if (getBrowserVersion().hasFeature(HTMLINPUT_FILES_UNDEFINED)) {
-            return Undefined.instance;
-        }
         return null;
     }
 
@@ -755,7 +707,7 @@ public class HTMLInputElement extends HTMLElement {
      * Returns the labels associated with the element.
      * @return the labels associated with the element
      */
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxGetter
     public NodeList getLabels() {
         if (labels_ == null) {
             labels_ = new LabelsNodeList(getDomNodeOrDie());
@@ -770,15 +722,6 @@ public class HTMLInputElement extends HTMLElement {
     @JsxFunction
     public boolean checkValidity() {
         return getDomNodeOrDie().isValid();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    @JsxFunction(IE)
-    public TextRange createTextRange() {
-        return super.createTextRange();
     }
 
     /**
@@ -803,7 +746,7 @@ public class HTMLInputElement extends HTMLElement {
      * {@inheritDoc} Overridden to modify browser configurations.
      */
     @Override
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxGetter
     public boolean isDisabled() {
         return super.isDisabled();
     }
@@ -812,7 +755,7 @@ public class HTMLInputElement extends HTMLElement {
      * {@inheritDoc} Overridden to modify browser configurations.
      */
     @Override
-    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxSetter
     public void setDisabled(final boolean disabled) {
         super.setDisabled(disabled);
     }

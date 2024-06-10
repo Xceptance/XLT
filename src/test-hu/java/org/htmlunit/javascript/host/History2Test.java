@@ -207,15 +207,14 @@ public class History2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"[object PopStateEvent]", "{\"hi\":\"there\"}", "true",
-                       "[object PopStateEvent]", "{\"hi\":\"there\"}", "true",
-                       "[object PopStateEvent]", "null", "true",
-                       "[object PopStateEvent]", "null", "true",
-                       "[object PopStateEvent]", "{\"hi\":\"there\"}", "true",
-                       "[object PopStateEvent]", "{\"hi\":\"there\"}", "true",
-                       "[object PopStateEvent]", "{\"hi2\":\"there2\"}", "true",
-                       "[object PopStateEvent]", "{\"hi2\":\"there2\"}", "true"},
-            IE = {})
+    @Alerts({"[object PopStateEvent]", "{\"hi\":\"there\"}", "true",
+             "[object PopStateEvent]", "{\"hi\":\"there\"}", "true",
+             "[object PopStateEvent]", "null", "true",
+             "[object PopStateEvent]", "null", "true",
+             "[object PopStateEvent]", "{\"hi\":\"there\"}", "true",
+             "[object PopStateEvent]", "{\"hi\":\"there\"}", "true",
+             "[object PopStateEvent]", "{\"hi2\":\"there2\"}", "true",
+             "[object PopStateEvent]", "{\"hi2\":\"there2\"}", "true"})
     public void pushStateClone() throws Exception {
         final String html = "<html>\n"
                 + "<head>\n"
@@ -372,9 +371,9 @@ public class History2Test extends WebDriverTestCase {
      */
     @Test
     @Alerts({"[object PopStateEvent]", "null",
-                "[object PopStateEvent]", "null",
-                "[object PopStateEvent]", "{\"hi2\":\"there2\"}",
-                "[object PopStateEvent]", "{\"hi2\":\"there2\"}"})
+             "[object PopStateEvent]", "null",
+             "[object PopStateEvent]", "{\"hi2\":\"there2\"}",
+             "[object PopStateEvent]", "{\"hi2\":\"there2\"}"})
     public void replaceState() throws Exception {
         final String html = "<html>\n"
                 + "<head>\n"
@@ -457,11 +456,10 @@ public class History2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"[object PopStateEvent]", "null", "true",
-                       "[object PopStateEvent]", "null", "true",
-                       "[object PopStateEvent]", "{\"hi2\":\"there2\"}", "true",
-                       "[object PopStateEvent]", "{\"hi2\":\"there2\"}", "true"},
-            IE = {})
+    @Alerts({"[object PopStateEvent]", "null", "true",
+             "[object PopStateEvent]", "null", "true",
+             "[object PopStateEvent]", "{\"hi2\":\"there2\"}", "true",
+             "[object PopStateEvent]", "{\"hi2\":\"there2\"}", "true"})
     public void replaceStateClone() throws Exception {
         final String html = "<html>\n"
                 + "<head>\n"
@@ -547,8 +545,7 @@ public class History2Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"href=§§URL§§", "href=§§URL§§?p=%C3%84"},
             FF = {"href=§§URL§§", "href=§§URL§§?p=%C4"},
-            FF_ESR = {"href=§§URL§§", "href=§§URL§§?p=%C4"},
-            IE = {"href=§§URL§§", "href=§§URL§§?p=\u00c4"})
+            FF_ESR = {"href=§§URL§§", "href=§§URL§§?p=%C4"})
     @HtmlUnitNYI(CHROME = {"href=§§URL§§", "href=§§URL§§?p=%C4"},
             EDGE = {"href=§§URL§§", "href=§§URL§§?p=%C4"})
     public void pushStateEncoding() throws Exception {
@@ -625,9 +622,7 @@ public class History2Test extends WebDriverTestCase {
     }
 
     @Test
-    @Alerts(DEFAULT = {"href=§§URL§§", "href=§§URL§§"},
-            IE = {"href=§§URL§§", "href=§§URL§§undefined"})
-    @HtmlUnitNYI(IE = {"href=§§URL§§", "href=§§URL§§"})
+    @Alerts({"href=§§URL§§", "href=§§URL§§"})
     public void replaceStateUndefined() throws Exception {
         final String html = "<html>\n"
                 + "<head>\n"
@@ -673,8 +668,7 @@ public class History2Test extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = {"href=§§URL§§", "href=§§URL§§%5Bobject%20Object%5D"},
                  EDGE = {"href=§§URL§§", "href=§§URL§§%5Bobject%20Object%5D"},
                  FF = {"href=§§URL§§", "href=§§URL§§%5Bobject%20Object%5D"},
-                 FF_ESR = {"href=§§URL§§", "href=§§URL§§%5Bobject%20Object%5D"},
-                 IE = {"href=§§URL§§", "href=§§URL§§%5Bobject%20Object%5D"})
+                 FF_ESR = {"href=§§URL§§", "href=§§URL§§%5Bobject%20Object%5D"})
     public void replaceStateObj() throws Exception {
         final String html = "<html>\n"
                 + "<head>\n"
@@ -717,9 +711,7 @@ public class History2Test extends WebDriverTestCase {
     }
 
     @Test
-    @Alerts(DEFAULT = {"href=§§URL§§", "href=§§URL§§"},
-            IE = {"href=§§URL§§", "href=§§URL§§undefined"})
-    @HtmlUnitNYI(IE = {"href=§§URL§§", "href=§§URL§§"})
+    @Alerts({"href=§§URL§§", "href=§§URL§§"})
     public void pushStateUndefined() throws Exception {
         final String html = "<html>\n"
                 + "<head>\n"
@@ -765,8 +757,7 @@ public class History2Test extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = {"href=§§URL§§", "href=§§URL§§%5Bobject%20Object%5D"},
             EDGE = {"href=§§URL§§", "href=§§URL§§%5Bobject%20Object%5D"},
             FF = {"href=§§URL§§", "href=§§URL§§%5Bobject%20Object%5D"},
-            FF_ESR = {"href=§§URL§§", "href=§§URL§§%5Bobject%20Object%5D"},
-            IE = {"href=§§URL§§", "href=§§URL§§%5Bobject%20Object%5D"})
+            FF_ESR = {"href=§§URL§§", "href=§§URL§§%5Bobject%20Object%5D"})
     public void pushStateObj() throws Exception {
         final String html = "<html>\n"
                 + "<head>\n"
@@ -832,8 +823,7 @@ public class History2Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"href=§§URL§§", "href=§§URL§§?p=%C3%84"},
             FF = {"href=§§URL§§", "href=§§URL§§?p=%C4"},
-            FF_ESR = {"href=§§URL§§", "href=§§URL§§?p=%C4"},
-            IE = {"href=§§URL§§", "href=§§URL§§?p=\u00c4"})
+            FF_ESR = {"href=§§URL§§", "href=§§URL§§?p=%C4"})
     @HtmlUnitNYI(CHROME = {"href=§§URL§§", "href=§§URL§§?p=%C4"},
             EDGE = {"href=§§URL§§", "href=§§URL§§?p=%C4"})
     public void replaceStateEncoding() throws Exception {
@@ -1136,9 +1126,8 @@ public class History2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"back", "forward", "go", "length", "pushState", "replaceState",
-                       "scrollRestoration", "state"},
-            IE = {"back", "forward", "go", "length", "pushState", "replaceState", "state"})
+    @Alerts({"back", "forward", "go", "length", "pushState", "replaceState",
+             "scrollRestoration", "state"})
     public void properties() throws Exception {
         final String html = "<html><head><script>\n"
                 + LOG_TITLE_FUNCTION
@@ -1195,8 +1184,7 @@ public class History2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"auto", "manual", "auto", "auto", "auto", "auto"},
-            IE = {"undefined", "manual", "auto", "MaNUaL", "unknown", "undefined"})
+    @Alerts({"auto", "manual", "auto", "auto", "auto", "auto"})
     public void scrollRestoration() throws Exception {
         final String html = "<html><head><script>\n"
                 + LOG_TITLE_FUNCTION

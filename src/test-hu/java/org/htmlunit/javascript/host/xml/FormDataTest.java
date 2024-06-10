@@ -62,10 +62,8 @@ public class FormDataTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"function", "function", "function", "function", "function", "function",
-                       "function", "function", "function", "function"},
-            IE = {"function", "undefined", "undefined", "undefined", "undefined", "undefined",
-                  "undefined", "undefined", "undefined", "undefined"})
+    @Alerts({"function", "function", "function", "function", "function", "function",
+             "function", "function", "function", "function"})
     public void functions() throws Exception {
         final String html
             = HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -299,10 +297,8 @@ public class FormDataTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"Content-Disposition: form-data; name=\"myKey\"; filename=\"test\"",
-                       "Content-Type: application/octet-stream", "", "Hello HtmlUnit"},
-            IE = {"Content-Disposition: form-data; name=\"myKey\"; filename=\"test\"",
-                  "Content-Type: text/plain", "", "Hello HtmlUnit"})
+    @Alerts({"Content-Disposition: form-data; name=\"myKey\"; filename=\"test\"",
+             "Content-Type: application/octet-stream", "", "Hello HtmlUnit"})
     public void appendFileWithUnknownExtension() throws Exception {
         final String alerts = appendFile(".htmlunit", "test");
 
@@ -320,10 +316,8 @@ public class FormDataTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"Content-Disposition: form-data; name=\"myKey\"; filename=\"test\"",
-                       "Content-Type: application/octet-stream", "", "Hello HtmlUnit"},
-              IE = {"Content-Disposition: form-data; name=\"myKey\"; filename=\"test\"",
-                    "Content-Type: text/plain", "", "Hello HtmlUnit"})
+    @Alerts({"Content-Disposition: form-data; name=\"myKey\"; filename=\"test\"",
+             "Content-Type: application/octet-stream", "", "Hello HtmlUnit"})
     public void appendFileWithoutExtension() throws Exception {
         final String alerts = appendFile("", "test");
 
@@ -397,8 +391,7 @@ public class FormDataTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"myKey", "myKey1"},
-            IE = "no delete")
+    @Alerts({"myKey", "myKey1"})
     public void delete() throws Exception {
         final String html
             = HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -451,8 +444,7 @@ public class FormDataTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"myValue", "null", "null", "null", "null"},
-            IE = "no get")
+    @Alerts({"myValue", "null", "null", "null", "null"})
     public void get() throws Exception {
         final String html
             = HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -497,8 +489,7 @@ public class FormDataTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"myValue,myValue2", "", "", "", ""},
-            IE = "no getAll")
+    @Alerts({"myValue,myValue2", "", "", "", ""})
     public void getAll() throws Exception {
         final String html
             = HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -543,8 +534,7 @@ public class FormDataTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"true", "false", "false"},
-            IE = "no has")
+    @Alerts({"true", "false", "false"})
     public void has() throws Exception {
         final String html
             = HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -962,9 +952,8 @@ public class FormDataTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"function keys() { [native code] }", "[object FormData Iterator]",
-                       "key1", "key2", "key1", "undefined", "true"},
-            IE = "no keys")
+    @Alerts({"function keys() { [native code] }", "[object FormData Iterator]",
+             "key1", "key2", "key1", "undefined", "true"})
     public void keys() throws Exception {
         final String html =
             "<html>\n"
@@ -1013,9 +1002,8 @@ public class FormDataTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"function values() { [native code] }", "[object FormData Iterator]",
-                       "val1", "undefined", "val3", "val4", "true"},
-            IE = "no values")
+    @Alerts({"function values() { [native code] }", "[object FormData Iterator]",
+             "val1", "undefined", "val3", "val4", "true"})
     public void values() throws Exception {
         final String html =
             "<html>\n"
@@ -1063,8 +1051,7 @@ public class FormDataTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"val1", "undefined", "val3", "val4"},
-            IE = "no values")
+    @Alerts({"val1", "undefined", "val3", "val4"})
     public void valuesForOf() throws Exception {
         final String html =
             "<html>\n"
@@ -1101,10 +1088,9 @@ public class FormDataTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"key1-val1", "key2-val2", "key3-val3",
-                       "key1-val1", "key3-val3",
-                       "key2-val2", "key3-val3"},
-            IE = "no forEach")
+    @Alerts({"key1-val1", "key2-val2", "key3-val3",
+             "key1-val1", "key3-val3",
+             "key2-val2", "key3-val3"})
     public void forEach() throws Exception {
         final String html =
             "<html>\n"
@@ -1152,8 +1138,7 @@ public class FormDataTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"myKey", "myValue", "myKey2", "", "myKey", "myvalue2"},
-            IE = "no entries")
+    @Alerts({"myKey", "myValue", "myKey2", "", "myKey", "myvalue2"})
     public void entries_forOf() throws Exception {
         final String html
             = HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -1189,9 +1174,8 @@ public class FormDataTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"true", "[object FormData Iterator]", "done", "value",
-                       "myKey", "myValue", "myKey2", "", "myKey", "myvalue2"},
-            IE = "no entries")
+    @Alerts({"true", "[object FormData Iterator]", "done", "value",
+             "myKey", "myValue", "myKey2", "", "myKey", "myvalue2"})
     @HtmlUnitNYI(CHROME = {"true", "[object FormData Iterator]", "value", "done",
                            "myKey", "myValue", "myKey2", "", "myKey", "myvalue2"},
             EDGE = {"true", "[object FormData Iterator]", "value", "done",

@@ -14,23 +14,11 @@
  */
 package org.htmlunit.javascript.host.dom;
 
-import static org.htmlunit.BrowserVersionFeatures.JS_DOMTOKENLIST_CONTAINS_RETURNS_FALSE_FOR_BLANK;
-import static org.htmlunit.BrowserVersionFeatures.JS_DOMTOKENLIST_ENHANCED_WHITESPACE_CHARS;
-import static org.htmlunit.BrowserVersionFeatures.JS_DOMTOKENLIST_GET_NULL_IF_OUTSIDE;
-import static org.htmlunit.BrowserVersionFeatures.JS_DOMTOKENLIST_LENGTH_IGNORES_DUPLICATES;
-import static org.htmlunit.BrowserVersionFeatures.JS_DOMTOKENLIST_REMOVE_WHITESPACE_CHARS_ON_ADD;
-import static org.htmlunit.BrowserVersionFeatures.JS_DOMTOKENLIST_REMOVE_WHITESPACE_CHARS_ON_REMOVE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-
 import java.util.Arrays;
 import java.util.HashSet;
 
 import org.apache.commons.lang3.StringUtils;
 import org.htmlunit.corejs.javascript.Scriptable;
-import org.htmlunit.corejs.javascript.Undefined;
 import org.htmlunit.html.DomAttr;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.DomNode;
@@ -52,7 +40,6 @@ import org.htmlunit.javascript.configuration.JsxGetter;
 public class DOMTokenList extends HtmlUnitScriptable {
 
     private static final String WHITESPACE_CHARS = " \t\r\n\u000C";
-    private static final String WHITESPACE_CHARS_IE_11 = WHITESPACE_CHARS + "\u000B";
 
     private String attributeName_;
 
@@ -65,7 +52,7 @@ public class DOMTokenList extends HtmlUnitScriptable {
     /**
      * JavaScript constructor.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
     }
 
@@ -92,13 +79,10 @@ public class DOMTokenList extends HtmlUnitScriptable {
             return 0;
         }
 
-        final String[] parts = StringUtils.split(value, whitespaceChars());
-        if (getBrowserVersion().hasFeature(JS_DOMTOKENLIST_LENGTH_IGNORES_DUPLICATES)) {
-            final HashSet<String> elements = new HashSet<>(parts.length);
-            elements.addAll(Arrays.asList(parts));
-            return elements.size();
-        }
-        return parts.length;
+        final String[] parts = StringUtils.split(value, WHITESPACE_CHARS);
+        final HashSet<String> elements = new HashSet<>(parts.length);
+        elements.addAll(Arrays.asList(parts));
+        return elements.size();
     }
 
     private String getAttribValue() {
@@ -123,7 +107,7 @@ public class DOMTokenList extends HtmlUnitScriptable {
 
         final String value = getAttribValue();
         if (value != null) {
-            return String.join(" ", StringUtils.split(value, whitespaceChars()));
+            return String.join(" ", StringUtils.split(value, WHITESPACE_CHARS));
         }
         return "";
     }
@@ -137,7 +121,7 @@ public class DOMTokenList extends HtmlUnitScriptable {
         if (StringUtils.isEmpty(token)) {
             throw JavaScriptEngine.reportRuntimeError("Empty input not allowed");
         }
-        if (StringUtils.containsAny(token, whitespaceChars())) {
+        if (StringUtils.containsAny(token, WHITESPACE_CHARS)) {
             throw JavaScriptEngine.reportRuntimeError("Empty input not allowed");
         }
 
@@ -148,7 +132,7 @@ public class DOMTokenList extends HtmlUnitScriptable {
             changed = true;
         }
         else {
-            value = String.join(" ", StringUtils.split(value, whitespaceChars()));
+            value = String.join(" ", StringUtils.split(value, WHITESPACE_CHARS));
             if (position(value, token) < 0) {
                 if (value.length() != 0 && !isWhitespace(value.charAt(value.length() - 1))) {
                     value = value + " ";
@@ -156,8 +140,8 @@ public class DOMTokenList extends HtmlUnitScriptable {
                 value = value + token;
                 changed = true;
             }
-            else if (getBrowserVersion().hasFeature(JS_DOMTOKENLIST_REMOVE_WHITESPACE_CHARS_ON_ADD)) {
-                value = String.join(" ", StringUtils.split(value, whitespaceChars()));
+            else {
+                value = String.join(" ", StringUtils.split(value, WHITESPACE_CHARS));
                 changed = true;
             }
         }
@@ -176,7 +160,7 @@ public class DOMTokenList extends HtmlUnitScriptable {
         if (StringUtils.isEmpty(token)) {
             throw JavaScriptEngine.reportRuntimeError("Empty input not allowed");
         }
-        if (StringUtils.containsAny(token, whitespaceChars())) {
+        if (StringUtils.containsAny(token, WHITESPACE_CHARS)) {
             throw JavaScriptEngine.reportRuntimeError("Empty input not allowed");
         }
 
@@ -185,8 +169,7 @@ public class DOMTokenList extends HtmlUnitScriptable {
             return;
         }
 
-        String value = String.join(" ", StringUtils.split(oldValue, whitespaceChars()));
-        boolean changed = false;
+        String value = String.join(" ", StringUtils.split(oldValue, WHITESPACE_CHARS));
         int pos = position(value, token);
         while (pos != -1) {
             int from = pos;
@@ -208,19 +191,12 @@ public class DOMTokenList extends HtmlUnitScriptable {
             }
             result.append(value, to, value.length());
             value = result.toString();
-            changed = true;
 
             pos = position(value, token);
         }
 
-        if (getBrowserVersion().hasFeature(JS_DOMTOKENLIST_REMOVE_WHITESPACE_CHARS_ON_REMOVE)) {
-            value = String.join(" ", StringUtils.split(value, whitespaceChars()));
-            changed = true;
-        }
-
-        if (changed) {
-            updateAttribute(value);
-        }
+        value = String.join(" ", StringUtils.split(value, WHITESPACE_CHARS));
+        updateAttribute(value);
     }
 
     /**
@@ -245,15 +221,14 @@ public class DOMTokenList extends HtmlUnitScriptable {
      */
     @JsxFunction
     public boolean contains(final String token) {
-        if (getBrowserVersion().hasFeature(JS_DOMTOKENLIST_CONTAINS_RETURNS_FALSE_FOR_BLANK)
-                && StringUtils.isBlank(token)) {
+        if (StringUtils.isBlank(token)) {
             return false;
         }
 
         if (StringUtils.isEmpty(token)) {
             throw JavaScriptEngine.reportRuntimeError("Empty input not allowed");
         }
-        if (StringUtils.containsAny(token, whitespaceChars())) {
+        if (StringUtils.containsAny(token, WHITESPACE_CHARS)) {
             throw JavaScriptEngine.reportRuntimeError("Empty input not allowed");
         }
 
@@ -262,7 +237,7 @@ public class DOMTokenList extends HtmlUnitScriptable {
             return false;
         }
 
-        value = String.join(" ", StringUtils.split(value, whitespaceChars()));
+        value = String.join(" ", StringUtils.split(value, WHITESPACE_CHARS));
         return position(value, token) > -1;
     }
 
@@ -282,7 +257,7 @@ public class DOMTokenList extends HtmlUnitScriptable {
             return null;
         }
 
-        final String[] values = StringUtils.split(value, whitespaceChars());
+        final String[] values = StringUtils.split(value, WHITESPACE_CHARS);
         if (index < values.length) {
             return values[index];
         }
@@ -296,8 +271,8 @@ public class DOMTokenList extends HtmlUnitScriptable {
     @Override
     public Object get(final int index, final Scriptable start) {
         final Object value = item(index);
-        if (value == null && !getBrowserVersion().hasFeature(JS_DOMTOKENLIST_GET_NULL_IF_OUTSIDE)) {
-            return Undefined.instance;
+        if (value == null) {
+            return JavaScriptEngine.Undefined;
         }
         return value;
     }
@@ -312,7 +287,7 @@ public class DOMTokenList extends HtmlUnitScriptable {
         domNode.setAttributeNode(attr);
     }
 
-    private int position(final String value, final String token) {
+    private static int position(final String value, final String token) {
         final int pos = value.indexOf(token);
         if (pos < 0) {
             return -1;
@@ -331,14 +306,7 @@ public class DOMTokenList extends HtmlUnitScriptable {
         return pos;
     }
 
-    private String whitespaceChars() {
-        if (getBrowserVersion().hasFeature(JS_DOMTOKENLIST_ENHANCED_WHITESPACE_CHARS)) {
-            return WHITESPACE_CHARS_IE_11;
-        }
-        return WHITESPACE_CHARS;
-    }
-
-    private boolean isWhitespace(final int ch) {
-        return whitespaceChars().indexOf(ch) > -1;
+    private static boolean isWhitespace(final int ch) {
+        return WHITESPACE_CHARS.indexOf(ch) > -1;
     }
 }

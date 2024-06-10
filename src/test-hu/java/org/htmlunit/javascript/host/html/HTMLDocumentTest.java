@@ -37,7 +37,6 @@ import org.htmlunit.junit.BrowserRunner.BuggyWebDriver;
 import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
@@ -282,8 +281,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "false",
-            IE = "true")
+    @Alerts("false")
     public void uniqueID() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -579,8 +577,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"", "", "#0000aa", "#0000aa", "x", "x"},
-            IE = {"#ffffff", "", "#0000aa", "#0000aa", "#000000", "#0"})
+    @Alerts({"", "", "#0000aa", "#0000aa", "x", "x"})
     public void bgColor() throws Exception {
         final String html =
             "<html>\n"
@@ -664,7 +661,6 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      */
     @Test
     @Alerts({"string", "Fri, 16 Oct 2009 13:59:47 GMT"})
-    @HtmlUnitNYI(IE = {"string", "Fri, 16 Oct 2009 13:59:47 GMT"})
     public void lastModified() throws Exception {
         final List<NameValuePair> responseHeaders = new ArrayList<>();
         responseHeaders.add(new NameValuePair("Last-Modified", "Fri, 16 Oct 2009 13:59:47 GMT"));
@@ -682,7 +678,6 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      */
     @Test
     @Alerts({"string", "Fri, 16 Oct 2009 13:59:47 GMT"})
-    @HtmlUnitNYI(IE = {"string", "Fri, 16 Oct 2009 13:59:47 GMT"})
     public void lastModifiedAndDate() throws Exception {
         final List<NameValuePair> responseHeaders = new ArrayList<>();
         responseHeaders.add(new NameValuePair("Last-Modified", "Fri, 16 Oct 2009 13:59:47 GMT"));
@@ -802,9 +797,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"0", "exception"},
             FF = {"1", "[object HTMLBodyElement]"},
-            FF_ESR = {"1", "[object HTMLBodyElement]"},
-            IE = {"0", "[object HTMLBodyElement]"})
-    @HtmlUnitNYI(IE = {"0", "exception"})
+            FF_ESR = {"1", "[object HTMLBodyElement]"})
     public void designMode_selectionRange_empty() throws Exception {
         designMode_selectionRange("");
     }
@@ -817,9 +810,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"0", "exception"},
             FF = {"1", "[object Text]"},
-            FF_ESR = {"1", "[object Text]"},
-            IE = {"1", "[object Text]"})
-    @HtmlUnitNYI(IE = {"0", "exception"})
+            FF_ESR = {"1", "[object Text]"})
     public void designMode_selectionRange_text() throws Exception {
         designMode_selectionRange("hello");
     }
@@ -885,8 +876,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "not defined",
-            IE = {"true", "1"})
+    @Alerts("not defined")
     public void frames() throws Exception {
         final String html = "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
@@ -1370,8 +1360,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
                     + "Open, OverWrite, PlayImage, Refresh, RemoveParaFormat, SaveAs, SizeToControl, "
                     + "SizeToControlHeight, SizeToControlWidth, Stop, StopImage, UnBookmark"},
             FF = "0 commands supported",
-            FF_ESR = "0 commands supported",
-            IE = "46 commands supported")
+            FF_ESR = "0 commands supported")
     public void queryCommandSupported_disctinct() throws Exception {
         final String[] commands = {"2D-Position", "AbsolutePosition",
             "BlockDirLTR", "BlockDirRTL", "BrowseMode",
@@ -1518,8 +1507,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"3", "div1"},
-            IE = "undefined")
+    @Alerts({"3", "div1"})
     public void querySelectorAll_quirks() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -1677,9 +1665,6 @@ public class HTMLDocumentTest extends WebDriverTestCase {
     @Test
     @Alerts({"true", "", "foo=bar", "foo=hello world"})
     public void cookie_write_cookiesEnabled() throws Exception {
-        // TODO [IE]SINGLE-VS-BULK test runs when executed as single but breaks as bulk
-        shutDownRealIE();
-
         final String html =
                 "<html><head><script>\n"
               + LOG_TITLE_FUNCTION
@@ -1748,11 +1733,6 @@ public class HTMLDocumentTest extends WebDriverTestCase {
             + "  <body>abc</body>\n"
             + "</html>";
 
-        // [IE] real IE waits for the page to load until infinity
-        if (useRealBrowser() && getBrowserVersion().isIE()) {
-            Assert.fail("Blocks real IE");
-        }
-
         loadPageVerifyTitle2(html);
     }
 
@@ -1803,8 +1783,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"myattr", ""},
-            IE = {"myAttr", ""})
+    @Alerts({"myattr", ""})
     public void createAttributeNameValue() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -1929,8 +1908,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"", "", "#0000aa", "#0000aa", "x", "x"},
-            IE = {"#0000ff", "", "#0000aa", "#0000aa", "#000000", "#0"})
+    @Alerts({"", "", "#0000aa", "#0000aa", "x", "x"})
     public void alinkColor() throws Exception {
         final String html =
             "<html>\n"
@@ -1960,8 +1938,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"", "", "#0000aa", "#0000aa", "x", "x"},
-            IE = {"#0000ff", "", "#0000aa", "#0000aa", "#000000", "#0"})
+    @Alerts({"", "", "#0000aa", "#0000aa", "x", "x"})
     public void linkColor() throws Exception {
         final String html =
             "<html>\n"
@@ -1991,8 +1968,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"", "", "#0000aa", "#0000aa", "x", "x"},
-            IE = {"#800080", "", "#0000aa", "#0000aa", "#000000", "#0"})
+    @Alerts({"", "", "#0000aa", "#0000aa", "x", "x"})
     public void vlinkColor() throws Exception {
         final String html =
             "<html>\n"
@@ -2022,8 +1998,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"", "", "#0000aa", "#0000aa", "x", "x"},
-            IE = {"#000000", "", "#0000aa", "#0000aa", "#000000", "#0"})
+    @Alerts({"", "", "#0000aa", "#0000aa", "x", "x"})
     public void fgColor() throws Exception {
         final String html =
             "<html>\n"
@@ -2078,8 +2053,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"true", "undefined", "false"},
-            IE = {"true", "[object HTMLFormElement]", "true"})
+    @Alerts({"true", "undefined", "false"})
     public void document_xxx_formAccess() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -2105,8 +2079,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"windows-1252", "windows-1252", "windows-1252", "undefined"},
-            IE = {"ISO-8859-1", "iso-8859-1", "iso-8859-1", "windows-1252"})
+    @Alerts({"windows-1252", "windows-1252", "windows-1252", "undefined"})
     public void encoding() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -2129,8 +2102,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"windows-1252", "windows-1252", "windows-1252", "undefined"},
-            IE = {"ISO-8859-1", "iso-8859-1", "iso-8859-1", "windows-1252"})
+    @Alerts({"windows-1252", "windows-1252", "windows-1252", "undefined"})
     public void encoding2() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -2154,8 +2126,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"windows-1252", "windows-1252", "windows-1252", "undefined"},
-            IE = {"ISO-8859-1", "iso-8859-1", "iso-8859-1", "windows-1252"})
+    @Alerts({"windows-1252", "windows-1252", "windows-1252", "undefined"})
     public void encoding3() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -2181,8 +2152,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"UTF-8", "UTF-8", "UTF-8", "undefined"},
-            IE = {"UTF-8", "utf-8", "utf-8", "windows-1252"})
+    @Alerts({"UTF-8", "UTF-8", "UTF-8", "undefined"})
     public void encoding4() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -2208,8 +2178,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"UTF-8", "UTF-8", "UTF-8", "undefined"},
-            IE = {"UTF-8", "utf-8", "utf-8", "windows-1252"})
+    @Alerts({"UTF-8", "UTF-8", "UTF-8", "undefined"})
     public void encoding5() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -2235,8 +2204,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"UTF-8", "UTF-8", "UTF-8", "undefined"},
-            IE = {"UTF-8", "utf-8", "utf-8", "windows-1252"})
+    @Alerts({"UTF-8", "UTF-8", "UTF-8", "undefined"})
     public void encoding6() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -2263,8 +2231,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "?%C3%A8=%C3%A8",
-            IE = "?\u00E8=\u00E8")
+    @Alerts("?%C3%A8=%C3%A8")
     public void encoding7() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -2285,8 +2252,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "BackCompat", "function", "function"},
-            IE = {"11", "BackCompat", "function", "function"})
+    @Alerts({"undefined", "BackCompat", "function", "function"})
     public void documentMode() throws Exception {
         documentMode("", "");
     }
@@ -2295,8 +2261,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "CSS1Compat", "function", "function"},
-            IE = {"11", "CSS1Compat", "function", "function"})
+    @Alerts({"undefined", "CSS1Compat", "function", "function"})
     public void documentMode_doctypeStrict() throws Exception {
         documentMode(HtmlPageTest.STANDARDS_MODE_PREFIX_, "");
     }
@@ -2305,8 +2270,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "BackCompat", "function", "function"},
-            IE = {"11", "BackCompat", "function", "function"})
+    @Alerts({"undefined", "BackCompat", "function", "function"})
     public void documentMode_doctypeTransitional() throws Exception {
         documentMode("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 Transitional//EN\""
                 + " \"http://www.w3.org/TR/html4/loose.dtd\">\n", "");
@@ -2316,8 +2280,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "CSS1Compat", "function", "function"},
-            IE = {"11", "CSS1Compat", "function", "function"})
+    @Alerts({"undefined", "CSS1Compat", "function", "function"})
     public void documentMode_doctypeHTML5() throws Exception {
         documentMode("<!DOCTYPE html>\n", "");
     }
@@ -2326,8 +2289,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "BackCompat", "function", "function"},
-            IE = {"5", "BackCompat", "undefined", "undefined"})
+    @Alerts({"undefined", "BackCompat", "function", "function"})
     public void documentMode_metaIE5() throws Exception {
         documentMode("", "  <meta http-equiv='X-UA-Compatible' content='IE=5'>\n");
     }
@@ -2336,9 +2298,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "BackCompat", "function", "function"},
-            IE = {"8", "CSS1Compat", "object", "object"})
-    @HtmlUnitNYI(IE = {"8", "CSS1Compat", "function", "function"})
+    @Alerts({"undefined", "BackCompat", "function", "function"})
     public void documentMode_metaIE8() throws Exception {
         documentMode("", "  <meta http-equiv='X-UA-Compatible' content='IE=8'>\n");
     }
@@ -2347,9 +2307,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "CSS1Compat", "function", "function"},
-            IE = {"8", "CSS1Compat", "object", "object"})
-    @HtmlUnitNYI(IE = {"8", "CSS1Compat", "function", "function"})
+    @Alerts({"undefined", "CSS1Compat", "function", "function"})
     public void documentMode_metaIE8_doctypeStrict() throws Exception {
         documentMode(HtmlPageTest.STANDARDS_MODE_PREFIX_, "  <meta http-equiv='X-UA-Compatible' content='IE=8'>\n");
     }
@@ -2358,8 +2316,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "BackCompat", "function", "function"},
-            IE = {"11", "BackCompat", "function", "function"})
+    @Alerts({"undefined", "BackCompat", "function", "function"})
     public void documentMode_metaEmulateIE8() throws Exception {
         documentMode("", "  <meta http-equiv='X-UA-Compatible' content='IE=Emulate8'>\n");
     }
@@ -2368,8 +2325,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "CSS1Compat", "function", "function"},
-            IE = {"11", "CSS1Compat", "function", "function"})
+    @Alerts({"undefined", "CSS1Compat", "function", "function"})
     public void documentMode_metaEmulateIE8_doctypeStrict() throws Exception {
         documentMode(HtmlPageTest.STANDARDS_MODE_PREFIX_,
                 "  <meta http-equiv='X-UA-Compatible' content='IE=Emulate8'>\n");
@@ -2379,8 +2335,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "BackCompat", "function", "function"},
-            IE = {"9", "CSS1Compat", "function", "function"})
+    @Alerts({"undefined", "BackCompat", "function", "function"})
     public void documentMode_metaIE9() throws Exception {
         documentMode("", "  <meta http-equiv='X-UA-Compatible' content='IE=9'>\n");
     }
@@ -2389,8 +2344,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "CSS1Compat", "function", "function"},
-            IE = {"9", "CSS1Compat", "function", "function"})
+    @Alerts({"undefined", "CSS1Compat", "function", "function"})
     public void documentMode_metaIE9_doctypeStrict() throws Exception {
         documentMode(HtmlPageTest.STANDARDS_MODE_PREFIX_,
                 "  <meta http-equiv='X-UA-Compatible' content='IE=9'>\n");
@@ -2400,8 +2354,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "BackCompat", "function", "function"},
-            IE = {"11", "BackCompat", "function", "function"})
+    @Alerts({"undefined", "BackCompat", "function", "function"})
     public void documentMode_metaIEEdge() throws Exception {
         documentMode("", "  <meta http-equiv='X-UA-Compatible' content='IE=edge'>\n");
     }
@@ -2410,8 +2363,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "CSS1Compat", "function", "function"},
-            IE = {"11", "CSS1Compat", "function", "function"})
+    @Alerts({"undefined", "CSS1Compat", "function", "function"})
     public void documentMode_metaIEEdge_doctypeStrict() throws Exception {
         documentMode(HtmlPageTest.STANDARDS_MODE_PREFIX_,
                 "  <meta http-equiv='X-UA-Compatible' content='IE=edge'>\n");
@@ -2514,8 +2466,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(IE = {"[object HTMLDocument]", "[object HTMLDocument]"},
-            CHROME = {"[object HTMLDocument]", "function HTMLDocument() { [native code] }"},
+    @Alerts(CHROME = {"[object HTMLDocument]", "function HTMLDocument() { [native code] }"},
             EDGE = {"[object HTMLDocument]", "function HTMLDocument() { [native code] }"},
             FF = {"[object HTMLDocument]", "function HTMLDocument() { [native code] }"},
             FF_ESR = {"[object HTMLDocument]", "function HTMLDocument() { [native code] }"})
@@ -2543,8 +2494,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "§§URL§§",
-            IE = "undefined")
+    @Alerts("§§URL§§")
     public void baseURI_noBaseTag() throws Exception {
         final String html = "<html>\n"
                 + "<body>\n"
@@ -2566,8 +2516,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "§§URL§§details/abc",
-            IE = "undefined")
+    @Alerts("§§URL§§details/abc")
     public void baseURI_noBaseTag_urlPath() throws Exception {
         final String html = "<html>\n"
                 + "<body>\n"
@@ -2591,8 +2540,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "§§URL§§?x=y&z=zz",
-            IE = "undefined")
+    @Alerts("§§URL§§?x=y&z=zz")
     public void baseURI_noBaseTag_urlParams() throws Exception {
         final String html = "<html>\n"
                 + "<body>\n"
@@ -2616,8 +2564,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "§§URL§§details/abc;jsessionid=42?x=y&z=zz",
-            IE = "undefined")
+    @Alerts("§§URL§§details/abc;jsessionid=42?x=y&z=zz")
     public void baseURI_noBaseTag_urlPathAndParams() throws Exception {
         final String html = "<html>\n"
                 + "<body>\n"
@@ -2641,8 +2588,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "http://myotherwebsite.com/foo",
-            IE = "undefined")
+    @Alerts("http://myotherwebsite.com/foo")
     public void baseURI_withBaseTag() throws Exception {
         final String html = "<html>\n"
                 + "<head>\n"
@@ -2661,8 +2607,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "http://myotherwebsite.com/foo",
-            IE = "undefined")
+    @Alerts("http://myotherwebsite.com/foo")
     public void baseURI_withBaseTagInBody() throws Exception {
         final String html = "<html>\n"
                 + "<body>\n"
@@ -2680,8 +2625,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "§§URL§§img/",
-            IE = "undefined")
+    @Alerts("§§URL§§img/")
     public void baseURI_withBaseTag_absolutePath() throws Exception {
         final String html = "<html>\n"
                 + "<head>\n"
@@ -2703,8 +2647,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "§§URL§§path/to/img",
-            IE = "undefined")
+    @Alerts("§§URL§§path/to/img")
     public void baseURI_withBaseTag_relativePath() throws Exception {
         final String html = "<html>\n"
                 + "<head>\n"
@@ -2726,8 +2669,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "§§URL§§path/to/img/",
-            IE = "undefined")
+    @Alerts("§§URL§§path/to/img/")
     public void baseURI_withBaseTag_relativePath_slash() throws Exception {
         final String html = "<html>\n"
                 + "<head>\n"
@@ -2749,8 +2691,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "§§URL§§path/img",
-            IE = "undefined")
+    @Alerts("§§URL§§path/img")
     public void baseURI_withBaseTag_relativePath_parent() throws Exception {
         final String html = "<html>\n"
                 + "<head>\n"
@@ -2772,8 +2713,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "§§URL§§img",
-            IE = "undefined")
+    @Alerts("§§URL§§img")
     public void baseURI_withBaseTag_relativePath_strange() throws Exception {
         final String html = "<html>\n"
                 + "<head>\n"
@@ -2822,8 +2762,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "complete,[object HTMLBodyElement]-complete,[object HTMLBodyElement]-",
             FF = "uninitialized,[object HTMLBodyElement]-uninitialized,[object HTMLBodyElement]-",
-            FF_ESR = "uninitialized,[object HTMLBodyElement]-uninitialized,[object HTMLBodyElement]-",
-            IE = "loading,[object HTMLBodyElement]-complete,[object HTMLBodyElement]-")
+            FF_ESR = "uninitialized,[object HTMLBodyElement]-uninitialized,[object HTMLBodyElement]-")
     @HtmlUnitNYI(CHROME = "loading,[object HTMLBodyElement]-complete,[object HTMLBodyElement]-",
             EDGE = "loading,[object HTMLBodyElement]-complete,[object HTMLBodyElement]-",
             FF = "loading,[object HTMLBodyElement]-complete,[object HTMLBodyElement]-",
@@ -2867,8 +2806,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "1",
-            IE = "undefined")
+    @Alerts("1")
     public void childElementCount() throws Exception {
         final String html = ""
             + "<html><head>\n"
@@ -2890,8 +2828,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "exception",
-            IE = "[object HTMLEmbedElement]")
+    @Alerts("exception")
     public void embeds() throws Exception {
         final String html = ""
             + "<html><head>\n"
@@ -2915,8 +2852,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"1", "exception"},
-            IE = {"1", "[object HTMLEmbedElement]"})
+    @Alerts({"1", "exception"})
     public void plugins() throws Exception {
         final String html = ""
             + "<html><head>\n"
@@ -2941,8 +2877,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "exception",
-            IE = "[object HTMLImageElement]")
+    @Alerts("exception")
     public void images() throws Exception {
         final String html = ""
             + "<html><head>\n"

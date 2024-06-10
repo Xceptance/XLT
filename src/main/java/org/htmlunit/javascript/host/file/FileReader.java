@@ -14,9 +14,6 @@
  */
 package org.htmlunit.javascript.host.file;
 
-import static org.htmlunit.BrowserVersionFeatures.JS_FILEREADER_CONTENT_TYPE;
-import static org.htmlunit.BrowserVersionFeatures.JS_FILEREADER_EMPTY_NULL;
-
 import java.io.IOException;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
@@ -30,7 +27,6 @@ import org.apache.commons.io.Charsets;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.htmlunit.BrowserVersion;
 import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.ScriptableObject;
 import org.htmlunit.corejs.javascript.typedarrays.NativeArrayBuffer;
@@ -119,10 +115,9 @@ public class FileReader extends EventTarget {
 
         final byte[] bytes = ((Blob) object).getBytes();
         final String value = new String(Base64.encodeBase64(bytes), StandardCharsets.US_ASCII);
-        final BrowserVersion browserVersion = getBrowserVersion();
 
         String contentType = ((Blob) object).getType();
-        if (StringUtils.isEmpty(contentType) && !browserVersion.hasFeature(JS_FILEREADER_EMPTY_NULL)) {
+        if (StringUtils.isEmpty(contentType)) {
             contentType = MimeType.APPLICATION_OCTET_STREAM;
         }
 
@@ -139,26 +134,10 @@ public class FileReader extends EventTarget {
             }
         }
 
-        if (browserVersion.hasFeature(JS_FILEREADER_EMPTY_NULL)) {
-            if (value.isEmpty()) {
-                result_ = "null";
-            }
-            else {
-                if (contentType != null) {
-                    result_ += contentType;
-                }
-                result_ += ";base64," + value;
-            }
+        if (contentType == null) {
+            contentType = MimeType.APPLICATION_OCTET_STREAM;
         }
-        else {
-            final boolean includeConentType = browserVersion.hasFeature(JS_FILEREADER_CONTENT_TYPE);
-            if (!value.isEmpty() || includeConentType) {
-                if (contentType == null) {
-                    contentType = MimeType.APPLICATION_OCTET_STREAM;
-                }
-                result_ += contentType + ";base64," + value;
-            }
-        }
+        result_ += contentType + ";base64," + value;
         readyState_ = DONE;
 
         final Event event = new Event(this, Event.TYPE_LOAD);

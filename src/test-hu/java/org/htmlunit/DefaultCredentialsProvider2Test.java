@@ -14,7 +14,6 @@
  */
 package org.htmlunit;
 
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 import static org.junit.Assert.fail;
 
 import java.io.StringWriter;
@@ -30,7 +29,6 @@ import org.apache.logging.log4j.core.layout.PatternLayout;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -150,7 +148,7 @@ public class DefaultCredentialsProvider2Test extends WebServerTestCase {
             //success
         }
 
-        final boolean urlWithCredentials = !getBrowserVersion().isIE();
+        final boolean urlWithCredentials = true;
 
         try {
             //  now a url with credentials
@@ -200,7 +198,7 @@ public class DefaultCredentialsProvider2Test extends WebServerTestCase {
             //success
         }
 
-        final boolean urlWithCredentials = !getBrowserVersion().isIE();
+        final boolean urlWithCredentials = true;
 
         try {
             // now a url with credentials
@@ -264,7 +262,7 @@ public class DefaultCredentialsProvider2Test extends WebServerTestCase {
             //success
         }
 
-        final boolean urlWithCredentials = !getBrowserVersion().isIE();
+        final boolean urlWithCredentials = true;
 
         try {
             // now a url with credentials
@@ -322,20 +320,10 @@ public class DefaultCredentialsProvider2Test extends WebServerTestCase {
         try {
             final URL url = new URL("http://joe:jetty@localhost:" + PORT + "/");
             final HtmlPage page = loadPage(html, url);
-            if (getBrowserVersion().isIE()) {
-                assertTrue(getCollectedAlerts(page).contains("SecRet"));
-            }
-            else {
-                fail("Should not be authorized");
-            }
+            fail("Should not be authorized");
         }
         catch (final FailingHttpStatusCodeException e) {
-            if (getBrowserVersion().isIE()) {
-                fail("Should be authorized");
-            }
-            else {
-                //success
-            }
+            //success
         }
     }
 
@@ -361,7 +349,7 @@ public class DefaultCredentialsProvider2Test extends WebServerTestCase {
             //success
         }
 
-        final boolean urlWithCredentials = !getBrowserVersion().isIE();
+        final boolean urlWithCredentials = true;
 
         try {
             // now a url with correct credentials
@@ -406,9 +394,7 @@ public class DefaultCredentialsProvider2Test extends WebServerTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "HTTP ERROR 401",
-            IE = "HTTP ERROR 500")
-    @NotYetImplemented(IE)
+    @Alerts("HTTP ERROR 401")
     public void basicAuthenticationXHRWithUsername() throws Exception {
         final String html = "<html><head><script>\n"
             + "var xhr = new XMLHttpRequest();\n"

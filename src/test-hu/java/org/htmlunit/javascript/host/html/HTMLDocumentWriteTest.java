@@ -136,8 +136,7 @@ public class HTMLDocumentWriteTest extends SimpleWebTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "exception occurred",
-            IE = "")
+    @Alerts("exception occurred")
     public void write_AssignedToVar() throws Exception {
         final String html
             = "<html><head><title>foo</title><script>\n"
@@ -163,8 +162,7 @@ public class HTMLDocumentWriteTest extends SimpleWebTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(IE = "",
-            FF = "exception occurred")
+    @Alerts(FF = "exception occurred")
     public void write_AssignedToVar2() throws Exception {
         final String html =
             "<html><head><title>Test</title></head><body>\n"

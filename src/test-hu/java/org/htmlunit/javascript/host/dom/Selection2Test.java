@@ -194,8 +194,7 @@ public class Selection2Test extends SimpleWebTestCase {
     @Test
     @Alerts(DEFAULT = {"0", "1"},
             CHROME = {"0", "3"},
-            EDGE = {"0", "3"},
-            IE = {"0", "exception", "1"})
+            EDGE = {"0", "3"})
     @NotYetImplemented({CHROME, EDGE})
     public void extend() throws Exception {
         test("try{selection.extend(s2, 1)}catch(e){alert('exception')}", "selection.focusOffset", "x");
@@ -233,11 +232,7 @@ public class Selection2Test extends SimpleWebTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "exception", "undefined"},
-            CHROME = {"None", "None"},
-            EDGE = {"None", "None"},
-            FF = {"None", "None"},
-            FF_ESR = {"None", "None"})
+    @Alerts({"None", "None"})
     public void empty() throws Exception {
         test("try{selection.empty()}catch(e){alert('exception')}", "selection.type", "x ? x : 'undefined'");
     }

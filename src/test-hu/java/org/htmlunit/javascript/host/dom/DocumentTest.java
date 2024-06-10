@@ -17,7 +17,6 @@ package org.htmlunit.javascript.host.dom;
 
 import static org.htmlunit.javascript.host.xml.XMLDocumentTest.LOAD_XML_DOCUMENT_FROM_FILE_FUNCTION;
 import static org.htmlunit.javascript.host.xml.XMLDocumentTest.callLoadXMLDocumentFromFile;
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 
 import java.net.URL;
 
@@ -195,8 +194,7 @@ public class DocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"0", "1", "1", "true", "name: end"},
-            IE = {"0", "3", "3", "true", "id: firstLink"})
+    @Alerts({"0", "1", "1", "true", "name: end"})
     public void anchors() throws Exception {
         final String html =
             "<html>\n"
@@ -261,8 +259,7 @@ public class DocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"0", "0", "0", "true"},
-            IE = {"0", "3", "3", "true"})
+    @Alerts({"0", "0", "0", "true"})
     public void applets() throws Exception {
         final String html =
             "<html>\n"
@@ -1310,10 +1307,7 @@ public class DocumentTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"2", "<nested>Three</nested>", "Four",
-                       "1", "Two", "0", "0"},
-            IE = {"2", "undefined", "undefined",
-                  "1", "undefined", "0", "0"})
+    @Alerts({"2", "<nested>Three</nested>", "Four", "1", "Two", "0", "0"})
     public void getElementsByTagNameXml() throws Exception {
         final String html = "<html><head>\n"
             + "<meta http-equiv='X-UA-Compatible' content='IE=edge'>\n"
@@ -1329,14 +1323,8 @@ public class DocumentTest extends WebDriverTestCase {
             + "                 '<result>Four</result>',\n"
             + "                 '</ResultSet>'\n"
             + "                ].join('');\n"
-            + "  if (window.DOMParser) {\n"
-            + "    var parser = new DOMParser();\n"
-            + "    xml = parser.parseFromString(xmlString, 'text/xml');\n"
-            + "  } else { // IE\n"
-            + "    var parser = new ActiveXObject('Microsoft.XMLDOM');\n"
-            + "    parser.async = 'false';\n"
-            + "    parser.loadXML(xmlString);\n"
-            + "  }\n"
+            + "  var parser = new DOMParser();\n"
+            + "  xml = parser.parseFromString(xmlString, 'text/xml');\n"
             + "  var xmlDoc = parser.parseFromString(xmlString, 'text/xml');\n"
             + "  try {\n"
 
@@ -1434,8 +1422,7 @@ public class DocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "null",
-            IE = "undefined")
+    @Alerts("null")
     public void all_NamedItem_Unknown() throws Exception {
         namedItem("foo");
     }
@@ -1471,8 +1458,7 @@ public class DocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"coll 2", "f4<->form4_1", "f4<->form4_2"},
-            IE = "f4<->form4_1")
+    @Alerts({"coll 2", "f4<->form4_1", "f4<->form4_2"})
     public void all_NamedItem_DuplicateId() throws Exception {
         namedItem("f4");
     }
@@ -1481,8 +1467,7 @@ public class DocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"coll 2", "f5_1<->form5", "f5_2<->form5"},
-            IE = "f5_1<->form5")
+    @Alerts({"coll 2", "f5_1<->form5", "f5_2<->form5"})
     public void all_NamedItem_DuplicateName() throws Exception {
         namedItem("form5");
     }
@@ -1491,8 +1476,7 @@ public class DocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"coll 2", "f6<->form6", "form6<->form6_2"},
-            IE = "f6<->form6")
+    @Alerts({"coll 2", "f6<->form6", "form6<->form6_2"})
     public void all_NamedItem_DuplicateIdName() throws Exception {
         namedItem("form6");
     }
@@ -1538,8 +1522,7 @@ public class DocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "exception",
-            IE = {"a", "b", "a", "b", "0"})
+    @Alerts("exception")
     public void all_tags() throws Exception {
         final String html
             = "<html><head>\n"
@@ -1615,8 +1598,7 @@ public class DocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"null", "null", "null"},
-            IE = {"undefined", "null", "undefined"})
+    @Alerts({"null", "null", "null"})
     public void all_NotExisting() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -1986,8 +1968,7 @@ public class DocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"object", "FORM"},
-            IE = {"function", "undefined"})
+    @Alerts({"object", "FORM"})
     public void precedence() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -2007,8 +1988,7 @@ public class DocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"true", "false"},
-            IE = {"true", "true"})
+    @Alerts({"true", "false"})
     public void defaultViewAndParentWindow() throws Exception {
         final String html = "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
@@ -2235,8 +2215,7 @@ public class DocumentTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "test",
-            IE = "null")
+    @Alerts("test")
     @NotYetImplemented
     public void createEvent_caller() throws Exception {
         final String html =
@@ -2286,9 +2265,7 @@ public class DocumentTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "onload",
-            IE = "undefined")
-    @NotYetImplemented(IE)
+    @Alerts("onload")
     public void caller_event() throws Exception {
         final String html =
               "<html>\n"
@@ -2373,8 +2350,7 @@ public class DocumentTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"off", "off", "on", "on", "on", "off", "off", "off", "off"},
-            IE = {"inherit", "!", "inherit", "on", "on", "!", "on", "off", "off", "inherit", "inherit"})
+    @Alerts({"off", "off", "on", "on", "on", "off", "off", "off", "off"})
     public void designMode_root() throws Exception {
         designMode("document");
     }
@@ -2384,8 +2360,7 @@ public class DocumentTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"off", "off", "on", "on", "on", "off", "off", "off", "off"},
-            IE = {"inherit", "!", "inherit", "on", "on", "!", "on", "off", "off", "inherit", "inherit"})
+    @Alerts({"off", "off", "on", "on", "on", "off", "off", "off", "off"})
     public void designMode_iframe() throws Exception {
         designMode("window.frames['f'].document");
     }
@@ -2480,8 +2455,7 @@ public class DocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "[object HTMLHeadingElement]",
-            IE = "not available")
+    @Alerts("[object HTMLHeadingElement]")
     public void evaluate_caseInsensitiveAttribute() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -2505,8 +2479,7 @@ public class DocumentTest extends WebDriverTestCase {
      */
     @org.junit.Ignore("Jaxen doesn't support this")
     @Test
-    @Alerts(DEFAULT = "[object HTMLHtmlElement]",
-            IE = "not available")
+    @Alerts("[object HTMLHtmlElement]")
     public void evaluate_caseInsensitiveTagName() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -2628,8 +2601,7 @@ public class DocumentTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"[object HTMLDocument]", "true"},
-            IE = "-")
+    @Alerts({"[object HTMLDocument]", "true"})
     public void getRootNode() throws Exception {
         final String html = "<html>\n"
                 + "<body id='hello' onload='doTest()'>\n"
@@ -2651,9 +2623,7 @@ public class DocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"null", "text1", "not available"},
-            IE = {"null", "text1", "onfocus text2", "text2", "onfocus text2"})
-    @NotYetImplemented(IE)
+    @Alerts({"null", "text1", "not available"})
     // the execution order is not yet correct: the onfocus is called during onload not after it
     public void setActive() throws Exception {
         final String html = "<html><head>\n"
@@ -2712,8 +2682,7 @@ public class DocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"true", "false", "true", "true", "true", "false", "false"},
-            IE = {"-", "-", "-", "-", "-", "-", "-"})
+    @Alerts({"true", "false", "true", "true", "true", "false", "false"})
     public void contains() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"
@@ -2743,8 +2712,7 @@ public class DocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object Comment]", "false"},
-            IE = {"[object Comment]", "-"})
+    @Alerts({"[object Comment]", "false"})
     public void createComment() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -2770,8 +2738,6 @@ public class DocumentTest extends WebDriverTestCase {
     @Test
     @Alerts({"books", "books", "3", "#text", "0"})
     public void createAttribute() throws Exception {
-        shutDownRealIE();
-
         final String html = "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -2808,8 +2774,6 @@ public class DocumentTest extends WebDriverTestCase {
     @Test
     @Alerts({"0", "1"})
     public void getElementsByTagNameNS() throws Exception {
-        shutDownRealIE();
-
         final String html = "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -2895,8 +2859,7 @@ public class DocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"§§URL§§", "undefined"},
-            IE = {"§§URL§§", "§§URL§§"})
+    @Alerts({"§§URL§§", "undefined"})
     public void urlUnencoded() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -2923,8 +2886,7 @@ public class DocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"1", "[object HTMLHtmlElement]"},
-            IE = "not found")
+    @Alerts({"1", "[object HTMLHtmlElement]"})
     public void children() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -2955,8 +2917,7 @@ public class DocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"application/xml", "text/html"},
-            IE = {"undefined", "undefined"})
+    @Alerts({"application/xml", "text/html"})
     public void contentType() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -2981,8 +2942,7 @@ public class DocumentTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"null", "null"},
             FF = {"undefined", "undefined"},
-            FF_ESR = {"undefined", "undefined"},
-            IE = {"", ""})
+            FF_ESR = {"undefined", "undefined"})
     public void xmlEncoding() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -3032,8 +2992,7 @@ public class DocumentTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"1.0", "null"},
             FF = {"undefined", "undefined"},
-            FF_ESR = {"undefined", "undefined"},
-            IE = {"1.0", ""})
+            FF_ESR = {"undefined", "undefined"})
     public void xmlVersion() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -3079,8 +3038,7 @@ public class DocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"1", "[object HTMLHtmlElement]", "[object HTMLHtmlElement]"},
-            IE = {"undefined", "undefined", "undefined"})
+    @Alerts({"1", "[object HTMLHtmlElement]", "[object HTMLHtmlElement]"})
     public void firstElementChild() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -3103,8 +3061,7 @@ public class DocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"1", "[object HTMLHtmlElement]", "[object HTMLHtmlElement]"},
-            IE = {"undefined", "undefined", "undefined"})
+    @Alerts({"1", "[object HTMLHtmlElement]", "[object HTMLHtmlElement]"})
     public void firstElementChildDoctype() throws Exception {
         final String html = "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"\n"
             + "    \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n"
@@ -3206,8 +3163,7 @@ public class DocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "no WeakSet")
+    @Alerts("true")
     public void useInWeakSet() throws Exception {
         final String html = "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"\n"
             + "    \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n"
@@ -3236,8 +3192,7 @@ public class DocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"about:blank", "about:blank", "undefined", "null", "null"},
-            IE = "no")
+    @Alerts({"about:blank", "about:blank", "undefined", "null", "null"})
     @HtmlUnitNYI(CHROME = "exception",
             EDGE = "exception",
             FF = "exception",

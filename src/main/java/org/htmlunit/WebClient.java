@@ -17,15 +17,8 @@ package org.htmlunit;
 
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.htmlunit.BrowserVersionFeatures.CONTENT_SECURITY_POLICY_IGNORED;
-import static org.htmlunit.BrowserVersionFeatures.DIALOGWINDOW_REFERER;
 import static org.htmlunit.BrowserVersionFeatures.HTTP_HEADER_CH_UA;
-import static org.htmlunit.BrowserVersionFeatures.HTTP_HEADER_SEC_FETCH;
-import static org.htmlunit.BrowserVersionFeatures.HTTP_HEADER_UPGRADE_INSECURE_REQUEST;
-import static org.htmlunit.BrowserVersionFeatures.HTTP_REDIRECT_WITHOUT_HASH;
-import static org.htmlunit.BrowserVersionFeatures.JS_XML_SUPPORT_VIA_ACTIVEXOBJECT;
-import static org.htmlunit.BrowserVersionFeatures.URL_MINIMAL_QUERY_ENCODING;
-import static org.htmlunit.BrowserVersionFeatures.WINDOW_EXECUTE_EVENTS;
+import static org.htmlunit.BrowserVersionFeatures.HTTP_HEADER_PRIORITY;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -68,7 +61,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.http.NoHttpResponseException;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.cookie.MalformedCookieException;
-import org.htmlunit.activex.javascript.msxml.MSXMLActiveXObjectFactory;
+import org.htmlunit.attachment.Attachment;
 import org.htmlunit.attachment.AttachmentHandler;
 import org.htmlunit.csp.Policy;
 import org.htmlunit.csp.url.URI;
@@ -86,6 +79,8 @@ import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.XHtmlPage;
 import org.htmlunit.html.parser.HTMLParser;
 import org.htmlunit.html.parser.HTMLParserListener;
+import org.htmlunit.http.HttpStatus;
+import org.htmlunit.http.HttpUtils;
 import org.htmlunit.httpclient.HttpClientConverter;
 import org.htmlunit.javascript.AbstractJavaScriptEngine;
 import org.htmlunit.javascript.DefaultJavaScriptErrorListener;
@@ -97,6 +92,7 @@ import org.htmlunit.javascript.host.Location;
 import org.htmlunit.javascript.host.Window;
 import org.htmlunit.javascript.host.dom.Node;
 import org.htmlunit.javascript.host.event.Event;
+import org.htmlunit.javascript.host.file.Blob;
 import org.htmlunit.javascript.host.html.HTMLIFrameElement;
 import org.htmlunit.protocol.data.DataURLConnection;
 import org.htmlunit.util.Cookie;
@@ -180,7 +176,6 @@ public class WebClient implements Serializable, AutoCloseable {
     private PrintHandler printHandler_;
     private WebStartHandler webStartHandler_;
     private FrameContentHandler frameContentHandler_;
-    private AppletConfirmHandler appletConfirmHandler_;
 
     private AjaxController ajaxController_ = new AjaxController();
 
@@ -221,14 +216,11 @@ public class WebClient implements Serializable, AutoCloseable {
 
     private ScriptPreProcessor scriptPreProcessor_;
 
-    private Map<String, String> activeXObjectMap_ = Collections.emptyMap();
-    private transient MSXMLActiveXObjectFactory msxmlActiveXObjectFactory_;
     private RefreshHandler refreshHandler_ = new NiceRefreshHandler(2);
     private JavaScriptErrorListener javaScriptErrorListener_ = new DefaultJavaScriptErrorListener();
 
     private final WebClientOptions options_ = new WebClientOptions();
     private final boolean javaScriptEngineEnabled_;
-    private final WebClientInternals internals_ = new WebClientInternals();
     private final StorageHolder storageHolder_ = new StorageHolder();
 
     /**
@@ -312,8 +304,6 @@ public class WebClient implements Serializable, AutoCloseable {
         // The window must be constructed AFTER the script engine.
         currentWindowTracker_ = new CurrentWindowTracker(this, true);
         currentWindow_ = new TopLevelWindow("", this);
-
-        initMSXMLActiveX();
     }
 
     /**
@@ -333,22 +323,6 @@ public class WebClient implements Serializable, AutoCloseable {
             final Thread thread = baseFactory_.newThread(aRunnable);
             thread.setName("WebClient Thread " + ID_++);
             return thread;
-        }
-    }
-
-    private void initMSXMLActiveX() {
-        if (!isJavaScriptEnabled() || !getBrowserVersion().hasFeature(JS_XML_SUPPORT_VIA_ACTIVEXOBJECT)) {
-            return;
-        }
-
-        msxmlActiveXObjectFactory_ = new MSXMLActiveXObjectFactory();
-        // TODO [IE] initialize in #init or in #initialize?
-        try {
-            msxmlActiveXObjectFactory_.init(getBrowserVersion());
-        }
-        catch (final Exception e) {
-            LOG.error("Exception while initializing MSXML ActiveX for the page", e);
-            throw new ScriptException(null, e); // BUG: null is not useful.
         }
     }
 
@@ -569,7 +543,7 @@ public class WebClient implements Serializable, AutoCloseable {
      */
     public Page loadWebResponseInto(final WebResponse webResponse, final WebWindow webWindow)
         throws IOException, FailingHttpStatusCodeException {
-        return loadWebResponseInto(webResponse, webWindow, false);
+        return loadWebResponseInto(webResponse, webWindow, null);
     }
 
     /**
@@ -585,8 +559,8 @@ public class WebClient implements Serializable, AutoCloseable {
      *
      * @param webResponse the response that will be used to create the new page
      * @param webWindow the window that the new page will be placed within
-     * @param forceAttachment handle this as attachment (is set to true if the call was triggered from
-     * anchor with download property set).
+     * @param forceAttachmentWithFilename if not {@code null}, handle this as an attachment with the specified name
+     * or if an empty string ("") use the filename provided in the response
      * @throws IOException if an IO error occurs
      * @throws FailingHttpStatusCodeException if the server returns a failing status code AND the property
      *         {@link WebClientOptions#setThrowExceptionOnFailingStatusCode(boolean)} is set to true
@@ -594,12 +568,12 @@ public class WebClient implements Serializable, AutoCloseable {
      * @see #setAttachmentHandler(AttachmentHandler)
      */
     public Page loadWebResponseInto(final WebResponse webResponse, final WebWindow webWindow,
-            final boolean forceAttachment)
+            String forceAttachmentWithFilename)
             throws IOException, FailingHttpStatusCodeException {
         WebAssert.notNull("webResponse", webResponse);
         WebAssert.notNull("webWindow", webWindow);
 
-        if (webResponse.getStatusCode() == HttpClientConverter.NO_CONTENT) {
+        if (webResponse.getStatusCode() == HttpStatus.NO_CONTENT_204) {
             return webWindow.getEnclosedPage();
         }
 
@@ -609,8 +583,16 @@ public class WebClient implements Serializable, AutoCloseable {
         }
 
         if (attachmentHandler_ != null
-                && (forceAttachment || attachmentHandler_.isAttachment(webResponse))) {
-            if (attachmentHandler_.handleAttachment(webResponse)) {
+                && (forceAttachmentWithFilename != null || attachmentHandler_.isAttachment(webResponse))) {
+
+            // check content disposition header for nothing provided
+            if (StringUtils.isEmpty(forceAttachmentWithFilename)) {
+                final String disp = webResponse.getResponseHeaderValue(HttpHeader.CONTENT_DISPOSITION);
+                forceAttachmentWithFilename = Attachment.getSuggestedFilename(disp);
+            }
+
+            if (attachmentHandler_.handleAttachment(webResponse,
+                        StringUtils.isEmpty(forceAttachmentWithFilename) ? null : forceAttachmentWithFilename)) {
                 // the handling is done by the attachment handler;
                 // do not open a new window
                 return webWindow.getEnclosedPage();
@@ -618,7 +600,8 @@ public class WebClient implements Serializable, AutoCloseable {
 
             final WebWindow w = openWindow(null, null, webWindow);
             final Page page = pageCreator_.createPage(webResponse, w);
-            attachmentHandler_.handleAttachment(page);
+            attachmentHandler_.handleAttachment(page,
+                                StringUtils.isEmpty(forceAttachmentWithFilename) ? null : forceAttachmentWithFilename);
             return page;
         }
 
@@ -630,12 +613,11 @@ public class WebClient implements Serializable, AutoCloseable {
 
         Page newPage = null;
         FrameWindow.PageDenied pageDenied = PageDenied.NONE;
-        if (windows_.contains(webWindow) || getBrowserVersion().hasFeature(WINDOW_EXECUTE_EVENTS)) {
+        if (windows_.contains(webWindow)) {
             if (webWindow instanceof FrameWindow) {
                 final String contentSecurityPolicy =
                         webResponse.getResponseHeaderValue(HttpHeader.CONTENT_SECURIRY_POLICY);
-                if (StringUtils.isNotBlank(contentSecurityPolicy)
-                        && !getBrowserVersion().hasFeature(CONTENT_SECURITY_POLICY_IGNORED)) {
+                if (StringUtils.isNotBlank(contentSecurityPolicy)) {
                     final URL origin = UrlUtils.getUrlWithoutPathRefQuery(
                             ((FrameWindow) webWindow).getEnclosingPage().getUrl());
                     final URL source = UrlUtils.getUrlWithoutPathRefQuery(webResponse.getWebRequest().getUrl());
@@ -1082,9 +1064,7 @@ public class WebClient implements Serializable, AutoCloseable {
                 request.setCharset(UTF_8);
 
                 final Page openerPage = opener.getEnclosedPage();
-                if (getBrowserVersion().hasFeature(DIALOGWINDOW_REFERER)
-                        && openerPage != null
-                        && openerPage.getUrl() != null) {
+                if (openerPage != null && openerPage.getUrl() != null) {
                     request.setRefererlHeader(openerPage.getUrl());
                 }
                 getPage(window, request);
@@ -1210,7 +1190,7 @@ public class WebClient implements Serializable, AutoCloseable {
                                                         getBrowserVersion().getAcceptEncodingHeader());
         request.setCharset(UTF_8);
 
-        if (getBrowserVersion().hasFeature(DIALOGWINDOW_REFERER) && openerPage != null) {
+        if (openerPage != null) {
             request.setRefererlHeader(openerPage.getUrl());
         }
 
@@ -1417,11 +1397,37 @@ public class WebClient implements Serializable, AutoCloseable {
         final List<NameValuePair> compiledHeaders = new ArrayList<>();
         compiledHeaders.add(new NameValuePair(HttpHeader.CONTENT_TYPE, contentType));
         compiledHeaders.add(new NameValuePair(HttpHeader.LAST_MODIFIED,
-                HttpClientConverter.formatDate(new Date(file.lastModified()))));
+                HttpUtils.formatDate(new Date(file.lastModified()))));
         final WebResponseData responseData = new WebResponseData(content, 200, "OK", compiledHeaders);
         final WebResponse webResponse = new WebResponse(responseData, webRequest, 0);
         getCache().cacheIfPossible(webRequest, webResponse, null);
         return webResponse;
+    }
+
+    private WebResponse makeWebResponseForBlobUrl(final WebRequest webRequest) {
+        final Window window = getCurrentWindow().getScriptableObject();
+        final Blob fileOrBlob = window.getDocument().resolveBlobUrl(webRequest.getUrl().toString());
+        if (fileOrBlob == null) {
+            throw JavaScriptEngine.typeError("Cannot load data from " + webRequest.getUrl());
+        }
+
+        final List<NameValuePair> headers = new ArrayList<>();
+        final String type = fileOrBlob.getType();
+        if (!StringUtils.isEmpty(type)) {
+            headers.add(new NameValuePair(HttpHeader.CONTENT_TYPE, fileOrBlob.getType()));
+        }
+        if (fileOrBlob instanceof org.htmlunit.javascript.host.file.File) {
+            final org.htmlunit.javascript.host.file.File file = (org.htmlunit.javascript.host.file.File) fileOrBlob;
+            final String fileName = file.getName();
+            if (!StringUtils.isEmpty(fileName)) {
+                // https://datatracker.ietf.org/doc/html/rfc6266#autoid-10
+                headers.add(new NameValuePair(HttpHeader.CONTENT_DISPOSITION, "inline; filename=\"" + fileName + "\""));
+            }
+        }
+
+        final DownloadedContent content = new DownloadedContent.InMemory(fileOrBlob.getBytes());
+        final WebResponseData responseData = new WebResponseData(content, 200, "OK", headers);
+        return new WebResponse(responseData, webRequest, 0);
     }
 
     /**
@@ -1514,6 +1520,9 @@ public class WebClient implements Serializable, AutoCloseable {
             case "data":
                 return makeWebResponseForDataUrl(webRequest);
 
+            case "blob":
+                return makeWebResponseForBlobUrl(webRequest);
+
             default:
                 return loadWebResponseFromWebConnection(webRequest, ALLOWED_REDIRECTIONS_SAME_URL);
         }
@@ -1537,8 +1546,7 @@ public class WebClient implements Serializable, AutoCloseable {
         WebAssert.notNull("method", method);
         WebAssert.notNull("parameters", parameters);
 
-        url = UrlUtils.encodeUrl(url, getBrowserVersion().hasFeature(URL_MINIMAL_QUERY_ENCODING),
-                                        webRequest.getCharset());
+        url = UrlUtils.encodeUrl(url, webRequest.getCharset());
         webRequest.setUrl(url);
 
         if (LOG.isDebugEnabled()) {
@@ -1556,7 +1564,7 @@ public class WebClient implements Serializable, AutoCloseable {
                             .getWebResponse().getContentAsString();
                         proxyConfig.setProxyAutoConfigContent(content);
                     }
-                    final String allValue = ProxyAutoConfig.evaluate(content, url);
+                    final String allValue = JavaScriptEngine.evaluateProxyAutoConfig(getBrowserVersion(), content, url);
                     if (LOG.isDebugEnabled()) {
                         LOG.debug("Proxy Auto-Config: value '" + allValue + "' for URL " + url);
                     }
@@ -1595,29 +1603,23 @@ public class WebClient implements Serializable, AutoCloseable {
 
         // Continue according to the HTTP status code.
         final int status = webResponse.getStatusCode();
-        if (status == HttpClientConverter.USE_PROXY) {
+        if (status == HttpStatus.USE_PROXY_305) {
             getIncorrectnessListener().notify("Ignoring HTTP status code [305] 'Use Proxy'", this);
         }
-        else if (status >= HttpClientConverter.MOVED_PERMANENTLY
-            && status <= 308
-            && status != HttpClientConverter.NOT_MODIFIED
+        else if (status >= HttpStatus.MOVED_PERMANENTLY_301
+            && status <= HttpStatus.PERMANENT_REDIRECT_308
+            && status != HttpStatus.NOT_MODIFIED_304
             && getOptions().isRedirectEnabled()) {
 
-            URL newUrl;
+            final URL newUrl;
             String locationString = null;
             try {
                 locationString = webResponse.getResponseHeaderValue("Location");
                 if (locationString == null) {
                     return webResponse;
                 }
-                if (!getBrowserVersion().hasFeature(URL_MINIMAL_QUERY_ENCODING)) {
-                    locationString = new String(locationString.getBytes(ISO_8859_1), UTF_8);
-                }
+                locationString = new String(locationString.getBytes(ISO_8859_1), UTF_8);
                 newUrl = expandUrl(url, locationString);
-
-                if (getBrowserVersion().hasFeature(HTTP_REDIRECT_WITHOUT_HASH)) {
-                    newUrl = UrlUtils.getUrlWithNewRef(newUrl, null);
-                }
             }
             catch (final MalformedURLException e) {
                 getIncorrectnessListener().notify("Got a redirect status code [" + status + " "
@@ -1636,9 +1638,9 @@ public class WebClient implements Serializable, AutoCloseable {
                     + webResponse.getWebRequest().getUrl(), webResponse);
             }
 
-            if (status == HttpClientConverter.MOVED_PERMANENTLY
-                    || status == HttpClientConverter.MOVED_TEMPORARILY
-                    || status == HttpClientConverter.SEE_OTHER) {
+            if (status == HttpStatus.MOVED_PERMANENTLY_301
+                    || status == HttpStatus.FOUND_302
+                    || status == HttpStatus.SEE_OTHER_303) {
                 final WebRequest wrs = new WebRequest(newUrl, HttpMethod.GET);
                 wrs.setCharset(webRequest.getCharset());
 
@@ -1653,8 +1655,8 @@ public class WebClient implements Serializable, AutoCloseable {
                 }
                 return loadWebResponseFromWebConnection(wrs, allowedRedirects - 1);
             }
-            else if (status == HttpClientConverter.TEMPORARY_REDIRECT
-                        || status == HttpClientConverter.PERMANENT_REDIRECT) {
+            else if (status == HttpStatus.TEMPORARY_REDIRECT_307
+                        || status == HttpStatus.PERMANENT_REDIRECT_308) {
                 // https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/307
                 // https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/308
                 // reuse method and body
@@ -1717,11 +1719,11 @@ public class WebClient implements Serializable, AutoCloseable {
 
         final WebResponse webResponse = getWebConnection().getResponse(webRequest);
 
-        if (webResponse.getStatusCode() >= HttpClientConverter.INTERNAL_SERVER_ERROR) {
+        if (webResponse.getStatusCode() >= HttpStatus.INTERNAL_SERVER_ERROR_500) {
             return new WebResponseFromCache(cached, webRequest);
         }
 
-        if (webResponse.getStatusCode() == HttpClientConverter.NOT_MODIFIED) {
+        if (webResponse.getStatusCode() == HttpStatus.NOT_MODIFIED_304) {
             final Map<String, NameValuePair> header2NameValuePair = new LinkedHashMap<>();
             for (final NameValuePair pair : cached.getResponseHeaders()) {
                 header2NameValuePair.put(pair.getName(), pair);
@@ -1811,21 +1813,21 @@ public class WebClient implements Serializable, AutoCloseable {
             wrs.setAdditionalHeader(HttpHeader.ACCEPT_LANGUAGE, getBrowserVersion().getAcceptLanguageHeader());
         }
 
-        if (getBrowserVersion().hasFeature(HTTP_HEADER_SEC_FETCH)
-                && !wrs.isAdditionalHeader(HttpHeader.SEC_FETCH_DEST)) {
+        if (!wrs.isAdditionalHeader(HttpHeader.SEC_FETCH_DEST)) {
             wrs.setAdditionalHeader(HttpHeader.SEC_FETCH_DEST, "document");
         }
-        if (getBrowserVersion().hasFeature(HTTP_HEADER_SEC_FETCH)
-                && !wrs.isAdditionalHeader(HttpHeader.SEC_FETCH_MODE)) {
+        if (!wrs.isAdditionalHeader(HttpHeader.SEC_FETCH_MODE)) {
             wrs.setAdditionalHeader(HttpHeader.SEC_FETCH_MODE, "navigate");
         }
-        if (getBrowserVersion().hasFeature(HTTP_HEADER_SEC_FETCH)
-                && !wrs.isAdditionalHeader(HttpHeader.SEC_FETCH_SITE)) {
+        if (!wrs.isAdditionalHeader(HttpHeader.SEC_FETCH_SITE)) {
             wrs.setAdditionalHeader(HttpHeader.SEC_FETCH_SITE, "same-origin");
         }
-        if (getBrowserVersion().hasFeature(HTTP_HEADER_SEC_FETCH)
-                && !wrs.isAdditionalHeader(HttpHeader.SEC_FETCH_USER)) {
+        if (!wrs.isAdditionalHeader(HttpHeader.SEC_FETCH_USER)) {
             wrs.setAdditionalHeader(HttpHeader.SEC_FETCH_USER, "?1");
+        }
+        if (getBrowserVersion().hasFeature(HTTP_HEADER_PRIORITY)
+                && !wrs.isAdditionalHeader(HttpHeader.PRIORITY)) {
+            wrs.setAdditionalHeader(HttpHeader.PRIORITY, "u=1");
         }
 
         if (getBrowserVersion().hasFeature(HTTP_HEADER_CH_UA)
@@ -1842,8 +1844,7 @@ public class WebClient implements Serializable, AutoCloseable {
                     getBrowserVersion().getSecClientHintUserAgentPlatformHeader());
         }
 
-        if (getBrowserVersion().hasFeature(HTTP_HEADER_UPGRADE_INSECURE_REQUEST)
-                && !wrs.isAdditionalHeader(HttpHeader.UPGRADE_INSECURE_REQUESTS)) {
+        if (!wrs.isAdditionalHeader(HttpHeader.UPGRADE_INSECURE_REQUESTS)) {
             wrs.setAdditionalHeader(HttpHeader.UPGRADE_INSECURE_REQUESTS, "1");
         }
     }
@@ -1927,33 +1928,6 @@ public class WebClient implements Serializable, AutoCloseable {
      */
     public ScriptPreProcessor getScriptPreProcessor() {
         return scriptPreProcessor_;
-    }
-
-    /**
-     * Sets the active X object map for this {@link WebClient}. The <code>Map</code> is used to map the
-     * string passed into the <code>ActiveXObject</code> constructor to a java class name. Therefore
-     * you can emulate <code>ActiveXObject</code>s in a web page's JavaScript by mapping the object
-     * name to a java class to emulate the active X object.
-     * @param activeXObjectMap the new preprocessor or null if none is specified
-     */
-    public void setActiveXObjectMap(final Map<String, String> activeXObjectMap) {
-        activeXObjectMap_ = activeXObjectMap;
-    }
-
-    /**
-     * Returns the active X object map for this {@link WebClient}.
-     * @return the active X object map
-     */
-    public Map<String, String> getActiveXObjectMap() {
-        return activeXObjectMap_;
-    }
-
-    /**
-     * Returns the MSXML ActiveX object factory (if supported).
-     * @return the msxmlActiveXObjectFactory
-     */
-    public MSXMLActiveXObjectFactory getMSXMLActiveXObjectFactory() {
-        return msxmlActiveXObjectFactory_;
     }
 
     /**
@@ -2130,22 +2104,6 @@ public class WebClient implements Serializable, AutoCloseable {
      */
     public void setPrintHandler(final PrintHandler handler) {
         printHandler_ = handler;
-    }
-
-    /**
-     * Sets the applet confirm handler.
-     * @param handler the new applet confirm handler handler
-     */
-    public void setAppletConfirmHandler(final AppletConfirmHandler handler) {
-        appletConfirmHandler_ = handler;
-    }
-
-    /**
-     * Returns the current applet confirm handler.
-     * @return the current applet confirm handler
-     */
-    public AppletConfirmHandler getAppletConfirmHandler() {
-        return appletConfirmHandler_;
     }
 
     /**
@@ -2420,7 +2378,6 @@ public class WebClient implements Serializable, AutoCloseable {
         }
         executor_ = null;
 
-        msxmlActiveXObjectFactory_ = null;
         cache_.clear();
         if (toThrow != null) {
             throw toThrow;
@@ -2442,8 +2399,6 @@ public class WebClient implements Serializable, AutoCloseable {
         if (javaScriptEngineEnabled_) {
             scriptEngine_ = new JavaScriptEngine(this);
         }
-
-        initMSXMLActiveX();
 
         // The window must be constructed AFTER the script engine.
         currentWindowTracker_ = new CurrentWindowTracker(this, true);
@@ -2594,8 +2549,6 @@ public class WebClient implements Serializable, AutoCloseable {
         scriptEngine_ = new JavaScriptEngine(this);
         jobManagers_ = Collections.synchronizedList(new ArrayList<>());
         loadQueue_ = new ArrayList<>();
-
-        initMSXMLActiveX();
     }
 
     private static class LoadJob {
@@ -2604,18 +2557,18 @@ public class WebClient implements Serializable, AutoCloseable {
         private final WebResponse response_;
         private final WeakReference<Page> originalPage_;
         private final WebRequest request_;
-        private final boolean forceAttachment_;
+        private final String forceAttachmentWithFilename_;
 
         // we can't us the WebRequest from the WebResponse because
         // we need the original request e.g. after a redirect
         LoadJob(final WebRequest request, final WebResponse response,
-                final WebWindow requestingWindow, final String target, final boolean forceAttachment) {
+                final WebWindow requestingWindow, final String target, final String forceAttachmentWithFilename) {
             request_ = request;
             requestingWindow_ = requestingWindow;
             target_ = target;
             response_ = response;
             originalPage_ = new WeakReference<>(requestingWindow.getEnclosedPage());
-            forceAttachment_ = forceAttachment;
+            forceAttachmentWithFilename_ = forceAttachmentWithFilename;
         }
 
         public boolean isOutdated() {
@@ -2646,13 +2599,13 @@ public class WebClient implements Serializable, AutoCloseable {
      * @param request the request to perform
      * @param checkHash if true check for hashChenage
      * @param forceLoad if true always load the request even if there is already the same in the queue
-     * @param forceAttachment if true the AttachmentHandler isAttachment() method is not called, the
-     * response has to be handled as attachment in any case
+     * @param forceAttachmentWithFilename if not {@code null} the AttachmentHandler isAttachment() method is not called,
+     * the response has to be handled as attachment in any case
      * @param description information about the origin of the request. Useful for debugging.
      */
     public void download(final WebWindow requestingWindow, final String target,
         final WebRequest request, final boolean checkHash, final boolean forceLoad,
-        final boolean forceAttachment, final String description) {
+        final String forceAttachmentWithFilename, final String description) {
 
         final WebWindow targetWindow = resolveWindow(requestingWindow, target);
         final URL url = request.getUrl();
@@ -2709,7 +2662,7 @@ public class WebClient implements Serializable, AutoCloseable {
                 LOG.error("NoHttpResponseException while downloading; generating a NoHttpResponse", e);
                 response = new WebResponse(RESPONSE_DATA_NO_HTTP_RESPONSE, request, 0);
             }
-            loadJob = new LoadJob(request, response, requestingWindow, target, forceAttachment);
+            loadJob = new LoadJob(request, response, requestingWindow, target, forceAttachmentWithFilename);
         }
         catch (final IOException e) {
             throw new RuntimeException(e);
@@ -2761,7 +2714,7 @@ public class WebClient implements Serializable, AutoCloseable {
 
             final WebWindow win = openTargetWindow(loadJob.requestingWindow_, loadJob.target_, TARGET_SELF);
             final Page pageBeforeLoad = win.getEnclosedPage();
-            loadWebResponseInto(loadJob.response_, win, loadJob.forceAttachment_);
+            loadWebResponseInto(loadJob.response_, win, loadJob.forceAttachmentWithFilename_);
 
             // start execution here.
             if (scriptEngine_ != null) {
@@ -2805,16 +2758,6 @@ public class WebClient implements Serializable, AutoCloseable {
     }
 
     /**
-     * <span style="color:red">INTERNAL API - SUBJECT TO CHANGE AT ANY TIME - USE AT YOUR OWN RISK.</span><br>
-     *
-     * Returns the internals object of this WebClient.
-     * @return the internals object
-     */
-    public WebClientInternals getInternals() {
-        return internals_;
-    }
-
-    /**
      * Gets the holder for the different storages.
      * <p><span style="color:red">Experimental API: May be changed in next release!</span></p>
      * @return the holder
@@ -2848,12 +2791,10 @@ public class WebClient implements Serializable, AutoCloseable {
         // discard expired cookies
         cookieManager.clearExpired(new Date());
 
-        final List<org.apache.http.cookie.Cookie> matches = new ArrayList<>();
-
-        HttpClientConverter.addMatching(cookieManager.getCookies(), normalizedUrl, getBrowserVersion(), matches);
-
-        final Set<Cookie> cookies = new LinkedHashSet<>(HttpClientConverter.fromHttpClient(matches));
-        return Collections.unmodifiableSet(cookies);
+        final Set<Cookie> matchingCookies = new LinkedHashSet<>();
+        HttpClientConverter.addMatching(cookieManager.getCookies(), normalizedUrl,
+                getBrowserVersion(), matchingCookies);
+        return Collections.unmodifiableSet(matchingCookies);
     }
 
     /**

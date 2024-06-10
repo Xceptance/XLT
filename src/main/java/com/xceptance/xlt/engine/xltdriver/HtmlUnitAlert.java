@@ -168,9 +168,7 @@ public class HtmlUnitAlert implements Alert {
         }
         String msg = holder_.message_;
         msg = msg.replace("\r\n", "\n");
-        if (!driver_.getBrowserVersion().isIE()) {
-            msg = msg.replace('\r', '\n');
-        }
+        msg = msg.replace('\r', '\n');
         return msg;
     }
 

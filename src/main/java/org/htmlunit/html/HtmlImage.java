@@ -19,12 +19,8 @@ import static org.htmlunit.BrowserVersionFeatures.HTMLIMAGE_BLANK_SRC_AS_EMPTY;
 import static org.htmlunit.BrowserVersionFeatures.HTMLIMAGE_EMPTY_SRC_DISPLAY_FALSE;
 import static org.htmlunit.BrowserVersionFeatures.HTMLIMAGE_HTMLELEMENT;
 import static org.htmlunit.BrowserVersionFeatures.HTMLIMAGE_HTMLUNKNOWNELEMENT;
-import static org.htmlunit.BrowserVersionFeatures.HTMLIMAGE_INVISIBLE_NO_SRC;
-import static org.htmlunit.BrowserVersionFeatures.JS_IMAGE_COMPLETE_RETURNS_TRUE_FOR_NO_REQUEST;
-import static org.htmlunit.BrowserVersionFeatures.JS_IMAGE_WIDTH_HEIGHT_EMPTY_SOURCE_RETURNS_0x0;
 import static org.htmlunit.BrowserVersionFeatures.JS_IMAGE_WIDTH_HEIGHT_RETURNS_16x16_0x0;
 import static org.htmlunit.BrowserVersionFeatures.JS_IMAGE_WIDTH_HEIGHT_RETURNS_24x24_0x0;
-import static org.htmlunit.BrowserVersionFeatures.JS_IMAGE_WIDTH_HEIGHT_RETURNS_28x30_28x30;
 
 import java.io.File;
 import java.io.IOException;
@@ -47,6 +43,7 @@ import org.htmlunit.SgmlPage;
 import org.htmlunit.WebClient;
 import org.htmlunit.WebRequest;
 import org.htmlunit.WebResponse;
+import org.htmlunit.javascript.AbstractJavaScriptEngine;
 import org.htmlunit.javascript.PostponedAction;
 import org.htmlunit.javascript.host.dom.Document;
 import org.htmlunit.javascript.host.dom.Node;
@@ -324,7 +321,19 @@ public class HtmlImage extends HtmlElement {
                 htmlPage.addAfterLoadAction(action);
             }
             else {
-                fireEvent(event);
+                final AbstractJavaScriptEngine<?> jsEngine = client.getJavaScriptEngine();
+                if (jsEngine.isScriptRunning()) {
+                    final PostponedAction action = new PostponedAction(getPage(), "HtmlImage.doOnLoad") {
+                        @Override
+                        public void execute() {
+                            HtmlImage.this.fireEvent(event);
+                        }
+                    };
+                    jsEngine.addPostponedAction(action);
+                }
+                else {
+                    fireEvent(event);
+                }
             }
         }
         */
@@ -530,9 +539,6 @@ public class HtmlImage extends HtmlElement {
         final String src = getSrcAttribute();
         if (ATTRIBUTE_NOT_DEFINED == src) {
             final BrowserVersion browserVersion = getPage().getWebClient().getBrowserVersion();
-            if (browserVersion.hasFeature(JS_IMAGE_WIDTH_HEIGHT_RETURNS_28x30_28x30)) {
-                return 30;
-            }
             if (browserVersion.hasFeature(JS_IMAGE_WIDTH_HEIGHT_RETURNS_16x16_0x0)
                     || browserVersion.hasFeature(JS_IMAGE_WIDTH_HEIGHT_RETURNS_24x24_0x0)) {
                 return 0;
@@ -542,7 +548,7 @@ public class HtmlImage extends HtmlElement {
 
         final WebClient webClient = getPage().getWebClient();
         final BrowserVersion browserVersion = webClient.getBrowserVersion();
-        if (browserVersion.hasFeature(JS_IMAGE_WIDTH_HEIGHT_EMPTY_SOURCE_RETURNS_0x0) && StringUtils.isEmpty(src)) {
+        if (StringUtils.isEmpty(src)) {
             return 0;
         }
         if (browserVersion.hasFeature(JS_IMAGE_WIDTH_HEIGHT_RETURNS_16x16_0x0) && StringUtils.isBlank(src)) {
@@ -553,9 +559,6 @@ public class HtmlImage extends HtmlElement {
             return getHeight();
         }
         catch (final IOException e) {
-            if (browserVersion.hasFeature(JS_IMAGE_WIDTH_HEIGHT_RETURNS_28x30_28x30)) {
-                return 30;
-            }
             if (browserVersion.hasFeature(JS_IMAGE_WIDTH_HEIGHT_RETURNS_16x16_0x0)) {
                 return 16;
             }
@@ -597,10 +600,6 @@ public class HtmlImage extends HtmlElement {
         final String src = getSrcAttribute();
         if (ATTRIBUTE_NOT_DEFINED == src) {
             final BrowserVersion browserVersion = getPage().getWebClient().getBrowserVersion();
-
-            if (browserVersion.hasFeature(JS_IMAGE_WIDTH_HEIGHT_RETURNS_28x30_28x30)) {
-                return 28;
-            }
             if (browserVersion.hasFeature(JS_IMAGE_WIDTH_HEIGHT_RETURNS_16x16_0x0)
                     || browserVersion.hasFeature(JS_IMAGE_WIDTH_HEIGHT_RETURNS_24x24_0x0)) {
                 return 0;
@@ -610,7 +609,7 @@ public class HtmlImage extends HtmlElement {
 
         final WebClient webClient = getPage().getWebClient();
         final BrowserVersion browserVersion = webClient.getBrowserVersion();
-        if (browserVersion.hasFeature(JS_IMAGE_WIDTH_HEIGHT_EMPTY_SOURCE_RETURNS_0x0) && StringUtils.isEmpty(src)) {
+        if (StringUtils.isEmpty(src)) {
             return 0;
         }
         if (browserVersion.hasFeature(JS_IMAGE_WIDTH_HEIGHT_RETURNS_16x16_0x0) && StringUtils.isBlank(src)) {
@@ -621,9 +620,6 @@ public class HtmlImage extends HtmlElement {
             return getWidth();
         }
         catch (final IOException e) {
-            if (browserVersion.hasFeature(JS_IMAGE_WIDTH_HEIGHT_RETURNS_28x30_28x30)) {
-                return 28;
-            }
             if (browserVersion.hasFeature(JS_IMAGE_WIDTH_HEIGHT_RETURNS_16x16_0x0)) {
                 return 16;
             }
@@ -712,8 +708,7 @@ public class HtmlImage extends HtmlElement {
             closeImageData();
 
             downloaded_ = true;
-            isComplete_ = hasFeature(JS_IMAGE_COMPLETE_RETURNS_TRUE_FOR_NO_REQUEST)
-                    || (imageWebResponse_ != null && imageWebResponse_.getContentType().contains("image"));
+            isComplete_ = true;
 
             width_ = -1;
             height_ = -1;
@@ -865,9 +860,7 @@ public class HtmlImage extends HtmlElement {
      * @return true if the image was successfully downloaded
      */
     public boolean isComplete() {
-        return isComplete_ || (hasFeature(JS_IMAGE_COMPLETE_RETURNS_TRUE_FOR_NO_REQUEST)
-                                ? ATTRIBUTE_NOT_DEFINED == getSrcAttribute()
-                                : imageData_ != null);
+        return isComplete_ || ATTRIBUTE_NOT_DEFINED == getSrcAttribute();
     }
 
     /**
@@ -876,16 +869,14 @@ public class HtmlImage extends HtmlElement {
     @Override
     public boolean isDisplayed() {
         final String src = getSrcAttribute();
-        if (hasFeature(HTMLIMAGE_INVISIBLE_NO_SRC)) {
-            if (ATTRIBUTE_NOT_DEFINED == src) {
-                return false;
-            }
-            if (hasFeature(HTMLIMAGE_BLANK_SRC_AS_EMPTY) && StringUtils.isBlank(src)) {
-                return false;
-            }
-            if (hasFeature(HTMLIMAGE_EMPTY_SRC_DISPLAY_FALSE) && StringUtils.isEmpty(src)) {
-                return false;
-            }
+        if (ATTRIBUTE_NOT_DEFINED == src) {
+            return false;
+        }
+        if (hasFeature(HTMLIMAGE_BLANK_SRC_AS_EMPTY) && StringUtils.isBlank(src)) {
+            return false;
+        }
+        if (hasFeature(HTMLIMAGE_EMPTY_SRC_DISPLAY_FALSE) && StringUtils.isEmpty(src)) {
+            return false;
         }
 
         return super.isDisplayed();
@@ -894,8 +885,7 @@ public class HtmlImage extends HtmlElement {
     /**
      * <span style="color:red">INTERNAL API - SUBJECT TO CHANGE AT ANY TIME - USE AT YOUR OWN RISK.</span><br>
      *
-     * Marks this frame as created by javascript. This is needed to handle
-     * some special IE behavior.
+     * Marks this frame as created by javascript.
      */
     public void markAsCreatedByJavascript() {
         createdByJavascript_ = true;
@@ -904,8 +894,7 @@ public class HtmlImage extends HtmlElement {
     /**
      * <span style="color:red">INTERNAL API - SUBJECT TO CHANGE AT ANY TIME - USE AT YOUR OWN RISK.</span><br>
      *
-     * Returns true if this frame was created by javascript. This is needed to handle
-     * some special IE behavior.
+     * Returns true if this frame was created by javascript.
      * @return true or false
      */
     public boolean wasCreatedByJavascript() {

@@ -27,8 +27,6 @@ import java.security.cert.CertificateException;
 
 import org.apache.commons.io.FileUtils;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 /**
  * Represents options of a {@link WebClient}.
  *
@@ -49,7 +47,6 @@ public class WebClientOptions implements Serializable {
     private boolean printContentOnFailingStatusCode_ = true;
     private boolean throwExceptionOnFailingStatusCode_ = true;
     private boolean throwExceptionOnScriptError_ = true;
-    private boolean appletEnabled_;
     private boolean popupBlockerEnabled_;
     private boolean isRedirectEnabled_ = true;
     private File tempFileDirectory_;
@@ -60,9 +57,7 @@ public class WebClientOptions implements Serializable {
     private String[] sslClientProtocols_;
     private String[] sslClientCipherSuites_;
 
-    private boolean geolocationEnabled_;
     private boolean doNotTrackEnabled_;
-    private boolean activeXNative_;
     private String homePage_ = "https://www.htmlunit.org/";
     private ProxyConfig proxyConfig_;
     private int timeout_ = 90_000; // like Firefox 16 default's value for network.http.connection-timeout
@@ -77,6 +72,9 @@ public class WebClientOptions implements Serializable {
     private boolean downloadImages_;
     private int screenWidth_ = DEFAULT_SCRREN_WIDTH;
     private int screenHeight_ = DEFAULT_SCRREN_HEIGHT;
+
+    private boolean geolocationEnabled_;
+    private Geolocation geolocation_;
 
     private boolean webSocketEnabled_ = true;
     private int webSocketMaxTextMessageSize_ = -1;
@@ -283,7 +281,6 @@ public class WebClientOptions implements Serializable {
      * Gets the SSLClientCertificateStore.
      * @return the KeyStore for use on SSL connections
      */
-    @SuppressFBWarnings("EI_EXPOSE_REP")
     public KeyStore getSSLClientCertificateStore() {
         return sslClientCertificateStore_;
     }
@@ -292,7 +289,6 @@ public class WebClientOptions implements Serializable {
      * Gets the SSLClientCertificatePassword.
      * @return the password
      */
-    @SuppressFBWarnings("EI_EXPOSE_REP")
     public char[] getSSLClientCertificatePassword() {
         return sslClientCertificatePassword_;
     }
@@ -302,7 +298,6 @@ public class WebClientOptions implements Serializable {
      * @return the protocol versions enabled for use on SSL connections
      * @see #setSSLClientProtocols(String...)
      */
-    @SuppressFBWarnings("EI_EXPOSE_REP")
     public String[] getSSLClientProtocols() {
         return sslClientProtocols_;
     }
@@ -324,7 +319,6 @@ public class WebClientOptions implements Serializable {
      * @return the cipher suites enabled for use on SSL connections
      * @see #setSSLClientCipherSuites(String...)
      */
-    @SuppressFBWarnings("EI_EXPOSE_REP")
     public String[] getSSLClientCipherSuites() {
         return sslClientCipherSuites_;
     }
@@ -380,26 +374,6 @@ public class WebClientOptions implements Serializable {
     }
 
     /**
-     * Enables/disables Applet support. By default, this property is disabled.<br>
-     * <p>
-     * Note: Applet support is experimental and minimal
-     * </p>
-     * @param enabled {@code true} to enable Applet support
-     */
-    public void setAppletEnabled(final boolean enabled) {
-        appletEnabled_ = enabled;
-    }
-
-    /**
-     * Returns {@code true} if Applet are enabled.
-     *
-     * @return {@code true} if Applet is enabled
-     */
-    public boolean isAppletEnabled() {
-        return appletEnabled_;
-    }
-
-    /**
      * Enable/disable the popup window blocker. By default, the popup blocker is disabled, and popup
      * windows are allowed. When set to {@code true}, <code>window.open()</code> has no effect and
      * returns {@code null}.
@@ -417,24 +391,6 @@ public class WebClientOptions implements Serializable {
      */
     public boolean isPopupBlockerEnabled() {
         return popupBlockerEnabled_;
-    }
-
-    /**
-     * Enables/disables Geolocation support. By default, this property is disabled.
-     *
-     * @param enabled {@code true} to enable Geolocation support
-     */
-    public void setGeolocationEnabled(final boolean enabled) {
-        geolocationEnabled_ = enabled;
-    }
-
-    /**
-     * Returns {@code true} if Geolocation is enabled.
-     *
-     * @return {@code true} if Geolocation is enabled
-     */
-    public boolean isGeolocationEnabled() {
-        return geolocationEnabled_;
     }
 
     /**
@@ -517,29 +473,6 @@ public class WebClientOptions implements Serializable {
     }
 
     /**
-     * Sets whether to allow native ActiveX or no. Default value is false.
-     * Beware that you should never allow running native ActiveX components unless you fully trust
-     * the JavaScript code, as it is not controlled by the Java Virtual Machine.
-     *
-     * @param allow whether to allow or no
-     * @deprecated as of version 3.4.0
-    */
-    @Deprecated
-    public void setActiveXNative(final boolean allow) {
-        activeXNative_ = allow;
-    }
-
-    /**
-     * Returns whether native ActiveX components are allowed or no.
-     * @return whether native ActiveX components are allowed or no
-     * @deprecated as of version 3.4.0
-    */
-    @Deprecated
-    public boolean isActiveXNative() {
-        return activeXNative_;
-    }
-
-    /**
      * Returns the client's current homepage.
      * @return the client's current homepage
      */
@@ -559,7 +492,6 @@ public class WebClientOptions implements Serializable {
      * Returns the proxy configuration for this client.
      * @return the proxy configuration for this client
      */
-    @SuppressFBWarnings("EI_EXPOSE_REP")
     public ProxyConfig getProxyConfig() {
         return proxyConfig_;
     }
@@ -665,7 +597,6 @@ public class WebClientOptions implements Serializable {
      * Gets the SSL TrustStore.
      * @return the SSL TrustStore for insecure SSL connections
      */
-    @SuppressFBWarnings("EI_EXPOSE_REP")
     public KeyStore getSSLTrustStore() {
         return sslTrustStore_;
     }
@@ -752,7 +683,6 @@ public class WebClientOptions implements Serializable {
      *
      * @return the local address
      */
-    @SuppressFBWarnings("EI_EXPOSE_REP")
     public InetAddress getLocalAddress() {
         return localAddress_;
     }
@@ -916,5 +846,123 @@ public class WebClientOptions implements Serializable {
      */
     public boolean isFetchPolyfillEnabled() {
         return isFetchPolyfillEnabled_;
+    }
+
+    /**
+     * Enables/disables Geolocation support. By default, this property is disabled.
+     *
+     * @param enabled {@code true} to enable Geolocation support
+     */
+    public void setGeolocationEnabled(final boolean enabled) {
+        geolocationEnabled_ = enabled;
+    }
+
+    /**
+     * @return {@code true} if Geolocation is enabled
+     */
+    public boolean isGeolocationEnabled() {
+        return geolocationEnabled_;
+    }
+
+    /**
+     * @return the {@link Geolocation}
+     */
+    public Geolocation getGeolocation() {
+        return geolocation_;
+    }
+
+    /**
+     * Sets the {@link Geolocation} to be used.
+     * @param geolocation the new location or null
+     */
+    public void setGeolocation(final Geolocation geolocation) {
+        geolocation_ = geolocation;
+    }
+
+    public static class Geolocation {
+        private final double accuracy_;
+        private final double latitude_;
+        private final double longitude_;
+        private final Double altitude_;
+        private final Double altitudeAccuracy_;
+        private final Double heading_;
+        private final Double speed_;
+
+        /**
+         * Ctor.
+         *
+         * @param accuracy the accuracy
+         * @param latitude the latitude
+         * @param longitude the longitude
+         * @param altitude the altitude or null
+         * @param altitudeAccuracy the altitudeAccuracy or null
+         * @param heading the heading or null
+         * @param speed the speed or null
+         */
+        public Geolocation(
+                final double latitude,
+                final double longitude,
+                final double accuracy,
+                final Double altitude,
+                final Double altitudeAccuracy,
+                final Double heading,
+                final Double speed) {
+            latitude_ = latitude;
+            longitude_ = longitude;
+            accuracy_ = accuracy;
+            altitude_ = altitude;
+            altitudeAccuracy_ = altitudeAccuracy;
+            heading_ = heading;
+            speed_ = speed;
+        }
+
+        /**
+         * @return the accuracy
+         */
+        public double getAccuracy() {
+            return accuracy_;
+        }
+
+        /**
+         * @return the latitude
+         */
+        public double getLatitude() {
+            return latitude_;
+        }
+
+        /**
+         * @return the longitude
+         */
+        public double getLongitude() {
+            return longitude_;
+        }
+
+        /**
+         * @return the longitude
+         */
+        public Double getAltitude() {
+            return altitude_;
+        }
+
+        /**
+         * @return the altitudeAccuracy
+         */
+        public Double getAltitudeAccuracy() {
+            return altitudeAccuracy_;
+        }
+
+        /**
+         * @return the heading
+         */
+        public Double getHeading() {
+            return heading_;
+        }
+
+        /**
+         * @return the speed
+         */
+        public Double getSpeed() {
+            return speed_;
+        }
     }
 }

@@ -16,9 +16,6 @@ package org.htmlunit.javascript.host.file;
 
 import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -109,7 +106,7 @@ public class File extends Blob {
      * @param fileName the Name
      * @param properties the properties
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor(final NativeArray fileBits, final String fileName, final ScriptableObject properties) {
         if (fileBits == null
                 || JavaScriptEngine.isUndefined(fileBits)
@@ -140,7 +137,7 @@ public class File extends Blob {
      * Returns the {@code lastModifiedDate} property.
      * @return the {@code lastModifiedDate} property
      */
-    @JsxGetter({CHROME, EDGE, IE})
+    @JsxGetter({CHROME, EDGE})
     public String getLastModifiedDate() {
         final Date date = new Date(getLastModified());
         final BrowserVersion browser = getBrowserVersion();
@@ -155,7 +152,7 @@ public class File extends Blob {
      * Returns the {@code lastModified} property.
      * @return the {@code lastModified} property
      */
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxGetter
     public long getLastModified() {
         return getBackend().getLastModified();
     }
@@ -164,7 +161,7 @@ public class File extends Blob {
      * Returns the {@code webkitRelativePath} property.
      * @return the {@code webkitRelativePath} property
      */
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxGetter
     public String getWebkitRelativePath() {
         return "";
     }
@@ -174,13 +171,6 @@ public class File extends Blob {
      */
     @JsxFunction
     public void slice() {
-    }
-
-    /**
-     * Closes the file.
-     */
-    @JsxFunction(IE)
-    public void msClose() {
     }
 
     /**

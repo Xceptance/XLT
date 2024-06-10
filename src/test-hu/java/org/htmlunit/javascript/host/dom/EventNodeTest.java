@@ -14,12 +14,9 @@
  */
 package org.htmlunit.javascript.host.dom;
 
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
-
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
@@ -131,9 +128,7 @@ public class EventNodeTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "mousedown label,mouseup label,click label,focus text,click text,",
-            IE = "mousedown label,mouseup label,click label,click text,focus text,")
-    @NotYetImplemented(IE)
+    @Alerts("mousedown label,mouseup label,click label,focus text,click text,")
     public void clickEventsLabel() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"

@@ -14,21 +14,14 @@
  */
 package org.htmlunit.html;
 
-import static java.nio.charset.StandardCharsets.UTF_16;
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.htmlunit.BrowserVersionFeatures.FORM_IGNORE_REL_NOREFERRER;
-import static org.htmlunit.BrowserVersionFeatures.FORM_PARAMETRS_NOT_SUPPORTED_FOR_IMAGE;
-import static org.htmlunit.BrowserVersionFeatures.FORM_SUBMISSION_DOWNLOWDS_ALSO_IF_ONLY_HASH_CHANGED;
 import static org.htmlunit.BrowserVersionFeatures.FORM_SUBMISSION_HEADER_CACHE_CONTROL_MAX_AGE;
-import static org.htmlunit.BrowserVersionFeatures.FORM_SUBMISSION_HEADER_CACHE_CONTROL_NO_CACHE;
-import static org.htmlunit.BrowserVersionFeatures.FORM_SUBMISSION_HEADER_ORIGIN;
-import static org.htmlunit.BrowserVersionFeatures.FORM_SUBMISSION_URL_WITHOUT_HASH;
-import static org.htmlunit.BrowserVersionFeatures.JS_FORM_SUBMIT_FORCES_DOWNLOAD;
 import static org.htmlunit.html.DisabledElement.ATTRIBUTE_DISABLED;
 
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -55,7 +48,7 @@ import org.htmlunit.WebAssert;
 import org.htmlunit.WebClient;
 import org.htmlunit.WebRequest;
 import org.htmlunit.WebWindow;
-import org.htmlunit.httpclient.HttpClientConverter;
+import org.htmlunit.http.HttpUtils;
 import org.htmlunit.javascript.host.event.Event;
 import org.htmlunit.javascript.host.event.SubmitEvent;
 import org.htmlunit.protocol.javascript.JavaScriptURLConnection;
@@ -78,6 +71,7 @@ import org.htmlunit.util.UrlUtils;
  * @author Ronald Brill
  * @author Frank Danek
  * @author Anton Demydenko
+ * @author Lai Quang Duong
  */
 public class HtmlForm extends HtmlElement {
     private static final Log LOG = LogFactory.getLog(HtmlForm.class);
@@ -196,11 +190,8 @@ public class HtmlForm extends HtmlElement {
         final String target = htmlPage.getResolvedTarget(getTargetAttribute());
 
         final WebWindow webWindow = htmlPage.getEnclosingWindow();
-        final boolean forceDownload = webClient.getBrowserVersion().hasFeature(JS_FORM_SUBMIT_FORCES_DOWNLOAD);
         // Calling form.submit() twice forces double download.
-        final boolean checkHash =
-                !webClient.getBrowserVersion().hasFeature(FORM_SUBMISSION_DOWNLOWDS_ALSO_IF_ONLY_HASH_CHANGED);
-        webClient.download(webWindow, target, request, checkHash, forceDownload, false, "JS form.submit()");
+        webClient.download(webWindow, target, request, false, false, null, "JS form.submit()");
     }
 
     /**
@@ -218,12 +209,6 @@ public class HtmlForm extends HtmlElement {
             final boolean isInput = HtmlInput.TAG_NAME.equals(element.getTagName());
             if (isInput) {
                 typeImage = "image".equalsIgnoreCase(type);
-            }
-
-            // IE does not support formxxx attributes for input with 'image' types
-            final BrowserVersion browser = getPage().getWebClient().getBrowserVersion();
-            if (browser.hasFeature(FORM_PARAMETRS_NOT_SUPPORTED_FOR_IMAGE) && typeImage) {
-                return;
             }
 
             // could be excessive validation but support of html5 fromxxx
@@ -299,15 +284,17 @@ public class HtmlForm extends HtmlElement {
         String anchor = null;
         String queryFormFields = "";
         Charset enc = getSubmitCharset();
-        if (UTF_16 == enc) {
-            enc = UTF_8;
+        if (StandardCharsets.UTF_16 == enc
+                || StandardCharsets.UTF_16BE == enc
+                || StandardCharsets.UTF_16LE == enc) {
+            enc = StandardCharsets.UTF_8;
         }
 
         if (HttpMethod.GET == method) {
             if (actionUrl.contains("#")) {
                 anchor = StringUtils.substringAfter(actionUrl, "#");
             }
-            queryFormFields = HttpClientConverter.toQueryFormFields(parameters, enc);
+            queryFormFields = HttpUtils.toQueryFormFields(parameters, enc);
 
             // action may already contain some query parameters: they have to be removed
             actionUrl = StringUtils.substringBefore(actionUrl, "#");
@@ -328,18 +315,7 @@ public class HtmlForm extends HtmlElement {
                 url = UrlUtils.getUrlWithNewQuery(url, queryFormFields);
             }
 
-            if (HttpMethod.GET == method && browser.hasFeature(FORM_SUBMISSION_URL_WITHOUT_HASH)
-                    && UrlUtils.URL_ABOUT_BLANK != url) {
-                url = UrlUtils.getUrlWithNewRef(url, null);
-            }
-            else if (HttpMethod.POST == method
-                    && browser.hasFeature(FORM_SUBMISSION_URL_WITHOUT_HASH)
-                    && UrlUtils.URL_ABOUT_BLANK != url
-                    && StringUtils.isEmpty(actionUrl)) {
-                url = UrlUtils.getUrlWithNewRef(url, null);
-            }
-            else if (anchor != null
-                    && UrlUtils.URL_ABOUT_BLANK != url) {
+            if (anchor != null && UrlUtils.URL_ABOUT_BLANK != url) {
                 url = UrlUtils.getUrlWithNewRef(url, anchor);
             }
         }
@@ -362,8 +338,7 @@ public class HtmlForm extends HtmlElement {
             request.setRefererlHeader(htmlPage.getUrl());
         }
 
-        if (HttpMethod.POST == method
-                && browser.hasFeature(FORM_SUBMISSION_HEADER_ORIGIN)) {
+        if (HttpMethod.POST == method) {
             try {
                 request.setAdditionalHeader(HttpHeader.ORIGIN,
                         UrlUtils.getUrlWithProtocolAndAuthority(htmlPage.getUrl()).toExternalForm());
@@ -377,10 +352,6 @@ public class HtmlForm extends HtmlElement {
         if (HttpMethod.POST == method) {
             if (browser.hasFeature(FORM_SUBMISSION_HEADER_CACHE_CONTROL_MAX_AGE)) {
                 request.setAdditionalHeader(HttpHeader.CACHE_CONTROL, "max-age=0");
-            }
-
-            if (browser.hasFeature(FORM_SUBMISSION_HEADER_CACHE_CONTROL_NO_CACHE)) {
-                request.setAdditionalHeader(HttpHeader.CACHE_CONTROL, "no-cache");
             }
         }
 
@@ -593,10 +564,19 @@ public class HtmlForm extends HtmlElement {
     public List<HtmlElement> getElements() {
         final List<HtmlElement> elements = new ArrayList<>();
 
-        for (final HtmlElement element : getPage().getDocumentElement().getHtmlElementDescendants()) {
-            if (SUBMITTABLE_ELEMENT_NAMES.contains(element.getTagName())
-                    && element.getEnclosingForm() == this) {
-                elements.add(element);
+        if (isAttachedToPage()) {
+            for (final HtmlElement element : getPage().getDocumentElement().getHtmlElementDescendants()) {
+                if (SUBMITTABLE_ELEMENT_NAMES.contains(element.getTagName())
+                        && element.getEnclosingForm() == this) {
+                    elements.add(element);
+                }
+            }
+        }
+        else {
+            for (final HtmlElement element : getHtmlElementDescendants()) {
+                if (SUBMITTABLE_ELEMENT_NAMES.contains(element.getTagName())) {
+                    elements.add(element);
+                }
             }
         }
 

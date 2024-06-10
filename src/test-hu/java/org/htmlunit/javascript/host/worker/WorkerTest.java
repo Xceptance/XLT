@@ -14,16 +14,12 @@
  */
 package org.htmlunit.javascript.host.worker;
 
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
-
 import java.net.URL;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import org.htmlunit.util.MimeType;
-import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.WebDriver;
@@ -36,15 +32,6 @@ import org.openqa.selenium.WebDriver;
  */
 @RunWith(BrowserRunner.class)
 public class WorkerTest extends WebDriverTestCase {
-
-    /**
-     * Closes the real ie because clearing all cookies seem to be not working
-     * at the moment.
-     */
-    @After
-    public void shutDownRealBrowsersAfter() {
-        shutDownRealIE();
-    }
 
     /**
      * @throws Exception if the test fails
@@ -160,8 +147,7 @@ public class WorkerTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "start worker import exception end worker",
-            IE = "start worker in imported script1 end worker")
+    @Alerts("start worker import exception end worker")
     public void importScriptsWrongContentType() throws Exception {
         importScripts(MimeType.TEXT_HTML);
     }
@@ -220,8 +206,7 @@ public class WorkerTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "[object DedicatedWorkerGlobalScope] [object DedicatedWorkerGlobalScope] true",
-            IE = "[object WorkerGlobalScope] [object WorkerGlobalScope] true")
+    @Alerts("[object DedicatedWorkerGlobalScope] [object DedicatedWorkerGlobalScope] true")
     public void thisAndSelf() throws Exception {
         final String html = "<html><body><script>\n"
             + "try {\n"
@@ -282,9 +267,7 @@ public class WorkerTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "null",
-            IE = "exception Error")
-    @NotYetImplemented(IE)
+    @Alerts("null")
     public void onmessageNumber() throws Exception {
         final String html = "<html><body><script>\n"
                 + LOG_TITLE_FUNCTION
@@ -303,9 +286,7 @@ public class WorkerTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "null",
-            IE = "HtmlUnit")
-    @NotYetImplemented(IE)
+    @Alerts("null")
     public void onmessageString() throws Exception {
         final String html = "<html><body><script>\n"
                 + LOG_TITLE_FUNCTION
@@ -405,8 +386,7 @@ public class WorkerTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"object", "true"},
-            IE = {"undefined", "globalThis\\sis\\sundefined"})
+    @Alerts({"object", "true"})
     public void globalThis() throws Exception {
         final String workerJs
             = "  try {\n"

@@ -14,12 +14,6 @@
  */
 package org.htmlunit.javascript.host.media;
 
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
-
 import org.htmlunit.javascript.HtmlUnitScriptable;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstant;
@@ -50,10 +44,6 @@ public class MediaError extends HtmlUnitScriptable {
     @JsxConstant
     public static final int MEDIA_ERR_SRC_NOT_SUPPORTED = 4;
 
-    /** Source Not Supported Error. */
-    @JsxConstant(IE)
-    public static final int MS_MEDIA_ERR_ENCRYPTED = 5;
-
     /**
      * Creates an instance.
      */
@@ -63,7 +53,7 @@ public class MediaError extends HtmlUnitScriptable {
     /**
      * JavaScript constructor.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
     }
 }

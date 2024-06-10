@@ -16,7 +16,6 @@ package org.htmlunit.javascript.host.html;
 
 import static org.htmlunit.junit.BrowserRunner.TestedBrowser.FF;
 import static org.htmlunit.junit.BrowserRunner.TestedBrowser.FF_ESR;
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 
 import java.net.URL;
 
@@ -197,8 +196,7 @@ public class HTMLElementTest extends WebDriverTestCase {
      * @throws Exception on test failure
      */
     @Test
-    @Alerts(DEFAULT = {"null", "bla", "true"},
-            IE = {"", "bla", "true"})
+    @Alerts({"null", "bla", "true"})
     public void getSetAttributeNS() throws Exception {
         final String html = "<html>\n"
                 + "<head>\n"
@@ -227,10 +225,9 @@ public class HTMLElementTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = {"text", "i", "i", "[object CSS2Properties]", "function", "undefined", "undefined"},
-            IE = {"text", "i", "i", "[object MSStyleCSSProperties]", "function", "undefined", "undefined"},
             CHROME = {"text", "i", "i", "[object CSSStyleDeclaration]", "function", "undefined", "undefined"},
             EDGE = {"text", "i", "i", "[object CSSStyleDeclaration]", "function", "undefined", "undefined"})
-    @NotYetImplemented({FF, FF_ESR, IE})
+    @NotYetImplemented({FF, FF_ESR})
     public void attributesAccess() throws Exception {
         final String html
             = "<html><head>\n"
@@ -291,36 +288,21 @@ public class HTMLElementTest extends WebDriverTestCase {
      * @throws Exception on test failure
      */
     @Test
-    @Alerts(DEFAULT = {"null",
-                       "expando=undefined",
-                       "firstChild=null",
-                       "lastChild=null",
-                       "name=custom_attribute",
-                       "nextSibling=null",
-                       "nodeName=custom_attribute",
-                       "nodeType=2",
-                       "nodeValue=bleh",
-                       "(ownerDocument === document) = true",
-                       "(getRootNode() === att) = true",
-                       "parentNode=null",
-                       "previousSibling=null",
-                       "specified=true",
-                       "value=bleh"},
-            IE = {"null",
-                  "expando=true",
-                  "firstChild=[object Text]",
-                  "lastChild=[object Text]",
-                  "name=custom_attribute",
-                  "nextSibling=null",
-                  "nodeName=custom_attribute",
-                  "nodeType=2",
-                  "nodeValue=bleh",
-                  "(ownerDocument === document) = true",
-                  "-",
-                  "parentNode=null",
-                  "previousSibling=null",
-                  "specified=true",
-                  "value=bleh"})
+    @Alerts({"null",
+             "expando=undefined",
+             "firstChild=null",
+             "lastChild=null",
+             "name=custom_attribute",
+             "nextSibling=null",
+             "nodeName=custom_attribute",
+             "nodeType=2",
+             "nodeValue=bleh",
+             "(ownerDocument === document) = true",
+             "(getRootNode() === att) = true",
+             "parentNode=null",
+             "previousSibling=null",
+             "specified=true",
+             "value=bleh"})
     public void getAttributeNode() throws Exception {
         final String html =
               "<html>\n"
@@ -410,9 +392,7 @@ public class HTMLElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"null", "inform('newHandler')", "null"},
-            IE = {"null", "inform('newHandler')", ""})
-    @NotYetImplemented(IE)
+    @Alerts({"null", "inform('newHandler')", "null"})
     public void setAttribute_eventHandlerNull() throws Exception {
         final String html = "<html><head><script>\n"
             + LOG_TEXTAREA_FUNCTION
@@ -862,8 +842,7 @@ public class HTMLElementTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "<b>inner HTML</b>",
             FF = "getInnerHTML() not available",
-            FF_ESR = "getInnerHTML() not available",
-            IE = "getInnerHTML() not available")
+            FF_ESR = "getInnerHTML() not available")
     public void getGetInnerHTML() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -1128,8 +1107,7 @@ public class HTMLElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "Null ChildrenLength: 0",
-            IE = "Null ChildrenLength: 1")
+    @Alerts("Null ChildrenLength: 0")
     public void setInnerHTMLNull() throws Exception {
         final String html = "<html><head></head><body>\n"
                 + "<div id='testDiv'>foo</div>\n"
@@ -1203,10 +1181,8 @@ public class HTMLElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "Outer = <p id=\"myNode\">New  cell value\n"
-                    + "  <textarea id=\"myLog\" cols=\"80\" rows=\"22\"></textarea>\n\n</p>",
-            IE = "Outer = <p id=\"myNode\">New  cell value\n"
-                    + "  <textarea id=\"myLog\" rows=\"22\" cols=\"80\"></textarea>\n\n")
+    @Alerts("Outer = <p id=\"myNode\">New  cell value\n"
+                    + "  <textarea id=\"myLog\" cols=\"80\" rows=\"22\"></textarea>\n\n</p>")
     @NotYetImplemented
     public void getOuterHTMLFromUnclosedParagraph() throws Exception {
         final String html = createPageForGetOuterHTML("p", "New  cell value", true);
@@ -1236,8 +1212,7 @@ public class HTMLElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"Old = <span id=\"innerNode\">Old outerHTML</span>", "New = ", "Children: 0"},
-            IE = {"Old = <span id=\"innerNode\">Old outerHTML</span>", "New = null", "Children: 1"})
+    @Alerts({"Old = <span id=\"innerNode\">Old outerHTML</span>", "New = ", "Children: 0"})
     public void setOuterHTMLNull() throws Exception {
         final String html = createPageForSetOuterHTML("div", null);
         loadPageVerifyTextArea2(html);
@@ -1528,8 +1503,7 @@ public class HTMLElementTest extends WebDriverTestCase {
     @Alerts(DEFAULT = {"Old = <span id=\"innerNode\">Old outerHTML</span>",
                        "New = <span id=\"innerNode\">Old outerHTML</span>", "Children: 1"},
             CHROME = {"Old = <span id=\"innerNode\">Old outerHTML</span>", "exception"},
-            EDGE = {"Old = <span id=\"innerNode\">Old outerHTML</span>", "exception"},
-            IE = {"Old = <span id=\"innerNode\">Old outerHTML</span>", "New = ", "Children: 0"})
+            EDGE = {"Old = <span id=\"innerNode\">Old outerHTML</span>", "exception"})
     public void setOuterHTMLDetachedElementNull() throws Exception {
         final String html = "<html>\n"
                 + "<head>\n"
@@ -1562,8 +1536,7 @@ public class HTMLElementTest extends WebDriverTestCase {
     @Alerts(DEFAULT = {"Old = <span id=\"innerNode\">Old outerHTML</span>",
                        "New = <span id=\"innerNode\">Old outerHTML</span>", "Children: 1"},
             CHROME = {"Old = <span id=\"innerNode\">Old outerHTML</span>", "exception"},
-            EDGE = {"Old = <span id=\"innerNode\">Old outerHTML</span>", "exception"},
-            IE = {"Old = <span id=\"innerNode\">Old outerHTML</span>", "New = ", "Children: 0"})
+            EDGE = {"Old = <span id=\"innerNode\">Old outerHTML</span>", "exception"})
     public void setOuterHTMLDetachedElementUndefined() throws Exception {
         final String html = "<html>\n"
                 + "<head>\n"
@@ -1596,8 +1569,7 @@ public class HTMLElementTest extends WebDriverTestCase {
     @Alerts(DEFAULT = {"Old = <span id=\"innerNode\">Old outerHTML</span>",
                        "New = <span id=\"innerNode\">Old outerHTML</span>", "Children: 1"},
             CHROME = {"Old = <span id=\"innerNode\">Old outerHTML</span>", "exception"},
-            EDGE = {"Old = <span id=\"innerNode\">Old outerHTML</span>", "exception"},
-            IE = {"Old = <span id=\"innerNode\">Old outerHTML</span>", "New = ", "Children: 0"})
+            EDGE = {"Old = <span id=\"innerNode\">Old outerHTML</span>", "exception"})
     public void setOuterHTMLDetachedElementEmpty() throws Exception {
         final String html = "<html>\n"
                 + "<head>\n"
@@ -1630,8 +1602,7 @@ public class HTMLElementTest extends WebDriverTestCase {
     @Alerts(DEFAULT = {"Old = <span id=\"innerNode\">Old outerHTML</span>",
                        "New = <span id=\"innerNode\">Old outerHTML</span>", "Children: 1"},
             CHROME = {"Old = <span id=\"innerNode\">Old outerHTML</span>", "exception"},
-            EDGE = {"Old = <span id=\"innerNode\">Old outerHTML</span>", "exception"},
-            IE = {"Old = <span id=\"innerNode\">Old outerHTML</span>", "New = ", "Children: 0"})
+            EDGE = {"Old = <span id=\"innerNode\">Old outerHTML</span>", "exception"})
     public void setOuterHTMLDetachedElementBlank() throws Exception {
         final String html = "<html>\n"
                 + "<head>\n"
@@ -1664,8 +1635,7 @@ public class HTMLElementTest extends WebDriverTestCase {
     @Alerts(DEFAULT = {"Old = <span id=\"innerNode\">Old outerHTML</span>",
                        "New = <span id=\"innerNode\">Old outerHTML</span>", "Children: 1"},
             CHROME = {"Old = <span id=\"innerNode\">Old outerHTML</span>", "exception"},
-            EDGE = {"Old = <span id=\"innerNode\">Old outerHTML</span>", "exception"},
-            IE = {"Old = <span id=\"innerNode\">Old outerHTML</span>", "New = ", "Children: 0"})
+            EDGE = {"Old = <span id=\"innerNode\">Old outerHTML</span>", "exception"})
     public void setOuterHTMLDetachedElement() throws Exception {
         final String html = "<html>\n"
                 + "<head>\n"
@@ -1858,8 +1828,7 @@ public class HTMLElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"2", "exception"},
-            IE = {"2", "BR"})
+    @Alerts({"2", "exception"})
     public void childrenFunctionAccess() throws Exception {
         final String html = "<html><body>\n"
             + "<div id='myDiv'><br/><div>\n"
@@ -1878,13 +1847,11 @@ public class HTMLElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"Old = Old\n\ninnerText", "New = New cell value"},
-            IE = {"Old = Old \ninnerText", "New = New cell value"})
+    @Alerts({"Old = Old\n\ninnerText", "New = New cell value"})
     @HtmlUnitNYI(CHROME = {"Old = Old\ninnerText", "New = New cell value"},
             EDGE =  {"Old = Old\ninnerText", "New = New cell value"},
             FF = {"Old = Old\ninnerText", "New = New cell value"},
-            FF_ESR = {"Old = Old\ninnerText", "New = New cell value"},
-            IE  = {"Old = Old\ninnerText", "New = New cell value"})
+            FF_ESR = {"Old = Old\ninnerText", "New = New cell value"})
     public void getSetInnerTextSimple() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -2426,9 +2393,7 @@ public class HTMLElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "undefined",
-            IE = {"[object MSCurrentStyleCSSProperties]", "#000000"})
-    @NotYetImplemented(IE)
+    @Alerts("undefined")
     public void currentStyle() throws Exception {
         style("currentStyle");
     }
@@ -2437,9 +2402,7 @@ public class HTMLElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "undefined",
-            IE = {"[object MSStyleCSSProperties]", ""})
-    @NotYetImplemented(IE)
+    @Alerts("undefined")
     public void runtimeStyle() throws Exception {
         style("runtimeStyle");
     }
@@ -2520,8 +2483,7 @@ public class HTMLElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "[object DOMRect]",
-            IE = "[object ClientRect]")
+    @Alerts("[object DOMRect]")
     public void getBoundingClientRect() throws Exception {
         final String html = "<html><body>\n"
             + "<div id='div1'>hello</div><script>\n"
@@ -2593,8 +2555,7 @@ public class HTMLElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object DOMRect]", "0", "0"},
-            IE = "exception")
+    @Alerts({"[object DOMRect]", "0", "0"})
     public void getBoundingClientRectDisconnected() throws Exception {
         final String html = "<html>\n"
             + "<head><script>\n"
@@ -2619,8 +2580,7 @@ public class HTMLElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object DOMRectList]", "1"},
-            IE = {"[object ClientRectList]", "1"})
+    @Alerts({"[object DOMRectList]", "1"})
     public void getClientRects() throws Exception {
         final String html = "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
@@ -2641,8 +2601,7 @@ public class HTMLElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object DOMRectList]", "0"},
-            IE = {"[object ClientRectList]", "0"})
+    @Alerts({"[object DOMRectList]", "0"})
     public void getClientRectsDisconnected() throws Exception {
         final String html =
             "<html><head><script>\n"
@@ -2662,8 +2621,7 @@ public class HTMLElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object DOMRectList]", "0", "[object DOMRectList]", "0"},
-            IE = {"[object ClientRectList]", "0", "[object ClientRectList]", "0"})
+    @Alerts({"[object DOMRectList]", "0", "[object DOMRectList]", "0"})
     public void getClientRectsDisplayNone() throws Exception {
         final String html =
             "<html><head><script>\n"
@@ -2736,8 +2694,7 @@ public class HTMLElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"true", "true", "true"},
-            IE = {"false", "true", "false"})
+    @Alerts({"true", "true", "true"})
     public void uniqueID() throws Exception {
         final String html = "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
@@ -2762,8 +2719,7 @@ public class HTMLElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "undefined",
-            IE = {"true", "true"})
+    @Alerts("undefined")
     public void uniqueIDFormatIE() throws Exception {
         final String html = "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
@@ -3231,9 +3187,7 @@ public class HTMLElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"true", "true", "true", "false", "false", "false", "false", "true", "true", "false", "false"},
-            IE = {"true", "true", "true", "false", "false", "false", "false", "true", "false", "false",
-                  "exception"})
+    @Alerts({"true", "true", "true", "false", "false", "false", "false", "true", "true", "false", "false"})
     public void contains() throws Exception {
         final String html
             = "<html><head>\n"
@@ -3276,8 +3230,7 @@ public class HTMLElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"exception[]", "false", "false"},
-            IE = {"false", "false", "false"})
+    @Alerts({"exception[]", "false", "false"})
     public void contains_invalid_argument() throws Exception {
         final String html = "<html><body><script>\n"
             + LOG_TITLE_FUNCTION
@@ -3442,8 +3395,7 @@ public class HTMLElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "removeNode not available",
-            IE = {"div2", "null", "div3", "div4", "div6", "div7", "null"})
+    @Alerts("removeNode not available")
     public void removeNode() throws Exception {
         final String html
             = "<html><head>\n"
@@ -3503,8 +3455,7 @@ public class HTMLElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"false,false,false,false,false,true,false", "clearAttributes not available"},
-            IE = {"false,false,false,false,false,true,false", "false,false,false,false,false,true,false"})
+    @Alerts({"false,false,false,false,false,true,false", "clearAttributes not available"})
     public void clearAttributes() throws Exception {
         final String html
             = "<html><head>\n"
@@ -3534,9 +3485,7 @@ public class HTMLElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "mergeAttributes not available",
-            IE = {"false,false,false,false,false,true,true", "i", "",
-                  "false,false,false,false,false,true,true", "i", ""})
+    @Alerts("mergeAttributes not available")
     public void mergeAttributes() throws Exception {
         mergeAttributesTest("i2");
     }
@@ -3545,9 +3494,7 @@ public class HTMLElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "mergeAttributes not available",
-            IE = {"false,false,false,false,false,true,true", "i", "",
-                  "false,false,false,false,false,true,true", "i", ""})
+    @Alerts("mergeAttributes not available")
     public void mergeAttributesTrue() throws Exception {
         mergeAttributesTest("i2, true");
     }
@@ -3556,9 +3503,7 @@ public class HTMLElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "mergeAttributes not available",
-            IE = {"false,false,false,false,false,true,true", "i", "",
-                  "false,false,false,false,false,true,true", "i2", "i2"})
+    @Alerts("mergeAttributes not available")
     public void mergeAttributesfalse() throws Exception {
         mergeAttributesTest("i2, false");
     }
@@ -3640,8 +3585,7 @@ public class HTMLElementTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"", "#0000aa", "x", "BlanchedAlmond", "aBlue", "bluex"},
-            IE = {"", "#0000aa", "#0", "blanchedalmond", "#ab00e", "#b00e0"})
+    @Alerts({"", "#0000aa", "x", "BlanchedAlmond", "aBlue", "bluex"})
     public void setColorAttribute() throws Exception {
         final String html =
             "<html>\n"
@@ -3694,8 +3638,7 @@ public class HTMLElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"button", "null", "false", "true"},
-            IE = {"button", "", "false", "true"})
+    @Alerts({"button", "null", "false", "true"})
     public void attributeNS() throws Exception {
         final String html
             = "<html><head>\n"
@@ -3922,14 +3865,10 @@ public class HTMLElementTest extends WebDriverTestCase {
             + "    text += '  </html>\\n';\n"
             + "    text += '  </xsl:template>\\n';\n"
             + "    text += '</xsl:stylesheet>';\n"
-            + "    if (window.ActiveXObject) {\n"
-            + "      var doc=new ActiveXObject('Microsoft.XMLDOM');\n"
-            + "      doc.async = false;\n"
-            + "      doc.loadXML(text);\n"
-            + "    } else {\n"
-            + "      var parser=new DOMParser();\n"
-            + "      var doc=parser.parseFromString(text,'text/xml');\n"
-            + "    }\n"
+
+            + "    var parser=new DOMParser();\n"
+            + "    var doc=parser.parseFromString(text,'text/xml');\n"
+
             + "    var elem = doc.documentElement.getElementsByTagName('html').item(0);\n"
             + "    log(elem.getAttribute('hi'));\n"
             + "    elem.setAttribute('hi', 'ho');\n"
@@ -3962,9 +3901,7 @@ public class HTMLElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "<svg id=\"svgElem2\"></svg>",
-            IE = "<svg xmlns=\"http://www.w3.org/2000/svg\" id=\"svgElem2\" />")
-    @NotYetImplemented(IE)
+    @Alerts("<svg id=\"svgElem2\"></svg>")
     public void innerHTML_svg() throws Exception {
         final String html = "<html>\n"
                 + "<head>\n"
@@ -4035,6 +3972,82 @@ public class HTMLElementTest extends WebDriverTestCase {
             + "  }\n"
             + "</script></head><body onload='test()'>\n"
             + "  <div id='myNode'></div>\n"
+            + "</body></html>";
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = {"executed", "appendChild done"},
+            FF = "appendChild done",
+            FF_ESR = "appendChild done")
+    public void appendChildExecuteTemplateChildJavaScript() throws Exception {
+        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+            + "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var html = '<body><template><script>alerter();<' + '/script></template></body>';\n"
+            + "    var parser = new DOMParser();\n"
+            + "    var responseDoc = parser.parseFromString(html, 'text/html');\n"
+            + "    var responseBody = responseDoc.body;\n"
+            + "    var template = responseBody.querySelector('template');\n"
+            + "    var scriptElem = template.content.firstChild;\n"
+            + "    try {\n"
+            + "      var outernode = document.getElementById('myNode');\n"
+            + "      outernode.appendChild(scriptElem);\n"
+            + "      log('appendChild done');\n"
+            + "    } catch(e) { log('exception-append'); }\n"
+            + "  }\n"
+            + "  function alerter() {\n"
+            + "    log('executed');\n"
+            + "  }\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <div id='myNode'></div>\n"
+            + "</body></html>";
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = {"executed", "appendChild done1", "appendChild done2"},
+            FF = {"appendChild done1", "appendChild done2"},
+            FF_ESR = {"appendChild done1", "appendChild done2"})
+    public void appendChildExecuteTemplateFragmentJavaScript() throws Exception {
+        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+            + "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var html = '<body><template><script>alerter();<' + '/script></template></body>';\n"
+            + "    var parser = new DOMParser();\n"
+            + "    var responseDoc = parser.parseFromString(html, 'text/html');\n"
+            + "    var responseBody = responseDoc.body;\n"
+            + "    var templateContent = responseBody.querySelector('template').content;\n"
+            + "    var scriptElem = templateContent.firstChild;\n"
+
+            + "    try {\n"
+            + "      var outernode = document.getElementById('myNode');\n"
+            + "      outernode.appendChild(scriptElem);\n"
+            + "      log('appendChild done1');\n"
+            + "    } catch(e) { log('exception-append2'); }\n"
+
+            + "    try {\n"
+            + "      var outernode = document.getElementById('secondNode');\n"
+            + "      outernode.appendChild(scriptElem);\n"
+            + "      log('appendChild done2');\n"
+            + "    } catch(e) { log('exception-append2'); }\n"
+            + "  }\n"
+            + "  function alerter() {\n"
+            + "    log('executed');\n"
+            + "  }\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <div id='myNode'></div>\n"
+            + "  <div id='secondNode'></div>\n"
             + "</body></html>";
         loadPageVerifyTitle2(html);
     }
@@ -4122,6 +4135,120 @@ public class HTMLElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
+    @Alerts(DEFAULT = {"executed", "insertBefore done"},
+            FF = "insertBefore done",
+            FF_ESR = "insertBefore done")
+    public void insertBeforeExecuteTemplateChildJavaScript() throws Exception {
+        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+            + "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var html = '<body><template><script>alerter();<' + '/script></template></body>';\n"
+            + "    var parser = new DOMParser();\n"
+            + "    var responseDoc = parser.parseFromString(html, 'text/html');\n"
+            + "    var responseBody = responseDoc.body;\n"
+            + "    var template = responseBody.querySelector('template');\n"
+            + "    var scriptElem = template.content.firstChild;\n"
+            + "    try {\n"
+            + "      var outernode = document.getElementById('myNode');\n"
+            + "      outernode.insertBefore(scriptElem, null);\n"
+            + "      log('insertBefore done');\n"
+            + "    } catch(e) { log('exception-append'); }\n"
+            + "  }\n"
+            + "  function alerter() {\n"
+            + "    log('executed');\n"
+            + "  }\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <div id='myNode'></div>\n"
+            + "</body></html>";
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = {"executed", "insertBefore done1", "insertBefore done2"},
+            FF = {"insertBefore done1", "insertBefore done2"},
+            FF_ESR = {"insertBefore done1", "insertBefore done2"})
+    public void insertBeforeExecuteTemplateFragmentJavaScript() throws Exception {
+        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+            + "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var html = '<body><template><script>alerter();<' + '/script></template></body>';\n"
+            + "    var parser = new DOMParser();\n"
+            + "    var responseDoc = parser.parseFromString(html, 'text/html');\n"
+            + "    var responseBody = responseDoc.body;\n"
+            + "    var templateContent = responseBody.querySelector('template').content;\n"
+            + "    var scriptElem = templateContent.firstChild;\n"
+
+            + "    try {\n"
+            + "      var outernode = document.getElementById('myNode');\n"
+            + "      outernode.insertBefore(scriptElem, null);\n"
+            + "      log('insertBefore done1');\n"
+            + "    } catch(e) { log('exception-append2'); }\n"
+
+            + "    try {\n"
+            + "      var outernode = document.getElementById('secondNode');\n"
+            + "      outernode.insertBefore(scriptElem, null);\n"
+            + "      log('insertBefore done2');\n"
+            + "    } catch(e) { log('exception-append2'); }\n"
+            + "  }\n"
+            + "  function alerter() {\n"
+            + "    log('executed');\n"
+            + "  }\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <div id='myNode'></div>\n"
+            + "  <div id='secondNode'></div>\n"
+            + "</body></html>";
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"before", "executed", "insertBefore done1", "insertBefore done2"})
+    public void insertBeforeExecuteTemplateFragmentDom() throws Exception {
+        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+            + "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    log('before');\n"
+            + "    var templateContent = document.getElementById('myTemplate').content;\n"
+            + "    var scriptElem = templateContent.firstChild;\n"
+
+            + "    try {\n"
+            + "      var outernode = document.getElementById('myNode');\n"
+            + "      outernode.insertBefore(scriptElem, null);\n"
+            + "      log('insertBefore done1');\n"
+            + "    } catch(e) { log('exception-append2'); }\n"
+
+            + "    try {\n"
+            + "      var outernode = document.getElementById('secondNode');\n"
+            + "      outernode.insertBefore(scriptElem, null);\n"
+            + "      log('insertBefore done2');\n"
+            + "    } catch(e) { log('exception-append2'); }\n"
+            + "  }\n"
+            + "  function alerter() {\n"
+            + "    log('executed');\n"
+            + "  }\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <template id='myTemplate'><script>alerter();</script></template>\n"
+            + "  <div id='myNode'></div>\n"
+            + "  <div id='secondNode'></div>\n"
+            + "</body></html>";
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
     @Alerts("declared")
     public void insertBeforeDeclareJavaScript() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -4201,6 +4328,82 @@ public class HTMLElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
+    @Alerts(DEFAULT = {"executed", "replaceChild done"},
+            FF = "replaceChild done",
+            FF_ESR = "replaceChild done")
+    public void replaceChildExecuteTemplateChildJavaScript() throws Exception {
+        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+            + "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var html = '<body><template><script>alerter();<' + '/script></template></body>';\n"
+            + "    var parser = new DOMParser();\n"
+            + "    var responseDoc = parser.parseFromString(html, 'text/html');\n"
+            + "    var responseBody = responseDoc.body;\n"
+            + "    var template = responseBody.querySelector('template');\n"
+            + "    var scriptElem = template.content.firstChild;\n"
+            + "    try {\n"
+            + "      var outernode = document.getElementById('myNode');\n"
+            + "      outernode.replaceChild(scriptElem, document.getElementById('inner'));\n"
+            + "      log('replaceChild done');\n"
+            + "    } catch(e) { log('exception-append'); }\n"
+            + "  }\n"
+            + "  function alerter() {\n"
+            + "    log('executed');\n"
+            + "  }\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <div id='myNode'><div id='inner'></div></div>\n"
+            + "</body></html>";
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = {"executed", "replaceChild done1", "replaceChild done2"},
+            FF = {"replaceChild done1", "replaceChild done2"},
+            FF_ESR = {"replaceChild done1", "replaceChild done2"})
+    public void replaceChildExecuteTemplateFragmentJavaScript() throws Exception {
+        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+            + "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var html = '<body><template><script>alerter();<' + '/script></template></body>';\n"
+            + "    var parser = new DOMParser();\n"
+            + "    var responseDoc = parser.parseFromString(html, 'text/html');\n"
+            + "    var responseBody = responseDoc.body;\n"
+            + "    var templateContent = responseBody.querySelector('template').content;\n"
+            + "    var scriptElem = templateContent.firstChild;\n"
+
+            + "    try {\n"
+            + "      var outernode = document.getElementById('myNode');\n"
+            + "      outernode.replaceChild(scriptElem, document.getElementById('inner'));\n"
+            + "      log('replaceChild done1');\n"
+            + "    } catch(e) { log('exception-append2'); }\n"
+
+            + "    try {\n"
+            + "      var outernode = document.getElementById('secondNode');\n"
+            + "      outernode.replaceChild(scriptElem, document.getElementById('inner2'));\n"
+            + "      log('replaceChild done2');\n"
+            + "    } catch(e) { log('exception-append2'); }\n"
+            + "  }\n"
+            + "  function alerter() {\n"
+            + "    log('executed');\n"
+            + "  }\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <div id='myNode'><div id='inner'></div></div>\n"
+            + "  <div id='secondNode'><div id='inner2'></div></div>\n"
+            + "</body></html>";
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
     @Alerts("declared")
     public void replaceChildDeclareJavaScript() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -4226,8 +4429,7 @@ public class HTMLElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"false", "<!--some comment-->", "true", "false"},
-            IE = {"-", "<!--some comment-->", "-", "-"})
+    @Alerts({"false", "<!--some comment-->", "true", "false"})
     public void replaceChildAddNewChildToDocument() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"
@@ -4474,6 +4676,82 @@ public class HTMLElementTest extends WebDriverTestCase {
             + "  }\n"
             + "</script></head><body onload='test()'>\n"
             + "  <div id='myNode'></div>\n"
+            + "</body></html>";
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = {"executed", "insertAdjacentElement done"},
+            FF = "insertAdjacentElement done",
+            FF_ESR = "insertAdjacentElement done")
+    public void insertAdjacentElementExecuteTemplateChildJavaScript() throws Exception {
+        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+            + "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var html = '<body><template><script>alerter();<' + '/script></template></body>';\n"
+            + "    var parser = new DOMParser();\n"
+            + "    var responseDoc = parser.parseFromString(html, 'text/html');\n"
+            + "    var responseBody = responseDoc.body;\n"
+            + "    var template = responseBody.querySelector('template');\n"
+            + "    var scriptElem = template.content.firstChild;\n"
+            + "    try {\n"
+            + "      var outernode = document.getElementById('myNode');\n"
+            + "      outernode.insertAdjacentElement('afterend', scriptElem);\n"
+            + "      log('insertAdjacentElement done');\n"
+            + "    } catch(e) { log('exception-append'); }\n"
+            + "  }\n"
+            + "  function alerter() {\n"
+            + "    log('executed');\n"
+            + "  }\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <div id='myNode'></div>\n"
+            + "</body></html>";
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = {"executed", "insertAdjacentElement done1", "insertAdjacentElement done2"},
+            FF = {"insertAdjacentElement done1", "insertAdjacentElement done2"},
+            FF_ESR = {"insertAdjacentElement done1", "insertAdjacentElement done2"})
+    public void insertAdjacentElementExecuteTemplateFragmentJavaScript() throws Exception {
+        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+            + "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var html = '<body><template><script>alerter();<' + '/script></template></body>';\n"
+            + "    var parser = new DOMParser();\n"
+            + "    var responseDoc = parser.parseFromString(html, 'text/html');\n"
+            + "    var responseBody = responseDoc.body;\n"
+            + "    var templateContent = responseBody.querySelector('template').content;\n"
+            + "    var scriptElem = templateContent.firstChild;\n"
+
+            + "    try {\n"
+            + "      var outernode = document.getElementById('myNode');\n"
+            + "      outernode.insertAdjacentElement('afterend', scriptElem);\n"
+            + "      log('insertAdjacentElement done1');\n"
+            + "    } catch(e) { log('exception-append2'); }\n"
+
+            + "    try {\n"
+            + "      var outernode = document.getElementById('secondNode');\n"
+            + "      outernode.insertAdjacentElement('afterend', scriptElem);\n"
+            + "      log('insertAdjacentElement done2');\n"
+            + "    } catch(e) { log('exception-append2'); }\n"
+            + "  }\n"
+            + "  function alerter() {\n"
+            + "    log('executed');\n"
+            + "  }\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <div id='myNode'></div>\n"
+            + "  <div id='secondNode'></div>\n"
             + "</body></html>";
         loadPageVerifyTitle2(html);
     }
@@ -5186,8 +5464,7 @@ public class HTMLElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"", "go", "", "enter", "done",  "go", "next", "previous", "search", "send"},
-            IE = {"undefined", "GO", "run", "enter", "done",  "go", "next", "previous", "search", "send"})
+    @Alerts({"", "go", "", "enter", "done",  "go", "next", "previous", "search", "send"})
     public void enterKeyHint() throws Exception {
         final String html =
             "<html><head><script>\n"
@@ -5237,8 +5514,7 @@ public class HTMLElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"", "go", "", "", ""},
-            IE = {"undefined", "GO", "run", "undefined", "null"})
+    @Alerts({"", "go", "", "", ""})
     public void enterKeyHint2() throws Exception {
         final String html =
             "<html><head><script>\n"
@@ -5272,8 +5548,7 @@ public class HTMLElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"go", "go", "", "", ""},
-            IE = {"undefined", "undefined", "undefined", "undefined", "undefined"})
+    @Alerts({"go", "go", "", "", ""})
     public void enterKeyHintDefaults() throws Exception {
         final String html =
             "<html><head><script>\n"
@@ -5310,8 +5585,7 @@ public class HTMLElementTest extends WebDriverTestCase {
      * @throws Exception on test failure
      */
     @Test
-    @Alerts(DEFAULT = {"true", "", "true", "7", "true", "seven", "false", "null"},
-            IE = {"undefined", "", "undefined", "7", "undefined", "seven", "undefined", "null"})
+    @Alerts({"true", "", "true", "7", "true", "seven", "false", "null"})
     public void autofocus() throws Exception {
         final String html = "<html>\n"
                 + "<head>\n"
@@ -5353,12 +5627,9 @@ public class HTMLElementTest extends WebDriverTestCase {
      * @throws Exception on test failure
      */
     @Test
-    @Alerts(DEFAULT = {"true", "", "true", "", "false", "null", "true", "7",
-                       "true", "", "false", "null", "true", "", "false", "null",
-                       "true", "", "false", "null", "false", "null"},
-            IE = {"undefined", "", "undefined", "", "undefined", "null", "undefined", "7",
-                  "true", "7", "false", "7", "true", "7", "false", "7",
-                  "no", "7", "null", "7", "undefined", "7"})
+    @Alerts({"true", "", "true", "", "false", "null", "true", "7",
+             "true", "", "false", "null", "true", "", "false", "null",
+             "true", "", "false", "null", "false", "null"})
     public void editAutofocus() throws Exception {
         final String html = "<html>\n"
                 + "<head>\n"

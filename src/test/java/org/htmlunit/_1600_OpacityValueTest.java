@@ -37,12 +37,6 @@ public class _1600_OpacityValueTest
     }
 
     @Test
-    public void ie() throws Exception
-    {
-        test(new WebClient(BrowserVersion.INTERNET_EXPLORER), "0.55");
-    }
-
-    @Test
     public void chrome() throws Exception
     {
         test(new WebClient(BrowserVersion.CHROME), "0.55");

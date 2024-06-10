@@ -18,7 +18,6 @@ import java.util.Collection;
 
 import org.htmlunit.junit.BrowserParameterizedRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized.Parameters;
@@ -64,8 +63,7 @@ public class HostParentOfPTest extends HostParentOf {
      *             if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _PannerNode_PannerNode() throws Exception {
         test("PannerNode", "PannerNode");
     }
@@ -86,8 +84,7 @@ public class HostParentOfPTest extends HostParentOf {
      *             if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _Path2D_Path2D() throws Exception {
         test("Path2D", "Path2D");
     }
@@ -173,9 +170,7 @@ public class HostParentOfPTest extends HostParentOf {
      *             if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
-    @HtmlUnitNYI(IE = "true")
+    @Alerts("true")
     public void _PerformanceEntry_PerformanceNavigationTiming() throws Exception {
         test("PerformanceEntry", "PerformanceNavigationTiming");
     }
@@ -234,8 +229,7 @@ public class HostParentOfPTest extends HostParentOf {
      *             if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _PerformanceObserver_PerformanceObserver() throws Exception {
         test("PerformanceObserver", "PerformanceObserver");
     }
@@ -245,8 +239,7 @@ public class HostParentOfPTest extends HostParentOf {
      *             if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _PerformanceObserverEntryList_PerformanceObserverEntryList() throws Exception {
         test("PerformanceObserverEntryList", "PerformanceObserverEntryList");
     }
@@ -256,9 +249,7 @@ public class HostParentOfPTest extends HostParentOf {
      *             if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
-    @HtmlUnitNYI(IE = "true")
+    @Alerts("true")
     public void _PerformanceResourceTiming_PerformanceNavigationTiming() throws Exception {
         test("PerformanceResourceTiming", "PerformanceNavigationTiming");
     }
@@ -300,8 +291,7 @@ public class HostParentOfPTest extends HostParentOf {
      *             if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _PeriodicWave_PeriodicWave() throws Exception {
         test("PeriodicWave", "PeriodicWave");
     }
@@ -311,8 +301,7 @@ public class HostParentOfPTest extends HostParentOf {
      *             if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _Permissions_Permissions() throws Exception {
         test("Permissions", "Permissions");
     }
@@ -322,8 +311,7 @@ public class HostParentOfPTest extends HostParentOf {
      *             if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _PermissionStatus_PermissionStatus() throws Exception {
         test("PermissionStatus", "PermissionStatus");
     }
@@ -373,8 +361,7 @@ public class HostParentOfPTest extends HostParentOf {
      *             if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "false",
-            IE = "true")
+    @Alerts("false")
     public void _Position_Position() throws Exception {
         test("Position", "Position");
     }
@@ -384,8 +371,7 @@ public class HostParentOfPTest extends HostParentOf {
      *             if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "false",
-            IE = "true")
+    @Alerts("false")
     public void _PositionError_PositionError() throws Exception {
         test("PositionError", "PositionError");
     }
@@ -481,8 +467,7 @@ public class HostParentOfPTest extends HostParentOf {
      *             if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _Promise_Promise() throws Exception {
         test("Promise", "Promise");
     }
@@ -491,11 +476,7 @@ public class HostParentOfPTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "false",
-            CHROME = "true",
-            EDGE = "true",
-            FF = "true",
-            FF_ESR = "true")
+    @Alerts("true")
     public void _PromiseRejectionEvent_PromiseRejectionEvent() throws Exception {
         test("PromiseRejectionEvent", "PromiseRejectionEvent");
     }
@@ -505,11 +486,7 @@ public class HostParentOfPTest extends HostParentOf {
      *             if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "false",
-            CHROME = "true",
-            EDGE = "true",
-            FF = "true",
-            FF_ESR = "true")
+    @Alerts("true")
     public void _PushManager_PushManager() throws Exception {
         test("PushManager", "PushManager");
     }
@@ -519,11 +496,7 @@ public class HostParentOfPTest extends HostParentOf {
      *             if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "false",
-            CHROME = "true",
-            EDGE = "true",
-            FF = "true",
-            FF_ESR = "true")
+    @Alerts("true")
     public void _PushSubscription_PushSubscription() throws Exception {
         test("PushSubscription", "PushSubscription");
     }
@@ -532,11 +505,7 @@ public class HostParentOfPTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "false",
-            CHROME = "true",
-            EDGE = "true",
-            FF = "true",
-            FF_ESR = "true")
+    @Alerts("true")
     public void _PushSubscriptionOptions_PushSubscriptionOptions() throws Exception {
         test("PushSubscriptionOptions", "PushSubscriptionOptions");
     }
@@ -546,8 +515,7 @@ public class HostParentOfPTest extends HostParentOf {
      *             if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _RadioNodeList_RadioNodeList() throws Exception {
         test("RadioNodeList", "RadioNodeList");
     }
@@ -567,8 +535,7 @@ public class HostParentOfPTest extends HostParentOf {
      *             if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _ReadableStream_ReadableStream() throws Exception {
         test("ReadableStream", "ReadableStream");
     }
@@ -589,8 +556,7 @@ public class HostParentOfPTest extends HostParentOf {
      *             if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _Request_Request() throws Exception {
         test("Request", "Request");
     }
@@ -600,8 +566,7 @@ public class HostParentOfPTest extends HostParentOf {
      *             if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _Response_Response() throws Exception {
         test("Response", "Response");
     }
@@ -610,8 +575,7 @@ public class HostParentOfPTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _RTCCertificate_RTCCertificate() throws Exception {
         test("RTCCertificate", "RTCCertificate");
     }
@@ -621,8 +585,7 @@ public class HostParentOfPTest extends HostParentOf {
      *             if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _RTCDataChannelEvent_RTCDataChannelEvent() throws Exception {
         test("RTCDataChannelEvent", "RTCDataChannelEvent");
     }
@@ -642,8 +605,7 @@ public class HostParentOfPTest extends HostParentOf {
      *             if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _RTCIceCandidate_RTCIceCandidate() throws Exception {
         test("RTCIceCandidate", "RTCIceCandidate");
     }
@@ -661,8 +623,7 @@ public class HostParentOfPTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _RTCPeerConnection_RTCPeerConnection() throws Exception {
         test("RTCPeerConnection", "RTCPeerConnection");
     }
@@ -683,8 +644,7 @@ public class HostParentOfPTest extends HostParentOf {
      *             if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _RTCPeerConnectionIceEvent_RTCPeerConnectionIceEvent() throws Exception {
         test("RTCPeerConnectionIceEvent", "RTCPeerConnectionIceEvent");
     }
@@ -693,8 +653,7 @@ public class HostParentOfPTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _RTCSctpTransport_RTCSctpTransport() throws Exception {
         test("RTCSctpTransport", "RTCSctpTransport");
     }
@@ -713,8 +672,7 @@ public class HostParentOfPTest extends HostParentOf {
      *             if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _RTCSessionDescription_RTCSessionDescription() throws Exception {
         test("RTCSessionDescription", "RTCSessionDescription");
     }
@@ -723,8 +681,7 @@ public class HostParentOfPTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _RTCStatsReport_RTCStatsReport() throws Exception {
         test("RTCStatsReport", "RTCStatsReport");
     }

@@ -14,8 +14,6 @@
  */
 package org.htmlunit.libraries;
 
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
-
 import java.time.Duration;
 import java.util.List;
 
@@ -47,10 +45,7 @@ public class TinyMceTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"348", "0"},
-            IE = {"348", "13"})
-    @NotYetImplemented(IE)
-    // TODO [IE]XML tinymce 3.2.7 is not compatible with IE
+    @Alerts({"348", "0"})
     public void api() throws Exception {
         test("api", Integer.parseInt(getExpectedAlerts()[0]), Integer.parseInt(getExpectedAlerts()[1]));
     }
@@ -61,10 +56,8 @@ public class TinyMceTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"89", "0"},
             CHROME = {"89", "1"},
-            EDGE = {"89", "1"},
-            IE = {"89", "4"})
+            EDGE = {"89", "1"})
     @NotYetImplemented
-    // TODO [IE]XML tinymce 3.2.7 is not compatible with IE
     public void basic() throws Exception {
         test("basic", Integer.parseInt(getExpectedAlerts()[0]), Integer.parseInt(getExpectedAlerts()[1]));
     }

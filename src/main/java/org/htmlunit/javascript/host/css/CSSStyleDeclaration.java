@@ -15,13 +15,7 @@
 package org.htmlunit.javascript.host.css;
 
 import static org.htmlunit.BrowserVersionFeatures.CSS_BACKGROUND_INITIAL;
-import static org.htmlunit.BrowserVersionFeatures.CSS_LENGTH_INITIAL;
-import static org.htmlunit.BrowserVersionFeatures.CSS_OUTLINE_WIDTH_UNIT_NOT_REQUIRED;
-import static org.htmlunit.BrowserVersionFeatures.CSS_VERTICAL_ALIGN_SUPPORTS_AUTO;
-import static org.htmlunit.BrowserVersionFeatures.CSS_ZINDEX_TYPE_INTEGER;
-import static org.htmlunit.BrowserVersionFeatures.JS_STYLE_UNSUPPORTED_PROPERTY_GETTER;
 import static org.htmlunit.BrowserVersionFeatures.JS_STYLE_WORD_SPACING_ACCEPTS_PERCENT;
-import static org.htmlunit.BrowserVersionFeatures.JS_STYLE_WRONG_INDEX_RETURNS_UNDEFINED;
 import static org.htmlunit.css.CssStyleSheet.ABSOLUTE;
 import static org.htmlunit.css.CssStyleSheet.AUTO;
 import static org.htmlunit.css.CssStyleSheet.FIXED;
@@ -33,7 +27,6 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -48,16 +41,9 @@ import java.util.Set;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.htmlunit.BrowserVersion;
-import org.htmlunit.corejs.javascript.ES6Iterator;
-import org.htmlunit.corejs.javascript.NativeArrayIterator;
-import org.htmlunit.corejs.javascript.ScriptRuntime;
 import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.corejs.javascript.ScriptableObject;
-import org.htmlunit.corejs.javascript.Undefined;
 import org.htmlunit.css.AbstractCssStyleDeclaration;
-import org.htmlunit.css.ComputedCssStyleDeclaration;
-import org.htmlunit.css.CssPixelValueConverter;
-import org.htmlunit.css.ElementCssStyleDeclaration;
 import org.htmlunit.css.StyleAttributes;
 import org.htmlunit.css.StyleAttributes.Definition;
 import org.htmlunit.css.StyleElement;
@@ -146,7 +132,7 @@ public class CSSStyleDeclaration extends HtmlUnitScriptable {
      * @param type the event type
      * @param details the event details (optional)
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor(final String type, final ScriptableObject details) {
         throw JavaScriptEngine.typeError("CSSStyleDeclaration ctor is not available");
     }
@@ -188,25 +174,6 @@ public class CSSStyleDeclaration extends HtmlUnitScriptable {
     }
 
     /**
-     * IE makes unknown style properties accessible.
-     * @param name the name of the requested property
-     * @return the object value, {@link #NOT_FOUND} if nothing is found
-     */
-    @Override
-    protected Object getWithPreemption(final String name) {
-        if (getBrowserVersion().hasFeature(JS_STYLE_UNSUPPORTED_PROPERTY_GETTER)
-                && (styleDeclaration_ instanceof ElementCssStyleDeclaration
-                        || styleDeclaration_ instanceof ComputedCssStyleDeclaration)) {
-            final StyleElement element = styleDeclaration_.getStyleElement(name);
-            if (element != null && element.getValue() != null) {
-                return element.getValue();
-            }
-        }
-
-        return NOT_FOUND;
-    }
-
-    /**
      * Returns the priority of the named style attribute, or an empty string if it is not found.
      *
      * @param name the name of the style attribute whose value is to be retrieved
@@ -214,17 +181,6 @@ public class CSSStyleDeclaration extends HtmlUnitScriptable {
      */
     protected String getStylePriority(final String name) {
         return styleDeclaration_.getStylePriority(name);
-    }
-
-    /**
-     * Determines the StyleElement for the given name.
-     * This ignores the case of the name.
-     *
-     * @param name the name of the requested StyleElement
-     * @return the StyleElement or null if not found
-     */
-    private StyleElement getStyleElementCaseInSensitive(final String name) {
-        return styleDeclaration_.getStyleElementCaseInSensitive(name);
     }
 
     /**
@@ -272,27 +228,6 @@ public class CSSStyleDeclaration extends HtmlUnitScriptable {
             return Collections.emptyMap();
         }
         return styleDeclaration_.getStyleMap();
-    }
-
-    /**
-     * Gets the {@code accelerator} style attribute.
-     * @return the style attribute
-     */
-    @JsxGetter(IE)
-    public String getAccelerator() {
-        if (styleDeclaration_ == null) {
-            return null; // prototype
-        }
-        return styleDeclaration_.getAccelerator();
-    }
-
-    /**
-     * Sets the {@code accelerator} style attribute.
-     * @param accelerator the new attribute
-     */
-    @JsxSetter(IE)
-    public void setAccelerator(final String accelerator) {
-        setStyleAttribute(Definition.ACCELERATOR.getAttributeName(), accelerator);
     }
 
     /**
@@ -855,7 +790,7 @@ public class CSSStyleDeclaration extends HtmlUnitScriptable {
 
     private void updateFont(final String font, final boolean force) {
         final BrowserVersion browserVersion = getBrowserVersion();
-        final String[] details = ComputedFont.getDetails(font, browserVersion);
+        final String[] details = ComputedFont.getDetails(font);
         if (details != null || force) {
             final StringBuilder newFont = new StringBuilder();
             newFont.append(getFontSize());
@@ -865,7 +800,7 @@ public class CSSStyleDeclaration extends HtmlUnitScriptable {
                 lineHeight = defaultLineHeight;
             }
 
-            if (browserVersion.hasFeature(CSS_ZINDEX_TYPE_INTEGER) || !lineHeight.equals(defaultLineHeight)) {
+            if (!lineHeight.equals(defaultLineHeight)) {
                 newFont.append('/');
                 if (lineHeight.equals(defaultLineHeight)) {
                     newFont.append(Definition.LINE_HEIGHT.getDefaultComputedValue(browserVersion));
@@ -898,7 +833,7 @@ public class CSSStyleDeclaration extends HtmlUnitScriptable {
      */
     @JsxSetter
     public void setFont(final String font) {
-        final String[] details = ComputedFont.getDetails(font, getBrowserVersion());
+        final String[] details = ComputedFont.getDetails(font);
         if (details != null) {
             setStyleAttribute(Definition.FONT_FAMILY.getAttributeName(), details[ComputedFont.FONT_FAMILY_INDEX]);
             final String fontSize = details[ComputedFont.FONT_SIZE_INDEX];
@@ -979,11 +914,11 @@ public class CSSStyleDeclaration extends HtmlUnitScriptable {
 
     /**
      * Returns an Iterator allowing to go through all keys contained in this object.
-     * @return an {@link NativeArrayIterator}
+     * @return a NativeArrayIterator
      */
-    @JsxSymbol(value = {CHROME, EDGE, FF, FF_ESR}, symbolName = "iterator")
-    public ES6Iterator values() {
-        return new NativeArrayIterator(getParentScope(), this, NativeArrayIterator.ARRAY_ITERATOR_TYPE.VALUES);
+    @JsxSymbol(symbolName = "iterator")
+    public Scriptable values() {
+        return JavaScriptEngine.newArrayIteratorTypeValues(getParentScope(), this);
     }
 
     /**
@@ -1234,16 +1169,13 @@ public class CSSStyleDeclaration extends HtmlUnitScriptable {
     @Override
     public Object get(final int index, final Scriptable start) {
         if (index < 0) {
-            return Undefined.instance;
+            return JavaScriptEngine.Undefined;
         }
 
         final Map<String, StyleElement> style = getStyleMap();
         final int size = style.size();
         if (index >= size) {
-            if (getBrowserVersion().hasFeature(JS_STYLE_WRONG_INDEX_RETURNS_UNDEFINED)) {
-                return Undefined.instance;
-            }
-            return "";
+            return JavaScriptEngine.Undefined;
         }
         return style.keySet().toArray(new String[size])[index];
     }
@@ -1337,27 +1269,6 @@ public class CSSStyleDeclaration extends HtmlUnitScriptable {
     }
 
     /**
-     * Gets the {@code borderTop} style attribute.
-     * @return the style attribute
-     */
-    @JsxGetter(IE)
-    public String getMsImeAlign() {
-        if (styleDeclaration_ == null) {
-            return null; // prototype
-        }
-        return styleDeclaration_.getMsImeAlign();
-    }
-
-    /**
-     * Sets the {@code msImeAlign} style attribute.
-     * @param msImeAlign the new attribute
-     */
-    @JsxSetter(IE)
-    public void setMsImeAlign(final String msImeAlign) {
-        setStyleAttribute(Definition.MS_IME_ALIGN.getAttributeName(), msImeAlign);
-    }
-
-    /**
      * Gets the {@code opacity} style attribute.
      * @return the style attribute
      */
@@ -1375,7 +1286,7 @@ public class CSSStyleDeclaration extends HtmlUnitScriptable {
      */
     @JsxSetter
     public void setOpacity(final Object opacity) {
-        if (ScriptRuntime.isNaN(opacity)) {
+        if (JavaScriptEngine.isNaN(opacity)) {
             return;
         }
 
@@ -1446,9 +1357,8 @@ public class CSSStyleDeclaration extends HtmlUnitScriptable {
      */
     @JsxSetter
     public void setOutlineWidth(final Object outlineWidth) {
-        final boolean requiresUnit = !getBrowserVersion().hasFeature(CSS_OUTLINE_WIDTH_UNIT_NOT_REQUIRED);
         setStyleLengthAttribute(Definition.OUTLINE_WIDTH.getAttributeName(), outlineWidth, "",
-                false, false, requiresUnit, THIN_MED_THICK);
+                false, false, true, THIN_MED_THICK);
     }
 
     /**
@@ -1582,222 +1492,6 @@ public class CSSStyleDeclaration extends HtmlUnitScriptable {
     }
 
     /**
-     * Gets the {@code pixelBottom} style attribute.
-     * @return the style attribute
-     */
-    @JsxGetter(IE)
-    public int getPixelBottom() {
-        return CssPixelValueConverter.pixelValue(getBottom());
-    }
-
-    /**
-     * Sets the {@code pixelBottom} style attribute.
-     * @param pixelBottom the new attribute
-     */
-    @JsxSetter(IE)
-    public void setPixelBottom(final int pixelBottom) {
-        setBottom(pixelBottom + "px");
-    }
-
-    /**
-     * Gets the {@code pixelHeight} style attribute.
-     * @return the style attribute
-     */
-    @JsxGetter(IE)
-    public int getPixelHeight() {
-        return CssPixelValueConverter.pixelValue(getHeight());
-    }
-
-    /**
-     * Sets the {@code pixelHeight} style attribute.
-     * @param pixelHeight the new attribute
-     */
-    @JsxSetter(IE)
-    public void setPixelHeight(final int pixelHeight) {
-        setHeight(pixelHeight + "px");
-    }
-
-    /**
-     * Gets the {@code pixelLeft} style attribute.
-     * @return the style attribute
-     */
-    @JsxGetter(IE)
-    public int getPixelLeft() {
-        return CssPixelValueConverter.pixelValue(getLeft());
-    }
-
-    /**
-     * Sets the {@code pixelLeft} style attribute.
-     * @param pixelLeft the new attribute
-     */
-    @JsxSetter(IE)
-    public void setPixelLeft(final int pixelLeft) {
-        setLeft(pixelLeft + "px");
-    }
-
-    /**
-     * Gets the {@code pixelRight} style attribute.
-     * @return the style attribute
-     */
-    @JsxGetter(IE)
-    public int getPixelRight() {
-        return CssPixelValueConverter.pixelValue(getRight());
-    }
-
-    /**
-     * Sets the {@code pixelRight} style attribute.
-     * @param pixelRight the new attribute
-     */
-    @JsxSetter(IE)
-    public void setPixelRight(final int pixelRight) {
-        setRight(pixelRight + "px");
-    }
-
-    /**
-     * Gets the {@code pixelTop} style attribute.
-     * @return the style attribute
-     */
-    @JsxGetter(IE)
-    public int getPixelTop() {
-        return CssPixelValueConverter.pixelValue(getTop());
-    }
-
-    /**
-     * Sets the {@code pixelTop} style attribute.
-     * @param pixelTop the new attribute
-     */
-    @JsxSetter(IE)
-    public void setPixelTop(final int pixelTop) {
-        setTop(pixelTop + "px");
-    }
-
-    /**
-     * Gets the {@code pixelWidth} style attribute.
-     * @return the style attribute
-     */
-    @JsxGetter(IE)
-    public int getPixelWidth() {
-        return CssPixelValueConverter.pixelValue(getWidth());
-    }
-
-    /**
-     * Sets the {@code pixelWidth} style attribute.
-     * @param pixelWidth the new attribute
-     */
-    @JsxSetter(IE)
-    public void setPixelWidth(final int pixelWidth) {
-        setWidth(pixelWidth + "px");
-    }
-
-    /**
-     * Gets the {@code posBottom} style attribute.
-     * @return the style attribute
-     */
-    @JsxGetter(IE)
-    public int getPosBottom() {
-        return 0;
-    }
-
-    /**
-     * Sets the {@code posBottom} style attribute.
-     * @param posBottom the new attribute
-     */
-    @JsxSetter(IE)
-    public void setPosBottom(final int posBottom) {
-        // Empty.
-    }
-
-    /**
-     * Gets the {@code posHeight} style attribute.
-     * @return the style attribute
-     */
-    @JsxGetter(IE)
-    public int getPosHeight() {
-        return 0;
-    }
-
-    /**
-     * Sets the {@code posHeight} style attribute.
-     * @param posHeight the new attribute
-     */
-    @JsxSetter(IE)
-    public void setPosHeight(final int posHeight) {
-        // Empty.
-    }
-
-    /**
-     * Gets the {@code posLeft} style attribute.
-     * @return the style attribute
-     */
-    @JsxGetter(IE)
-    public int getPosLeft() {
-        return 0;
-    }
-
-    /**
-     * Sets the {@code posLeft} style attribute.
-     * @param posLeft the new attribute
-     */
-    @JsxSetter(IE)
-    public void setPosLeft(final int posLeft) {
-        // Empty.
-    }
-
-    /**
-     * Gets the {@code posRight} style attribute.
-     * @return the style attribute
-     */
-    @JsxGetter(IE)
-    public int getPosRight() {
-        return 0;
-    }
-
-    /**
-     * Sets the {@code posRight} style attribute.
-     * @param posRight the new attribute
-     */
-    @JsxSetter(IE)
-    public void setPosRight(final int posRight) {
-        // Empty.
-    }
-
-    /**
-     * Gets the {@code posTop} style attribute.
-     * @return the style attribute
-     */
-    @JsxGetter(IE)
-    public int getPosTop() {
-        return 0;
-    }
-
-    /**
-     * Sets the {@code posTop} style attribute.
-     * @param posTop the new attribute
-     */
-    @JsxSetter(IE)
-    public void setPosTop(final int posTop) {
-        // Empty.
-    }
-
-    /**
-     * Gets the {@code posWidth} style attribute.
-     * @return the style attribute
-     */
-    @JsxGetter(IE)
-    public int getPosWidth() {
-        return 0;
-    }
-
-    /**
-     * Sets the {@code posWidth} style attribute.
-     * @param posWidth the new attribute
-     */
-    @JsxSetter(IE)
-    public void setPosWidth(final int posWidth) {
-        // Empty.
-    }
-
-    /**
      * Gets the {@code right} style attribute.
      * @return the style attribute
      */
@@ -1822,7 +1516,7 @@ public class CSSStyleDeclaration extends HtmlUnitScriptable {
      * Gets the {@code rubyAlign} style attribute.
      * @return the style attribute
      */
-    @JsxGetter({IE, FF, FF_ESR})
+    @JsxGetter({FF, FF_ESR})
     public String getRubyAlign() {
         if (styleDeclaration_ == null) {
             return null; // prototype
@@ -1834,7 +1528,7 @@ public class CSSStyleDeclaration extends HtmlUnitScriptable {
      * Sets the {@code rubyAlign} style attribute.
      * @param rubyAlign the new attribute
      */
-    @JsxSetter({IE, FF, FF_ESR})
+    @JsxSetter({FF, FF_ESR})
     public void setRubyAlign(final String rubyAlign) {
         setStyleAttribute(Definition.RUBY_ALIGN.getAttributeName(), rubyAlign);
     }
@@ -1858,96 +1552,6 @@ public class CSSStyleDeclaration extends HtmlUnitScriptable {
     @JsxSetter({CHROME, EDGE})
     public void setSize(final String size) {
         setStyleAttribute(Definition.SIZE.getAttributeName(), size);
-    }
-
-    /**
-     * Gets the {@code textDecorationBlink} style attribute.
-     * @return the style attribute
-     */
-    @JsxGetter(IE)
-    public boolean isTextDecorationBlink() {
-        return false;
-    }
-
-    /**
-     * Sets the {@code textDecorationBlink} style attribute.
-     * @param textDecorationBlink the new attribute
-     */
-    @JsxSetter(IE)
-    public void setTextDecorationBlink(final boolean textDecorationBlink) {
-        // Empty.
-    }
-
-    /**
-     * Gets the {@code textDecorationLineThrough} style attribute.
-     * @return the style attribute
-     */
-    @JsxGetter(IE)
-    public boolean isTextDecorationLineThrough() {
-        return false;
-    }
-
-    /**
-     * Sets the {@code textDecorationLineThrough} style attribute.
-     * @param textDecorationLineThrough the new attribute
-     */
-    @JsxSetter(IE)
-    public void setTextDecorationLineThrough(final boolean textDecorationLineThrough) {
-        // Empty.
-    }
-
-    /**
-     * Gets the {@code textDecorationNone} style attribute.
-     * @return the style attribute
-     */
-    @JsxGetter(IE)
-    public boolean isTextDecorationNone() {
-        return false;
-    }
-
-    /**
-     * Sets the {@code textDecorationNone} style attribute.
-     * @param textDecorationNone the new attribute
-     */
-    @JsxSetter(IE)
-    public void setTextDecorationNone(final boolean textDecorationNone) {
-        // Empty.
-    }
-
-    /**
-     * Gets the {@code textDecorationOverline} style attribute.
-     * @return the style attribute
-     */
-    @JsxGetter(IE)
-    public boolean isTextDecorationOverline() {
-        return false;
-    }
-
-    /**
-     * Sets the {@code textDecorationOverline} style attribute.
-     * @param textDecorationOverline the new attribute
-     */
-    @JsxSetter(IE)
-    public void setTextDecorationOverline(final boolean textDecorationOverline) {
-        // Empty.
-    }
-
-    /**
-     * Gets the {@code textDecorationUnderline} style attribute.
-     * @return the style attribute
-     */
-    @JsxGetter(IE)
-    public boolean getTextDecorationUnderline() {
-        return false;
-    }
-
-    /**
-     * Sets the {@code textDecorationUnderline} style attribute.
-     * @param textDecorationUnderline the new attribute
-     */
-    @JsxSetter(IE)
-    public void setTextDecorationUnderline(final boolean textDecorationUnderline) {
-        // Empty.
     }
 
     /**
@@ -2010,9 +1614,8 @@ public class CSSStyleDeclaration extends HtmlUnitScriptable {
      */
     @JsxSetter
     public void setVerticalAlign(final Object verticalAlign) {
-        final boolean auto = getBrowserVersion().hasFeature(CSS_VERTICAL_ALIGN_SUPPORTS_AUTO);
         setStyleLengthAttribute(Definition.VERTICAL_ALIGN.getAttributeName(),
-                verticalAlign, "", auto, true, false, ALIGN_KEYWORDS);
+                verticalAlign, "", false, true, false, ALIGN_KEYWORDS);
     }
 
     /**
@@ -2040,7 +1643,7 @@ public class CSSStyleDeclaration extends HtmlUnitScriptable {
      * Gets the {@code widows} style attribute.
      * @return the style attribute
      */
-    @JsxGetter({CHROME, EDGE, IE})
+    @JsxGetter({CHROME, EDGE})
     public String getWidows() {
         if (styleDeclaration_ == null) {
             return null; // prototype
@@ -2052,7 +1655,7 @@ public class CSSStyleDeclaration extends HtmlUnitScriptable {
      * Sets the {@code widows} style attribute.
      * @param widows the new attribute
      */
-    @JsxSetter({CHROME, EDGE, IE})
+    @JsxSetter({CHROME, EDGE})
     public void setWidows(final String widows) {
         if (getBrowserVersion().hasFeature(CSS_BACKGROUND_INITIAL)) {
             try {
@@ -2071,7 +1674,7 @@ public class CSSStyleDeclaration extends HtmlUnitScriptable {
      * Gets the {@code orphans} style attribute.
      * @return the style attribute
      */
-    @JsxGetter({CHROME, EDGE, IE})
+    @JsxGetter({CHROME, EDGE})
     public String getOrphans() {
         if (styleDeclaration_ == null) {
             return null; // prototype
@@ -2083,7 +1686,7 @@ public class CSSStyleDeclaration extends HtmlUnitScriptable {
      * Sets the {@code orphans} style attribute.
      * @param orphans the new attribute
      */
-    @JsxSetter({CHROME, EDGE, IE})
+    @JsxSetter({CHROME, EDGE})
     public void setOrphans(final String orphans) {
         if (getBrowserVersion().hasFeature(CSS_BACKGROUND_INITIAL)) {
             try {
@@ -2244,17 +1847,15 @@ public class CSSStyleDeclaration extends HtmlUnitScriptable {
             setStyleLengthAttribute(name, value, imp, false, true, false, null);
         }
         else if (Definition.OUTLINE_WIDTH.getAttributeName().equals(name)) {
-            final boolean requiresUnit = !getBrowserVersion().hasFeature(CSS_OUTLINE_WIDTH_UNIT_NOT_REQUIRED);
             setStyleLengthAttribute(Definition.OUTLINE_WIDTH.getAttributeName(),
-                    value, imp, false, false, requiresUnit, THIN_MED_THICK);
+                    value, imp, false, false, true, THIN_MED_THICK);
         }
         else if (Definition.WORD_SPACING.getAttributeName().equals(name)) {
             setStyleLengthAttribute(Definition.WORD_SPACING.getAttributeName(), value, imp,
                     false, getBrowserVersion().hasFeature(JS_STYLE_WORD_SPACING_ACCEPTS_PERCENT), false, null);
         }
         else if (Definition.VERTICAL_ALIGN.getAttributeName().equals(name)) {
-            final boolean auto = getBrowserVersion().hasFeature(CSS_VERTICAL_ALIGN_SUPPORTS_AUTO);
-            setStyleLengthAttribute(Definition.VERTICAL_ALIGN.getAttributeName(), value, imp, auto, true, false, null);
+            setStyleLengthAttribute(Definition.VERTICAL_ALIGN.getAttributeName(), value, imp, false, true, false, null);
         }
         else {
             setStyleAttribute(name, JavaScriptEngine.toString(value), imp);
@@ -2269,61 +1870,6 @@ public class CSSStyleDeclaration extends HtmlUnitScriptable {
     @JsxFunction
     public String removeProperty(final Object name) {
         return removeStyleAttribute(JavaScriptEngine.toString(name));
-    }
-
-    /**
-     * Returns the value of the specified attribute, or an empty string if it does not exist.
-     * This method exists only in IE.
-     *
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms536429.aspx">MSDN Documentation</a>
-     * @param name the name of the attribute
-     * @param flag 0 for case insensitive, 1 (default) for case sensitive
-     * @return the value of the specified attribute
-     */
-    @JsxFunction(IE)
-    public Object getAttribute(final String name, final int flag) {
-        // Case-insensitive.
-        final StyleElement style = getStyleElementCaseInSensitive(name);
-        if (null == style) {
-            return "";
-        }
-        return style.getValue();
-    }
-
-    /**
-     * Sets the value of the specified attribute. This method exists only in IE.
-     *
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms536739.aspx">MSDN Documentation</a>
-     * @param name the name of the attribute
-     * @param value the value to assign to the attribute
-     * @param flag 0 for case insensitive, 1 (default) for case sensitive
-     */
-    @JsxFunction(IE)
-    public void setAttribute(final String name, final String value, final Object flag) {
-        // Case-insensitive.
-        final StyleElement style = getStyleElementCaseInSensitive(name);
-        if (null != style) {
-            setStyleAttribute(style.getName(), value);
-        }
-    }
-
-    /**
-     * Removes the specified attribute. This method exists only in IE.
-     *
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms536696.aspx">MSDN Documentation</a>
-     * @param name the name of the attribute
-     * @param flag 0 for case insensitive, 1 (default) for case sensitive
-     * @return {@code true} if the attribute was successfully removed, {@code false} otherwise
-     */
-    @JsxFunction(IE)
-    public boolean removeAttribute(final String name, final Object flag) {
-        // Case-insensitive.
-        final StyleElement style = getStyleElementCaseInSensitive(name);
-        if (style != null) {
-            removeStyleAttribute(style.getName());
-            return true;
-        }
-        return false;
     }
 
     /**
@@ -2378,7 +1924,7 @@ public class CSSStyleDeclaration extends HtmlUnitScriptable {
     private void setStyleLengthAttribute(final String name, final Object value, final String important,
                 final boolean auto, final boolean percent, final boolean unitRequired, final String[] validValues) {
 
-        if (ScriptRuntime.isNaN(value)) {
+        if (JavaScriptEngine.isNaN(value)) {
             return;
         }
 
@@ -2402,7 +1948,7 @@ public class CSSStyleDeclaration extends HtmlUnitScriptable {
             }
 
             if ((auto && AUTO.equals(valueString))
-                    || INITIAL.equals(valueString) && getBrowserVersion().hasFeature(CSS_LENGTH_INITIAL)
+                    || INITIAL.equals(valueString)
                     || INHERIT.equals(valueString)) {
                 setStyleAttribute(name, valueString, important);
                 return;

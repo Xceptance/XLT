@@ -16,7 +16,6 @@ package org.htmlunit.javascript.host.html;
 
 import static org.htmlunit.junit.BrowserRunner.TestedBrowser.CHROME;
 import static org.htmlunit.junit.BrowserRunner.TestedBrowser.EDGE;
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
@@ -272,7 +271,7 @@ public class HTMLElement2Test extends WebDriverTestCase {
     @Alerts(DEFAULT = {"15", "15"},
             FF = {"12", "12"},
             FF_ESR = {"12", "12"})
-    @NotYetImplemented({CHROME, EDGE, IE})
+    @NotYetImplemented({CHROME, EDGE})
     public void offsetTopAndLeft_Borders() throws Exception {
         final String html =
               "<html>\n"
@@ -464,12 +463,7 @@ public class HTMLElement2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"true", "true", "2", "3", "4", "5", "6", "7", "8", "9", "99", "199", "5999"},
-            IE = {"true", "true", "2.0555555555555553", "3.0555555555555553",
-                  "4.111111111111111", "5.111111111111111", "6.111111111111111",
-                  "7.166666666666667", "8.166666666666666", "9.222222222222221",
-                  "101.22222222222223", "203.44444444444446", "6132.333333333333"})
-    @NotYetImplemented(IE)
+    @Alerts({"true", "true", "2", "3", "4", "5", "6", "7", "8", "9", "99", "199", "5999"})
     public void offsetTopWithPreviousSiblings() throws Exception {
         String html =
             HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -945,9 +939,7 @@ public class HTMLElement2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"0", "1", " ", "0", "1", "undefined", "1", "[object Object]"},
-            IE = {"0", "1", "\u00A0", "1", "1", "undefined", "1", "[object Object]"})
-    @HtmlUnitNYI(IE = {"0", "1", " ", "1", "1", "undefined", "1", "[object Object]"})
+    @Alerts({"0", "1", " ", "0", "1", "undefined", "1", "[object Object]"})
     public void innerText_Empty() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -988,8 +980,7 @@ public class HTMLElement2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"something", "0"},
-            IE = {"something", "null"})
+    @Alerts({"something", "0"})
     public void innerText_null() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -1020,8 +1011,7 @@ public class HTMLElement2Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"before\\nsvg-text\\nafter", "before\\nsvg-text\\nafter"},
             FF = {"beforesvg-textafter", "beforesvg-textafter"},
-            FF_ESR = {"beforesvg-textafter", "beforesvg-textafter"},
-            IE = {"beforesvg-titlesvg-textafter", "beforesvg-titlesvg-textafter"})
+            FF_ESR = {"beforesvg-textafter", "beforesvg-textafter"})
     public void innerText_SVG() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -1087,6 +1077,265 @@ public class HTMLElement2Test extends WebDriverTestCase {
             + "</head>\n"
             + "<body onload='test()'>\n"
             + "  <div id='myTestDiv'>something</div>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"something", " "})
+    public void innerText_blankString() throws Exception {
+        final String html = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    checkChildren();\n"
+            + "    myTestDiv.innerText = '    \t';\n"
+            + "    checkChildren();\n"
+            + "  }\n"
+            + "  function checkChildren() {\n"
+            + "    if (myTestDiv.childNodes.length == 0)\n"
+            + "      log('0');\n"
+            + "    else\n"
+            + "      log(myTestDiv.childNodes.item(0).data);\n"
+            + "  }\n"
+            + "</script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "  <div id='myTestDiv'>something</div>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"1", "undefined", "1", "Hello World", "Hello World"})
+    public void outerText() throws Exception {
+        final String html = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    checkChildren();\n"
+            + "    myTestDiv.outerText = 'Hello World';\n"
+            + "    checkChildren();\n"
+            + "    log(myCheckDiv.innerHTML);\n"
+            + "  }\n"
+            + "  function checkChildren() {\n"
+            + "    log(myCheckDiv.childNodes.length);\n"
+            + "    if (myCheckDiv.childNodes.length > 0)\n"
+            + "      log(myCheckDiv.childNodes.item(0).data);\n"
+            + "  }\n"
+            + "</script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "  <div id='myCheckDiv'><div id='myTestDiv'>something</div></div>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"3", " ", "1", " Hello World ", " Hello World "})
+    @HtmlUnitNYI(CHROME = {"3", " ", "3", " ", " Hello World "},
+            EDGE = {"3", " ", "3", " ", " Hello World "},
+            FF = {"3", " ", "3", " ", " Hello World "},
+            FF_ESR = {"3", " ", "3", " ", " Hello World "})
+    public void outerText_removeSurroundings() throws Exception {
+        final String html = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    checkChildren();\n"
+            + "    myTestDiv.outerText = 'Hello World';\n"
+            + "    checkChildren();\n"
+            + "    log(myCheckDiv.innerHTML);\n"
+            + "  }\n"
+            + "  function checkChildren() {\n"
+            + "    log(myCheckDiv.childNodes.length);\n"
+            + "    if (myCheckDiv.childNodes.length > 0)\n"
+            + "      log(myCheckDiv.childNodes.item(0).data);\n"
+            + "  }\n"
+            + "</script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "  <div id='myCheckDiv'>  <div id='myTestDiv'>something</div>\n</div>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"something", "3", "Hello", "[object HTMLBRElement]", "World",
+             "Hello<br>World"})
+    public void outerText_LineBreak() throws Exception {
+        final String html = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    log(myTestDiv.childNodes.item(0).data);\n"
+
+            + "    myTestDiv.outerText = 'Hello\\nWorld';\n"
+            + "    log(myCheckDiv.childNodes.length);\n"
+            + "    log(myCheckDiv.childNodes.item(0).data);\n"
+            + "    log(myCheckDiv.childNodes.item(1));\n"
+            + "    log(myCheckDiv.childNodes.item(2).data);\n"
+
+            + "    log(myCheckDiv.innerHTML);\n"
+            + "  }\n"
+            + "</script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "  <div id='myCheckDiv'><div id='myTestDiv'>something</div></div>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"11", "3", " ", "[object HTMLDivElement]", " undefined [object Object] ",
+             " <div id=\"myTestDiv0\"></div> undefined [object Object] "})
+    @HtmlUnitNYI(CHROME = {"11", "11", " ", "[object HTMLDivElement]", " ",
+                           " <div id=\"myTestDiv0\"></div> undefined [object Object] "},
+            EDGE = {"11", "11", " ", "[object HTMLDivElement]", " ",
+                    " <div id=\"myTestDiv0\"></div> undefined [object Object] "},
+            FF = {"11", "11", " ", "[object HTMLDivElement]", " ",
+                  " <div id=\"myTestDiv0\"></div> undefined [object Object] "},
+            FF_ESR = {"11", "11", " ", "[object HTMLDivElement]", " ",
+                      " <div id=\"myTestDiv0\"></div> undefined [object Object] "})
+    public void outerText_Empty() throws Exception {
+        final String html = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    myTestDiv0.innerText = '';\n"
+            + "    log(myCheckDiv.childNodes.length);\n"
+
+            + "    myTestDiv1.outerText = ' ';\n"
+            + "    myTestDiv2.outerText = null;\n"
+            + "    myTestDiv3.outerText = undefined;\n"
+            + "    myTestDiv4.outerText = { a: 'b'};\n"
+
+            + "    log(myCheckDiv.childNodes.length);\n"
+            + "    log(myCheckDiv.childNodes.item(0).data);\n"
+            + "    log(myCheckDiv.childNodes.item(1));\n"
+            + "    log(myCheckDiv.childNodes.item(2).data);\n"
+
+            + "    log(myCheckDiv.innerHTML);\n"
+            + "  }\n"
+            + "</script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "  <div id='myCheckDiv'>\n"
+            + "    <div id='myTestDiv0'>something</div>\n"
+            + "    <div id='myTestDiv1'>something</div>\n"
+            + "    <div id='myTestDiv2'>something</div>\n"
+            + "    <div id='myTestDiv3'>something</div>\n"
+            + "    <div id='myTestDiv4'>something</div>\n"
+            + "  </div>/n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"1", "[object HTMLDivElement]", "1", "[object Text]", ""})
+    public void outerText_null() throws Exception {
+        final String html = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    checkChildren();\n"
+            + "    myTestDiv.outerText = null;\n"
+            + "    checkChildren();\n"
+            + "    log(myCheckDiv.innerHTML);\n"
+            + "  }\n"
+            + "  function checkChildren() {\n"
+            + "    log(myCheckDiv.childNodes.length);\n"
+            + "    if (myCheckDiv.childNodes.length > 0)\n"
+            + "      log(myCheckDiv.childNodes.item(0));\n"
+            + "  }\n"
+            + "</script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "  <div id='myCheckDiv'><div id='myTestDiv'>something</div></div>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"1", "[object HTMLDivElement]", "1", "[object Text]", ""})
+    public void outerText_emptyString() throws Exception {
+        final String html = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    checkChildren();\n"
+            + "    myTestDiv.outerText = '';\n"
+            + "    checkChildren();\n"
+            + "    log(myCheckDiv.innerHTML);\n"
+            + "  }\n"
+            + "  function checkChildren() {\n"
+            + "    log(myCheckDiv.childNodes.length);\n"
+            + "    if (myCheckDiv.childNodes.length > 0)\n"
+            + "      log(myCheckDiv.childNodes.item(0));\n"
+            + "  }\n"
+            + "</script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "  <div id='myCheckDiv'><div id='myTestDiv'>something</div></div>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"1", "[object HTMLDivElement]", "1", "[object Text]", " "})
+    public void outerText_blankString() throws Exception {
+        final String html = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    checkChildren();\n"
+            + "    myTestDiv.outerText = '   \t';\n"
+            + "    checkChildren();\n"
+            + "    log(myCheckDiv.innerHTML);\n"
+            + "  }\n"
+            + "  function checkChildren() {\n"
+            + "    log(myCheckDiv.childNodes.length);\n"
+            + "    if (myCheckDiv.childNodes.length > 0)\n"
+            + "      log(myCheckDiv.childNodes.item(0));\n"
+            + "  }\n"
+            + "</script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "  <div id='myCheckDiv'><div id='myTestDiv'>something</div></div>\n"
             + "</body></html>";
 
         loadPageVerifyTitle2(html);
@@ -1635,11 +1884,8 @@ public class HTMLElement2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"First: body1", "Second:", "Second: body1 setActive not available"},
-            IE = {"First: body1", "Second:",
-                  "Second: body1 text1 [object HTMLButtonElement] text2 [object Window] onfocus text2"})
+    @Alerts({"First: body1", "Second:", "Second: body1 setActive not available"})
     // alert conflicts with focus/blur
-    @NotYetImplemented(IE)
     public void setActiveAndFocus() throws Exception {
         final String firstHtml =
             HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -1681,21 +1927,16 @@ public class HTMLElement2Test extends WebDriverTestCase {
             + "</body></html>";
         getMockWebConnection().setResponse(URL_SECOND, secondHtml);
 
-        try {
-            final WebDriver driver = loadPage2(firstHtml);
-            assertTitle(driver, getExpectedAlerts()[0]);
+        final WebDriver driver = loadPage2(firstHtml);
+        assertTitle(driver, getExpectedAlerts()[0]);
 
-            driver.findElement(By.id("button1")).click();
+        driver.findElement(By.id("button1")).click();
 
-            driver.switchTo().window("second");
-            assertTitle(driver, getExpectedAlerts()[1]);
+        driver.switchTo().window("second");
+        assertTitle(driver, getExpectedAlerts()[1]);
 
-            driver.findElement(By.id("button2")).click();
-            assertTitle(driver,  getExpectedAlerts()[2]);
-        }
-        finally {
-            shutDownRealIE();
-        }
+        driver.findElement(By.id("button2")).click();
+        assertTitle(driver,  getExpectedAlerts()[2]);
     }
 
     /**

@@ -15,10 +15,6 @@
 package org.htmlunit.javascript.host.html;
 
 import static org.htmlunit.html.DomElement.ATTRIBUTE_NOT_DEFINED;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -57,7 +53,7 @@ public class HTMLScriptElement extends HTMLElement {
      * JavaScript constructor.
      */
     @Override
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
         super.jsConstructor();
     }
@@ -141,7 +137,7 @@ public class HTMLScriptElement extends HTMLElement {
     }
 
     /**
-     * Overwritten for special IE handling.
+     * Overwritten for special handling.
      *
      * @param childObject the node to add to this node
      * @return the newly added child node

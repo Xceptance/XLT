@@ -14,13 +14,9 @@
  */
 package org.htmlunit.javascript;
 
-import static org.htmlunit.BrowserVersionFeatures.JS_ARGUMENTS_READ_ONLY_ACCESSED_FROM_FUNCTION;
-import static org.htmlunit.BrowserVersionFeatures.JS_IGNORES_LAST_LINE_CONTAINING_UNCOMMENTED;
 import static org.htmlunit.BrowserVersionFeatures.JS_PROPERTY_DESCRIPTOR_NAME;
-import static org.htmlunit.BrowserVersionFeatures.JS_PROPERTY_DESCRIPTOR_NEW_LINE;
 
 import java.io.Serializable;
-import java.util.Map;
 
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.ScriptException;
@@ -186,28 +182,6 @@ public class HtmlUnitContextFactory extends ContextFactory {
                         && source.charAt(start++) == '-') {
                     source = source.replaceFirst("<!--", "// <!--");
                 }
-
-                // IE ignores the last line containing uncommented -->
-                // if (browserVersion_.hasFeature(JS_IGNORES_LAST_LINE_CONTAINING_UNCOMMENTED)
-                //         && sourceCodeTrimmed.endsWith("-->")) {
-                // **** Memory Optimization ****
-                // see above
-                if (browserVersion_.hasFeature(JS_IGNORES_LAST_LINE_CONTAINING_UNCOMMENTED)) {
-                    int end = source.length() - 1;
-                    while ((end > -1) && (source.charAt(end) <= ' ')) {
-                        end--;
-                    }
-                    if (1 < end
-                            && source.charAt(end--) == '>'
-                            && source.charAt(end--) == '-'
-                            && source.charAt(end--) == '-') {
-                        final int lastDoubleSlash = source.lastIndexOf("//");
-                        final int lastNewLine = Math.max(source.lastIndexOf('\n'), source.lastIndexOf('\r'));
-                        if (lastNewLine > lastDoubleSlash) {
-                            source = source.substring(0, lastNewLine);
-                        }
-                    }
-                }
             }
 
             // Pre process the source code
@@ -273,14 +247,6 @@ public class HtmlUnitContextFactory extends ContextFactory {
 
         // make sure no java classes are usable from js
         cx.setClassShutter(fullClassName -> {
-            final  Map<String, String> activeXObjectMap = webClient_.getActiveXObjectMap();
-            if (activeXObjectMap != null) {
-                for (final String mappedClass : activeXObjectMap.values()) {
-                    if (fullClassName.equals(mappedClass)) {
-                        return true;
-                    }
-                }
-            }
             return false;
         });
 
@@ -299,7 +265,7 @@ public class HtmlUnitContextFactory extends ContextFactory {
         }
 
         // register custom RegExp processing
-        ScriptRuntime.setRegExpProxy(cx, new HtmlUnitRegExpProxy(ScriptRuntime.getRegExpProxy(cx), browserVersion_));
+        ScriptRuntime.setRegExpProxy(cx, new HtmlUnitRegExpProxy(ScriptRuntime.getRegExpProxy(cx)));
 
         cx.setMaximumInterpreterStackDepth(5_000);
 
@@ -373,13 +339,13 @@ public class HtmlUnitContextFactory extends ContextFactory {
             case Context.FEATURE_INTL_402:
                 return true;
             case Context.FEATURE_HTMLUNIT_FN_ARGUMENTS_IS_RO_VIEW:
-                return browserVersion_.hasFeature(JS_ARGUMENTS_READ_ONLY_ACCESSED_FROM_FUNCTION);
+                return true;
             case Context.FEATURE_HTMLUNIT_FUNCTION_DECLARED_FORWARD_IN_BLOCK:
                 return true;
             case Context.FEATURE_HTMLUNIT_MEMBERBOX_NAME:
                 return browserVersion_.hasFeature(JS_PROPERTY_DESCRIPTOR_NAME);
             case Context.FEATURE_HTMLUNIT_MEMBERBOX_NEWLINE:
-                return browserVersion_.hasFeature(JS_PROPERTY_DESCRIPTOR_NEW_LINE);
+                return false;
             default:
                 return super.hasFeature(cx, featureIndex);
         }

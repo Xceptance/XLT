@@ -32,8 +32,7 @@ public class RTCPeerConnectionTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void inWindow() throws Exception {
         final String html
             = "<html>\n"
@@ -58,8 +57,7 @@ public class RTCPeerConnectionTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"[object RTCPeerConnection]", "", "false"},
             CHROME = {"[object RTCPeerConnection]", "[object RTCPeerConnection]", "true"},
-            EDGE = {"[object RTCPeerConnection]", "[object RTCPeerConnection]", "true"},
-            IE = {})
+            EDGE = {"[object RTCPeerConnection]", "[object RTCPeerConnection]", "true"})
     public void webkitRTCPeerConnection() throws Exception {
         final String html
             = "<html><head>\n"

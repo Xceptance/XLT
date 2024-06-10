@@ -15,14 +15,9 @@
 package org.htmlunit.javascript.host.html;
 
 import static org.htmlunit.BrowserVersionFeatures.JS_SELECT_REMOVE_IGNORE_IF_INDEX_OUTSIDE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import java.util.List;
 
-import org.htmlunit.corejs.javascript.ES6Iterator;
 import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.html.HtmlOption;
 import org.htmlunit.html.HtmlSelect;
@@ -64,7 +59,7 @@ public class HTMLSelectElement extends HTMLElement {
      * JavaScript constructor.
      */
     @Override
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
         super.jsConstructor();
     }
@@ -110,8 +105,7 @@ public class HTMLSelectElement extends HTMLElement {
     /**
      * Adds a new item to the list (optionally) before the specified item.
      * @param newOptionObject the DomNode to insert
-     * @param beforeOptionObject for Firefox: the DomNode to insert the previous element before (null if at end),
-     * for Internet Explorer: the index where the element should be placed (optional).
+     * @param beforeOptionObject the DomNode to insert the previous element before (null if at end).
      */
     @JsxFunction
     public void add(final HTMLOptionElement newOptionObject, final Object beforeOptionObject) {
@@ -311,7 +305,7 @@ public class HTMLSelectElement extends HTMLElement {
      * Returns the labels associated with the element.
      * @return the labels associated with the element
      */
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxGetter
     public NodeList getLabels() {
         if (labels_ == null) {
             labels_ = new LabelsNodeList(getDomNodeOrDie());
@@ -359,7 +353,7 @@ public class HTMLSelectElement extends HTMLElement {
      * {@inheritDoc} Overridden to modify browser configurations.
      */
     @Override
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxGetter
     public boolean isDisabled() {
         return super.isDisabled();
     }
@@ -368,7 +362,7 @@ public class HTMLSelectElement extends HTMLElement {
      * {@inheritDoc} Overridden to modify browser configurations.
      */
     @Override
-    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxSetter
     public void setDisabled(final boolean disabled) {
         super.setDisabled(disabled);
     }
@@ -420,8 +414,8 @@ public class HTMLSelectElement extends HTMLElement {
         getDomNodeOrDie().setCustomValidity(message);
     }
 
-    @JsxSymbol({CHROME, EDGE, FF, FF_ESR})
-    public ES6Iterator iterator() {
+    @JsxSymbol
+    public Scriptable iterator() {
         return getOptions().iterator();
     }
 }

@@ -70,7 +70,7 @@ public class AttributesTest extends TestCase {
         final TestSuite suite = new TestSuite();
         final String[] classesToTest = {
             "HtmlAbbreviated", "HtmlAcronym",
-            "HtmlAnchor", "HtmlAddress", "HtmlApplet", "HtmlArea",
+            "HtmlAnchor", "HtmlAddress", "HtmlArea",
             "HtmlArticle", "HtmlAside", "HtmlAudio",
             "HtmlBackgroundSound", "HtmlBase", "HtmlBaseFont",
             "HtmlBidirectionalIsolation",
@@ -237,7 +237,7 @@ public class AttributesTest extends TestCase {
      */
     @Override
     protected void runTest() throws Exception {
-        try (WebClient webClient = new WebClient(BrowserVersion.INTERNET_EXPLORER)) {
+        try (WebClient webClient = new WebClient(BrowserVersion.BEST_SUPPORTED)) {
             final MockWebConnection connection = new MockWebConnection();
             connection.setDefaultResponse("<html><head><title>foo</title></head><body></body></html>");
             webClient.setWebConnection(connection);

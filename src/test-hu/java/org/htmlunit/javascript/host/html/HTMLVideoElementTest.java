@@ -17,7 +17,6 @@ package org.htmlunit.javascript.host.html;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -53,8 +52,7 @@ public class HTMLVideoElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object HTMLVideoElement]", "function HTMLVideoElement() { [native code] }"},
-            IE = {"[object HTMLVideoElement]", "[object HTMLVideoElement]"})
+    @Alerts({"[object HTMLVideoElement]", "function HTMLVideoElement() { [native code] }"})
     public void type() throws Exception {
         final String html = ""
             + "<html><head>\n"
@@ -180,9 +178,7 @@ public class HTMLVideoElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"string", ""},
-            IE = {"string", "§§URL§§flower.mp4"})
-    @HtmlUnitNYI(IE = {"string", ""})
+    @Alerts({"string", ""})
     public void currentSrc() throws Exception {
         final String html
             = "<html><body>\n"

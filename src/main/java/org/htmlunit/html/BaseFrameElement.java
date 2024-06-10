@@ -15,13 +15,13 @@
 package org.htmlunit.html;
 
 import static org.htmlunit.BrowserVersionFeatures.FRAME_LOCATION_ABOUT_BLANK_FOR_ABOUT_SCHEME;
-import static org.htmlunit.BrowserVersionFeatures.URL_MINIMAL_QUERY_ENCODING;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.Map;
+import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
@@ -54,6 +54,7 @@ import org.w3c.dom.Attr;
  * @author Daniel Gredler
  * @author Ronald Brill
  * @author Frank Danek
+ * @author Lai Quang Duong
  */
 public abstract class BaseFrameElement extends HtmlElement {
 
@@ -190,12 +191,29 @@ public abstract class BaseFrameElement extends HtmlElement {
                 return;
             }
 
-            final WebRequest request = new WebRequest(url, page.getCharset(), page.getUrl());
+            final URL pageUrl = page.getUrl();
+
+            // accessing to local resource is forbidden for security reason
+            if (!"file".equals(pageUrl.getProtocol()) && "file".equals(url.getProtocol())) {
+                notifyIncorrectness("Not allowed to load local resource: " + source);
+                return;
+            }
+
+            final Charset pageCharset = page.getCharset();
+            final WebRequest request = new WebRequest(url, pageCharset, pageUrl);
 
             if (isAlreadyLoadedByAncestor(url, request.getCharset())) {
                 notifyIncorrectness("Recursive src attribute of " + getTagName() + ": url=[" + source + "]. Ignored.");
                 return;
             }
+
+            // Use parent document's charset as container charset if same origin
+            // https://html.spec.whatwg.org/multipage/parsing.html#determining-the-character-encoding
+            if (Objects.equals(pageUrl.getProtocol(), url.getProtocol())
+                    && Objects.equals(pageUrl.getAuthority(), url.getAuthority())) {
+                request.setDefaultResponseContentCharset(pageCharset);
+            }
+
             try {
                 webClient.getPage(enclosedWindow_, request);
             }
@@ -222,9 +240,7 @@ public abstract class BaseFrameElement extends HtmlElement {
                 return true;
             }
 
-            final URL encUrl = UrlUtils.encodeUrl(url,
-                    window.getWebClient().getBrowserVersion().hasFeature(URL_MINIMAL_QUERY_ENCODING),
-                    charset);
+            final URL encUrl = UrlUtils.encodeUrl(url, charset);
             if (UrlUtils.sameFile(encUrl, window.getEnclosedPage().getUrl())) {
                 return true;
             }

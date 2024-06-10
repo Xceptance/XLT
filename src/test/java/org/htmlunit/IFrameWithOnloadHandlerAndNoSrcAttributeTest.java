@@ -37,18 +37,6 @@ public class IFrameWithOnloadHandlerAndNoSrcAttributeTest
         test(BrowserVersion.FIREFOX, "_plain.html", true);
     }
 
-    @Test
-    public void ie_jquery() throws Exception
-    {
-        test(BrowserVersion.INTERNET_EXPLORER, "_jquery.html", true);
-    }
-
-    @Test
-    public void ie_plain() throws Exception
-    {
-        test(BrowserVersion.INTERNET_EXPLORER, "_plain.html", true);
-    }
-
     private void test(final BrowserVersion browserVersion, final String ext, final boolean handlerShouldHaveBeenCalled) throws Exception
     {
         try (final WebClient webClient = new WebClient(browserVersion))

@@ -14,13 +14,10 @@
  */
 package org.htmlunit.javascript;
 
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
-
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -76,8 +73,7 @@ public class NativeObjectTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "1",
-            IE = {})
+    @Alerts("1")
     public void assign() throws Exception {
         final String html
             = "<html><head><script>\n"
@@ -99,8 +95,7 @@ public class NativeObjectTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "1",
-            IE = {})
+    @Alerts("1")
     public void assignUndefined() throws Exception {
         final String html
             = "<html><head><script>\n"
@@ -122,8 +117,7 @@ public class NativeObjectTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "undefined",
-            IE = {})
+    @Alerts("undefined")
     public void assignUndefined2() throws Exception {
         final String html
                 = "<html><head><script>\n"
@@ -144,8 +138,7 @@ public class NativeObjectTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "undefined",
-            IE = {})
+    @Alerts("undefined")
     public void assignNull() throws Exception {
         final String html
                 = "<html><head><script>\n"
@@ -166,8 +159,7 @@ public class NativeObjectTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "undefined",
-            IE = {})
+    @Alerts("undefined")
     public void assignNull2() throws Exception {
         final String html
                 = "<html><head><script>\n"
@@ -190,9 +182,7 @@ public class NativeObjectTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "function\\s()\\s{\\s[native\\scode]\\s}",
             FF = "function\\s()\\s{\\n\\s\\s\\s\\s[native\\scode]\\n}",
-            FF_ESR = "function\\s()\\s{\\n\\s\\s\\s\\s[native\\scode]\\n}",
-            IE = "\\nfunction()\\s{\\n\\s\\s\\s\\s[native\\scode]\\n}\\n")
-    @NotYetImplemented(IE)
+            FF_ESR = "function\\s()\\s{\\n\\s\\s\\s\\s[native\\scode]\\n}")
     public void proto() throws Exception {
         final String html = ""
             + "<html><head>\n"
@@ -239,9 +229,7 @@ public class NativeObjectTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "exception")
-    @NotYetImplemented(IE)
+    @Alerts("true")
     public void getPrototypeOfString() throws Exception {
         final String html = ""
             + "<html><head>\n"
@@ -264,9 +252,7 @@ public class NativeObjectTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "exception")
-    @NotYetImplemented(IE)
+    @Alerts("true")
     public void getPrototypeOfNumber() throws Exception {
         final String html = ""
             + "<html><head>\n"
@@ -289,9 +275,7 @@ public class NativeObjectTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "exception")
-    @NotYetImplemented(IE)
+    @Alerts("true")
     public void getPrototypeOfBoolean() throws Exception {
         final String html = ""
             + "<html><head>\n"
@@ -314,9 +298,7 @@ public class NativeObjectTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "object",
-            IE = "exception")
-    @NotYetImplemented(IE)
+    @Alerts("object")
     public void getTypeOfPrototypeOfNumber() throws Exception {
         final String html = ""
             + "<html><head>\n"
@@ -339,8 +321,7 @@ public class NativeObjectTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"2", "true", "true"},
-            IE = "exception")
+    @Alerts({"2", "true", "true"})
     public void getOwnPropertySymbols() throws Exception {
         final String html = ""
             + "<html><head>\n"
@@ -397,13 +378,10 @@ public class NativeObjectTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object HTMLInputElement]", "[object HTMLInputElementPrototype]",
-                       "[object Object]", "function"},
-            CHROME = {"[object HTMLInputElement]", "[object HTMLInputElement]", "[object Object]", "function"},
+    @Alerts(CHROME = {"[object HTMLInputElement]", "[object HTMLInputElement]", "[object Object]", "function"},
             EDGE = {"[object HTMLInputElement]", "[object HTMLInputElement]", "[object Object]", "function"},
             FF = {"[object HTMLInputElement]", "[object HTMLInputElement]", "[object Object]", "function"},
             FF_ESR = {"[object HTMLInputElement]", "[object HTMLInputElement]", "[object Object]", "function"})
-    @HtmlUnitNYI(IE = {"[object HTMLInputElement]", "[object HTMLInputElement]", "[object Object]", "function"})
     public void getOwnPropertyDescriptor() throws Exception {
         final String html = ""
             + "<html><head>\n"
@@ -442,19 +420,13 @@ public class NativeObjectTest extends WebDriverTestCase {
                   "x.get.call = function call() {\n    [native code]\n}"},
             FF_ESR = {"[object HTMLInputElement]", "x = [object Object]",
                       "x.get = function value() {\n    [native code]\n}",
-                      "x.get.call = function call() {\n    [native code]\n}"},
-            IE = {"[object HTMLInputElementPrototype]", "x = [object Object]",
-                  "x.get = \nfunction value() {\n    [native code]\n}\n",
-                  "x.get.call = \nfunction call() {\n    [native code]\n}\n"})
+                      "x.get.call = function call() {\n    [native code]\n}"})
     @HtmlUnitNYI(CHROME = {"[object HTMLInputElement]", "x = [object Object]",
                            "x.get = function value() { [native code] }",
                            "x.get.call = function call() { [native code] }"},
             EDGE = {"[object HTMLInputElement]", "x = [object Object]",
                     "x.get = function value() { [native code] }",
-                    "x.get.call = function call() { [native code] }"},
-            IE = {"[object HTMLInputElement]", "x = [object Object]",
-                  "x.get = \nfunction value() {\n    [native code]\n}\n",
-                  "x.get.call = \nfunction call() {\n    [native code]\n}\n"})
+                    "x.get.call = function call() { [native code] }"})
     public void getOwnPropertyDescriptorGetCall() throws Exception {
         final String html = "<html><head><script>\n"
             + LOG_TEXTAREA_FUNCTION

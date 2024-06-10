@@ -14,10 +14,7 @@
  */
 package org.htmlunit.html;
 
-import static org.htmlunit.BrowserVersionFeatures.EVENT_MOUSE_ON_DISABLED;
-import static org.htmlunit.BrowserVersionFeatures.HTMLSELECT_WILL_VALIDATE_ALWAYS_TRUE;
 import static org.htmlunit.BrowserVersionFeatures.HTMLSELECT_WILL_VALIDATE_IGNORES_READONLY;
-import static org.htmlunit.BrowserVersionFeatures.JS_SELECT_SET_VALUES_CHECKS_ONLY_VALUE_ATTRIBUTE;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -112,7 +109,7 @@ public class HtmlSelect extends HtmlElement implements DisabledElement, Submitta
      */
     @Override
     public boolean handles(final Event event) {
-        if (event instanceof MouseEvent && hasFeature(EVENT_MOUSE_ON_DISABLED)) {
+        if (event instanceof MouseEvent) {
             return true;
         }
 
@@ -301,15 +298,7 @@ public class HtmlSelect extends HtmlElement implements DisabledElement, Submitta
     public <P extends Page> P setSelectedAttribute(final String optionValue,
             final boolean isSelected, final boolean invokeOnFocus) {
         try {
-            final boolean attributeOnly = hasFeature(JS_SELECT_SET_VALUES_CHECKS_ONLY_VALUE_ATTRIBUTE)
-                    && !optionValue.isEmpty();
-            final HtmlOption selected;
-            if (attributeOnly) {
-                selected = getOptionByValueStrict(optionValue);
-            }
-            else {
-                selected = getOptionByValue(optionValue);
-            }
+            final HtmlOption selected = getOptionByValue(optionValue);
             return setSelectedAttribute(selected, isSelected, invokeOnFocus, true, false, true);
         }
         catch (final ElementNotFoundException e) {
@@ -782,9 +771,7 @@ public class HtmlSelect extends HtmlElement implements DisabledElement, Submitta
      */
     @Override
     public boolean willValidate() {
-        return hasFeature(HTMLSELECT_WILL_VALIDATE_ALWAYS_TRUE)
-                || (!isDisabled()
-                        && (hasFeature(HTMLSELECT_WILL_VALIDATE_IGNORES_READONLY) || !isReadOnly()));
+        return !isDisabled() && (hasFeature(HTMLSELECT_WILL_VALIDATE_IGNORES_READONLY) || !isReadOnly());
     }
 
     /**

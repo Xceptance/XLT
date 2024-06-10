@@ -14,19 +14,7 @@
  */
 package org.htmlunit.javascript.host;
 
-import static org.htmlunit.BrowserVersionFeatures.ANCHOR_EMPTY_HREF_NO_FILENAME;
-import static org.htmlunit.BrowserVersionFeatures.EVENT_TYPE_HASHCHANGEEVENT;
-import static org.htmlunit.BrowserVersionFeatures.JS_LOCATION_HASH_HASH_IS_ENCODED;
-import static org.htmlunit.BrowserVersionFeatures.JS_LOCATION_HASH_IS_DECODED;
-import static org.htmlunit.BrowserVersionFeatures.JS_LOCATION_HASH_RETURNS_HASH_FOR_EMPTY_DEFINED;
-import static org.htmlunit.BrowserVersionFeatures.JS_LOCATION_HREF_HASH_IS_ENCODED;
 import static org.htmlunit.BrowserVersionFeatures.JS_LOCATION_RELOAD_REFERRER;
-import static org.htmlunit.BrowserVersionFeatures.URL_ABOUT_BLANK_HAS_BLANK_PATH;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -46,9 +34,6 @@ import org.htmlunit.html.HtmlPage;
 import org.htmlunit.javascript.HtmlUnitScriptable;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
-import org.htmlunit.javascript.configuration.JsxFunction;
-import org.htmlunit.javascript.configuration.JsxGetter;
-import org.htmlunit.javascript.configuration.JsxSetter;
 import org.htmlunit.javascript.host.event.Event;
 import org.htmlunit.javascript.host.event.HashChangeEvent;
 import org.htmlunit.protocol.javascript.JavaScriptURLConnection;
@@ -68,6 +53,8 @@ import org.htmlunit.util.UrlUtils;
  * @author Frank Danek
  * @author Adam Afeltowicz
  * @author Atsushi Nakagawa
+ * @author Lai Quang Duong
+ * @author Kanoko Yamamoto
  *
  * @see <a href="http://msdn.microsoft.com/en-us/library/ms535866.aspx">MSDN Documentation</a>
  */
@@ -166,7 +153,7 @@ public class Location extends HtmlUnitScriptable {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
         final int attributes = ScriptableObject.PERMANENT | ScriptableObject.READONLY;
 
@@ -225,7 +212,6 @@ public class Location extends HtmlUnitScriptable {
      * @throws IOException if loading the specified location fails
      * @see <a href="http://msdn.microsoft.com/en-us/library/ms536342.aspx">MSDN Documentation</a>
      */
-    @JsxFunction(IE)
     public void assign(final String url) throws IOException {
         setHref(url);
     }
@@ -237,17 +223,18 @@ public class Location extends HtmlUnitScriptable {
      * @throws IOException if there is a problem reloading the page
      * @see <a href="http://msdn.microsoft.com/en-us/library/ms536342.aspx">MSDN Documentation</a>
      */
-    @JsxFunction(IE)
     public void reload(final boolean force) throws IOException {
         final WebWindow webWindow = window_.getWebWindow();
         final HtmlPage htmlPage = (HtmlPage) webWindow.getEnclosedPage();
         final WebRequest request = htmlPage.getWebResponse().getWebRequest();
 
+        // update request url with location.href in case hash was changed
+        request.setUrl(new URL(getHref()));
         if (webWindow.getWebClient().getBrowserVersion().hasFeature(JS_LOCATION_RELOAD_REFERRER)) {
             request.setRefererlHeader(htmlPage.getUrl());
         }
 
-        webWindow.getWebClient().download(webWindow, "", request, true, false, false, "JS location.reload");
+        webWindow.getWebClient().download(webWindow, "", request, false, false, null, "JS location.reload");
     }
 
     /**
@@ -256,7 +243,6 @@ public class Location extends HtmlUnitScriptable {
      * @throws IOException if loading the specified location fails
      * @see <a href="http://msdn.microsoft.com/en-us/library/ms536712.aspx">MSDN Documentation</a>
      */
-    @JsxFunction(IE)
     public void replace(final String url) throws IOException {
         window_.getWebWindow().getHistory().removeCurrent();
         setHref(url);
@@ -266,7 +252,6 @@ public class Location extends HtmlUnitScriptable {
      * Returns the location URL.
      * @return the location URL
      */
-    @JsxFunction(functionName = "toString", value = IE)
     public String jsToString() {
         if (window_ != null) {
             return getHref();
@@ -279,7 +264,6 @@ public class Location extends HtmlUnitScriptable {
      * @return the location URL
      * @see <a href="http://msdn.microsoft.com/en-us/library/ms533867.aspx">MSDN Documentation</a>
      */
-    @JsxGetter(IE)
     public String getHref() {
         final WebWindow webWindow = window_.getWebWindow();
         final Page page = webWindow.getEnclosedPage();
@@ -288,9 +272,7 @@ public class Location extends HtmlUnitScriptable {
         }
         try {
             URL url = page.getUrl();
-            final boolean encodeHash = webWindow.getWebClient()
-                    .getBrowserVersion().hasFeature(JS_LOCATION_HREF_HASH_IS_ENCODED);
-            final String hash = getHash(encodeHash);
+            final String hash = getHash(true);
             if (hash != null) {
                 url = UrlUtils.getUrlWithNewRef(url, hash);
             }
@@ -316,7 +298,6 @@ public class Location extends HtmlUnitScriptable {
      * @throws IOException if loading the specified location fails
      * @see <a href="http://msdn.microsoft.com/en-us/library/ms533867.aspx">MSDN Documentation</a>
      */
-    @JsxSetter(IE)
     public void setHref(final String newLocation) throws IOException {
         WebWindow webWindow = getWindow(getStartingScope()).getWebWindow();
         final HtmlPage page = (HtmlPage) webWindow.getEnclosedPage();
@@ -331,12 +312,6 @@ public class Location extends HtmlUnitScriptable {
             URL url = page.getFullyQualifiedUrl(newLocation);
             // fix for empty url
             if (StringUtils.isEmpty(newLocation)) {
-                final boolean dropFilename = browserVersion.hasFeature(ANCHOR_EMPTY_HREF_NO_FILENAME);
-                if (dropFilename) {
-                    String path = url.getPath();
-                    path = path.substring(0, path.lastIndexOf('/') + 1);
-                    url = UrlUtils.getUrlWithNewPath(url, path);
-                }
                 url = UrlUtils.getUrlWithNewRef(url, null);
             }
 
@@ -345,7 +320,7 @@ public class Location extends HtmlUnitScriptable {
             request.setRefererlHeader(page.getUrl());
 
             webWindow = window_.getWebWindow();
-            webWindow.getWebClient().download(webWindow, "", request, true, false, false, "JS set location");
+            webWindow.getWebClient().download(webWindow, "", request, true, false, null, "JS set location");
         }
         catch (final MalformedURLException e) {
             if (LOG.isErrorEnabled()) {
@@ -360,7 +335,6 @@ public class Location extends HtmlUnitScriptable {
      * @return the search portion of the location URL
      * @see <a href="http://msdn.microsoft.com/en-us/library/ms534620.aspx">MSDN Documentation</a>
      */
-    @JsxGetter(IE)
     public String getSearch() {
         final String search = getUrl().getQuery();
         if (search == null) {
@@ -375,7 +349,6 @@ public class Location extends HtmlUnitScriptable {
      * @throws Exception if an error occurs
      * @see <a href="http://msdn.microsoft.com/en-us/library/ms534620.aspx">MSDN Documentation</a>
      */
-    @JsxSetter(IE)
     public void setSearch(final String search) throws Exception {
         setUrl(UrlUtils.getUrlWithNewQuery(getUrl(), search));
     }
@@ -385,27 +358,18 @@ public class Location extends HtmlUnitScriptable {
      * @return the hash portion of the location URL
      * @see <a href="http://msdn.microsoft.com/en-us/library/ms533775.aspx">MSDN Documentation</a>
      */
-    @JsxGetter(IE)
     public String getHash() {
-        final BrowserVersion browserVersion = getBrowserVersion();
-        final boolean decodeHash = browserVersion.hasFeature(JS_LOCATION_HASH_IS_DECODED);
         String hash = hash_;
 
-        if (hash_ != null && (decodeHash || hash_.equals(getUrl().getRef()))) {
+        if (hash_ != null) {
             hash = decodeHash(hash);
         }
 
         if (StringUtils.isEmpty(hash)) {
-            if (browserVersion.hasFeature(JS_LOCATION_HASH_RETURNS_HASH_FOR_EMPTY_DEFINED)
-                    && getHref().endsWith("#")) {
-                return "#";
-            }
-        }
-        else if (browserVersion.hasFeature(JS_LOCATION_HASH_HASH_IS_ENCODED)) {
-            return "#" + UrlUtils.encodeHash(hash);
+            // nothing to do
         }
         else {
-            return "#" + hash;
+            return "#" + UrlUtils.encodeHash(hash);
         }
 
         return "";
@@ -427,7 +391,6 @@ public class Location extends HtmlUnitScriptable {
      * @param hash the new hash portion of the location URL
      * @see <a href="http://msdn.microsoft.com/en-us/library/ms533775.aspx">MSDN Documentation</a>
      */
-    @JsxSetter(IE)
     public void setHash(final String hash) {
         // IMPORTANT: This method must not call setUrl(), because
         // we must not hit the server just to change the hash!
@@ -464,14 +427,7 @@ public class Location extends HtmlUnitScriptable {
 
         if (triggerHashChanged && hasChanged) {
             final Window w = getWindow();
-            final Event event;
-            if (getBrowserVersion().hasFeature(EVENT_TYPE_HASHCHANGEEVENT)) {
-                event = new HashChangeEvent(w, Event.TYPE_HASH_CHANGE, oldURL, getHref());
-            }
-            else {
-                event = new Event(w, Event.TYPE_HASH_CHANGE);
-                event.initEvent(Event.TYPE_HASH_CHANGE, false, false);
-            }
+            final Event event = new HashChangeEvent(w, Event.TYPE_HASH_CHANGE, oldURL, getHref());
             w.executeEventLocally(event);
         }
     }
@@ -488,7 +444,6 @@ public class Location extends HtmlUnitScriptable {
      * @return the hostname portion of the location URL
      * @see <a href="http://msdn.microsoft.com/en-us/library/ms533785.aspx">MSDN Documentation</a>
      */
-    @JsxGetter(IE)
     public String getHostname() {
         return getUrl().getHost();
     }
@@ -499,7 +454,6 @@ public class Location extends HtmlUnitScriptable {
      * @throws Exception if an error occurs
      * @see <a href="http://msdn.microsoft.com/en-us/library/ms533785.aspx">MSDN Documentation</a>
      */
-    @JsxSetter(IE)
     public void setHostname(final String hostname) throws Exception {
         setUrl(UrlUtils.getUrlWithNewHost(getUrl(), hostname));
     }
@@ -509,7 +463,6 @@ public class Location extends HtmlUnitScriptable {
      * @return the host portion of the location URL
      * @see <a href="http://msdn.microsoft.com/en-us/library/ms533784.aspx">MSDN Documentation</a>
      */
-    @JsxGetter(IE)
     public String getHost() {
         final URL url = getUrl();
         final int port = url.getPort();
@@ -527,7 +480,6 @@ public class Location extends HtmlUnitScriptable {
      * @throws Exception if an error occurs
      * @see <a href="http://msdn.microsoft.com/en-us/library/ms533784.aspx">MSDN Documentation</a>
      */
-    @JsxSetter(IE)
     public void setHost(final String host) throws Exception {
         final String hostname;
         final int port;
@@ -549,13 +501,9 @@ public class Location extends HtmlUnitScriptable {
      * @return the pathname portion of the location URL
      * @see <a href="http://msdn.microsoft.com/en-us/library/ms534332.aspx">MSDN Documentation</a>
      */
-    @JsxGetter(IE)
     public String getPathname() {
         if (UrlUtils.URL_ABOUT_BLANK == getUrl()) {
-            if (getBrowserVersion().hasFeature(URL_ABOUT_BLANK_HAS_BLANK_PATH)) {
-                return "blank";
-            }
-            return "/blank";
+            return "blank";
         }
         return getUrl().getPath();
     }
@@ -566,7 +514,6 @@ public class Location extends HtmlUnitScriptable {
      * @throws Exception if an error occurs
      * @see <a href="http://msdn.microsoft.com/en-us/library/ms534332.aspx">MSDN Documentation</a>
      */
-    @JsxSetter(IE)
     public void setPathname(final String pathname) throws Exception {
         setUrl(UrlUtils.getUrlWithNewPath(getUrl(), pathname));
     }
@@ -576,7 +523,6 @@ public class Location extends HtmlUnitScriptable {
      * @return the port portion of the location URL
      * @see <a href="http://msdn.microsoft.com/en-us/library/ms534342.aspx">MSDN Documentation</a>
      */
-    @JsxGetter(IE)
     public String getPort() {
         final int port = getUrl().getPort();
         if (port == -1) {
@@ -591,7 +537,6 @@ public class Location extends HtmlUnitScriptable {
      * @throws Exception if an error occurs
      * @see <a href="http://msdn.microsoft.com/en-us/library/ms534342.aspx">MSDN Documentation</a>
      */
-    @JsxSetter(IE)
     public void setPort(final String port) throws Exception {
         setUrl(UrlUtils.getUrlWithNewPort(getUrl(), Integer.parseInt(port)));
     }
@@ -601,7 +546,6 @@ public class Location extends HtmlUnitScriptable {
      * @return the protocol portion of the location URL, including the trailing ':'
      * @see <a href="http://msdn.microsoft.com/en-us/library/ms534353.aspx">MSDN Documentation</a>
      */
-    @JsxGetter(IE)
     public String getProtocol() {
         return getUrl().getProtocol() + ":";
     }
@@ -612,7 +556,6 @@ public class Location extends HtmlUnitScriptable {
      * @throws Exception if an error occurs
      * @see <a href="http://msdn.microsoft.com/en-us/library/ms534353.aspx">MSDN Documentation</a>
      */
-    @JsxSetter(IE)
     public void setProtocol(final String protocol) throws Exception {
         setUrl(UrlUtils.getUrlWithNewProtocol(getUrl(), protocol));
     }
@@ -646,7 +589,6 @@ public class Location extends HtmlUnitScriptable {
      * Returns the {@code origin} property.
      * @return the {@code origin} property
      */
-    @JsxGetter(IE)
     public String getOrigin() {
         return getUrl().getProtocol() + "://" + getHost();
     }

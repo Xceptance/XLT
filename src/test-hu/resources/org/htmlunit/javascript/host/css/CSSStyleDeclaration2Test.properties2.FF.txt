@@ -8,7 +8,6 @@ MozAnimationName
 MozAnimationPlayState
 MozAnimationTimingFunction
 MozAppearance
-MozBackfaceVisibility
 MozBorderEnd
 MozBorderEndColor
 MozBorderEndStyle
@@ -35,19 +34,10 @@ MozMarginStart
 MozOrient
 MozPaddingEnd
 MozPaddingStart
-MozPerspective
-MozPerspectiveOrigin
 MozTabSize
 MozTextSizeAdjust
 MozTransform
 MozTransformOrigin
-MozTransformStyle
-MozTransition
-MozTransitionDelay
-MozTransitionDuration
-MozTransitionProperty
-MozTransitionTimingFunction
-MozUserFocus
 MozUserInput
 MozUserModify
 MozUserSelect
@@ -254,6 +244,7 @@ container
 containerName
 containerType
 content
+contentVisibility
 counterIncrement
 counterReset
 counterSet
@@ -523,6 +514,8 @@ textTransform
 textUnderlineOffset
 textUnderlinePosition
 textWrap
+textWrapMode
+textWrapStyle
 top
 touchAction
 transform
@@ -611,6 +604,7 @@ webkitTransitionProperty
 webkitTransitionTimingFunction
 webkitUserSelect
 whiteSpace
+whiteSpaceCollapse
 width
 willChange
 wordBreak
@@ -620,3 +614,4 @@ writingMode
 x
 y
 zIndex
+zoom

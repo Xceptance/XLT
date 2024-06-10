@@ -14,12 +14,9 @@
  */
 package org.htmlunit.javascript.host.dom;
 
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
-
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -382,9 +379,7 @@ public class RangeTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
-    @NotYetImplemented(IE)
+    @Alerts("true")
     public void getClientRectsMany() throws Exception {
         final String html =
             "<html><body><div id='d'><span id='a'>a</span><span id='b'>b</span><span id='c'>c</span>"

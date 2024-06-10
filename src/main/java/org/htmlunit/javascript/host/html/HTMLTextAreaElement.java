@@ -14,19 +14,6 @@
  */
 package org.htmlunit.javascript.host.html;
 
-import static org.htmlunit.BrowserVersionFeatures.JS_TEXT_AREA_GET_MAXLENGTH_MAX_INT;
-import static org.htmlunit.BrowserVersionFeatures.JS_TEXT_AREA_SET_COLS_NEGATIVE_THROWS_EXCEPTION;
-import static org.htmlunit.BrowserVersionFeatures.JS_TEXT_AREA_SET_COLS_THROWS_EXCEPTION;
-import static org.htmlunit.BrowserVersionFeatures.JS_TEXT_AREA_SET_MAXLENGTH_NEGATIVE_THROWS_EXCEPTION;
-import static org.htmlunit.BrowserVersionFeatures.JS_TEXT_AREA_SET_ROWS_NEGATIVE_THROWS_EXCEPTION;
-import static org.htmlunit.BrowserVersionFeatures.JS_TEXT_AREA_SET_ROWS_THROWS_EXCEPTION;
-import static org.htmlunit.BrowserVersionFeatures.JS_TEXT_AREA_SET_VALUE_NULL;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
-
 import org.htmlunit.html.HtmlTextArea;
 import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
@@ -35,7 +22,6 @@ import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.configuration.JsxSetter;
 import org.htmlunit.javascript.host.dom.NodeList;
-import org.htmlunit.javascript.host.dom.TextRange;
 
 /**
  * The JavaScript object {@code HTMLTextAreaElement}.
@@ -65,7 +51,7 @@ public class HTMLTextAreaElement extends HTMLElement {
      * JavaScript constructor.
      */
     @Override
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
         super.jsConstructor();
     }
@@ -104,7 +90,7 @@ public class HTMLTextAreaElement extends HTMLElement {
     @JsxSetter
     @Override
     public void setValue(final Object value) {
-        if (null == value && getBrowserVersion().hasFeature(JS_TEXT_AREA_SET_VALUE_NULL)) {
+        if (null == value) {
             getDomNodeOrDie().setText("");
             return;
         }
@@ -136,18 +122,12 @@ public class HTMLTextAreaElement extends HTMLElement {
         try {
             final int i = Float.valueOf(cols).intValue();
             if (i < 0) {
-                if (getBrowserVersion().hasFeature(JS_TEXT_AREA_SET_COLS_NEGATIVE_THROWS_EXCEPTION)) {
-                    throw new NumberFormatException("New value for cols '" + cols + "' is smaller than zero.");
-                }
                 getDomNodeOrDie().setAttribute("cols", null);
                 return;
             }
             getDomNodeOrDie().setAttribute("cols", Integer.toString(i));
         }
         catch (final NumberFormatException e) {
-            if (getBrowserVersion().hasFeature(JS_TEXT_AREA_SET_COLS_THROWS_EXCEPTION)) {
-                throw JavaScriptEngine.throwAsScriptRuntimeEx(e);
-            }
             getDomNodeOrDie().setAttribute("cols", "20");
         }
     }
@@ -176,19 +156,12 @@ public class HTMLTextAreaElement extends HTMLElement {
         try {
             final int i = Float.valueOf(rows).intValue();
             if (i < 0) {
-                if (getBrowserVersion().hasFeature(JS_TEXT_AREA_SET_ROWS_NEGATIVE_THROWS_EXCEPTION)) {
-                    throw new NumberFormatException("New value for rows '" + rows + "' is smaller than zero.");
-                }
                 getDomNodeOrDie().setAttribute("rows", null);
                 return;
             }
             getDomNodeOrDie().setAttribute("rows", Integer.toString(i));
         }
         catch (final NumberFormatException e) {
-            if (getBrowserVersion().hasFeature(JS_TEXT_AREA_SET_ROWS_THROWS_EXCEPTION)) {
-                throw JavaScriptEngine.throwAsScriptRuntimeEx(e);
-            }
-
             getDomNodeOrDie().setAttribute("rows", "2");
         }
     }
@@ -217,7 +190,7 @@ public class HTMLTextAreaElement extends HTMLElement {
      * Gets the value of {@code textLength} attribute.
      * @return the text length
      */
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxGetter
     public int getTextLength() {
         return getValue().length();
     }
@@ -307,9 +280,6 @@ public class HTMLTextAreaElement extends HTMLElement {
             return Integer.parseInt(maxLength);
         }
         catch (final NumberFormatException e) {
-            if (getBrowserVersion().hasFeature(JS_TEXT_AREA_GET_MAXLENGTH_MAX_INT)) {
-                return Integer.MAX_VALUE;
-            }
             return -1;
         }
     }
@@ -323,7 +293,7 @@ public class HTMLTextAreaElement extends HTMLElement {
         try {
             final int i = Integer.parseInt(maxLength);
 
-            if (i < 0 && getBrowserVersion().hasFeature(JS_TEXT_AREA_SET_MAXLENGTH_NEGATIVE_THROWS_EXCEPTION)) {
+            if (i < 0) {
                 throw JavaScriptEngine.throwAsScriptRuntimeEx(
                     new NumberFormatException("New value for maxLength '" + maxLength + "' is smaller than zero."));
             }
@@ -338,7 +308,7 @@ public class HTMLTextAreaElement extends HTMLElement {
      * Returns the minimum number of characters in this text area.
      * @return the minimum number of characters in this text area
      */
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxGetter
     public Object getMinLength() {
         final String minLength = getDomNodeOrDie().getAttribute("minLength");
 
@@ -354,7 +324,7 @@ public class HTMLTextAreaElement extends HTMLElement {
      * Sets minimum number of characters in this text area.
      * @param minLength minimum number of characters in this text area.
      */
-    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxSetter
     public void setMinLength(final String minLength) {
         try {
             final int i = Integer.parseInt(minLength);
@@ -392,21 +362,12 @@ public class HTMLTextAreaElement extends HTMLElement {
      * Returns the labels associated with the element.
      * @return the labels associated with the element
      */
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxGetter
     public NodeList getLabels() {
         if (labels_ == null) {
             labels_ = new LabelsNodeList(getDomNodeOrDie());
         }
         return labels_;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    @JsxFunction(IE)
-    public TextRange createTextRange() {
-        return super.createTextRange();
     }
 
     /**
@@ -458,7 +419,7 @@ public class HTMLTextAreaElement extends HTMLElement {
      * {@inheritDoc} Overridden to modify browser configurations.
      */
     @Override
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxGetter
     public boolean isDisabled() {
         return super.isDisabled();
     }
@@ -467,7 +428,7 @@ public class HTMLTextAreaElement extends HTMLElement {
      * {@inheritDoc} Overridden to modify browser configurations.
      */
     @Override
-    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxSetter
     public void setDisabled(final boolean disabled) {
         super.setDisabled(disabled);
     }

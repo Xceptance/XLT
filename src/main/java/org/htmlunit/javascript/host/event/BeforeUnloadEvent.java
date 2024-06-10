@@ -14,15 +14,7 @@
  */
 package org.htmlunit.javascript.host.event;
 
-import static org.htmlunit.BrowserVersionFeatures.EVENT_BEFORE_UNLOAD_RETURN_VALUE_IS_HTML5_LIKE;
-import static org.htmlunit.BrowserVersionFeatures.EVENT_HANDLER_NULL_RETURN_IS_MEANINGFUL;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-
 import org.htmlunit.BrowserVersion;
-import org.htmlunit.corejs.javascript.Undefined;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
@@ -55,7 +47,7 @@ public class BeforeUnloadEvent extends Event {
     /**
      * The JavaScript constructor. It seems it is not possible to do it from JavaScript code.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
         throw JavaScriptEngine.throwAsScriptRuntimeEx(new IllegalArgumentException("Illegal Constructor"));
     }
@@ -80,12 +72,9 @@ public class BeforeUnloadEvent extends Event {
     }
 
     private static Object getReturnValueDefault(final BrowserVersion browserVersion) {
-        if (browserVersion.hasFeature(EVENT_BEFORE_UNLOAD_RETURN_VALUE_IS_HTML5_LIKE)) {
-            // Empty string default is specified by HTML5
-            // https://www.w3.org/TR/html5/browsers.html#the-beforeunloadevent-interface
-            return "";
-        }
-        return Undefined.instance;
+        // Empty string default is specified by HTML5
+        // https://www.w3.org/TR/html5/browsers.html#the-beforeunloadevent-interface
+        return "";
     }
 
     /**
@@ -121,10 +110,9 @@ public class BeforeUnloadEvent extends Event {
         final BrowserVersion browserVersion = getBrowserVersion();
 
         // Most browsers ignore null return values of property handlers
-        if (returnValue != null || browserVersion.hasFeature(EVENT_HANDLER_NULL_RETURN_IS_MEANINGFUL)) {
+        if (returnValue != null) {
             // Chrome/Firefox only accept the return value if returnValue is equal to default
-            if (!browserVersion.hasFeature(EVENT_BEFORE_UNLOAD_RETURN_VALUE_IS_HTML5_LIKE)
-                    || getReturnValueDefault(browserVersion).equals(getReturnValue())) {
+            if (getReturnValueDefault(browserVersion).equals(getReturnValue())) {
                 setReturnValue(returnValue);
             }
         }

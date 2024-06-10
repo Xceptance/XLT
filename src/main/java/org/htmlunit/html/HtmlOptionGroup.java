@@ -14,8 +14,6 @@
  */
 package org.htmlunit.html;
 
-import static org.htmlunit.BrowserVersionFeatures.CSS_DISPLAY_BLOCK2;
-
 import java.util.Map;
 
 import org.htmlunit.SgmlPage;
@@ -50,12 +48,7 @@ public class HtmlOptionGroup extends HtmlElement implements DisabledElement {
     }
 
     /**
-     * Returns {@code true} if the disabled attribute is set for this element. Note that this
-     * method always returns {@code false} when emulating IE, because IE does not allow individual
-     * option groups to be disabled.
-     *
-     * @return {@code true} if the disabled attribute is set for this element (always {@code false}
-     *         when emulating IE)
+     * @return {@code true} if the disabled attribute is set for this element
      */
     @Override
     public final boolean isDisabled() {
@@ -105,9 +98,6 @@ public class HtmlOptionGroup extends HtmlElement implements DisabledElement {
      */
     @Override
     public DisplayStyle getDefaultStyleDisplay() {
-        if (hasFeature(CSS_DISPLAY_BLOCK2)) {
-            return DisplayStyle.BLOCK;
-        }
-        return DisplayStyle.INLINE;
+        return DisplayStyle.BLOCK;
     }
 }

@@ -61,12 +61,18 @@ public class ArchitectureTest {
     public static final ArchRule utilsPackageRule = classes()
         .that().haveNameMatching(".*Util.?")
         .and().doNotHaveFullyQualifiedName("org.htmlunit.cssparser.util.ParserUtils")
-        .and().doNotHaveFullyQualifiedName("org.htmlunit.httpclient.util.HttpDateUtils")
+        .and().doNotHaveFullyQualifiedName("org.htmlunit.http.HttpUtils")
+
         .and().doNotHaveFullyQualifiedName("org.htmlunit.platform.font.AwtFontUtil")
         .and().doNotHaveFullyQualifiedName("org.htmlunit.platform.font.FontUtil")
         .and().doNotHaveFullyQualifiedName("org.htmlunit.platform.font.NoOpFontUtil")
 
         .and().doNotHaveFullyQualifiedName("org.htmlunit.csp.Utils")
+
+        .and().resideOutsideOfPackage("org.htmlunit.jetty.util..")
+        .and().doNotHaveFullyQualifiedName("org.htmlunit.jetty.websocket.api.util.QuoteUtil")
+        .and().doNotHaveFullyQualifiedName("org.htmlunit.jetty.websocket.common.util.ReflectUtils")
+        .and().doNotHaveFullyQualifiedName("org.htmlunit.jetty.websocket.common.util.TextUtil")
 
         .should().resideInAPackage("org.htmlunit.util");
 
@@ -76,10 +82,21 @@ public class ArchitectureTest {
     @ArchTest
     public static final ArchRule awtPackageRule = noClasses()
         .that()
-            .doNotHaveFullyQualifiedName("org.htmlunit.html.applets.AppletContextImpl")
-            .and().resideOutsideOfPackage("org.htmlunit.platform..")
+            .resideOutsideOfPackage("org.htmlunit.platform..")
             .and().resideOutsideOfPackage("org.htmlunit.corejs.javascript.tools..")
+            .and().resideOutsideOfPackage("org.htmlunit.jetty..")
         .should().dependOnClassesThat().resideInAnyPackage("java.awt..");
+
+    /**
+     * Do not use org.apache.commons.codec.binary.Base64 - use the jdk instead.
+     */
+    @ArchTest
+    public static final ArchRule jdkBase64Rule = noClasses()
+        .that()
+            .resideOutsideOfPackage("org.htmlunit.jetty..")
+            .and().resideOutsideOfPackage("org.htmlunit.csp..")
+        .should().dependOnClassesThat().haveFullyQualifiedName("java.util.Base64");
+
 
     /**
      * JsxClasses are always in the javascript package.
@@ -308,6 +325,8 @@ public class ArchitectureTest {
          .that()
             .doNotHaveFullyQualifiedName("org.htmlunit.platform.image.ImageIOImageData")
             .and().doNotHaveFullyQualifiedName("org.htmlunit.platform.canvas.rendering.AwtRenderingBackend")
+            .and().doNotHaveFullyQualifiedName("org.htmlunit.platform.canvas.rendering.AwtRenderingBackend")
+            .and().resideOutsideOfPackage("org.htmlunit.jetty..")
         .should().dependOnClassesThat().resideInAnyPackage("javax.imageio..");
 
     /**
@@ -342,8 +361,27 @@ public class ArchitectureTest {
             .and().doNotHaveFullyQualifiedName("org.htmlunit.WebRequest")
             .and().doNotHaveFullyQualifiedName("org.htmlunit.util.Cookie")
             .and().doNotHaveFullyQualifiedName("org.htmlunit.DefaultCredentialsProvider")
+
             .and().resideOutsideOfPackage("org.htmlunit.httpclient..")
         .should().dependOnClassesThat().resideInAnyPackage("org.apache.http..");
+
+    /**
+     * Make sure the HttpWebConnection is the only entry into the HttpClient adapter.
+     */
+    @ArchTest
+    public static final ArchRule httpWebConnection = noClasses()
+        .that()
+            .doNotHaveFullyQualifiedName("org.htmlunit.HttpWebConnection")
+            .and().areNotInnerClasses()
+            .and().areNotMemberClasses()
+
+            .and().doNotHaveFullyQualifiedName("org.htmlunit.WebClient")
+            .and().doNotHaveFullyQualifiedName("org.htmlunit.WebRequest")
+            .and().doNotHaveFullyQualifiedName("org.htmlunit.javascript.host.xml.XMLHttpRequest")
+            .and().doNotHaveFullyQualifiedName("org.htmlunit.DefaultCredentialsProvider")
+
+            .and().resideOutsideOfPackage("org.htmlunit.httpclient..")
+        .should().dependOnClassesThat().resideInAnyPackage("org.htmlunit.httpclient..");
 
     /**
      * Do not use core-js dependencies outside of the adapter.
@@ -351,8 +389,7 @@ public class ArchitectureTest {
     @ArchTest
     public static final ArchRule corejsPackageRule = noClasses()
         .that()
-            .doNotHaveFullyQualifiedName("org.htmlunit.ProxyAutoConfig")
-            .and().doNotHaveFullyQualifiedName("org.htmlunit.WebConsole")
+            .doNotHaveFullyQualifiedName("org.htmlunit.WebConsole")
             .and().doNotHaveFullyQualifiedName("org.htmlunit.WebConsole$1")
             .and().doNotHaveFullyQualifiedName("org.htmlunit.ScriptException")
             .and().doNotHaveFullyQualifiedName("org.htmlunit.html.DomElement")
@@ -360,11 +397,43 @@ public class ArchitectureTest {
             .and().doNotHaveFullyQualifiedName("org.htmlunit.html.HtmlDialog$1")
             .and().doNotHaveFullyQualifiedName("org.htmlunit.html.HtmlPage")
             .and().doNotHaveFullyQualifiedName("org.htmlunit.util.WebClientUtils")
-            .and().doNotHaveFullyQualifiedName("org.htmlunit.websocket.JettyWebSocketAdapter")
 
             .and().resideOutsideOfPackage("org.htmlunit.javascript..")
-            .and().resideOutsideOfPackage("org.htmlunit.activex.javascript..")
 
             .and().resideOutsideOfPackage("org.htmlunit.corejs..")
         .should().dependOnClassesThat().resideInAnyPackage("org.htmlunit.corejs..");
+
+    /**
+     * Do not use core-js ScriptRuntime outside of the JavaScriptEngine.
+     */
+    @ArchTest
+    public static final ArchRule corejsScriptRuntimeRule = noClasses()
+        .that()
+            .doNotHaveFullyQualifiedName("org.htmlunit.javascript.host.URLSearchParams")
+
+            .and().doNotHaveFullyQualifiedName("org.htmlunit.javascript.HtmlUnitContextFactory")
+            .and().doNotHaveFullyQualifiedName("org.htmlunit.javascript.JavaScriptEngine")
+            .and().doNotHaveFullyQualifiedName("org.htmlunit.javascript.JavaScriptEngine$3")
+            .and().doNotHaveFullyQualifiedName("org.htmlunit.javascript.regexp.HtmlUnitRegExpProxy")
+            .and().resideOutsideOfPackage("org.htmlunit.corejs..")
+
+        .should().dependOnClassesThat().haveFullyQualifiedName("org.htmlunit.corejs.javascript.ScriptRuntime");
+
+    /**
+     * Do not use core-js org.htmlunit.corejs.javascript.Undefined.instance directly.
+     */
+    @ArchTest
+    public static final ArchRule corejsUndefinedRule = noClasses()
+        .that()
+            .doNotHaveFullyQualifiedName("org.htmlunit.javascript.JavaScriptEngine")
+            .and().resideOutsideOfPackage("org.htmlunit.corejs..")
+
+        .should().dependOnClassesThat().haveFullyQualifiedName("org.htmlunit.corejs.javascript.Undefined");
+
+    /**
+     * Do not use jetty.
+     */
+    @ArchTest
+    public static final ArchRule jettyPackageRule = noClasses()
+        .should().dependOnClassesThat().resideInAnyPackage("org.eclipse.jetty..");
 }

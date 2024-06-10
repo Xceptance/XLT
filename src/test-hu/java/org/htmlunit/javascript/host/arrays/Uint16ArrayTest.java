@@ -14,12 +14,9 @@
  */
 package org.htmlunit.javascript.host.arrays;
 
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
-
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -174,9 +171,7 @@ public class Uint16ArrayTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "0",
-            IE = "exception")
-    @NotYetImplemented(IE)
+    @Alerts("0")
     public void nullConstructor() throws Exception {
         final String html
             = "<html><head>\n"
@@ -200,11 +195,7 @@ public class Uint16ArrayTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"", "0", "1", "1,3", "1,3,4,7,11,0,123"},
-            IE = {"[object Uint16Array]", "[object Uint16Array]",
-                  "[object Uint16Array]", "[object Uint16Array]",
-                  "[object Uint16Array]"})
-    @NotYetImplemented(IE)
+    @Alerts({"", "0", "1", "1,3", "1,3,4,7,11,0,123"})
     public void asString() throws Exception {
         final String html
             = "<html><head>\n"
@@ -236,9 +227,7 @@ public class Uint16ArrayTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "Uint16Array",
-            IE = "undefined")
-    @NotYetImplemented(IE)
+    @Alerts("Uint16Array")
     public void name() throws Exception {
         final String html
             = "<html><head>\n"

@@ -14,11 +14,9 @@
  */
 package org.htmlunit.html;
 
-import static org.htmlunit.BrowserVersionFeatures.CSS_DIALOG_NONE;
 import static org.htmlunit.BrowserVersionFeatures.CSS_RP_DISPLAY_NONE;
 import static org.htmlunit.BrowserVersionFeatures.CSS_RT_DISPLAY_RUBY_TEXT_ALWAYS;
 import static org.htmlunit.BrowserVersionFeatures.MULTICOL_BLOCK;
-import static org.htmlunit.BrowserVersionFeatures.SLOT_CONTENTS;
 
 import java.util.Map;
 
@@ -53,8 +51,7 @@ public class HtmlUnknownElement extends HtmlElement {
     /**
      * <span style="color:red">INTERNAL API - SUBJECT TO CHANGE AT ANY TIME - USE AT YOUR OWN RISK.</span><br>
      *
-     * Marks this frame as created by javascript. This is needed to handle
-     * some special IE behavior.
+     * Marks this frame as created by javascript.
      */
     public void markAsCreatedByJavascript() {
         createdByJavascript_ = true;
@@ -63,8 +60,7 @@ public class HtmlUnknownElement extends HtmlElement {
     /**
      * <span style="color:red">INTERNAL API - SUBJECT TO CHANGE AT ANY TIME - USE AT YOUR OWN RISK.</span><br>
      *
-     * Returns true if this frame was created by javascript. This is needed to handle
-     * some special IE behavior.
+     * Returns true if this frame was created by javascript.
      * @return true or false
      */
     public boolean wasCreatedByJavascript() {
@@ -111,15 +107,9 @@ public class HtmlUnknownElement extends HtmlElement {
                 }
                 break;
             case HtmlDialog.TAG_NAME:
-                if (hasFeature(CSS_DIALOG_NONE)) {
-                    return DisplayStyle.NONE;
-                }
-                break;
+                return DisplayStyle.NONE;
             case HtmlSlot.TAG_NAME:
-                if (getPage().getWebClient().getBrowserVersion().hasFeature(SLOT_CONTENTS)) {
-                    return DisplayStyle.CONTENTS;
-                }
-                break;
+                return DisplayStyle.CONTENTS;
             default:
         }
         return DisplayStyle.INLINE;

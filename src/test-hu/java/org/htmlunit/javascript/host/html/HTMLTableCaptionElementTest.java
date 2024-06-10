@@ -14,12 +14,9 @@
  */
 package org.htmlunit.javascript.host.html;
 
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
-
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -37,9 +34,7 @@ public class HTMLTableCaptionElementTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"left", "right", "bottom", "top", "wrong", ""},
-            IE = {"left", "right", "bottom", "top", "", ""})
-    @NotYetImplemented(IE)
+    @Alerts({"left", "right", "bottom", "top", "wrong", ""})
     public void getAlign() throws Exception {
         final String html
             = "<html><body>\n"
@@ -67,9 +62,7 @@ public class HTMLTableCaptionElementTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"CenTer", "8", "foo", "left", "right", "bottom", "top"},
-            IE = {"center", "error", "center", "error", "center", "left", "right", "bottom", "top"})
-    @NotYetImplemented(IE)
+    @Alerts({"CenTer", "8", "foo", "left", "right", "bottom", "top"})
     public void setAlign() throws Exception {
         final String html
             = "<html><body>\n"
@@ -106,8 +99,7 @@ public class HTMLTableCaptionElementTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "undefined", "undefined", "middle", "8", "BOTtom"},
-            IE = {"top", "", "", "error", "error", "top", "", "bottom"})
+    @Alerts({"undefined", "undefined", "undefined", "middle", "8", "BOTtom"})
     public void vAlign() throws Exception {
         final String html
             = "<html><body><table>\n"

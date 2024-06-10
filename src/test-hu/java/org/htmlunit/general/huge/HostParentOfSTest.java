@@ -60,8 +60,7 @@ public class HostParentOfSTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _ScreenOrientation_ScreenOrientation() throws Exception {
         test("ScreenOrientation", "ScreenOrientation");
     }
@@ -70,8 +69,7 @@ public class HostParentOfSTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _ScriptProcessorNode_ScriptProcessorNode() throws Exception {
         test("ScriptProcessorNode", "ScriptProcessorNode");
     }
@@ -80,8 +78,7 @@ public class HostParentOfSTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _SecurityPolicyViolationEvent_SecurityPolicyViolationEvent() throws Exception {
         test("SecurityPolicyViolationEvent", "SecurityPolicyViolationEvent");
     }
@@ -99,11 +96,7 @@ public class HostParentOfSTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "false",
-            CHROME = "true",
-            EDGE = "true",
-            FF = "true",
-            FF_ESR = "true")
+    @Alerts("true")
     public void _ServiceWorker_ServiceWorker() throws Exception {
         test("ServiceWorker", "ServiceWorker");
     }
@@ -112,11 +105,7 @@ public class HostParentOfSTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "false",
-            CHROME = "true",
-            EDGE = "true",
-            FF = "true",
-            FF_ESR = "true")
+    @Alerts("true")
     public void _ServiceWorkerContainer_ServiceWorkerContainer() throws Exception {
         test("ServiceWorkerContainer", "ServiceWorkerContainer");
     }
@@ -125,11 +114,7 @@ public class HostParentOfSTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "false",
-            CHROME = "true",
-            EDGE = "true",
-            FF = "true",
-            FF_ESR = "true")
+    @Alerts("true")
     public void _ServiceWorkerRegistration_ServiceWorkerRegistration() throws Exception {
         test("ServiceWorkerRegistration", "ServiceWorkerRegistration");
     }
@@ -156,8 +141,7 @@ public class HostParentOfSTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _ShadowRoot_ShadowRoot() throws Exception {
         test("ShadowRoot", "ShadowRoot");
     }
@@ -166,8 +150,7 @@ public class HostParentOfSTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _SharedWorker_SharedWorker() throws Exception {
         test("SharedWorker", "SharedWorker");
     }
@@ -194,8 +177,7 @@ public class HostParentOfSTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _SpeechSynthesis_SpeechSynthesis() throws Exception {
         test("SpeechSynthesis", "SpeechSynthesis");
     }
@@ -204,8 +186,7 @@ public class HostParentOfSTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _SpeechSynthesisErrorEvent_SpeechSynthesisErrorEvent() throws Exception {
         test("SpeechSynthesisErrorEvent", "SpeechSynthesisErrorEvent");
     }
@@ -214,8 +195,7 @@ public class HostParentOfSTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _SpeechSynthesisEvent_SpeechSynthesisErrorEvent() throws Exception {
         test("SpeechSynthesisEvent", "SpeechSynthesisErrorEvent");
     }
@@ -224,8 +204,7 @@ public class HostParentOfSTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _SpeechSynthesisEvent_SpeechSynthesisEvent() throws Exception {
         test("SpeechSynthesisEvent", "SpeechSynthesisEvent");
     }
@@ -234,8 +213,7 @@ public class HostParentOfSTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _SpeechSynthesisUtterance_SpeechSynthesisUtterance() throws Exception {
         test("SpeechSynthesisUtterance", "SpeechSynthesisUtterance");
     }
@@ -244,8 +222,7 @@ public class HostParentOfSTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _SpeechSynthesisVoice_SpeechSynthesisVoice() throws Exception {
         test("SpeechSynthesisVoice", "SpeechSynthesisVoice");
     }
@@ -254,8 +231,7 @@ public class HostParentOfSTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _StereoPannerNode_StereoPannerNode() throws Exception {
         test("StereoPannerNode", "StereoPannerNode");
     }
@@ -282,8 +258,7 @@ public class HostParentOfSTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _StorageManager_StorageManager() throws Exception {
         test("StorageManager", "StorageManager");
     }
@@ -292,8 +267,7 @@ public class HostParentOfSTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "false",
-            IE = "true")
+    @Alerts("false")
     public void _StyleMedia_StyleMedia() throws Exception {
         test("StyleMedia", "StyleMedia");
     }
@@ -329,8 +303,7 @@ public class HostParentOfSTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _SubmitEvent_SubmitEvent() throws Exception {
         test("SubmitEvent", "SubmitEvent");
     }
@@ -474,8 +447,7 @@ public class HostParentOfSTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _SVGAnimateElement_SVGAnimateElement() throws Exception {
         test("SVGAnimateElement", "SVGAnimateElement");
     }
@@ -484,8 +456,7 @@ public class HostParentOfSTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _SVGAnimateMotionElement_SVGAnimateMotionElement() throws Exception {
         test("SVGAnimateMotionElement", "SVGAnimateMotionElement");
     }
@@ -494,8 +465,7 @@ public class HostParentOfSTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _SVGAnimateTransformElement_SVGAnimateTransformElement() throws Exception {
         test("SVGAnimateTransformElement", "SVGAnimateTransformElement");
     }
@@ -504,8 +474,7 @@ public class HostParentOfSTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _SVGAnimationElement_SVGAnimateElement() throws Exception {
         test("SVGAnimationElement", "SVGAnimateElement");
     }
@@ -514,8 +483,7 @@ public class HostParentOfSTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _SVGAnimationElement_SVGAnimateMotionElement() throws Exception {
         test("SVGAnimationElement", "SVGAnimateMotionElement");
     }
@@ -524,8 +492,7 @@ public class HostParentOfSTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _SVGAnimationElement_SVGAnimateTransformElement() throws Exception {
         test("SVGAnimationElement", "SVGAnimateTransformElement");
     }
@@ -534,8 +501,7 @@ public class HostParentOfSTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _SVGAnimationElement_SVGAnimationElement() throws Exception {
         test("SVGAnimationElement", "SVGAnimationElement");
     }
@@ -544,8 +510,7 @@ public class HostParentOfSTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _SVGAnimationElement_SVGSetElement() throws Exception {
         test("SVGAnimationElement", "SVGSetElement");
     }
@@ -644,8 +609,7 @@ public class HostParentOfSTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _SVGElement_SVGAnimateElement() throws Exception {
         test("SVGElement", "SVGAnimateElement");
     }
@@ -654,8 +618,7 @@ public class HostParentOfSTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _SVGElement_SVGAnimateMotionElement() throws Exception {
         test("SVGElement", "SVGAnimateMotionElement");
     }
@@ -664,8 +627,7 @@ public class HostParentOfSTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _SVGElement_SVGAnimateTransformElement() throws Exception {
         test("SVGElement", "SVGAnimateTransformElement");
     }
@@ -674,8 +636,7 @@ public class HostParentOfSTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _SVGElement_SVGAnimationElement() throws Exception {
         test("SVGElement", "SVGAnimationElement");
     }
@@ -819,8 +780,7 @@ public class HostParentOfSTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _SVGElement_SVGFEDropShadowElement() throws Exception {
         test("SVGElement", "SVGFEDropShadowElement");
     }
@@ -982,8 +942,7 @@ public class HostParentOfSTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _SVGElement_SVGForeignObjectElement() throws Exception {
         test("SVGElement", "SVGForeignObjectElement");
     }
@@ -1001,8 +960,7 @@ public class HostParentOfSTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _SVGElement_SVGGeometryElement() throws Exception {
         test("SVGElement", "SVGGeometryElement");
     }
@@ -1020,8 +978,7 @@ public class HostParentOfSTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _SVGElement_SVGGraphicsElement() throws Exception {
         test("SVGElement", "SVGGraphicsElement");
     }
@@ -1084,8 +1041,7 @@ public class HostParentOfSTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _SVGElement_SVGMPathElement() throws Exception {
         test("SVGElement", "SVGMPathElement");
     }
@@ -1157,8 +1113,7 @@ public class HostParentOfSTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _SVGElement_SVGSetElement() throws Exception {
         test("SVGElement", "SVGSetElement");
     }
@@ -1365,8 +1320,7 @@ public class HostParentOfSTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _SVGFEDropShadowElement_SVGFEDropShadowElement() throws Exception {
         test("SVGFEDropShadowElement", "SVGFEDropShadowElement");
     }
@@ -1528,8 +1482,7 @@ public class HostParentOfSTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _SVGForeignObjectElement_SVGForeignObjectElement() throws Exception {
         test("SVGForeignObjectElement", "SVGForeignObjectElement");
     }
