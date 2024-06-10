@@ -99,10 +99,10 @@
 
         <xsl:choose>
             <xsl:when test="string-length($itemName) &gt; 0">
-                <span title="{$itemId}">&quot;{$itemName}&quot;</span>
+                <span title="{$itemId}">&quot;<xsl:value-of select="$itemName" />&quot;</span>
             </xsl:when>
             <xsl:otherwise>
-                <span>&quot;{$itemId}&quot;</span>
+                <span>&quot;<xsl:value-of select="$itemId" />&quot;</span>
             </xsl:otherwise>
         </xsl:choose>
 
