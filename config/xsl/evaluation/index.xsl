@@ -84,22 +84,22 @@
         <div id="data-content">
 
             <xsl:call-template name="scorecard">
-                <xsl:with-param name="rootNode" select="./result" />
+                <xsl:with-param name="rootNode" select="./outcome" />
             </xsl:call-template>
 
             <xsl:call-template name="ratings">
                 <xsl:with-param name="elements" select="./configuration/ratings/rating" />
-                <xsl:with-param name="active" select="./result/rating" />
+                <xsl:with-param name="active" select="./outcome/rating" />
             </xsl:call-template>
 
             <xsl:call-template name="groups">
                 <xsl:with-param name="definitions" select="./configuration/groups/group" />
-                <xsl:with-param name="results" select="./result/groups/group" />
+                <xsl:with-param name="results" select="./outcome/groups/group" />
             </xsl:call-template>
 
             <xsl:call-template name="rules">
                 <xsl:with-param name="definitions" select="./configuration/rules/rule" />
-                <xsl:with-param name="results" select="./result/groups/group/rules" />
+                <xsl:with-param name="results" select="./outcome/groups/group/rules" />
             </xsl:call-template>
 
         </div> <!-- /data-content -->

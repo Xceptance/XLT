@@ -21,7 +21,7 @@
                             <th>Fails Test</th>
                             <th>Mode</th>
                             <th>Rule Count</th>
-                            <th>Status</th>
+                            <th>Result</th>
                             <th>Message</th>
                             <th>Max Points</th>
                             <th>Points</th>
@@ -62,11 +62,18 @@
                                         </td>
                                         <!-- Enabled -->
                                         <td class="value">
-                                            <xsl:value-of select="$groupDef/@enabled" />
+                                            <xsl:value-of select="$groupDef/@enabled = 'true'" />
                                         </td>
                                         <!-- Fails Test -->
                                         <td class="value">
-                                            <xsl:value-of select="$groupDef/@failsTest" />
+                                            <xsl:element name="span">
+                                                <xsl:if test="string-length(normalize-space($groupDef/@failsOn)) &gt; 0">
+                                                    <xsl:attribute name="title">
+                                                        <xsl:value-of select="concat('Fails On: ', $groupDef/@failsOn)" />
+                                                    </xsl:attribute>
+                                                </xsl:if>
+                                                <xsl:value-of select="$groupDef/@failsTest = 'true'" />
+                                            </xsl:element>
                                         </td>
                                         <!-- Mode -->
                                         <td class="value">
@@ -76,9 +83,9 @@
                                         <td class="value number">
                                             <xsl:value-of select="count($groupDef/rules/rule)" />
                                         </td>
-                                        <!-- Status -->
+                                        <!-- Group Result -->
                                         <td class="value">
-                                            <xsl:value-of select="status" />
+                                            <xsl:value-of select="result" />
                                         </td>
                                         <!-- Message -->
                                         <td class="value text">

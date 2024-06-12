@@ -4,7 +4,6 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 import org.apache.commons.lang3.EnumUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -30,40 +29,35 @@ public class GroupDefinition
 
     @XStreamAsAttribute
     private final String name;
-    
-    private final String description;
+
+    private String description;
 
     @XStreamAlias("rules")
     @XStreamConverter(RuleIdConverter.class)
     private final List<String> ruleIds;
 
     @XStreamAsAttribute
-    private final boolean enabled;
+    private boolean enabled;
 
     @XStreamAsAttribute
-    private final boolean failsTest;
+    private boolean failsTest;
+
+    @XStreamAsAttribute
+    private TestFailTrigger failsOn;
 
     @XStreamAsAttribute
     @XStreamConverter(EnumToStringConverter.class)
-    private final Mode mode;
+    private Mode mode;
 
-    private final String successMessage;
+    private String successMessage;
 
-    private final String failMessage;
+    private String failMessage;
 
-
-    public GroupDefinition(final String id, final String name, final String description, final List<String> ruleIds, final boolean enabled,
-                           final boolean failsTest, final Mode mode, final String successMessage, final String failMessage)
+    public GroupDefinition(final String id, final String name, final List<String> ruleIds)
     {
         this.id = Objects.requireNonNull(id, "Group ID must not be null");
         this.name = name;
-        this.description = description;
         this.ruleIds = ruleIds;
-        this.enabled = enabled;
-        this.failsTest = failsTest;
-        this.mode = Objects.requireNonNull(mode, "Group mode must not be null");
-        this.successMessage = successMessage;
-        this.failMessage = failMessage;
     }
 
     public boolean isEnabled()
@@ -71,9 +65,19 @@ public class GroupDefinition
         return enabled;
     }
 
+    public void setEnabled(boolean enabled)
+    {
+        this.enabled = enabled;
+    }
+
     public Mode getMode()
     {
         return mode;
+    }
+
+    public void setMode(Mode mode)
+    {
+        this.mode = mode;
     }
 
     public String getId()
@@ -86,6 +90,11 @@ public class GroupDefinition
         return description;
     }
 
+    public void setDescription(String description)
+    {
+        this.description = description;
+    }
+
     public List<String> getRuleIds()
     {
         return Collections.unmodifiableList(ruleIds);
@@ -96,16 +105,41 @@ public class GroupDefinition
         return successMessage;
     }
 
+    public void setSuccessMessage(String successMessage)
+    {
+        this.successMessage = successMessage;
+    }
+
     public String getFailMessage()
     {
         return failMessage;
+    }
+
+    public void setFailMessage(String failMessage)
+    {
+        this.failMessage = failMessage;
     }
 
     public boolean isFailsTest()
     {
         return failsTest;
     }
-    
+
+    public void setFailsTest(boolean failsTest)
+    {
+        this.failsTest = failsTest;
+    }
+
+    public TestFailTrigger getFailsOn()
+    {
+        return failsOn;
+    }
+
+    public void setFailsOn(TestFailTrigger failsOn)
+    {
+        this.failsOn = failsOn;
+    }
+
     public static enum Mode
     {
         firstPassed,
@@ -123,7 +157,10 @@ public class GroupDefinition
         final boolean enabled = jsonObject.optBoolean("enabled", true);
         final boolean failsTest = jsonObject.optBoolean("failsTest", false);
         final String modeStr = StringUtils.trimToNull(jsonObject.optString("mode"));
-        final Mode source = EnumUtils.getEnumIgnoreCase(Mode.class, modeStr);
+        final String failsOnStr = StringUtils.trimToNull(jsonObject.optString("failsOn"));
+
+        final Mode source = EnumUtils.getEnumIgnoreCase(Mode.class, modeStr, Mode.firstPassed);
+        final TestFailTrigger failsOn = EnumUtils.getEnumIgnoreCase(TestFailTrigger.class, failsOnStr);
 
         final JSONObject messageObj = jsonObject.optJSONObject("message");
         final String successMessage = messageObj != null ? StringUtils.trimToNull(messageObj.optString("success")) : null;
@@ -144,8 +181,16 @@ public class GroupDefinition
             throw new ValidationException("Property 'rules' must contain distinct values");
         }
 
-        return new GroupDefinition(id, name, description, ruleIds, enabled, failsTest, Optional.ofNullable(source).orElse(Mode.firstPassed),
-                                   successMessage, failMessage);
+        final GroupDefinition group = new GroupDefinition(id, name, ruleIds);
+        group.setEnabled(enabled);
+        group.setDescription(description);
+        group.setFailsTest(failsTest);
+        group.setFailsOn(failsOn);
+        group.setMode(source);
+        group.setFailMessage(failMessage);
+        group.setSuccessMessage(successMessage);
+
+        return group;
     }
 
     public static class RuleIdConverter extends AbstractCollectionConverter

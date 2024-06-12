@@ -78,7 +78,7 @@ public class Configuration
         if (!unknownSelectors.isEmpty())
         {
             throw new ValidationException(String.format("Rule '%s' references unknown selector%s: %s", ruleId,
-                                                    (unknownSelectors.size() > 1 ? "s" : ""), StringUtils.join(unknownSelectors)));
+                                                        (unknownSelectors.size() > 1 ? "s" : ""), StringUtils.join(unknownSelectors)));
         }
 
         rules.put(ruleId, rule);
@@ -109,7 +109,7 @@ public class Configuration
         if (!unknownRules.isEmpty())
         {
             throw new ValidationException(String.format("Group '%s' references unknown rule%s: %s", groupId,
-                                                    (unknownRules.size() > 1 ? "s" : ""), StringUtils.join(unknownRules)));
+                                                        (unknownRules.size() > 1 ? "s" : ""), StringUtils.join(unknownRules)));
         }
 
         groups.put(groupId, group);

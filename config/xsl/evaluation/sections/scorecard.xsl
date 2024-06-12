@@ -42,14 +42,14 @@
                                                 Lookup all 'rule' definitions in configuration that have 'failsTest' attribute set to 'true',
                                                 collect the value of their 'id' attribute and filter out those that are not used as value for
                                                 the 'ref-id' attribute of at least one 'rule' element node reachable via '$rootNode' having
-                                                status 'FAILED'.
+                                                attribute 'testFailed' set to 'true'.
                                             -->
                                             <xsl:variable name="failedRules" select="filter($config//rule[@failsTest='true' and @enabled='true'], function($a){ count($rootNode//rule[@testFailed='true'][@ref-id=$a/@id]) &gt; 0 })" />
                                            <!--
                                                 Lookup all 'group' definitions in configuration that have 'failsTest' attribute set to 'true',
                                                 collect the value of their 'id' attribute and filter out those that are not used as value for
                                                 the 'ref-id' attribute of at least one 'group' element node reachable via '$rootNode' having
-                                                status 'FAILED'.
+                                                attribute 'testFailed' set to 'true'.
                                             -->
                                             <xsl:variable name="failedGroups" select="filter($config//group[@failsTest='true' and @enabled='true'], function($a){ count($rootNode//group[@testFailed='true'][@ref-id=$a/@id]) &gt; 0 })" />
                                             <xsl:choose>
@@ -68,6 +68,7 @@
                                                     </xsl:call-template>
                                                 </xsl:otherwise>
                                             </xsl:choose>
+                                        .
                                         </xsl:when>
                                         <xsl:otherwise>
                                         failed with <xsl:value-of select="$ratingDescription" />.
@@ -99,10 +100,10 @@
 
         <xsl:choose>
             <xsl:when test="string-length($itemName) &gt; 0">
-                <span title="{$itemId}">&quot;<xsl:value-of select="$itemName" />&quot;</span>
+                <span title="{$itemId}"><xsl:value-of select="concat('&quot;', $itemName, '&quot;')" /></span>
             </xsl:when>
             <xsl:otherwise>
-                <span>&quot;<xsl:value-of select="$itemId" />&quot;</span>
+                <span><xsl:value-of select="concat('&quot;', $itemId, '&quot;')" /></span>
             </xsl:otherwise>
         </xsl:choose>
 

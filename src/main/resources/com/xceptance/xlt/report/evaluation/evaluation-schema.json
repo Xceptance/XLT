@@ -29,6 +29,13 @@
       },
       "minProperties": 1,
       "additionalProperties": false
+    },
+    "testFailTrigger": {
+      "enum": [
+        "NOTPASSED",
+        "PASSED"
+      ],
+      "default": "NOTPASSED"
     }
   },
   "properties": {
@@ -80,6 +87,9 @@
           },
           "failsTest": {
             "$ref": "#/$defs/boolDefaultFalse"
+          },
+          "failsOn": {
+            "$ref": "#/$defs/testFailTrigger"
           },
           "messages": {
             "$ref": "#/$defs/messageDict"
@@ -172,6 +182,9 @@
           },
           "failsTest": {
             "$ref": "#/$defs/boolDefaultFalse"
+          },
+          "failsOn": {
+            "$ref": "#/$defs/testFailTrigger"
           },
           "messages": {
             "$ref": "#/$defs/messageDict"

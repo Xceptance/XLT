@@ -509,7 +509,7 @@ public class Evaluator
         final int points, totalPoints;
         final Status groupStatus;
 
-        final List<Evaluation.Rule> rulesOfInterest;
+        final List<Evaluation.Rule> rulesThatMayFailTest;
         final Mode mode = group.getDefinition().getMode();
         if (mode == Mode.allPassed)
         {
@@ -517,7 +517,7 @@ public class Evaluator
             points = sumPointsMatching;
             totalPoints = sumPointsTotal;
 
-            rulesOfInterest = rules;
+            rulesThatMayFailTest = rules;
         }
         else if (mode == Mode.firstPassed || mode == Mode.lastPassed)
         {
@@ -527,8 +527,8 @@ public class Evaluator
             groupStatus = somePassed ? Status.PASSED : someFailed ? Status.FAILED : Status.SKIPPED;
             points = Optional.ofNullable(triggerRule).map(Evaluation.Rule::getPoints).orElse(0);
             totalPoints = maxPoints;
-
-            rulesOfInterest = idx > 0 ? rules.subList(0, idx) : rules;
+            // need to inspect the group's status trigger rule as well
+            rulesThatMayFailTest = idx < 0 ? rules : rules.subList(0, idx + 1);
         }
         else
         {
@@ -536,10 +536,10 @@ public class Evaluator
             points = 0;
             totalPoints = 0;
 
-            rulesOfInterest = Collections.emptyList();
+            rulesThatMayFailTest = Collections.emptyList();
         }
 
-        boolean testFailed = rulesOfInterest.stream().filter((rule) -> {
+        boolean testFailed = rulesThatMayFailTest.stream().filter((rule) -> {
             final boolean ruleFailedTest = rule.mayFailTest();
             if (ruleFailedTest)
             {

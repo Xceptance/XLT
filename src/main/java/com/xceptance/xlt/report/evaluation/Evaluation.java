@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -119,6 +120,7 @@ public class Evaluation
 
     public final Configuration configuration;
 
+    @XStreamAlias("outcome")
     public final Evaluation.Result result = new Evaluation.Result();
 
     Evaluation(final Configuration configuration)
@@ -159,6 +161,7 @@ public class Evaluation
 
         private String message;
 
+        @XStreamAlias("result")
         private Status status = Status.SKIPPED;
 
         @XStreamAsAttribute
@@ -237,12 +240,17 @@ public class Evaluation
 
         public boolean isEnabled()
         {
-            return getDefinition().isEnabled();
+            return definition.isEnabled();
         }
 
-        public boolean mayFailTest()
+        TestFailTrigger getFailsOn()
         {
-            return isEnabled() && getStatus().isFailed() && getDefinition().isFailsTest();
+            return Optional.ofNullable(definition.getFailsOn()).orElse(TestFailTrigger.NOTPASSED);
+        }
+
+        boolean mayFailTest()
+        {
+            return isEnabled() && definition.isFailsTest() && getFailsOn().isTriggeredBy(status);
         }
     }
 
@@ -255,6 +263,7 @@ public class Evaluation
 
         private final List<Check> checks = new LinkedList<>();
 
+        @XStreamAlias("result")
         private Status status = Status.SKIPPED;
 
         private String message;
@@ -332,9 +341,14 @@ public class Evaluation
             return groupEnabled && definition.isEnabled();
         }
 
+        TestFailTrigger getFailsOn()
+        {
+            return Optional.ofNullable(definition.getFailsOn()).orElse(TestFailTrigger.NOTPASSED);
+        }
+
         boolean mayFailTest()
         {
-            return isEnabled() && getStatus().isFailed() && getDefinition().isFailsTest();
+            return isEnabled() && definition.isFailsTest() && getFailsOn().isTriggeredBy(status);
         }
 
         void setTestFailed()
@@ -352,6 +366,7 @@ public class Evaluation
 
             private transient final boolean ruleEnabled;
 
+            @XStreamAlias("result")
             private Status status = Status.SKIPPED;
 
             private String errorMessage;

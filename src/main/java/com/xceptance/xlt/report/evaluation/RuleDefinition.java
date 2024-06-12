@@ -3,6 +3,7 @@ package com.xceptance.xlt.report.evaluation;
 import java.util.LinkedList;
 import java.util.Objects;
 
+import org.apache.commons.lang3.EnumUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -32,6 +33,9 @@ public class RuleDefinition
 
     @XStreamAsAttribute
     private boolean failsTest;
+
+    @XStreamAsAttribute
+    private TestFailTrigger failsOn;
 
     @XStreamAsAttribute
     private boolean negateResult;
@@ -80,6 +84,16 @@ public class RuleDefinition
     public void setFailsTest(final boolean failsTest)
     {
         this.failsTest = failsTest;
+    }
+
+    public TestFailTrigger getFailsOn()
+    {
+        return failsOn;
+    }
+
+    public void setFailsOn(final TestFailTrigger failsOn)
+    {
+        this.failsOn = failsOn;
     }
 
     public boolean isNegateResult()
@@ -212,6 +226,9 @@ public class RuleDefinition
         final JSONArray checks = jsonObject.optJSONArray("checks");
         final int rulePoints = jsonObject.optInt("points");
 
+        final String failsOnStr = StringUtils.trimToNull(jsonObject.optString("failsOn"));
+        final TestFailTrigger failsOn = EnumUtils.getEnumIgnoreCase(TestFailTrigger.class, failsOnStr);
+
         final LinkedList<Check> checkList = new LinkedList<>();
         if (checks != null)
         {
@@ -227,7 +244,8 @@ public class RuleDefinition
 
                 if (!(selector == null ^ selectorId == null))
                 {
-                    throw new ValidationException("Check #" + i + " is ambiguous: either 'selector' or 'selectorId' property must be given");
+                    throw new ValidationException("Check #" + i +
+                                                  " is ambiguous: either 'selector' or 'selectorId' property must be given");
                 }
 
                 checkList.add(new Check(i, selector, selectorId, condition, checkEnabled, displayValue));
@@ -246,6 +264,7 @@ public class RuleDefinition
         ruleDef.setDescription(ruleDesc);
         ruleDef.setEnabled(enabled);
         ruleDef.setFailsTest(failsTest);
+        ruleDef.setFailsOn(failsOn);
         ruleDef.setNegateResult(negateResult);
         ruleDef.setPoints(rulePoints);
         ruleDef.setSuccessMessage(messages != null ? StringUtils.trimToNull(messages.optString("success")) : null);
