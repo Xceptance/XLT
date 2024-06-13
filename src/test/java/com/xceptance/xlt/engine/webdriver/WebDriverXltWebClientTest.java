@@ -115,14 +115,12 @@ public class WebDriverXltWebClientTest extends AbstractXLTTestCase
     public void testGetPage() throws FailingHttpStatusCodeException, IOException
     {
         final MockWebConnection webConnection = new MockWebConnection();
-        final URL url = new URL("http://www.example.com");
+        final URL url = new URL("http://www.example.com/");
         webConnection.setResponse(url, "<html><body><p>Dummy Text</p></body></html>", "text/html");
         client.setWebConnection(webConnection);
 
-        final WebRequest settings = Mockito.mock(WebRequest.class);
-        Mockito.doReturn(url).when(settings).getUrl();
-        Mockito.doReturn(StandardCharsets.UTF_8).when(settings).getCharset();
-        Mockito.doReturn(HttpMethod.GET).when(settings).getHttpMethod();
+        final WebRequest settings = new WebRequest(url);
+        settings.setCharset(StandardCharsets.UTF_8);
 
         final HtmlPage page = client.getPage(client.getCurrentWindow(), settings);
 
@@ -131,5 +129,4 @@ public class WebDriverXltWebClientTest extends AbstractXLTTestCase
         final HtmlElement e = HtmlPageUtils.findSingleHtmlElementByXPath(page, "//p");
         Assert.assertEquals("Dummy Text", e.asNormalizedText());
     }
-
 }
