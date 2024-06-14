@@ -37,7 +37,7 @@ import org.htmlunit.util.XUserDefinedCharset;
 @JsxClass
 public class TextDecoder extends HtmlUnitScriptable {
     private String whatwgEncoding_ = "utf-8";
-    
+
     /**
      * Ctor.
      */
