@@ -15,7 +15,6 @@
  */
 package org.htmlunit;
 
-import org.htmlunit.css.ComputedCssStyleDeclaration;
 import org.htmlunit.css.StyleAttributes.Definition;
 import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.HtmlPage;
@@ -37,9 +36,9 @@ public class ParsingInvalidCssTest
             final HtmlPage page = wc.getPage(getClass().getResource(getClass().getSimpleName() + ".html"));
 
             final HtmlElement e = (HtmlElement) page.getByXPath("//h1").get(0);
-            final ComputedCssStyleDeclaration styleDec = page.getEnclosingWindow().getComputedStyle(e, null);
-            Assert.assertEquals("top right", styleDec.getBackgroundPosition());
-            Assert.assertEquals("url(\"someFile.jpg\") top right", styleDec.getBackgroundImage());
+            final HTMLElement scriptable = e.getScriptableObject();
+            final ComputedCSSStyleDeclaration styleDec = scriptable.getWindow().getComputedStyle(scriptable, null);
+            Assert.assertEquals("url(\"someFile.jpg\") top right", styleDec.getStyleAttribute(Definition.BACKGROUND));
         }
     }
 }
