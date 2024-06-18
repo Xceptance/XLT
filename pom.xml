@@ -69,7 +69,7 @@
         <htmlunit.version>4.2.0</htmlunit.version>
         <httpclient.version>4.5.14</httpclient.version>
         <jetty.version>9.4.54.v20240208</jetty.version>
-        <log4j.version>2.22.1</log4j.version>
+        <log4j.version>2.23.1</log4j.version>
         <powermock.version>2.0.9</powermock.version>
         <selenium.version>4.21.0</selenium.version>
         <htmlunitdriver.version>4.21.0</htmlunitdriver.version>
@@ -533,7 +533,7 @@
         <dependency>
             <groupId>net.sourceforge.pmd</groupId>
             <artifactId>pmd-java</artifactId>
-            <version>6.53.0</version>
+            <version>6.55.0</version>
             <scope>test</scope>
         </dependency>
         <!-- HtmlUnit -->
@@ -590,7 +590,7 @@
         <dependency>
             <groupId>com.puppycrawl.tools</groupId>
             <artifactId>checkstyle</artifactId>
-            <version>10.6.0</version>
+            <version>10.17.0</version>
             <scope>test</scope>
         </dependency>
         <!-- Cobertura -->
