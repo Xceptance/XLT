@@ -48,8 +48,7 @@ public class HtmlUnitScriptable2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"text/html", "text/html"},
-            IE = {"undefined", "123456"})
+    @Alerts({"text/html", "text/html"})
     public void setNonWritablePropertyContentType() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head>\n"
@@ -329,8 +328,7 @@ public class HtmlUnitScriptable2Test extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = "0",
             EDGE = "0",
             FF = "0",
-            FF_ESR = "0",
-            IE = "0")
+            FF_ESR = "0")
     public void set_ReadOnly_window_length() throws Exception {
         set_ReadOnly("window.length");
     }
@@ -384,8 +382,7 @@ public class HtmlUnitScriptable2Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"function", "true", "function length() { [native code] }", "0", "0"},
             CHROME = {"function", "true", "function get length() { [native code] }", "0", "0"},
-            EDGE = {"function", "true", "function get length() { [native code] }", "0", "0"},
-            IE = {"function", "true", " function length() { [native code] } ", "0", "0"})
+            EDGE = {"function", "true", "function get length() { [native code] }", "0", "0"})
     @HtmlUnitNYI(CHROME = {"function", "true", "function length() { [native code] }", "0", "0"},
             EDGE = {"function", "true", "function length() { [native code] }", "0", "0"})
     public void lookupGetter() throws Exception {

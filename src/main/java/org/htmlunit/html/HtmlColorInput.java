@@ -14,9 +14,6 @@
  */
 package org.htmlunit.html;
 
-import static org.htmlunit.BrowserVersionFeatures.HTMLINPUT_TYPE_COLOR_NOT_SUPPORTED;
-import static org.htmlunit.BrowserVersionFeatures.JS_INPUT_SET_VALUE_MOVE_SELECTION_TO_START;
-
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
@@ -42,8 +39,7 @@ public class HtmlColorInput extends HtmlInput implements LabelableElement {
     HtmlColorInput(final String qualifiedName, final SgmlPage page,
             final Map<String, DomAttr> attributes) {
         super(qualifiedName, page, attributes);
-        if (getValueAttribute() == ATTRIBUTE_NOT_DEFINED
-                && !hasFeature(JS_INPUT_SET_VALUE_MOVE_SELECTION_TO_START)) {
+        if (getValueAttribute() == ATTRIBUTE_NOT_DEFINED) {
             setValue("#000000");
         }
     }
@@ -61,11 +57,6 @@ public class HtmlColorInput extends HtmlInput implements LabelableElement {
      */
     @Override
     public void setValue(final String newValue) {
-        if (hasFeature(HTMLINPUT_TYPE_COLOR_NOT_SUPPORTED)) {
-            super.setValue(newValue);
-            return;
-        }
-
         if (StringUtils.isEmpty(newValue)) {
             super.setValue("#000000");
             return;
@@ -79,11 +70,6 @@ public class HtmlColorInput extends HtmlInput implements LabelableElement {
     @Override
     protected void valueAttributeChanged(final String attributeValue, final boolean isValueDirty) {
         if (isValueDirty) {
-            return;
-        }
-
-        if (hasFeature(HTMLINPUT_TYPE_COLOR_NOT_SUPPORTED)) {
-            setRawValue(attributeValue);
             return;
         }
 

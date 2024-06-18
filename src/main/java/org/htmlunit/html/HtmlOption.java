@@ -14,16 +14,7 @@
  */
 package org.htmlunit.html;
 
-import static org.htmlunit.BrowserVersionFeatures.CSS_DISPLAY_BLOCK2;
-import static org.htmlunit.BrowserVersionFeatures.EVENT_MOUSE_ON_DISABLED;
-import static org.htmlunit.BrowserVersionFeatures.EVENT_ONCLICK_FOR_SELECT_ONLY;
-import static org.htmlunit.BrowserVersionFeatures.EVENT_ONMOUSEDOWN_FOR_SELECT_OPTION_TRIGGERS_ADDITIONAL_DOWN_FOR_SELECT;
-import static org.htmlunit.BrowserVersionFeatures.EVENT_ONMOUSEDOWN_NOT_FOR_SELECT_OPTION;
 import static org.htmlunit.BrowserVersionFeatures.EVENT_ONMOUSEOVER_FOR_DISABLED_OPTION;
-import static org.htmlunit.BrowserVersionFeatures.EVENT_ONMOUSEOVER_NEVER_FOR_SELECT_OPTION;
-import static org.htmlunit.BrowserVersionFeatures.EVENT_ONMOUSEUP_FOR_SELECT_OPTION_TRIGGERS_ADDITIONAL_UP_FOR_SELECT;
-import static org.htmlunit.BrowserVersionFeatures.EVENT_ONMOUSEUP_NOT_FOR_SELECT_OPTION;
-import static org.htmlunit.BrowserVersionFeatures.HTMLOPTION_PREVENT_DISABLED;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -179,18 +170,10 @@ public class HtmlOption extends HtmlElement implements DisabledElement {
     }
 
     /**
-     * Returns {@code true} if the disabled attribute is set for this element. Note that this
-     * method always returns {@code false} when emulating IE, because IE does not allow individual
-     * options to be disabled.
-     *
-     * @return {@code true} if the disabled attribute is set for this element (always {@code false}
-     *         when emulating IE)
+     * @return {@code true} if the disabled attribute is set for this element
      */
     @Override
     public final boolean isDisabled() {
-        if (hasFeature(HTMLOPTION_PREVENT_DISABLED)) {
-            return false;
-        }
         return hasAttribute(ATTRIBUTE_DISABLED);
     }
 
@@ -256,62 +239,6 @@ public class HtmlOption extends HtmlElement implements DisabledElement {
      * {@inheritDoc}
      */
     @Override
-    public Page mouseDown(final boolean shiftKey, final boolean ctrlKey, final boolean altKey, final int button) {
-        Page page = null;
-        if (hasFeature(EVENT_ONMOUSEDOWN_FOR_SELECT_OPTION_TRIGGERS_ADDITIONAL_DOWN_FOR_SELECT)) {
-            page = getEnclosingSelect().mouseDown(shiftKey, ctrlKey, altKey, button);
-        }
-        if (hasFeature(EVENT_ONMOUSEDOWN_NOT_FOR_SELECT_OPTION)) {
-            return page;
-        }
-        return super.mouseDown(shiftKey, ctrlKey, altKey, button);
-    }
-
-    /**
-     * Selects the option if it's not already selected.
-     * {@inheritDoc}
-     */
-    @Override
-    public Page mouseUp(final boolean shiftKey, final boolean ctrlKey, final boolean altKey, final int button) {
-        Page page = null;
-        if (hasFeature(EVENT_ONMOUSEUP_FOR_SELECT_OPTION_TRIGGERS_ADDITIONAL_UP_FOR_SELECT)) {
-            page = getEnclosingSelect().mouseUp(shiftKey, ctrlKey, altKey, button);
-        }
-        if (hasFeature(EVENT_ONMOUSEUP_NOT_FOR_SELECT_OPTION)) {
-            return page;
-        }
-        return super.mouseUp(shiftKey, ctrlKey, altKey, button);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    @SuppressWarnings("unchecked")
-    public <P extends Page> P click(final Event event,
-            final boolean shiftKey, final boolean ctrlKey, final boolean altKey,
-            final boolean ignoreVisibility) throws IOException {
-        if (hasFeature(EVENT_ONCLICK_FOR_SELECT_ONLY)) {
-            final SgmlPage page = getPage();
-
-            if (isDisabled()) {
-                return (P) page;
-            }
-
-            if (isStateUpdateFirst()) {
-                doClickStateUpdate(event.isShiftKey(), event.isCtrlKey());
-            }
-
-            return getEnclosingSelect().click(event, shiftKey, ctrlKey, altKey, ignoreVisibility);
-        }
-        return super.click(event, shiftKey, ctrlKey, altKey, ignoreVisibility);
-    }
-
-    /**
-     * Selects the option if it's not already selected.
-     * {@inheritDoc}
-     */
-    @Override
     protected boolean doClickStateUpdate(final boolean shiftKey, final boolean ctrlKey) throws IOException {
         boolean changed = false;
         if (!isSelected()) {
@@ -329,20 +256,6 @@ public class HtmlOption extends HtmlElement implements DisabledElement {
         }
         super.doClickStateUpdate(shiftKey, ctrlKey);
         return changed;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected DomNode getEventTargetElement() {
-        if (hasFeature(EVENT_ONCLICK_FOR_SELECT_ONLY)) {
-            final HtmlSelect select = getEnclosingSelect();
-            if (select != null) {
-                return select;
-            }
-        }
-        return super.getEventTargetElement();
     }
 
     /**
@@ -407,11 +320,6 @@ public class HtmlOption extends HtmlElement implements DisabledElement {
      */
     @Override
     public Page mouseOver(final boolean shiftKey, final boolean ctrlKey, final boolean altKey, final int button) {
-        final SgmlPage page = getPage();
-        if (page.getWebClient().getBrowserVersion().hasFeature(EVENT_ONMOUSEOVER_NEVER_FOR_SELECT_OPTION)) {
-            return page;
-        }
-
         if (hasFeature(EVENT_ONMOUSEOVER_FOR_DISABLED_OPTION) && isDisabled()) {
             getEnclosingSelect().mouseOver(shiftKey, ctrlKey, altKey, button);
         }
@@ -423,10 +331,7 @@ public class HtmlOption extends HtmlElement implements DisabledElement {
      */
     @Override
     public DisplayStyle getDefaultStyleDisplay() {
-        if (hasFeature(CSS_DISPLAY_BLOCK2)) {
-            return DisplayStyle.BLOCK;
-        }
-        return DisplayStyle.INLINE;
+        return DisplayStyle.BLOCK;
     }
 
     /**
@@ -434,8 +339,7 @@ public class HtmlOption extends HtmlElement implements DisabledElement {
      */
     @Override
     public boolean handles(final Event event) {
-        if (MouseEvent.TYPE_MOUSE_OVER.equals(event.getType())
-                && getPage().getWebClient().getBrowserVersion().hasFeature(EVENT_MOUSE_ON_DISABLED)) {
+        if (MouseEvent.TYPE_MOUSE_OVER.equals(event.getType())) {
             return true;
         }
         return super.handles(event);

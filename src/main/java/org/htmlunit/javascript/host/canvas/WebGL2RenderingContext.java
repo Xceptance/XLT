@@ -14,12 +14,6 @@
  */
 package org.htmlunit.javascript.host.canvas;
 
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
-
 import org.htmlunit.javascript.HtmlUnitScriptable;
 import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
@@ -32,7 +26,7 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
  * @author Ahmed Ashour
  * @author Ronald Brill
  */
-@JsxClass({CHROME, EDGE, FF, FF_ESR})
+@JsxClass
 public class WebGL2RenderingContext extends HtmlUnitScriptable {
 
     /** The constant {@code ACTIVE_ATTRIBUTES}. */
@@ -1646,10 +1640,6 @@ public class WebGL2RenderingContext extends HtmlUnitScriptable {
     /** The constant {@code STENCIL_FUNC}. */
     @JsxConstant
     public static final long STENCIL_FUNC = 2_962L;
-
-    /** The constant {@code STENCIL_INDEX}. */
-    @JsxConstant(IE)
-    public static final long STENCIL_INDEX = 6_401L;
 
     /** The constant {@code STENCIL_INDEX8}. */
     @JsxConstant

@@ -24,7 +24,7 @@ import java.util.Map;
 import org.apache.commons.io.ByteOrderMark;
 import org.htmlunit.HttpHeader;
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.httpclient.HttpClientConverter;
+import org.htmlunit.http.HttpStatus;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
@@ -140,9 +140,7 @@ public class HtmlScript2Test extends WebDriverTestCase {
      * @exception Exception If the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G"},
-            IE = {"1", "2", "4", "5", "6", "8", "9", "A", "D", "E", "G"})
-    @HtmlUnitNYI(IE = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G"})
+    @Alerts({"1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G"})
     public void typeValues() throws Exception {
         final String html = "<html>"
             + "<head>\n"
@@ -300,9 +298,7 @@ public class HtmlScript2Test extends WebDriverTestCase {
             CHROME = {"dcl listener added", "head-end", "end",
                       "deferred-1", "deferred-3", "dcLoaded", "deferred-2", "onload"},
             EDGE = {"dcl listener added", "head-end", "end",
-                    "deferred-1", "deferred-3", "dcLoaded", "deferred-2", "onload"},
-            IE = {"dcl listener added", "head-end", "deferred-2", "end",
-                  "deferred-1", "deferred-3", "dcLoaded", "onload"})
+                    "deferred-1", "deferred-3", "dcLoaded", "deferred-2", "onload"})
     @HtmlUnitNYI(CHROME = {"dcl listener added", "head-end", "end",
                            "deferred-1", "deferred-2", "deferred-3", "dcLoaded", "onload"},
             EDGE = {"dcl listener added", "head-end", "end",
@@ -310,9 +306,7 @@ public class HtmlScript2Test extends WebDriverTestCase {
             FF = {"dcl listener added", "head-end", "end",
                   "deferred-1", "deferred-2", "deferred-3", "dcLoaded", "onload"},
             FF_ESR = {"dcl listener added", "head-end", "end",
-                      "deferred-1", "deferred-2", "deferred-3", "dcLoaded", "onload"},
-            IE = {"dcl listener added", "head-end", "end",
-                  "deferred-1", "deferred-2", "deferred-3", "dcLoaded", "onload"})
+                      "deferred-1", "deferred-2", "deferred-3", "dcLoaded", "onload"})
     public void deferDynamicExternal() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -350,9 +344,7 @@ public class HtmlScript2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"end", "s0 6", "5", "deferred-1", "deferred-2", "deferred-3", "onload"},
-            IE = {"end", "s0 6", "5", "deferred-1", "deferred-2", "onload"})
-    @HtmlUnitNYI(IE = {"end", "s0 6", "5", "deferred-1", "deferred-2", "deferred-3", "onload"})
+    @Alerts({"end", "s0 6", "5", "deferred-1", "deferred-2", "deferred-3", "onload"})
     public void deferRemovesScript() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -519,8 +511,7 @@ public class HtmlScript2Test extends WebDriverTestCase {
      * @throws Exception on test failure
      */
     @Test
-    @Alerts(DEFAULT = {"s-x", "z"},
-            IE = {"s-x", "x", "z"})
+    @Alerts({"s-x", "z"})
     public void addEventListener_load() throws Exception {
         final String html
             = "<html><head>\n"
@@ -557,8 +548,7 @@ public class HtmlScript2Test extends WebDriverTestCase {
      * @throws Exception on test failure
      */
     @Test
-    @Alerts(DEFAULT = "load",
-            IE = "error")
+    @Alerts("load")
     public void addEventListener_NoContent() throws Exception {
         // use always a different url to avoid caching effects
         final URL scriptUrl = new URL(URL_SECOND, "" + System.currentTimeMillis() + ".js");
@@ -579,8 +569,8 @@ public class HtmlScript2Test extends WebDriverTestCase {
             + "<body onload='test()'></body>\n"
             + "</html>";
 
-        getMockWebConnection().setResponse(scriptUrl, (String) null, HttpClientConverter.NO_CONTENT, "No Content",
-                                                MimeType.TEXT_JAVASCRIPT, null);
+        getMockWebConnection().setResponse(scriptUrl, (String) null,
+                HttpStatus.NO_CONTENT_204, HttpStatus.NO_CONTENT_204_MSG, MimeType.TEXT_JAVASCRIPT, null);
         loadPageVerifyTitle2(html);
     }
 
@@ -669,8 +659,7 @@ public class HtmlScript2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"onLoad", "body onLoad"},
-            IE = "body onLoad")
+    @Alerts({"onLoad", "body onLoad"})
     public void onLoadTypeWhitespace() throws Exception {
         getMockWebConnection().setResponse(new URL(URL_FIRST, "simple.js"), "");
         onLoadOnError("src='simple.js' type='\t  text/javascript     '");
@@ -744,8 +733,7 @@ public class HtmlScript2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "[object HTMLScriptElement]",
-            IE = "undefined")
+    @Alerts("[object HTMLScriptElement]")
     public void currentScriptInline() throws Exception {
         final String html
                 = "<html>\n"
@@ -766,8 +754,7 @@ public class HtmlScript2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "null",
-            IE = "undefined")
+    @Alerts("null")
     public void currentScriptFunction() throws Exception {
         final String html
                 = "<html>\n"
@@ -790,8 +777,7 @@ public class HtmlScript2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "[object HTMLScriptElement]",
-            IE = "undefined")
+    @Alerts("[object HTMLScriptElement]")
     public void currentScriptExternal() throws Exception {
         getMockWebConnection().setResponse(new URL(URL_FIRST, "simple.js"), "log(document.currentScript);");
         final String html
@@ -949,7 +935,8 @@ public class HtmlScript2Test extends WebDriverTestCase {
         final String html = "<html><body><script src='" + URL_SECOND + "'/></body></html>";
 
         final ArrayList<NameValuePair> headers = new ArrayList<>();
-        getMockWebConnection().setResponse(URL_SECOND, (String) null, HttpClientConverter.NO_CONTENT, "No Content",
+        getMockWebConnection().setResponse(URL_SECOND, (String) null,
+                HttpStatus.NO_CONTENT_204, HttpStatus.NO_CONTENT_204_MSG,
                 MimeType.TEXT_JAVASCRIPT,
                 headers);
 

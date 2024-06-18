@@ -14,11 +14,6 @@
  */
 package org.htmlunit.javascript.host.crypto;
 
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.CHROME;
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.EDGE;
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.FF;
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.FF_ESR;
-
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
@@ -41,8 +36,7 @@ public class SubtleCryptoTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"function", "error"},
-            IE = {"object", "error"})
+    @Alerts({"function", "error"})
     public void ctor() throws Exception {
         final String html
             = "<html>\n"
@@ -71,8 +65,7 @@ public class SubtleCryptoTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "TypeError true",
-            IE = {})
+    @Alerts("TypeError true")
     @HtmlUnitNYI(CHROME = "TypeError false",
             EDGE = "TypeError false",
             FF = "TypeError false",
@@ -103,14 +96,13 @@ public class SubtleCryptoTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object Crypto]", "public", "true", "verify",
-                       "name RSASSA-PKCS1-v1_5", "hash [object Object]", "modulusLength 2048",
-                       "publicExponent 1,0,1",
-                       "private", "false", "sign",
-                       "name RSASSA-PKCS1-v1_5", "hash [object Object]", "modulusLength 2048",
-                       "publicExponent 1,0,1"},
-            IE = "undefined")
-    @NotYetImplemented({CHROME, EDGE, FF, FF_ESR})
+    @Alerts({"[object Crypto]", "public", "true", "verify",
+             "name RSASSA-PKCS1-v1_5", "hash [object Object]", "modulusLength 2048",
+             "publicExponent 1,0,1",
+             "private", "false", "sign",
+             "name RSASSA-PKCS1-v1_5", "hash [object Object]", "modulusLength 2048",
+             "publicExponent 1,0,1"})
+    @NotYetImplemented
     public void rsassa() throws Exception {
         final String html
             = "<html><head><script>\n"

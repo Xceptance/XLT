@@ -14,20 +14,12 @@
  */
 package org.htmlunit.javascript.host;
 
-import static org.htmlunit.BrowserVersionFeatures.JS_BOUNDINGCLIENTRECT_THROWS_IF_DISCONNECTED;
-import static org.htmlunit.BrowserVersionFeatures.JS_ELEMENT_GET_ATTRIBUTE_RETURNS_EMPTY;
-import static org.htmlunit.BrowserVersionFeatures.JS_INNER_HTML_ADD_CHILD_FOR_NULL_VALUE;
-import static org.htmlunit.BrowserVersionFeatures.JS_INNER_HTML_LF;
-import static org.htmlunit.BrowserVersionFeatures.JS_OUTER_HTML_NULL_AS_STRING;
-import static org.htmlunit.BrowserVersionFeatures.JS_OUTER_HTML_REMOVES_CHILDREN_FOR_DETACHED;
 import static org.htmlunit.BrowserVersionFeatures.JS_OUTER_HTML_THROWS_FOR_DETACHED;
-import static org.htmlunit.BrowserVersionFeatures.QUERYSELECTORALL_NOT_IN_QUIRKS;
 import static org.htmlunit.html.DomElement.ATTRIBUTE_NOT_DEFINED;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -42,7 +34,7 @@ import org.htmlunit.SgmlPage;
 import org.htmlunit.corejs.javascript.BaseFunction;
 import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.Function;
-import org.htmlunit.corejs.javascript.FunctionObject;
+import org.htmlunit.corejs.javascript.NativeObject;
 import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.css.ComputedCssStyleDeclaration;
 import org.htmlunit.css.ElementCssStyleDeclaration;
@@ -66,14 +58,11 @@ import org.htmlunit.javascript.configuration.JsxSetter;
 import org.htmlunit.javascript.host.css.CSSStyleDeclaration;
 import org.htmlunit.javascript.host.dom.Attr;
 import org.htmlunit.javascript.host.dom.DOMTokenList;
-import org.htmlunit.javascript.host.dom.Document;
 import org.htmlunit.javascript.host.dom.Node;
 import org.htmlunit.javascript.host.dom.NodeList;
-import org.htmlunit.javascript.host.dom.TextRange;
 import org.htmlunit.javascript.host.event.Event;
 import org.htmlunit.javascript.host.event.EventHandler;
 import org.htmlunit.javascript.host.html.HTMLCollection;
-import org.htmlunit.javascript.host.html.HTMLDocument;
 import org.htmlunit.javascript.host.html.HTMLElement;
 import org.htmlunit.javascript.host.html.HTMLElement.ProxyDomNode;
 import org.htmlunit.javascript.host.html.HTMLScriptElement;
@@ -120,7 +109,7 @@ public class Element extends Node {
      * JavaScript constructor.
      */
     @Override
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
         super.jsConstructor();
     }
@@ -192,15 +181,11 @@ public class Element extends Node {
     }
 
     /**
-     * Returns the value of the specified attribute.
      * @param attributeName attribute name
-     * @param flags IE-specific flags (see the MSDN documentation for more info)
      * @return the value of the specified attribute, {@code null} if the attribute is not defined
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms536429.aspx">MSDN Documentation</a>
-     * @see <a href="http://reference.sitepoint.com/javascript/Element/getAttribute">IE Bug Documentation</a>
      */
     @JsxFunction
-    public String getAttribute(final String attributeName, final Integer flags) {
+    public String getAttribute(final String attributeName) {
         String value = getDomNodeOrDie().getAttribute(attributeName);
 
         if (ATTRIBUTE_NOT_DEFINED == value) {
@@ -325,7 +310,7 @@ public class Element extends Node {
      * {@inheritDoc}
      */
     @Override
-    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
+    @JsxFunction
     public boolean hasAttributes() {
         return super.hasAttributes();
     }
@@ -354,11 +339,6 @@ public class Element extends Node {
      */
     @JsxFunction
     public ClientRect getBoundingClientRect() {
-        if (!getDomNodeOrDie().isAttachedToPage()
-                && getBrowserVersion().hasFeature(JS_BOUNDINGCLIENTRECT_THROWS_IF_DISCONNECTED)) {
-            throw JavaScriptEngine.reportRuntimeError("Element is not attache to a page");
-        }
-
         final ClientRect textRectangle = new ClientRect(1, 1, 1, 1);
         textRectangle.setParentScope(getWindow());
         textRectangle.setPrototype(getPrototype(textRectangle.getClass()));
@@ -437,7 +417,7 @@ public class Element extends Node {
      * {@inheritDoc}
      */
     @Override
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxGetter
     public HTMLCollection getChildren() {
         return super.getChildren();
     }
@@ -446,7 +426,7 @@ public class Element extends Node {
      * Gets the token list of class attribute.
      * @return the token list of class attribute
      */
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxGetter
     public DOMTokenList getClassList() {
         return new DOMTokenList(this, "class");
     }
@@ -460,8 +440,7 @@ public class Element extends Node {
     @JsxFunction
     public String getAttributeNS(final String namespaceURI, final String localName) {
         final String value = getDomNodeOrDie().getAttributeNS(namespaceURI, localName);
-        if (ATTRIBUTE_NOT_DEFINED == value
-                && !getBrowserVersion().hasFeature(JS_ELEMENT_GET_ATTRIBUTE_RETURNS_EMPTY)) {
+        if (ATTRIBUTE_NOT_DEFINED == value) {
             return null;
         }
         return value;
@@ -523,27 +502,6 @@ public class Element extends Node {
     }
 
     /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Object get(final String name, final Scriptable start) {
-        final Object response = super.get(name, start);
-
-        // IE support .querySelector(All) but not in quirks mode
-        // => TODO: find a better way to handle this!
-        if (response instanceof FunctionObject
-                && ("querySelectorAll".equals(name) || "querySelector".equals(name))
-                && getBrowserVersion().hasFeature(QUERYSELECTORALL_NOT_IN_QUIRKS)) {
-            final Document doc = getWindow().getDocument();
-            if (doc instanceof HTMLDocument && doc.getDocumentMode() < 8) {
-                return NOT_FOUND;
-            }
-        }
-
-        return response;
-    }
-
-    /**
      * Retrieves all element nodes from descendants of the starting element node that match any selector
      * within the supplied selector strings.
      * The NodeList object returned by the querySelectorAll() method must be static, not live.
@@ -585,7 +543,7 @@ public class Element extends Node {
      * Returns the class defined for this element.
      * @return the class name
      */
-    @JsxGetter(propertyName = "className", value = {CHROME, EDGE, FF, FF_ESR})
+    @JsxGetter(propertyName = "className")
     public Object getClassName_js() {
         return getDomNodeOrDie().getAttributeDirect("class");
     }
@@ -594,7 +552,7 @@ public class Element extends Node {
      * Sets the class attribute for this element.
      * @param className the new class name
      */
-    @JsxSetter(propertyName = "className", value = {CHROME, EDGE, FF, FF_ESR})
+    @JsxSetter(propertyName = "className")
     public void setClassName_js(final String className) {
         getDomNodeOrDie().setAttribute("class", className);
     }
@@ -655,7 +613,7 @@ public class Element extends Node {
      * @param className the name to search for
      * @return all the descendant elements with the specified class name
      */
-    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
+    @JsxFunction
     public HTMLCollection getElementsByClassName(final String className) {
         final DomElement elt = getDomNodeOrDie();
         final String[] classNames = CLASS_NAMES_SPLIT_PATTERN.split(className, 0);
@@ -725,17 +683,6 @@ public class Element extends Node {
     }
 
     /**
-     * Creates a new TextRange object for this element.
-     * @return a new TextRange object for this element
-     */
-    protected TextRange createTextRange() {
-        final TextRange range = new TextRange(this);
-        range.setParentScope(getParentScope());
-        range.setPrototype(getPrototype(range.getClass()));
-        return range;
-    }
-
-    /**
      * Inserts the given element into the element at the location.
      * @param where specifies where to insert the element, using one of the following values (case-insensitive):
      *        beforebegin, afterbegin, beforeend, afterend
@@ -744,7 +691,7 @@ public class Element extends Node {
      *
      * @see <a href="http://msdn.microsoft.com/en-us/library/ie/ms536451.aspx">MSDN</a>
      */
-    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
+    @JsxFunction
     public Object insertAdjacentElement(final String where, final Object insertedElement) {
         if (insertedElement instanceof Node) {
             final DomNode childNode = ((Node) insertedElement).getDomNodeOrDie();
@@ -771,7 +718,7 @@ public class Element extends Node {
      *
      * @see <a href="http://msdn.microsoft.com/en-us/library/ie/ms536453.aspx">MSDN</a>
      */
-    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
+    @JsxFunction
     public void insertAdjacentText(final String where, final String text) {
         final Object[] values = getInsertAdjacentLocation(where);
         final DomNode node = (DomNode) values[0];
@@ -859,7 +806,7 @@ public class Element extends Node {
      *      >Mozilla Developer Network</a>
      * @see <a href="http://msdn.microsoft.com/en-us/library/ie/ms536452.aspx">MSDN</a>
      */
-    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
+    @JsxFunction
     public void insertAdjacentHTML(final String position, final String text) {
         final Object[] values = getInsertAdjacentLocation(position);
         final DomNode domNode = (DomNode) values[0];
@@ -897,10 +844,20 @@ public class Element extends Node {
     }
 
     /**
+     * The {@code getHTML} function.
+     * @return the contents of this node as HTML
+     */
+    @JsxFunction({CHROME, EDGE})
+    public String getHTML() {
+        // ignore the params because we have no shadow dom support so far
+        return getInnerHTML();
+    }
+
+    /**
      * Gets the {@code innerHTML} attribute.
      * @return the contents of this node as HTML
      */
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxGetter
     public String getInnerHTML() {
         try {
             DomNode domNode = getDomNodeOrDie();
@@ -918,7 +875,7 @@ public class Element extends Node {
      * Replaces all child elements of this element with the supplied value.
      * @param value the new value for the contents of this element
      */
-    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxSetter
     public void setInnerHTML(final Object value) {
         final DomElement domNode;
         try {
@@ -929,8 +886,7 @@ public class Element extends Node {
         }
 
         String html = null;
-        final boolean addChildForNull = getBrowserVersion().hasFeature(JS_INNER_HTML_ADD_CHILD_FOR_NULL_VALUE);
-        if ((value == null && addChildForNull) || (value != null && !"".equals(value))) {
+        if (value != null && !"".equals(value)) {
             html = JavaScriptEngine.toString(value);
         }
 
@@ -967,7 +923,7 @@ public class Element extends Node {
      * @see <a href="http://msdn.microsoft.com/en-us/library/ms534310.aspx">MSDN documentation</a>
      * @return the contents of this node as HTML
      */
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxGetter
     public String getOuterHTML() {
         final StringBuilder buf = new StringBuilder();
         // we can't rely on DomNode.asXml because it adds indentation and new lines
@@ -979,24 +935,22 @@ public class Element extends Node {
      * Replaces this element (including all child elements) with the supplied value.
      * @param value the new value for replacing this element
      */
-    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxSetter
     public void setOuterHTML(final Object value) {
         final DomNode domNode = getDomNodeOrDie();
         final DomNode parent = domNode.getParentNode();
         if (null == parent) {
-            if (getBrowserVersion().hasFeature(JS_OUTER_HTML_REMOVES_CHILDREN_FOR_DETACHED)) {
-                domNode.removeAllChildren();
-            }
             if (getBrowserVersion().hasFeature(JS_OUTER_HTML_THROWS_FOR_DETACHED)) {
                 throw JavaScriptEngine.reportRuntimeError("outerHTML is readonly for detached nodes");
             }
             return;
         }
 
-        if (value == null && !getBrowserVersion().hasFeature(JS_OUTER_HTML_NULL_AS_STRING)) {
+        if (value == null) {
             domNode.remove();
             return;
         }
+
         final String valueStr = JavaScriptEngine.toString(value);
         if (valueStr.isEmpty()) {
             domNode.remove();
@@ -1068,7 +1022,6 @@ public class Element extends Node {
                 htmlElement = scriptObject;
             }
             builder.append('<').append(tag);
-            // Add the attributes. IE does not use quotes, FF does.
             for (final DomAttr attr : element.getAttributesMap().values()) {
                 if (!attr.getSpecified()) {
                     continue;
@@ -1093,17 +1046,12 @@ public class Element extends Node {
             if (node instanceof HtmlElement) {
                 final HtmlElement element = (HtmlElement) node;
                 if ("p".equals(element.getTagName())) {
-                    if (getBrowserVersion().hasFeature(JS_INNER_HTML_LF)) {
-                        builder.append('\n'); // \r\n because it's to implement something IE specific
+                    int i = builder.length() - 1;
+                    while (i >= 0 && Character.isWhitespace(builder.charAt(i))) {
+                        i--;
                     }
-                    else {
-                        int i = builder.length() - 1;
-                        while (i >= 0 && Character.isWhitespace(builder.charAt(i))) {
-                            i--;
-                        }
-                        builder.setLength(i + 1);
-                        builder.append('\n');
-                    }
+                    builder.setLength(i + 1);
+                    builder.append('\n');
                 }
                 if (!"script".equals(element.getTagName())) {
                     printChildren(builder, node, html);
@@ -1125,7 +1073,7 @@ public class Element extends Node {
      * Returns the element ID.
      * @return the ID of this element
      */
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxGetter
     public String getId() {
         return getDomNodeOrDie().getId();
     }
@@ -1134,7 +1082,7 @@ public class Element extends Node {
      * Sets the id value for this element.
      * @param newId the newId value for this element
      */
-    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxSetter
     public void setId(final String newId) {
         getDomNodeOrDie().setId(newId);
     }
@@ -1249,9 +1197,84 @@ public class Element extends Node {
      * @param style the style of the element
      */
     protected void setStyle(final String style) {
-        if (!getBrowserVersion().hasFeature(JS_ELEMENT_GET_ATTRIBUTE_RETURNS_EMPTY)) {
-            getStyle().setCssText(style);
+        getStyle().setCssText(style);
+    }
+
+    /**
+     * Scrolls to a particular set of coordinates inside a given element.
+     * @param x the horizontal pixel value that you want to scroll to
+     * @param y the vertical pixel value that you want to scroll to
+     */
+    @JsxFunction
+    public void scroll(final Scriptable x, final Scriptable y) {
+        scrollTo(x, y);
+    }
+
+    /**
+     * Scrolls the element by the given amount.
+     * @param x the horizontal pixel value that you want to scroll by
+     * @param y the vertical pixel value that you want to scroll by
+     */
+    @JsxFunction
+    public void scrollBy(final Scriptable x, final Scriptable y) {
+        int xOff = 0;
+        int yOff = 0;
+        if (y != null) {
+            xOff = JavaScriptEngine.toInt32(x);
+            yOff = JavaScriptEngine.toInt32(y);
         }
+        else {
+            if (!(x instanceof NativeObject)) {
+                throw JavaScriptEngine.typeError("eee");
+            }
+            if (x.has("left", x)) {
+                xOff = JavaScriptEngine.toInt32(x.get("left", x));
+            }
+            if (x.has("top", x)) {
+                yOff = JavaScriptEngine.toInt32(x.get("top", x));
+            }
+        }
+
+        setScrollLeft(getScrollLeft() + xOff);
+        setScrollTop(getScrollTop() + yOff);
+
+        final Event event = new Event(this, Event.TYPE_SCROLL);
+        fireEvent(event);
+    }
+
+    /**
+     * Scrolls to a particular set of coordinates inside a given element.
+     * @param x the horizontal pixel value that you want to scroll to
+     * @param y the vertical pixel value that you want to scroll to
+     */
+    @JsxFunction
+    public void scrollTo(final Scriptable x, final Scriptable y) {
+        int xOff = 0;
+        int yOff = 0;
+        if (y != null) {
+            xOff = JavaScriptEngine.toInt32(x);
+            yOff = JavaScriptEngine.toInt32(y);
+        }
+        else {
+            if (!(x instanceof NativeObject)) {
+                throw JavaScriptEngine.typeError("eee");
+            }
+
+            xOff = getScrollLeft();
+            yOff = getScrollTop();
+            if (x.has("left", x)) {
+                xOff = JavaScriptEngine.toInt32(x.get("left", x));
+            }
+            if (x.has("top", x)) {
+                yOff = JavaScriptEngine.toInt32(x.get("top", x));
+            }
+        }
+
+        setScrollLeft(xOff);
+        setScrollTop(yOff);
+
+        final Event event = new Event(this, Event.TYPE_SCROLL);
+        fireEvent(event);
     }
 
     /**
@@ -1259,7 +1282,7 @@ public class Element extends Node {
      * anything. The requirement
      * is just to prevent scripts that call that method from failing
      */
-    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
+    @JsxFunction
     public void scrollIntoView() {
         /* do nothing at the moment */
     }
@@ -1277,7 +1300,7 @@ public class Element extends Node {
      * {@inheritDoc}
      */
     @Override
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxGetter
     public Object getPrefix() {
         return super.getPrefix();
     }
@@ -1286,7 +1309,7 @@ public class Element extends Node {
      * {@inheritDoc}
      */
     @Override
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxGetter
     public Object getLocalName() {
         return super.getLocalName();
     }
@@ -1295,7 +1318,7 @@ public class Element extends Node {
      * {@inheritDoc}
      */
     @Override
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxGetter
     public Object getNamespaceURI() {
         return super.getNamespaceURI();
     }
@@ -1425,496 +1448,10 @@ public class Element extends Node {
     }
 
     /**
-     * Returns the {@code ongotpointercapture} event handler for this element.
-     * @return the {@code ongotpointercapture} event handler for this element
-     */
-    @JsxGetter(IE)
-    public Function getOngotpointercapture() {
-        return getEventHandler(Event.TYPE_GOTPOINTERCAPTURE);
-    }
-
-    /**
-     * Sets the {@code ongotpointercapture} event handler for this element.
-     * @param ongotpointercapture the {@code ongotpointercapture} event handler for this element
-     */
-    @JsxSetter(IE)
-    public void setOngotpointercapture(final Object ongotpointercapture) {
-        setEventHandler(Event.TYPE_GOTPOINTERCAPTURE, ongotpointercapture);
-    }
-
-    /**
-     * Returns the {@code onlostpointercapture} event handler for this element.
-     * @return the {@code onlostpointercapture} event handler for this element
-     */
-    @JsxGetter(IE)
-    public Function getOnlostpointercapture() {
-        return getEventHandler(Event.TYPE_LOSTPOINTERCAPTURE);
-    }
-
-    /**
-     * Sets the {@code onlostpointercapture} event handler for this element.
-     * @param onlostpointercapture the {@code onlostpointercapture} event handler for this element
-     */
-    @JsxSetter(IE)
-    public void setOnlostpointercapture(final Object onlostpointercapture) {
-        setEventHandler(Event.TYPE_LOSTPOINTERCAPTURE, onlostpointercapture);
-    }
-
-    /**
-     * Returns the {@code onmsgesturechange} event handler for this element.
-     * @return the {@code onmsgesturechange} event handler for this element
-     */
-    @JsxGetter(IE)
-    public Function getOnmsgesturechange() {
-        return getEventHandler(Event.TYPE_MSGESTURECHANGE);
-    }
-
-    /**
-     * Sets the {@code onmsgesturechange} event handler for this element.
-     * @param onmsgesturechange the {@code onmsgesturechange} event handler for this element
-     */
-    @JsxSetter(IE)
-    public void setOnmsgesturechange(final Object onmsgesturechange) {
-        setEventHandler(Event.TYPE_MSGESTURECHANGE, onmsgesturechange);
-    }
-
-    /**
-     * Returns the {@code onmsgesturedoubletap} event handler for this element.
-     * @return the {@code onmsgesturedoubletap} event handler for this element
-     */
-    @JsxGetter(IE)
-    public Function getOnmsgesturedoubletap() {
-        return getEventHandler(Event.TYPE_MSGESTUREDOUBLETAP);
-    }
-
-    /**
-     * Sets the {@code onmsgesturedoubletap} event handler for this element.
-     * @param onmsgesturedoubletap the {@code onmsgesturedoubletap} event handler for this element
-     */
-    @JsxSetter(IE)
-    public void setOnmsgesturedoubletap(final Object onmsgesturedoubletap) {
-        setEventHandler(Event.TYPE_MSGESTUREDOUBLETAP, onmsgesturedoubletap);
-    }
-
-    /**
-     * Returns the {@code onmsgestureend} event handler for this element.
-     * @return the {@code onmsgestureend} event handler for this element
-     */
-    @JsxGetter(IE)
-    public Function getOnmsgestureend() {
-        return getEventHandler(Event.TYPE_MSGESTUREEND);
-    }
-
-    /**
-     * Sets the {@code onmsgestureend} event handler for this element.
-     * @param onmsgestureend the {@code onmsgestureend} event handler for this element
-     */
-    @JsxSetter(IE)
-    public void setOnmsgestureend(final Object onmsgestureend) {
-        setEventHandler(Event.TYPE_MSGESTUREEND, onmsgestureend);
-    }
-
-    /**
-     * Returns the {@code onmsgesturehold} event handler for this element.
-     * @return the {@code onmsgesturehold} event handler for this element
-     */
-    @JsxGetter(IE)
-    public Function getOnmsgesturehold() {
-        return getEventHandler(Event.TYPE_MSGESTUREHOLD);
-    }
-
-    /**
-     * Sets the {@code onmsgesturehold} event handler for this element.
-     * @param onmsgesturehold the {@code onmsgesturehold} event handler for this element
-     */
-    @JsxSetter(IE)
-    public void setOnmsgesturehold(final Object onmsgesturehold) {
-        setEventHandler(Event.TYPE_MSGESTUREHOLD, onmsgesturehold);
-    }
-
-    /**
-     * Returns the {@code onmsgesturestart} event handler for this element.
-     * @return the {@code onmsgesturestart} event handler for this element
-     */
-    @JsxGetter(IE)
-    public Function getOnmsgesturestart() {
-        return getEventHandler(Event.TYPE_MSGESTURESTART);
-    }
-
-    /**
-     * Sets the {@code onmsgesturestart} event handler for this element.
-     * @param onmsgesturestart the {@code onmsgesturestart} event handler for this element
-     */
-    @JsxSetter(IE)
-    public void setOnmsgesturestart(final Object onmsgesturestart) {
-        setEventHandler(Event.TYPE_MSGESTURESTART, onmsgesturestart);
-    }
-
-    /**
-     * Returns the {@code onmsgesturetap} event handler for this element.
-     * @return the {@code onmsgesturetap} event handler for this element
-     */
-    @JsxGetter(IE)
-    public Function getOnmsgesturetap() {
-        return getEventHandler(Event.TYPE_MSGESTURETAP);
-    }
-
-    /**
-     * Sets the {@code onmsgesturetap} event handler for this element.
-     * @param onmsgesturetap the {@code onmsgesturetap} event handler for this element
-     */
-    @JsxSetter(IE)
-    public void setOnmsgesturetap(final Object onmsgesturetap) {
-        setEventHandler(Event.TYPE_MSGESTURETAP, onmsgesturetap);
-    }
-
-    /**
-     * Returns the {@code onmsgotpointercapture} event handler for this element.
-     * @return the {@code onmsgotpointercapture} event handler for this element
-     */
-    @JsxGetter(IE)
-    public Function getOnmsgotpointercapture() {
-        return getEventHandler(Event.TYPE_MSGOTPOINTERCAPTURE);
-    }
-
-    /**
-     * Sets the {@code onmsgotpointercapture} event handler for this element.
-     * @param onmsgotpointercapture the {@code onmsgotpointercapture} event handler for this element
-     */
-    @JsxSetter(IE)
-    public void setOnmsgotpointercapture(final Object onmsgotpointercapture) {
-        setEventHandler(Event.TYPE_MSGOTPOINTERCAPTURE, onmsgotpointercapture);
-    }
-
-    /**
-     * Returns the {@code onmsinertiastart} event handler for this element.
-     * @return the {@code onmsinertiastart} event handler for this element
-     */
-    @JsxGetter(IE)
-    public Function getOnmsinertiastart() {
-        return getEventHandler(Event.TYPE_MSINERTIASTART);
-    }
-
-    /**
-     * Sets the {@code onmsinertiastart} event handler for this element.
-     * @param onmsinertiastart the {@code onmsinertiastart} event handler for this element
-     */
-    @JsxSetter(IE)
-    public void setOnmsinertiastart(final Object onmsinertiastart) {
-        setEventHandler(Event.TYPE_MSINERTIASTART, onmsinertiastart);
-    }
-
-    /**
-     * Returns the {@code onmslostpointercapture} event handler for this element.
-     * @return the {@code onmslostpointercapture} event handler for this element
-     */
-    @JsxGetter(IE)
-    public Function getOnmslostpointercapture() {
-        return getEventHandler(Event.TYPE_MSLOSTPOINTERCAPTURE);
-    }
-
-    /**
-     * Sets the {@code onmslostpointercapture} event handler for this element.
-     * @param onmslostpointercapture the {@code onmslostpointercapture} event handler for this element
-     */
-    @JsxSetter(IE)
-    public void setOnmslostpointercapture(final Object onmslostpointercapture) {
-        setEventHandler(Event.TYPE_MSLOSTPOINTERCAPTURE, onmslostpointercapture);
-    }
-
-    /**
-     * Returns the {@code onmspointercancel} event handler for this element.
-     * @return the {@code onmspointercancel} event handler for this element
-     */
-    @JsxGetter(IE)
-    public Function getOnmspointercancel() {
-        return getEventHandler(Event.TYPE_MSPOINTERCANCEL);
-    }
-
-    /**
-     * Sets the {@code onmspointercancel} event handler for this element.
-     * @param onmspointercancel the {@code onmspointercancel} event handler for this element
-     */
-    @JsxSetter(IE)
-    public void setOnmspointercancel(final Object onmspointercancel) {
-        setEventHandler(Event.TYPE_MSPOINTERCANCEL, onmspointercancel);
-    }
-
-    /**
-     * Returns the {@code onmspointerdown} event handler for this element.
-     * @return the {@code onmspointerdown} event handler for this element
-     */
-    @JsxGetter(IE)
-    public Function getOnmspointerdown() {
-        return getEventHandler(Event.TYPE_MSPOINTERDOWN);
-    }
-
-    /**
-     * Sets the {@code onmspointerdown} event handler for this element.
-     * @param onmspointerdown the {@code onmspointerdown} event handler for this element
-     */
-    @JsxSetter(IE)
-    public void setOnmspointerdown(final Object onmspointerdown) {
-        setEventHandler(Event.TYPE_MSPOINTERDOWN, onmspointerdown);
-    }
-
-    /**
-     * Returns the {@code onmspointerenter} event handler for this element.
-     * @return the {@code onmspointerenter} event handler for this element
-     */
-    @JsxGetter(IE)
-    public Function getOnmspointerenter() {
-        return getEventHandler(Event.TYPE_MSPOINTENTER);
-    }
-
-    /**
-     * Sets the {@code onmspointerenter} event handler for this element.
-     * @param onmspointerenter the {@code onmspointerenter} event handler for this element
-     */
-    @JsxSetter(IE)
-    public void setOnmspointerenter(final Object onmspointerenter) {
-        setEventHandler(Event.TYPE_MSPOINTENTER, onmspointerenter);
-    }
-
-    /**
-     * Returns the {@code onmspointerleave} event handler for this element.
-     * @return the {@code onmspointerleave} event handler for this element
-     */
-    @JsxGetter(IE)
-    public Function getOnmspointerleave() {
-        return getEventHandler(Event.TYPE_MSPOINTERLEAVE);
-    }
-
-    /**
-     * Sets the {@code onmspointerleave} event handler for this element.
-     * @param onmspointerleave the {@code onmspointerleave} event handler for this element
-     */
-    @JsxSetter(IE)
-    public void setOnmspointerleave(final Object onmspointerleave) {
-        setEventHandler(Event.TYPE_MSPOINTERLEAVE, onmspointerleave);
-    }
-
-    /**
-     * Returns the {@code onmspointermove} event handler for this element.
-     * @return the {@code onmspointermove} event handler for this element
-     */
-    @JsxGetter(IE)
-    public Function getOnmspointermove() {
-        return getEventHandler(Event.TYPE_MSPOINTERMOVE);
-    }
-
-    /**
-     * Sets the {@code onmspointermove} event handler for this element.
-     * @param onmspointermove the {@code onmspointermove} event handler for this element
-     */
-    @JsxSetter(IE)
-    public void setOnmspointermove(final Object onmspointermove) {
-        setEventHandler(Event.TYPE_MSPOINTERMOVE, onmspointermove);
-    }
-
-    /**
-     * Returns the {@code onmspointerout} event handler for this element.
-     * @return the {@code onmspointerout} event handler for this element
-     */
-    @JsxGetter(IE)
-    public Function getOnmspointerout() {
-        return getEventHandler(Event.TYPE_MSPOINTEROUT);
-    }
-
-    /**
-     * Sets the {@code onmspointerout} event handler for this element.
-     * @param onmspointerout the {@code onmspointerout} event handler for this element
-     */
-    @JsxSetter(IE)
-    public void setOnmspointerout(final Object onmspointerout) {
-        setEventHandler(Event.TYPE_MSPOINTEROUT, onmspointerout);
-    }
-
-    /**
-     * Returns the {@code onmspointerover} event handler for this element.
-     * @return the {@code onmspointerover} event handler for this element
-     */
-    @JsxGetter(IE)
-    public Function getOnmspointerover() {
-        return getEventHandler(Event.TYPE_MSPOINTEROVER);
-    }
-
-    /**
-     * Sets the {@code onmspointerover} event handler for this element.
-     * @param onmspointerover the {@code onmspointerover} event handler for this element
-     */
-    @JsxSetter(IE)
-    public void setOnmspointerover(final Object onmspointerover) {
-        setEventHandler(Event.TYPE_MSPOINTEROVER, onmspointerover);
-    }
-
-    /**
-     * Returns the {@code onmspointerup} event handler for this element.
-     * @return the {@code onmspointerup} event handler for this element
-     */
-    @JsxGetter(IE)
-    public Function getOnmspointerup() {
-        return getEventHandler(Event.TYPE_MSPOINTERUP);
-    }
-
-    /**
-     * Sets the {@code onmspointerup} event handler for this element.
-     * @param onmspointerup the {@code onmspointerup} event handler for this element
-     */
-    @JsxSetter(IE)
-    public void setOnmspointerup(final Object onmspointerup) {
-        setEventHandler(Event.TYPE_MSPOINTERUP, onmspointerup);
-    }
-
-    /**
-     * Returns the {@code onpointercancel} event handler for this element.
-     * @return the {@code onpointercancel} event handler for this element
-     */
-    @JsxGetter(IE)
-    public Function getOnpointercancel() {
-        return getEventHandler(Event.TYPE_POINTERCANCEL);
-    }
-
-    /**
-     * Sets the {@code onpointercancel} event handler for this element.
-     * @param onpointercancel the {@code onpointercancel} event handler for this element
-     */
-    @JsxSetter(IE)
-    public void setOnpointercancel(final Object onpointercancel) {
-        setEventHandler(Event.TYPE_POINTERCANCEL, onpointercancel);
-    }
-
-    /**
-     * Returns the {@code onpointerdown} event handler for this element.
-     * @return the {@code onpointerdown} event handler for this element
-     */
-    @JsxGetter(IE)
-    public Function getOnpointerdown() {
-        return getEventHandler(Event.TYPE_POINTERDOWN);
-    }
-
-    /**
-     * Sets the {@code onpointerdown} event handler for this element.
-     * @param onpointerdown the {@code onpointerdown} event handler for this element
-     */
-    @JsxSetter(IE)
-    public void setOnpointerdown(final Object onpointerdown) {
-        setEventHandler(Event.TYPE_POINTERDOWN, onpointerdown);
-    }
-
-    /**
-     * Returns the {@code onpointerenter} event handler for this element.
-     * @return the {@code onpointerenter} event handler for this element
-     */
-    @JsxGetter(IE)
-    public Function getOnpointerenter() {
-        return getEventHandler(Event.TYPE_POINTERENTER);
-    }
-
-    /**
-     * Sets the {@code onpointerenter} event handler for this element.
-     * @param onpointerenter the {@code onpointerenter} event handler for this element
-     */
-    @JsxSetter(IE)
-    public void setOnpointerenter(final Object onpointerenter) {
-        setEventHandler(Event.TYPE_POINTERENTER, onpointerenter);
-    }
-
-    /**
-     * Returns the {@code onpointerleave} event handler for this element.
-     * @return the {@code onpointerleave} event handler for this element
-     */
-    @JsxGetter(IE)
-    public Function getOnpointerleave() {
-        return getEventHandler(Event.TYPE_POINTERLEAVE);
-    }
-
-    /**
-     * Sets the {@code onpointerleave} event handler for this element.
-     * @param onpointerleave the {@code onpointerleave} event handler for this element
-     */
-    @JsxSetter(IE)
-    public void setOnpointerleave(final Object onpointerleave) {
-        setEventHandler(Event.TYPE_POINTERLEAVE, onpointerleave);
-    }
-
-    /**
-     * Returns the {@code onpointermove} event handler for this element.
-     * @return the {@code onpointermove} event handler for this element
-     */
-    @JsxGetter(IE)
-    public Function getOnpointermove() {
-        return getEventHandler(Event.TYPE_POINTERMOVE);
-    }
-
-    /**
-     * Sets the {@code onpointermove} event handler for this element.
-     * @param onpointermove the {@code onpointermove} event handler for this element
-     */
-    @JsxSetter(IE)
-    public void setOnpointermove(final Object onpointermove) {
-        setEventHandler(Event.TYPE_POINTERMOVE, onpointermove);
-    }
-
-    /**
-     * Returns the {@code onpointerout} event handler for this element.
-     * @return the {@code onpointerout} event handler for this element
-     */
-    @JsxGetter(IE)
-    public Function getOnpointerout() {
-        return getEventHandler(Event.TYPE_POINTEROUT);
-    }
-
-    /**
-     * Sets the {@code onpointerout} event handler for this element.
-     * @param onpointerout the {@code onpointerout} event handler for this element
-     */
-    @JsxSetter(IE)
-    public void setOnpointerout(final Object onpointerout) {
-        setEventHandler(Event.TYPE_POINTEROUT, onpointerout);
-    }
-
-    /**
-     * Returns the {@code onpointerover} event handler for this element.
-     * @return the {@code onpointerover} event handler for this element
-     */
-    @JsxGetter(IE)
-    public Function getOnpointerover() {
-        return getEventHandler(Event.TYPE_POINTEROVER);
-    }
-
-    /**
-     * Sets the {@code onpointerover} event handler for this element.
-     * @param onpointerover the {@code onpointerover} event handler for this element
-     */
-    @JsxSetter(IE)
-    public void setOnpointerover(final Object onpointerover) {
-        setEventHandler(Event.TYPE_POINTEROVER, onpointerover);
-    }
-
-    /**
-     * Returns the {@code onpointerup} event handler for this element.
-     * @return the {@code onpointerup} event handler for this element
-     */
-    @JsxGetter(IE)
-    public Function getOnpointerup() {
-        return getEventHandler(Event.TYPE_POINTERUP);
-    }
-
-    /**
-     * Sets the {@code onpointerup} event handler for this element.
-     * @param onpointerup the {@code onpointerup} event handler for this element
-     */
-    @JsxSetter(IE)
-    public void setOnpointerup(final Object onpointerup) {
-        setEventHandler(Event.TYPE_POINTERUP, onpointerup);
-    }
-
-    /**
      * {@inheritDoc}
      */
     @Override
-    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
+    @JsxFunction
     public void remove() {
         super.remove();
     }
@@ -1945,7 +1482,7 @@ public class Element extends Node {
      * @param args the arguments
      * @param function the function
      */
-    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
+    @JsxFunction
     public static void before(final Context context, final Scriptable scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         Node.before(context, thisObj, args, function);
@@ -1960,7 +1497,7 @@ public class Element extends Node {
      * @param args the arguments
      * @param function the function
      */
-    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
+    @JsxFunction
     public static void after(final Context context, final Scriptable scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         Node.after(context, thisObj, args, function);
@@ -1974,7 +1511,7 @@ public class Element extends Node {
      * @param args the arguments
      * @param function the function
      */
-    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
+    @JsxFunction
     public static void replaceWith(final Context context, final Scriptable scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         Node.replaceWith(context, thisObj, args, function);
@@ -1989,7 +1526,7 @@ public class Element extends Node {
      * @param function the function
      * @return the value
      */
-    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
+    @JsxFunction
     public static boolean matches(final Context context, final Scriptable scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         if (!(thisObj instanceof Element)) {
@@ -2032,28 +1569,13 @@ public class Element extends Node {
      * @param function the function
      * @return the value
      */
-    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
+    @JsxFunction
     public static boolean webkitMatchesSelector(final Context context, final Scriptable scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         return matches(context, scope, thisObj, args, function);
     }
 
-    /**
-     * Returns true if the element would be selected by the specified selector string; otherwise, returns false.
-     * @param context the JavaScript context
-     * @param scope the scope
-     * @param thisObj the scriptable
-     * @param args the arguments passed into the method
-     * @param function the function
-     * @return the value
-     */
-    @JsxFunction(IE)
-    public static boolean msMatchesSelector(final Context context, final Scriptable scope,
-            final Scriptable thisObj, final Object[] args, final Function function) {
-        return matches(context, scope, thisObj, args, function);
-    }
-
-    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
+    @JsxFunction
     public static Element closest(final Context context, final Scriptable scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         if (!(thisObj instanceof Element)) {
@@ -2094,7 +1616,7 @@ public class Element extends Node {
      * @see <a href=
      *      "https://developer.mozilla.org/en-US/docs/Web/API/Element/toggleAttribute">Element.toggleAttribute()</a>
      */
-    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
+    @JsxFunction
     public boolean toggleAttribute(final String name, final Object force) {
         if (JavaScriptEngine.isUndefined(force)) {
             if (hasAttribute(name)) {
@@ -2121,7 +1643,7 @@ public class Element extends Node {
      * @param args the arguments
      * @param function the function
      */
-    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
+    @JsxFunction
     public static void append(final Context context, final Scriptable scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         if (!(thisObj instanceof Element)) {
@@ -2140,7 +1662,7 @@ public class Element extends Node {
      * @param args the arguments
      * @param function the function
      */
-    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
+    @JsxFunction
     public static void prepend(final Context context, final Scriptable scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         if (!(thisObj instanceof Element)) {
@@ -2159,7 +1681,7 @@ public class Element extends Node {
      * @param args the arguments
      * @param function the function
      */
-    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
+    @JsxFunction
     public static void replaceChildren(final Context context, final Scriptable scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         if (!(thisObj instanceof Element)) {

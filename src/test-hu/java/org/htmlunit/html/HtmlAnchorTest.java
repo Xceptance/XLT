@@ -31,7 +31,7 @@ import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.BuggyWebDriver;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
 import org.junit.Test;
@@ -153,7 +153,6 @@ public class HtmlAnchorTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "",
-            FF = "page2.html",
             FF_ESR = "page2.html")
     public void clickNestedCheckboxElement() throws Exception {
         final String html =
@@ -227,8 +226,7 @@ public class HtmlAnchorTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "page2.html",
-            IE = "")
+    @Alerts("page2.html")
     public void clickNestedInputTextElement() throws Exception {
         final String html =
               "<html>\n"
@@ -250,8 +248,7 @@ public class HtmlAnchorTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "page2.html",
-            IE = "")
+    @Alerts("page2.html")
     public void clickNestedInputPasswordElement() throws Exception {
         final String html =
               "<html>\n"
@@ -302,7 +299,6 @@ public class HtmlAnchorTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "",
-            FF = "page2.html",
             FF_ESR = "page2.html")
     public void clickNestedRadioElement() throws Exception {
         final String html =
@@ -606,12 +602,14 @@ public class HtmlAnchorTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "click href click doubleClick href ",
-            IE = "click href click doubleClick ")
+    @Alerts("click href click doubleClick href ")
     @BuggyWebDriver(
-            FF = "click doubleClick click href href ",
-            FF_ESR = "click doubleClick click href href ")
-    @NotYetImplemented
+            FF = "click click doubleClick href href ",
+            FF_ESR = "click click doubleClick href href ")
+    @HtmlUnitNYI(CHROME = "click href click href doubleClick ",
+            EDGE = "click href click href doubleClick ",
+            FF = "click href click href doubleClick ",
+            FF_ESR = "click href click href doubleClick ")
     public void doubleClick() throws Exception {
         final String html =
               "<html>\n"
@@ -695,7 +693,6 @@ public class HtmlAnchorTest extends WebDriverTestCase {
      */
     @Test
     @Alerts({"1", "First"})
-    @BuggyWebDriver(IE = {"0", "Second"})
     public void shiftClick() throws Exception {
         final String html = "<html><head><title>First</title></head><body>\n"
             + "<a href='" + URL_SECOND + "'>Click Me</a>\n"
@@ -726,7 +723,6 @@ public class HtmlAnchorTest extends WebDriverTestCase {
      */
     @Test
     @Alerts({"1", "First"})
-    @BuggyWebDriver(IE = {"0", "Second"})
     public void ctrlClick() throws Exception {
         final String html = "<html><head><title>First</title></head><body>\n"
             + "<a href='" + URL_SECOND + "'>Click Me</a>\n"

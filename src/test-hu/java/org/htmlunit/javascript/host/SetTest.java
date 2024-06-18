@@ -14,15 +14,12 @@
  */
 package org.htmlunit.javascript.host;
 
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
-
 import java.util.Set;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -39,9 +36,7 @@ public class SetTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"3", "true"},
-            IE = {"1", "false"})
-    @NotYetImplemented(IE)
+    @Alerts({"3", "true"})
     public void has() throws Exception {
         final String html =
             HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -68,9 +63,8 @@ public class SetTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"function values() { [native code] }",
-                       "[object Set Iterator]", "0", "1", "[object Object]"},
-            IE = {})
+    @Alerts({"function values() { [native code] }",
+             "[object Set Iterator]", "0", "1", "[object Object]"})
     public void iterator() throws Exception {
         final String html =
             HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -104,9 +98,8 @@ public class SetTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"function values() { [native code] }",
-                       "[object Set Iterator]", "0", "1", "[object Object]"},
-            IE = {})
+    @Alerts({"function values() { [native code] }",
+             "[object Set Iterator]", "0", "1", "[object Object]"})
     public void values() throws Exception {
         final String html =
             HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -140,9 +133,7 @@ public class SetTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "2",
-            IE = "0")
-    @NotYetImplemented(IE)
+    @Alerts("2")
     public void constructorArray() throws Exception {
         final String html
             = "<html><head>\n"
@@ -162,9 +153,7 @@ public class SetTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "2",
-            IE = "0")
-    @NotYetImplemented(IE)
+    @Alerts("2")
     public void constructorInt32Array() throws Exception {
         final String html
             = "<html><head>\n"
@@ -185,9 +174,7 @@ public class SetTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"3", "true", "false"},
-            IE = {"0", "false", "false"})
-    @NotYetImplemented(IE)
+    @Alerts({"3", "true", "false"})
     public void constructorStringParam() throws Exception {
         final String html
             = "<html><head>\n"
@@ -209,8 +196,7 @@ public class SetTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"7", "true", "false"},
-            IE = {})
+    @Alerts({"7", "true", "false"})
     public void constructorStringIteratorParam() throws Exception {
         final String html
             = "<html><head>\n"
@@ -235,9 +221,7 @@ public class SetTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"3", "true", "false"},
-            IE = {"0", "false", "false"})
-    @NotYetImplemented(IE)
+    @Alerts({"3", "true", "false"})
     public void constructorSetParam() throws Exception {
         final String html
             = "<html><head>\n"
@@ -259,9 +243,7 @@ public class SetTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"2", "false", "false"},
-            IE = {"0", "false", "false"})
-    @NotYetImplemented(IE)
+    @Alerts({"2", "false", "false"})
     public void constructorMapParam() throws Exception {
         final String html
             = "<html><head>\n"
@@ -285,8 +267,7 @@ public class SetTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"1", "#77"},
-            IE = "exception")
+    @Alerts({"1", "#77"})
     public void constructorIteratorParam() throws Exception {
         final String html
             = "<html><head>\n"
@@ -326,11 +307,9 @@ public class SetTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"ab", "ab", "[object Set]", "[object Window]",
-                       "undefined", "undefined", "[object Set]", "[object Window]",
-                       "null", "null", "[object Set]", "[object Window]"},
-            IE = {})
-    @NotYetImplemented(IE)
+    @Alerts({"ab", "ab", "[object Set]", "[object Window]",
+             "undefined", "undefined", "[object Set]", "[object Window]",
+             "null", "null", "[object Set]", "[object Window]"})
     public void forEach() throws Exception {
         final String html
             = "<html><head>\n"
@@ -358,11 +337,9 @@ public class SetTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"ab", "ab", "[object Set]", "undefined",
-                       "undefined", "undefined", "[object Set]", "undefined",
-                       "null", "null", "[object Set]", "undefined"},
-            IE = {})
-    @NotYetImplemented(IE)
+    @Alerts({"ab", "ab", "[object Set]", "undefined",
+             "undefined", "undefined", "[object Set]", "undefined",
+             "null", "null", "[object Set]", "undefined"})
     public void forEachStrict() throws Exception {
         final String html
             = "<html><head>\n"
@@ -391,10 +368,8 @@ public class SetTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"ab", "ab", "[object Set]", "hello", "undefined", "undefined", "[object Set]", "hello",
-                       "null", "null", "[object Set]", "hello"},
-            IE = {})
-    @NotYetImplemented(IE)
+    @Alerts({"ab", "ab", "[object Set]", "hello", "undefined", "undefined", "[object Set]", "hello",
+             "null", "null", "[object Set]", "hello"})
     public void forEachThis() throws Exception {
         final String html
             = "<html><head>\n"
@@ -422,8 +397,7 @@ public class SetTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "[object Set Iterator]",
-            IE = {})
+    @Alerts("[object Set Iterator]")
     public void iteratorPrototype() throws Exception {
         final String html =
             HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -452,9 +426,7 @@ public class SetTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "0"},
-            IE = {})
-    @NotYetImplemented(IE)
+    @Alerts({"undefined", "0"})
     public void forEach_withElision() throws Exception {
         final String html
                 = "<html><head>\n"

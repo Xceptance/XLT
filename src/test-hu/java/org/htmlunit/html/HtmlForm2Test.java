@@ -16,11 +16,11 @@ package org.htmlunit.html;
 
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 
 import java.io.IOException;
 import java.io.Writer;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -37,11 +37,11 @@ import org.htmlunit.FormEncodingType;
 import org.htmlunit.HttpHeader;
 import org.htmlunit.HttpMethod;
 import org.htmlunit.MockWebConnection;
+import org.htmlunit.WebClient;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
 import org.htmlunit.util.UrlUtils;
@@ -51,6 +51,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.By.ById;
 import org.openqa.selenium.By.ByTagName;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 
 /**
  * Tests for {@link HtmlForm}, with BrowserRunner.
@@ -66,8 +67,7 @@ public class HtmlForm2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"myForm", "TypeError"},
-            IE = {"myForm", "myForm"})
+    @Alerts({"myForm", "TypeError"})
     public void formsAccessor_FormsAsFunction() throws Exception {
         final String html
             = "<html><head>\n"
@@ -95,8 +95,7 @@ public class HtmlForm2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"myForm", "TypeError"},
-            IE = {"myForm", "myForm"})
+    @Alerts({"myForm", "TypeError"})
     public void formsAccessor_FormsAsFunction2() throws Exception {
         final String html
             = "<html><head>\n"
@@ -124,8 +123,7 @@ public class HtmlForm2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"error", "error", "error"},
-            IE = {"textfieldid", "textfieldname", "textfieldid"})
+    @Alerts({"error", "error", "error"})
     public void asFunction() throws Exception {
         final String html
             = "<html><head>\n"
@@ -152,8 +150,7 @@ public class HtmlForm2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "TypeError",
-            IE = {"textfieldid", "textfieldname", "textfieldid"})
+    @Alerts("TypeError")
     public void asFunctionFormsFunction() throws Exception {
         final String html
             = "<html><head>\n"
@@ -364,8 +361,7 @@ public class HtmlForm2Test extends WebDriverTestCase {
      * @throws Exception on test failure
      */
     @Test
-    @Alerts(DEFAULT = {"§§URL§§", "§§URL§§/path?query"},
-            IE = {"null", "§§URL§§/path?query"})
+    @Alerts({"§§URL§§", "§§URL§§/path?query"})
     public void originRefererHeaderPost() throws Exception {
         final String firstHtml
             = "<html>\n"
@@ -401,8 +397,7 @@ public class HtmlForm2Test extends WebDriverTestCase {
     @Alerts(DEFAULT = "text/html,application/xhtml+xml,application/xml;q=0.9,"
                     + "image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
             FF = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-            FF_ESR = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-            IE = "text/html, application/xhtml+xml, image/jxr, */*")
+            FF_ESR = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8")
     public void acceptHeader() throws Exception {
         final String html
             = HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -448,8 +443,11 @@ public class HtmlForm2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "gzip, deflate, br",
-            IE = "gzip, deflate")
+    @Alerts(DEFAULT = "gzip, deflate, br, zstd",
+            FF_ESR = "gzip, deflate, br")
+    @HtmlUnitNYI(CHROME = "gzip, deflate, br",
+            EDGE = "gzip, deflate, br",
+            FF = "gzip, deflate, br")
     public void acceptEncodingHeader() throws Exception {
         final String html
             = HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -535,9 +533,7 @@ public class HtmlForm2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"2", "third"},
-            IE = {"1", "third"})
-    @HtmlUnitNYI(IE = {"2", "third"})
+    @Alerts({"2", "third"})
     public void buttonWithFormAction() throws Exception {
         final String html = "<!DOCTYPE html>\n"
             + "<html><head><title>first</title></head>\n"
@@ -660,8 +656,7 @@ public class HtmlForm2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "third content",
-            IE = "second content")
+    @Alerts("third content")
     public void inputTypeImageWithFormAction() throws Exception {
         final String html = "<!DOCTYPE html>\n"
             + "<html><head></head>\n"
@@ -741,8 +736,7 @@ public class HtmlForm2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "GET",
-            IE = "POST")
+    @Alerts("GET")
     public void inputTypeImageWithFormMethod() throws Exception {
         final String html = "<!DOCTYPE html>\n"
             + "<html><head></head>\n"
@@ -828,8 +822,7 @@ public class HtmlForm2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "application/x-www-form-urlencoded",
-            IE = "multipart/form-data")
+    @Alerts("application/x-www-form-urlencoded")
     public void inputTypeImageWithFormEnctype() throws Exception {
         final String html = "<!DOCTYPE html>\n"
             + "<html><head></head>\n"
@@ -939,9 +932,7 @@ public class HtmlForm2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "2",
-            IE = "1")
-    @NotYetImplemented(IE)
+    @Alerts("2")
     public void inputTypeImageWithFormTarget() throws Exception {
         final String html = "<!DOCTYPE html>\n"
             + "<html><head></head>\n"
@@ -1115,9 +1106,8 @@ public class HtmlForm2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"radioParam2#radioValue2", "selectParam#selectValue", "textParam#textValue",
-        "textareaParam#textarea value"},
-            IE = {})
+    @Alerts({"radioParam2#radioValue2", "selectParam#selectValue", "textParam#textValue",
+             "textareaParam#textarea value"})
     public void submitUsingFormAttribute() throws Exception {
         final String html =
             "<!DOCTYPE html>\n"
@@ -1168,9 +1158,8 @@ public class HtmlForm2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"radioParam2#radioValue2", "selectParam#selectValue", "textParam#textValue",
-        "textareaParam#textarea value"},
-            IE = {})
+    @Alerts({"radioParam2#radioValue2", "selectParam#selectValue", "textParam#textValue",
+             "textareaParam#textarea value"})
     public void submitUsingFormAttributeElementsDeclaredBeforeForm() throws Exception {
         final String html =
             "<!DOCTYPE html>\n"
@@ -1223,8 +1212,7 @@ public class HtmlForm2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "textParam#textValue",
-            IE = {})
+    @Alerts("textParam#textValue")
     public void submitUsingFormAttributeElementsDeeplyNested() throws Exception {
         final String html =
             "<!DOCTYPE html>\n"
@@ -1263,8 +1251,7 @@ public class HtmlForm2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "hiddenParam#form1",
-            IE = "hiddenParam#form2")
+    @Alerts("hiddenParam#form1")
     public void submitFromInsideAnother() throws Exception {
         final String html =
             "<!DOCTYPE html>\n"
@@ -1302,8 +1289,7 @@ public class HtmlForm2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {},
-            IE = "hiddenParam#form2")
+    @Alerts({})
     public void submitFromInsideAnotherInvalidFormRef() throws Exception {
         final String html =
             "<!DOCTYPE html>\n"
@@ -1598,8 +1584,7 @@ public class HtmlForm2Test extends WebDriverTestCase {
      * @throws Exception on test failure
      */
     @Test
-    @Alerts(DEFAULT = "NoReferrer",
-            IE = "undefined")
+    @Alerts("NoReferrer")
     public void relAttribute() throws Exception {
         final String html
             = "<html><head></head>\n"
@@ -1749,5 +1734,200 @@ public class HtmlForm2Test extends WebDriverTestCase {
 
         final String url = getMockWebConnection().getLastWebRequest().getUrl().toExternalForm();
         assertTrue(url.endsWith(getExpectedAlerts()[0]));
+    }
+
+    /**
+     * @throws Exception if the test page can't be loaded
+     */
+    @Test
+    @Alerts({"2", "inp", "submitButton"})
+    public void elements() throws Exception {
+        final String html
+            = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    log(document.forms[0].elements.length);\n"
+            + "    log(document.forms[0].elements[0].id);\n"
+            + "    log(document.forms[0].elements[1].id);\n"
+            + "  }\n"
+            + "</script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "<form id='form1' method='get' action='foo'>\n"
+            + "  <input name='field1' value='val1' id='inp'/>\n"
+            + "  <input type='submit' id='submitButton'/>\n"
+            + "</form>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test page can't be loaded
+     */
+    @Test
+    @Alerts({"1", "[object HTMLInputElement]"})
+    public void elementsDetached() throws Exception {
+        final String html
+            = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    let frm = document.createElement('form');\n"
+            + "    frm.appendChild(document.createElement('input'));\n"
+            + "    frm.remove();\n"
+            + "    log(frm.elements.length);\n"
+            + "    log(frm.elements[0]);\n"
+            + "  }\n"
+            + "</script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test page can't be loaded
+     */
+    @Test
+    @Alerts({"2", "inpt1", "inpt2", "1", "inpt1"})
+    public void elementsDetachedFormAttribute() throws Exception {
+        final String html
+            = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    let frm = document.getElementById('formId');\n"
+
+            + "    log(frm.elements.length);\n"
+            + "    log(frm.elements[0].id);\n"
+            + "    log(frm.elements[1].id);\n"
+
+            + "    frm.remove();\n"
+            + "    log(frm.elements.length);\n"
+            + "    log(frm.elements[0].id);\n"
+            + "  }\n"
+            + "</script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "  <form id='formId'>\n"
+            + "    <input id='inpt1' type='text' name='textParam' value='textValue'>\n"
+            + "  </form>\n"
+
+            + "  <input form='formId' id='inpt2' type='text' name='textParam' value='textValue'>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void submitRequestCharset() throws Exception {
+        submitRequestCharset("utf-8", null, null, null, ISO_8859_1);
+        submitRequestCharset(null, "utf-8", null, null, ISO_8859_1);
+        submitRequestCharset("iso-8859-1", null, "utf-8", null, ISO_8859_1);
+        submitRequestCharset("iso-8859-1", null, "utf-8, iso-8859-1", null, ISO_8859_1);
+        submitRequestCharset("utf-8", null, "iso-8859-1 utf-8", null, ISO_8859_1);
+        submitRequestCharset("iso-8859-1", null, "utf-8, iso-8859-1", null, ISO_8859_1);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void submitRequestCharsetTextPlain() throws Exception {
+        submitRequestCharset("utf-8", null, null, "text/plain", null);
+        submitRequestCharset(null, "utf-8", null, "text/plain", null);
+        submitRequestCharset("iso-8859-1", null, "utf-8", "text/plain", null);
+        submitRequestCharset("iso-8859-1", null, "utf-8, iso-8859-1", "text/plain", null);
+        submitRequestCharset("utf-8", null, "iso-8859-1 utf-8", "text/plain", null);
+        submitRequestCharset("iso-8859-1", null, "utf-8, iso-8859-1", "text/plain", null);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void submitRequestCharsetMultipartFormData() throws Exception {
+        submitRequestCharset("utf-8", null, null, "multipart/form-data", null);
+        submitRequestCharset(null, "utf-8", null, "multipart/form-data", null);
+        submitRequestCharset("iso-8859-1", null, "utf-8", "multipart/form-data", null);
+        submitRequestCharset("iso-8859-1", null, "utf-8, iso-8859-1", "multipart/form-data", null);
+        submitRequestCharset("utf-8", null, "iso-8859-1 utf-8", "multipart/form-data", null);
+        submitRequestCharset("iso-8859-1", null, "utf-8, iso-8859-1", "multipart/form-data", null);
+    }
+
+    /**
+     * Utility for {@link #submitRequestCharset()}
+     * @param headerCharset the charset for the content type header if not null
+     * @param metaCharset the charset for the meta http-equiv content type tag if not null
+     * @param formCharset the charset for the form's accept-charset attribute if not null
+     * @param expectedRequestCharset the charset expected for the form submission
+     * @throws Exception if the test fails
+     */
+    private void submitRequestCharset(final String headerCharset,
+            final String metaCharset, final String formCharset,
+            final String formEnctype,
+            final Charset expectedRequestCharset) throws Exception {
+
+        final String formAcceptCharset;
+        if (formCharset == null) {
+            formAcceptCharset = "";
+        }
+        else {
+            formAcceptCharset = " accept-charset='" + formCharset + "'";
+        }
+
+        final String formEnc;
+        if (formEnctype == null) {
+            formEnc = "";
+        }
+        else {
+            formEnc = " enctype='" + formEnctype + "'";
+        }
+
+        final String metaContentType;
+        if (metaCharset == null) {
+            metaContentType = "";
+        }
+        else {
+            metaContentType = "<meta http-equiv='Content-Type' content='text/html; charset="
+                + metaCharset + "'>\n";
+        }
+
+        final String html = "<html><head><title>foo</title>\n"
+            + metaContentType
+            + "</head><body>\n"
+            + "<form name='form1' method='post' action='foo'" + formAcceptCharset + formEnc + ">\n"
+            + "<input type='text' name='textField' value='foo'/>\n"
+            + "<input type='text' name='nonAscii' value='Flo\u00DFfahrt'/>\n"
+            + "<input type='submit' name='button' id='myButton' value='foo'/>\n"
+            + "</form></body></html>";
+
+        String contentType = MimeType.TEXT_HTML;
+        if (headerCharset != null) {
+            contentType += ";charset=" + headerCharset;
+        }
+        getMockWebConnection().setDefaultResponse(html, 200, "ok", contentType);
+
+        final WebDriver driver = loadPage2(URL_FIRST, null);
+        driver.findElement(By.id("myButton")).click();
+
+        assertSame(expectedRequestCharset, getMockWebConnection().getLastWebRequest().getCharset());
+
+        if (driver instanceof HtmlUnitDriver) {
+            final WebClient webClient = ((HtmlUnitDriver) driver).getWebClient();
+
+            final HtmlPage page = webClient.getPage(URL_FIRST);
+
+            final HtmlForm form = page.getFormByName("form1");
+            form.getInputByName("button").click();
+
+            assertSame(expectedRequestCharset, getMockWebConnection().getLastWebRequest().getCharset());
+        }
     }
 }

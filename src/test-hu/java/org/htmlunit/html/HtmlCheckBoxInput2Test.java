@@ -19,7 +19,6 @@ import java.util.Arrays;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
@@ -1017,9 +1016,7 @@ public class HtmlCheckBoxInput2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"true", "false", "true", "false", "true"},
-            IE = {"true", "false", "true", "true", "true"})
-    @HtmlUnitNYI(IE = {"true", "false", "true", "false", "true"})
+    @Alerts({"true", "false", "true", "false", "true"})
     public void willValidate() throws Exception {
         final String html =
                 "<html><head>\n"
@@ -1051,12 +1048,9 @@ public class HtmlCheckBoxInput2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true"},
-            IE = {"true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true"})
+    @Alerts({"true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true"})
     public void validationEmpty() throws Exception {
         validation("<input type='checkbox' id='e1'>\n", "");
     }
@@ -1065,12 +1059,9 @@ public class HtmlCheckBoxInput2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"false",
-                       "false-true-false-false-false-false-false-false-false-false-false",
-                       "true"},
-            IE = {"false",
-                  "undefined-true-false-false-false-false-false-undefined-false-false-false",
-                  "true"})
+    @Alerts({"false",
+             "false-true-false-false-false-false-false-false-false-false-false",
+             "true"})
     public void validationCustomValidity() throws Exception {
         validation("<input type='checkbox' id='e1'>\n", "elem.setCustomValidity('Invalid');");
     }
@@ -1079,12 +1070,9 @@ public class HtmlCheckBoxInput2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"false",
-                       "false-true-false-false-false-false-false-false-false-false-false",
-                       "true"},
-            IE = {"false",
-                  "undefined-true-false-false-false-false-false-undefined-false-false-false",
-                  "true"})
+    @Alerts({"false",
+             "false-true-false-false-false-false-false-false-false-false-false",
+             "true"})
     public void validationBlankCustomValidity() throws Exception {
         validation("<input type='checkbox' id='e1'>\n", "elem.setCustomValidity(' ');\n");
     }
@@ -1093,12 +1081,9 @@ public class HtmlCheckBoxInput2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true"},
-            IE = {"true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true"})
+    @Alerts({"true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true"})
     public void validationResetCustomValidity() throws Exception {
         validation("<input type='checkbox' id='e1'>\n",
                 "elem.setCustomValidity('Invalid');elem.setCustomValidity('');");
@@ -1108,12 +1093,9 @@ public class HtmlCheckBoxInput2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"false",
-                       "false-false-false-false-false-false-false-false-false-false-true",
-                       "true"},
-            IE = {"false",
-                  "undefined-false-false-false-false-false-false-undefined-false-false-true",
-                  "true"})
+    @Alerts({"false",
+             "false-false-false-false-false-false-false-false-false-false-true",
+             "true"})
     public void validationRequired() throws Exception {
         validation("<input type='checkbox' id='e1' required>\n", "");
     }
@@ -1122,12 +1104,9 @@ public class HtmlCheckBoxInput2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true"},
-            IE = {"true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true"})
+    @Alerts({"true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true"})
     public void validationRequiredChecked() throws Exception {
         validation("<input type='checkbox' id='e1' required checked>\n", "");
     }
@@ -1136,12 +1115,9 @@ public class HtmlCheckBoxInput2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true"},
-            IE = {"true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true"})
+    @Alerts({"true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true"})
     public void validationRequiredClicked() throws Exception {
         validation("<input type='checkbox' id='e1' required>\n", "elem.click();");
     }
@@ -1150,12 +1126,9 @@ public class HtmlCheckBoxInput2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"false",
-                       "false-false-false-false-false-false-false-false-false-false-true",
-                       "true"},
-            IE = {"false",
-                  "undefined-false-false-false-false-false-false-undefined-false-false-true",
-                  "true"})
+    @Alerts({"false",
+             "false-false-false-false-false-false-false-false-false-false-true",
+             "true"})
     public void validationRequiredClickUncheck() throws Exception {
         validation("<input type='checkbox' id='e1' required checked>\n", "elem.click();");
     }

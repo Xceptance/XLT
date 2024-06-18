@@ -20,7 +20,6 @@ import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.BuggyWebDriver;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.WebDriver;
@@ -65,8 +64,7 @@ public class ConsoleTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"true", "undefined", "false"},
-            IE = {"false", "object", "true"})
+    @Alerts({"true", "undefined", "false"})
     public void prototypeUppercase() throws Exception {
         final String html
             = "<html>\n"
@@ -88,8 +86,7 @@ public class ConsoleTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {},
-            IE = "window.console.timeStamp not available")
+    @Alerts({})
     public void timeStamp() throws Exception {
         final String html
             = "<html>\n"
@@ -110,8 +107,7 @@ public class ConsoleTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"function", "function", "function", "function", "function", "function"},
-            IE = {"function", "function", "function", "function", "function", "undefined"})
+    @Alerts({"function", "function", "function", "function", "function", "function"})
     public void methods() throws Exception {
         final String html
             = "<html>\n"
@@ -134,9 +130,7 @@ public class ConsoleTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
-    @HtmlUnitNYI(IE = "true")
+    @Alerts("true")
     public void windowProperty() throws Exception {
         final String html
             = "<html>\n"
@@ -157,9 +151,7 @@ public class ConsoleTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "success",
-            IE = "exception")
-    @HtmlUnitNYI(IE = "success")
+    @Alerts("success")
     public void fromWindow() throws Exception {
         final String html
             = "<html>\n"

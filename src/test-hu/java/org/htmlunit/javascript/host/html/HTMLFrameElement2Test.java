@@ -183,8 +183,7 @@ public class HTMLFrameElement2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"§§URL§§subdir/frame.html", "§§URL§§frame.html"},
-            IE = "§§URL§§subdir/frame.html")
+    @Alerts({"§§URL§§subdir/frame.html", "§§URL§§frame.html"})
     public void location() throws Exception {
         location("Frame1.location = \"frame.html\"");
         location("Frame1.location.replace(\"frame.html\")");
@@ -314,8 +313,7 @@ public class HTMLFrameElement2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "[object HTMLFrameElement]",
-            IE = "[object Window]")
+    @Alerts("[object HTMLFrameElement]")
     public void frames_framesetOnLoad() throws Exception {
         final String mainHtml =
             "<html><head>\n"
@@ -342,8 +340,7 @@ public class HTMLFrameElement2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "[object HTMLFrameElement]",
-            IE = "[object Window]")
+    @Alerts("[object HTMLFrameElement]")
     public void frames_bodyOnLoad() throws Exception {
         final String mainHtml =
             "<html><head>\n"
@@ -369,8 +366,7 @@ public class HTMLFrameElement2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "[object HTMLFrameElement]",
-            IE = "[object Window]")
+    @Alerts("[object HTMLFrameElement]")
     public void parent_frames() throws Exception {
         final String mainHtml =
             "<html><head>\n"
@@ -518,15 +514,10 @@ public class HTMLFrameElement2Test extends WebDriverTestCase {
         assertEquals(getExpectedAlerts()[2], driver.findElement(By.tagName("body")).getText());
 
         driver.findElement(By.name("onloadFrameAnchor")).click();
-        final boolean ie = getBrowserVersion().isIE();
         verifyAlerts(driver, "Body alert.");
-        if (!ie) {
-            verifyAlerts(driver, "Onload alert.");
-        }
+        verifyAlerts(driver, "Onload alert.");
+
         driver.switchTo().defaultContent();
-        if (ie) {
-            verifyAlerts(driver, "Onload alert.");
-        }
         Thread.sleep(1000);
 
         driver.switchTo().frame("header");
@@ -601,15 +592,9 @@ public class HTMLFrameElement2Test extends WebDriverTestCase {
         assertEquals(getExpectedAlerts()[2], driver.findElement(By.tagName("body")).getText());
 
         driver.findElement(By.name("onloadFrameAnchor")).click();
-        final boolean ie = getBrowserVersion().isIE();
         verifyAlerts(driver, "Body alert.");
-        if (!ie) {
-            verifyAlerts(driver, "Onload alert.");
-        }
+        verifyAlerts(driver, "Onload alert.");
         driver.switchTo().defaultContent();
-        if (ie) {
-            verifyAlerts(driver, "Onload alert.");
-        }
         Thread.sleep(1000);
 
         driver.switchTo().frame("header");
@@ -730,8 +715,7 @@ public class HTMLFrameElement2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"loaded", "null"},
-            IE = {"loaded", "error"})
+    @Alerts({"loaded", "null"})
     public void deny() throws Exception {
         final String html
             = "<!DOCTYPE html>\n"

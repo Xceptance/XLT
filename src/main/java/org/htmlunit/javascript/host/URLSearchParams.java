@@ -14,11 +14,6 @@
  */
 package org.htmlunit.javascript.host;
 
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -61,7 +56,7 @@ import org.htmlunit.util.UrlUtils;
  * @author cd alexndr
  * @author Lai Quang Duong
  */
-@JsxClass({CHROME, EDGE, FF, FF_ESR})
+@JsxClass
 public class URLSearchParams extends HtmlUnitScriptable {
 
     private static final Log LOG = LogFactory.getLog(URLSearchParams.class);
@@ -456,7 +451,7 @@ public class URLSearchParams extends HtmlUnitScriptable {
      * @return an iterator.
      */
     @JsxFunction
-    @JsxSymbol(value = {CHROME, EDGE, FF, FF_ESR}, symbolName = "iterator")
+    @JsxSymbol(symbolName = "iterator")
     public Object entries() {
         final List<NameValuePair> splitted = splitQuery();
 
@@ -495,7 +490,7 @@ public class URLSearchParams extends HtmlUnitScriptable {
     /**
      * @return the total number of search parameter entries
      */
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxGetter
     public int getSize() {
         final List<NameValuePair> splitted = splitQuery();
         return splitted.size();

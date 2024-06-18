@@ -14,12 +14,6 @@
  */
 package org.htmlunit.javascript.host.html;
 
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
-
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.HtmlMeta;
 import org.htmlunit.javascript.configuration.JsxClass;
@@ -46,27 +40,9 @@ public class HTMLMetaElement extends HTMLElement {
      * JavaScript constructor.
      */
     @Override
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
         super.jsConstructor();
-    }
-
-    /**
-     * Returns the {@code charset} attributee.
-     * @return the {@code charset} attribute
-     */
-    @JsxGetter(IE)
-    public String getCharset() {
-        return "";
-    }
-
-    /**
-     * Sets the {@code charset} attribute.
-     * @param charset the {@code charset} attribute
-     */
-    @JsxSetter(IE)
-    public void setCharset(final String charset) {
-        //empty
     }
 
     /**
@@ -146,7 +122,7 @@ public class HTMLMetaElement extends HTMLElement {
     /**
      * @return the {@code meta} attribute
      */
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxGetter
     public String getMedia() {
         return getDomNodeOrDie().getAttribute("media");
     }
@@ -154,27 +130,9 @@ public class HTMLMetaElement extends HTMLElement {
     /**
      * @param media the media attribute
      */
-    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxSetter
     public void setMedia(final String media) {
         getDomNodeOrDie().setAttribute("media", media);
-    }
-
-    /**
-     * Returns the {@code url} attribute.
-     * @return the {@code url} attribute
-     */
-    @JsxGetter(IE)
-    public String getUrl() {
-        return "";
-    }
-
-    /**
-     * Sets the {@code url} attribute.
-     * @param url the {@code url} attribute
-     */
-    @JsxSetter(IE)
-    public void setUrl(final String url) {
-        //empty
     }
 
     /**

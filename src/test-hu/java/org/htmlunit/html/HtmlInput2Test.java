@@ -130,8 +130,7 @@ public final class HtmlInput2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"mousedown; onfocus; mouseup; onclick; onchange;", ""},
-            IE = {"mousedown; onfocus; mouseup; onchange; onclick;", ""})
+    @Alerts({"mousedown; onfocus; mouseup; onclick; onchange;", ""})
     public void clickCheckboxEventSequence() throws Exception {
         testClickEventSequence("<input type='checkbox' id='" + TEST_ID + "'>Check", false);
     }
@@ -153,8 +152,7 @@ public final class HtmlInput2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"mousedown; onfocus; mouseup; onclick; onchange;", ""},
-            IE = {"mousedown; onfocus; mouseup; onchange; onclick;", ""})
+    @Alerts({"mousedown; onfocus; mouseup; onclick; onchange;", ""})
     public void clickRadioEventSequence() throws Exception {
         testClickEventSequence("<input type='radio' name='test' id='" + TEST_ID + "'>Check", false);
     }
@@ -191,8 +189,7 @@ public final class HtmlInput2Test extends WebDriverTestCase {
     @BuggyWebDriver(CHROME = {"onfocus; onchange; mouseup; onclick;", ""},
                     EDGE = {"onfocus; onchange; mouseup; onclick;", ""},
                     FF = {"mousedown; onfocus; onchange; mouseup; onclick;", ""},
-                    FF_ESR = {"mousedown; onfocus; onchange; mouseup; onclick;", ""},
-                    IE = {"mousedown; onchange; mouseup; onclick; onfocus;", ""})
+                    FF_ESR = {"mousedown; onfocus; onchange; mouseup; onclick;", ""})
     public void clickOptionEventSequence() throws Exception {
         testClickEventSequence("<select size='2'><option id='" + TEST_ID + "'>1</option></select>", false);
     }

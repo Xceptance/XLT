@@ -14,8 +14,6 @@
  */
 package org.htmlunit.javascript;
 
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
-
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
@@ -116,9 +114,7 @@ public class RhinoTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"true", "true", "true"},
-            IE = {"true.constructor", "1.constructor", "test.constructor"})
-    @NotYetImplemented(IE)
+    @Alerts({"true", "true", "true"})
     public void isStrict_constructor() throws Exception {
         final String html
             = "<html>\n"

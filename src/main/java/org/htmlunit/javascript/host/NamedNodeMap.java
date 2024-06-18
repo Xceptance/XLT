@@ -14,17 +14,11 @@
  */
 package org.htmlunit.javascript.host;
 
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-
-import org.htmlunit.corejs.javascript.ES6Iterator;
-import org.htmlunit.corejs.javascript.NativeArrayIterator;
 import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.javascript.HtmlUnitScriptable;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
@@ -61,7 +55,7 @@ public class NamedNodeMap extends HtmlUnitScriptable {
     /**
      * JavaScript constructor.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
     }
 
@@ -228,8 +222,8 @@ public class NamedNodeMap extends HtmlUnitScriptable {
         return index >= 0 && index < getLength();
     }
 
-    @JsxSymbol({CHROME, EDGE, FF, FF_ESR})
-    public ES6Iterator iterator() {
-        return new NativeArrayIterator(getParentScope(), this, NativeArrayIterator.ARRAY_ITERATOR_TYPE.VALUES);
+    @JsxSymbol
+    public Scriptable iterator() {
+        return JavaScriptEngine.newArrayIteratorTypeValues(getParentScope(), this);
     }
 }

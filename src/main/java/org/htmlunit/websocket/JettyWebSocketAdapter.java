@@ -19,13 +19,12 @@ import java.net.URI;
 import java.nio.ByteBuffer;
 import java.util.concurrent.Future;
 
-import org.eclipse.jetty.util.ssl.SslContextFactory;
-import org.eclipse.jetty.websocket.api.Session;
-import org.eclipse.jetty.websocket.api.WebSocketPolicy;
-import org.eclipse.jetty.websocket.client.WebSocketClient;
 import org.htmlunit.WebClient;
 import org.htmlunit.WebClientOptions;
-import org.htmlunit.corejs.javascript.typedarrays.NativeArrayBuffer;
+import org.htmlunit.jetty.util.ssl.SslContextFactory;
+import org.htmlunit.jetty.websocket.api.Session;
+import org.htmlunit.jetty.websocket.api.WebSocketPolicy;
+import org.htmlunit.jetty.websocket.client.WebSocketClient;
 
 /**
  * Jetty based impl of the WebSocketAdapter.
@@ -104,10 +103,8 @@ public abstract class JettyWebSocketAdapter implements WebSocketAdapter {
         if (content instanceof String) {
             outgoingSession_.getRemote().sendString((String) content);
         }
-        else if (content instanceof NativeArrayBuffer) {
-            final byte[] bytes = ((NativeArrayBuffer) content).getBuffer();
-            final ByteBuffer buffer = ByteBuffer.wrap(bytes);
-            outgoingSession_.getRemote().sendBytes(buffer);
+        else if (content instanceof ByteBuffer) {
+            outgoingSession_.getRemote().sendBytes((ByteBuffer) content);
         }
         else {
             throw new IllegalStateException(
@@ -142,7 +139,7 @@ public abstract class JettyWebSocketAdapter implements WebSocketAdapter {
         }
     }
 
-    private class JettyWebSocketAdapterImpl extends org.eclipse.jetty.websocket.api.WebSocketAdapter {
+    private class JettyWebSocketAdapterImpl extends org.htmlunit.jetty.websocket.api.WebSocketAdapter {
 
         JettyWebSocketAdapterImpl() {
         }

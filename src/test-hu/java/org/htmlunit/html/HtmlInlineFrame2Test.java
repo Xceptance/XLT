@@ -16,8 +16,8 @@ package org.htmlunit.html;
 
 import static org.htmlunit.junit.BrowserRunner.TestedBrowser.CHROME;
 import static org.htmlunit.junit.BrowserRunner.TestedBrowser.EDGE;
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 
+import java.io.File;
 import java.net.URL;
 import java.util.Map;
 
@@ -96,7 +96,7 @@ public class HtmlInlineFrame2Test extends WebDriverTestCase {
     }
 
     /**
-     * Test, the right frame is used for a target, even if some frames
+     * Test, the correct frame is used for a target, even if some frames
      * have the same name.
      *
      * @throws Exception if the test fails
@@ -210,9 +210,8 @@ public class HtmlInlineFrame2Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "about:blank",
             CHROME = "about://unsupported",
-            EDGE = "about://unsupported",
-            IE = "exception")
-    @NotYetImplemented({CHROME, EDGE, IE})
+            EDGE = "about://unsupported")
+    @NotYetImplemented({CHROME, EDGE})
     public void aboutSrc() throws Exception {
         final String html
             = "<html><head>\n"
@@ -245,8 +244,7 @@ public class HtmlInlineFrame2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"1:true", "2:false", "3:false", "4:false"},
-            IE = {"1:false", "2:false", "3:false", "4:false"})
+    @Alerts({"1:true", "2:false", "3:false", "4:false"})
     @HtmlUnitNYI(CHROME = {"1:false", "2:false", "3:false", "4:false"},
             EDGE = {"1:false", "2:false", "3:false", "4:false"},
             FF = {"1:false", "2:false", "3:false", "4:false"},
@@ -308,5 +306,30 @@ public class HtmlInlineFrame2Test extends WebDriverTestCase {
 
         final Map<String, String> lastAdditionalHeaders = getMockWebConnection().getLastAdditionalHeaders();
         assertEquals(getExpectedAlerts()[0], lastAdditionalHeaders.get(HttpHeader.REFERER));
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void localFile() throws Exception {
+        final URL fileURL = getClass().getClassLoader().getResource("testfiles/xhtml.html");
+        final File file = new File(fileURL.toURI());
+        assertTrue("File '" + file.getAbsolutePath() + "' does not exist", file.exists());
+
+        final String html = "<html>"
+                + "<head><title>Top Page</title></head>\n"
+                + "<body>\n"
+                + "  <iframe id='myFrame' src='" + fileURL + "'></iframe>\n"
+                + "  <div>HtmlUnit</div>\n"
+                + "</body>\n"
+                + "</html>";
+
+        final WebDriver driver = loadPage2(html);
+        assertTitle(driver, "Top Page");
+        assertEquals("HtmlUnit", driver.findElement(By.tagName("body")).getText());
+
+        driver.switchTo().frame("myFrame");
+        assertEquals("", driver.findElement(By.tagName("body")).getText());
     }
 }

@@ -14,15 +14,6 @@
  */
 package org.htmlunit.javascript.host.xml;
 
-import static org.htmlunit.BrowserVersionFeatures.JS_DOMPARSER_EMPTY_STRING_IS_ERROR;
-import static org.htmlunit.BrowserVersionFeatures.JS_DOMPARSER_EXCEPTION_ON_ERROR;
-import static org.htmlunit.BrowserVersionFeatures.JS_DOMPARSER_PARSERERROR_ON_ERROR;
-import static org.htmlunit.BrowserVersionFeatures.JS_XML_GET_ELEMENTS_BY_TAG_NAME_LOCAL;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.function.Predicate;
@@ -44,7 +35,6 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.host.Element;
 import org.htmlunit.javascript.host.dom.Attr;
-import org.htmlunit.javascript.host.dom.DOMException;
 import org.htmlunit.javascript.host.dom.Document;
 import org.htmlunit.javascript.host.html.HTMLCollection;
 import org.htmlunit.svg.SvgElement;
@@ -76,7 +66,7 @@ public class XMLDocument extends Document {
      * JavaScript constructor.
      */
     @Override
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
         super.jsConstructor();
     }
@@ -107,7 +97,7 @@ public class XMLDocument extends Document {
     public boolean loadXML(final String strXML) {
         final WebWindow webWindow = getWindow().getWebWindow();
         try {
-            if (StringUtils.isEmpty(strXML) && getBrowserVersion().hasFeature(JS_DOMPARSER_EMPTY_STRING_IS_ERROR)) {
+            if (StringUtils.isEmpty(strXML)) {
                 throw new IOException("Error parsing XML '" + strXML + "'");
             }
 
@@ -122,19 +112,12 @@ public class XMLDocument extends Document {
                 LOG.debug("Error parsing XML\n" + strXML, e);
             }
 
-            if (getBrowserVersion().hasFeature(JS_DOMPARSER_EXCEPTION_ON_ERROR)) {
-                throw asJavaScriptException(
-                        new DOMException("Syntax Error",
-                            DOMException.SYNTAX_ERR));
+            try {
+                final XmlPage page = createParserErrorXmlPage("Syntax Error", webWindow);
+                setDomNode(page);
             }
-            if (getBrowserVersion().hasFeature(JS_DOMPARSER_PARSERERROR_ON_ERROR)) {
-                try {
-                    final XmlPage page = createParserErrorXmlPage("Syntax Error", webWindow);
-                    setDomNode(page);
-                }
-                catch (final IOException eI) {
-                    LOG.error("Could not handle ParserError", e);
-                }
+            catch (final IOException eI) {
+                LOG.error("Could not handle ParserError", e);
             }
 
             return false;
@@ -214,14 +197,7 @@ public class XMLDocument extends Document {
         elements.setIsMatchingPredicate(
                 (Predicate<DomNode> & Serializable)
                 node -> {
-                    final String nodeName;
-                    if (getBrowserVersion().hasFeature(JS_XML_GET_ELEMENTS_BY_TAG_NAME_LOCAL)) {
-                        nodeName = node.getLocalName();
-                    }
-                    else {
-                        nodeName = node.getNodeName();
-                    }
-
+                    final String nodeName = node.getNodeName();
                     return nodeName.equals(tagName);
                 });
         return elements;

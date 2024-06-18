@@ -14,13 +14,6 @@
  */
 package org.htmlunit.javascript.host.worker;
 
-import static org.htmlunit.BrowserVersionFeatures.JS_WORKER_IMPORT_SCRIPTS_ACCEPTS_ALL;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
-
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
@@ -35,10 +28,9 @@ import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.ContextAction;
 import org.htmlunit.corejs.javascript.ContextFactory;
 import org.htmlunit.corejs.javascript.Function;
-import org.htmlunit.corejs.javascript.Script;
 import org.htmlunit.corejs.javascript.Scriptable;
-import org.htmlunit.corejs.javascript.Undefined;
 import org.htmlunit.html.HtmlPage;
+import org.htmlunit.javascript.AbstractJavaScriptEngine;
 import org.htmlunit.javascript.HtmlUnitContextFactory;
 import org.htmlunit.javascript.HtmlUnitScriptable;
 import org.htmlunit.javascript.JavaScriptEngine;
@@ -65,8 +57,7 @@ import org.htmlunit.util.MimeType;
  * @author Ronald Brill
  * @author Rural Hunter
  */
-@JsxClass({CHROME, EDGE, FF, FF_ESR})
-@JsxClass(className = "WorkerGlobalScope", value = IE)
+@JsxClass
 public class DedicatedWorkerGlobalScope extends EventTarget implements WindowOrWorkerGlobalScope {
 
     private static final Log LOG = LogFactory.getLog(DedicatedWorkerGlobalScope.class);
@@ -173,7 +164,7 @@ public class DedicatedWorkerGlobalScope extends EventTarget implements WindowOrW
     public void postMessage(final Object message) {
         final MessageEvent event = new MessageEvent();
         event.initMessageEvent(Event.TYPE_MESSAGE, false, false, message, origin_, "",
-                                    owningWindow_, Undefined.instance);
+                                    owningWindow_, JavaScriptEngine.Undefined);
         event.setParentScope(owningWindow_);
         event.setPrototype(owningWindow_.getPrototype(event.getClass()));
 
@@ -200,7 +191,7 @@ public class DedicatedWorkerGlobalScope extends EventTarget implements WindowOrW
     void messagePosted(final Object message) {
         final MessageEvent event = new MessageEvent();
         event.initMessageEvent(Event.TYPE_MESSAGE, false, false, message, origin_, "",
-                                    owningWindow_, Undefined.instance);
+                                    owningWindow_, JavaScriptEngine.Undefined);
         event.setParentScope(owningWindow_);
         event.setPrototype(owningWindow_.getPrototype(event.getClass()));
 
@@ -253,12 +244,9 @@ public class DedicatedWorkerGlobalScope extends EventTarget implements WindowOrW
         final DedicatedWorkerGlobalScope workerScope = (DedicatedWorkerGlobalScope) thisObj;
 
         final WebClient webClient = workerScope.owningWindow_.getWebWindow().getWebClient();
-        final boolean checkContentType = !webClient.getBrowserVersion()
-                .hasFeature(JS_WORKER_IMPORT_SCRIPTS_ACCEPTS_ALL);
-
         for (final Object arg : args) {
             final String url = JavaScriptEngine.toString(arg);
-            workerScope.loadAndExecute(webClient, url, cx, checkContentType);
+            workerScope.loadAndExecute(webClient, url, cx, true);
         }
     }
 
@@ -275,18 +263,11 @@ public class DedicatedWorkerGlobalScope extends EventTarget implements WindowOrW
         }
 
         final String scriptCode = response.getContentAsString();
-        final JavaScriptEngine javaScriptEngine = (JavaScriptEngine) webClient.getJavaScriptEngine();
+        final AbstractJavaScriptEngine<?> javaScriptEngine = webClient.getJavaScriptEngine();
 
         final DedicatedWorkerGlobalScope thisScope = this;
         final ContextAction<Object> action = cx -> {
-            final Script script = javaScriptEngine.compile(page, thisScope, scriptCode,
-                    fullUrl.toExternalForm(), 1);
-
-            // script might be null here e.g. if there is a syntax error
-            if (script != null) {
-                return javaScriptEngine.execute(page, thisScope, script);
-            }
-            return null;
+            return javaScriptEngine.execute(page, thisScope, scriptCode, fullUrl.toExternalForm(), 1);
         };
 
         final HtmlUnitContextFactory cf = javaScriptEngine.getContextFactory();

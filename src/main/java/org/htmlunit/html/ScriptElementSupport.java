@@ -14,10 +14,6 @@
  */
 package org.htmlunit.html;
 
-import static org.htmlunit.BrowserVersionFeatures.EVENT_ONLOAD_INTERNAL_JAVASCRIPT;
-import static org.htmlunit.BrowserVersionFeatures.HTMLSCRIPT_TRIM_TYPE;
-import static org.htmlunit.BrowserVersionFeatures.JS_SCRIPT_HANDLE_204_AS_ERROR;
-import static org.htmlunit.BrowserVersionFeatures.JS_SCRIPT_SUPPORTS_FOR_AND_EVENT_WINDOW;
 import static org.htmlunit.html.DomElement.ATTRIBUTE_NOT_DEFINED;
 
 import java.nio.charset.Charset;
@@ -25,7 +21,6 @@ import java.nio.charset.Charset;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.htmlunit.BrowserVersion;
 import org.htmlunit.FailingHttpStatusCodeException;
 import org.htmlunit.SgmlPage;
 import org.htmlunit.WebWindow;
@@ -35,7 +30,6 @@ import org.htmlunit.javascript.PostponedAction;
 import org.htmlunit.javascript.host.Window;
 import org.htmlunit.javascript.host.dom.Document;
 import org.htmlunit.javascript.host.event.Event;
-import org.htmlunit.javascript.host.event.EventHandler;
 import org.htmlunit.javascript.host.event.EventTarget;
 import org.htmlunit.javascript.host.html.HTMLDocument;
 import org.htmlunit.protocol.javascript.JavaScriptURLConnection;
@@ -203,13 +197,7 @@ public final class ScriptElementSupport {
                         executeEvent(element, Event.TYPE_ERROR);
                     }
                     else if (result == JavaScriptLoadResult.NO_CONTENT) {
-                        final BrowserVersion browserVersion = page.getWebClient().getBrowserVersion();
-                        if (browserVersion.hasFeature(JS_SCRIPT_HANDLE_204_AS_ERROR)) {
-                            executeEvent(element, Event.TYPE_ERROR);
-                        }
-                        else {
-                            executeEvent(element, Event.TYPE_LOAD);
-                        }
+                        executeEvent(element, Event.TYPE_LOAD);
                     }
                 }
                 catch (final FailingHttpStatusCodeException e) {
@@ -228,10 +216,6 @@ public final class ScriptElementSupport {
             }
             finally {
                 doc.setCurrentScript(null);
-            }
-
-            if (element.hasFeature(EVENT_ONLOAD_INTERNAL_JAVASCRIPT)) {
-                executeEvent(element, Event.TYPE_LOAD);
             }
         }
     }
@@ -302,20 +286,13 @@ public final class ScriptElementSupport {
      * Returns true if a script with the specified type and language attributes is actually JavaScript.
      * According to <a href="http://www.w3.org/TR/REC-html40/types.html#h-6.7">W3C recommendation</a>
      * are content types case insensitive.<br>
-     * IE supports only a limited number of values for the type attribute. For testing you can
-     * use <a href="http://www.robinlionheart.com/stds/html4/scripts">
-     * http://www.robinlionheart.com/stds/html4/scripts</a>.
      * @param element the element
      * @param typeAttribute the type attribute specified in the script tag
      * @param languageAttribute the language attribute specified in the script tag
      * @return true if the script is JavaScript
      */
     public static boolean isJavaScript(final DomElement element, String typeAttribute, final String languageAttribute) {
-        final BrowserVersion browserVersion = element.getPage().getWebClient().getBrowserVersion();
-
-        if (browserVersion.hasFeature(HTMLSCRIPT_TRIM_TYPE)) {
-            typeAttribute = typeAttribute.trim();
-        }
+        typeAttribute = typeAttribute.trim();
 
         if (StringUtils.isNotEmpty(typeAttribute)) {
             return MimeType.isJavascriptMimeType(typeAttribute);
@@ -355,15 +332,6 @@ public final class ScriptElementSupport {
         }
 
         final String scriptCode = getScriptCode(element);
-        if (event != ATTRIBUTE_NOT_DEFINED
-                && forr != ATTRIBUTE_NOT_DEFINED
-                && element.hasFeature(JS_SCRIPT_SUPPORTS_FOR_AND_EVENT_WINDOW)
-                && "window".equals(forr)) {
-            final Window window = element.getPage().getEnclosingWindow().getScriptableObject();
-            final EventHandler function = new EventHandler(element, event, scriptCode);
-            window.getEventListenersContainer().addEventListener(StringUtils.substring(event, 2), function, false);
-            return;
-        }
         if (forr == ATTRIBUTE_NOT_DEFINED || "onload".equals(event)) {
             final String url = element.getPage().getUrl().toExternalForm();
             final int line1 = element.getStartLineNumber();

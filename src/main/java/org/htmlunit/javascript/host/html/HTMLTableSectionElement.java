@@ -14,13 +14,6 @@
  */
 package org.htmlunit.javascript.host.html;
 
-import static org.htmlunit.BrowserVersionFeatures.JS_TABLE_VALIGN_SUPPORTS_IE_VALUES;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
-
 import org.htmlunit.html.HtmlTableBody;
 import org.htmlunit.html.HtmlTableFooter;
 import org.htmlunit.html.HtmlTableHeader;
@@ -42,9 +35,6 @@ import org.htmlunit.javascript.configuration.JsxSetter;
 @JsxClass(domClass = HtmlTableFooter.class)
 public class HTMLTableSectionElement extends RowContainer {
 
-    /** The valid "vAlign" values for this element, when emulating IE. */
-    private static final String[] VALIGN_VALID_VALUES_IE = {"top", "bottom", "middle", "baseline"};
-
     /** The default value of the "vAlign" property. */
     private static final String VALIGN_DEFAULT_VALUE = "top";
 
@@ -58,7 +48,7 @@ public class HTMLTableSectionElement extends RowContainer {
      * JavaScript constructor.
      */
     @Override
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
         super.jsConstructor();
     }
@@ -86,9 +76,6 @@ public class HTMLTableSectionElement extends RowContainer {
      * @return the valid "vAlign" values for this element, depending on the browser being emulated
      */
     private String[] getValidVAlignValues() {
-        if (getBrowserVersion().hasFeature(JS_TABLE_VALIGN_SUPPORTS_IE_VALUES)) {
-            return VALIGN_VALID_VALUES_IE;
-        }
         return null;
     }
 
@@ -130,25 +117,5 @@ public class HTMLTableSectionElement extends RowContainer {
     @JsxSetter
     public void setChOff(final String chOff) {
         super.setChOff(chOff);
-    }
-
-    /**
-     * Returns the value of the {@code bgColor} attribute.
-     * @return the value of the {@code bgColor} attribute
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms533505.aspx">MSDN Documentation</a>
-     */
-    @JsxGetter(IE)
-    public String getBgColor() {
-        return getDomNodeOrDie().getAttribute("bgColor");
-    }
-
-    /**
-     * Sets the value of the {@code bgColor} attribute.
-     * @param bgColor the value of the {@code bgColor} attribute
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms533505.aspx">MSDN Documentation</a>
-     */
-    @JsxSetter(IE)
-    public void setBgColor(final String bgColor) {
-        setColorAttribute("bgColor", bgColor);
     }
 }

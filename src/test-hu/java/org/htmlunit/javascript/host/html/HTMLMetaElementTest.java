@@ -35,8 +35,7 @@ public class HTMLMetaElementTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "text/html; charset=utf-8", HttpHeader.CONTENT_TYPE, "", "", "undefined", ""},
-            IE = {"", "text/html; charset=utf-8", HttpHeader.CONTENT_TYPE, "", "", "", "undefined"})
+    @Alerts({"undefined", "text/html; charset=utf-8", HttpHeader.CONTENT_TYPE, "", "", "undefined", ""})
     public void name() throws Exception {
         final String html =
             "<html>\n"
@@ -66,8 +65,7 @@ public class HTMLMetaElementTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "only screen and (max-width: 600px)",
-            IE = "undefined")
+    @Alerts("only screen and (max-width: 600px)")
     public void media() throws Exception {
         final String html =
             "<html>\n"

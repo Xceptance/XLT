@@ -35,8 +35,7 @@ public class HtmlOutputTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object HTMLOutputElement]", "[object HTMLFormElement]"},
-            IE = {"[object HTMLUnknownElement]", "undefined"})
+    @Alerts({"[object HTMLOutputElement]", "[object HTMLFormElement]"})
     public void simpleScriptable() throws Exception {
         final String html
             = "<html><head>\n"
@@ -104,8 +103,7 @@ public class HtmlOutputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"false", "false", "false", "false", "false"},
-            IE = {"undefined", "undefined", "undefined", "undefined", "undefined"})
+    @Alerts({"false", "false", "false", "false", "false"})
     public void willValidate() throws Exception {
         final String html =
                 "<html><head>\n"
@@ -137,10 +135,9 @@ public class HtmlOutputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "false"},
-            IE = "no checkValidity")
+    @Alerts({"true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "false"})
     public void validationEmpty() throws Exception {
         validation("<output id='e1'>o1</output>\n", "");
     }
@@ -149,10 +146,9 @@ public class HtmlOutputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"true",
-                       "false-true-false-false-false-false-false-false-false-false-false",
-                       "false"},
-            IE = "no checkValidity")
+    @Alerts({"true",
+             "false-true-false-false-false-false-false-false-false-false-false",
+             "false"})
     public void validationCustomValidity() throws Exception {
         validation("<output id='e1'>o1</output>\n", "elem.setCustomValidity('Invalid');");
     }
@@ -161,10 +157,9 @@ public class HtmlOutputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"true",
-                       "false-true-false-false-false-false-false-false-false-false-false",
-                       "false"},
-            IE = "no checkValidity")
+    @Alerts({"true",
+             "false-true-false-false-false-false-false-false-false-false-false",
+             "false"})
     public void validationBlankCustomValidity() throws Exception {
         validation("<output id='e1'>o1</output>\n", "elem.setCustomValidity(' ');\n");
     }
@@ -173,10 +168,9 @@ public class HtmlOutputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "false"},
-            IE = "no checkValidity")
+    @Alerts({"true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "false"})
     public void validationResetCustomValidity() throws Exception {
         validation("<output id='e1'>o1</output>\n",
                 "elem.setCustomValidity('Invalid');elem.setCustomValidity('');");
@@ -186,10 +180,9 @@ public class HtmlOutputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "false"},
-            IE = "no checkValidity")
+    @Alerts({"true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "false"})
     public void validationRequired() throws Exception {
         validation("<output id='e1' required></output>\n", "");
     }

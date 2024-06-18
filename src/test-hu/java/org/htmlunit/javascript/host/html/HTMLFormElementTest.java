@@ -14,9 +14,9 @@
  */
 package org.htmlunit.javascript.host.html;
 
+import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static java.nio.charset.StandardCharsets.UTF_16;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 import static org.junit.Assert.fail;
 
 import java.io.File;
@@ -38,7 +38,6 @@ import org.openqa.selenium.NoSuchWindowException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
-import org.openqa.selenium.ie.InternetExplorerDriver;
 
 /**
  * Tests for {@link HTMLFormElement}.
@@ -132,8 +131,7 @@ public class HTMLFormElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"3", "textInput1", "button1", "textInput3"},
-            IE = {"1", "button1"})
+    @Alerts({"3", "textInput1", "button1", "textInput3"})
     public void elementsAccessorFormAttribute() throws Exception {
         final String html
             = "<html><head><script>\n"
@@ -341,11 +339,9 @@ public class HTMLFormElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"application/x-www-form-urlencoded",
-                       "application/x-www-form-urlencoded",
-                       "application/x-www-form-urlencoded"},
-            IE = {"exception", "application/x-www-form-urlencoded",
-                  "application/x-www-form-urlencoded"})
+    @Alerts({"application/x-www-form-urlencoded",
+             "application/x-www-form-urlencoded",
+             "application/x-www-form-urlencoded"})
     public void jsDefaultEnctype() throws Exception {
         jsEnctype(null);
         jsEncoding(null);
@@ -355,11 +351,9 @@ public class HTMLFormElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"application/x-www-form-urlencoded",
-                       "application/x-www-form-urlencoded",
-                       "application/x-www-form-urlencoded"},
-            IE = {"exception", "application/x-www-form-urlencoded",
-                  "application/x-www-form-urlencoded"})
+    @Alerts({"application/x-www-form-urlencoded",
+             "application/x-www-form-urlencoded",
+             "application/x-www-form-urlencoded"})
     public void jsEmptyEnctype() throws Exception {
         jsEnctype("");
         jsEncoding("");
@@ -369,11 +363,9 @@ public class HTMLFormElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"application/x-www-form-urlencoded",
-                       "application/x-www-form-urlencoded",
-                       "application/x-www-form-urlencoded"},
-            IE = {"exception", "application/x-www-form-urlencoded",
-                  "application/x-www-form-urlencoded"})
+    @Alerts({"application/x-www-form-urlencoded",
+             "application/x-www-form-urlencoded",
+             "application/x-www-form-urlencoded"})
     public void jsBlankEnctype() throws Exception {
         jsEnctype(" ");
         jsEncoding(" ");
@@ -383,11 +375,9 @@ public class HTMLFormElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"application/x-www-form-urlencoded",
-                       "application/x-www-form-urlencoded",
-                       "application/x-www-form-urlencoded"},
-            IE = {"exception", "application/x-www-form-urlencoded",
-                  "application/x-www-form-urlencoded"})
+    @Alerts({"application/x-www-form-urlencoded",
+             "application/x-www-form-urlencoded",
+             "application/x-www-form-urlencoded"})
     public void jsUnknownEnctype() throws Exception {
         jsEnctype("unknown");
         jsEncoding("unknown");
@@ -429,11 +419,9 @@ public class HTMLFormElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"application/x-www-form-urlencoded",
-                       "application/x-www-form-urlencoded",
-                       "application/x-www-form-urlencoded"},
-            IE = {"exception", "application/x-www-form-urlencoded",
-                  "application/x-www-form-urlencoded"})
+    @Alerts({"application/x-www-form-urlencoded",
+             "application/x-www-form-urlencoded",
+             "application/x-www-form-urlencoded"})
     public void jsXmlEnctype() throws Exception {
         jsEnctype("text/xml");
         jsEncoding("text/xml");
@@ -443,11 +431,9 @@ public class HTMLFormElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"application/x-www-form-urlencoded",
-                       "application/x-www-form-urlencoded",
-                       "application/x-www-form-urlencoded"},
-            IE = {"exception", "application/x-www-form-urlencoded",
-                  "application/x-www-form-urlencoded"})
+    @Alerts({"application/x-www-form-urlencoded",
+             "application/x-www-form-urlencoded",
+             "application/x-www-form-urlencoded"})
     public void jsJsonEnctype() throws Exception {
         jsEnctype("application/json");
         jsEncoding("application/json");
@@ -549,8 +535,7 @@ public class HTMLFormElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"text/plain", "application/x-www-form-urlencoded", "newEncoding"},
-            IE = {"text/plain", "exception"})
+    @Alerts({"text/plain", "application/x-www-form-urlencoded", "newEncoding"})
     public void encodingProperty_textPlain() throws Exception {
         doTestProperty("encoding", "enctype", MimeType.TEXT_PLAIN, "newEncoding");
     }
@@ -559,8 +544,7 @@ public class HTMLFormElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"application/x-www-form-urlencoded", "application/x-www-form-urlencoded", "newEncoding"},
-            IE = {"application/x-www-form-urlencoded", "exception"})
+    @Alerts({"application/x-www-form-urlencoded", "application/x-www-form-urlencoded", "newEncoding"})
     public void encodingProperty_dummyValues() throws Exception {
         doTestProperty("encoding", "enctype", "myEncoding", "newEncoding");
     }
@@ -808,8 +792,7 @@ public class HTMLFormElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "§§URL§§",
-            IE = "")
+    @Alerts("§§URL§§")
     public void action() throws Exception {
         final String html =
             "<html>\n"
@@ -974,8 +957,7 @@ public class HTMLFormElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object HTMLInputElement]", "[object HTMLInputElement]"},
-            IE = {"undefined", "undefined"})
+    @Alerts({"[object HTMLInputElement]", "[object HTMLInputElement]"})
     public void fieldFoundWithIdByReference() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -1154,9 +1136,7 @@ public class HTMLFormElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"page1.html", "page2.html", "page1.html", "page1.html"},
-            IE = {"page1.html", "page1.html", "page1.html", "page1.html"})
-    @NotYetImplemented(IE)
+    @Alerts({"page1.html", "page2.html", "page1.html", "page1.html"})
     public void changeFormActionAfterSubmit() throws Exception {
         final String[] expectedFiles = getExpectedAlerts();
         setExpectedAlerts();
@@ -1194,8 +1174,7 @@ public class HTMLFormElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "exception",
-            IE = "radio")
+    @Alerts("exception")
     public void item() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -1222,8 +1201,7 @@ public class HTMLFormElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "exception",
-            IE = "2")
+    @Alerts("exception")
     public void item_many() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -1251,8 +1229,7 @@ public class HTMLFormElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "exception",
-            IE = "radio2")
+    @Alerts("exception")
     public void item_many_subindex() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -1280,8 +1257,7 @@ public class HTMLFormElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "exception",
-            IE = "radio2")
+    @Alerts("exception")
     public void item_integer() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -1311,9 +1287,7 @@ public class HTMLFormElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"page4.html?f1=v1&f2=v2", "page4.html?f1=v1&f2=v2", "page3.html?f1=v1", "page3.html?f1=v1"},
-            IE = {"page3.html?f1=v1", "page3.html?f1=v1", "page3.html?f1=v1", "page3.html?f1=v1"})
-    @NotYetImplemented(IE)
+    @Alerts({"page4.html?f1=v1&f2=v2", "page4.html?f1=v1&f2=v2", "page3.html?f1=v1", "page3.html?f1=v1"})
     public void changesAfterCallToSubmit() throws Exception {
         final String[] expectedUrlSuffixes = getExpectedAlerts();
         setExpectedAlerts();
@@ -1367,8 +1341,7 @@ public class HTMLFormElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "2",
-            IE = "3")
+    @Alerts("2")
     public void submit_twice() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -1571,7 +1544,7 @@ public class HTMLFormElementTest extends WebDriverTestCase {
     public void submitMultipartTextFieldWithRightEncoding() throws Exception {
         final String html = "<html><body onload='document.forms[0].submit()'>\n"
             + "<form action='foo.html' enctype='multipart/form-data' method='post'>\n"
-            + "  <input name='myField' value='éèêäöü'>\n"
+            + "  <input name='myField' value='éèê\u00e4\u00f6\u00fc'>\n"
             + "</form></body></html>";
 
         getMockWebConnection().setDefaultResponse("");
@@ -1581,7 +1554,7 @@ public class HTMLFormElementTest extends WebDriverTestCase {
         final String body = getMockWebConnection().getLastWebRequest().getRequestBody();
         final String expected = "Content-Disposition: form-data; name=\"myField\"\r\n"
             + "\r\n"
-            + "éèêäöü";
+            + "éèê\u00e4\u00f6\u00fc";
 
         assertTrue("Body: " + body, body.contains(expected));
     }
@@ -1674,12 +1647,12 @@ public class HTMLFormElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"application/x-www-form-urlencoded", "myField=éèêäöü"})
+    @Alerts({"application/x-www-form-urlencoded", "myField=éèê\u00e4\u00f6\u00fc"})
     public void submitUrlEncodedUnicode() throws Exception {
         final String html = "<html>\n"
                 + "<body onload='document.forms[0].submit()'>\n"
                 + "  <form action='foo.html' enctype='application/x-www-form-urlencoded' method='post'>\n"
-                + "    <input name='myField' value='éèêäöü'>\n"
+                + "    <input name='myField' value='éèê\u00e4\u00f6\u00fc'>\n"
                 + "  </form>\n"
                 + "</body>\n"
                 + "</html>";
@@ -1775,10 +1748,7 @@ public class HTMLFormElementTest extends WebDriverTestCase {
 
         final File tmpFile = File.createTempFile("htmlunit-test", ".txt");
         try {
-            String path = tmpFile.getAbsolutePath();
-            if (driver instanceof InternetExplorerDriver) {
-                path = path.substring(path.indexOf('/') + 1).replace('/', '\\');
-            }
+            final String path = tmpFile.getAbsolutePath();
             driver.findElement(By.id("f")).sendKeys(path);
             driver.findElement(By.id("clickMe")).click();
         }
@@ -1882,12 +1852,12 @@ public class HTMLFormElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"text/plain", "myField=éèêäöü\r\n"})
+    @Alerts({"text/plain", "myField=éèê\u00e4\u00f6\u00fc\u00a9\r\n"})
     public void submitPlainTextUnicode() throws Exception {
         final String html = "<html>\n"
                 + "<body onload='document.forms[0].submit()'>\n"
                 + "  <form action='foo.html' enctype='text/plain' method='post'>\n"
-                + "    <input name='myField' value='éèêäöü'>\n"
+                + "    <input name='myField' value='éèê\u00e4\u00f6\u00fc\u00a9'>\n"
                 + "  </form>\n"
                 + "</body>\n"
                 + "</html>";
@@ -1902,6 +1872,63 @@ public class HTMLFormElementTest extends WebDriverTestCase {
 
         final String body = getMockWebConnection().getLastWebRequest().getRequestBody();
         assertEquals(getExpectedAlerts()[1], body);
+    }
+
+    /**
+     * Ensure that text/plain form parameters are correctly encoded.
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"text/plain", "myField=éèê\u00e4\u00f6\u00fc\u00a9?\r\n"})
+    public void submitPlainTextISO_8859_1() throws Exception {
+        final String html = "<html>\n"
+                + "<body onload='document.forms[0].submit()'>\n"
+                + "  <form action='foo.html' enctype='text/plain' method='post'>\n"
+                + "    <input name='myField' value='éèê\u00e4\u00f6\u00fc\u00a9\u05d4'>\n"
+                + "  </form>\n"
+                + "</body>\n"
+                + "</html>";
+
+        getMockWebConnection().setDefaultResponse("");
+        loadPage2(html, URL_FIRST, "text/html;charset=ISO-8859-1", ISO_8859_1, null);
+        Thread.sleep(100);
+
+        final String headerContentType = getMockWebConnection().getLastWebRequest().getAdditionalHeaders()
+                .get(HttpHeader.CONTENT_TYPE);
+        assertEquals(getExpectedAlerts()[0], headerContentType);
+
+        final String body = getMockWebConnection().getLastWebRequest().getRequestBody();
+        assertEquals(getExpectedAlerts()[1], body);
+        assertNull(getMockWebConnection().getLastWebRequest().getCharset());
+    }
+
+
+    /**
+     * Ensure that text/plain form parameters are correctly encoded.
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"text/plain", "myField=Ã©Ã¨ÃªÃ¤Ã¶Ã¼Â©?\r\n"})
+    public void submitPlainTextISO_8859_1_AcceptCharsetUtf8() throws Exception {
+        final String html = "<html>\n"
+                + "<body onload='document.forms[0].submit()'>\n"
+                + "  <form action='foo.html' enctype='text/plain' accept-charset='utf8' method='post'>\n"
+                + "    <input name='myField' value='éèê\u00e4\u00f6\u00fc\u00a9\u05d4'>\n"
+                + "  </form>\n"
+                + "</body>\n"
+                + "</html>";
+
+        getMockWebConnection().setDefaultResponse("");
+        loadPage2(html, URL_FIRST, "text/html;charset=ISO-8859-1", ISO_8859_1, null);
+        Thread.sleep(100);
+
+        final String headerContentType = getMockWebConnection().getLastWebRequest().getAdditionalHeaders()
+                .get(HttpHeader.CONTENT_TYPE);
+        assertEquals(getExpectedAlerts()[0], headerContentType);
+
+        final String body = getMockWebConnection().getLastWebRequest().getRequestBody();
+        assertEquals(getExpectedAlerts()[1], body);
+        assertNull(getMockWebConnection().getLastWebRequest().getCharset());
     }
 
     /**
@@ -1929,6 +1956,7 @@ public class HTMLFormElementTest extends WebDriverTestCase {
 
         final String body = getMockWebConnection().getLastWebRequest().getRequestBody();
         assertEquals(getExpectedAlerts()[1], body);
+        assertNull(getMockWebConnection().getLastWebRequest().getCharset());
     }
 
     /**
@@ -1956,6 +1984,35 @@ public class HTMLFormElementTest extends WebDriverTestCase {
 
         final String body = getMockWebConnection().getLastWebRequest().getRequestBody();
         assertEquals(getExpectedAlerts()[1], body);
+        assertNull(getMockWebConnection().getLastWebRequest().getCharset());
+    }
+
+    /**
+     * Ensure that text/plain form parameters are correctly encoded.
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"text/plain", "myField=HtmlUnit \u00D0\u00BB\u00C6\u0089\r\n"})
+    public void submitPlainTextUnicodeUTF16AcceptCharsetUtf8() throws Exception {
+        final String html = "<html>\n"
+                + "<body onload='document.forms[0].submit()'>\n"
+                + "  <form action='foo.html' enctype='text/plain' accept-charset='utf8' method='post'>\n"
+                + "    <input name='myField' value='HtmlUnit \u043B\u0189'>\n"
+                + "  </form>\n"
+                + "</body>\n"
+                + "</html>";
+
+        getMockWebConnection().setDefaultResponse("");
+        loadPage2(html, URL_FIRST, "text/html;charset=UTF-16", UTF_16, null);
+        Thread.sleep(100);
+
+        final String headerContentType = getMockWebConnection().getLastWebRequest().getAdditionalHeaders()
+                .get(HttpHeader.CONTENT_TYPE);
+        assertEquals(getExpectedAlerts()[0], headerContentType);
+
+        final String body = getMockWebConnection().getLastWebRequest().getRequestBody();
+        assertEquals(getExpectedAlerts()[1], body);
+        assertNull(getMockWebConnection().getLastWebRequest().getCharset());
     }
 
     /**
@@ -1980,10 +2037,7 @@ public class HTMLFormElementTest extends WebDriverTestCase {
 
         final File tmpFile = File.createTempFile("htmlunit-test", ".txt");
         try {
-            String path = tmpFile.getAbsolutePath();
-            if (driver instanceof InternetExplorerDriver) {
-                path = path.substring(path.indexOf('/') + 1).replace('/', '\\');
-            }
+            final String path = tmpFile.getAbsolutePath();
             driver.findElement(By.id("f")).sendKeys(path);
             driver.findElement(By.id("clickMe")).click();
         }
@@ -2038,8 +2092,7 @@ public class HTMLFormElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"", "foo4?foo=", "script4.js"},
-            IE = {"", "foo0?foo=", "foo4?foo=", "script4.js"})
+    @Alerts({"", "foo4?foo=", "script4.js"})
     @NotYetImplemented
     public void submitTriggersRequestNotParsed() throws Exception {
         final String html = "<html><head><script>\n"
@@ -2083,12 +2136,9 @@ public class HTMLFormElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object HTMLInputElement]", "undefined",
-                       "[object HTMLInputElement]", "[object HTMLInputElement]",
-                       "[object HTMLInputElement]", "[object HTMLInputElement]", "[object HTMLInputElement]"},
-            IE = {"[object HTMLInputElement]", "undefined",
-                  "undefined", "[object HTMLInputElement]",
-                  "undefined", "undefined", "[object HTMLInputElement]"})
+    @Alerts({"[object HTMLInputElement]", "undefined",
+             "[object HTMLInputElement]", "[object HTMLInputElement]",
+             "[object HTMLInputElement]", "[object HTMLInputElement]", "[object HTMLInputElement]"})
     public void accessByNameAfterNameChange() throws Exception {
         final String html
             = "<html><head><script>\n"
@@ -2196,12 +2246,9 @@ public class HTMLFormElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"type: submit", "submitter: [object HTMLInputElement]",
-                       "srcElement null: false", "srcElement==form: true",
-                       "target null: false", "target==form: true"},
-            IE = {"type: submit", "submitter: undefined",
-                  "srcElement null: false", "srcElement==form: true",
-                  "target null: false", "target==form: true"})
+    @Alerts({"type: submit", "submitter: [object HTMLInputElement]",
+             "srcElement null: false", "srcElement==form: true",
+             "target null: false", "target==form: true"})
     public void onSubmitEvent() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -2325,8 +2372,7 @@ public class HTMLFormElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"Response", "param1=value1"},
-            IE = "requestSubmit() not available")
+    @Alerts({"Response", "param1=value1"})
     public void requestSubmit() throws Exception {
         final String html
             = "<html>\n"
@@ -2366,8 +2412,7 @@ public class HTMLFormElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"Response", "param1=value1"},
-            IE = "requestSubmit() not available")
+    @Alerts({"Response", "param1=value1"})
     public void requestSubmitWithSubmit() throws Exception {
         final String html
             = "<html>\n"
@@ -2409,8 +2454,7 @@ public class HTMLFormElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"Response", "param1=value1&submit1="},
-            IE = "requestSubmit() not available")
+    @Alerts({"Response", "param1=value1&submit1="})
     public void requestSubmitWithButton() throws Exception {
         final String html
             = "<html>\n"
@@ -2454,8 +2498,7 @@ public class HTMLFormElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"first", "requestSubmit failed"},
-            IE = "requestSubmit() not available")
+    @Alerts({"first", "requestSubmit failed"})
     public void requestSubmitNotMember() throws Exception {
         final String html
             = "<html>\n"
@@ -2501,8 +2544,7 @@ public class HTMLFormElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"first", "requestSubmit failed"},
-            IE = "requestSubmit() not available")
+    @Alerts({"first", "requestSubmit failed"})
     public void requestSubmitNotSubmit() throws Exception {
         final String html
             = "<html>\n"
@@ -2876,8 +2918,7 @@ public class HTMLFormElementTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"", "alternate help", "prefetch", "prefetch", "not supported", "notsupported"},
-            IE = {"undefined", "undefined", "prefetch", "prefetch", "not supported", "notsupported"})
+    @Alerts({"", "alternate help", "prefetch", "prefetch", "not supported", "notsupported"})
     public void readWriteRel() throws Exception {
         final String html
             = "<html><body><form id='f1'>a1</form><form id='f2' rel='alternate help'>a2</form><script>\n"
@@ -2905,8 +2946,7 @@ public class HTMLFormElementTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"0", "2", "alternate", "help"},
-            IE = "exception")
+    @Alerts({"0", "2", "alternate", "help"})
     public void relList() throws Exception {
         final String html
             = "<html><body><form id='f1'>a1</form><form id='f2' rel='alternate help'>a2</form><script>\n"
@@ -2930,8 +2970,7 @@ public class HTMLFormElementTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"0", "2", "2", "1", "alternate", "help", "abc", "alternate help", "abc"},
-            IE = "exception")
+    @Alerts({"0", "2", "2", "1", "alternate", "help", "abc", "alternate help", "abc"})
     public void setRelListString() throws Exception {
         final String html
             = "<html><body><form id='f1'>a1</form><form id='f2' rel='alternate help'>a2</form><script>\n"
@@ -2968,8 +3007,7 @@ public class HTMLFormElementTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"0", "2", "0", "0", "", "\\s\\s\\t"},
-            IE = "exception")
+    @Alerts({"0", "2", "0", "0", "", "\\s\\s\\t"})
     public void setRelListStringBlank() throws Exception {
         final String html
             = "<html><body><form id='f1'>a1</form><form id='f2' rel='alternate help'>a2</form><script>\n"
@@ -2998,8 +3036,7 @@ public class HTMLFormElementTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"0", "2", "1", "1", "null", "null", "null", "null"},
-            IE = "exception")
+    @Alerts({"0", "2", "1", "1", "null", "null", "null", "null"})
     public void setRelListNull() throws Exception {
         final String html
             = "<html><body><form id='f1'>a1</form><form id='f2' rel='alternate help'>a2</form><script>\n"
@@ -3036,8 +3073,7 @@ public class HTMLFormElementTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"0", "2", "1", "1", "undefined", "undefined", "undefined", "undefined"},
-            IE = "exception")
+    @Alerts({"0", "2", "1", "1", "undefined", "undefined", "undefined", "undefined"})
     public void setRelListUndefined() throws Exception {
         final String html
             = "<html><body><form id='f1'>a1</form><form id='f2' rel='alternate help'>a2</form><script>\n"
@@ -3074,9 +3110,7 @@ public class HTMLFormElementTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"[object HTMLInputElement]", "[object HTMLInputElement]"},
-            IE = "exception")
-    @NotYetImplemented(IE)
+    @Alerts({"[object HTMLInputElement]", "[object HTMLInputElement]"})
     public void elementsForOf() throws Exception {
         final String html =
               "<html>\n"

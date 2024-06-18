@@ -113,8 +113,7 @@ public class NodeTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"4", "function", "3"},
-            IE = {"4", "undefined", "exception"})
+    @Alerts({"4", "function", "3"})
     public void remove() throws Exception {
         final String html = "<html><body>\n"
             + "<div id='div1'></div>\n"
@@ -865,8 +864,7 @@ public class NodeTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "exception",
-            IE = {"3", "SPAN"})
+    @Alerts("exception")
     public void insertBefore_noSecondArg() throws Exception {
         insertBefore("aNode.insertBefore(newNode);");
     }
@@ -935,8 +933,7 @@ public class NodeTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "exception",
-            IE = {"3", "SPAN"})
+    @Alerts("exception")
     public void insertBeforeFragment_noSecondArg() throws Exception {
         insertBeforeFragment("aNode.insertBefore(fragment);");
     }
@@ -1023,8 +1020,7 @@ public class NodeTest extends WebDriverTestCase {
      * @throws Exception on test failure
      */
     @Test
-    @Alerts(DEFAULT = "exception",
-            IE = {})
+    @Alerts("exception")
     public void insertBefore_newElement() throws Exception {
         final String html = "<html><head>\n"
                 + "<script>\n"
@@ -1047,8 +1043,7 @@ public class NodeTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"4", "3", "abc", "def", "123456", "true", "0", "2", "123", "456", "1", "true"},
-            IE = {"4", "3", "abc", "def", "123456", "false", "0", "2", "123", "456", "1", "false"})
+    @Alerts({"4", "3", "abc", "def", "123456", "true", "0", "2", "123", "456", "1", "true"})
     public void normalize() throws Exception {
         final String html = "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
@@ -1086,8 +1081,7 @@ public class NodeTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object Element]", "[object HTMLHtmlElement]"},
-            IE = {"undefined", "[object HTMLHtmlElement]"})
+    @Alerts({"[object Element]", "[object HTMLHtmlElement]"})
     public void parentElement() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"
@@ -1109,8 +1103,7 @@ public class NodeTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"hi", "undefined", "abcd", "undefined"},
-            IE = {"hi", "null", "abcd", "null"})
+    @Alerts({"hi", "undefined", "abcd", "undefined"})
     public void attributes() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"
@@ -1307,8 +1300,7 @@ public class NodeTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "<div><span></span>nullundefinedhello<p></p></div>",
-            IE = "<div><p></p></div>")
+    @Alerts("<div><span></span>nullundefinedhello<p></p></div>")
     public void before() throws Exception {
         final String html =
               "<html><head>\n"
@@ -1336,8 +1328,7 @@ public class NodeTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "<div><p></p><span></span>nullundefinedhello</div>",
-            IE = "<div><p></p></div>")
+    @Alerts("<div><p></p><span></span>nullundefinedhello</div>")
     public void after() throws Exception {
         final String html =
               "<html><head>\n"
@@ -1365,8 +1356,7 @@ public class NodeTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "<div><span></span>nullundefinedhello</div>",
-            IE = "<div><p></p></div>")
+    @Alerts("<div><span></span>nullundefinedhello</div>")
     public void replaceWith() throws Exception {
         final String html =
               "<html><head>\n"
@@ -1466,8 +1456,7 @@ public class NodeTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"1", "2", "§§URL§§"},
-            IE = {"1", "2", "§§URL§§second"})
+    @Alerts({"1", "2", "§§URL§§"})
     public void eventListener_returnValue_false() throws Exception {
         final String html
             = "<html><head>\n"

@@ -28,6 +28,7 @@ import org.htmlunit.WebAssert;
  * @author Sudhan Moghe
  * @author Daniel Gredler
  * @author Ronald Brill
+ * @author Lai Quang Duong
  */
 public class CollectingAttachmentHandler implements AttachmentHandler {
 
@@ -53,8 +54,8 @@ public class CollectingAttachmentHandler implements AttachmentHandler {
      * {@inheritDoc}
      */
     @Override
-    public void handleAttachment(final Page page) {
-        collectedAttachments_.add(new Attachment(page));
+    public void handleAttachment(final Page page, final String attachmentFilename) {
+        collectedAttachments_.add(new Attachment(page, attachmentFilename));
     }
 
     /**

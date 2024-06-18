@@ -14,12 +14,7 @@
  */
 package org.htmlunit.javascript.host.html;
 
-import static org.htmlunit.BrowserVersionFeatures.HTMLOPTION_REMOVE_SELECTED_ATTRIB_DESELECTS;
 import static org.htmlunit.html.DomElement.ATTRIBUTE_NOT_DEFINED;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import org.htmlunit.SgmlPage;
 import org.htmlunit.html.DomElement;
@@ -57,7 +52,7 @@ public class HTMLOptionElement extends HTMLElement {
      * @param defaultSelected Whether the option is initially selected
      * @param selected the current selection state of the option
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor(final Object newText, final String newValue,
             final boolean defaultSelected, final boolean selected) {
         final SgmlPage page = (SgmlPage) getWindow().getWebWindow().getEnclosedPage();
@@ -275,10 +270,8 @@ public class HTMLOptionElement extends HTMLElement {
     @Override
     public void removeAttribute(final String name) {
         super.removeAttribute(name);
-        if (getBrowserVersion().hasFeature(HTMLOPTION_REMOVE_SELECTED_ATTRIB_DESELECTS)) {
-            if ("selected".equals(name)) {
-                setSelected(false);
-            }
+        if ("selected".equals(name)) {
+            setSelected(false);
         }
     }
 

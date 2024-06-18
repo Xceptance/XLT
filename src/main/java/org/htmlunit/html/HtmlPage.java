@@ -15,16 +15,8 @@
  */
 package org.htmlunit.html;
 
-import static java.nio.charset.StandardCharsets.ISO_8859_1;
-import static org.htmlunit.BrowserVersionFeatures.EVENT_FOCUS_FOCUS_IN_BLUR_OUT;
-import static org.htmlunit.BrowserVersionFeatures.EVENT_FOCUS_IN_FOCUS_OUT_BLUR;
 import static org.htmlunit.BrowserVersionFeatures.EVENT_FOCUS_ON_LOAD;
-import static org.htmlunit.BrowserVersionFeatures.FOCUS_BODY_ELEMENT_AT_START;
-import static org.htmlunit.BrowserVersionFeatures.HTTP_HEADER_SEC_FETCH;
 import static org.htmlunit.BrowserVersionFeatures.JS_EVENT_LOAD_SUPPRESSED_BY_CONTENT_SECURIRY_POLICY;
-import static org.htmlunit.BrowserVersionFeatures.JS_IGNORES_UTF8_BOM_SOMETIMES;
-import static org.htmlunit.BrowserVersionFeatures.PAGE_SELECTION_RANGE_FROM_SELECTABLE_TEXT_INPUT;
-import static org.htmlunit.BrowserVersionFeatures.URL_MISSING_SLASHES;
 import static org.htmlunit.html.DisabledElement.ATTRIBUTE_DISABLED;
 import static org.htmlunit.html.DomElement.ATTRIBUTE_NOT_DEFINED;
 
@@ -36,6 +28,7 @@ import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -57,7 +50,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.htmlunit.BrowserVersion;
 import org.htmlunit.Cache;
 import org.htmlunit.ElementNotFoundException;
 import org.htmlunit.FailingHttpStatusCodeException;
@@ -77,16 +69,13 @@ import org.htmlunit.WebWindow;
 import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.Script;
 import org.htmlunit.corejs.javascript.Scriptable;
-import org.htmlunit.corejs.javascript.Undefined;
 import org.htmlunit.css.ComputedCssStyleDeclaration;
 import org.htmlunit.css.CssStyleSheet;
 import org.htmlunit.html.FrameWindow.PageDenied;
-import org.htmlunit.html.impl.SelectableTextInput;
 import org.htmlunit.html.impl.SimpleRange;
 import org.htmlunit.html.parser.HTMLParserDOMBuilder;
-import org.htmlunit.httpclient.HttpClientConverter;
+import org.htmlunit.http.HttpStatus;
 import org.htmlunit.javascript.AbstractJavaScriptEngine;
-import org.htmlunit.javascript.HtmlUnitContextFactory;
 import org.htmlunit.javascript.HtmlUnitScriptable;
 import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.PostponedAction;
@@ -96,7 +85,6 @@ import org.htmlunit.javascript.host.event.Event;
 import org.htmlunit.javascript.host.event.EventTarget;
 import org.htmlunit.javascript.host.html.HTMLDocument;
 import org.htmlunit.protocol.javascript.JavaScriptURLConnection;
-import org.htmlunit.util.EncodingSniffer;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.SerializableLock;
 import org.htmlunit.util.UrlUtils;
@@ -154,6 +142,7 @@ import org.w3c.dom.ProcessingInstruction;
  * @author Atsushi Nakagawa
  * @author Rural Hunter
  * @author Ronny Shapiro
+ * @author Lai Quang Duong
  */
 public class HtmlPage extends SgmlPage {
 
@@ -285,9 +274,6 @@ public class HtmlPage extends SgmlPage {
         // don't set the ready state if we really load the blank page into the window
         // see Node.initInlineFrameIfNeeded()
         if (!isAboutBlank) {
-            if (hasFeature(FOCUS_BODY_ELEMENT_AT_START)) {
-                setElementWithFocus(getBody());
-            }
             setReadyState(READY_STATE_COMPLETE);
             getDocumentElement().setReadyState(READY_STATE_COMPLETE);
             executeEventHandlersIfNeeded(Event.TYPE_READY_STATE_CHANGE);
@@ -741,15 +727,13 @@ public class HtmlPage extends SgmlPage {
      */
     public URL getFullyQualifiedUrl(String relativeUrl) throws MalformedURLException {
         // to handle http: and http:/ in FF (Bug #474)
-        if (hasFeature(URL_MISSING_SLASHES)) {
-            boolean incorrectnessNotified = false;
-            while (relativeUrl.startsWith("http:") && !relativeUrl.startsWith("http://")) {
-                if (!incorrectnessNotified) {
-                    notifyIncorrectness("Incorrect URL \"" + relativeUrl + "\" has been corrected");
-                    incorrectnessNotified = true;
-                }
-                relativeUrl = "http:/" + relativeUrl.substring(5);
+        boolean incorrectnessNotified = false;
+        while (relativeUrl.startsWith("http:") && !relativeUrl.startsWith("http://")) {
+            if (!incorrectnessNotified) {
+                notifyIncorrectness("Incorrect URL \"" + relativeUrl + "\" has been corrected");
+                incorrectnessNotified = true;
             }
+            relativeUrl = "http:/" + relativeUrl.substring(5);
         }
 
         return WebClient.expandUrl(getBaseURL(), relativeUrl);
@@ -964,7 +948,7 @@ public class HtmlPage extends SgmlPage {
      */
     public ScriptResult executeJavaScript(String sourceCode, final String sourceName, final int startLine) {
         if (!getWebClient().isJavaScriptEnabled()) {
-            return new ScriptResult(Undefined.instance);
+            return new ScriptResult(JavaScriptEngine.Undefined);
         }
 
         if (StringUtils.startsWithIgnoreCase(sourceCode, JavaScriptURLConnection.JAVASCRIPT_PREFIX)) {
@@ -974,7 +958,8 @@ public class HtmlPage extends SgmlPage {
             }
         }
 
-        final Object result = getWebClient().getJavaScriptEngine().execute(this, sourceCode, sourceName, startLine);
+        final Object result = getWebClient().getJavaScriptEngine()
+                .execute(this, getEnclosingWindow().getScriptableObject(), sourceCode, sourceName, startLine);
         return new ScriptResult(result);
     }
 
@@ -1041,7 +1026,7 @@ public class HtmlPage extends SgmlPage {
             return JavaScriptLoadResult.DOWNLOAD_ERROR;
         }
         catch (final FailingHttpStatusCodeException e) {
-            if (e.getStatusCode() == HttpClientConverter.NO_CONTENT) {
+            if (e.getStatusCode() == HttpStatus.NO_CONTENT_204) {
                 return JavaScriptLoadResult.NO_CONTENT;
             }
             client.getJavaScriptErrorListener().loadScriptError(this, scriptURL, e);
@@ -1054,7 +1039,7 @@ public class HtmlPage extends SgmlPage {
 
         @SuppressWarnings("unchecked")
         final AbstractJavaScriptEngine<Object> engine = (AbstractJavaScriptEngine<Object>) client.getJavaScriptEngine();
-        engine.execute(this, script);
+        engine.execute(this, getEnclosingWindow().getScriptableObject(), script);
         return JavaScriptLoadResult.SUCCESS;
     }
 
@@ -1085,16 +1070,22 @@ public class HtmlPage extends SgmlPage {
         request.setAdditionalHeaders(new HashMap<>(referringRequest.getAdditionalHeaders()));
 
         // at least overwrite this headers
-        final BrowserVersion browserVersion = client.getBrowserVersion();
         request.setAdditionalHeader(HttpHeader.ACCEPT, client.getBrowserVersion().getScriptAcceptHeader());
-        if (browserVersion.hasFeature(HTTP_HEADER_SEC_FETCH)) {
-            request.setAdditionalHeader(HttpHeader.SEC_FETCH_SITE, "same-origin");
-            request.setAdditionalHeader(HttpHeader.SEC_FETCH_MODE, "no-cors");
-            request.setAdditionalHeader(HttpHeader.SEC_FETCH_DEST, "script");
-        }
+        request.setAdditionalHeader(HttpHeader.SEC_FETCH_SITE, "same-origin");
+        request.setAdditionalHeader(HttpHeader.SEC_FETCH_MODE, "no-cors");
+        request.setAdditionalHeader(HttpHeader.SEC_FETCH_DEST, "script");
 
         request.setRefererlHeader(referringRequest.getUrl());
         request.setCharset(scriptCharset);
+
+        // use info from script tag or fall back to utf-8
+        // https://www.rfc-editor.org/rfc/rfc9239#section-4.2
+        if (scriptCharset != null) {
+            request.setDefaultResponseContentCharset(scriptCharset);
+        }
+        else {
+            request.setDefaultResponseContentCharset(StandardCharsets.UTF_8);
+        }
 
         // our cache is a bit strange;
         // loadWebResponse check the cache for the web response
@@ -1113,7 +1104,7 @@ public class HtmlPage extends SgmlPage {
         client.throwFailingHttpStatusCodeExceptionIfNecessary(response);
 
         final int statusCode = response.getStatusCode();
-        if (statusCode == HttpClientConverter.NO_CONTENT) {
+        if (statusCode == HttpStatus.NO_CONTENT_204) {
             throw new FailingHttpStatusCodeException(response);
         }
 
@@ -1136,33 +1127,12 @@ public class HtmlPage extends SgmlPage {
             }
         }
 
-        Charset scriptEncoding = Charset.forName("windows-1252");
-        final boolean ignoreBom;
-        final Charset contentCharset = EncodingSniffer.sniffEncodingFromHttpHeaders(response.getResponseHeaders());
-        if (contentCharset == null) {
-            // use info from script tag or fall back to utf-8
-            if (scriptCharset != null && ISO_8859_1 != scriptCharset) {
-                ignoreBom = true;
-                scriptEncoding = scriptCharset;
-            }
-            else {
-                ignoreBom = ISO_8859_1 != scriptCharset;
-            }
-        }
-        else if (ISO_8859_1 == contentCharset) {
-            ignoreBom = true;
-        }
-        else {
-            ignoreBom = true;
-            scriptEncoding = contentCharset;
-        }
-
-        final String scriptCode = response.getContentAsString(scriptEncoding,
-                                ignoreBom
-                                && getWebClient().getBrowserVersion().hasFeature(JS_IGNORES_UTF8_BOM_SOMETIMES));
+        final Charset scriptEncoding = response.getContentCharset();
+        final String scriptCode = response.getContentAsString(scriptEncoding);
         if (null != scriptCode) {
             final AbstractJavaScriptEngine<?> javaScriptEngine = client.getJavaScriptEngine();
-            final Object script = javaScriptEngine.compile(this, scriptCode, url.toExternalForm(), 1);
+            final Scriptable scope = getEnclosingWindow().getScriptableObject();
+            final Object script = javaScriptEngine.compile(this, scope, scriptCode, url.toExternalForm(), 1);
             if (script != null && cache.cacheIfPossible(request, response, script)) {
                 // no cleanup if the response is stored inside the cache
                 return script;
@@ -1309,9 +1279,7 @@ public class HtmlPage extends SgmlPage {
                 jsNode = window.getScriptableObject();
             }
 
-            final HtmlUnitContextFactory cf = ((JavaScriptEngine) getWebClient().getJavaScriptEngine())
-                                                    .getContextFactory();
-            cf.callSecured(cx -> jsNode.fireEvent(event), this);
+            ((JavaScriptEngine) getWebClient().getJavaScriptEngine()).callSecured(cx -> jsNode.fireEvent(event), this);
 
             if (!isOnbeforeunloadAccepted(this, event)) {
                 return false;
@@ -2500,23 +2468,11 @@ public class HtmlPage extends SgmlPage {
         elementWithFocus_ = null;
 
         if (!windowActivated) {
-            if (hasFeature(EVENT_FOCUS_IN_FOCUS_OUT_BLUR)) {
-                if (oldFocusedElement != null) {
-                    oldFocusedElement.fireEvent(Event.TYPE_FOCUS_OUT);
-                }
-
-                if (newElement != null) {
-                    newElement.fireEvent(Event.TYPE_FOCUS_IN);
-                }
-            }
-
             if (oldFocusedElement != null) {
                 oldFocusedElement.removeFocus();
                 oldFocusedElement.fireEvent(Event.TYPE_BLUR);
 
-                if (hasFeature(EVENT_FOCUS_FOCUS_IN_BLUR_OUT)) {
-                    oldFocusedElement.fireEvent(Event.TYPE_FOCUS_OUT);
-                }
+                oldFocusedElement.fireEvent(Event.TYPE_FOCUS_OUT);
             }
         }
 
@@ -2524,19 +2480,11 @@ public class HtmlPage extends SgmlPage {
 
         // use newElement in the code below because element elementWithFocus_
         // might be changed by another thread
-        if (newElement instanceof SelectableTextInput
-                && hasFeature(PAGE_SELECTION_RANGE_FROM_SELECTABLE_TEXT_INPUT)) {
-            final SelectableTextInput sti = (SelectableTextInput) newElement;
-            setSelectionRange(new SimpleRange(newElement, sti.getSelectionStart(), newElement, sti.getSelectionEnd()));
-        }
-
         if (newElement != null) {
             newElement.focus();
             newElement.fireEvent(Event.TYPE_FOCUS);
 
-            if (hasFeature(EVENT_FOCUS_FOCUS_IN_BLUR_OUT)) {
-                newElement.fireEvent(Event.TYPE_FOCUS_IN);
-            }
+            newElement.fireEvent(Event.TYPE_FOCUS_IN);
         }
 
         // If a page reload happened as a result of the focus change then obviously this
@@ -2584,8 +2532,7 @@ public class HtmlPage extends SgmlPage {
     /**
      * <p><span style="color:red">INTERNAL API - SUBJECT TO CHANGE AT ANY TIME - USE AT YOUR OWN RISK.</span></p>
      *
-     * <p>Returns the page's current selection ranges. Note that some browsers, like IE, only allow
-     * a single selection at a time.</p>
+     * <p>Returns the page's current selection ranges.</p>
      *
      * @return the page's current selection ranges
      */

@@ -58,9 +58,8 @@ public class KeyboardEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object KeyboardEvent]", "type", "false", "false", "false",
-                       ",,0,false,false,false,false,false,false,0,0"},
-            IE = "exception")
+    @Alerts({"[object KeyboardEvent]", "type", "false", "false", "false",
+             ",,0,false,false,false,false,false,false,0,0"})
     public void create_ctor() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
                 + "<html><head><script>\n"
@@ -112,9 +111,8 @@ public class KeyboardEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object KeyboardEvent]", "42", "false", "false", "false",
-                       ",,0,false,false,false,false,false,false,0,0"},
-            IE = "exception")
+    @Alerts({"[object KeyboardEvent]", "42", "false", "false", "false",
+             ",,0,false,false,false,false,false,false,0,0"})
     public void create_ctorNumericType() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"
@@ -136,9 +134,8 @@ public class KeyboardEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT =  {"[object KeyboardEvent]", "null", "false", "false", "false",
-                        ",,0,false,false,false,false,false,false,0,0"},
-            IE = "exception")
+    @Alerts({"[object KeyboardEvent]", "null", "false", "false", "false",
+             ",,0,false,false,false,false,false,false,0,0"})
     public void create_ctorNullType() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"
@@ -182,9 +179,8 @@ public class KeyboardEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object KeyboardEvent]", "HtmlUnitEvent", "false", "false", "false",
-                       ",,0,false,false,false,false,false,false,0,0"},
-            IE = "exception")
+    @Alerts({"[object KeyboardEvent]", "HtmlUnitEvent", "false", "false", "false",
+             ",,0,false,false,false,false,false,false,0,0"})
     public void create_ctorArbitraryType() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"
@@ -211,8 +207,7 @@ public class KeyboardEventTest extends WebDriverTestCase {
             CHROME = {"[object KeyboardEvent]", "keyboard", "false", "false", "false",
                       "key,code,123,true,true,true,true,true,true,456,0"},
             EDGE = {"[object KeyboardEvent]", "keyboard", "false", "false", "false",
-                    "key,code,123,true,true,true,true,true,true,456,0"},
-            IE = "exception")
+                    "key,code,123,true,true,true,true,true,true,456,0"})
     public void create_ctorAllDetails() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"
@@ -237,9 +232,8 @@ public class KeyboardEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object KeyboardEvent]", "keyboard", "false", "false", "false",
-                       "null,,0,true,false,false,false,false,false,456,0"},
-            IE = "exception")
+    @Alerts({"[object KeyboardEvent]", "keyboard", "false", "false", "false",
+             "null,,0,true,false,false,false,false,false,456,0"})
     public void create_ctorSomeDetails() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"
@@ -262,9 +256,8 @@ public class KeyboardEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object KeyboardEvent]", "keyboard", "false", "false", "false",
-                       ",,0,false,false,false,false,false,false,0,0"},
-            IE = "exception")
+    @Alerts({"[object KeyboardEvent]", "keyboard", "false", "false", "false",
+             ",,0,false,false,false,false,false,false,0,0"})
     public void create_ctorMissingData() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"
@@ -287,9 +280,8 @@ public class KeyboardEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object KeyboardEvent]", "keyboard", "false", "false", "false",
-                       ",,0,false,false,false,false,false,false,0,0"},
-            IE = "exception")
+    @Alerts({"[object KeyboardEvent]", "keyboard", "false", "false", "false",
+             ",,0,false,false,false,false,false,false,0,0"})
     public void create_ctorNullData() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"
@@ -311,9 +303,8 @@ public class KeyboardEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object KeyboardEvent]", "keyboard", "false", "false", "false",
-                       ",,0,false,false,false,false,false,false,0,0"},
-            IE = "exception")
+    @Alerts({"[object KeyboardEvent]", "keyboard", "false", "false", "false",
+             ",,0,false,false,false,false,false,false,0,0"})
     public void create_ctorUndefinedData() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"
@@ -335,9 +326,8 @@ public class KeyboardEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object KeyboardEvent]", "keyboard", "false", "false", "false",
-                       ",,0,false,false,false,false,false,false,0,0"},
-            IE = "exception")
+    @Alerts({"[object KeyboardEvent]", "keyboard", "false", "false", "false",
+             ",,0,false,false,false,false,false,false,0,0"})
     public void create_ctorWrongData() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"
@@ -455,19 +445,13 @@ public class KeyboardEventTest extends WebDriverTestCase {
                   "keyup, false, false, , 7, false, false, false, false, 0, 0"},
             FF_ESR = {"exception",
                       "keydown, true, true, Fn, 0, true, true, true, true, 0, 0",
-                      "keyup, false, false, , 7, false, false, false, false, 0, 0"},
-            IE = {"exception",
-                  "keydown, true, true, Fn, 0, false, false, false, false, 0, 0",
-                  "keyup, false, false, , 7, false, false, false, false, 0, 0"})
+                      "keyup, false, false, , 7, false, false, false, false, 0, 0"})
     @HtmlUnitNYI(CHROME = {"exception",
                            "keydown, true, true, Fn, 0, true, true, true, true, 0, 0",
                            "keyup, false, false, , 7, false, false, false, false, 0, 0"},
                  EDGE = {"exception",
                          "keydown, true, true, Fn, 0, true, true, true, true, 0, 0",
-                         "keyup, false, false, , 7, false, false, false, false, 0, 0"},
-                 IE = {"exception",
-                       "keydown, true, true, Fn, 0, true, true, true, true, 0, 0",
-                       "keyup, false, false, , 7, false, false, false, false, 0, 0"})
+                         "keyup, false, false, , 7, false, false, false, false, 0, 0"})
     public void initKeyboardEvent() throws Exception {
         final String html = "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
@@ -702,34 +686,20 @@ public class KeyboardEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"keydown:16,0,16,Shift,undefined,ShiftLeft,true",
-                       "keydown:65,0,65,A,undefined,KeyA,true",
-                       "keypress:65,65,65,A,undefined,KeyA,true",
-                       "keyup:65,0,65,A,undefined,KeyA,true",
-                       "keyup:16,0,16,Shift,undefined,ShiftLeft,false",
-                       "keydown:65,0,65,a,undefined,KeyA,false",
-                       "keypress:97,97,97,a,undefined,KeyA,false",
-                       "keyup:65,0,65,a,undefined,KeyA,false",
-                       "keydown:190,0,190,.,undefined,Period,false",
-                       "keypress:46,46,46,.,undefined,Period,false",
-                       "keyup:190,0,190,.,undefined,Period,false",
-                       "keydown:13,0,13,Enter,undefined,Enter,false",
-                       "keypress:13,13,13,Enter,undefined,Enter,false",
-                       "keyup:13,0,13,Enter,undefined,Enter,false"},
-            IE = {"keydown:16,0,16,Shift,,undefined,true",
-                  "keydown:65,0,65,A,A,undefined,true",
-                  "keypress:65,65,65,A,A,undefined,true",
-                  "keyup:65,0,65,A,A,undefined,true",
-                  "keyup:16,0,16,Shift,,undefined,false",
-                  "keydown:65,0,65,a,a,undefined,false",
-                  "keypress:97,97,97,a,a,undefined,false",
-                  "keyup:65,0,65,a,a,undefined,false",
-                  "keydown:190,0,190,.,.,undefined,false",
-                  "keypress:46,46,46,.,.,undefined,false",
-                  "keyup:190,0,190,.,.,undefined,false",
-                  "keydown:13,0,13,Enter,\\n,undefined,false",
-                  "keypress:13,13,13,Enter,\\n,undefined,false",
-                  "keyup:13,0,13,Enter,\\n,undefined,false"})
+    @Alerts({"keydown:16,0,16,Shift,undefined,ShiftLeft,true",
+             "keydown:65,0,65,A,undefined,KeyA,true",
+             "keypress:65,65,65,A,undefined,KeyA,true",
+             "keyup:65,0,65,A,undefined,KeyA,true",
+             "keyup:16,0,16,Shift,undefined,ShiftLeft,false",
+             "keydown:65,0,65,a,undefined,KeyA,false",
+             "keypress:97,97,97,a,undefined,KeyA,false",
+             "keyup:65,0,65,a,undefined,KeyA,false",
+             "keydown:190,0,190,.,undefined,Period,false",
+             "keypress:46,46,46,.,undefined,Period,false",
+             "keyup:190,0,190,.,undefined,Period,false",
+             "keydown:13,0,13,Enter,undefined,Enter,false",
+             "keypress:13,13,13,Enter,undefined,Enter,false",
+             "keyup:13,0,13,Enter,undefined,Enter,false"})
     // https://github.com/SeleniumHQ/selenium/issues/2531
     @BuggyWebDriver(CHROME = {"keydown:16,0,16,Shift,undefined,ShiftLeft,false",
                               "keydown:65,0,65,A,undefined,KeyA,true",
@@ -782,21 +752,7 @@ public class KeyboardEventTest extends WebDriverTestCase {
                           "keyup:190,0,190,.,undefined,Period,false",
                           "keydown:13,0,13,Enter,undefined,Enter,false",
                           "keypress:13,13,13,Enter,undefined,Enter,false",
-                          "keyup:13,0,13,Enter,undefined,Enter,false"},
-                    IE = {"keydown:16,0,16,Shift,,undefined,false",
-                          "keydown:65,0,65,A,A,undefined,false",
-                          "keypress:65,65,65,A,A,undefined,false",
-                          "keyup:65,0,65,a,a,undefined,false",
-                          "keyup:16,0,16,Shift,,undefined,false",
-                          "keydown:65,0,65,a,a,undefined,false",
-                          "keypress:97,97,97,a,a,undefined,false",
-                          "keyup:65,0,65,a,a,undefined,false",
-                          "keydown:190,0,190,.,.,undefined,false",
-                          "keypress:46,46,46,.,.,undefined,false",
-                          "keyup:190,0,190,.,.,undefined,false",
-                          "keydown:13,0,13,Enter,\\n,undefined,false",
-                          "keypress:13,13,13,\\r,\\r,undefined,false",
-                          "keyup:13,0,13,Enter,\\n,undefined,false"})
+                          "keyup:13,0,13,Enter,undefined,Enter,false"})
     public void which() throws Exception {
         final String html
             = "<html><head></head><body>\n"

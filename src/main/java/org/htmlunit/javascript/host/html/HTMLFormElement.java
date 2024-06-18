@@ -14,18 +14,7 @@
  */
 package org.htmlunit.javascript.host.html;
 
-import static org.htmlunit.BrowserVersionFeatures.FORMFIELD_REACHABLE_BY_NEW_NAMES;
-import static org.htmlunit.BrowserVersionFeatures.FORMFIELD_REACHABLE_BY_ORIGINAL_NAME;
-import static org.htmlunit.BrowserVersionFeatures.JS_FORM_ACTION_EXPANDURL_NOT_DEFINED;
 import static org.htmlunit.BrowserVersionFeatures.JS_FORM_DISPATCHEVENT_SUBMITS;
-import static org.htmlunit.BrowserVersionFeatures.JS_FORM_REJECT_INVALID_ENCODING;
-import static org.htmlunit.BrowserVersionFeatures.JS_FORM_USABLE_AS_FUNCTION;
-import static org.htmlunit.html.DomElement.ATTRIBUTE_NOT_DEFINED;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import java.io.Serializable;
 import java.net.MalformedURLException;
@@ -36,11 +25,9 @@ import java.util.function.Supplier;
 import org.htmlunit.FormEncodingType;
 import org.htmlunit.WebAssert;
 import org.htmlunit.corejs.javascript.Context;
-import org.htmlunit.corejs.javascript.ES6Iterator;
 import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.corejs.javascript.ScriptableObject;
-import org.htmlunit.corejs.javascript.Undefined;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.html.FormFieldWithNameHistory;
@@ -92,7 +79,7 @@ public class HTMLFormElement extends HTMLElement implements Function {
      * JavaScript constructor.
      */
     @Override
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
         super.jsConstructor();
     }
@@ -151,8 +138,8 @@ public class HTMLFormElement extends HTMLElement implements Function {
         return elements;
     }
 
-    @JsxSymbol({CHROME, EDGE, FF, FF_ESR})
-    public ES6Iterator iterator() {
+    @JsxSymbol
+    public Scriptable iterator() {
         return getElements().iterator();
     }
 
@@ -177,11 +164,6 @@ public class HTMLFormElement extends HTMLElement implements Function {
     @JsxGetter
     public String getAction() {
         final String action = getHtmlForm().getActionAttribute();
-
-        if (ATTRIBUTE_NOT_DEFINED == action
-                && !getBrowserVersion().hasFeature(JS_FORM_ACTION_EXPANDURL_NOT_DEFINED)) {
-            return action;
-        }
 
         try {
             return ((HtmlPage) getHtmlForm().getPage()).getFullyQualifiedUrl(action).toExternalForm();
@@ -244,7 +226,7 @@ public class HTMLFormElement extends HTMLElement implements Function {
      * Returns the value of the rel property.
      * @return the rel property
      */
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxGetter
     public String getRel() {
         return getHtmlForm().getRelAttribute();
     }
@@ -253,7 +235,7 @@ public class HTMLFormElement extends HTMLElement implements Function {
      * Sets the rel property.
      * @param rel rel attribute value
      */
-    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxSetter
     public void setRel(final String rel) {
         getHtmlForm().setAttribute("rel", rel);
     }
@@ -262,7 +244,7 @@ public class HTMLFormElement extends HTMLElement implements Function {
      * Returns the {@code relList} attribute.
      * @return the {@code relList} attribute
      */
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxGetter
     public DOMTokenList getRelList() {
         return new DOMTokenList(this, "rel");
     }
@@ -271,7 +253,7 @@ public class HTMLFormElement extends HTMLElement implements Function {
      * Sets the relList property.
      * @param rel attribute value
      */
-    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxSetter
     public void setRelList(final Object rel) {
         if (JavaScriptEngine.isUndefined(rel)) {
             setRel("undefined");
@@ -302,13 +284,6 @@ public class HTMLFormElement extends HTMLElement implements Function {
     @JsxSetter
     public void setEnctype(final String enctype) {
         WebAssert.notNull("encoding", enctype);
-        if (getBrowserVersion().hasFeature(JS_FORM_REJECT_INVALID_ENCODING)
-                && !FormEncodingType.URL_ENCODED.getName().equals(enctype)
-                && !FormEncodingType.MULTIPART.getName().equals(enctype)
-                && !FormEncodingType.TEXT_PLAIN.getName().equals(enctype)) {
-            throw JavaScriptEngine.reportRuntimeError(
-                    "Cannot set the encoding property to invalid value: '" + enctype + "'");
-        }
         getHtmlForm().setEnctypeAttribute(enctype);
     }
 
@@ -352,7 +327,7 @@ public class HTMLFormElement extends HTMLElement implements Function {
      * an &lt;input&gt; or &lt;button&gt; element whose type attribute is submit.
      * If you omit the submitter parameter, the form element itself is used as the submitter.
      */
-    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
+    @JsxFunction
     public void requestSubmit(final Object submitter) {
         if (JavaScriptEngine.isUndefined(submitter)) {
             submit();
@@ -387,31 +362,6 @@ public class HTMLFormElement extends HTMLElement implements Function {
         }
 
         this.getHtmlForm().submit(submittable);
-    }
-
-    /**
-     * Retrieves a form object or an object from an elements collection.
-     * @param index Integer or String that specifies the object or collection to retrieve.
-     *              If this parameter is an integer, it is the zero-based index of the object.
-     *              If this parameter is a string, all objects with matching name or id properties are retrieved,
-     *              and a collection is returned if more than one match is made
-     * @param subIndex Optional. Integer that specifies the zero-based index of the object to retrieve
-     *              when a collection is returned
-     * @return an object or a collection of objects if successful, or null otherwise
-     */
-    @JsxFunction(IE)
-    public Object item(final Object index, final Object subIndex) {
-        if (index instanceof Number) {
-            return getElements().item(index);
-        }
-
-        final String name = JavaScriptEngine.toString(index);
-        final Object response = getWithPreemption(name);
-        if (subIndex instanceof Number && response instanceof HTMLCollection) {
-            return ((HTMLCollection) response).item(subIndex);
-        }
-
-        return response;
     }
 
     /**
@@ -557,17 +507,14 @@ public class HTMLFormElement extends HTMLElement implements Function {
                 return true;
             }
             final FormFieldWithNameHistory elementWithNames = (FormFieldWithNameHistory) element;
-            if (getBrowserVersion().hasFeature(FORMFIELD_REACHABLE_BY_ORIGINAL_NAME)) {
-                if (name.equals(elementWithNames.getOriginalName())) {
-                    return true;
-                }
+            if (name.equals(elementWithNames.getOriginalName())) {
+                return true;
             }
             else if (name.equals(element.getAttributeDirect(DomElement.NAME_ATTRIBUTE))) {
                 return true;
             }
 
-            if (getBrowserVersion().hasFeature(FORMFIELD_REACHABLE_BY_NEW_NAMES)
-                    && elementWithNames.getNewNames().contains(name)) {
+            if (elementWithNames.getNewNames().contains(name)) {
                 return true;
             }
         }
@@ -593,19 +540,7 @@ public class HTMLFormElement extends HTMLElement implements Function {
      */
     @Override
     public Object call(final Context cx, final Scriptable scope, final Scriptable thisObj, final Object[] args) {
-        if (!getBrowserVersion().hasFeature(JS_FORM_USABLE_AS_FUNCTION)) {
-            throw JavaScriptEngine.reportRuntimeError("Not a function.");
-        }
-        if (args.length > 0) {
-            final Object arg = args[0];
-            if (arg instanceof String) {
-                return ScriptableObject.getProperty(this, (String) arg);
-            }
-            else if (arg instanceof Number) {
-                return ScriptableObject.getProperty(this, ((Number) arg).intValue());
-            }
-        }
-        return Undefined.instance;
+        throw JavaScriptEngine.reportRuntimeError("Not a function.");
     }
 
     /**
@@ -613,10 +548,7 @@ public class HTMLFormElement extends HTMLElement implements Function {
      */
     @Override
     public Scriptable construct(final Context cx, final Scriptable scope, final Object[] args) {
-        if (!getBrowserVersion().hasFeature(JS_FORM_USABLE_AS_FUNCTION)) {
-            throw JavaScriptEngine.reportRuntimeError("Not a function.");
-        }
-        return null;
+        throw JavaScriptEngine.reportRuntimeError("Not a function.");
     }
 
     @Override

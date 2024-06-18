@@ -17,7 +17,6 @@ package org.htmlunit.javascript.host.event;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -34,9 +33,7 @@ public class WebGLContextEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"1", "2", "3"},
-            IE = {"undefined", "undefined", "undefined"})
-    @HtmlUnitNYI(IE = {"1", "2", "3"})
+    @Alerts({"1", "2", "3"})
     public void constants() throws Exception {
         final String html = "<html><head><script>\n"
             + LOG_TITLE_FUNCTION

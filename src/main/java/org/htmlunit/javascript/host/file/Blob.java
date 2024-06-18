@@ -15,12 +15,6 @@
 package org.htmlunit.javascript.host.file;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.htmlunit.BrowserVersionFeatures.JS_BLOB_CONTENT_TYPE_CASE_SENSITIVE;
-import static org.htmlunit.BrowserVersionFeatures.XHR_SEND_IGNORES_BLOB_MIMETYPE_AS_CONTENTTYPE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -32,7 +26,6 @@ import org.htmlunit.BrowserVersion;
 import org.htmlunit.HttpHeader;
 import org.htmlunit.WebRequest;
 import org.htmlunit.corejs.javascript.NativeArray;
-import org.htmlunit.corejs.javascript.ScriptRuntime;
 import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.corejs.javascript.ScriptableObject;
 import org.htmlunit.corejs.javascript.typedarrays.NativeArrayBuffer;
@@ -140,10 +133,7 @@ public class Blob extends HtmlUnitScriptable {
 
         @Override
         public String getType(final BrowserVersion browserVersion) {
-            if (!browserVersion.hasFeature(JS_BLOB_CONTENT_TYPE_CASE_SENSITIVE)) {
-                return type_.toLowerCase(Locale.ROOT);
-            }
-            return type_;
+            return type_.toLowerCase(Locale.ROOT);
         }
 
         @Override
@@ -247,13 +237,14 @@ public class Blob extends HtmlUnitScriptable {
      * @return a Promise that resolves with an ArrayBuffer containing the
      * data in binary form.
      */
-    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
+    @JsxFunction
     public Object arrayBuffer() {
         return setupPromise(() -> {
             final byte[] bytes = getBytes();
             final NativeArrayBuffer buffer = new NativeArrayBuffer(bytes.length);
             System.arraycopy(bytes, 0, buffer.getBuffer(), 0, bytes.length);
-            ScriptRuntime.setObjectProtoAndParent(buffer, getParentScope());
+            buffer.setParentScope(getParentScope());
+            buffer.setPrototype(ScriptableObject.getClassPrototype(getWindow(), buffer.getClassName()));
             return buffer;
         });
     }
@@ -306,7 +297,7 @@ public class Blob extends HtmlUnitScriptable {
      * @return a Promise that resolves with a string containing the
      * contents of the blob, interpreted as UTF-8.
      */
-    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
+    @JsxFunction
     public Object text() {
         return setupPromise(() -> getBackend().getText());
     }
@@ -323,8 +314,7 @@ public class Blob extends HtmlUnitScriptable {
         webRequest.setRequestBody(new String(getBytes(), UTF_8));
 
         final boolean contentTypeDefinedByCaller = webRequest.getAdditionalHeader(HttpHeader.CONTENT_TYPE) != null;
-        if (!contentTypeDefinedByCaller
-                && !getBrowserVersion().hasFeature(XHR_SEND_IGNORES_BLOB_MIMETYPE_AS_CONTENTTYPE)) {
+        if (!contentTypeDefinedByCaller) {
             final String mimeType = getType();
             if (StringUtils.isNotBlank(mimeType)) {
                 webRequest.setAdditionalHeader(HttpHeader.CONTENT_TYPE, mimeType);
