@@ -162,7 +162,7 @@ public class GroupDefinition
         final Mode source = EnumUtils.getEnumIgnoreCase(Mode.class, modeStr, Mode.firstPassed);
         final TestFailTrigger failsOn = EnumUtils.getEnumIgnoreCase(TestFailTrigger.class, failsOnStr);
 
-        final JSONObject messageObj = jsonObject.optJSONObject("message");
+        final JSONObject messageObj = jsonObject.optJSONObject("messages");
         final String successMessage = messageObj != null ? StringUtils.trimToNull(messageObj.optString("success")) : null;
         final String failMessage = messageObj != null ? StringUtils.trimToNull(messageObj.optString("fail")) : null;
 
