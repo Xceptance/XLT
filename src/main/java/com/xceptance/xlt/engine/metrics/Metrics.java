@@ -15,12 +15,18 @@
  */
 package com.xceptance.xlt.engine.metrics;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.Callable;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.engine.Session;
 import com.xceptance.xlt.api.util.XltProperties;
+import com.xceptance.xlt.engine.TelemetryConfiguration;
 import com.xceptance.xlt.engine.metrics.graphite.GraphiteMetricsReporter;
 import com.xceptance.xlt.engine.metrics.otel.OtelMetricsReporter;
 
@@ -37,8 +43,6 @@ public class Metrics
 
     private static final String PROP_REP_INTERVAL = PROP_REP_PREFIX + "interval";
 
-    private static final String PROP_REP_BACKEND = PROP_REP_PREFIX + "backend";
-
     private static final String PROP_REP_METRIC_NAME_PREFIX = PROP_REP_PREFIX + "metricNamePrefix";
 
     private static final String PROP_REP_PREFIX_GRAPHITE = PROP_REP_PREFIX + "graphite.";
@@ -49,12 +53,10 @@ public class Metrics
 
     private static final String PROP_REP_PREFIX_OTEL = PROP_REP_PREFIX + "otel.";
 
-    private static final String PROP_REP_OTEL_SERVER = PROP_REP_PREFIX_OTEL + "host";
-
-    private static final String PROP_REP_OTEL_PORT = PROP_REP_PREFIX_OTEL + "port";
+    private static final String PROP_REP_OTEL_ENDPOINT = PROP_REP_PREFIX_OTEL + "endpoint";
 
     private static final String PROP_REP_OTEL_SECRET = PROP_REP_PREFIX_OTEL + "secret";
-    
+
     private static final Logger log = LoggerFactory.getLogger(Metrics.class);
 
     public static class LazySingletonHolder
@@ -73,7 +75,7 @@ public class Metrics
         return LazySingletonHolder.metrics;
     }
 
-    private final MetricsReporter _reporter;
+    private final List<MetricsReporter> _reporters;
 
     /**
      * Constructor.
@@ -87,37 +89,37 @@ public class Metrics
         final int reportingInterval = props.getProperty(PROP_REP_INTERVAL, 5);
         final String metricsNamePrefix = props.getProperty(PROP_REP_METRIC_NAME_PREFIX, "");
 
-        final String metricsBackend = props.getProperty(PROP_REP_BACKEND, "graphite");
+        final boolean graphiteEnabled = props.getProperty(PROP_REP_PREFIX_GRAPHITE + "enabled", enabled);
         final String graphiteHost = props.getProperty(PROP_REP_GRAPHITE_SERVER, "localhost");
         final int graphitePort = props.getProperty(PROP_REP_GRAPHITE_PORT, 2003);
 
-        final String otelHost = props.getProperty(PROP_REP_OTEL_SERVER, "localhost");
-        final int otelPort = props.getProperty(PROP_REP_OTEL_PORT, 12345);
+        final boolean otelEnabled = props.getProperty(PROP_REP_PREFIX_OTEL + "enabled", enabled);
+        final String otelEndPoint = props.getProperty(PROP_REP_OTEL_ENDPOINT, "http://localhost:4318");
         final String otelSecret = props.getProperty(PROP_REP_OTEL_SECRET);
 
         // start reporting if so configured and we are load testing
-        MetricsReporter reporter = null;
-        if (enabled && Session.getCurrent().isLoadTest())
+        final List<MetricsReporter> reporters = new ArrayList<>();
+        if (Session.getCurrent().isLoadTest())
         {
-            try
+            if (graphiteEnabled)
             {
-                if ("graphite".equalsIgnoreCase(metricsBackend))
-                {
-                    reporter = new GraphiteMetricsReporter(enabled, reportingInterval, graphiteHost, graphitePort, metricsNamePrefix);
-                }
-                else if ("otel".equalsIgnoreCase(metricsBackend))
-                {
-                    reporter = new OtelMetricsReporter(enabled, reportingInterval, otelHost, otelPort, metricsNamePrefix, otelSecret);
-                }
+                _create("graphite", () -> new GraphiteMetricsReporter(graphiteEnabled, reportingInterval, graphiteHost, graphitePort,
+                                                                      metricsNamePrefix)).ifPresent(reporters::add);
             }
-            catch (final Exception e)
-            {
-                log.error("Failed to start metrics reporter '%s'", metricsBackend, e);
-            }
+//            if (otelEnabled)
+//            {
+//                _create("otel", () -> new OtelMetricsReporter(otelEnabled, reportingInterval, otelEndPoint, metricsNamePrefix,
+//                                                              otelSecret)).ifPresent(reporters::add);
+//            }
 
+            _create("otel", () -> new OtelMetricsReporter(TelemetryConfiguration.initialize(props))).ifPresent(reporters::add);
+        }
+        else
+        {
+            log.info("XLT does not run in load-test mode");
         }
 
-        this._reporter = reporter;
+        this._reporters = List.copyOf(reporters);
     }
 
     /**
@@ -128,9 +130,20 @@ public class Metrics
      */
     public void updateMetrics(final Data data)
     {
-        if (this._reporter != null)
+        this._reporters.forEach((r) -> r.reportMetrics(data));
+    }
+
+    private static Optional<MetricsReporter> _create(final String str, final Callable<MetricsReporter> reporterSupplier)
+    {
+        try
         {
-            this._reporter.reportMetrics(data);
+            return Optional.ofNullable(reporterSupplier.call());
         }
+        catch (final Exception e)
+        {
+            log.error("Failed to start metrics reporter '%s'", str, e);
+        }
+
+        return Optional.empty();
     }
 }

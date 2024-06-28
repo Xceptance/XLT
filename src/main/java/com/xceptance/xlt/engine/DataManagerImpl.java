@@ -70,11 +70,6 @@ public class DataManagerImpl implements DataManager
     private volatile BufferedWriter logger;
 
     /**
-     * Our reference to metrics
-     */
-    private final Metrics metrics;
-
-    /**
      * Back-reference to session using this data manager.
      * <p>
      * Necessary as this data manager might be used by foreign threads (e.g. worker-threads of Grizzly WebSocket
@@ -87,25 +82,10 @@ public class DataManagerImpl implements DataManager
      *
      * @param session
      *            the session that should use this data manager
-     * @param metrics
-     *            a metrics target for real time loggiing
-     */
-    protected DataManagerImpl(final Session session, final Metrics metrics)
-    {
-        this.session = session;
-        this.metrics = metrics;
-    }
-
-    /**
-     * Creates a new data manager for the given session.
-     *
-     * @param session
-     *            the session that should use this data manager
      */
     protected DataManagerImpl(final Session session)
     {
         this.session = session;
-        this.metrics = null;
     }
 
     /**
@@ -139,10 +119,7 @@ public class DataManagerImpl implements DataManager
     public void logDataRecord(final Data stats)
     {
         // update metrics for real-time reporting
-        if (metrics != null)
-        {
-            metrics.updateMetrics(stats);
-        }
+        Metrics.getInstance().updateMetrics(stats);
 
         // Check whether the data record falls into the logging period.
         // Take the data record's (start) time as the criterion.

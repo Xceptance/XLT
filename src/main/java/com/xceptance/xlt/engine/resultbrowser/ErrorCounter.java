@@ -149,7 +149,7 @@ public class ErrorCounter
         this.resetInterval = tmpInterval * 1000;
         if (resetInterval > 0)
         {
-            timer = new Timer("ErrorCounter-ResetTimer");
+            timer = new Timer("ErrorCounter-ResetTimer", true);
         }
         else
         {
