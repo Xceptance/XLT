@@ -323,7 +323,7 @@ public class SessionImpl extends Session
         totalAgentCount = 1;
 
         // create the session-specific helper objects
-        dataManagerImpl = new DataManagerImpl(this, Metrics.getInstance());
+        dataManagerImpl = new DataManagerImpl(this, Metrics::getInstance);
         shutdownListeners = new ArrayList<SessionShutdownListener>();
         networkDataManagerImpl = new NetworkDataManagerImpl();
 
