@@ -107,7 +107,10 @@ import util.xlt.properties.AdjustXltProperties.SetProperty;
     {
         SessionImpl.class, DataManagerImpl.class, GlobalClock.class, AbstractExecutionTimer.class
 })
-@PowerMockIgnore({"javax.*", "org.xml.*", "org.w3c.dom.*"})
+@PowerMockIgnore(
+    {
+        "javax.*", "org.xml.*", "org.w3c.dom.*"
+})
 public class DataRecordLoggingTest
 {
     /**
@@ -662,7 +665,13 @@ public class DataRecordLoggingTest
             public DataManagerImpl answer(InvocationOnMock invocation) throws Throwable
             {
                 // limit to constructor new DataManagerImpl(Session) and avoid using (Session, Metrics)
-                final DataManagerImpl instance = Whitebox.invokeConstructor(DataManagerImpl.class, invocation.getArguments()[0]);
+                final DataManagerImpl instance = Whitebox.invokeConstructor(DataManagerImpl.class, new Class<?>[]
+                    {
+                        Session.class
+                    }, new Object[]
+                    {
+                        invocation.getArgument(0, Session.class)
+                    });
                 return mockDataManagers.computeIfAbsent(Thread.currentThread().getThreadGroup(), __ -> createMockDataManager(instance));
             }
         });
@@ -915,15 +924,15 @@ public class DataRecordLoggingTest
 
     enum KindOfLoadTestClass
     {
-     /**
-      * Use a load test class that is derived from {@link AbstractTestCase}
-      */
-     XltDerived(GenericLoadTestClasses.XltDerived.class, true),
+        /**
+         * Use a load test class that is derived from {@link AbstractTestCase}
+         */
+        XltDerived(GenericLoadTestClasses.XltDerived.class, true),
 
-     /**
-      * Use a load test class that is not derived from anything except Object
-      */
-     NotDerived(GenericLoadTestClasses.NotDerived.class, false);
+        /**
+         * Use a load test class that is not derived from anything except Object
+         */
+        NotDerived(GenericLoadTestClasses.NotDerived.class, false);
 
         private KindOfLoadTestClass(Class<?> genericTestClassObject, boolean isXltDerived)
         {
@@ -955,35 +964,35 @@ public class DataRecordLoggingTest
 
     enum TestExecutionThreadStrategy
     {
-     /**
-      * Use a {@link LoadTestRunner} thread to execute the load test class
-      */
-     LoadTestRunner(true)
-     {
-         @Override
-         public Thread createThreadFor(Class<?> loadTestClassObject, TestUserConfiguration testUserConfiguration, AgentInfo agentInfo,
-                                       DataRecordLoggingTest thisTestInstance)
-         {
-             return new LoadTestRunner(testUserConfiguration, agentInfo, dummyExecutionTimer());
-         }
+        /**
+         * Use a {@link LoadTestRunner} thread to execute the load test class
+         */
+        LoadTestRunner(true)
+        {
+            @Override
+            public Thread createThreadFor(Class<?> loadTestClassObject, TestUserConfiguration testUserConfiguration, AgentInfo agentInfo,
+                                          DataRecordLoggingTest thisTestInstance)
+            {
+                return new LoadTestRunner(testUserConfiguration, agentInfo, dummyExecutionTimer());
+            }
 
-     },
+        },
 
-     /**
-      * Use a simple thread that will just call JUnit's
-      * <code>{@linkplain Request#aClass(Class) Request.aClass(Class)}.getRunner().run(RunNotifier)</code> to execute
-      * the load test class
-      */
-     JUnitClassRequestRunner(false)
-     {
-         @Override
-         public Thread createThreadFor(Class<?> loadTestClassObject, TestUserConfiguration testUserConfiguration, AgentInfo agentInfo,
-                                       DataRecordLoggingTest thisTestInstance)
-         {
-             final Runnable r = () -> Request.aClass(loadTestClassObject).getRunner().run(new RunNotifier());
-             return new Thread(new ThreadGroup("JUnitRequestRunner"), r);
-         }
-     };
+        /**
+         * Use a simple thread that will just call JUnit's
+         * <code>{@linkplain Request#aClass(Class) Request.aClass(Class)}.getRunner().run(RunNotifier)</code> to execute
+         * the load test class
+         */
+        JUnitClassRequestRunner(false)
+        {
+            @Override
+            public Thread createThreadFor(Class<?> loadTestClassObject, TestUserConfiguration testUserConfiguration, AgentInfo agentInfo,
+                                          DataRecordLoggingTest thisTestInstance)
+            {
+                final Runnable r = () -> Request.aClass(loadTestClassObject).getRunner().run(new RunNotifier());
+                return new Thread(new ThreadGroup("JUnitRequestRunner"), r);
+            }
+        };
 
         private TestExecutionThreadStrategy(final boolean usesLoadTestRunner)
         {
