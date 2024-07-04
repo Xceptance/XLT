@@ -27,6 +27,7 @@ import java.util.TimerTask;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.runners.model.MultipleFailureException;
 
 import com.xceptance.common.io.FileUtils;
@@ -86,11 +87,26 @@ public class SessionImpl extends Session
      * All Session instances keyed by thread.
      */
     private static final Map<Thread, SessionImpl> sessions = new ConcurrentHashMap<>(101);
+    // private static final Map<String, SessionImpl> sessions = new ConcurrentHashMap<>(101);
 
     /**
      * The Session instance of the current thread.
      */
-    private static final InheritableThreadLocal<SessionImpl> session = new InheritableThreadLocal<>() {
+    private static final InheritableThreadLocal<String> magic = new InheritableThreadLocal<>()
+    {
+
+        @Override
+        protected String initialValue()
+        {
+            return RandomStringUtils.random(32);
+        }
+    };
+
+    /**
+     * The Session instance of the current thread.
+     */
+    private static final InheritableThreadLocal<SessionImpl> session = new InheritableThreadLocal<>()
+    {
 
         @Override
         protected SessionImpl initialValue()
@@ -99,7 +115,7 @@ public class SessionImpl extends Session
             return new SessionImpl(XltPropertiesImpl.getInstance());
         }
     };
-    
+
     /**
      * Returns the Session instance for the calling thread. If no such instance exists yet, it will be created.
      *
@@ -107,10 +123,14 @@ public class SessionImpl extends Session
      */
     public static SessionImpl getCurrent()
     {
-        final SessionImpl sessionImpl = session.get();
-        
-        sessions.putIfAbsent(Thread.currentThread(), sessionImpl);
-        
+        SessionImpl sessionImpl = sessions.get(Thread.currentThread());
+
+        if (sessionImpl == null)
+        {
+            sessionImpl = session.get();
+            sessions.put(Thread.currentThread(), sessionImpl);
+        }
+
         return sessionImpl;
     }
 
@@ -122,12 +142,8 @@ public class SessionImpl extends Session
      */
     public static SessionImpl removeCurrent()
     {
-        final SessionImpl sess = session.get();
-
-        session.set(null);
-        sessions.remove(Thread.currentThread());
-        
-        return sess;
+        session.remove();
+        return sessions.remove(Thread.currentThread());
     }
 
     /**
@@ -291,6 +307,7 @@ public class SessionImpl extends Session
         this.shutdownListeners = null;
         this.transactionTimeout = 0;
     }
+
     /**
      * Creates a new Session object.
      */
@@ -321,12 +338,11 @@ public class SessionImpl extends Session
         // create more session-specific helper objects
         requestHistory = new RequestHistory(this, properties);
 
-        this.isTransactionExpirationTimerEnabled = properties.getProperty(this, XltConstants.XLT_PACKAGE_PATH + ".abortLongRunningTransactions")
-            .map(Boolean::valueOf)
-            .orElse(false);
-        this.transactionTimeout = properties.getProperty(this, PROP_MAX_TRANSACTION_TIMEOUT)
-            .flatMap(ParseNumbers::parseOptionalInt)
-            .orElse(DEFAULT_TRANSACTION_TIMEOUT);
+        this.isTransactionExpirationTimerEnabled = properties.getProperty(this,
+                                                                          XltConstants.XLT_PACKAGE_PATH + ".abortLongRunningTransactions")
+                                                             .map(Boolean::valueOf).orElse(false);
+        this.transactionTimeout = properties.getProperty(this, PROP_MAX_TRANSACTION_TIMEOUT).flatMap(ParseNumbers::parseOptionalInt)
+                                            .orElse(DEFAULT_TRANSACTION_TIMEOUT);
     }
 
     /**
@@ -387,8 +403,9 @@ public class SessionImpl extends Session
             transactionTimer = null;  // just for safety's sake
             valueLog.clear();
 
-            // we cannot reset the name, because the session is recycled over and over again but never fully inited by the load test framework again
-            //userName = UNKNOWN_USER_NAME;
+            // we cannot reset the name, because the session is recycled over and over again but never fully inited by
+            // the load test framework again
+            // userName = UNKNOWN_USER_NAME;
 
             dataManagerImpl.close();
         }
@@ -483,7 +500,7 @@ public class SessionImpl extends Session
             // create new file handle for result directory rooted at the
             // user name directory which itself is rooted at the configured
             // result dir
-            //            resultDir = new File(new File(resultDirName, cleanUserName), String.valueOf(userNumber));
+            // resultDir = new File(new File(resultDirName, cleanUserName), String.valueOf(userNumber));
             resultDir = Path.of(resultDirName, cleanUserName, String.valueOf(userNumber));
 
             if (!Files.exists(resultDir))
@@ -498,8 +515,7 @@ public class SessionImpl extends Session
                     }
                     catch (IOException e)
                     {
-                        XltLogger.runTimeLogger.error("Cannot create file for output of timer: "
-                            + resultDir.toString(), e);
+                        XltLogger.runTimeLogger.error("Cannot create file for output of timer: " + resultDir.toString(), e);
 
                         return null;
                     }

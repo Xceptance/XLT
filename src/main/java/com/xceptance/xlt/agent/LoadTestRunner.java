@@ -107,6 +107,11 @@ public class LoadTestRunner
         thread.setName(config.getUserId());
     }
 
+    Thread getThread()
+    {
+        return thread;
+    }
+
     public void start()
     {
         thread.start();

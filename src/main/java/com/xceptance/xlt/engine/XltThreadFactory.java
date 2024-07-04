@@ -45,9 +45,9 @@ public class XltThreadFactory implements ThreadFactory
     @Override
     public Thread newThread(final Runnable r)
     {
-        final String threadName = threadNamePrefix + threadCounter.getAndIncrement();
-
         final Thread thread = createThread(r);
+
+        final String threadName = threadNamePrefix + threadCounter.getAndIncrement();
         thread.setName(threadName);
 
         return thread;
@@ -62,7 +62,7 @@ public class XltThreadFactory implements ThreadFactory
             System.out.println("Creating virtual thread");
 
             // This is what actually needs to be done here:
-            // thread = Thread.ofVirtual().inheritInheritableThreadLocals(false).unstarted(this::run);
+            // thread = Thread.ofVirtual().inheritInheritableThreadLocals(false).unstarted(runnable);
 
             // To make the above Java 21 code compile on Java 11, use reflection.
             try
