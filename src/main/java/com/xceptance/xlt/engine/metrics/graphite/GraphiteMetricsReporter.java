@@ -32,8 +32,6 @@ public class GraphiteMetricsReporter implements MetricsReporter
 
     private static final int ONE_HOUR = 3600 * ONE_SEC;
 
-    private final boolean enabled;
-
     private final int reportingInterval;
 
     /**
@@ -46,10 +44,9 @@ public class GraphiteMetricsReporter implements MetricsReporter
      */
     private final Map<String, Metric> metricsRegistry = new ConcurrentHashMap<String, Metric>();
 
-    public GraphiteMetricsReporter(final boolean enabled, final int interval, final String host, final int port, String metricsNamePrefix)
+    public GraphiteMetricsReporter(final int interval, final String host, final int port, String metricsNamePrefix)
         throws UnknownHostException, IllegalArgumentException
     {
-        this.enabled = enabled;
         this.reportingInterval = interval * ONE_SEC;
 
         // sanitize the metric name prefix and add a trailing dot if not present yet
@@ -75,37 +72,34 @@ public class GraphiteMetricsReporter implements MetricsReporter
 
     public void reportMetrics(final Data data)
     {
-        if (enabled)
+        // do the right thing depending on the data type
+        if (data instanceof RequestData)
         {
-            // do the right thing depending on the data type
-            if (data instanceof RequestData)
-            {
-                updateRequestMetrics((RequestData) data);
-            }
-            else if (data instanceof ActionData)
-            {
-                updateActionMetrics((ActionData) data);
-            }
-            else if (data instanceof TransactionData)
-            {
-                updateTransactionMetrics((TransactionData) data);
-            }
-            else if (data instanceof PageLoadTimingData)
-            {
-                updatePageLoadTimingMetrics((PageLoadTimingData) data);
-            }
-            else if (data instanceof CustomData)
-            {
-                updateCustomTimerMetrics((CustomData) data);
-            }
-            else if (data instanceof EventData)
-            {
-                updateEventMetrics((EventData) data);
-            }
-            else if (data instanceof JvmResourceUsageData)
-            {
-                updateJvmMetrics((JvmResourceUsageData) data);
-            }
+            updateRequestMetrics((RequestData) data);
+        }
+        else if (data instanceof ActionData)
+        {
+            updateActionMetrics((ActionData) data);
+        }
+        else if (data instanceof TransactionData)
+        {
+            updateTransactionMetrics((TransactionData) data);
+        }
+        else if (data instanceof PageLoadTimingData)
+        {
+            updatePageLoadTimingMetrics((PageLoadTimingData) data);
+        }
+        else if (data instanceof CustomData)
+        {
+            updateCustomTimerMetrics((CustomData) data);
+        }
+        else if (data instanceof EventData)
+        {
+            updateEventMetrics((EventData) data);
+        }
+        else if (data instanceof JvmResourceUsageData)
+        {
+            updateJvmMetrics((JvmResourceUsageData) data);
         }
     }
 

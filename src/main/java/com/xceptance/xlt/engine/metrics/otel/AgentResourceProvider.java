@@ -15,7 +15,7 @@ public class AgentResourceProvider implements ResourceProvider
     public Resource createResource(ConfigProperties config)
     {
         final ProductInformation productInfo = ProductInformation.getProductInformation();
-        Attributes atts = Attributes.of(ResourceAttributes.SERVICE_NAME, productInfo.getProductIdentifier(),
+        Attributes atts = Attributes.of(ResourceAttributes.SERVICE_NAME, "xlt-agent",
                                         ResourceAttributes.SERVICE_VERSION, productInfo.getVersion(),
                                         ResourceAttributes.SERVICE_INSTANCE_ID, Session.getCurrent().getAgentID());
         return Resource.create(atts);

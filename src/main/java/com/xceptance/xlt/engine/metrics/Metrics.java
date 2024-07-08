@@ -15,20 +15,29 @@
  */
 package com.xceptance.xlt.engine.metrics;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Callable;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.xceptance.common.util.ProductInformation;
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.engine.Session;
 import com.xceptance.xlt.api.util.XltProperties;
-import com.xceptance.xlt.engine.TelemetryConfiguration;
+import com.xceptance.xlt.engine.SessionImpl;
 import com.xceptance.xlt.engine.metrics.graphite.GraphiteMetricsReporter;
 import com.xceptance.xlt.engine.metrics.otel.OtelMetricsReporter;
+
+import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
+import io.opentelemetry.semconv.ResourceAttributes;
 
 /**
  * The Metrics sub-system collects certain metrics and submits them periodically to a reporting system (Graphite in this
@@ -52,10 +61,6 @@ public class Metrics
     private static final String PROP_REP_GRAPHITE_PORT = PROP_REP_PREFIX_GRAPHITE + "port";
 
     private static final String PROP_REP_PREFIX_OTEL = PROP_REP_PREFIX + "otel.";
-
-    private static final String PROP_REP_OTEL_ENDPOINT = PROP_REP_PREFIX_OTEL + "endpoint";
-
-    private static final String PROP_REP_OTEL_SECRET = PROP_REP_PREFIX_OTEL + "secret";
 
     private static final Logger log = LoggerFactory.getLogger(Metrics.class);
 
@@ -94,8 +99,6 @@ public class Metrics
         final int graphitePort = props.getProperty(PROP_REP_GRAPHITE_PORT, 2003);
 
         final boolean otelEnabled = props.getProperty(PROP_REP_PREFIX_OTEL + "enabled", enabled);
-        final String otelEndPoint = props.getProperty(PROP_REP_OTEL_ENDPOINT, "http://localhost:4318");
-        final String otelSecret = props.getProperty(PROP_REP_OTEL_SECRET);
 
         // start reporting if so configured and we are load testing
         final List<MetricsReporter> reporters = new ArrayList<>();
@@ -103,16 +106,14 @@ public class Metrics
         {
             if (graphiteEnabled)
             {
-                _create("graphite", () -> new GraphiteMetricsReporter(graphiteEnabled, reportingInterval, graphiteHost, graphitePort,
+                _create("graphite", () -> new GraphiteMetricsReporter(reportingInterval, graphiteHost, graphitePort,
                                                                       metricsNamePrefix)).ifPresent(reporters::add);
             }
-//            if (otelEnabled)
-//            {
-//                _create("otel", () -> new OtelMetricsReporter(otelEnabled, reportingInterval, otelEndPoint, metricsNamePrefix,
-//                                                              otelSecret)).ifPresent(reporters::add);
-//            }
-
-            _create("otel", () -> new OtelMetricsReporter(TelemetryConfiguration.initialize(props))).ifPresent(reporters::add);
+            if (otelEnabled)
+            {
+                final Map<String,String> otelProps = getOTelProperties(props, reportingInterval);
+                _create("otel", () -> new OtelMetricsReporter(configureOpenTelemetry(otelProps))).ifPresent(reporters::add);
+            }
         }
         else
         {
@@ -146,4 +147,21 @@ public class Metrics
 
         return Optional.empty();
     }
+    
+    private static Map<String,String> getOTelProperties(final XltProperties properties, final int reportingInterval)
+    {
+        final Map<String,String> otelProps = properties.getProperties().stringPropertyNames().stream().filter(p -> p.startsWith("otel.")).collect(Collectors.toMap(Function.identity(), properties::getProperty));
+        final String exportScheduleMillis = String.valueOf(Duration.ofSeconds(reportingInterval).toMillis());
+        otelProps.putIfAbsent("otel.sdk.disabled", String.valueOf(false));
+        otelProps.putIfAbsent("otel.blrp.schedule.delay", exportScheduleMillis);
+        otelProps.putIfAbsent("otel.metric.export.interval", exportScheduleMillis);
+        
+        return otelProps;
+    }
+    
+    private static OpenTelemetrySdk configureOpenTelemetry(final Map<String,String> otelProps)
+    {
+        return AutoConfiguredOpenTelemetrySdk.builder().addPropertiesSupplier(() -> otelProps).build().getOpenTelemetrySdk();
+    }
+    
 }

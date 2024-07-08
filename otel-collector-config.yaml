@@ -10,10 +10,14 @@ processors:
 exporters:
   debug:
     verbosity: detailed
+  googlecloud:
+    log:
+      default_log_name: otlp.xtc.xceptance.com
 
 service:
   pipelines:
     logs:
       receivers: [otlp]
       processors: [batch]
+      #exporters: [debug, googlecloud]
       exporters: [debug]
