@@ -21,6 +21,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.Optional;
+import java.util.function.Supplier;
 
 import com.xceptance.common.util.CsvUtils;
 import com.xceptance.xlt.api.engine.Data;
@@ -70,6 +72,11 @@ public class DataManagerImpl implements DataManager
     private volatile BufferedWriter logger;
 
     /**
+     * Our metrics provider.
+     */
+    private final Supplier<Metrics> metrics;
+
+    /**
      * Back-reference to session using this data manager.
      * <p>
      * Necessary as this data manager might be used by foreign threads (e.g. worker-threads of Grizzly WebSocket
@@ -82,10 +89,24 @@ public class DataManagerImpl implements DataManager
      *
      * @param session
      *            the session that should use this data manager
+     * @param metrics
+     *            a metrics target for real time logging
+     */
+    protected DataManagerImpl(final Session session, final Supplier<Metrics> metrics)
+    {
+        this.session = session;
+        this.metrics = metrics;
+    }
+
+    /**
+     * Creates a new data manager for the given session.
+     *
+     * @param session
+     *            the session that should use this data manager
      */
     protected DataManagerImpl(final Session session)
     {
-        this.session = session;
+        this(session, null);
     }
 
     /**
@@ -119,7 +140,7 @@ public class DataManagerImpl implements DataManager
     public void logDataRecord(final Data stats)
     {
         // update metrics for real-time reporting
-        Metrics.getInstance().updateMetrics(stats);
+        Optional.ofNullable(metrics).map(Supplier::get).ifPresent((m) -> m.updateMetrics(stats));
 
         // Check whether the data record falls into the logging period.
         // Take the data record's (start) time as the criterion.

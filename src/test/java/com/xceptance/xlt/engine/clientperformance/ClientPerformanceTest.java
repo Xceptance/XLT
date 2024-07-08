@@ -35,7 +35,7 @@ import com.xceptance.xlt.api.webdriver.XltChromeDriver;
 import com.xceptance.xlt.engine.clientperformance.util.HttpRequestHandlerConfiguration;
 import com.xceptance.xlt.engine.clientperformance.util.HttpServer;
 import com.xceptance.xlt.engine.metrics.Metrics;
-import com.xceptance.xlt.engine.metrics.Metrics.LazySingletonHolder;
+import com.xceptance.xlt.engine.metrics.MetricsReporter;
 
 /**
  * Checks the client-performance measurements of native browsers or XltDriver for plausibility.
@@ -54,10 +54,10 @@ public class ClientPerformanceTest
     @BeforeClass
     public static void beforeClass() throws IOException, ClassNotFoundException, InterruptedException
     {
-        // install our special Metrics sub class to get access to the measurements
+        // install our own metrics reporter to get access to the measurements
         metrics = new TestMetrics();
-        // HACK: replace the Metrics instance
-        ReflectionUtils.writeStaticField(LazySingletonHolder.class, "metrics", metrics);
+        // HACK: replace the metrics reporters list of the Metrics' singleton
+        ReflectionUtils.writeInstanceField(Metrics.getInstance(), "_reporters", List.of(metrics));
 
         // start our test HTTP server
         httpServer = new HttpServer(HttpRequestHandlerConfiguration.HTTP_PORT, -1);
@@ -201,14 +201,14 @@ public class ClientPerformanceTest
     /**
      * A sub class of {@link Metrics} that stores data for later evaluation.
      */
-    private static class TestMetrics extends Metrics
+    private static class TestMetrics implements MetricsReporter
     {
         List<Data> dataRecords = new ArrayList<>();
 
         boolean failed = false;
 
         @Override
-        public void updateMetrics(final Data data)
+        public void reportMetrics(final Data data)
         {
             dataRecords.add(data);
         }

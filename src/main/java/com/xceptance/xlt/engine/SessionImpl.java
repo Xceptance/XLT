@@ -41,6 +41,7 @@ import com.xceptance.xlt.api.engine.TransactionData;
 import com.xceptance.xlt.api.util.XltLogger;
 import com.xceptance.xlt.api.util.XltProperties;
 import com.xceptance.xlt.common.XltConstants;
+import com.xceptance.xlt.engine.metrics.Metrics;
 import com.xceptance.xlt.engine.resultbrowser.ActionInfo;
 import com.xceptance.xlt.engine.resultbrowser.RequestHistory;
 import com.xceptance.xlt.engine.util.TimerUtils;
@@ -322,7 +323,7 @@ public class SessionImpl extends Session
         totalAgentCount = 1;
 
         // create the session-specific helper objects
-        dataManagerImpl = new DataManagerImpl(this);
+        dataManagerImpl = new DataManagerImpl(this, Metrics::getInstance);
         shutdownListeners = new ArrayList<SessionShutdownListener>();
         networkDataManagerImpl = new NetworkDataManagerImpl();
 
