@@ -36,13 +36,7 @@
                         </form>
                     </th>
                     <xsl:if test="$type = 'transaction' or $type = 'action' or $type = 'request'">
-                        <th rowspan="2" class="table-sortable:alphanumeric colgroup1" id="sortByLabel">
-                            Label<br/>
-                            <form>
-                                <input class="filter" placeholder="Enter filter substrings" title=""/>
-                                <button class="clear-input" type="clear" title="Click to clear">&#x2715;</button>
-                            </form>
-                        </th>
+                        <th rowspan="2" class="table-sortable:alphanumeric colgroup1" id="sortByLabel">Label</th>
                     </xsl:if>
                     <xsl:choose>
                         <xsl:when test="$type = 'request'">
