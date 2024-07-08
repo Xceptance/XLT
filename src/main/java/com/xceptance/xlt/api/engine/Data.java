@@ -150,4 +150,19 @@ public interface Data
      *            the transaction's name
      */
     public void setTransactionName(String transactionName);
+
+    /**
+     * Returns the custom label determined by the labeling rules. Only used during report generation or analysis.
+     *
+     * @return the custom label
+     */
+    public String getLabel();
+
+    /**
+     * Sets the custom label determined by the labeling rules. Only used during report generation or analysis.
+     *
+     * @param label
+     *            the custom label
+     */
+    public void setLabel(String label);
 }

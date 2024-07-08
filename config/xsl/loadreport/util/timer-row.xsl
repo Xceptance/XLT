@@ -43,6 +43,13 @@
 				</xsl:if>
 			</td>
 
+			<!-- label -->
+			<xsl:if test="$type = 'transaction' or $type = 'action' or $type = 'request'">
+				<td class="key colgroup1 forcewordbreak">
+					<xsl:value-of select="labels/*" />
+				</td>
+			</xsl:if>
+
 			<!-- count -->
 			<td class="value number">
 				<xsl:value-of select="format-number(count, '#,##0')" />

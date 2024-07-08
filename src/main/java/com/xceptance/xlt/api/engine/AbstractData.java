@@ -57,6 +57,11 @@ public abstract class AbstractData implements Data
     private String agentName;
 
     /**
+     * The custom label determined by the labeling rules. Only used during report generation or analysis.
+     */
+    private String label;
+
+    /**
      * Creates a new AbstractData object and gives it the specified name and type code.
      *
      * @param name
@@ -215,5 +220,21 @@ public abstract class AbstractData implements Data
         fields.add(Long.toString(time));
 
         return fields;
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public String getLabel()
+    {
+        return label;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void setLabel(String label)
+    {
+        this.label = label;
     }
 }

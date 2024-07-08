@@ -18,10 +18,12 @@ package com.xceptance.xlt.report.providers;
 import java.math.BigDecimal;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamConverter;
 import com.xceptance.xlt.report.util.CustomMapConverter;
+import com.xceptance.xlt.report.util.LabelSetConverter;
 
 /**
  * Represents the timer statistics in a test report. The statistics is generated from a series of timer events.
@@ -33,6 +35,12 @@ public class TimerReport
      * The timer name.
      */
     public String name;
+
+    /**
+     * The labels.
+     */
+    @XStreamConverter(LabelSetConverter.class)
+    public Set<String> labels;
 
     /**
      * The number how often the timer has fired.
