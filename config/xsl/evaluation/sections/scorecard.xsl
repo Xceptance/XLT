@@ -23,7 +23,7 @@
                     </div><!-- /error -->
                 </xsl:when>
                 <xsl:otherwise>
-                    <div class="paragraph">
+                    <div class="paragraph verdict">
 
                             The test got <xsl:value-of select="$rootNode/@points" /> out of <xsl:value-of select="$rootNode/@totalPoints" /> points.
                             The rating result is <xsl:value-of select="concat($rootNode/@pointsPercentage, '%')" />.

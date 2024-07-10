@@ -66,7 +66,7 @@
 </xsl:template>
 
 <xsl:template name="headline-rulechecks">
-<h3>Rule Checks</h3>
+<h2>Rule Checks</h2>
 </xsl:template>
 
 <xsl:template name="description-rulechecks">

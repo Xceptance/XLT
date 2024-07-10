@@ -572,7 +572,7 @@ public class ReportGenerator
 
             TaskManager.getInstance().stopProgress();
 
-            XltLogger.reportLogger.info("...finished - {} ms", TimerUtils.get().getElapsedTime(start));
+            XltLogger.reportLogger.info(String.format("...finished - %,d ms", TimerUtils.get().getElapsedTime(start)));
             XltLogger.reportLogger.info(Console.endSection());
         }
     }
@@ -689,7 +689,7 @@ public class ReportGenerator
             TaskManager.getInstance().waitForAllTasksToComplete();
             TaskManager.getInstance().stopProgress();
 
-            XltLogger.reportLogger.info("...finished - {} ms", TimerUtils.get().getElapsedTime(start));
+            XltLogger.reportLogger.info(String.format("...finished - %,d ms", TimerUtils.get().getElapsedTime(start)));
             XltLogger.reportLogger.info(Console.endSection());
         }
     }
@@ -900,7 +900,7 @@ public class ReportGenerator
             TaskManager.getInstance().waitForAllTasksToComplete();
             TaskManager.getInstance().stopProgress();
 
-            XltLogger.reportLogger.info("...finished - {} ms", TimerUtils.get().getElapsedTime(start));
+            XltLogger.reportLogger.info(String.format("...finished - %,d ms", TimerUtils.get().getElapsedTime(start)));
             XltLogger.reportLogger.info(Console.endSection());
         }
     }

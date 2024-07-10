@@ -20,6 +20,7 @@
 <xsl:include href="sections/scorecard.xsl" />
 <xsl:include href="sections/ratings.xsl" />
 <xsl:include href="sections/rules.xsl" />
+<xsl:include href="sections/rule-checks.xsl" />
 <xsl:include href="sections/groups.xsl" />
 
 <xsl:param name="productName" />
@@ -56,7 +57,12 @@
 
     #scorecard-result .error > pre {
         border: 1px solid var(--main-color);
-        padding: 16px;
+        padding: 1rem;
+    }
+    #scorecard-result .verdict {
+        padding: 0px 1rem;
+        font-weight: 500;
+        font-style: italic;
     }
     #scorecard-ratings .inactive, #scorecard-rules .inactive {
         color: #5f5f5f;
@@ -97,7 +103,13 @@
                 <xsl:with-param name="results" select="./outcome/groups/group" />
             </xsl:call-template>
 
+            <!-- N.B.: Templates 'rules' and 'rule-checks' operate on the very same data -->
             <xsl:call-template name="rules">
+                <xsl:with-param name="definitions" select="./configuration/rules/rule" />
+                <xsl:with-param name="results" select="./outcome/groups/group/rules" />
+            </xsl:call-template>
+
+            <xsl:call-template name="rule-checks">
                 <xsl:with-param name="definitions" select="./configuration/rules/rule" />
                 <xsl:with-param name="results" select="./outcome/groups/group/rules" />
             </xsl:call-template>

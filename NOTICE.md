@@ -250,6 +250,12 @@ progressbar
   * Homepage: https://github.com/ctongfei/progressbar
   * More information in folder: doc/3rd-party-licenses/progressbar
 
+saxon-he
+
+  * License: Mozilla Public License 2.0
+  * Homepage: https://www.saxonica.com/
+  * More information in folder: doc/3rd-party-licenses/saxon-he
+
 selenium-java
 
   * License: Apache License 2.0
@@ -297,12 +303,6 @@ websocket-client
   * License: Apache License 2.0
   * Homepage: https://www.eclipse.org/jetty/
   * More information in folder: doc/3rd-party-licenses/websocket-client
-
-xalan
-
-  * License: Apache License 2.0
-  * Homepage: https://xml.apache.org/xalan-j/
-  * More information in folder: doc/3rd-party-licenses/xalan
 
 xerces
 
