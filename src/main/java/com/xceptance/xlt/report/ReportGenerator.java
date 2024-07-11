@@ -877,7 +877,7 @@ public class ReportGenerator
         final Map<String, Object> parameters = Map.of("productName", ProductInformation.getProductInformation().getProductName(),
                                                       "productVersion", ProductInformation.getProductInformation().getVersion(),
                                                       "productUrl", ProductInformation.getProductInformation().getProductURL(),
-                                                      "projectName", projectName, "evaluationPresent", Boolean.TRUE, "xtcOrganization",
+                                                      "projectName", projectName, "scorecardPresent", Boolean.TRUE, "xtcOrganization",
                                                       organization, "xtcProject", project, "xtcLoadTestId", loadTestId, "xtcResultId",
                                                       resultId, "xtcReportId", reportId);
 
