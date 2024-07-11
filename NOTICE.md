@@ -304,12 +304,6 @@ websocket-client
   * Homepage: https://www.eclipse.org/jetty/
   * More information in folder: doc/3rd-party-licenses/websocket-client
 
-xerces
-
-  * License: Apache License 2.0
-  * Homepage: http://xerces.apache.org/xerces2-j/
-  * More information in folder: doc/3rd-party-licenses/xerces
-
 xstream
 
   * License: BSD 3-Clause License
