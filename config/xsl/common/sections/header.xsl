@@ -8,7 +8,7 @@
         <xsl:param name="productUrl" select="/testreport/configuration/version/productURL" />
         <xsl:param name="projectName" select="/testreport/configuration/projectName" />
         <xsl:param name="properties" select="/testreport/configuration/properties" />
-        <xsl:param name="evaluationPresent" />
+        <xsl:param name="scorecardPresent" select="false" />
         <!-- XTC specific parameters -->
         <xsl:param name="xtcOrganization" select="$properties/property[@name='com.xceptance.xtc.organization']/@value" />
         <xsl:param name="xtcProject" select="$properties/property[@name='com.xceptance.xtc.project']/@value" />
@@ -20,7 +20,7 @@
 
         <xsl:call-template name="navigation">
             <xsl:with-param name="current" select="general" />
-            <xsl:with-param name="evaluationPresent" select="$evaluationPresent" />
+            <xsl:with-param name="scorecardPresent" select="$scorecardPresent" />
         </xsl:call-template>
 
         <header id="header">

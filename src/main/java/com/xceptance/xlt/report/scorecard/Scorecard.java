@@ -1,4 +1,4 @@
-package com.xceptance.xlt.report.evaluation;
+package com.xceptance.xlt.report.scorecard;
 
 import java.util.Collections;
 import java.util.LinkedList;
@@ -14,8 +14,8 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
 
-@XStreamAlias("evaluation")
-public class Evaluation
+@XStreamAlias("scorecard")
+public class Scorecard
 {
     public static class Result
     {
@@ -121,16 +121,16 @@ public class Evaluation
     public final Configuration configuration;
 
     @XStreamAlias("outcome")
-    public final Evaluation.Result result = new Evaluation.Result();
+    public final Scorecard.Result result = new Scorecard.Result();
 
-    Evaluation(final Configuration configuration)
+    Scorecard(final Configuration configuration)
     {
         this.configuration = configuration;
     }
 
-    static Evaluation error(final Throwable t)
+    static Scorecard error(final Throwable t)
     {
-        final Evaluation r = new Evaluation(null);
+        final Scorecard r = new Scorecard(null);
         final String errMsg = ExceptionUtils.stream(t).map(Throwable::getMessage).collect(Collectors.joining(" -> "));
         r.result.setError(errMsg);
         return r;

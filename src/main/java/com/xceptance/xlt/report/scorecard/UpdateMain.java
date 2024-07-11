@@ -1,4 +1,4 @@
-package com.xceptance.xlt.report.evaluation;
+package com.xceptance.xlt.report.scorecard;
 
 import java.io.File;
 import java.util.Locale;
@@ -32,7 +32,7 @@ public final class UpdateMain
         Locale.setDefault(Locale.US);
 
         XltLogger.reportLogger.info(Console.horizontalBar());
-        XltLogger.reportLogger.info(Console.startSection("XLT Evaluation Update"));
+        XltLogger.reportLogger.info(Console.startSection("XLT Scorecard Update"));
         XltLogger.reportLogger.info(Console.endSection());
 
         final UpdateMain main = new UpdateMain();
@@ -59,7 +59,7 @@ public final class UpdateMain
         }
         catch (final Exception e)
         {
-            final String errorMessage = "Failed to update evaluation";
+            final String errorMessage = "Failed to update scorecard";
             System.err.println(errorMessage + ": " + e.getMessage());
             LOG.error(errorMessage, e);
 
@@ -123,7 +123,7 @@ public final class UpdateMain
         XltLogger.reportLogger.info(timer.stop().get("...finished"));
         XltLogger.reportLogger.info(Console.endSection());
 
-        reportGenerator.updateEvaluation();
+        reportGenerator.updateScorecard();
     }
 
     private void printUsage()
@@ -133,7 +133,7 @@ public final class UpdateMain
         helpFormatter.setWidth(79);
 
         System.out.println();
-        helpFormatter.printHelp("update_evaluation (<options>) reportdir", "Updates the evaluation of the given report\n\nOptions:\n",
+        helpFormatter.printHelp("update_scorecard (<options>) reportdir", "Updates the scorecard of the given report\n\nOptions:\n",
                                 options, null);
         System.out.println();
     }

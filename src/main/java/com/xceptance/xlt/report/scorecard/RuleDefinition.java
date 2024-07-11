@@ -1,4 +1,4 @@
-package com.xceptance.xlt.report.evaluation;
+package com.xceptance.xlt.report.scorecard;
 
 import java.util.LinkedList;
 import java.util.Objects;

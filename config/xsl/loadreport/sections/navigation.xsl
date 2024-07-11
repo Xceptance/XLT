@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
     <xsl:template name="navigation">
-    <xsl:param name="evaluationPresent" select="false()" />
+    <xsl:param name="scorecardPresent" select="false()" />
     <nav>
         <input class="hamburger-btn" type="checkbox" id="hamburger-btn" />
         <label class="hamburger-icon" for="hamburger-btn"><span class="navicon"></span></label>
@@ -55,8 +55,8 @@
                     <li><a href="configuration.html#jvm-configuration">Agent JVM Settings</a></li>
                 </ul>
             </li>
-        <xsl:if test="$evaluationPresent">
-            <li><a href="evaluation.html">Scorecard</a></li>
+        <xsl:if test="$scorecardPresent">
+            <li><a href="scorecard.html">Scorecard</a></li>
         </xsl:if>
         </ul>
     </nav>

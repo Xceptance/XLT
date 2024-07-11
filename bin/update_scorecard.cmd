@@ -28,4 +28,4 @@ set JAVA_OPTIONS=%JAVA_OPTIONS% -XX:+IgnoreUnrecognizedVMOptions
 rem set JAVA_OPTIONS=%JAVA_OPTIONS% --illegal-access=debug
 
 :: run Java
-java %JAVA_OPTIONS% com.xceptance.xlt.report.evaluation.UpdateMain %*
+java %JAVA_OPTIONS% com.xceptance.xlt.report.scorecard.UpdateMain %*

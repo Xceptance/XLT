@@ -27,7 +27,7 @@
 <xsl:param name="productVersion" />
 <xsl:param name="productUrl" />
 <xsl:param name="projectName" />
-<xsl:param name="evaluationPresent" />
+<xsl:param name="scorecardPresent" />
 
 <!-- XTC specific parameters -->
 <xsl:param name="xtcOrganization" />
@@ -36,7 +36,7 @@
 <xsl:param name="xtcResultId" />
 <xsl:param name="xtcReportId" />
 
-<xsl:template match="/evaluation">
+<xsl:template match="/scorecard">
 
 <html lang="en">
 <head>
@@ -78,7 +78,7 @@
             <xsl:with-param name="productVersion" select="$productVersion" />
             <xsl:with-param name="productUrl" select="$productUrl" />
             <xsl:with-param name="projectName" select="$projectName" />
-            <xsl:with-param name="evaluationPresent" select="$evaluationPresent" />
+            <xsl:with-param name="scorecardPresent" select="$scorecardPresent" />
             <!-- XTC specific parameters -->
             <xsl:with-param name="xtcOrganization" select="$xtcOrganization" />
             <xsl:with-param name="xtcProject" select="$xtcProject" />

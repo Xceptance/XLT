@@ -467,31 +467,31 @@ public final class XltConstants
     public static final String PROP_REMOVE_USERINFO_FROM_REQUEST_URL = XltConstants.XLT_PACKAGE_PATH + ".results.data.request.removeUserInfoFromURL";
 
     /*
-     * Auto-evaluation configuration values
+     * Scorecard configuration values
      */
 
     /**
-     * The property name for path to auto-evaluation configuration file.
+     * The property name for path to scorecard configuration file.
      */
-    public static final String EVALUATION_CONFIG_FILE_PROPERTY = XLT_PACKAGE_PATH + ".evaluation.config";
+    public static final String SCORECARD_CONFIG_FILE_PROPERTY = XLT_PACKAGE_PATH + ".scorecard.config";
 
     /**
-     * The XML file name for auto-evaluation.
+     * The XML file name for scorecard.
      */
-    public static final String EVALUATION_REPORT_XML_FILENAME = "evaluation.xml";
+    public static final String SCORECARD_REPORT_XML_FILENAME = "scorecard.xml";
 
     /**
-     * The path of the directory with all XSL files for auto-evaluation rendering.
+     * The path of the directory with all XSL files for scorecard rendering.
      */
-    public static final String EVALUATION_REPORT_XSL_PATH = "xsl/evaluation";
+    public static final String SCORECARD_REPORT_XSL_PATH = "xsl/scorecard";
 
     /**
-     * The name of the XSL file for rendering the auto-evaluation report.
+     * The name of the XSL file for rendering the scorecard report page.
      */
-    public static final String EVALUATION_REPORT_XSL_FILENAME = "index.xsl";
+    public static final String SCORECARD_REPORT_XSL_FILENAME = "index.xsl";
 
     /**
-     * The name of the HTML output file for rendering the auto-evaluation report.
+     * The name of the HTML output file for rendering the scorecard report page.
      */
-    public static final String EVALUATION_REPORT_HTML_FILENAME = "evaluation.html";
+    public static final String SCORECARD_REPORT_HTML_FILENAME = "scorecard.html";
 }

@@ -1,4 +1,4 @@
-package com.xceptance.xlt.report.evaluation;
+package com.xceptance.xlt.report.scorecard;
 
 import com.thoughtworks.xstream.annotations.XStreamConverter;
 import com.thoughtworks.xstream.converters.enums.EnumToStringConverter;

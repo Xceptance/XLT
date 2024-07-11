@@ -28,7 +28,7 @@
 <xsl:param name="productVersion" />
 <xsl:param name="productUrl" />
 <xsl:param name="projectName" />
-<xsl:param name="evaluationPresent" />
+<xsl:param name="scorecardPresent" />
 
 <xsl:template match="/testreport">
 
@@ -43,7 +43,7 @@
     <div id="container">
         <div id="content">
             <xsl:call-template name="header">
-                <xsl:with-param name="evaluationPresent" select="$evaluationPresent" />
+                <xsl:with-param name="scorecardPresent" select="$scorecardPresent" />
              </xsl:call-template>
 
             <div id="data-content">

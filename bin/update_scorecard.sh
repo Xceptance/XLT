@@ -36,7 +36,7 @@ JAVA_OPTIONS="$JAVA_OPTIONS -XX:+IgnoreUnrecognizedVMOptions"
 #JAVA_OPTIONS="$JAVA_OPTIONS --illegal-access=debug"
 
 # run Java
-CMD="java $JAVA_OPTIONS com.xceptance.xlt.report.evaluation.UpdateMain"
+CMD="java $JAVA_OPTIONS com.xceptance.xlt.report.scorecard.UpdateMain"
 ARGS=""
 I=1
 while [ $I -le $# ]; do

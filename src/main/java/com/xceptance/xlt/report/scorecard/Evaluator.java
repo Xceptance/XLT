@@ -1,4 +1,4 @@
-package com.xceptance.xlt.report.evaluation;
+package com.xceptance.xlt.report.scorecard;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -26,7 +26,7 @@ import com.google.common.io.Files;
 import com.thoughtworks.xstream.XStream;
 import com.xceptance.common.util.ParameterCheckUtils;
 import com.xceptance.xlt.common.XltConstants;
-import com.xceptance.xlt.report.evaluation.GroupDefinition.Mode;
+import com.xceptance.xlt.report.scorecard.GroupDefinition.Mode;
 import com.xceptance.xlt.report.util.xstream.SanitizingDomDriver;
 
 import dev.harrel.jsonschema.Validator;
@@ -42,7 +42,7 @@ import net.sf.saxon.s9api.XdmValue;
 
 public class Evaluator
 {
-    private static final String SCHEMA_RESOURCE_PATH = "evaluation-schema.json";
+    private static final String SCHEMA_RESOURCE_PATH = "configuration-schema.json";
 
     private final File configFile;
 
@@ -52,7 +52,7 @@ public class Evaluator
      * Creates a new evaluator instance that uses the given configuration JSON file.
      *
      * @param configFile
-     *            the evaluation configuration JSON file to use
+     *            the configuration JSON file to use
      */
     public Evaluator(final File configFile)
     {
@@ -63,13 +63,13 @@ public class Evaluator
     }
 
     /**
-     * Evaluates the given XML file and returns the evaluations outcome.
+     * Evaluates the given XML file.
      *
      * @param documentFile
      *            the XML file to evaluate
-     * @return evaluation outcome
+     * @return resulting scorecard
      */
-    public Evaluation evaluate(final File documentFile)
+    public Scorecard evaluate(final File documentFile)
     {
         ParameterCheckUtils.isNotNull(documentFile, "documentFile");
 
@@ -80,40 +80,40 @@ public class Evaluator
         }
         catch (final Exception ex)
         {
-            return Evaluation.error(ex);
+            return Scorecard.error(ex);
         }
 
     }
 
     /**
-     * Writes the given evaluation outcome as serialized XML to the given output file.
+     * Writes the given scorecard as serialized XML to the given output file.
      *
-     * @param evaluation
-     *            the evaluation outcome to be written
+     * @param scorecard
+     *            the scorecard to be written
      * @param outputFile
      *            the target output file
      * @throws IOException
-     *             thrown when evaluation outcome could be not be written to the given file
+     *             thrown upon failure to write to given file
      */
-    public void writeEvaluationToFile(final Evaluation evaluation, final File outputFile) throws IOException
+    public void writeScorecardToFile(final Scorecard scorecard, final File outputFile) throws IOException
     {
         try (final OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream(outputFile), XltConstants.UTF8_ENCODING))
         {
-            writeEvaluation(evaluation, osw);
+            writeScorecard(scorecard, osw);
         }
     }
 
     /**
-     * Writes the given evaluation outcome as serialized XML to the given destination writer.
+     * Writes the given scorecard as serialized XML to the given destination writer.
      *
-     * @param evaluation
-     *            the evaluation outcome to be written
+     * @param scorecard
+     *            the scorecard to be written
      * @param writer
      *            the destination to write serialized XML to
      * @throws IOException
-     *             thrown evaluation outcome could not be written
+     *             thrown if scorecard could not be written
      */
-    public void writeEvaluation(final Evaluation evaluation, final Writer writer) throws IOException
+    public void writeScorecard(final Scorecard scorecard, final Writer writer) throws IOException
     {
         // writer the XML preamble
         writer.write(XltConstants.XML_HEADER);
@@ -125,7 +125,7 @@ public class Evaluator
         xstream.setMode(XStream.NO_REFERENCES);
 
         // let XStream do its job
-        xstream.toXML(evaluation, writer);
+        xstream.toXML(scorecard, writer);
     }
 
     protected Configuration parseConfiguration() throws ValidationException, FileNotFoundException, IOException
@@ -172,7 +172,7 @@ public class Evaluator
 
     }
 
-    protected Evaluation doEvaluate(final Configuration config, final File documentFile) throws SaxonApiException
+    protected Scorecard doEvaluate(final Configuration config, final File documentFile) throws SaxonApiException
     {
         final XdmNode docNode = processor.newDocumentBuilder().build(documentFile);
         final XPathCompiler xpathCompiler = processor.newXPathCompiler();
@@ -182,28 +182,28 @@ public class Evaluator
         Integer points = 0, totalPoints = 0; // counters for achieved and achievable points
         boolean testFailed = false; // whether to mark test as failed
 
-        // initialize evaluation and its result objects
-        final Evaluation evaluation = new Evaluation(config);
-        final Evaluation.Result result = evaluation.result;
+        // initialize scorecard and its result objects
+        final Scorecard scorecard = new Scorecard(config);
+        final Scorecard.Result result = scorecard.result;
         // remember the erroneous groups to decide whether evaluation has a meaningful result later on
-        final List<Evaluation.Group> erroneousGroups = new ArrayList<>();
+        final List<Scorecard.Group> erroneousGroups = new ArrayList<>();
 
         // loop through the list of configured groups (in definition order)
         for (final GroupDefinition groupDef : config.getGroups())
         {
             // create a group result object
-            final Evaluation.Group group = new Evaluation.Group(groupDef);
+            final Scorecard.Group group = new Scorecard.Group(groupDef);
             // loop through the group's rule IDs (in definition order)
             for (final String ruleId : groupDef.getRuleIds())
             {
                 // lookup the rule's definition for this ID
                 final RuleDefinition ruleDef = config.getRule(ruleId);
                 // create a rule result object
-                final Evaluation.Rule rule = new Evaluation.Rule(ruleDef, groupDef.isEnabled());
+                final Scorecard.Rule rule = new Scorecard.Rule(ruleDef, groupDef.isEnabled());
                 // evaluate the rule
                 evaluateRule(rule, xpathCompiler, docNode, config::getSelector);
 
-                // add rule result to group result
+                // add rule result to group
                 group.addRule(rule);
 
             }
@@ -220,7 +220,7 @@ public class Evaluator
                 erroneousGroups.add(group);
             }
 
-            // add group result to evaluation result
+            // add group result to scorecard result
             result.addGroup(group);
         }
 
@@ -273,15 +273,15 @@ public class Evaluator
             result.setRating(rating);
         }
 
-        return evaluation;
+        return scorecard;
     }
 
-    private void evaluateRule(final Evaluation.Rule rule, final XPathCompiler compiler, final XdmNode document,
+    private void evaluateRule(final Scorecard.Rule rule, final XPathCompiler compiler, final XdmNode document,
                               final Function<String, SelectorDefinition> selectorLookup)
     {
         for (final RuleDefinition.Check check : rule.getDefinition().getChecks())
         {
-            final Evaluation.Rule.Check ruleCheck = new Evaluation.Rule.Check(check, rule.isEnabled());
+            final Scorecard.Rule.Check ruleCheck = new Scorecard.Rule.Check(check, rule.isEnabled());
             if (ruleCheck.isEnabled())
             {
                 evaluateRuleCheck(ruleCheck, compiler, document, selectorLookup);
@@ -292,7 +292,7 @@ public class Evaluator
         conclude(rule);
     }
 
-    private void evaluateRuleCheck(final Evaluation.Rule.Check check, final XPathCompiler compiler, final XdmNode document,
+    private void evaluateRuleCheck(final Scorecard.Rule.Check check, final XPathCompiler compiler, final XdmNode document,
                                    final Function<String, SelectorDefinition> selectorLookup)
     {
         final String selector;
@@ -376,7 +376,7 @@ public class Evaluator
         }
     }
 
-    private void conclude(final Evaluation.Rule rule)
+    private void conclude(final Scorecard.Rule rule)
     {
         // nothing to do for disabled rules
         if (!rule.isEnabled())
@@ -386,7 +386,7 @@ public class Evaluator
 
         Status lastStatus = Status.PASSED;
         // loop through rule's checks
-        for (final Evaluation.Rule.Check c : rule.getChecks())
+        for (final Scorecard.Rule.Check c : rule.getChecks())
         {
             final Status checkStatus = c.getStatus();
             // ignore skipped checks
@@ -429,7 +429,7 @@ public class Evaluator
 
     }
 
-    private boolean conclude(final Evaluation.Group group)
+    private boolean conclude(final Scorecard.Group group)
     {
         // nothing to do for disabled groups
         if (!group.isEnabled())
@@ -437,7 +437,7 @@ public class Evaluator
             return false;
         }
 
-        Evaluation.Rule firstMatch = null, lastMatch = null;
+        Scorecard.Rule firstMatch = null, lastMatch = null;
         int maxPoints = 0, sumPointsTotal = 0, sumPointsMatching = 0;
 
         boolean somePassed = false, someFailed = false, someError = false;
@@ -454,8 +454,8 @@ public class Evaluator
         // 'all'
         // - + FAILED if at least one rule failed if mode is 'all' OR all rules did fail and mode is 'first' or 'last'
         // - + ERROR if some rule was erroneous
-        final List<Evaluation.Rule> rules = group.getRules();
-        for (final Evaluation.Rule rule : rules)
+        final List<Scorecard.Rule> rules = group.getRules();
+        for (final Scorecard.Rule rule : rules)
         {
             // rules must be enabled in order to participate in point calculation
             // N.B. Rule status is SKIPPED if and only if rule is disabled
@@ -509,7 +509,7 @@ public class Evaluator
         final int points, totalPoints;
         final Status groupStatus;
 
-        final List<Evaluation.Rule> rulesThatMayFailTest;
+        final List<Scorecard.Rule> rulesThatMayFailTest;
         final Mode mode = group.getDefinition().getMode();
         if (mode == Mode.allPassed)
         {
@@ -521,11 +521,11 @@ public class Evaluator
         }
         else if (mode == Mode.firstPassed || mode == Mode.lastPassed)
         {
-            final Evaluation.Rule triggerRule = (mode == Mode.firstPassed) ? firstMatch : lastMatch;
+            final Scorecard.Rule triggerRule = (mode == Mode.firstPassed) ? firstMatch : lastMatch;
             final int idx = triggerRule != null ? rules.indexOf(triggerRule) : -1;
 
             groupStatus = somePassed ? Status.PASSED : someFailed ? Status.FAILED : Status.SKIPPED;
-            points = Optional.ofNullable(triggerRule).map(Evaluation.Rule::getPoints).orElse(0);
+            points = Optional.ofNullable(triggerRule).map(Scorecard.Rule::getPoints).orElse(0);
             totalPoints = maxPoints;
             // need to inspect the group's status trigger rule as well
             rulesThatMayFailTest = idx < 0 ? rules : rules.subList(0, idx + 1);

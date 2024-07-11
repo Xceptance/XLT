@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://xlt.xceptance.com/schemas/evaluation-config.json",
-  "title": "XLT Auto-Rating",
-  "description": "Schema for XLT's Auto-Rating definition files'",
+  "$id": "https://xlt.xceptance.com/schemas/scorecard-config.json",
+  "title": "XLT Scorecard Configuration",
+  "description": "Schema for XLT's Scorecard configuration files",
   "type": "object",
   "$defs": {
     "boolDefaultFalse": {
