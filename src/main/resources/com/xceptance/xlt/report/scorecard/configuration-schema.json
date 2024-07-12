@@ -1,0 +1,259 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xlt.xceptance.com/schemas/scorecard-config.json",
+  "title": "XLT Scorecard Configuration",
+  "description": "Schema for XLT's Scorecard configuration files",
+  "type": "object",
+  "$defs": {
+    "boolDefaultFalse": {
+      "type": "boolean",
+      "default": false
+    },
+    "boolDefaultTrue": {
+      "type": "boolean",
+      "default": true
+    },
+    "nonEmptyString": {
+      "type": "string",
+      "minLength": 1
+    },
+    "messageDict": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "string"
+        },
+        "fail": {
+          "type": "string"
+        }
+      },
+      "minProperties": 1,
+      "additionalProperties": false
+    },
+    "testFailTrigger": {
+      "enum": [
+        "NOTPASSED",
+        "PASSED"
+      ],
+      "default": "NOTPASSED"
+    }
+  },
+  "properties": {
+    "comment": {
+      "type": "string"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "selectors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/$defs/nonEmptyString"
+          },
+          "expression": {
+            "$ref": "#/$defs/nonEmptyString"
+          },
+          "comment": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "expression"
+        ]
+      }
+    },
+    "rules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/$defs/nonEmptyString"
+          },
+          "enabled": {
+            "$ref": "#/$defs/boolDefaultTrue"
+          },
+          "comment": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "failsTest": {
+            "$ref": "#/$defs/boolDefaultFalse"
+          },
+          "failsOn": {
+            "$ref": "#/$defs/testFailTrigger"
+          },
+          "messages": {
+            "$ref": "#/$defs/messageDict"
+          },
+          "name": {
+            "$ref": "#/$defs/nonEmptyString"
+          },
+          "negateResult": {
+            "$ref": "#/$defs/boolDefaultFalse"
+          },
+          "checks": {
+            "type": "array",
+            "items": {
+              "oneOf": [
+                {
+                  "properties": {
+                    "selectorId": {
+                      "$ref": "#/$defs/nonEmptyString"
+                    }
+                  },
+                  "required": [
+                    "selectorId"
+                  ]
+                },
+                {
+                  "properties": {
+                    "selector": {
+                      "$ref": "#/$defs/nonEmptyString"
+                    }
+                  },
+                  "required": [
+                    "selector"
+                  ]
+                }
+              ],
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "$ref": "#/$defs/boolDefaultTrue"
+                },
+                "displayValue": {
+                  "$ref": "#/$defs/boolDefaultFalse"
+                },
+                "condition": {
+                  "$ref": "#/$defs/nonEmptyString"
+                },
+                "comment": {
+                  "type": "string"
+                }
+              },
+              "unevaluatedProperties": false,
+              "required": [
+                "condition"
+              ]
+            },
+            "uniqueItems": true
+          },
+          "points": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id"
+        ]
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "groups": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/$defs/nonEmptyString"
+          },
+          "name": {
+            "$ref": "#/$defs/nonEmptyString"
+          },
+          "comment": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "enabled": {
+            "$ref": "#/$defs/boolDefaultTrue"
+          },
+          "failsTest": {
+            "$ref": "#/$defs/boolDefaultFalse"
+          },
+          "failsOn": {
+            "$ref": "#/$defs/testFailTrigger"
+          },
+          "messages": {
+            "$ref": "#/$defs/messageDict"
+          },
+          "mode": {
+            "enum": [
+              "firstPassed",
+              "lastPassed",
+              "allPassed"
+            ],
+            "default": "firstPassed"
+          },
+          "rules": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "uniqueItems": true
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "rules"
+        ]
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "ratings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/$defs/nonEmptyString"
+          },
+          "name": {
+            "$ref": "#/$defs/nonEmptyString"
+          },
+          "comment": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "value": {
+            "type": "number",
+            "minimum": 0.0,
+            "maximum": 100.0
+          },
+          "enabled": {
+            "$ref": "#/$defs/boolDefaultTrue"
+          },
+          "failsTest": {
+            "$ref": "#/$defs/boolDefaultFalse"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "value"
+        ]
+      }
+    }
+  },
+  "required": [
+    "rules",
+    "groups"
+  ]
+}
