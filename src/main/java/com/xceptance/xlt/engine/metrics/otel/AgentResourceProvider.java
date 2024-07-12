@@ -12,7 +12,7 @@ import io.opentelemetry.semconv.ResourceAttributes;
 public class AgentResourceProvider implements ResourceProvider
 {
     @Override
-    public Resource createResource(ConfigProperties config)
+    public Resource createResource(final ConfigProperties config)
     {
         final ProductInformation productInfo = ProductInformation.getProductInformation();
         Attributes atts = Attributes.of(ResourceAttributes.SERVICE_NAMESPACE, "com.xceptance.xlt",

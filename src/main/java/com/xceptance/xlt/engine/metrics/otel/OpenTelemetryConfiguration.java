@@ -1,7 +1,7 @@
 package com.xceptance.xlt.engine.metrics.otel;
 
-import java.time.Duration;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -18,17 +18,15 @@ public final class OpenTelemetryConfiguration
         // empty on purpose
     }
 
-    public static OpenTelemetrySdk initialize(final XltProperties props, final int reportingIntervalSeconds)
+    public static OpenTelemetrySdk initialize(final XltProperties props, final Consumer<Map<String, String>> propsCustomizer)
     {
         final Map<String, String> otelProps = props.getProperties().stringPropertyNames().stream().filter(p -> p.startsWith("otel."))
                                                    .collect(Collectors.toMap(Function.identity(), props::getProperty));
-        // add some default settings if not already present
-        otelProps.putIfAbsent("otel.sdk.disabled", String.valueOf(false));
-        if (reportingIntervalSeconds > 0)
+
+
+        if (propsCustomizer != null)
         {
-            final String exportScheduleMillis = String.valueOf(Duration.ofSeconds(reportingIntervalSeconds).toMillis());
-            otelProps.putIfAbsent("otel.blrp.schedule.delay", exportScheduleMillis);
-            otelProps.putIfAbsent("otel.metric.export.interval", exportScheduleMillis);
+            propsCustomizer.accept(otelProps);
         }
 
         return initialize(otelProps);
@@ -36,7 +34,7 @@ public final class OpenTelemetryConfiguration
 
     public static OpenTelemetrySdk initialize(final XltProperties props)
     {
-        return initialize(props, -1);
+        return initialize(props, null);
     }
 
     public static OpenTelemetrySdk initialize(final Map<String, String> properties)
