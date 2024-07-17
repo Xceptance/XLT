@@ -13,11 +13,13 @@ exporters:
   googlecloud:
     log:
       default_log_name: otlp.xtc.xceptance.com
+      resource_filters:
+       - prefix: xtc.
 
 service:
   pipelines:
     logs:
       receivers: [otlp]
       processors: [batch]
-      #exporters: [debug, googlecloud]
-      exporters: [debug]
+      exporters: [debug, googlecloud]
+      #~ exporters: [debug]
