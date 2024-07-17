@@ -83,7 +83,7 @@ public class ViewCart extends AbstractHtmlPageAction
         HeaderValidator.getInstance().validate(page);
 
         // Check that it's the cart overview page.
-        Assert.assertTrue("Title not found", HtmlPageUtils.isElementPresent(page, "id('titleCar')"));
+        Assert.assertTrue("Title not found", HtmlPageUtils.isElementPresent(page, "id('titleCart')"));
         Assert.assertTrue("Total price not found", HtmlPageUtils.isElementPresent(page, "id('orderSubTotalValue')"));
         Assert.assertTrue("Checkout button not found", HtmlPageUtils.isElementPresent(page, "id('btnStartCheckout')"));
     }
