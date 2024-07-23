@@ -15,6 +15,8 @@
  */
 package com.xceptance.xlt.report.providers;
 
+import java.util.Set;
+
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.CombinedDomainXYPlot;
 import org.jfree.chart.plot.CombinedRangeXYPlot;
@@ -30,11 +32,11 @@ import com.xceptance.xlt.api.report.AbstractReportProvider;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration.ChartScale;
 import com.xceptance.xlt.report.util.FixedSizeHistogramValueSet;
-import com.xceptance.xlt.report.util.JFreeChartUtils;
 import com.xceptance.xlt.report.util.IntMinMaxValueSet;
+import com.xceptance.xlt.report.util.IntSummaryStatistics;
+import com.xceptance.xlt.report.util.JFreeChartUtils;
 import com.xceptance.xlt.report.util.ReportUtils;
 import com.xceptance.xlt.report.util.RuntimeHistogram;
-import com.xceptance.xlt.report.util.IntSummaryStatistics;
 import com.xceptance.xlt.report.util.TaskManager;
 import com.xceptance.xlt.report.util.ValueSet;
 
@@ -65,6 +67,8 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
     private int totalErrors = 0;
 
     private final int minMaxValueSetSize;
+
+    private String label;
 
     /**
      * Constructor.
@@ -108,6 +112,7 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
         timerReport.max = runTimeStatistics.getMaximum();
         timerReport.min = runTimeStatistics.getMinimum();
         timerReport.name = name;
+        timerReport.labels = (label == null) ? null : Set.of(label);
         timerReport.deviation = ReportUtils.convertToBigDecimal(runTimeStatistics.getStandardDeviation());
         timerReport.median = ReportUtils.convertToBigDecimal(runTimeHistogram.getMedianValue());
 
@@ -121,7 +126,7 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
         // set the counts
         final double count = runTimeStatistics.getCount();
         final long duration = Math.max((getEndTime() - getStartTime()) / 1000, 1);
-        
+
         timerReport.errorPercentage = ReportUtils.calculatePercentage(totalErrors, (int) count);
         timerReport.count = (int) count;
         timerReport.countPerSecond = ReportUtils.convertToBigDecimal(count / duration);
@@ -213,6 +218,9 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
             // we expect the timer to be failed around the same time as it has finished
             errorsPerSecondValueSet.addOrUpdateValue(endTime, 1);
         }
+
+        // remember the latest label (it should always be the same)
+        this.label = stat.getLabel();
     }
 
     protected ValueSet getCountPerSecondValueSet()
@@ -250,8 +258,8 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
      */
     protected JFreeChart createResponseTimeAndErrorsChart(final String chartTitle, final TimeSeries responseTimeSeries,
                                                           final TimeSeries responseTimeAverageSeries,
-                                                          final XYIntervalSeries responseTimeHistogramSeries,
-                                                          final TimeSeries errorsSeries, final int chartCappingValue)
+                                                          final XYIntervalSeries responseTimeHistogramSeries, final TimeSeries errorsSeries,
+                                                          final int chartCappingValue)
     {
         final ChartScale chartScale = ((ReportGeneratorConfiguration) getConfiguration()).getChartScale();
         Range responseTimeRange = null;

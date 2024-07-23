@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 8.0.0
+#Version 8.3.0
 
 CLSS public abstract com.xceptance.xlt.api.actions.AbstractAction
 cons protected init(com.xceptance.xlt.api.actions.AbstractAction,java.lang.String)
@@ -278,17 +278,19 @@ intf com.xceptance.xlt.api.engine.Data
 meth public char getTypeCode()
 meth public final void setAllValues(java.util.List<com.xceptance.xlt.api.util.XltCharBuffer>)
 meth public java.lang.String getAgentName()
+meth public java.lang.String getLabel()
 meth public java.lang.String getName()
 meth public java.lang.String getTransactionName()
 meth public java.util.List<java.lang.String> toList()
 meth public long getTime()
 meth public void setAgentName(java.lang.String)
 meth public void setBaseValues(java.util.List<com.xceptance.xlt.api.util.XltCharBuffer>)
+meth public void setLabel(java.lang.String)
 meth public void setName(java.lang.String)
 meth public void setTime(long)
 meth public void setTransactionName(java.lang.String)
 supr java.lang.Object
-hfds agentName,name,time,transactionName,typeCode
+hfds agentName,label,name,time,transactionName,typeCode
 
 CLSS public com.xceptance.xlt.api.engine.ActionData
 cons public init()
@@ -315,12 +317,14 @@ hfds TYPE_CODE,value
 CLSS public abstract interface com.xceptance.xlt.api.engine.Data
 meth public abstract char getTypeCode()
 meth public abstract java.lang.String getAgentName()
+meth public abstract java.lang.String getLabel()
 meth public abstract java.lang.String getName()
 meth public abstract java.lang.String getTransactionName()
 meth public abstract java.util.List<java.lang.String> toList()
 meth public abstract long getTime()
 meth public abstract void setAgentName(java.lang.String)
 meth public abstract void setBaseValues(java.util.List<com.xceptance.xlt.api.util.XltCharBuffer>)
+meth public abstract void setLabel(java.lang.String)
 meth public abstract void setName(java.lang.String)
 meth public abstract void setRemainingValues(java.util.List<com.xceptance.xlt.api.util.XltCharBuffer>)
 meth public abstract void setTime(long)

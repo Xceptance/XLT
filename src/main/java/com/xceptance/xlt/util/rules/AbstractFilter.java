@@ -1,0 +1,101 @@
+/*
+ * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.xceptance.xlt.util.rules;
+
+import com.xceptance.xlt.api.engine.Data;
+import com.xceptance.xlt.api.engine.RequestData;
+
+/**
+ * Base class for all data record filters.
+ */
+public abstract class AbstractFilter<T extends Data>
+{
+    /**
+     * The type code of this request filter.
+     */
+    private final String typeCode;
+
+    /**
+     * The hash of the string for faster comparison of the type code
+     */
+    private final int typeCodeHashCode;
+
+    /**
+     * Constructor.
+     *
+     * @param typeCode
+     *            the type code of this request filter
+     */
+    public AbstractFilter(final String typeCode)
+    {
+        this.typeCode = typeCode;
+        typeCodeHashCode = typeCode.hashCode();
+    }
+
+    /**
+     * Returns the replacement text derived from the passed data object.
+     *
+     * @param data
+     *            the data object
+     * @param capturingGroupIndex
+     *            the capturing group index specified in the placeholder
+     * @param filterState
+     *            the filter state object returned by {@link #appliesTo(RequestData)}
+     * @return the replacement text
+     */
+    public abstract CharSequence getReplacementText(T data, int capturingGroupIndex, Object filterState);
+
+    /**
+     * Whether or not the passed data object is accepted by this filter.
+     *
+     * @param data
+     *            the data object
+     * @return in case the filter accepted the passed data object: a state object representing the filter state (can be
+     *         a dummy object), otherwise: <code>null</code>
+     */
+    public abstract Object appliesTo(T data);
+
+    /**
+     * Returns the type code of this filter.
+     *
+     * @return the type code
+     */
+    public String getTypeCode()
+    {
+        return typeCode;
+    }
+
+    /**
+     * Compares two types codes efficiently
+     *
+     * @param typeCode
+     *            the type code to compare to
+     * @param typeCodeHashCode
+     *            the hash of the type code for performance reason
+     * @return true, if the type codes match, false otherwise
+     */
+    public boolean isSameTypeCode(final String typeCode, final int typeCodeHashCode)
+    {
+        if (this.typeCodeHashCode == typeCodeHashCode)
+        {
+            return this.typeCode.equals(typeCode);
+        }
+        else
+        {
+            return false;
+        }
+    }
+}

@@ -46,10 +46,12 @@ import com.xceptance.xlt.common.XltPropertyNames;
 import com.xceptance.xlt.engine.XltExecutionContext;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration.ChartCappingInfo.ChartCappingMethod;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration.ChartCappingInfo.ChartCappingMode;
+import com.xceptance.xlt.report.labelrules.LabelingRule;
 import com.xceptance.xlt.report.mergerules.InvalidRequestProcessingRuleException;
 import com.xceptance.xlt.report.mergerules.RequestProcessingRule;
 import com.xceptance.xlt.report.providers.RequestTableColorization;
 import com.xceptance.xlt.report.providers.RequestTableColorization.ColorizationRule;
+import com.xceptance.xlt.util.rules.InvalidDataProcessingRuleException;
 
 /**
  * The ReportGeneratorConfiguration is the central place where all configuration information for the report generator
@@ -79,14 +81,14 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
          */
         public enum ChartCappingMethod
         {
-         /** No capping (default). */
-         NONE,
+            /** No capping (default). */
+            NONE,
 
-         /** Cap at an absolute value. */
-         ABSOLUTE,
+            /** Cap at an absolute value. */
+            ABSOLUTE,
 
-         /** Cap at the n-fold of the average value. */
-         NFOLD_OF_AVERAGE
+            /** Cap at the n-fold of the average value. */
+            NFOLD_OF_AVERAGE
         };
 
         /**
@@ -94,11 +96,11 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
          */
         public enum ChartCappingMode
         {
-         /** Cap the chart at the capping value only if necessary. */
-         SMART,
+            /** Cap the chart at the capping value only if necessary. */
+            SMART,
 
-         /** Always cap the chart at the capping value even if the maximum values are below the capping value. */
-         ALWAYS
+            /** Always cap the chart at the capping value even if the maximum values are below the capping value. */
+            ALWAYS
         };
 
         /**
@@ -161,11 +163,17 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
     private static final String PROP_REQUEST_MERGE_RULES_PREFIX = PROP_PREFIX + "requestMergeRules.";
 
+    private static final String PROP_LABELING_RULES_PREFIX = PROP_PREFIX + "labelingRules.";
+
     // Special settings for profiling and debugging
     private static final String PROP_PARSER_THREAD_COUNT = PROP_PREFIX + "parser.threads";
+
     private static final String PROP_READER_THREAD_COUNT = PROP_PREFIX + "reader.threads";
+
     private static final String PROP_THREAD_QUEUE_SIZE = PROP_PREFIX + "queue.bucketsize";
+
     private static final String PROP_THREAD_QUEUE_LENGTH = PROP_PREFIX + "queue.length";
+
     private static final String PROP_DATA_SAMPLE_FACTOR = PROP_PREFIX + "data.sampleFactor";
 
     private static final String PROP_TRANSFORMATIONS_PREFIX = PROP_PREFIX + "transformations.";
@@ -243,8 +251,11 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     private boolean noAgentCharts;
 
     public final int readerThreadCount;
+
     public final int parserThreadCount;
+
     public final int threadQueueBucketSize;
+
     public final int threadQueueLength;
 
     public final int dataSampleFactor;
@@ -276,11 +287,11 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     private final int transactionErrorOverviewChartLimit;
 
     private final int errorDetailsChartLimit;
-    
+
     private final int directoryLimitPerError;
-    
+
     private final double directoryReplacementChance;
-    
+
     private final int stackTracesLimit;
 
     private final Map<Pattern, Double> apdexThresholdsByActionNamePattern = new HashMap<>();
@@ -408,9 +419,9 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
         directoryLimitPerError = getIntProperty(XltPropertyNames.ReportGenerator.Errors.DIRECTORY_LIMIT_PER_ERROR, 10);
         directoryReplacementChance = getDoubleProperty(XltPropertyNames.ReportGenerator.Errors.DIRECTORY_REPLACEMENT_CHANCE, 0.1);
-        
+
         stackTracesLimit = getIntProperty(XltPropertyNames.ReportGenerator.Errors.STACKTRACES_LIMIT, 500);
-        
+
         // event settings
         groupEventsByTestCase = getBooleanProperty(PROP_PREFIX + "events.groupByTestCase", true);
         eventLimit = getIntProperty(PROP_PREFIX + "events.eventLimit", 100);
@@ -791,7 +802,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     {
         return errorDetailsChartLimit;
     }
-    
+
     /**
      * The maximum number of directory hints remembered for a certain error (stack trace).
      *
@@ -801,9 +812,10 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     {
         return directoryLimitPerError;
     }
-    
+
     /**
-     * The chance to replace directory hints remembered for a certain error (stack trace) when the maximum number is reached.
+     * The chance to replace directory hints remembered for a certain error (stack trace) when the maximum number is
+     * reached.
      *
      * @return the chance to replace listed directory hints
      */
@@ -811,7 +823,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     {
         return directoryReplacementChance;
     }
-    
+
     /**
      * The maximum number of errors that will be saved complete with their stack trace.
      *
@@ -1001,7 +1013,6 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
         return eventLimit;
     }
 
-
     /**
      * Indicates whether or not to group events by test case.
      *
@@ -1011,7 +1022,6 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     {
         return eventMessageLimit;
     }
-
 
     /**
      * Returns whether to automatically remove any indexes from the request name (i.e. "HomePage.1.27" -> "HomePage").
@@ -1531,6 +1541,74 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
         }
 
         return requestProcessingRules;
+    }
+
+    /**
+     * Reads and returns the configured labeling rules.
+     *
+     * @return the list of labeling rules
+     */
+    public List<LabelingRule> getLabelingRules()
+    {
+        final List<LabelingRule> labelingRules = new ArrayList<>();
+
+        final Set<Integer> ruleNumbers = new TreeSet<>();
+        final Set<String> ruleNumberStrings = getPropertyKeyFragment(PROP_LABELING_RULES_PREFIX);
+        for (final String s : ruleNumberStrings)
+        {
+            checkForLeadingZeros(s);
+            ruleNumbers.add(Integer.parseInt(s));
+        }
+
+        boolean invalidRulePresent = false;
+        for (final int i : ruleNumbers)
+        {
+            final String basePropertyName = PROP_LABELING_RULES_PREFIX + i;
+
+            // general stuff
+            final String newlabel = getStringProperty(basePropertyName + ".newLabel", "");
+            final boolean stopOnMatch = getBooleanProperty(basePropertyName + ".stopOnMatch", true);
+
+            // include patterns
+            final String namePattern = getStringProperty(basePropertyName + ".namePattern", "");
+            final String labelPattern = getStringProperty(basePropertyName + ".labelPattern", "");
+            final String typeCodePattern = getStringProperty(basePropertyName + ".typeCodePattern", "");
+
+            // exclude patterns
+            final String nameExcludePattern = getStringProperty(basePropertyName + ".namePattern.exclude", "");
+            final String labelExcludePattern = getStringProperty(basePropertyName + ".labelPattern.exclude", "");
+            final String typeCodeExcludePattern = getStringProperty(basePropertyName + ".typeCodePattern.exclude", "");
+
+            // ensure that newLabel is set
+            if (StringUtils.isBlank(newlabel))
+            {
+                throw new RuntimeException(String.format("Property '%s' is missing", basePropertyName + ".newLabel"));
+            }
+
+            // create and validate the rules
+            try
+            {
+                final LabelingRule rule = new LabelingRule(newlabel, namePattern, labelPattern, typeCodePattern, stopOnMatch,
+                                                           nameExcludePattern, labelExcludePattern, typeCodeExcludePattern);
+                labelingRules.add(rule);
+            }
+            catch (final InvalidDataProcessingRuleException e)
+            {
+                // Log it and continue with next rule.
+                final String errMsg = "Labeling rule '" + basePropertyName + "' is invalid. " + e.getMessage();
+                XltLogger.reportLogger.error(errMsg, e);
+                System.err.println(errMsg);
+                // remember that we encountered an invalid merge rule
+                invalidRulePresent = true;
+            }
+        }
+
+        if (invalidRulePresent)
+        {
+            throw new RuntimeException("Please check your configuration. At least one labeling rule is invalid and needs to be fixed.");
+        }
+
+        return labelingRules;
     }
 
     /**

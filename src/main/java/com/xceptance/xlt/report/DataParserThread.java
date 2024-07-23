@@ -33,6 +33,7 @@ import com.xceptance.xlt.api.engine.TransactionData;
 import com.xceptance.xlt.api.report.PostProcessedDataContainer;
 import com.xceptance.xlt.api.util.SimpleArrayList;
 import com.xceptance.xlt.api.util.XltCharBuffer;
+import com.xceptance.xlt.report.labelrules.LabelingRule;
 import com.xceptance.xlt.report.mergerules.RequestProcessingRule;
 import com.xceptance.xlt.report.mergerules.RequestProcessingRule.ReturnState;
 import com.zaxxer.sparsebits.SparseBitSet;
@@ -116,6 +117,8 @@ class DataParserThread implements Runnable
         // efficiently cache and process
         final List<RequestProcessingRule> requestProcessingRules = config.getRequestProcessingRules();
         final boolean removeIndexes = config.getRemoveIndexesFromRequestNames();
+
+        final List<LabelingRule> labelingRules = config.getLabelingRules();
 
         final double SAMPLELIMIT = 1 / ((double) config.dataSampleFactor);
         final int SAMPLEFACTOR = config.dataSampleFactor;
@@ -218,7 +221,8 @@ class DataParserThread implements Runnable
                     }
                     catch (final Exception ex)
                     {
-                        final String msg = String.format("Failed to parse data record at line %,d in file '%s': %s\nLine is: ", lineNumber, file, ex, lines.get(i).toString());
+                        final String msg = String.format("Failed to parse data record at line %,d in file '%s': %s\nLine is: ", lineNumber,
+                                                         file, ex, lines.get(i).toString());
                         LOG.error(msg, ex);
 
                         continue;
@@ -230,17 +234,22 @@ class DataParserThread implements Runnable
                     // if this is request, filter it aka apply merge rules
                     if (data instanceof RequestData)
                     {
-                        final RequestData result = postprocess((RequestData) data, requestProcessingRules, removeIndexes);
-                        if (result != null)
-                        {
-                            postProcessedData.add(result);
-                        }
+                        // might return null in case of dropOnMatch
+                        data = postprocess((RequestData) data, requestProcessingRules, removeIndexes);
                     }
                     else
                     {
                         // get us a hashcode for later while the cache is warm
                         // for RequestData, we did that already
                         data.getName().hashCode();
+                    }
+
+                    // check if merge rules did not drop our data item
+                    if (data != null)
+                    {
+                        // set label
+                        setLabel(data, labelingRules);
+
                         postProcessedData.add(data);
                     }
 
@@ -287,7 +296,6 @@ class DataParserThread implements Runnable
         }
 
         return data;
-
     }
 
     /**
@@ -295,16 +303,14 @@ class DataParserThread implements Runnable
      * discarding requests.
      *
      * @param requestData
-     *              the request data record
+     *            the request data record
      * @param requestProcessingRules
-     *              the rules to apply
+     *            the rules to apply
      * @param removeIndexesFromRequestNames
-     *              in case we want to clean the name too
-     *
+     *            in case we want to clean the name too
      * @return the processed request data record, or <code>null</code> if the data record is to be discarded
      */
-    private RequestData postprocess(final RequestData requestData,
-                                    final List<RequestProcessingRule> requestProcessingRules,
+    private RequestData postprocess(final RequestData requestData, final List<RequestProcessingRule> requestProcessingRules,
                                     final boolean removeIndexesFromRequestNames)
     {
         // fix up the name first (Product.1.2 -> Product) if so configured
@@ -356,12 +362,52 @@ class DataParserThread implements Runnable
             }
         }
 
-        // ok, we processed all rules for this dataset, get us the final hashcode for the name, because we need that later
+        // ok, we processed all rules for this dataset, get us the final hashcode for the name, because we need that
+        // later
         // here the cache is likely still hot, so this is less expensive
         requestData.getName().hashCode();
 
         return requestData;
     }
 
+    /**
+     * Processes a data record according to the configured labeling rules.
+     *
+     * @param data
+     *            the data record
+     * @param labelingRules
+     *            the rules to apply
+     * @return the processed data record
+     */
+    private void setLabel(final Data data, final List<LabelingRule> labelingRules)
+    {
+        // remember the original label so we can restore it in case labeling fails
+        final String originalLabel = data.getLabel();
 
+        // execute all labeling rules one after the other until processing is complete
+        final int size = labelingRules.size();
+        for (int i = 0; i < size; i++)
+        {
+            final LabelingRule labelingRule = labelingRules.get(i);
+
+            try
+            {
+                final com.xceptance.xlt.report.labelrules.LabelingRule.ReturnState state = labelingRule.process(data);
+                if (state == com.xceptance.xlt.report.labelrules.LabelingRule.ReturnState.STOP)
+                {
+                    return;
+                }
+            }
+            catch (final Throwable t)
+            {
+                final String msg = String.format("Failed to apply labeling rule: %s\n%s", labelingRule, t);
+                LOG.error(msg);
+
+                // restore the data object's original label
+                data.setLabel(originalLabel);
+
+                break;
+            }
+        }
+    }
 }

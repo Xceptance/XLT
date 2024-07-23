@@ -11,6 +11,11 @@
                 <xsl:with-param name="class" select="'key colgroup1'"/>
             </xsl:call-template>
 
+            <!-- label -->
+            <xsl:if test="$type = 'transaction' or $type = 'action' or $type = 'request'">
+                <td class="colgroup1"></td>
+            </xsl:if>
+
             <!-- count -->
             <td class="value number">
                 <xsl:value-of select="format-number(count, '#,##0')"/>
@@ -105,9 +110,8 @@
             <!-- runtime segmentation -->
             <xsl:if test="$type = 'request'">
                 <xsl:for-each select="countPerInterval/int">
-                	<xsl:variable name="position" select="position()" />
-                	<xsl:variable name="percentage"
-						select="../../percentagePerInterval/big-decimal[$position]" />
+                    <xsl:variable name="position" select="position()"/>
+                    <xsl:variable name="percentage" select="../../percentagePerInterval/big-decimal[$position]"/>
                     <td class="value number">
                         <span>
                             <xsl:attribute name="title">
