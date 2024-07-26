@@ -73,7 +73,7 @@
         <powermock.version>2.0.9</powermock.version>
         <selenium.version>4.17.0</selenium.version>
         <htmlunitdriver.version>4.17.0</htmlunitdriver.version>
-        <otel.version>1.39.0</otel.version>
+        <otel.version>1.40.0</otel.version>
         <copyright>Copyright (c) ${project.inceptionYear}-2024 ${project.organization.name}</copyright>
     </properties>
 
@@ -484,12 +484,21 @@
             <version>12.5</version>
         </dependency>
         <dependency>
+            <groupId>io.opentelemetry.semconv</groupId>
+            <artifactId>opentelemetry-semconv</artifactId>
+            <version>1.26.0-alpha</version>
+        </dependency>
+        <dependency>
             <groupId>io.opentelemetry</groupId>
             <artifactId>opentelemetry-sdk-logs</artifactId>
         </dependency>
         <dependency>
             <groupId>io.opentelemetry</groupId>
             <artifactId>opentelemetry-exporter-otlp</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-sdk-extension-autoconfigure</artifactId>
         </dependency>
 
         <!-- ================= -->
