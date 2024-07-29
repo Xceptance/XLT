@@ -16,6 +16,25 @@ import io.opentelemetry.sdk.OpenTelemetrySdk;
 
 public class OtelMetricsReporter implements MetricsReporter
 {
+    static final class LogRecordAttributes
+    {
+        static final AttributeKey<String> LOG_TYPE = AttributeKey.stringKey("xlt.log_type");
+
+        static final AttributeKey<String> ERROR_ACTION = AttributeKey.stringKey("xlt.error.action");
+
+        static final AttributeKey<String> ERROR_MESSAGE = AttributeKey.stringKey("xlt.error.message");
+
+        static final AttributeKey<String> ERROR_SCENARIO = AttributeKey.stringKey("xlt.error.scenario");
+
+        static final AttributeKey<Long> ERROR_USER = AttributeKey.longKey("xlt.error.user");
+
+        static final AttributeKey<String> EVENT_NAME = AttributeKey.stringKey("xlt.event.name");
+
+        static final AttributeKey<String> EVENT_SCENARIO = AttributeKey.stringKey("xlt.event.scenario");
+
+        static final AttributeKey<Long> EVENT_USER = AttributeKey.longKey("xlt.event.user");
+    }
+
     private static final String LOG_TYPE_ERROR = "error";
 
     private static final String LOG_TYPE_EVENT = "event";
@@ -48,10 +67,10 @@ public class OtelMetricsReporter implements MetricsReporter
             record.setTimestamp(Instant.ofEpochMilli(eventData.getTime()));
             record.setSeverity(Severity.WARN);
             record.setBody(eventData.getMessage());
-            record.setAttribute(AttributeKey.stringKey("xlt.log_type"), LOG_TYPE_EVENT);
-            record.setAttribute(AttributeKey.stringKey("xlt.event.name"), eventData.getName());
-            record.setAttribute(AttributeKey.stringKey("xlt.event.scenario"), eventData.getTestCaseName());
-            record.setAttribute(AttributeKey.longKey("xlt.event.user"), Long.valueOf(Session.getCurrent().getUserNumber()));
+            record.setAttribute(LogRecordAttributes.LOG_TYPE, LOG_TYPE_EVENT);
+            record.setAttribute(LogRecordAttributes.EVENT_NAME, eventData.getName());
+            record.setAttribute(LogRecordAttributes.EVENT_SCENARIO, eventData.getTestCaseName());
+            record.setAttribute(LogRecordAttributes.EVENT_USER, Long.valueOf(Session.getCurrent().getUserNumber()));
         });
     }
 
@@ -65,11 +84,11 @@ public class OtelMetricsReporter implements MetricsReporter
                 record.setTimestamp(Instant.ofEpochMilli(txnData.getTime()));
                 record.setSeverity(Severity.ERROR);
                 record.setBody(txnData.getFailureStackTrace());
-                record.setAttribute(AttributeKey.stringKey("xlt.log_type"), LOG_TYPE_ERROR);
-                record.setAttribute(AttributeKey.stringKey("xlt.error.action"), txnData.getFailedActionName());
-                record.setAttribute(AttributeKey.stringKey("xlt.error.message"), txnData.getFailureMessage());
-                record.setAttribute(AttributeKey.longKey("xlt.error.user"), Long.valueOf(txnData.getTestUserNumber()));
-                record.setAttribute(AttributeKey.stringKey("xlt.error.scenario"), txnData.getName());
+                record.setAttribute(LogRecordAttributes.LOG_TYPE, LOG_TYPE_ERROR);
+                record.setAttribute(LogRecordAttributes.ERROR_ACTION, txnData.getFailedActionName());
+                record.setAttribute(LogRecordAttributes.ERROR_MESSAGE, txnData.getFailureMessage());
+                record.setAttribute(LogRecordAttributes.ERROR_USER, Long.valueOf(txnData.getTestUserNumber()));
+                record.setAttribute(LogRecordAttributes.ERROR_SCENARIO, txnData.getName());
             });
         }
     }
