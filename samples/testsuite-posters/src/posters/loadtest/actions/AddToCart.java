@@ -27,7 +27,6 @@ import org.json.JSONObject;
 import org.junit.Assert;
 
 import com.xceptance.xlt.api.actions.AbstractHtmlPageAction;
-import com.xceptance.xlt.api.engine.Session;
 import com.xceptance.xlt.api.util.HtmlPageUtils;
 
 import posters.loadtest.util.AjaxUtils;
@@ -219,8 +218,6 @@ public class AddToCart extends AbstractHtmlPageAction
 
         // (5) Publish the results of that action.
         setHtmlPage(page);
-
-        Session.logEvent("AddToCart", productId);
     }
 
     @Override
