@@ -85,11 +85,12 @@ public class Metrics
         final int reportingInterval = props.getProperty(PROP_REP_INTERVAL, 5);
         final String metricsNamePrefix = props.getProperty(PROP_REP_METRIC_NAME_PREFIX, "");
 
+        // default to 'xlt.reporting.enabled' to ensure backward compatibility
         final boolean graphiteEnabled = props.getProperty(PROP_REP_PREFIX_GRAPHITE + "enabled", enabled);
         final String graphiteHost = props.getProperty(PROP_REP_GRAPHITE_SERVER, "localhost");
         final int graphitePort = props.getProperty(PROP_REP_GRAPHITE_PORT, 2003);
 
-        final boolean otelEnabled = props.getProperty(PROP_REP_PREFIX_OTEL + "enabled", enabled);
+        final boolean otelEnabled = props.getProperty(PROP_REP_PREFIX_OTEL + "enabled", false);
 
         // start reporting if so configured and we are load testing
         final List<MetricsReporter> reporters = new ArrayList<>();
