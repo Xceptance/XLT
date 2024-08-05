@@ -81,7 +81,7 @@ public class OtelMetricsReporter implements MetricsReporter
         {
             logRecord((record) -> {
                 record.setObservedTimestamp(Instant.now());
-                record.setTimestamp(Instant.ofEpochMilli(txnData.getTime()));
+                record.setTimestamp(Instant.ofEpochMilli(txnData.getEndTime()));
                 record.setSeverity(Severity.ERROR);
                 record.setBody(txnData.getFailureStackTrace());
                 record.setAttribute(LogRecordAttributes.LOG_TYPE, LOG_TYPE_ERROR);
