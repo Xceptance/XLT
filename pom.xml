@@ -6,7 +6,7 @@
 
     <groupId>com.xceptance</groupId>
     <artifactId>xlt</artifactId>
-    <version>8.4.0-SNAPSHOT</version>
+    <version>8.4.0</version>
     <packaging>jar</packaging>
 
     <name>XLT</name>
@@ -134,6 +134,16 @@
                     <mapping>
                         <java>SLASHSTAR_STYLE</java>
                     </mapping>
+                </configuration>
+            </plugin>
+            <!-- Checks dependencies for known vulnerabilities. -->
+            <!-- Usage: mvn dependency-check:aggregate -->
+            <plugin>
+                <groupId>org.owasp</groupId>
+                <artifactId>dependency-check-maven</artifactId>
+                <version>10.0.3</version>
+                <configuration>
+                    <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
                 </configuration>
             </plugin>
         </plugins>
