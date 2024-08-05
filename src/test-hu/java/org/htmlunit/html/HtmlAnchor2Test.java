@@ -41,7 +41,6 @@ import org.htmlunit.WebWindow;
 import org.htmlunit.attachment.AttachmentHandler;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import org.htmlunit.util.MimeType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -54,6 +53,7 @@ import org.junit.runner.RunWith;
  * @author Stefan Anzinger
  * @author Ahmed Ashour
  * @author Ronald Brill
+ * @author Lai Quang Duong
  */
 @RunWith(BrowserRunner.class)
 public class HtmlAnchor2Test extends SimpleWebTestCase {
@@ -770,9 +770,7 @@ public class HtmlAnchor2Test extends SimpleWebTestCase {
      * @exception Exception If the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"1", "First"},
-            IE = {"0", "First"})
-    @HtmlUnitNYI(IE = {"1", "First"})
+    @Alerts({"1", "First"})
     public void clickWithDownloadAttribute() throws Exception {
         final String html = "<html>\n"
                 + "<head>\n"
@@ -799,9 +797,7 @@ public class HtmlAnchor2Test extends SimpleWebTestCase {
      * @exception Exception If the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"1", "First"},
-            IE = {"0", "First"})
-    @HtmlUnitNYI(IE = {"1", "First"})
+    @Alerts({"1", "First"})
     public void clickWithDownloadAttributeFromJs() throws Exception {
         final String html = "<html>\n"
                 + "<head>\n"
@@ -834,24 +830,12 @@ public class HtmlAnchor2Test extends SimpleWebTestCase {
      * @exception Exception If the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"1", "First",
-                       "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAABGdBTUEAAL"
-                        + "GPC/xhBQAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9YGARc5KB0XV+IAAAAddEVYdENvbW1l"
-                        + "bnQAQ3JlYXRlZCB3aXRoIFRoZSBHSU1Q72QlbgAAAF1JREFUGNO9zL0NglAAxPEfdLTs4BZM4DIO4C"
-                        + "7OwQg2JoQ9LE1exdlYvBBeZ7jqch9//q1uH4TLzw4d6+ErXMMcXuHWxId3KOETnnXXV6MJpcq2MLaI"
-                        + "97CER3N0vr4MkhoXe0rZigAAAABJRU5ErkJggg=="},
-            IE = {"0", "First",
-                  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAABGdBTUEAAL"
-                        + "GPC/xhBQAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9YGARc5KB0XV+IAAAAddEVYdENvbW1l"
-                        + "bnQAQ3JlYXRlZCB3aXRoIFRoZSBHSU1Q72QlbgAAAF1JREFUGNO9zL0NglAAxPEfdLTs4BZM4DIO4C"
-                        + "7OwQg2JoQ9LE1exdlYvBBeZ7jqch9//q1uH4TLzw4d6+ErXMMcXuHWxId3KOETnnXXV6MJpcq2MLaI"
-                        + "97CER3N0vr4MkhoXe0rZigAAAABJRU5ErkJggg=="})
-    @HtmlUnitNYI(IE = {"1", "First",
-                       "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAABGdBTUEAAL"
-                        + "GPC/xhBQAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9YGARc5KB0XV+IAAAAddEVYdENvbW1l"
-                        + "bnQAQ3JlYXRlZCB3aXRoIFRoZSBHSU1Q72QlbgAAAF1JREFUGNO9zL0NglAAxPEfdLTs4BZM4DIO4C"
-                        + "7OwQg2JoQ9LE1exdlYvBBeZ7jqch9//q1uH4TLzw4d6+ErXMMcXuHWxId3KOETnnXXV6MJpcq2MLaI"
-                        + "97CER3N0vr4MkhoXe0rZigAAAABJRU5ErkJggg=="})
+    @Alerts({"1", "First",
+             "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAABGdBTUEAAL"
+                    + "GPC/xhBQAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9YGARc5KB0XV+IAAAAddEVYdENvbW1l"
+                    + "bnQAQ3JlYXRlZCB3aXRoIFRoZSBHSU1Q72QlbgAAAF1JREFUGNO9zL0NglAAxPEfdLTs4BZM4DIO4C"
+                    + "7OwQg2JoQ9LE1exdlYvBBeZ7jqch9//q1uH4TLzw4d6+ErXMMcXuHWxId3KOETnnXXV6MJpcq2MLaI"
+                    + "97CER3N0vr4MkhoXe0rZigAAAABJRU5ErkJggg=="})
     public void clickWithDownloadAttributeDataUrl() throws Exception {
         final String html = "<html>\n"
                 + "<head>\n"
@@ -928,7 +912,7 @@ public class HtmlAnchor2Test extends SimpleWebTestCase {
         getWebClient().setAttachmentHandler(new AttachmentHandler() {
 
             @Override
-            public void handleAttachment(final Page page) {
+            public void handleAttachment(final Page page, final String attachmentFilename) {
                 pages.add(page);
             }
         });
@@ -974,7 +958,7 @@ public class HtmlAnchor2Test extends SimpleWebTestCase {
             }
 
             @Override
-            public void handleAttachment(final Page page) {
+            public void handleAttachment(final Page page, final String attachmentFilename) {
                 pages.add(page);
             }
         });
@@ -1013,13 +997,13 @@ public class HtmlAnchor2Test extends SimpleWebTestCase {
         getWebClient().setAttachmentHandler(new AttachmentHandler() {
 
             @Override
-            public boolean handleAttachment(final WebResponse response) {
+            public boolean handleAttachment(final WebResponse response, final String attachmentFilename) {
                 pages.add(response);
                 return true;
             }
 
             @Override
-            public void handleAttachment(final Page page) {
+            public void handleAttachment(final Page page, final String attachmentFilename) {
                 throw new IllegalAccessError("handleAttachment(Page) called");
             }
         });
@@ -1063,13 +1047,13 @@ public class HtmlAnchor2Test extends SimpleWebTestCase {
             }
 
             @Override
-            public boolean handleAttachment(final WebResponse response) {
+            public boolean handleAttachment(final WebResponse response, final String attachmentFilename) {
                 pages.add(response);
                 return true;
             }
 
             @Override
-            public void handleAttachment(final Page page) {
+            public void handleAttachment(final Page page, final String attachmentFilename) {
                 throw new IllegalAccessError("handleAttachment(Page) called");
             }
         });
@@ -1130,7 +1114,7 @@ public class HtmlAnchor2Test extends SimpleWebTestCase {
         final LinkedList<Page> pages = new LinkedList<>();
         getWebClient().setAttachmentHandler(new AttachmentHandler() {
             @Override
-            public void handleAttachment(final Page page) {
+            public void handleAttachment(final Page page, final String attachmentFilename) {
                 pages.add(page);
             }
         });
@@ -1170,13 +1154,13 @@ public class HtmlAnchor2Test extends SimpleWebTestCase {
         final LinkedList<WebResponse> pages = new LinkedList<>();
         getWebClient().setAttachmentHandler(new AttachmentHandler() {
             @Override
-            public boolean handleAttachment(final WebResponse response) {
+            public boolean handleAttachment(final WebResponse response, final String attachmentFilename) {
                 pages.add(response);
                 return true;
             }
 
             @Override
-            public void handleAttachment(final Page page) {
+            public void handleAttachment(final Page page, final String attachmentFilename) {
                 throw new IllegalAccessError("handleAttachment(Page) called");
             }
         });

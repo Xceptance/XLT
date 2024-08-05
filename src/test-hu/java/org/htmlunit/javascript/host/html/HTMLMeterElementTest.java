@@ -34,8 +34,7 @@ public class HTMLMeterElementTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "[object HTMLMeterElement]",
-            IE = "[object HTMLUnknownElement]")
+    @Alerts("[object HTMLMeterElement]")
     public void tag() throws Exception {
         final String html = "<html><body>\n"
             + "<meter id='it' min='200' max='500' value='350'>\n"
@@ -51,8 +50,7 @@ public class HTMLMeterElementTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"number200", "number500", "number200", "number500", "number350", "number350"},
-            IE = {})
+    @Alerts({"number200", "number500", "number200", "number500", "number350", "number350"})
     public void properties() throws Exception {
         final String html = "<html><body>\n"
             + "<meter id='it' min='200' max='500' value='350'>\n"
@@ -76,8 +74,7 @@ public class HTMLMeterElementTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"0", "2", "1", "2", "1", "1"},
-            IE = {"undefined", "undefined", "undefined", "undefined", "undefined", "undefined"})
+    @Alerts({"0", "2", "1", "2", "1", "1"})
     public void labels() throws Exception {
         final String html =
             "<html><head>\n"

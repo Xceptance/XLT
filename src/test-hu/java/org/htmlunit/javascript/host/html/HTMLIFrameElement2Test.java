@@ -14,15 +14,12 @@
  */
 package org.htmlunit.javascript.host.html;
 
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
-
 import java.net.URL;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import org.htmlunit.util.MimeType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -816,9 +813,7 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"left", "right", "bottom", "middle", "top", "wrong", ""},
-            IE = {"left", "right", "bottom", "middle", "top", "", ""})
-    @NotYetImplemented(IE)
+    @Alerts({"left", "right", "bottom", "middle", "top", "wrong", ""})
     public void getAlign() throws Exception {
         final String html
             = "<html><body>\n"
@@ -845,8 +840,7 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"CenTer", "8", "foo", "left", "right", "bottom", "middle", "top"},
-            IE = {"center", "error", "center", "error", "center", "left", "right", "bottom", "middle", "top"})
+    @Alerts({"CenTer", "8", "foo", "left", "right", "bottom", "middle", "top"})
     public void setAlign() throws Exception {
         final String html
             = "<html><body>\n"
@@ -1050,10 +1044,8 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"iframe script", "loaded", "null", "[object Window]",
-                       "about:blank", "iframe script", "loaded"},
-            IE = {"iframe script", "loaded", "null", "[object Window]",
-                  "§§URL§§", "iframe script", "loaded"})
+    @Alerts({"iframe script", "loaded", "null", "[object Window]",
+             "about:blank", "iframe script", "loaded"})
     @HtmlUnitNYI(CHROME = {"iframe script", "loaded", "null", "loaded", "[object Window]",
                            "about:blank", "iframe script", "loaded"},
             EDGE = {"iframe script", "loaded", "null", "loaded", "[object Window]",
@@ -1061,9 +1053,7 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
             FF = {"iframe script", "loaded", "null", "loaded", "[object Window]",
                   "about:blank", "iframe script", "loaded"},
             FF_ESR = {"iframe script", "loaded", "null", "loaded", "[object Window]",
-                      "about:blank", "iframe script", "loaded"},
-            IE = {"iframe script", "loaded", "null", "loaded", "[object Window]",
-                  "about:blank", "iframe script", "loaded"})
+                      "about:blank", "iframe script", "loaded"})
     public void detachAppend() throws Exception {
         final String html =
                 "<html>\n"
@@ -1115,10 +1105,8 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"iframe external script", "loaded", "null", "[object Window]",
-                       "about:blank", "iframe external script", "loaded"},
-            IE = {"iframe external script", "loaded", "null", "[object Window]",
-                  "§§URL§§", "iframe external script", "loaded"})
+    @Alerts({"iframe external script", "loaded", "null", "[object Window]",
+             "about:blank", "iframe external script", "loaded"})
     @HtmlUnitNYI(CHROME = {"iframe external script", "loaded", "null", "loaded", "[object Window]",
                            "about:blank", "iframe external script", "loaded"},
             EDGE = {"iframe external script", "loaded", "null", "loaded", "[object Window]",
@@ -1126,9 +1114,7 @@ public class HTMLIFrameElement2Test extends WebDriverTestCase {
             FF = {"iframe external script", "loaded", "null", "loaded", "[object Window]",
                   "about:blank", "iframe external script", "loaded"},
             FF_ESR = {"iframe external script", "loaded", "null", "loaded", "[object Window]",
-                      "about:blank", "iframe external script", "loaded"},
-            IE = {"iframe external script", "loaded", "null", "loaded", "[object Window]",
-                  "about:blank", "iframe external script", "loaded"})
+                      "about:blank", "iframe external script", "loaded"})
     public void detachAppendExternalScript() throws Exception {
         final String html =
                 "<html>\n"

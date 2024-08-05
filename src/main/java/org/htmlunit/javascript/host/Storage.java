@@ -14,12 +14,7 @@
  */
 package org.htmlunit.javascript.host;
 
-import static org.htmlunit.BrowserVersionFeatures.JS_STORAGE_GET_FROM_ITEMS;
 import static org.htmlunit.BrowserVersionFeatures.JS_STORAGE_PRESERVED_INCLUDED;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -64,7 +59,7 @@ public class Storage extends HtmlUnitScriptable {
     /**
      * JavaScript constructor.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
     }
 
@@ -99,8 +94,7 @@ public class Storage extends HtmlUnitScriptable {
      */
     @Override
     public Object get(final String name, final Scriptable start) {
-        if (store_ == null
-                || (RESERVED_NAMES_.contains(name) && !getBrowserVersion().hasFeature(JS_STORAGE_GET_FROM_ITEMS))) {
+        if (store_ == null || (RESERVED_NAMES_.contains(name))) {
             return super.get(name, start);
         }
         final Object value = getItem(name);

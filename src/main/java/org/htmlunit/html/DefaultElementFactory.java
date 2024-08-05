@@ -14,8 +14,6 @@
  */
 package org.htmlunit.html;
 
-import static org.htmlunit.BrowserVersionFeatures.KEYGEN_AS_BLOCK;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -24,7 +22,6 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.htmlunit.BrowserVersion;
 import org.htmlunit.SgmlPage;
 import org.htmlunit.javascript.configuration.JavaScriptConfiguration;
 import org.htmlunit.util.OrderedFastHashMap;
@@ -60,7 +57,7 @@ public class DefaultElementFactory implements ElementFactory {
      */
     public static final List<String> SUPPORTED_TAGS_ = Collections.unmodifiableList(Arrays.asList(
         KEYGEN_, HtmlAbbreviated.TAG_NAME, HtmlAcronym.TAG_NAME,
-        HtmlAnchor.TAG_NAME, HtmlAddress.TAG_NAME, HtmlApplet.TAG_NAME, HtmlArea.TAG_NAME,
+        HtmlAnchor.TAG_NAME, HtmlAddress.TAG_NAME, HtmlArea.TAG_NAME,
         HtmlArticle.TAG_NAME, HtmlAside.TAG_NAME, HtmlAudio.TAG_NAME,
         HtmlBackgroundSound.TAG_NAME, HtmlBase.TAG_NAME, HtmlBaseFont.TAG_NAME,
         HtmlBidirectionalIsolation.TAG_NAME, HtmlBidirectionalOverride.TAG_NAME, HtmlBig.TAG_NAME,
@@ -162,13 +159,7 @@ public class DefaultElementFactory implements ElementFactory {
         boolean doBrowserCompatibilityCheck = checkBrowserCompatibility;
         switch (tagName) {
             case KEYGEN_:
-                final BrowserVersion browserVersion = page.getWebClient().getBrowserVersion();
-                if (browserVersion.hasFeature(KEYGEN_AS_BLOCK)) {
-                    element = new HtmlBlockQuote(qualifiedName, page, attributeMap);
-                }
-                else {
-                    element = new HtmlUnknownElement(page, qualifiedName, attributeMap);
-                }
+                element = new HtmlUnknownElement(page, qualifiedName, attributeMap);
                 break;
 
             case HtmlAbbreviated.TAG_NAME:
@@ -185,10 +176,6 @@ public class DefaultElementFactory implements ElementFactory {
 
             case HtmlAnchor.TAG_NAME:
                 element = new HtmlAnchor(qualifiedName, page, attributeMap);
-                break;
-
-            case HtmlApplet.TAG_NAME:
-                element = new HtmlApplet(qualifiedName, page, attributeMap);
                 break;
 
             case HtmlArea.TAG_NAME:

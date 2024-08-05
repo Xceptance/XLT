@@ -808,8 +808,8 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
         // JS resources
         if (loadStaticContent || haveJS)
         {
-            // remove comments (don't remove conditional comments if IE)
-            final String commentPattern = getBrowserVersion().isIE() ? "(?sm)<!--[^\\[].*?-->" : "(?sm)<!--.*?-->";
+            // remove comments
+            final String commentPattern = "(?sm)<!--.*?-->";
             page = RegExUtils.replaceAll(page, commentPattern, "");
 
             // remove scripts (in-line scripts might contain resource URLs in the code)
@@ -1052,7 +1052,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
      */
     @Override
     public void download(final WebWindow requestingWindow, final String target, final WebRequest request, final boolean checkHash,
-                         final boolean forceLoad, final boolean forceAttachment, final String description)
+                         final boolean forceLoad, final String forceAttachmentWithFilename, final String description)
     {
         if (requestingWindow.getTopWindow() == requestingWindow)
         {
@@ -1071,7 +1071,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
 
         request.setDocumentRequest();
 
-        super.download(requestingWindow, target, request, checkHash, forceLoad, forceAttachment, description);
+        super.download(requestingWindow, target, request, checkHash, forceLoad, forceAttachmentWithFilename, description);
     }
 
     /**
@@ -1938,11 +1938,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
         final BrowserVersion browserVersion;
         final String browserType = XltProperties.getInstance().getProperty("com.xceptance.xlt.browser", "FF").toUpperCase();
 
-        if (browserType.equals("IE"))
-        {
-            browserVersion = BrowserVersion.INTERNET_EXPLORER;
-        }
-        else if (browserType.equals("CH"))
+        if (browserType.equals("CH"))
         {
             browserVersion = BrowserVersion.CHROME;
         }

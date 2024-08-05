@@ -14,7 +14,6 @@
  */
 package org.htmlunit.javascript.host;
 
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 import static org.junit.Assert.fail;
 
 import java.net.URL;
@@ -50,7 +49,6 @@ import org.htmlunit.html.HtmlPage;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
 import org.junit.Test;
@@ -1192,11 +1190,7 @@ public class WindowTest extends SimpleWebTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "Jane", "Smith", "sdg", "finished"},
-            CHROME = "not available",
-            EDGE = "not available",
-            FF = "not available",
-            FF_ESR = "not available")
+    @Alerts("not available")
     public void showModalDialog() throws Exception {
         final String html1
             = "<html><head><script>\n"
@@ -1254,12 +1248,7 @@ public class WindowTest extends SimpleWebTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "result", "finished"},
-            CHROME = {"undefined", "not available"},
-            EDGE = {"undefined", "not available"},
-            FF = {"undefined", "not available"},
-            FF_ESR = {"undefined", "not available"})
-    @NotYetImplemented(IE)
+    @Alerts({"undefined", "not available"})
     public void showModalDialogWithButton() throws Exception {
         final String html1
             = "<html><head>\n"
@@ -1307,8 +1296,7 @@ public class WindowTest extends SimpleWebTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "",
-            IE = {"[object Window]", "a"})
+    @Alerts("")
     public void showModelessDialog() throws Exception {
         final String html1
             = "<html><head><script>\n"
@@ -1363,8 +1351,7 @@ public class WindowTest extends SimpleWebTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"true", "[object Window]", "[object Window]"},
-            IE = {"true", "123", "123"})
+    @Alerts({"true", "[object Window]", "[object Window]"})
     public void overwriteProperty_top() throws Exception {
         final String html
             = "<html><body><script>\n"
@@ -1382,8 +1369,7 @@ public class WindowTest extends SimpleWebTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"true", "[object Window]", "[object Window]"},
-            IE = {"true", "123", "123"})
+    @Alerts({"true", "[object Window]", "[object Window]"})
     public void overwriteProperty_top2() throws Exception {
         final String html
             = "<html><body><script>\n"
@@ -1647,21 +1633,13 @@ public class WindowTest extends SimpleWebTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "before print"
+    @Alerts("before print"
                     + "§event beforeprint"
                     + "§[object Event]beforeprint-false-false-false-[object Window]"
                         + "-false-2-true-true-[object Window]-[object Window]-beforeprint"
                     + "§event afterprint"
                     + "§[object Event]afterprint-false-false-false-[object Window]"
                         + "-false-2-true-true-[object Window]-[object Window]-afterprint"
-                    + "§printed§",
-            IE = "before print"
-                    + "§event beforeprint"
-                    + "§[object Event]beforeprint-false-false-undefined-[object Window]"
-                        + "-false-2-true-undefined-[object Window]-[object Window]-beforeprint"
-                    + "§event afterprint"
-                    + "§[object Event]afterprint-false-false-undefined-[object Window]"
-                        + "-false-2-true-undefined-[object Window]-[object Window]-afterprint"
                     + "§printed§")
     @HtmlUnitNYI(CHROME = "before print"
                     + "§event beforeprint"
@@ -1694,14 +1672,6 @@ public class WindowTest extends SimpleWebTestCase {
                     + "§event afterprint"
                     + "§[object Event]afterprint-false-false-false-[object Window]"
                         + "-false-2-undefined-true-[object Window]-[object Window]-afterprint"
-                    + "§printed§",
-            IE = "before print"
-                    + "§event beforeprint"
-                    + "§[object Event]beforeprint-false-false-undefined-[object Window]"
-                        + "-false-2-undefined-undefined-[object Window]-[object Window]-beforeprint"
-                    + "§event afterprint"
-                    + "§[object Event]afterprint-false-false-undefined-[object Window]"
-                        + "-false-2-undefined-undefined-[object Window]-[object Window]-afterprint"
                     + "§printed§")
     public void printEvent() throws Exception {
         // we have to test this manually

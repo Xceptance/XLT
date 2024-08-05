@@ -54,11 +54,11 @@ public class ExternalTest {
     static String MAVEN_REPO_URL_ = "https://repo1.maven.org/maven2/";
 
     /** Chrome driver. */
-    static String CHROME_DRIVER_ = "121.0.6167";
+    static String CHROME_DRIVER_ = "125.0.6422";
     static String CHROME_DRIVER_URL_ =
             "https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions-with-downloads.json";
 
-    static String EDGE_DRIVER_ = "121.0.2277";
+    static String EDGE_DRIVER_ = "125.0.2535";
     static String EDGE_DRIVER_URL_ = "https://developer.microsoft.com/en-us/microsoft-edge/tools/webdriver/";
 
     /** Gecko driver. */
@@ -332,21 +332,22 @@ public class ExternalTest {
             return true;
         }
 
-        // version 10 requires JDK 11
-        if ("checkstyle".equals(artifactId) && (version.startsWith("10."))) {
-            return true;
-        }
         // version 3.11.x seem to requires JDK11
         if ("maven-site-plugin".equals(artifactId)
                 && (version.startsWith("3.11.") || version.startsWith("3.12."))) {
             return true;
         }
 
-        // https://issues.apache.org/jira/browse/MJAVADOC-700
-        // https://stackoverflow.com/questions/69320220/maven-javadoc-listed-classes-twice -->
-        // <sourcepath>${basedir}/src/main/java</sourcepath>
-        if ("maven-javadoc-plugin".equals(artifactId)
-                && (version.startsWith("3.3.") || version.startsWith("3.4."))) {
+        // pmd 7 has problems parsing our code
+        if ("maven-pmd-plugin".equals(artifactId)
+                && ("3.22.0".equals(version))) {
+            return true;
+        }
+        System.out.println(artifactId + " " + version);
+        if (artifactId.startsWith("pmd-")
+                && (version.startsWith("7.0.")
+                        || version.startsWith("7.1.")
+                        || version.startsWith("7.2."))) {
             return true;
         }
 

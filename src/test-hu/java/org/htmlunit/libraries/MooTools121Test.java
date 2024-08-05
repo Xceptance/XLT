@@ -14,8 +14,6 @@
  */
 package org.htmlunit.libraries;
 
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
-
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,7 +24,6 @@ import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.WebServerTestCase;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -71,13 +68,9 @@ public class MooTools121Test extends WebDriverTestCase {
     /**
      * @throws Exception if an error occurs
      */
-    @Alerts(DEFAULT = {"364", "1", "0",
-                       "should return the function bound to an object with multiple arguments"},
-            IE = {"364", "2", "0",
-                  "should return the function bound to an object with multiple arguments",
-                  "should return a CSS string representing the Element's styles"})
+    @Alerts({"364", "1", "0",
+             "should return the function bound to an object with multiple arguments"})
     @Test
-    @NotYetImplemented(IE)
     public void mooTools() throws Exception {
         final WebDriver driver = getWebDriver();
         driver.get(URL_FIRST + "Specs/index.html");

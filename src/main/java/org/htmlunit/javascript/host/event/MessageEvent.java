@@ -14,17 +14,10 @@
  */
 package org.htmlunit.javascript.host.event;
 
-import static org.htmlunit.BrowserVersionFeatures.EVENT_ONMESSAGE_DEFAULT_DATA_NULL;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-
 import org.htmlunit.HttpHeader;
 import org.htmlunit.corejs.javascript.NativeArray;
 import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.corejs.javascript.ScriptableObject;
-import org.htmlunit.corejs.javascript.Undefined;
 import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
@@ -62,7 +55,7 @@ public class MessageEvent extends Event {
         setType(TYPE_MESSAGE);
         origin_ = "";
         lastEventId_ = "";
-        data_ = Undefined.instance;
+        data_ = JavaScriptEngine.Undefined;
     }
 
     /**
@@ -81,13 +74,11 @@ public class MessageEvent extends Event {
      * @param details the event details (optional)
      */
     @Override
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor(final String type, final ScriptableObject details) {
         super.jsConstructor(type, details);
 
-        if (getBrowserVersion().hasFeature(EVENT_ONMESSAGE_DEFAULT_DATA_NULL)) {
-            data_ = null;
-        }
+        data_ = null;
 
         String origin = "";
         String lastEventId = "";
@@ -186,7 +177,7 @@ public class MessageEvent extends Event {
      * Retrieves the identifier of the last event.
      * @return the identified of the last event
      */
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxGetter
     public String getLastEventId() {
         return lastEventId_;
     }

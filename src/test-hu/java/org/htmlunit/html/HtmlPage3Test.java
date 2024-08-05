@@ -17,7 +17,6 @@ package org.htmlunit.html;
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static org.htmlunit.junit.BrowserRunner.TestedBrowser.FF;
 import static org.htmlunit.junit.BrowserRunner.TestedBrowser.FF_ESR;
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 
 import java.net.URL;
 import java.util.List;
@@ -29,7 +28,6 @@ import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import org.htmlunit.util.MimeType;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
@@ -111,8 +109,7 @@ public class HtmlPage3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"windows-1252", "windows-1252", "windows-1252", "undefined"},
-            IE = {"ISO-8859-1", "iso-8859-1", "iso-8859-1", "windows-1252"})
+    @Alerts({"windows-1252", "windows-1252", "windows-1252", "undefined"})
     public void getPageEncoding() throws Exception {
         final String htmlContent = "<html><head>\n"
             + "  <meta http-equiv='Content-Type' content='text/html; charset=Shift_JIS'>\n"
@@ -223,11 +220,6 @@ public class HtmlPage3Test extends WebDriverTestCase {
             + "</script></head>\n"
             + "<body onload='test()'>\n"
             + "</body></html>";
-
-        // [IE] real IE waits for the page to load until infinity
-        if (useRealBrowser() && getBrowserVersion().isIE()) {
-            Assert.fail("Blocks real IE");
-        }
 
         loadPage2(html);
         verifyWindowName2(getWebDriver(), getExpectedAlerts());
@@ -479,7 +471,7 @@ public class HtmlPage3Test extends WebDriverTestCase {
     @Alerts(DEFAULT = "error",
             CHROME = "Something",
             EDGE = "Something")
-    @NotYetImplemented({IE, FF, FF_ESR})
+    @NotYetImplemented({FF, FF_ESR})
     public void shouldBeAbleToFindElementByXPathInXmlDocument() throws Exception {
         final String html = "<?xml version='1.0' encoding='UTF-8'?>\n"
             + "<html xmlns='http://www.w3.org/1999/xhtml'\n"

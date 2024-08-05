@@ -14,12 +14,6 @@
  */
 package org.htmlunit.javascript.host.dom;
 
-import static org.htmlunit.BrowserVersionFeatures.JS_DOM_CDATA_DELETE_THROWS_NEGATIVE_COUNT;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-
 import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.Scriptable;
@@ -54,7 +48,7 @@ public class CharacterData extends Node {
      * JavaScript constructor.
      */
     @Override
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
         super.jsConstructor();
     }
@@ -104,15 +98,6 @@ public class CharacterData extends Node {
     public void deleteData(final int offset, final int count) {
         if (offset < 0) {
             throw JavaScriptEngine.reportRuntimeError("Provided offset: " + offset + " is less than zero.");
-        }
-
-        if (getBrowserVersion().hasFeature(JS_DOM_CDATA_DELETE_THROWS_NEGATIVE_COUNT)) {
-            if (count < 0) {
-                throw JavaScriptEngine.reportRuntimeError("Provided count: " + count + " is less than zero.");
-            }
-            if (count == 0) {
-                return;
-            }
         }
 
         final DomCharacterData domCharacterData = getDomCharacterDataOrDie();
@@ -167,7 +152,7 @@ public class CharacterData extends Node {
      * Returns the next element sibling.
      * @return the next element sibling
      */
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxGetter
     public Element getNextElementSibling() {
         final DomElement child = getDomNodeOrDie().getNextElementSibling();
         if (child != null) {
@@ -180,7 +165,7 @@ public class CharacterData extends Node {
      * Returns the previous element sibling.
      * @return the previous element sibling
      */
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxGetter
     public Element getPreviousElementSibling() {
         final DomElement child = getDomNodeOrDie().getPreviousElementSibling();
         if (child != null) {
@@ -193,7 +178,7 @@ public class CharacterData extends Node {
      * {@inheritDoc}
      */
     @Override
-    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
+    @JsxFunction
     public void remove() {
         super.remove();
     }
@@ -207,7 +192,7 @@ public class CharacterData extends Node {
      * @param args the arguments
      * @param function the function
      */
-    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
+    @JsxFunction
     public static void before(final Context context, final Scriptable scope,
             final Scriptable thisObj, final Object[] args,  final Function function) {
         Node.before(context, thisObj, args, function);
@@ -222,7 +207,7 @@ public class CharacterData extends Node {
      * @param args the arguments
      * @param function the function
      */
-    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
+    @JsxFunction
     public static void after(final Context context, final Scriptable scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         Node.after(context, thisObj, args, function);
@@ -236,7 +221,7 @@ public class CharacterData extends Node {
      * @param args the arguments
      * @param function the function
      */
-    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
+    @JsxFunction
     public static void replaceWith(final Context context, final Scriptable scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         Node.replaceWith(context, thisObj, args, function);

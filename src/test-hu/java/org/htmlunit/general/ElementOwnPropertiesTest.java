@@ -216,11 +216,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 if (BrowserVersionClassRunner.isDefined(alerts.value())) {
                     expectedAlerts = alerts.value();
                 }
-                if (browserVersion == BrowserVersion.INTERNET_EXPLORER) {
-                    expectedAlerts = BrowserVersionClassRunner
-                            .firstDefinedOrGiven(expectedAlerts, alerts.IE(), alerts.DEFAULT());
-                }
-                else if (browserVersion == BrowserVersion.EDGE) {
+                if (browserVersion == BrowserVersion.EDGE) {
                     expectedAlerts = BrowserVersionClassRunner
                             .firstDefinedOrGiven(expectedAlerts, alerts.EDGE(), alerts.DEFAULT());
                 }
@@ -243,10 +239,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 final HtmlUnitNYI htmlUnitNYI = method.getAnnotation(HtmlUnitNYI.class);
                 String[] nyiAlerts = {};
                 if (htmlUnitNYI != null) {
-                    if (browserVersion == BrowserVersion.INTERNET_EXPLORER) {
-                        nyiAlerts = BrowserVersionClassRunner.firstDefinedOrGiven(expectedAlerts, htmlUnitNYI.IE());
-                    }
-                    else if (browserVersion == BrowserVersion.EDGE) {
+                    if (browserVersion == BrowserVersion.EDGE) {
                         nyiAlerts = BrowserVersionClassRunner.firstDefinedOrGiven(expectedAlerts, htmlUnitNYI.EDGE());
                     }
                     else if (browserVersion == BrowserVersion.FIREFOX_ESR) {
@@ -275,7 +268,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
 
                 dataset.addValue(implementedProperties.size(), "Implemented", method.getName());
                 dataset.addValue(realProperties.size(),
-                        browserVersion.getNickname().replace("FF", "Firefox ").replace("IE", "Internet Explorer "),
+                        browserVersion.getNickname().replace("FF", "Firefox "),
                        method.getName());
                 dataset.addValue(erroredProperties.size(), "Should not be implemented", method.getName());
             }
@@ -438,13 +431,11 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "assignedSlot[GCE],constructor(),splitText(),wholeText[GCE]",
             EDGE = "assignedSlot[GCE],constructor(),splitText(),wholeText[GCE]",
             FF = "assignedSlot[GCE],constructor(),splitText(),wholeText[GCE]",
-            FF_ESR = "assignedSlot[GCE],constructor(),splitText(),wholeText[GCE]",
-            IE = "constructor,removeNode(),replaceNode(),replaceWholeText(),splitText(),swapNode(),wholeText")
+            FF_ESR = "assignedSlot[GCE],constructor(),splitText(),wholeText[GCE]")
     @HtmlUnitNYI(CHROME = "constructor(),splitText(),wholeText[GCE]",
             EDGE = "constructor(),splitText(),wholeText[GCE]",
             FF_ESR = "constructor(),splitText(),wholeText[GCE]",
-            FF = "constructor(),splitText(),wholeText[GCE]",
-            IE = "constructor[],splitText(),wholeText[GCE]")
+            FF = "constructor(),splitText(),wholeText[GCE]")
     public void text() throws Exception {
         testString("", "document.createTextNode('some text')");
     }
@@ -464,10 +455,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "value[GSCE]",
             FF_ESR = "constructor(),localName[GCE],name[GCE],namespaceURI[GCE],ownerElement[GCE],prefix[GCE],"
                 + "specified[GCE],"
-                + "value[GSCE]",
-            IE = "constructor,expando,name,ownerElement,specified,value")
-    @HtmlUnitNYI(IE = "constructor[],expando[GCE],localName[GCE],name[GCE],namespaceURI[GCE],ownerElement[GCE],"
-                + "prefix[GCE],specified[GCE],value[GSCE]")
+                + "value[GSCE]")
     public void attr() throws Exception {
         testString("", "document.createAttribute('some_attrib')");
     }
@@ -479,9 +467,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor()",
             EDGE = "constructor()",
             FF = "constructor()",
-            FF_ESR = "constructor()",
-            IE = "constructor,text")
-    @HtmlUnitNYI(IE = "constructor[],getAttribute(),getAttributeNode(),text[GCE]")
+            FF_ESR = "constructor()")
     public void comment() throws Exception {
         testString("", "document.createComment('come_comment')");
     }
@@ -493,9 +479,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor()",
             EDGE = "constructor()",
             FF = "constructor()",
-            FF_ESR = "constructor()",
-            IE = "constructor,namedRecordset(),recordset")
-    @HtmlUnitNYI(IE = "constructor[]")
+            FF_ESR = "constructor()")
     public void unknown() throws Exception {
         testString("", "unknown");
     }
@@ -507,9 +491,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor()",
             EDGE = "constructor()",
             FF = "constructor()",
-            FF_ESR = "constructor()",
-            IE = "constructor,namedRecordset(),recordset")
-    @HtmlUnitNYI(IE = "constructor[]")
+            FF_ESR = "constructor()")
     public void htmlElement() throws Exception {
         testString("", "unknown");
     }
@@ -535,19 +517,19 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "constructor(),elementTiming[GSCE],firstElementChild[GCE],getAnimations(),getAttribute(),"
                 + "getAttributeNames(),getAttributeNode(),getAttributeNodeNS(),getAttributeNS(),"
                 + "getBoundingClientRect(),getClientRects(),getElementsByClassName(),getElementsByTagName(),"
-                + "getElementsByTagNameNS(),getInnerHTML(),hasAttribute(),hasAttributeNS(),hasAttributes(),"
-                + "hasPointerCapture(),id[GSCE],innerHTML[GSCE],insertAdjacentElement(),insertAdjacentHTML(),"
-                + "insertAdjacentText(),lastElementChild[GCE],localName[GCE],matches(),namespaceURI[GCE],"
-                + "nextElementSibling[GCE],onbeforecopy[GSCE],onbeforecut[GSCE],onbeforepaste[GSCE],"
-                + "onfullscreenchange[GSCE],onfullscreenerror[GSCE],onsearch[GSCE],onwebkitfullscreenchange[GSCE],"
-                + "onwebkitfullscreenerror[GSCE],outerHTML[GSCE],part[GSCE],prefix[GCE],prepend(),"
-                + "previousElementSibling[GCE],querySelector(),querySelectorAll(),releasePointerCapture(),remove(),"
-                + "removeAttribute(),removeAttributeNode(),removeAttributeNS(),replaceChildren(),replaceWith(),"
-                + "requestFullscreen(),requestPointerLock(),role[GSCE],scroll(),scrollBy(),scrollHeight[GCE],"
-                + "scrollIntoView(),scrollIntoViewIfNeeded(),scrollLeft[GSCE],scrollTo(),scrollTop[GSCE],"
-                + "scrollWidth[GCE],setAttribute(),setAttributeNode(),setAttributeNodeNS(),setAttributeNS(),"
-                + "setPointerCapture(),shadowRoot[GCE],slot[GSCE],tagName[GCE],toggleAttribute(),"
-                + "webkitMatchesSelector(),webkitRequestFullScreen(),"
+                + "getElementsByTagNameNS(),getHTML(),getInnerHTML(),hasAttribute(),hasAttributeNS(),"
+                + "hasAttributes(),hasPointerCapture(),id[GSCE],innerHTML[GSCE],insertAdjacentElement(),"
+                + "insertAdjacentHTML(),insertAdjacentText(),lastElementChild[GCE],localName[GCE],matches(),"
+                + "namespaceURI[GCE],nextElementSibling[GCE],onbeforecopy[GSCE],onbeforecut[GSCE],"
+                + "onbeforepaste[GSCE],onfullscreenchange[GSCE],onfullscreenerror[GSCE],onsearch[GSCE],"
+                + "onwebkitfullscreenchange[GSCE],onwebkitfullscreenerror[GSCE],outerHTML[GSCE],part[GSCE],"
+                + "prefix[GCE],prepend(),previousElementSibling[GCE],querySelector(),querySelectorAll(),"
+                + "releasePointerCapture(),remove(),removeAttribute(),removeAttributeNode(),removeAttributeNS(),"
+                + "replaceChildren(),replaceWith(),requestFullscreen(),requestPointerLock(),role[GSCE],scroll(),"
+                + "scrollBy(),scrollHeight[GCE],scrollIntoView(),scrollIntoViewIfNeeded(),scrollLeft[GSCE],"
+                + "scrollTo(),scrollTop[GSCE],scrollWidth[GCE],setAttribute(),setAttributeNode(),"
+                + "setAttributeNodeNS(),setAttributeNS(),setHTMLUnsafe(),setPointerCapture(),shadowRoot[GCE],"
+                + "slot[GSCE],tagName[GCE],toggleAttribute(),webkitMatchesSelector(),webkitRequestFullScreen(),"
                 + "webkitRequestFullscreen()",
             EDGE = "after(),animate(),append(),ariaAtomic[GSCE],ariaAutoComplete[GSCE],ariaBrailleLabel[GSCE],"
                 + "ariaBrailleRoleDescription[GSCE],ariaBusy[GSCE],ariaChecked[GSCE],ariaColCount[GSCE],"
@@ -564,45 +546,46 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "constructor(),elementTiming[GSCE],firstElementChild[GCE],getAnimations(),getAttribute(),"
                 + "getAttributeNames(),getAttributeNode(),getAttributeNodeNS(),getAttributeNS(),"
                 + "getBoundingClientRect(),getClientRects(),getElementsByClassName(),getElementsByTagName(),"
-                + "getElementsByTagNameNS(),getInnerHTML(),hasAttribute(),hasAttributeNS(),hasAttributes(),"
-                + "hasPointerCapture(),id[GSCE],innerHTML[GSCE],insertAdjacentElement(),insertAdjacentHTML(),"
-                + "insertAdjacentText(),lastElementChild[GCE],localName[GCE],matches(),namespaceURI[GCE],"
-                + "nextElementSibling[GCE],onbeforecopy[GSCE],onbeforecut[GSCE],onbeforepaste[GSCE],"
-                + "onfullscreenchange[GSCE],onfullscreenerror[GSCE],onsearch[GSCE],onwebkitfullscreenchange[GSCE],"
-                + "onwebkitfullscreenerror[GSCE],outerHTML[GSCE],part[GSCE],prefix[GCE],prepend(),"
-                + "previousElementSibling[GCE],querySelector(),querySelectorAll(),releasePointerCapture(),remove(),"
-                + "removeAttribute(),removeAttributeNode(),removeAttributeNS(),replaceChildren(),replaceWith(),"
-                + "requestFullscreen(),requestPointerLock(),role[GSCE],scroll(),scrollBy(),scrollHeight[GCE],"
-                + "scrollIntoView(),scrollIntoViewIfNeeded(),scrollLeft[GSCE],scrollTo(),scrollTop[GSCE],"
-                + "scrollWidth[GCE],setAttribute(),setAttributeNode(),setAttributeNodeNS(),setAttributeNS(),"
-                + "setPointerCapture(),shadowRoot[GCE],slot[GSCE],tagName[GCE],toggleAttribute(),"
-                + "webkitMatchesSelector(),webkitRequestFullScreen(),"
+                + "getElementsByTagNameNS(),getHTML(),getInnerHTML(),hasAttribute(),hasAttributeNS(),"
+                + "hasAttributes(),hasPointerCapture(),id[GSCE],innerHTML[GSCE],insertAdjacentElement(),"
+                + "insertAdjacentHTML(),insertAdjacentText(),lastElementChild[GCE],localName[GCE],matches(),"
+                + "namespaceURI[GCE],nextElementSibling[GCE],onbeforecopy[GSCE],onbeforecut[GSCE],"
+                + "onbeforepaste[GSCE],onfullscreenchange[GSCE],onfullscreenerror[GSCE],onsearch[GSCE],"
+                + "onwebkitfullscreenchange[GSCE],onwebkitfullscreenerror[GSCE],outerHTML[GSCE],part[GSCE],"
+                + "prefix[GCE],prepend(),previousElementSibling[GCE],querySelector(),querySelectorAll(),"
+                + "releasePointerCapture(),remove(),removeAttribute(),removeAttributeNode(),removeAttributeNS(),"
+                + "replaceChildren(),replaceWith(),requestFullscreen(),requestPointerLock(),role[GSCE],scroll(),"
+                + "scrollBy(),scrollHeight[GCE],scrollIntoView(),scrollIntoViewIfNeeded(),scrollLeft[GSCE],"
+                + "scrollTo(),scrollTop[GSCE],scrollWidth[GCE],setAttribute(),setAttributeNode(),"
+                + "setAttributeNodeNS(),setAttributeNS(),setHTMLUnsafe(),setPointerCapture(),shadowRoot[GCE],"
+                + "slot[GSCE],tagName[GCE],toggleAttribute(),webkitMatchesSelector(),webkitRequestFullScreen(),"
                 + "webkitRequestFullscreen()",
-            FF = "after(),animate(),append(),ariaAtomic[GSCE],ariaAutoComplete[GSCE],ariaBusy[GSCE],"
-                + "ariaChecked[GSCE],ariaColCount[GSCE],ariaColIndex[GSCE],ariaColIndexText[GSCE],ariaColSpan[GSCE],"
-                + "ariaCurrent[GSCE],ariaDescription[GSCE],ariaDisabled[GSCE],ariaExpanded[GSCE],ariaHasPopup[GSCE],"
-                + "ariaHidden[GSCE],ariaInvalid[GSCE],ariaKeyShortcuts[GSCE],ariaLabel[GSCE],ariaLevel[GSCE],"
-                + "ariaLive[GSCE],ariaModal[GSCE],ariaMultiLine[GSCE],ariaMultiSelectable[GSCE],"
-                + "ariaOrientation[GSCE],ariaPlaceholder[GSCE],ariaPosInSet[GSCE],ariaPressed[GSCE],"
-                + "ariaReadOnly[GSCE],ariaRelevant[GSCE],ariaRequired[GSCE],ariaRoleDescription[GSCE],"
-                + "ariaRowCount[GSCE],ariaRowIndex[GSCE],ariaRowIndexText[GSCE],ariaRowSpan[GSCE],"
-                + "ariaSelected[GSCE],ariaSetSize[GSCE],ariaSort[GSCE],ariaValueMax[GSCE],ariaValueMin[GSCE],"
-                + "ariaValueNow[GSCE],ariaValueText[GSCE],assignedSlot[GCE],attachShadow(),attributes[GCE],before(),"
-                + "checkVisibility(),childElementCount[GCE],children[GCE],classList[GSCE],className[GSCE],"
-                + "clientHeight[GCE],clientLeft[GCE],clientTop[GCE],clientWidth[GCE],closest(),constructor(),"
-                + "firstElementChild[GCE],getAnimations(),getAttribute(),getAttributeNames(),getAttributeNode(),"
-                + "getAttributeNodeNS(),getAttributeNS(),getBoundingClientRect(),getClientRects(),"
-                + "getElementsByClassName(),getElementsByTagName(),getElementsByTagNameNS(),hasAttribute(),"
-                + "hasAttributeNS(),hasAttributes(),hasPointerCapture(),id[GSCE],innerHTML[GSCE],"
-                + "insertAdjacentElement(),insertAdjacentHTML(),insertAdjacentText(),lastElementChild[GCE],"
-                + "localName[GCE],matches(),mozMatchesSelector(),mozRequestFullScreen(),namespaceURI[GCE],"
-                + "nextElementSibling[GCE],onfullscreenchange[GSCE],onfullscreenerror[GSCE],outerHTML[GSCE],"
-                + "part[GSCE],prefix[GCE],prepend(),previousElementSibling[GCE],querySelector(),querySelectorAll(),"
-                + "releaseCapture(),releasePointerCapture(),remove(),removeAttribute(),removeAttributeNode(),"
-                + "removeAttributeNS(),replaceChildren(),replaceWith(),requestFullscreen(),requestPointerLock(),"
-                + "role[GSCE],scroll(),scrollBy(),scrollHeight[GCE],scrollIntoView(),scrollLeft[GSCE],"
-                + "scrollLeftMax[GCE],scrollTo(),scrollTop[GSCE],scrollTopMax[GCE],scrollWidth[GCE],setAttribute(),"
-                + "setAttributeNode(),setAttributeNodeNS(),setAttributeNS(),setCapture(),setPointerCapture(),"
+            FF = "after(),animate(),append(),ariaAtomic[GSCE],ariaAutoComplete[GSCE],ariaBrailleLabel[GSCE],"
+                + "ariaBrailleRoleDescription[GSCE],ariaBusy[GSCE],ariaChecked[GSCE],ariaColCount[GSCE],"
+                + "ariaColIndex[GSCE],ariaColIndexText[GSCE],ariaColSpan[GSCE],ariaCurrent[GSCE],"
+                + "ariaDescription[GSCE],ariaDisabled[GSCE],ariaExpanded[GSCE],ariaHasPopup[GSCE],ariaHidden[GSCE],"
+                + "ariaInvalid[GSCE],ariaKeyShortcuts[GSCE],ariaLabel[GSCE],ariaLevel[GSCE],ariaLive[GSCE],"
+                + "ariaModal[GSCE],ariaMultiLine[GSCE],ariaMultiSelectable[GSCE],ariaOrientation[GSCE],"
+                + "ariaPlaceholder[GSCE],ariaPosInSet[GSCE],ariaPressed[GSCE],ariaReadOnly[GSCE],ariaRelevant[GSCE],"
+                + "ariaRequired[GSCE],ariaRoleDescription[GSCE],ariaRowCount[GSCE],ariaRowIndex[GSCE],"
+                + "ariaRowIndexText[GSCE],ariaRowSpan[GSCE],ariaSelected[GSCE],ariaSetSize[GSCE],ariaSort[GSCE],"
+                + "ariaValueMax[GSCE],ariaValueMin[GSCE],ariaValueNow[GSCE],ariaValueText[GSCE],assignedSlot[GCE],"
+                + "attachShadow(),attributes[GCE],before(),checkVisibility(),childElementCount[GCE],children[GCE],"
+                + "classList[GSCE],className[GSCE],clientHeight[GCE],clientLeft[GCE],clientTop[GCE],"
+                + "clientWidth[GCE],closest(),constructor(),currentCSSZoom[GCE],firstElementChild[GCE],"
+                + "getAnimations(),getAttribute(),getAttributeNames(),getAttributeNode(),getAttributeNodeNS(),"
+                + "getAttributeNS(),getBoundingClientRect(),getClientRects(),getElementsByClassName(),"
+                + "getElementsByTagName(),getElementsByTagNameNS(),hasAttribute(),hasAttributeNS(),hasAttributes(),"
+                + "hasPointerCapture(),id[GSCE],innerHTML[GSCE],insertAdjacentElement(),insertAdjacentHTML(),"
+                + "insertAdjacentText(),lastElementChild[GCE],localName[GCE],matches(),mozMatchesSelector(),"
+                + "mozRequestFullScreen(),namespaceURI[GCE],nextElementSibling[GCE],onfullscreenchange[GSCE],"
+                + "onfullscreenerror[GSCE],outerHTML[GSCE],part[GSCE],prefix[GCE],prepend(),"
+                + "previousElementSibling[GCE],querySelector(),querySelectorAll(),releaseCapture(),"
+                + "releasePointerCapture(),remove(),removeAttribute(),removeAttributeNode(),removeAttributeNS(),"
+                + "replaceChildren(),replaceWith(),requestFullscreen(),requestPointerLock(),role[GSCE],scroll(),"
+                + "scrollBy(),scrollHeight[GCE],scrollIntoView(),scrollLeft[GSCE],scrollLeftMax[GCE],scrollTo(),"
+                + "scrollTop[GSCE],scrollTopMax[GCE],scrollWidth[GCE],setAttribute(),setAttributeNode(),"
+                + "setAttributeNodeNS(),setAttributeNS(),setCapture(),setHTMLUnsafe(),setPointerCapture(),"
                 + "shadowRoot[GCE],slot[GSCE],tagName[GCE],toggleAttribute(),"
                 + "webkitMatchesSelector()",
             FF_ESR = "after(),animate(),append(),assignedSlot[GCE],attachShadow(),attributes[GCE],before(),"
@@ -622,48 +605,35 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "scrollTo(),scrollTop[GSCE],scrollTopMax[GCE],scrollWidth[GCE],setAttribute(),setAttributeNode(),"
                 + "setAttributeNodeNS(),setAttributeNS(),setCapture(),setPointerCapture(),shadowRoot[GCE],"
                 + "slot[GSCE],tagName[GCE],toggleAttribute(),"
-                + "webkitMatchesSelector()",
-            IE = "childElementCount,clientHeight,clientLeft,clientTop,clientWidth,constructor,firstElementChild,"
-                + "getAttribute(),getAttributeNode(),getAttributeNodeNS(),getAttributeNS(),getBoundingClientRect(),"
-                + "getClientRects(),getElementsByTagName(),getElementsByTagNameNS(),hasAttribute(),hasAttributeNS(),"
-                + "lastElementChild,msContentZoomFactor,msGetRegionContent(),msGetUntransformedBounds(),"
-                + "msMatchesSelector(),msRegionOverflow,msReleasePointerCapture(),msRequestFullscreen(),"
-                + "msSetPointerCapture(),msZoomTo(),nextElementSibling,ongotpointercapture,onlostpointercapture,"
-                + "onmsgesturechange,onmsgesturedoubletap,onmsgestureend,onmsgesturehold,onmsgesturestart,"
-                + "onmsgesturetap,onmsgotpointercapture,onmsinertiastart,onmslostpointercapture,onmspointercancel,"
-                + "onmspointerdown,onmspointerenter,onmspointerleave,onmspointermove,onmspointerout,onmspointerover,"
-                + "onmspointerup,onpointercancel,onpointerdown,onpointerenter,onpointerleave,onpointermove,"
-                + "onpointerout,onpointerover,onpointerup,previousElementSibling,querySelector(),querySelectorAll(),"
-                + "releasePointerCapture(),removeAttribute(),removeAttributeNode(),removeAttributeNS(),scrollHeight,"
-                + "scrollLeft,scrollTop,scrollWidth,setAttribute(),setAttributeNode(),setAttributeNodeNS(),"
-                + "setAttributeNS(),setPointerCapture(),"
-                + "tagName")
+                + "webkitMatchesSelector()")
     @HtmlUnitNYI(CHROME = "after(),append(),attributes[GCE],before(),childElementCount[GCE],children[GCE],"
                 + "classList[GCE],className[GSCE],clientHeight[GCE],clientLeft[GCE],clientTop[GCE],"
                 + "clientWidth[GCE],closest(),constructor(),firstElementChild[GCE],getAttribute(),getAttributeNode(),"
                 + "getAttributeNodeNS(),getAttributeNS(),getBoundingClientRect(),getClientRects(),"
-                + "getElementsByClassName(),getElementsByTagName(),getElementsByTagNameNS(),getInnerHTML(),"
+                + "getElementsByClassName(),getElementsByTagName(),getElementsByTagNameNS(),getHTML(),getInnerHTML(),"
                 + "hasAttribute(),hasAttributeNS(),hasAttributes(),id[GSCE],innerHTML[GSCE],insertAdjacentElement(),"
                 + "insertAdjacentHTML(),insertAdjacentText(),lastElementChild[GCE],localName[GCE],matches(),"
                 + "namespaceURI[GCE],nextElementSibling[GCE],onbeforecopy[GSCE],onbeforecut[GSCE],onbeforepaste[GSCE],"
                 + "onsearch[GSCE],onwebkitfullscreenchange[GSCE],onwebkitfullscreenerror[GSCE],outerHTML[GSCE],"
                 + "prefix[GCE],prepend(),previousElementSibling[GCE],querySelector(),querySelectorAll(),remove(),"
                 + "removeAttribute(),removeAttributeNode(),removeAttributeNS(),replaceChildren(),replaceWith(),"
-                + "scrollHeight[GCE],scrollIntoView(),scrollIntoViewIfNeeded(),scrollLeft[GSCE],scrollTop[GSCE],"
+                + "scroll(),scrollBy(),scrollHeight[GCE],scrollIntoView(),scrollIntoViewIfNeeded(),"
+                + "scrollLeft[GSCE],scrollTo(),scrollTop[GSCE],"
                 + "scrollWidth[GCE],setAttribute(),setAttributeNode(),setAttributeNS(),tagName[GCE],"
                 + "toggleAttribute(),webkitMatchesSelector()",
             EDGE = "after(),append(),attributes[GCE],before(),childElementCount[GCE],children[GCE],"
                 + "classList[GCE],className[GSCE],clientHeight[GCE],clientLeft[GCE],clientTop[GCE],"
                 + "clientWidth[GCE],closest(),constructor(),firstElementChild[GCE],getAttribute(),getAttributeNode(),"
                 + "getAttributeNodeNS(),getAttributeNS(),getBoundingClientRect(),getClientRects(),"
-                + "getElementsByClassName(),getElementsByTagName(),getElementsByTagNameNS(),getInnerHTML(),"
+                + "getElementsByClassName(),getElementsByTagName(),getElementsByTagNameNS(),getHTML(),getInnerHTML(),"
                 + "hasAttribute(),hasAttributeNS(),hasAttributes(),id[GSCE],innerHTML[GSCE],insertAdjacentElement(),"
                 + "insertAdjacentHTML(),insertAdjacentText(),lastElementChild[GCE],localName[GCE],matches(),"
                 + "namespaceURI[GCE],nextElementSibling[GCE],onbeforecopy[GSCE],onbeforecut[GSCE],onbeforepaste[GSCE],"
                 + "onsearch[GSCE],onwebkitfullscreenchange[GSCE],onwebkitfullscreenerror[GSCE],outerHTML[GSCE],"
                 + "prefix[GCE],prepend(),previousElementSibling[GCE],querySelector(),querySelectorAll(),remove(),"
                 + "removeAttribute(),removeAttributeNode(),removeAttributeNS(),replaceChildren(),replaceWith(),"
-                + "scrollHeight[GCE],scrollIntoView(),scrollIntoViewIfNeeded(),scrollLeft[GSCE],scrollTop[GSCE],"
+                + "scroll(),scrollBy(),scrollHeight[GCE],scrollIntoView(),scrollIntoViewIfNeeded(),"
+                + "scrollLeft[GSCE],scrollTo(),scrollTop[GSCE],"
                 + "scrollWidth[GCE],setAttribute(),setAttributeNode(),setAttributeNS(),tagName[GCE],"
                 + "toggleAttribute(),webkitMatchesSelector()",
             FF = "after(),append(),attributes[GCE],before(),childElementCount[GCE],children[GCE],classList[GCE],"
@@ -675,8 +645,9 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "lastElementChild[GCE],localName[GCE],matches(),mozMatchesSelector(),namespaceURI[GCE],"
                 + "nextElementSibling[GCE],outerHTML[GSCE],prefix[GCE],prepend(),previousElementSibling[GCE],"
                 + "querySelector(),querySelectorAll(),releaseCapture(),remove(),removeAttribute(),"
-                + "removeAttributeNode(),removeAttributeNS(),replaceChildren(),replaceWith(),scrollHeight[GCE],"
-                + "scrollIntoView(),scrollLeft[GSCE],scrollTop[GSCE],scrollWidth[GCE],setAttribute(),"
+                + "removeAttributeNode(),removeAttributeNS(),replaceChildren(),replaceWith(),"
+                + "scroll(),scrollBy(),scrollHeight[GCE],scrollIntoView(),scrollLeft[GSCE],scrollTo(),scrollTop[GSCE],"
+                + "scrollWidth[GCE],setAttribute(),"
                 + "setAttributeNode(),setAttributeNS(),setCapture(),tagName[GCE],toggleAttribute(),"
                 + "webkitMatchesSelector()",
             FF_ESR = "after(),append(),attributes[GCE],before(),childElementCount[GCE],children[GCE],classList[GCE],"
@@ -688,25 +659,11 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "lastElementChild[GCE],localName[GCE],matches(),mozMatchesSelector(),namespaceURI[GCE],"
                 + "nextElementSibling[GCE],outerHTML[GSCE],prefix[GCE],prepend(),previousElementSibling[GCE],"
                 + "querySelector(),querySelectorAll(),releaseCapture(),remove(),removeAttribute(),"
-                + "removeAttributeNode(),removeAttributeNS(),replaceChildren(),replaceWith(),scrollHeight[GCE],"
-                + "scrollIntoView(),scrollLeft[GSCE],scrollTop[GSCE],scrollWidth[GCE],setAttribute(),"
+                + "removeAttributeNode(),removeAttributeNS(),replaceChildren(),replaceWith(),"
+                + "scroll(),scrollBy(),scrollHeight[GCE],scrollIntoView(),scrollLeft[GSCE],scrollTo(),scrollTop[GSCE],"
+                + "scrollWidth[GCE],setAttribute(),"
                 + "setAttributeNode(),setAttributeNS(),setCapture(),tagName[GCE],toggleAttribute(),"
-                + "webkitMatchesSelector()",
-            IE = "attributes[GCE],childElementCount[GCE],clientHeight[GCE],clientLeft[GCE],clientTop[GCE],"
-                + "clientWidth[GCE],constructor[],firstElementChild[GCE],getAttribute(),getAttributeNode(),"
-                + "getAttributeNodeNS(),getAttributeNS(),getBoundingClientRect(),getClientRects(),"
-                + "getElementsByTagName(),getElementsByTagNameNS(),hasAttribute(),hasAttributeNS(),"
-                + "lastElementChild[GCE],msMatchesSelector(),nextElementSibling[GCE],ongotpointercapture[GSCE],"
-                + "onlostpointercapture[GSCE],onmsgesturechange[GSCE],onmsgesturedoubletap[GSCE],"
-                + "onmsgestureend[GSCE],onmsgesturehold[GSCE],onmsgesturestart[GSCE],onmsgesturetap[GSCE],"
-                + "onmsgotpointercapture[GSCE],onmsinertiastart[GSCE],onmslostpointercapture[GSCE],"
-                + "onmspointercancel[GSCE],onmspointerdown[GSCE],onmspointerenter[GSCE],onmspointerleave[GSCE],"
-                + "onmspointermove[GSCE],onmspointerout[GSCE],onmspointerover[GSCE],onmspointerup[GSCE],"
-                + "onpointercancel[GSCE],onpointerdown[GSCE],onpointerenter[GSCE],onpointerleave[GSCE],"
-                + "onpointermove[GSCE],onpointerout[GSCE],onpointerover[GSCE],onpointerup[GSCE],"
-                + "previousElementSibling[GCE],querySelector(),querySelectorAll(),removeAttribute(),"
-                + "removeAttributeNode(),removeAttributeNS(),scrollHeight[GCE],scrollLeft[GSCE],scrollTop[GSCE],"
-                + "scrollWidth[GCE],setAttribute(),setAttributeNode(),setAttributeNS(),tagName[GCE]")
+                + "webkitMatchesSelector()")
     public void element() throws Exception {
         testString("", "element");
     }
@@ -732,19 +689,19 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "constructor(),elementTiming[GSCE],firstElementChild[GCE],getAnimations(),getAttribute(),"
                 + "getAttributeNames(),getAttributeNode(),getAttributeNodeNS(),getAttributeNS(),"
                 + "getBoundingClientRect(),getClientRects(),getElementsByClassName(),getElementsByTagName(),"
-                + "getElementsByTagNameNS(),getInnerHTML(),hasAttribute(),hasAttributeNS(),hasAttributes(),"
-                + "hasPointerCapture(),id[GSCE],innerHTML[GSCE],insertAdjacentElement(),insertAdjacentHTML(),"
-                + "insertAdjacentText(),lastElementChild[GCE],localName[GCE],matches(),namespaceURI[GCE],"
-                + "nextElementSibling[GCE],onbeforecopy[GSCE],onbeforecut[GSCE],onbeforepaste[GSCE],"
-                + "onfullscreenchange[GSCE],onfullscreenerror[GSCE],onsearch[GSCE],onwebkitfullscreenchange[GSCE],"
-                + "onwebkitfullscreenerror[GSCE],outerHTML[GSCE],part[GSCE],prefix[GCE],prepend(),"
-                + "previousElementSibling[GCE],querySelector(),querySelectorAll(),releasePointerCapture(),remove(),"
-                + "removeAttribute(),removeAttributeNode(),removeAttributeNS(),replaceChildren(),replaceWith(),"
-                + "requestFullscreen(),requestPointerLock(),role[GSCE],scroll(),scrollBy(),scrollHeight[GCE],"
-                + "scrollIntoView(),scrollIntoViewIfNeeded(),scrollLeft[GSCE],scrollTo(),scrollTop[GSCE],"
-                + "scrollWidth[GCE],setAttribute(),setAttributeNode(),setAttributeNodeNS(),setAttributeNS(),"
-                + "setPointerCapture(),shadowRoot[GCE],slot[GSCE],tagName[GCE],toggleAttribute(),"
-                + "webkitMatchesSelector(),webkitRequestFullScreen(),"
+                + "getElementsByTagNameNS(),getHTML(),getInnerHTML(),hasAttribute(),hasAttributeNS(),"
+                + "hasAttributes(),hasPointerCapture(),id[GSCE],innerHTML[GSCE],insertAdjacentElement(),"
+                + "insertAdjacentHTML(),insertAdjacentText(),lastElementChild[GCE],localName[GCE],matches(),"
+                + "namespaceURI[GCE],nextElementSibling[GCE],onbeforecopy[GSCE],onbeforecut[GSCE],"
+                + "onbeforepaste[GSCE],onfullscreenchange[GSCE],onfullscreenerror[GSCE],onsearch[GSCE],"
+                + "onwebkitfullscreenchange[GSCE],onwebkitfullscreenerror[GSCE],outerHTML[GSCE],part[GSCE],"
+                + "prefix[GCE],prepend(),previousElementSibling[GCE],querySelector(),querySelectorAll(),"
+                + "releasePointerCapture(),remove(),removeAttribute(),removeAttributeNode(),removeAttributeNS(),"
+                + "replaceChildren(),replaceWith(),requestFullscreen(),requestPointerLock(),role[GSCE],scroll(),"
+                + "scrollBy(),scrollHeight[GCE],scrollIntoView(),scrollIntoViewIfNeeded(),scrollLeft[GSCE],"
+                + "scrollTo(),scrollTop[GSCE],scrollWidth[GCE],setAttribute(),setAttributeNode(),"
+                + "setAttributeNodeNS(),setAttributeNS(),setHTMLUnsafe(),setPointerCapture(),shadowRoot[GCE],"
+                + "slot[GSCE],tagName[GCE],toggleAttribute(),webkitMatchesSelector(),webkitRequestFullScreen(),"
                 + "webkitRequestFullscreen()",
             EDGE = "after(),animate(),append(),ariaAtomic[GSCE],ariaAutoComplete[GSCE],ariaBrailleLabel[GSCE],"
                 + "ariaBrailleRoleDescription[GSCE],ariaBusy[GSCE],ariaChecked[GSCE],ariaColCount[GSCE],"
@@ -761,45 +718,46 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "constructor(),elementTiming[GSCE],firstElementChild[GCE],getAnimations(),getAttribute(),"
                 + "getAttributeNames(),getAttributeNode(),getAttributeNodeNS(),getAttributeNS(),"
                 + "getBoundingClientRect(),getClientRects(),getElementsByClassName(),getElementsByTagName(),"
-                + "getElementsByTagNameNS(),getInnerHTML(),hasAttribute(),hasAttributeNS(),hasAttributes(),"
-                + "hasPointerCapture(),id[GSCE],innerHTML[GSCE],insertAdjacentElement(),insertAdjacentHTML(),"
-                + "insertAdjacentText(),lastElementChild[GCE],localName[GCE],matches(),namespaceURI[GCE],"
-                + "nextElementSibling[GCE],onbeforecopy[GSCE],onbeforecut[GSCE],onbeforepaste[GSCE],"
-                + "onfullscreenchange[GSCE],onfullscreenerror[GSCE],onsearch[GSCE],onwebkitfullscreenchange[GSCE],"
-                + "onwebkitfullscreenerror[GSCE],outerHTML[GSCE],part[GSCE],prefix[GCE],prepend(),"
-                + "previousElementSibling[GCE],querySelector(),querySelectorAll(),releasePointerCapture(),remove(),"
-                + "removeAttribute(),removeAttributeNode(),removeAttributeNS(),replaceChildren(),replaceWith(),"
-                + "requestFullscreen(),requestPointerLock(),role[GSCE],scroll(),scrollBy(),scrollHeight[GCE],"
-                + "scrollIntoView(),scrollIntoViewIfNeeded(),scrollLeft[GSCE],scrollTo(),scrollTop[GSCE],"
-                + "scrollWidth[GCE],setAttribute(),setAttributeNode(),setAttributeNodeNS(),setAttributeNS(),"
-                + "setPointerCapture(),shadowRoot[GCE],slot[GSCE],tagName[GCE],toggleAttribute(),"
-                + "webkitMatchesSelector(),webkitRequestFullScreen(),"
+                + "getElementsByTagNameNS(),getHTML(),getInnerHTML(),hasAttribute(),hasAttributeNS(),"
+                + "hasAttributes(),hasPointerCapture(),id[GSCE],innerHTML[GSCE],insertAdjacentElement(),"
+                + "insertAdjacentHTML(),insertAdjacentText(),lastElementChild[GCE],localName[GCE],matches(),"
+                + "namespaceURI[GCE],nextElementSibling[GCE],onbeforecopy[GSCE],onbeforecut[GSCE],"
+                + "onbeforepaste[GSCE],onfullscreenchange[GSCE],onfullscreenerror[GSCE],onsearch[GSCE],"
+                + "onwebkitfullscreenchange[GSCE],onwebkitfullscreenerror[GSCE],outerHTML[GSCE],part[GSCE],"
+                + "prefix[GCE],prepend(),previousElementSibling[GCE],querySelector(),querySelectorAll(),"
+                + "releasePointerCapture(),remove(),removeAttribute(),removeAttributeNode(),removeAttributeNS(),"
+                + "replaceChildren(),replaceWith(),requestFullscreen(),requestPointerLock(),role[GSCE],scroll(),"
+                + "scrollBy(),scrollHeight[GCE],scrollIntoView(),scrollIntoViewIfNeeded(),scrollLeft[GSCE],"
+                + "scrollTo(),scrollTop[GSCE],scrollWidth[GCE],setAttribute(),setAttributeNode(),"
+                + "setAttributeNodeNS(),setAttributeNS(),setHTMLUnsafe(),setPointerCapture(),shadowRoot[GCE],"
+                + "slot[GSCE],tagName[GCE],toggleAttribute(),webkitMatchesSelector(),webkitRequestFullScreen(),"
                 + "webkitRequestFullscreen()",
-            FF = "after(),animate(),append(),ariaAtomic[GSCE],ariaAutoComplete[GSCE],ariaBusy[GSCE],"
-                + "ariaChecked[GSCE],ariaColCount[GSCE],ariaColIndex[GSCE],ariaColIndexText[GSCE],ariaColSpan[GSCE],"
-                + "ariaCurrent[GSCE],ariaDescription[GSCE],ariaDisabled[GSCE],ariaExpanded[GSCE],ariaHasPopup[GSCE],"
-                + "ariaHidden[GSCE],ariaInvalid[GSCE],ariaKeyShortcuts[GSCE],ariaLabel[GSCE],ariaLevel[GSCE],"
-                + "ariaLive[GSCE],ariaModal[GSCE],ariaMultiLine[GSCE],ariaMultiSelectable[GSCE],"
-                + "ariaOrientation[GSCE],ariaPlaceholder[GSCE],ariaPosInSet[GSCE],ariaPressed[GSCE],"
-                + "ariaReadOnly[GSCE],ariaRelevant[GSCE],ariaRequired[GSCE],ariaRoleDescription[GSCE],"
-                + "ariaRowCount[GSCE],ariaRowIndex[GSCE],ariaRowIndexText[GSCE],ariaRowSpan[GSCE],"
-                + "ariaSelected[GSCE],ariaSetSize[GSCE],ariaSort[GSCE],ariaValueMax[GSCE],ariaValueMin[GSCE],"
-                + "ariaValueNow[GSCE],ariaValueText[GSCE],assignedSlot[GCE],attachShadow(),attributes[GCE],before(),"
-                + "checkVisibility(),childElementCount[GCE],children[GCE],classList[GSCE],className[GSCE],"
-                + "clientHeight[GCE],clientLeft[GCE],clientTop[GCE],clientWidth[GCE],closest(),constructor(),"
-                + "firstElementChild[GCE],getAnimations(),getAttribute(),getAttributeNames(),getAttributeNode(),"
-                + "getAttributeNodeNS(),getAttributeNS(),getBoundingClientRect(),getClientRects(),"
-                + "getElementsByClassName(),getElementsByTagName(),getElementsByTagNameNS(),hasAttribute(),"
-                + "hasAttributeNS(),hasAttributes(),hasPointerCapture(),id[GSCE],innerHTML[GSCE],"
-                + "insertAdjacentElement(),insertAdjacentHTML(),insertAdjacentText(),lastElementChild[GCE],"
-                + "localName[GCE],matches(),mozMatchesSelector(),mozRequestFullScreen(),namespaceURI[GCE],"
-                + "nextElementSibling[GCE],onfullscreenchange[GSCE],onfullscreenerror[GSCE],outerHTML[GSCE],"
-                + "part[GSCE],prefix[GCE],prepend(),previousElementSibling[GCE],querySelector(),querySelectorAll(),"
-                + "releaseCapture(),releasePointerCapture(),remove(),removeAttribute(),removeAttributeNode(),"
-                + "removeAttributeNS(),replaceChildren(),replaceWith(),requestFullscreen(),requestPointerLock(),"
-                + "role[GSCE],scroll(),scrollBy(),scrollHeight[GCE],scrollIntoView(),scrollLeft[GSCE],"
-                + "scrollLeftMax[GCE],scrollTo(),scrollTop[GSCE],scrollTopMax[GCE],scrollWidth[GCE],setAttribute(),"
-                + "setAttributeNode(),setAttributeNodeNS(),setAttributeNS(),setCapture(),setPointerCapture(),"
+            FF = "after(),animate(),append(),ariaAtomic[GSCE],ariaAutoComplete[GSCE],ariaBrailleLabel[GSCE],"
+                + "ariaBrailleRoleDescription[GSCE],ariaBusy[GSCE],ariaChecked[GSCE],ariaColCount[GSCE],"
+                + "ariaColIndex[GSCE],ariaColIndexText[GSCE],ariaColSpan[GSCE],ariaCurrent[GSCE],"
+                + "ariaDescription[GSCE],ariaDisabled[GSCE],ariaExpanded[GSCE],ariaHasPopup[GSCE],ariaHidden[GSCE],"
+                + "ariaInvalid[GSCE],ariaKeyShortcuts[GSCE],ariaLabel[GSCE],ariaLevel[GSCE],ariaLive[GSCE],"
+                + "ariaModal[GSCE],ariaMultiLine[GSCE],ariaMultiSelectable[GSCE],ariaOrientation[GSCE],"
+                + "ariaPlaceholder[GSCE],ariaPosInSet[GSCE],ariaPressed[GSCE],ariaReadOnly[GSCE],ariaRelevant[GSCE],"
+                + "ariaRequired[GSCE],ariaRoleDescription[GSCE],ariaRowCount[GSCE],ariaRowIndex[GSCE],"
+                + "ariaRowIndexText[GSCE],ariaRowSpan[GSCE],ariaSelected[GSCE],ariaSetSize[GSCE],ariaSort[GSCE],"
+                + "ariaValueMax[GSCE],ariaValueMin[GSCE],ariaValueNow[GSCE],ariaValueText[GSCE],assignedSlot[GCE],"
+                + "attachShadow(),attributes[GCE],before(),checkVisibility(),childElementCount[GCE],children[GCE],"
+                + "classList[GSCE],className[GSCE],clientHeight[GCE],clientLeft[GCE],clientTop[GCE],"
+                + "clientWidth[GCE],closest(),constructor(),currentCSSZoom[GCE],firstElementChild[GCE],"
+                + "getAnimations(),getAttribute(),getAttributeNames(),getAttributeNode(),getAttributeNodeNS(),"
+                + "getAttributeNS(),getBoundingClientRect(),getClientRects(),getElementsByClassName(),"
+                + "getElementsByTagName(),getElementsByTagNameNS(),hasAttribute(),hasAttributeNS(),hasAttributes(),"
+                + "hasPointerCapture(),id[GSCE],innerHTML[GSCE],insertAdjacentElement(),insertAdjacentHTML(),"
+                + "insertAdjacentText(),lastElementChild[GCE],localName[GCE],matches(),mozMatchesSelector(),"
+                + "mozRequestFullScreen(),namespaceURI[GCE],nextElementSibling[GCE],onfullscreenchange[GSCE],"
+                + "onfullscreenerror[GSCE],outerHTML[GSCE],part[GSCE],prefix[GCE],prepend(),"
+                + "previousElementSibling[GCE],querySelector(),querySelectorAll(),releaseCapture(),"
+                + "releasePointerCapture(),remove(),removeAttribute(),removeAttributeNode(),removeAttributeNS(),"
+                + "replaceChildren(),replaceWith(),requestFullscreen(),requestPointerLock(),role[GSCE],scroll(),"
+                + "scrollBy(),scrollHeight[GCE],scrollIntoView(),scrollLeft[GSCE],scrollLeftMax[GCE],scrollTo(),"
+                + "scrollTop[GSCE],scrollTopMax[GCE],scrollWidth[GCE],setAttribute(),setAttributeNode(),"
+                + "setAttributeNodeNS(),setAttributeNS(),setCapture(),setHTMLUnsafe(),setPointerCapture(),"
                 + "shadowRoot[GCE],slot[GSCE],tagName[GCE],toggleAttribute(),"
                 + "webkitMatchesSelector()",
             FF_ESR = "after(),animate(),append(),assignedSlot[GCE],attachShadow(),attributes[GCE],before(),"
@@ -819,36 +777,23 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "scrollTo(),scrollTop[GSCE],scrollTopMax[GCE],scrollWidth[GCE],setAttribute(),setAttributeNode(),"
                 + "setAttributeNodeNS(),setAttributeNS(),setCapture(),setPointerCapture(),shadowRoot[GCE],"
                 + "slot[GSCE],tagName[GCE],toggleAttribute(),"
-                + "webkitMatchesSelector()",
-            IE = "attributes[GCE],childElementCount[GCE],clientHeight[GCE],clientLeft[GCE],clientTop[GCE],"
-                + "clientWidth[GCE],constructor[],firstElementChild[GCE],getAttribute(),getAttributeNode(),"
-                + "getAttributeNodeNS(),getAttributeNS(),getBoundingClientRect(),getClientRects(),"
-                + "getElementsByTagName(),getElementsByTagNameNS(),hasAttribute(),hasAttributeNS(),"
-                + "lastElementChild[GCE],msMatchesSelector(),nextElementSibling[GCE],ongotpointercapture[GSCE],"
-                + "onlostpointercapture[GSCE],onmsgesturechange[GSCE],onmsgesturedoubletap[GSCE],"
-                + "onmsgestureend[GSCE],onmsgesturehold[GSCE],onmsgesturestart[GSCE],onmsgesturetap[GSCE],"
-                + "onmsgotpointercapture[GSCE],onmsinertiastart[GSCE],onmslostpointercapture[GSCE],"
-                + "onmspointercancel[GSCE],onmspointerdown[GSCE],onmspointerenter[GSCE],"
-                + "onmspointerleave[GSCE],onmspointermove[GSCE],onmspointerout[GSCE],onmspointerover[GSCE],"
-                + "onmspointerup[GSCE],onpointercancel[GSCE],onpointerdown[GSCE],onpointerenter[GSCE],"
-                + "onpointerleave[GSCE],onpointermove[GSCE],onpointerout[GSCE],onpointerover[GSCE],"
-                + "onpointerup[GSCE],previousElementSibling[GCE],querySelector(),querySelectorAll(),"
-                + "removeAttribute(),removeAttributeNode(),removeAttributeNS(),scrollHeight[GCE],"
-                + "scrollLeft[GSCE],scrollTop[GSCE],scrollWidth[GCE],setAttribute(),setAttributeNode(),"
-                + "setAttributeNS(),tagName[GCE]")
+                + "webkitMatchesSelector()")
     @HtmlUnitNYI(CHROME = "after(),append(),attributes[GCE],before(),childElementCount[GCE],"
                 + "children[GCE],classList[GCE],"
                 + "className[GSCE],clientHeight[GCE],clientLeft[GCE],clientTop[GCE],clientWidth[GCE],closest(),"
                 + "constructor(),firstElementChild[GCE],getAttribute(),getAttributeNode(),getAttributeNodeNS(),"
                 + "getAttributeNS(),getBoundingClientRect(),getClientRects(),getElementsByClassName(),"
-                + "getElementsByTagName(),getElementsByTagNameNS(),getInnerHTML(),hasAttribute(),hasAttributeNS(),"
+                + "getElementsByTagName(),getElementsByTagNameNS(),getHTML(),getInnerHTML(),"
+                + "hasAttribute(),hasAttributeNS(),"
                 + "hasAttributes(),id[GSCE],innerHTML[GSCE],insertAdjacentElement(),insertAdjacentHTML(),"
                 + "insertAdjacentText(),lastElementChild[GCE],localName[GCE],matches(),namespaceURI[GCE],"
                 + "nextElementSibling[GCE],onbeforecopy[GSCE],onbeforecut[GSCE],onbeforepaste[GSCE],onsearch[GSCE],"
                 + "onwebkitfullscreenchange[GSCE],onwebkitfullscreenerror[GSCE],outerHTML[GSCE],prefix[GCE],prepend(),"
                 + "previousElementSibling[GCE],querySelector(),querySelectorAll(),remove(),removeAttribute(),"
-                + "removeAttributeNode(),removeAttributeNS(),replaceChildren(),replaceWith(),scrollHeight[GCE],"
-                + "scrollIntoView(),scrollIntoViewIfNeeded(),scrollLeft[GSCE],scrollTop[GSCE],scrollWidth[GCE],"
+                + "removeAttributeNode(),removeAttributeNS(),replaceChildren(),replaceWith(),"
+                + "scroll(),scrollBy(),scrollHeight[GCE],"
+                + "scrollIntoView(),scrollIntoViewIfNeeded(),scrollLeft[GSCE],scrollTo(),"
+                + "scrollTop[GSCE],scrollWidth[GCE],"
                 + "setAttribute(),setAttributeNode(),setAttributeNS(),"
                 + "tagName[GCE],toggleAttribute(),webkitMatchesSelector()",
             EDGE = "after(),append(),attributes[GCE],before(),childElementCount[GCE],"
@@ -856,14 +801,17 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "className[GSCE],clientHeight[GCE],clientLeft[GCE],clientTop[GCE],clientWidth[GCE],closest(),"
                 + "constructor(),firstElementChild[GCE],getAttribute(),getAttributeNode(),getAttributeNodeNS(),"
                 + "getAttributeNS(),getBoundingClientRect(),getClientRects(),getElementsByClassName(),"
-                + "getElementsByTagName(),getElementsByTagNameNS(),getInnerHTML(),hasAttribute(),hasAttributeNS(),"
+                + "getElementsByTagName(),getElementsByTagNameNS(),getHTML(),getInnerHTML(),"
+                + "hasAttribute(),hasAttributeNS(),"
                 + "hasAttributes(),id[GSCE],innerHTML[GSCE],insertAdjacentElement(),insertAdjacentHTML(),"
                 + "insertAdjacentText(),lastElementChild[GCE],localName[GCE],matches(),namespaceURI[GCE],"
                 + "nextElementSibling[GCE],onbeforecopy[GSCE],onbeforecut[GSCE],onbeforepaste[GSCE],onsearch[GSCE],"
                 + "onwebkitfullscreenchange[GSCE],onwebkitfullscreenerror[GSCE],outerHTML[GSCE],prefix[GCE],prepend(),"
                 + "previousElementSibling[GCE],querySelector(),querySelectorAll(),remove(),removeAttribute(),"
-                + "removeAttributeNode(),removeAttributeNS(),replaceChildren(),replaceWith(),scrollHeight[GCE],"
-                + "scrollIntoView(),scrollIntoViewIfNeeded(),scrollLeft[GSCE],scrollTop[GSCE],scrollWidth[GCE],"
+                + "removeAttributeNode(),removeAttributeNS(),replaceChildren(),replaceWith(),"
+                + "scroll(),scrollBy(),scrollHeight[GCE],"
+                + "scrollIntoView(),scrollIntoViewIfNeeded(),scrollLeft[GSCE],scrollTo(),"
+                + "scrollTop[GSCE],scrollWidth[GCE],"
                 + "setAttribute(),setAttributeNode(),setAttributeNS(),"
                 + "tagName[GCE],toggleAttribute(),webkitMatchesSelector()",
             FF_ESR = "after(),append(),attributes[GCE],before(),childElementCount[GCE],"
@@ -878,8 +826,9 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "nextElementSibling[GCE],outerHTML[GSCE],prefix[GCE],prepend(),"
                 + "previousElementSibling[GCE],querySelector(),querySelectorAll(),releaseCapture(),"
                 + "remove(),removeAttribute(),"
-                + "removeAttributeNode(),removeAttributeNS(),replaceChildren(),replaceWith(),scrollHeight[GCE],"
-                + "scrollIntoView(),scrollLeft[GSCE],scrollTop[GSCE],scrollWidth[GCE],"
+                + "removeAttributeNode(),removeAttributeNS(),replaceChildren(),replaceWith(),"
+                + "scroll(),scrollBy(),scrollHeight[GCE],"
+                + "scrollIntoView(),scrollLeft[GSCE],scrollTo(),scrollTop[GSCE],scrollWidth[GCE],"
                 + "setAttribute(),setAttributeNode(),setAttributeNS(),setCapture(),"
                 + "tagName[GCE],toggleAttribute(),webkitMatchesSelector()",
             FF = "after(),append(),attributes[GCE],before(),childElementCount[GCE],"
@@ -894,8 +843,9 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "nextElementSibling[GCE],outerHTML[GSCE],prefix[GCE],prepend(),"
                 + "previousElementSibling[GCE],querySelector(),querySelectorAll(),releaseCapture(),"
                 + "remove(),removeAttribute(),"
-                + "removeAttributeNode(),removeAttributeNS(),replaceChildren(),replaceWith(),scrollHeight[GCE],"
-                + "scrollIntoView(),scrollLeft[GSCE],scrollTop[GSCE],scrollWidth[GCE],"
+                + "removeAttributeNode(),removeAttributeNS(),replaceChildren(),replaceWith(),"
+                + "scroll(),scrollBy(),scrollHeight[GCE],"
+                + "scrollIntoView(),scrollLeft[GSCE],scrollTo(),scrollTop[GSCE],scrollWidth[GCE],"
                 + "setAttribute(),setAttributeNode(),setAttributeNS(),setCapture(),"
                 + "tagName[GCE],toggleAttribute(),webkitMatchesSelector()")
     public void element2() throws Exception {
@@ -909,26 +859,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "exception",
             EDGE = "exception",
             FF = "exception",
-            FF_ESR = "exception",
-            IE = "blockDirection,clipBottom,clipLeft,clipRight,clipTop,constructor,hasLayout")
-    @HtmlUnitNYI(IE = "accelerator[GSCE],backgroundAttachment[GSCE],backgroundColor[GSCE],backgroundImage[GSCE],"
-                + "backgroundPosition[GSCE],backgroundRepeat[GSCE],borderBottomColor[GSCE],borderBottomStyle[GSCE],"
-                + "borderBottomWidth[GSCE],borderLeftColor[GSCE],borderLeftStyle[GSCE],borderLeftWidth[GSCE],"
-                + "borderRightColor[GSCE],borderRightStyle[GSCE],borderRightWidth[GSCE],borderTop[GSCE],"
-                + "borderTopColor[GSCE],borderTopStyle[GSCE],borderTopWidth[GSCE],bottom[GSCE],color[GSCE],"
-                + "constructor[],cssFloat[GSCE],cssText[GSCE],display[GSCE],font[GSCE],fontFamily[GSCE],"
-                + "fontSize[GSCE],getAttribute(),getPropertyPriority(),getPropertyValue(),height[GSCE],item(),"
-                + "left[GSCE],length[GCE],letterSpacing[GSCE],lineHeight[GSCE],margin[GSCE],marginBottom[GSCE],"
-                + "marginLeft[GSCE],marginRight[GSCE],marginTop[GSCE],maxHeight[GSCE],maxWidth[GSCE],minHeight[GSCE],"
-                + "minWidth[GSCE],msImeAlign[GSCE],opacity[GSCE],orphans[GSCE],outline[GSCE],outlineWidth[GSCE],"
-                + "padding[GSCE],paddingBottom[GSCE],paddingLeft[GSCE],paddingRight[GSCE],paddingTop[GSCE],"
-                + "parentRule[GSCE],pixelBottom[GSCE],pixelHeight[GSCE],pixelLeft[GSCE],pixelRight[GSCE],"
-                + "pixelTop[GSCE],pixelWidth[GSCE],posBottom[GSCE],posHeight[GSCE],position[GSCE],posLeft[GSCE],"
-                + "posRight[GSCE],posTop[GSCE],posWidth[GSCE],removeAttribute(),removeProperty(),right[GSCE],"
-                + "rubyAlign[GSCE],setAttribute(),setProperty(),textDecorationBlink[GSCE],"
-                + "textDecorationLineThrough[GSCE],textDecorationNone[GSCE],textDecorationOverline[GSCE],"
-                + "textDecorationUnderline[GSCE],textIndent[GSCE],top[GSCE],verticalAlign[GSCE],widows[GSCE],"
-                + "width[GSCE],wordSpacing[GSCE],zIndex[GSCE]")
+            FF_ESR = "exception")
     public void currentStyle() throws Exception {
         testString("", "document.body.currentStyle");
     }
@@ -958,11 +889,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "defaultPrevented[GCE],eventPhase[GCE],explicitOriginalTarget[GCE],initEvent(),META_MASK[E],"
                 + "NONE[E],originalTarget[GCE],preventDefault(),returnValue[GSCE],SHIFT_MASK[E],srcElement[GCE],"
                 + "stopImmediatePropagation(),stopPropagation(),target[GCE],timeStamp[GCE],"
-                + "type[GCE]",
-            IE = "AT_TARGET,bubbles,BUBBLING_PHASE,cancelable,cancelBubble,CAPTURING_PHASE,constructor,"
-                + "currentTarget,defaultPrevented,eventPhase,initEvent(),isTrusted,preventDefault(),srcElement,"
-                + "stopImmediatePropagation(),stopPropagation(),target,timeStamp,"
-                + "type")
+                + "type[GCE]")
     @HtmlUnitNYI(CHROME = "AT_TARGET[E],bubbles[GCE],BUBBLING_PHASE[E],cancelable[GCE],cancelBubble[GSCE],"
                 + "CAPTURING_PHASE[E],composed[GCE],constructor(),currentTarget[GCE],"
                 + "defaultPrevented[GCE],eventPhase[GCE],initEvent(),NONE[E],preventDefault(),"
@@ -982,10 +909,6 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "CAPTURING_PHASE[E],composed[GCE],constructor(),CONTROL_MASK[E],currentTarget[GCE],"
                 + "defaultPrevented[GCE],eventPhase[GCE],initEvent(),META_MASK[E],NONE[E],preventDefault(),"
                 + "returnValue[GSCE],SHIFT_MASK[E],srcElement[GCE],stopImmediatePropagation(),stopPropagation(),"
-                + "target[GCE],timeStamp[GCE],type[GCE]",
-            IE = "AT_TARGET[E],bubbles[GCE],BUBBLING_PHASE[E],cancelable[GCE],cancelBubble[GSCE],CAPTURING_PHASE[E],"
-                + "constructor[],currentTarget[GCE],defaultPrevented[GCE],eventPhase[GCE],initEvent(),"
-                + "preventDefault(),srcElement[GSCE],stopImmediatePropagation(),stopPropagation(),"
                 + "target[GCE],timeStamp[GCE],type[GCE]")
     public void event() throws Exception {
         testString("", "event");
@@ -998,35 +921,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor(),PERSISTENT[E],TEMPORARY[E]",
             EDGE = "constructor(),PERSISTENT[E],TEMPORARY[E]",
             FF = "constructor()",
-            FF_ESR = "constructor()",
-            IE = "addEventListener(),alert(),animationStartTime,applicationCache,atob(),blur(),btoa(),"
-                + "cancelAnimationFrame(),captureEvents(),clearImmediate(),clearInterval(),clearTimeout(),"
-                + "clientInformation,clipboardData,close(),closed,confirm(),console,constructor,defaultStatus,"
-                + "devicePixelRatio,dispatchEvent(),document,doNotTrack,event,external,focus(),frameElement,frames,"
-                + "getComputedStyle(),getSelection(),history,indexedDB,innerHeight,innerWidth,item(),length,"
-                + "localStorage,location,matchMedia(),maxConnectionsPerServer,moveBy(),moveTo(),"
-                + "msAnimationStartTime,msCancelRequestAnimationFrame(),msClearImmediate(),msCrypto,msIndexedDB,"
-                + "msIsStaticHTML(),msMatchMedia(),msRequestAnimationFrame(),msSetImmediate(),msWriteProfilerMark(),"
-                + "name,navigate(),navigator,offscreenBuffering,onabort,onafterprint,onbeforeprint,onbeforeunload,"
-                + "onblur,oncanplay,oncanplaythrough,onchange,onclick,oncompassneedscalibration,oncontextmenu,"
-                + "ondblclick,ondevicemotion,ondeviceorientation,ondrag,ondragend,ondragenter,ondragleave,"
-                + "ondragover,ondragstart,ondrop,ondurationchange,onemptied,onended,onerror,onfocus,onfocusin,"
-                + "onfocusout,onhashchange,onhelp,oninput,onkeydown,onkeypress,onkeyup,onload(),onloadeddata,"
-                + "onloadedmetadata,onloadstart,onmessage,onmousedown,onmouseenter,onmouseleave,onmousemove,"
-                + "onmouseout,onmouseover,onmouseup,onmousewheel,onmsgesturechange,onmsgesturedoubletap,"
-                + "onmsgestureend,onmsgesturehold,onmsgesturestart,onmsgesturetap,onmsinertiastart,"
-                + "onmspointercancel,onmspointerdown,onmspointerenter,onmspointerleave,onmspointermove,"
-                + "onmspointerout,onmspointerover,onmspointerup,onoffline,ononline,onpagehide,onpageshow,onpause,"
-                + "onplay,onplaying,onpointercancel,onpointerdown,onpointerenter,onpointerleave,onpointermove,"
-                + "onpointerout,onpointerover,onpointerup,onpopstate,onprogress,onratechange,onreadystatechange,"
-                + "onreset,onresize,onscroll,onseeked,onseeking,onselect,onstalled,onstorage,onsubmit,onsuspend,"
-                + "ontimeupdate,onunload,onvolumechange,onwaiting,open(),opener,outerHeight,outerWidth,pageXOffset,"
-                + "pageYOffset,parent,performance,postMessage(),print(),prompt(),releaseEvents(),"
-                + "removeEventListener(),requestAnimationFrame(),resizeBy(),resizeTo(),screen,screenLeft,screenTop,"
-                + "screenX,screenY,scroll(),scrollBy(),scrollTo(),self,sessionStorage,setImmediate(),setInterval(),"
-                + "setTimeout(),showHelp(),showModalDialog(),showModelessDialog(),status,styleMedia,top,"
-                + "toStaticHTML(),toString(),"
-                + "window")
+            FF_ESR = "constructor()")
     @HtmlUnitNYI(CHROME = "alert(),atob(),blur(),btoa(),cancelAnimationFrame(),captureEvents(),clearInterval(),"
                 + "clearTimeout(),clientInformation[GSCE],close(),closed[GCE],confirm(),constructor(),crypto[GCE],"
                 + "devicePixelRatio[GCE],document[GCE],event[GCE],external[GCE],find(),focus(),frameElement[GCE],"
@@ -1142,131 +1037,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "pageXOffset[GCE],pageYOffset[GCE],parent[GCE],performance[GCE],postMessage(),print(),prompt(),"
                 + "releaseEvents(),requestAnimationFrame(),resizeBy(),resizeTo(),screen[GCE],scroll(),scrollBy(),"
                 + "scrollByLines(),scrollByPages(),scrollTo(),scrollX[GCE],scrollY[GCE],self[GCE],sessionStorage[GCE],"
-                + "setInterval(),setTimeout(),status[GSCE],stop(),top[GSCE],window[GCE]",
-            IE = "AbstractRange(),ActiveXObject[WC],alert(),ANGLE_instanced_arrays[WC],AnimationEvent[WC],"
-                + "applicationCache[GCE],ApplicationCache[WC],Array(),ArrayBuffer(),atob(),Attr[WC],Audio(),"
-                + "BeforeUnloadEvent[WC],Blob(),blur(),Boolean(),btoa(),Call(),CallSite(),cancelAnimationFrame(),"
-                + "CanvasGradient[WC],CanvasPattern[WC],CanvasRenderingContext2D[WC],captureEvents(),"
-                + "CDATASection[WC],CharacterData[WC],clearInterval(),clearTimeout(),clientInformation[GCE],"
-                + "ClientRect[WC],ClientRectList[WC],clipboardData[GCE],close(),closed[GCE],CloseEvent[WC],"
-                + "CollectGarbage(),Comment[WC],CompositionEvent[WC],confirm(),Console[WC],console[WC],constructor[],"
-                + "Coordinates[WC],Crypto[WC],CSSFontFaceRule[WC],CSSImportRule[WC],CSSKeyframeRule[WC],"
-                + "CSSKeyframesRule[WC],CSSMediaRule[WC],CSSNamespaceRule[WC],CSSPageRule[WC],CSSRule[WC],"
-                + "CSSRuleList[WC],CSSStyleDeclaration[WC],CSSStyleRule[WC],CSSStyleSheet[WC],CustomEvent[WC],"
-                + "DataTransfer[WC],DataView(),Date(),decodeURI(),decodeURIComponent(),DeviceMotionEvent[WC],"
-                + "DeviceOrientationEvent[WC],devicePixelRatio[GCE],document[GCE],Document[WC],DocumentFragment[WC],"
-                + "DocumentType[WC],DOMError[WC],DOMException[WC],DOMImplementation[WC],DOMParser(),"
-                + "DOMSettableTokenList[WC],DOMStringList[WC],DOMStringMap[WC],DOMTokenList[WC],doNotTrack[GCE],"
-                + "DragEvent[WC],Element[WC],encodeURI(),encodeURIComponent(),Enumerator(),Error(),ErrorEvent[WC],"
-                + "escape(),eval(),EvalError(),event[GCE],Event[WC],EXT_texture_filter_anisotropic[WC],"
-                + "external[GCE],File[WC],FileList[WC],FileReader(),Float32Array(),Float64Array(),focus(),"
-                + "FocusEvent[WC],FormData(),frameElement[GCE],frames[GCE],Function(),Geolocation[WC],"
-                + "getComputedStyle(),getSelection(),history[GCE],History[WC],HTMLAllCollection[WC],"
-                + "HTMLAnchorElement[WC],HTMLAppletElement[WC],HTMLAreaElement[WC],HTMLAudioElement[WC],"
-                + "HTMLBaseElement[WC],HTMLBaseFontElement[WC],HTMLBGSoundElement[WC],HTMLBlockElement[WC],"
-                + "HTMLBodyElement[WC],HTMLBRElement[WC],HTMLButtonElement[WC],HTMLCanvasElement[WC],"
-                + "HTMLCollection[WC],HTMLDataListElement[WC],HTMLDDElement[WC],HTMLDirectoryElement[WC],"
-                + "HTMLDivElement[WC],HTMLDListElement[WC],HTMLDocument[WC],HTMLDTElement[WC],HTMLElement[WC],"
-                + "HTMLEmbedElement[WC],HTMLFieldSetElement[WC],HTMLFontElement[WC],HTMLFormElement[WC],"
-                + "HTMLFrameElement[WC],HTMLFrameSetElement[WC],HTMLHeadElement[WC],HTMLHeadingElement[WC],"
-                + "HTMLHRElement[WC],HTMLHtmlElement[WC],HTMLIFrameElement[WC],HTMLImageElement[WC],"
-                + "HTMLInputElement[WC],HTMLIsIndexElement[WC],HTMLLabelElement[WC],HTMLLegendElement[WC],"
-                + "HTMLLIElement[WC],HTMLLinkElement[WC],HTMLMapElement[WC],HTMLMarqueeElement[WC],"
-                + "HTMLMediaElement[WC],HTMLMenuElement[WC],HTMLMetaElement[WC],HTMLModElement[WC],"
-                + "HTMLNextIdElement[WC],HTMLObjectElement[WC],HTMLOListElement[WC],HTMLOptGroupElement[WC],"
-                + "HTMLOptionElement[WC],HTMLParagraphElement[WC],HTMLParamElement[WC],HTMLPhraseElement[WC],"
-                + "HTMLPreElement[WC],HTMLProgressElement[WC],HTMLQuoteElement[WC],HTMLScriptElement[WC],"
-                + "HTMLSelectElement[WC],HTMLSourceElement[WC],HTMLSpanElement[WC],HTMLStyleElement[WC],"
-                + "HTMLTableCaptionElement[WC],HTMLTableCellElement[WC],HTMLTableColElement[WC],"
-                + "HTMLTableDataCellElement[WC],HTMLTableElement[WC],HTMLTableHeaderCellElement[WC],"
-                + "HTMLTableRowElement[WC],HTMLTableSectionElement[WC],HTMLTextAreaElement[WC],"
-                + "HTMLTitleElement[WC],HTMLTrackElement[WC],HTMLUListElement[WC],HTMLUnknownElement[WC],"
-                + "HTMLVideoElement[WC],IDBCursor[WC],IDBCursorWithValue[WC],IDBDatabase[WC],IDBFactory[WC],"
-                + "IDBIndex[WC],IDBKeyRange[WC],IDBObjectStore[WC],IDBOpenDBRequest[WC],IDBRequest[WC],"
-                + "IDBTransaction[WC],IDBVersionChangeEvent[WC],Image(),ImageData[WC],Infinity[],"
-                + "innerHeight[GSCE],innerWidth[GSCE],Int16Array(),Int32Array(),Int8Array(),InternalError(),"
-                + "Intl[WC],isFinite(),isNaN(),JavaException(),JSON[WC],KeyboardEvent[WC],length[GCE],"
-                + "localStorage[GCE],location[GSCE],Location[WC],log(),Map(),matchMedia(),Math[WC],"
-                + "MediaError[WC],MediaList[WC],MediaQueryList[WC],MediaSource(),MessageChannel(),"
-                + "MessageEvent[WC],MessagePort[WC],MimeType[WC],MimeTypeArray[WC],MouseEvent[WC],"
-                + "MouseWheelEvent[WC],moveBy(),moveTo(),MSGestureEvent[WC],MutationEvent[WC],"
-                + "MutationObserver(),MutationRecord[WC],name[GSCE],NamedNodeMap[WC],NaN[],navigate(),"
-                + "navigator[GCE],Navigator[WC],Node[WC],NodeFilter[WC],NodeIterator[WC],NodeList[WC],"
-                + "Number(),Object(),OES_element_index_uint[WC],OES_standard_derivatives[WC],"
-                + "OES_texture_float[WC],OES_texture_float_linear[WC],offscreenBuffering[GCE],onabort[GSCE],"
-                + "onafterprint[GSCE],onbeforeprint[GSCE],onbeforeunload[GSCE],onblur[GSCE],oncanplay[GSCE],"
-                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],oncontextmenu[GSCE],ondblclick[GSCE],"
-                + "ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragleave[GSCE],ondragover[GSCE],"
-                + "ondragstart[GSCE],ondrop[GSCE],ondurationchange[GSCE],onemptied[GSCE],onended[GSCE],"
-                + "onerror[GSCE],onfocus[GSCE],onfocusin[GSCE],onfocusout[GSCE],onhashchange[GSCE],"
-                + "onhelp[GSCE],oninput[GSCE],onkeydown[GSCE],onkeypress[GSCE],onkeyup[GSCE],onload(),"
-                + "onloadeddata[GSCE],onloadedmetadata[GSCE],onloadstart[GSCE],onmessage[GSCE],"
-                + "onmousedown[GSCE],onmouseenter[GSCE],onmouseleave[GSCE],onmousemove[GSCE],"
-                + "onmouseout[GSCE],onmouseover[GSCE],onmouseup[GSCE],onmousewheel[GSCE],"
-                + "onmsgesturechange[GSCE],onmsgesturedoubletap[GSCE],onmsgestureend[GSCE],"
-                + "onmsgesturehold[GSCE],onmsgesturestart[GSCE],onmsgesturetap[GSCE],onmsinertiastart[GSCE],"
-                + "onmspointercancel[GSCE],onmspointerdown[GSCE],onmspointerenter[GSCE],"
-                + "onmspointerleave[GSCE],onmspointermove[GSCE],onmspointerout[GSCE],onmspointerover[GSCE],"
-                + "onmspointerup[GSCE],onoffline[GSCE],ononline[GSCE],onpagehide[GSCE],onpageshow[GSCE],"
-                + "onpause[GSCE],onplay[GSCE],onplaying[GSCE],onpointercancel[GSCE],onpointerdown[GSCE],"
-                + "onpointerenter[GSCE],onpointerleave[GSCE],onpointermove[GSCE],onpointerout[GSCE],"
-                + "onpointerover[GSCE],onpointerup[GSCE],onpopstate[GSCE],onprogress[GSCE],onratechange[GSCE],"
-                + "onreadystatechange[GSCE],onreset[GSCE],onresize[GSCE],onscroll[GSCE],onseeked[GSCE],"
-                + "onseeking[GSCE],onselect[GSCE],onstalled[GSCE],onstorage[GSCE],onsubmit[GSCE],onsuspend[GSCE],"
-                + "ontimeupdate[GSCE],onunload[GSCE],onvolumechange[GSCE],onwaiting[GSCE],open(),opener[GSCE],"
-                + "Option(),outerHeight[GSCE],outerWidth[GSCE],PageTransitionEvent[WC],pageXOffset[GCE],"
-                + "pageYOffset[GCE],parent[GCE],parseFloat(),parseInt(),performance[GCE],Performance[WC],"
-                + "PerformanceEntry[WC],PerformanceMark[WC],PerformanceMeasure[WC],PerformanceNavigation[WC],"
-                + "PerformanceNavigationTiming[WC],PerformanceResourceTiming[WC],PerformanceTiming[WC],"
-                + "Plugin[WC],PluginArray[WC],PointerEvent[WC],PopStateEvent[WC],Position[WC],"
-                + "PositionError[WC],postMessage(),print(),process(),ProcessingInstruction[WC],"
-                + "ProgressEvent[WC],prompt(),Range[WC],RangeError(),ReferenceError(),RegExp(),"
-                + "releaseEvents(),requestAnimationFrame(),resizeBy(),resizeTo(),screen[GCE],Screen[WC],"
-                + "Script(),ScriptEngine(),ScriptEngineBuildVersion(),ScriptEngineMajorVersion(),"
-                + "ScriptEngineMinorVersion(),scroll(),scrollBy(),scrollTo(),Selection[WC],self[GCE],"
-                + "sessionStorage[GCE],Set(),setInterval(),setTimeout(),showModalDialog(),showModelessDialog(),"
-                + "sortFunction(),SourceBuffer(),SourceBufferList(),status[GSCE],Storage[WC],StorageEvent[WC],"
-                + "String(),styleMedia[GCE],StyleMedia[WC],StyleSheet[WC],StyleSheetList[WC],SubtleCrypto[WC],"
-                + "SVGAElement[WC],SVGAngle[WC],SVGAnimatedAngle[WC],SVGAnimatedBoolean[WC],"
-                + "SVGAnimatedEnumeration[WC],SVGAnimatedInteger[WC],SVGAnimatedLength[WC],"
-                + "SVGAnimatedLengthList[WC],SVGAnimatedNumber[WC],SVGAnimatedNumberList[WC],"
-                + "SVGAnimatedPreserveAspectRatio[WC],SVGAnimatedRect[WC],SVGAnimatedString[WC],"
-                + "SVGAnimatedTransformList[WC],SVGCircleElement[WC],SVGClipPathElement[WC],"
-                + "SVGComponentTransferFunctionElement[WC],SVGDefsElement[WC],SVGDescElement[WC],"
-                + "SVGElement[WC],SVGEllipseElement[WC],SVGFEBlendElement[WC],SVGFEColorMatrixElement[WC],"
-                + "SVGFEComponentTransferElement[WC],SVGFECompositeElement[WC],SVGFEConvolveMatrixElement[WC],"
-                + "SVGFEDiffuseLightingElement[WC],SVGFEDisplacementMapElement[WC],SVGFEDistantLightElement[WC],"
-                + "SVGFEFloodElement[WC],SVGFEFuncAElement[WC],SVGFEFuncBElement[WC],SVGFEFuncGElement[WC],"
-                + "SVGFEFuncRElement[WC],SVGFEGaussianBlurElement[WC],SVGFEImageElement[WC],SVGFEMergeElement[WC],"
-                + "SVGFEMergeNodeElement[WC],SVGFEMorphologyElement[WC],SVGFEOffsetElement[WC],"
-                + "SVGFEPointLightElement[WC],SVGFESpecularLightingElement[WC],SVGFESpotLightElement[WC],"
-                + "SVGFETileElement[WC],SVGFETurbulenceElement[WC],SVGFilterElement[WC],SVGGElement[WC],"
-                + "SVGGradientElement[WC],SVGImageElement[WC],SVGLength[WC],SVGLengthList[WC],"
-                + "SVGLinearGradientElement[WC],SVGLineElement[WC],SVGMarkerElement[WC],SVGMaskElement[WC],"
-                + "SVGMatrix[WC],SVGMetadataElement[WC],SVGNumber[WC],SVGNumberList[WC],SVGPathElement[WC],"
-                + "SVGPathSeg[WC],SVGPathSegArcAbs[WC],SVGPathSegArcRel[WC],SVGPathSegClosePath[WC],"
-                + "SVGPathSegCurvetoCubicAbs[WC],SVGPathSegCurvetoCubicRel[WC],SVGPathSegCurvetoCubicSmoothAbs[WC],"
-                + "SVGPathSegCurvetoCubicSmoothRel[WC],SVGPathSegCurvetoQuadraticAbs[WC],"
-                + "SVGPathSegCurvetoQuadraticRel[WC],SVGPathSegCurvetoQuadraticSmoothAbs[WC],"
-                + "SVGPathSegCurvetoQuadraticSmoothRel[WC],SVGPathSegLinetoAbs[WC],SVGPathSegLinetoHorizontalAbs[WC],"
-                + "SVGPathSegLinetoHorizontalRel[WC],SVGPathSegLinetoRel[WC],SVGPathSegLinetoVerticalAbs[WC],"
-                + "SVGPathSegLinetoVerticalRel[WC],SVGPathSegList[WC],SVGPathSegMovetoAbs[WC],SVGPathSegMovetoRel[WC],"
-                + "SVGPatternElement[WC],SVGPoint[WC],SVGPointList[WC],SVGPolygonElement[WC],SVGPolylineElement[WC],"
-                + "SVGPreserveAspectRatio[WC],SVGRadialGradientElement[WC],SVGRect[WC],SVGRectElement[WC],"
-                + "SVGScriptElement[WC],SVGStopElement[WC],SVGStringList[WC],SVGStyleElement[WC],SVGSVGElement[WC],"
-                + "SVGSwitchElement[WC],SVGSymbolElement[WC],SVGTextContentElement[WC],SVGTextElement[WC],"
-                + "SVGTextPathElement[WC],SVGTextPositioningElement[WC],SVGTitleElement[WC],SVGTransform[WC],"
-                + "SVGTransformList[WC],SVGTSpanElement[WC],SVGUnitTypes[WC],SVGUseElement[WC],SVGViewElement[WC],"
-                + "SVGZoomEvent[WC],SyntaxError(),test(),Text[WC],TextEvent[WC],TextMetrics[WC],TextRange[WC],"
-                + "TextTrack[WC],TextTrackCue(),TextTrackCueList[WC],TextTrackList[WC],TimeRanges[WC],top[GSCE],"
-                + "TrackEvent[WC],TransitionEvent[WC],TreeWalker[WC],TypeError(),UIEvent[WC],Uint16Array(),"
-                + "Uint32Array(),Uint8Array(),Uint8ClampedArray(),undefined[],unescape(),URIError(),URL[WC],"
-                + "ValidityState[WC],VideoPlaybackQuality[WC],WeakMap(),WEBGL_compressed_texture_s3tc[WC],"
-                + "WEBGL_debug_renderer_info[WC],WebGLActiveInfo[WC],WebGLBuffer[WC],WebGLContextEvent(),"
-                + "WebGLFramebuffer[WC],WebGLProgram[WC],WebGLRenderbuffer[WC],WebGLRenderingContext[WC],"
-                + "WebGLShader[WC],WebGLShaderPrecisionFormat[WC],WebGLTexture[WC],WebGLUniformLocation[WC],"
-                + "WebSocket(),WheelEvent[WC],window[GCE],Window[WC],With(),Worker(),XMLDocument[WC],"
-                + "XMLHttpRequest(),XMLHttpRequestEventTarget[WC],XMLSerializer()")
+                + "setInterval(),setTimeout(),status[GSCE],stop(),top[GSCE],window[GCE]")
     public void window() throws Exception {
         testString("", "window");
     }
@@ -1304,8 +1075,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],"
-                + "togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             EDGE = "accessKey[GSCE],attachInternals(),attributeStyleMap[GCE],autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
                 + "editContext[GSCE],enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],"
@@ -1333,17 +1104,18 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],textprediction[GSCE],"
-                + "title[GSCE],togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "title[GSCE],togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             FF = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
-                + "enterKeyHint[GSCE],focus(),hidden[GSCE],inert[GSCE],innerText[GSCE],inputMode[GSCE],"
-                + "isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
+                + "enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],innerText[GSCE],"
+                + "inputMode[GSCE],isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
                 + "offsetParent[GCE],offsetTop[GCE],offsetWidth[GCE],onabort[GSCE],onanimationcancel[GSCE],"
                 + "onanimationend[GSCE],onanimationiteration[GSCE],onanimationstart[GSCE],onauxclick[GSCE],"
-                + "onbeforeinput[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],oncanplaythrough[GSCE],"
-                + "onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextmenu[GSCE],oncopy[GSCE],oncuechange[GSCE],"
-                + "oncut[GSCE],ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
+                + "onbeforeinput[GSCE],onbeforetoggle[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],"
+                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextlost[GSCE],"
+                + "oncontextmenu[GSCE],oncontextrestored[GSCE],oncopy[GSCE],oncuechange[GSCE],oncut[GSCE],"
+                + "ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
                 + "ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],ondrop[GSCE],ondurationchange[GSCE],"
                 + "onemptied[GSCE],onended[GSCE],onerror[GSCE],onfocus[GSCE],onformdata[GSCE],"
                 + "ongotpointercapture[GSCE],oninput[GSCE],oninvalid[GSCE],onkeydown[GSCE],onkeypress[GSCE],"
@@ -1359,8 +1131,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],"
                 + "ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],"
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
-                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
-                + "tabIndex[GSCE],title[GSCE],"
+                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],popover[GSCE],showPopover(),"
+                + "spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],togglePopover(),"
                 + "translate[GSCE]",
             FF_ESR = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
@@ -1388,8 +1160,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
                 + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
                 + "tabIndex[GSCE],title[GSCE],"
-                + "translate[GSCE]",
-            IE = "cite,constructor,dateTime")
+                + "translate[GSCE]")
     @HtmlUnitNYI(CHROME = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -1416,7 +1187,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             EDGE = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -1443,7 +1214,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -1467,7 +1238,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF_ESR = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -1490,8 +1261,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
-            IE = "constructor[]")
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]")
     public void abbr() throws Exception {
         test("abbr");
     }
@@ -1529,8 +1299,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],"
-                + "togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             EDGE = "accessKey[GSCE],attachInternals(),attributeStyleMap[GCE],autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
                 + "editContext[GSCE],enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],"
@@ -1558,17 +1328,18 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],textprediction[GSCE],"
-                + "title[GSCE],togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "title[GSCE],togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             FF = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
-                + "enterKeyHint[GSCE],focus(),hidden[GSCE],inert[GSCE],innerText[GSCE],inputMode[GSCE],"
-                + "isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
+                + "enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],innerText[GSCE],"
+                + "inputMode[GSCE],isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
                 + "offsetParent[GCE],offsetTop[GCE],offsetWidth[GCE],onabort[GSCE],onanimationcancel[GSCE],"
                 + "onanimationend[GSCE],onanimationiteration[GSCE],onanimationstart[GSCE],onauxclick[GSCE],"
-                + "onbeforeinput[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],oncanplaythrough[GSCE],"
-                + "onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextmenu[GSCE],oncopy[GSCE],oncuechange[GSCE],"
-                + "oncut[GSCE],ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
+                + "onbeforeinput[GSCE],onbeforetoggle[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],"
+                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextlost[GSCE],"
+                + "oncontextmenu[GSCE],oncontextrestored[GSCE],oncopy[GSCE],oncuechange[GSCE],oncut[GSCE],"
+                + "ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
                 + "ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],ondrop[GSCE],ondurationchange[GSCE],"
                 + "onemptied[GSCE],onended[GSCE],onerror[GSCE],onfocus[GSCE],onformdata[GSCE],"
                 + "ongotpointercapture[GSCE],oninput[GSCE],oninvalid[GSCE],onkeydown[GSCE],onkeypress[GSCE],"
@@ -1584,8 +1355,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],"
                 + "ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],"
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
-                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
-                + "tabIndex[GSCE],title[GSCE],"
+                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],popover[GSCE],showPopover(),"
+                + "spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],togglePopover(),"
                 + "translate[GSCE]",
             FF_ESR = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
@@ -1613,8 +1384,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
                 + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
                 + "tabIndex[GSCE],title[GSCE],"
-                + "translate[GSCE]",
-            IE = "cite,constructor,dateTime")
+                + "translate[GSCE]")
     @HtmlUnitNYI(CHROME = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -1641,7 +1411,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             EDGE = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -1668,7 +1438,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -1692,7 +1462,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF_ESR = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -1715,8 +1485,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
-            IE = "constructor[]")
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]")
     public void acronym() throws Exception {
         test("acronym");
     }
@@ -1727,15 +1496,15 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = "charset[GSCE],constructor(),coords[GSCE],download[GSCE],hash[GSCE],host[GSCE],hostname[GSCE],"
-                + "href[GSCE],hreflang[GSCE],name[GSCE],origin[GCE],password[GSCE],pathname[GSCE],ping[GSCE],"
-                + "port[GSCE],protocol[GSCE],referrerPolicy[GSCE],rel[GSCE],relList[GSCE],rev[GSCE],search[GSCE],"
-                + "shape[GSCE],target[GSCE],text[GSCE],toString(),type[GSCE],"
+    @Alerts(CHROME = "attributionSrc[GSCE],charset[GSCE],constructor(),coords[GSCE],download[GSCE],hash[GSCE],"
+                + "host[GSCE],hostname[GSCE],href[GSCE],hreflang[GSCE],name[GSCE],origin[GCE],password[GSCE],"
+                + "pathname[GSCE],ping[GSCE],port[GSCE],protocol[GSCE],referrerPolicy[GSCE],rel[GSCE],relList[GSCE],"
+                + "rev[GSCE],search[GSCE],shape[GSCE],target[GSCE],text[GSCE],toString(),type[GSCE],"
                 + "username[GSCE]",
-            EDGE = "charset[GSCE],constructor(),coords[GSCE],download[GSCE],hash[GSCE],host[GSCE],hostname[GSCE],"
-                + "href[GSCE],hreflang[GSCE],name[GSCE],origin[GCE],password[GSCE],pathname[GSCE],ping[GSCE],"
-                + "port[GSCE],protocol[GSCE],referrerPolicy[GSCE],rel[GSCE],relList[GSCE],rev[GSCE],search[GSCE],"
-                + "shape[GSCE],target[GSCE],text[GSCE],toString(),type[GSCE],"
+            EDGE = "attributionSrc[GSCE],charset[GSCE],constructor(),coords[GSCE],download[GSCE],hash[GSCE],"
+                + "host[GSCE],hostname[GSCE],href[GSCE],hreflang[GSCE],name[GSCE],origin[GCE],password[GSCE],"
+                + "pathname[GSCE],ping[GSCE],port[GSCE],protocol[GSCE],referrerPolicy[GSCE],rel[GSCE],relList[GSCE],"
+                + "rev[GSCE],search[GSCE],shape[GSCE],target[GSCE],text[GSCE],toString(),type[GSCE],"
                 + "username[GSCE]",
             FF = "charset[GSCE],constructor(),coords[GSCE],download[GSCE],hash[GSCE],host[GSCE],hostname[GSCE],"
                 + "href[GSCE],hreflang[GSCE],name[GSCE],origin[GCE],password[GSCE],pathname[GSCE],ping[GSCE],"
@@ -1746,10 +1515,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "href[GSCE],hreflang[GSCE],name[GSCE],origin[GCE],password[GSCE],pathname[GSCE],ping[GSCE],"
                 + "port[GSCE],protocol[GSCE],referrerPolicy[GSCE],rel[GSCE],relList[GSCE],rev[GSCE],search[GSCE],"
                 + "shape[GSCE],target[GSCE],text[GSCE],toString(),type[GSCE],"
-                + "username[GSCE]",
-            IE = "charset,constructor,coords,hash,host,hostname,href,hreflang,Methods,mimeType,name,nameProp,"
-                + "pathname,port,protocol,protocolLong,rel,rev,search,shape,target,text,toString(),type,"
-                + "urn")
+                + "username[GSCE]")
     @HtmlUnitNYI(CHROME = "charset[GSCE],constructor(),coords[GSCE],download[GSCE],hash[GSCE],host[GSCE],"
                 + "hostname[GSCE],href[GSCE],hreflang[GSCE],name[GSCE],origin[GCE],password[GSCE],"
                 + "pathname[GSCE],ping[GSCE],port[GSCE],protocol[GSCE],referrerPolicy[GSCE],rel[GSCE],relList[GSCE],"
@@ -1765,8 +1531,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
             FF_ESR = "charset[GSCE],constructor(),coords[GSCE],download[GSCE],hash[GSCE],host[GSCE],hostname[GSCE],"
                 + "href[GSCE],hreflang[GSCE],name[GSCE],origin[GCE],password[GSCE],"
                 + "pathname[GSCE],ping[GSCE],port[GSCE],protocol[GSCE],referrerPolicy[GSCE],rel[GSCE],relList[GSCE],"
-                + "rev[GSCE],search[GSCE],shape[GSCE],target[GSCE],text[GSCE],type[GSCE],username[GSCE]",
-            IE = "exception")
+                + "rev[GSCE],search[GSCE],shape[GSCE],target[GSCE],text[GSCE],type[GSCE],username[GSCE]")
     public void a() throws Exception {
         test("a");
     }
@@ -1804,8 +1569,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],"
-                + "togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             EDGE = "accessKey[GSCE],attachInternals(),attributeStyleMap[GCE],autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
                 + "editContext[GSCE],enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],"
@@ -1833,17 +1598,18 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],textprediction[GSCE],"
-                + "title[GSCE],togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "title[GSCE],togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             FF = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
-                + "enterKeyHint[GSCE],focus(),hidden[GSCE],inert[GSCE],innerText[GSCE],inputMode[GSCE],"
-                + "isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
+                + "enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],innerText[GSCE],"
+                + "inputMode[GSCE],isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
                 + "offsetParent[GCE],offsetTop[GCE],offsetWidth[GCE],onabort[GSCE],onanimationcancel[GSCE],"
                 + "onanimationend[GSCE],onanimationiteration[GSCE],onanimationstart[GSCE],onauxclick[GSCE],"
-                + "onbeforeinput[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],oncanplaythrough[GSCE],"
-                + "onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextmenu[GSCE],oncopy[GSCE],oncuechange[GSCE],"
-                + "oncut[GSCE],ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
+                + "onbeforeinput[GSCE],onbeforetoggle[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],"
+                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextlost[GSCE],"
+                + "oncontextmenu[GSCE],oncontextrestored[GSCE],oncopy[GSCE],oncuechange[GSCE],oncut[GSCE],"
+                + "ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
                 + "ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],ondrop[GSCE],ondurationchange[GSCE],"
                 + "onemptied[GSCE],onended[GSCE],onerror[GSCE],onfocus[GSCE],onformdata[GSCE],"
                 + "ongotpointercapture[GSCE],oninput[GSCE],oninvalid[GSCE],onkeydown[GSCE],onkeypress[GSCE],"
@@ -1859,8 +1625,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],"
                 + "ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],"
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
-                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
-                + "tabIndex[GSCE],title[GSCE],"
+                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],popover[GSCE],showPopover(),"
+                + "spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],togglePopover(),"
                 + "translate[GSCE]",
             FF_ESR = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
@@ -1888,8 +1654,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
                 + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
                 + "tabIndex[GSCE],title[GSCE],"
-                + "translate[GSCE]",
-            IE = "cite,clear,constructor,width")
+                + "translate[GSCE]")
     @HtmlUnitNYI(CHROME = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -1916,7 +1681,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             EDGE = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -1943,7 +1708,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -1967,7 +1732,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF_ESR = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -1990,8 +1755,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
-            IE = "clear[GSCE],constructor[],width[GSCE]")
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]")
     public void address() throws Exception {
         test("address");
     }
@@ -2005,12 +1769,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor()",
             EDGE = "constructor()",
             FF = "constructor()",
-            FF_ESR = "constructor()",
-            IE = "align,alt,altHtml,archive,BaseHref,border,classid,code,codeBase,codeType,constructor,"
-                + "contentDocument,data,declare,form,height,hspace,name,namedRecordset(),object,recordset,standby,"
-                + "type,useMap,vspace,"
-                + "width")
-    @HtmlUnitNYI(IE = "align[GSCE],alt[GSCE],border[GSCE],classid[GSCE],constructor[],height[GSCE],width[GSCE]")
+            FF_ESR = "constructor()")
     public void applet() throws Exception {
         test("applet");
     }
@@ -2040,15 +1799,11 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "href[GSCE],noHref[GSCE],origin[GCE],password[GSCE],pathname[GSCE],ping[GSCE],port[GSCE],"
                 + "protocol[GSCE],referrerPolicy[GSCE],rel[GSCE],relList[GSCE],search[GSCE],shape[GSCE],"
                 + "target[GSCE],toString(),"
-                + "username[GSCE]",
-            IE = "alt,constructor,coords,hash,host,hostname,href,noHref,pathname,port,protocol,rel,search,shape,"
-                + "target,"
-                + "toString()")
+                + "username[GSCE]")
     @HtmlUnitNYI(CHROME = "alt[GSCE],constructor(),coords[GSCE],rel[GSCE],relList[GCE]",
             EDGE = "alt[GSCE],constructor(),coords[GSCE],rel[GSCE],relList[GCE]",
             FF_ESR = "alt[GSCE],constructor(),coords[GSCE],rel[GSCE],relList[GCE]",
-            FF = "alt[GSCE],constructor(),coords[GSCE],rel[GSCE],relList[GCE]",
-            IE = "alt[GSCE],constructor[],coords[GSCE],rel[GSCE]")
+            FF = "alt[GSCE],constructor(),coords[GSCE],rel[GSCE],relList[GCE]")
     public void area() throws Exception {
         test("area");
     }
@@ -2086,8 +1841,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],"
-                + "togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             EDGE = "accessKey[GSCE],attachInternals(),attributeStyleMap[GCE],autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
                 + "editContext[GSCE],enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],"
@@ -2115,17 +1870,18 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],textprediction[GSCE],"
-                + "title[GSCE],togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "title[GSCE],togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             FF = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
-                + "enterKeyHint[GSCE],focus(),hidden[GSCE],inert[GSCE],innerText[GSCE],inputMode[GSCE],"
-                + "isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
+                + "enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],innerText[GSCE],"
+                + "inputMode[GSCE],isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
                 + "offsetParent[GCE],offsetTop[GCE],offsetWidth[GCE],onabort[GSCE],onanimationcancel[GSCE],"
                 + "onanimationend[GSCE],onanimationiteration[GSCE],onanimationstart[GSCE],onauxclick[GSCE],"
-                + "onbeforeinput[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],oncanplaythrough[GSCE],"
-                + "onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextmenu[GSCE],oncopy[GSCE],oncuechange[GSCE],"
-                + "oncut[GSCE],ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
+                + "onbeforeinput[GSCE],onbeforetoggle[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],"
+                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextlost[GSCE],"
+                + "oncontextmenu[GSCE],oncontextrestored[GSCE],oncopy[GSCE],oncuechange[GSCE],oncut[GSCE],"
+                + "ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
                 + "ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],ondrop[GSCE],ondurationchange[GSCE],"
                 + "onemptied[GSCE],onended[GSCE],onerror[GSCE],onfocus[GSCE],onformdata[GSCE],"
                 + "ongotpointercapture[GSCE],oninput[GSCE],oninvalid[GSCE],onkeydown[GSCE],onkeypress[GSCE],"
@@ -2141,8 +1897,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],"
                 + "ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],"
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
-                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
-                + "tabIndex[GSCE],title[GSCE],"
+                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],popover[GSCE],showPopover(),"
+                + "spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],togglePopover(),"
                 + "translate[GSCE]",
             FF_ESR = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
@@ -2170,26 +1926,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
                 + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
                 + "tabIndex[GSCE],title[GSCE],"
-                + "translate[GSCE]",
-            IE = "accessKey,applyElement(),blur(),canHaveChildren,canHaveHTML,children,classList,className,"
-                + "clearAttributes(),click(),componentFromPoint(),constructor,contains(),contentEditable,"
-                + "createControlRange(),currentStyle,dataset,dir,disabled,dragDrop(),draggable,focus(),"
-                + "getAdjacentText(),getElementsByClassName(),hidden,hideFocus,id,innerHTML,innerText,"
-                + "insertAdjacentElement(),insertAdjacentHTML(),insertAdjacentText(),isContentEditable,isDisabled,"
-                + "isMultiLine,isTextEdit,lang,language,mergeAttributes(),msGetInputContext(),offsetHeight,"
-                + "offsetLeft,offsetParent,offsetTop,offsetWidth,onabort,onactivate,onbeforeactivate,onbeforecopy,"
-                + "onbeforecut,onbeforedeactivate,onbeforepaste,onblur,oncanplay,oncanplaythrough,onchange,onclick,"
-                + "oncontextmenu,oncopy,oncuechange,oncut,ondblclick,ondeactivate,ondrag,ondragend,ondragenter,"
-                + "ondragleave,ondragover,ondragstart,ondrop,ondurationchange,onemptied,onended,onerror,onfocus,"
-                + "onfocusin,onfocusout,onhelp,oninput,onkeydown,onkeypress,onkeyup,onload,onloadeddata,"
-                + "onloadedmetadata,onloadstart,onmousedown,onmouseenter,onmouseleave,onmousemove,onmouseout,"
-                + "onmouseover,onmouseup,onmousewheel,onmscontentzoom,onmsmanipulationstatechanged,onpaste,onpause,"
-                + "onplay,onplaying,onprogress,onratechange,onreset,onscroll,onseeked,onseeking,onselect,"
-                + "onselectstart,onstalled,onsubmit,onsuspend,ontimeupdate,onvolumechange,onwaiting,outerHTML,"
-                + "outerText,parentElement,parentTextEdit,recordNumber,releaseCapture(),removeNode(),"
-                + "replaceAdjacentText(),replaceNode(),runtimeStyle,scrollIntoView(),setActive(),setCapture(),"
-                + "sourceIndex,spellcheck,style,swapNode(),tabIndex,title,uniqueID,"
-                + "uniqueNumber")
+                + "translate[GSCE]")
     @HtmlUnitNYI(CHROME = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -2216,7 +1953,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             EDGE = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -2243,7 +1980,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -2267,7 +2004,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF_ESR = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -2290,30 +2027,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
-            IE = "accessKey[GSCE],blur(),children[GCE],classList[GCE],className[GSCE],clearAttributes(),"
-                + "click(),constructor[],contains(),contentEditable[GSCE],currentStyle[GCE],dataset[GCE],"
-                + "dir[GSCE],disabled[GSCE],focus(),getElementsByClassName(),hidden[GSCE],id[GSCE],"
-                + "innerHTML[GSCE],innerText[GSCE],insertAdjacentElement(),insertAdjacentHTML(),"
-                + "insertAdjacentText(),isContentEditable[GCE],lang[GSCE],language[GSCE],mergeAttributes(),"
-                + "offsetHeight[GCE],offsetLeft[GCE],offsetParent[GCE],offsetTop[GCE],offsetWidth[GCE],"
-                + "onabort[GSCE],onactivate[GSCE],onbeforeactivate[GSCE],onbeforecopy[GSCE],onbeforecut[GSCE],"
-                + "onbeforedeactivate[GSCE],onbeforepaste[GSCE],onblur[GSCE],oncanplay[GSCE],"
-                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],oncontextmenu[GSCE],oncopy[GSCE],"
-                + "oncuechange[GSCE],oncut[GSCE],ondblclick[GSCE],ondeactivate[GSCE],ondrag[GSCE],"
-                + "ondragend[GSCE],ondragenter[GSCE],ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],"
-                + "ondrop[GSCE],ondurationchange[GSCE],onemptied[GSCE],onended[GSCE],onerror[GSCE],"
-                + "onfocus[GSCE],onfocusin[GSCE],onfocusout[GSCE],onhelp[GSCE],oninput[GSCE],onkeydown[GSCE],"
-                + "onkeypress[GSCE],onkeyup[GSCE],onload[GSCE],onloadeddata[GSCE],onloadedmetadata[GSCE],"
-                + "onloadstart[GSCE],onmousedown[GSCE],onmouseenter[GSCE],onmouseleave[GSCE],onmousemove[GSCE],"
-                + "onmouseout[GSCE],onmouseover[GSCE],onmouseup[GSCE],onmousewheel[GSCE],onmscontentzoom[GSCE],"
-                + "onmsmanipulationstatechanged[GSCE],onpaste[GSCE],onpause[GSCE],onplay[GSCE],onplaying[GSCE],"
-                + "onprogress[GSCE],onratechange[GSCE],onreset[GSCE],onscroll[GSCE],onseeked[GSCE],"
-                + "onseeking[GSCE],onselect[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
-                + "onsuspend[GSCE],ontimeupdate[GSCE],onvolumechange[GSCE],onwaiting[GSCE],outerHTML[GSCE],"
-                + "outerText[GCE],parentElement[GCE],releaseCapture(),removeNode(),runtimeStyle[GCE],"
-                + "scrollIntoView(),setActive(),setCapture(),style[GSCE],tabIndex[GSCE],"
-                + "title[GSCE],uniqueID[GCE]")
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]")
     public void article() throws Exception {
         test("article");
     }
@@ -2351,8 +2065,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],"
-                + "togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             EDGE = "accessKey[GSCE],attachInternals(),attributeStyleMap[GCE],autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
                 + "editContext[GSCE],enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],"
@@ -2380,17 +2094,18 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],textprediction[GSCE],"
-                + "title[GSCE],togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "title[GSCE],togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             FF = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
-                + "enterKeyHint[GSCE],focus(),hidden[GSCE],inert[GSCE],innerText[GSCE],inputMode[GSCE],"
-                + "isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
+                + "enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],innerText[GSCE],"
+                + "inputMode[GSCE],isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
                 + "offsetParent[GCE],offsetTop[GCE],offsetWidth[GCE],onabort[GSCE],onanimationcancel[GSCE],"
                 + "onanimationend[GSCE],onanimationiteration[GSCE],onanimationstart[GSCE],onauxclick[GSCE],"
-                + "onbeforeinput[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],oncanplaythrough[GSCE],"
-                + "onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextmenu[GSCE],oncopy[GSCE],oncuechange[GSCE],"
-                + "oncut[GSCE],ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
+                + "onbeforeinput[GSCE],onbeforetoggle[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],"
+                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextlost[GSCE],"
+                + "oncontextmenu[GSCE],oncontextrestored[GSCE],oncopy[GSCE],oncuechange[GSCE],oncut[GSCE],"
+                + "ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
                 + "ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],ondrop[GSCE],ondurationchange[GSCE],"
                 + "onemptied[GSCE],onended[GSCE],onerror[GSCE],onfocus[GSCE],onformdata[GSCE],"
                 + "ongotpointercapture[GSCE],oninput[GSCE],oninvalid[GSCE],onkeydown[GSCE],onkeypress[GSCE],"
@@ -2406,8 +2121,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],"
                 + "ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],"
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
-                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
-                + "tabIndex[GSCE],title[GSCE],"
+                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],popover[GSCE],showPopover(),"
+                + "spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],togglePopover(),"
                 + "translate[GSCE]",
             FF_ESR = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
@@ -2435,26 +2150,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
                 + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
                 + "tabIndex[GSCE],title[GSCE],"
-                + "translate[GSCE]",
-            IE = "accessKey,applyElement(),blur(),canHaveChildren,canHaveHTML,children,classList,className,"
-                + "clearAttributes(),click(),componentFromPoint(),constructor,contains(),contentEditable,"
-                + "createControlRange(),currentStyle,dataset,dir,disabled,dragDrop(),draggable,focus(),"
-                + "getAdjacentText(),getElementsByClassName(),hidden,hideFocus,id,innerHTML,innerText,"
-                + "insertAdjacentElement(),insertAdjacentHTML(),insertAdjacentText(),isContentEditable,isDisabled,"
-                + "isMultiLine,isTextEdit,lang,language,mergeAttributes(),msGetInputContext(),offsetHeight,"
-                + "offsetLeft,offsetParent,offsetTop,offsetWidth,onabort,onactivate,onbeforeactivate,onbeforecopy,"
-                + "onbeforecut,onbeforedeactivate,onbeforepaste,onblur,oncanplay,oncanplaythrough,onchange,onclick,"
-                + "oncontextmenu,oncopy,oncuechange,oncut,ondblclick,ondeactivate,ondrag,ondragend,ondragenter,"
-                + "ondragleave,ondragover,ondragstart,ondrop,ondurationchange,onemptied,onended,onerror,onfocus,"
-                + "onfocusin,onfocusout,onhelp,oninput,onkeydown,onkeypress,onkeyup,onload,onloadeddata,"
-                + "onloadedmetadata,onloadstart,onmousedown,onmouseenter,onmouseleave,onmousemove,onmouseout,"
-                + "onmouseover,onmouseup,onmousewheel,onmscontentzoom,onmsmanipulationstatechanged,onpaste,onpause,"
-                + "onplay,onplaying,onprogress,onratechange,onreset,onscroll,onseeked,onseeking,onselect,"
-                + "onselectstart,onstalled,onsubmit,onsuspend,ontimeupdate,onvolumechange,onwaiting,outerHTML,"
-                + "outerText,parentElement,parentTextEdit,recordNumber,releaseCapture(),removeNode(),"
-                + "replaceAdjacentText(),replaceNode(),runtimeStyle,scrollIntoView(),setActive(),setCapture(),"
-                + "sourceIndex,spellcheck,style,swapNode(),tabIndex,title,uniqueID,"
-                + "uniqueNumber")
+                + "translate[GSCE]")
     @HtmlUnitNYI(CHROME = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -2481,7 +2177,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             EDGE = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -2508,7 +2204,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -2532,7 +2228,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF_ESR = "accessKey[GSCE],autofocus[GSCE],blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
                 + "hidden[GSCE],innerText[GSCE],isContentEditable[GCE],lang[GSCE],"
@@ -2554,30 +2250,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
-            IE = "accessKey[GSCE],blur(),children[GCE],classList[GCE],className[GSCE],clearAttributes(),"
-                + "click(),constructor[],contains(),contentEditable[GSCE],currentStyle[GCE],dataset[GCE],"
-                + "dir[GSCE],disabled[GSCE],focus(),getElementsByClassName(),hidden[GSCE],id[GSCE],"
-                + "innerHTML[GSCE],innerText[GSCE],insertAdjacentElement(),insertAdjacentHTML(),"
-                + "insertAdjacentText(),isContentEditable[GCE],lang[GSCE],language[GSCE],mergeAttributes(),"
-                + "offsetHeight[GCE],offsetLeft[GCE],offsetParent[GCE],offsetTop[GCE],offsetWidth[GCE],"
-                + "onabort[GSCE],onactivate[GSCE],onbeforeactivate[GSCE],onbeforecopy[GSCE],onbeforecut[GSCE],"
-                + "onbeforedeactivate[GSCE],onbeforepaste[GSCE],onblur[GSCE],oncanplay[GSCE],"
-                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],oncontextmenu[GSCE],oncopy[GSCE],"
-                + "oncuechange[GSCE],oncut[GSCE],ondblclick[GSCE],ondeactivate[GSCE],ondrag[GSCE],"
-                + "ondragend[GSCE],ondragenter[GSCE],ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],"
-                + "ondrop[GSCE],ondurationchange[GSCE],onemptied[GSCE],onended[GSCE],onerror[GSCE],"
-                + "onfocus[GSCE],onfocusin[GSCE],onfocusout[GSCE],onhelp[GSCE],oninput[GSCE],onkeydown[GSCE],"
-                + "onkeypress[GSCE],onkeyup[GSCE],onload[GSCE],onloadeddata[GSCE],onloadedmetadata[GSCE],"
-                + "onloadstart[GSCE],onmousedown[GSCE],onmouseenter[GSCE],onmouseleave[GSCE],onmousemove[GSCE],"
-                + "onmouseout[GSCE],onmouseover[GSCE],onmouseup[GSCE],onmousewheel[GSCE],onmscontentzoom[GSCE],"
-                + "onmsmanipulationstatechanged[GSCE],onpaste[GSCE],onpause[GSCE],onplay[GSCE],onplaying[GSCE],"
-                + "onprogress[GSCE],onratechange[GSCE],onreset[GSCE],onscroll[GSCE],onseeked[GSCE],"
-                + "onseeking[GSCE],onselect[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
-                + "onsuspend[GSCE],ontimeupdate[GSCE],onvolumechange[GSCE],onwaiting[GSCE],outerHTML[GSCE],"
-                + "outerText[GCE],parentElement[GCE],releaseCapture(),removeNode(),runtimeStyle[GCE],"
-                + "scrollIntoView(),setActive(),setCapture(),style[GSCE],tabIndex[GSCE],"
-                + "title[GSCE],uniqueID[GCE]")
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]")
     public void aside() throws Exception {
         test("aside");
     }
@@ -2591,8 +2264,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor()",
             EDGE = "constructor()",
             FF = "constructor()",
-            FF_ESR = "constructor()",
-            IE = "constructor[]")
+            FF_ESR = "constructor()")
     public void audio() throws Exception {
         test("audio");
     }
@@ -2606,8 +2278,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor()",
             EDGE = "constructor()",
             FF = "constructor()",
-            FF_ESR = "constructor()",
-            IE = "balance,constructor,loop,src,volume")
+            FF_ESR = "constructor()")
     @HtmlUnitNYI(FF = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],"
                 + "enterKeyHint[GSCE],focus(),hidden[GSCE],innerText[GSCE],isContentEditable[GCE],lang[GSCE],"
@@ -2628,7 +2299,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onseeked[GSCE],onseeking[GSCE],"
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],"
-                + "ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],outerText[GCE],"
+                + "ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],outerText[GSCE],"
                 + "spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF_ESR = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],"
@@ -2649,9 +2320,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onratechange[GSCE],onreset[GSCE],onresize[GSCE],onscroll[GSCE],onseeked[GSCE],onseeking[GSCE],"
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],"
-                + "ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],outerText[GCE],"
-                + "spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
-            IE = "constructor[]")
+                + "ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],outerText[GSCE],"
+                + "spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]")
     public void bgsound() throws Exception {
         test("bgsound");
     }
@@ -2665,8 +2335,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor(),href[GSCE],target[GSCE]",
             EDGE = "constructor(),href[GSCE],target[GSCE]",
             FF = "constructor(),href[GSCE],target[GSCE]",
-            FF_ESR = "constructor(),href[GSCE],target[GSCE]",
-            IE = "constructor[],href[GSCE],target[GSCE]")
+            FF_ESR = "constructor(),href[GSCE],target[GSCE]")
     public void base() throws Exception {
         test("base");
     }
@@ -2704,8 +2373,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],"
-                + "togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             EDGE = "accessKey[GSCE],attachInternals(),attributeStyleMap[GCE],autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
                 + "editContext[GSCE],enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],"
@@ -2733,17 +2402,18 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],textprediction[GSCE],"
-                + "title[GSCE],togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "title[GSCE],togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             FF = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
-                + "enterKeyHint[GSCE],focus(),hidden[GSCE],inert[GSCE],innerText[GSCE],inputMode[GSCE],"
-                + "isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
+                + "enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],innerText[GSCE],"
+                + "inputMode[GSCE],isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
                 + "offsetParent[GCE],offsetTop[GCE],offsetWidth[GCE],onabort[GSCE],onanimationcancel[GSCE],"
                 + "onanimationend[GSCE],onanimationiteration[GSCE],onanimationstart[GSCE],onauxclick[GSCE],"
-                + "onbeforeinput[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],oncanplaythrough[GSCE],"
-                + "onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextmenu[GSCE],oncopy[GSCE],oncuechange[GSCE],"
-                + "oncut[GSCE],ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
+                + "onbeforeinput[GSCE],onbeforetoggle[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],"
+                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextlost[GSCE],"
+                + "oncontextmenu[GSCE],oncontextrestored[GSCE],oncopy[GSCE],oncuechange[GSCE],oncut[GSCE],"
+                + "ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
                 + "ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],ondrop[GSCE],ondurationchange[GSCE],"
                 + "onemptied[GSCE],onended[GSCE],onerror[GSCE],onfocus[GSCE],onformdata[GSCE],"
                 + "ongotpointercapture[GSCE],oninput[GSCE],oninvalid[GSCE],onkeydown[GSCE],onkeypress[GSCE],"
@@ -2759,8 +2429,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],"
                 + "ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],"
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
-                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
-                + "tabIndex[GSCE],title[GSCE],"
+                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],popover[GSCE],showPopover(),"
+                + "spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],togglePopover(),"
                 + "translate[GSCE]",
             FF_ESR = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
@@ -2788,8 +2458,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
                 + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
                 + "tabIndex[GSCE],title[GSCE],"
-                + "translate[GSCE]",
-            IE = "color[GSCE],constructor[],face[GSCE],size[GSCE]")
+                + "translate[GSCE]")
     @HtmlUnitNYI(CHROME = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -2816,7 +2485,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             EDGE = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -2843,7 +2512,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -2867,7 +2536,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF_ESR = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -2890,7 +2559,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]")
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]")
     public void basefont() throws Exception {
         test("basefont");
     }
@@ -2928,8 +2597,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],"
-                + "togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             EDGE = "accessKey[GSCE],attachInternals(),attributeStyleMap[GCE],autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
                 + "editContext[GSCE],enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],"
@@ -2957,17 +2626,18 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],textprediction[GSCE],"
-                + "title[GSCE],togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "title[GSCE],togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             FF = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
-                + "enterKeyHint[GSCE],focus(),hidden[GSCE],inert[GSCE],innerText[GSCE],inputMode[GSCE],"
-                + "isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
+                + "enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],innerText[GSCE],"
+                + "inputMode[GSCE],isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
                 + "offsetParent[GCE],offsetTop[GCE],offsetWidth[GCE],onabort[GSCE],onanimationcancel[GSCE],"
                 + "onanimationend[GSCE],onanimationiteration[GSCE],onanimationstart[GSCE],onauxclick[GSCE],"
-                + "onbeforeinput[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],oncanplaythrough[GSCE],"
-                + "onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextmenu[GSCE],oncopy[GSCE],oncuechange[GSCE],"
-                + "oncut[GSCE],ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
+                + "onbeforeinput[GSCE],onbeforetoggle[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],"
+                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextlost[GSCE],"
+                + "oncontextmenu[GSCE],oncontextrestored[GSCE],oncopy[GSCE],oncuechange[GSCE],oncut[GSCE],"
+                + "ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
                 + "ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],ondrop[GSCE],ondurationchange[GSCE],"
                 + "onemptied[GSCE],onended[GSCE],onerror[GSCE],onfocus[GSCE],onformdata[GSCE],"
                 + "ongotpointercapture[GSCE],oninput[GSCE],oninvalid[GSCE],onkeydown[GSCE],onkeypress[GSCE],"
@@ -2983,8 +2653,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],"
                 + "ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],"
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
-                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
-                + "tabIndex[GSCE],title[GSCE],"
+                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],popover[GSCE],showPopover(),"
+                + "spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],togglePopover(),"
                 + "translate[GSCE]",
             FF_ESR = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
@@ -3012,8 +2682,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
                 + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
                 + "tabIndex[GSCE],title[GSCE],"
-                + "translate[GSCE]",
-            IE = "constructor,namedRecordset(),recordset")
+                + "translate[GSCE]")
     @HtmlUnitNYI(CHROME = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -3040,7 +2709,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             EDGE = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -3067,7 +2736,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -3091,7 +2760,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF_ESR = "accessKey[GSCE],autofocus[GSCE],blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
                 + "hidden[GSCE],innerText[GSCE],isContentEditable[GCE],lang[GSCE],"
@@ -3113,8 +2782,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
-            IE = "constructor[]")
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]")
     public void bdi() throws Exception {
         test("bdi");
     }
@@ -3152,8 +2820,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],"
-                + "togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             EDGE = "accessKey[GSCE],attachInternals(),attributeStyleMap[GCE],autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
                 + "editContext[GSCE],enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],"
@@ -3181,17 +2849,18 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],textprediction[GSCE],"
-                + "title[GSCE],togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "title[GSCE],togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             FF = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
-                + "enterKeyHint[GSCE],focus(),hidden[GSCE],inert[GSCE],innerText[GSCE],inputMode[GSCE],"
-                + "isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
+                + "enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],innerText[GSCE],"
+                + "inputMode[GSCE],isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
                 + "offsetParent[GCE],offsetTop[GCE],offsetWidth[GCE],onabort[GSCE],onanimationcancel[GSCE],"
                 + "onanimationend[GSCE],onanimationiteration[GSCE],onanimationstart[GSCE],onauxclick[GSCE],"
-                + "onbeforeinput[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],oncanplaythrough[GSCE],"
-                + "onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextmenu[GSCE],oncopy[GSCE],oncuechange[GSCE],"
-                + "oncut[GSCE],ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
+                + "onbeforeinput[GSCE],onbeforetoggle[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],"
+                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextlost[GSCE],"
+                + "oncontextmenu[GSCE],oncontextrestored[GSCE],oncopy[GSCE],oncuechange[GSCE],oncut[GSCE],"
+                + "ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
                 + "ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],ondrop[GSCE],ondurationchange[GSCE],"
                 + "onemptied[GSCE],onended[GSCE],onerror[GSCE],onfocus[GSCE],onformdata[GSCE],"
                 + "ongotpointercapture[GSCE],oninput[GSCE],oninvalid[GSCE],onkeydown[GSCE],onkeypress[GSCE],"
@@ -3207,8 +2876,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],"
                 + "ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],"
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
-                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
-                + "tabIndex[GSCE],title[GSCE],"
+                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],popover[GSCE],showPopover(),"
+                + "spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],togglePopover(),"
                 + "translate[GSCE]",
             FF_ESR = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
@@ -3236,8 +2905,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
                 + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
                 + "tabIndex[GSCE],title[GSCE],"
-                + "translate[GSCE]",
-            IE = "cite,constructor,dateTime")
+                + "translate[GSCE]")
     @HtmlUnitNYI(CHROME = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -3264,7 +2932,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             EDGE = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -3291,7 +2959,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -3315,7 +2983,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF_ESR = "accessKey[GSCE],autofocus[GSCE],blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
                 + "hidden[GSCE],innerText[GSCE],isContentEditable[GCE],lang[GSCE],"
@@ -3337,8 +3005,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
-            IE = "constructor[]")
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]")
     public void bdo() throws Exception {
         test("bdo");
     }
@@ -3376,8 +3043,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],"
-                + "togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             EDGE = "accessKey[GSCE],attachInternals(),attributeStyleMap[GCE],autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
                 + "editContext[GSCE],enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],"
@@ -3405,17 +3072,18 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],textprediction[GSCE],"
-                + "title[GSCE],togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "title[GSCE],togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             FF = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
-                + "enterKeyHint[GSCE],focus(),hidden[GSCE],inert[GSCE],innerText[GSCE],inputMode[GSCE],"
-                + "isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
+                + "enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],innerText[GSCE],"
+                + "inputMode[GSCE],isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
                 + "offsetParent[GCE],offsetTop[GCE],offsetWidth[GCE],onabort[GSCE],onanimationcancel[GSCE],"
                 + "onanimationend[GSCE],onanimationiteration[GSCE],onanimationstart[GSCE],onauxclick[GSCE],"
-                + "onbeforeinput[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],oncanplaythrough[GSCE],"
-                + "onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextmenu[GSCE],oncopy[GSCE],oncuechange[GSCE],"
-                + "oncut[GSCE],ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
+                + "onbeforeinput[GSCE],onbeforetoggle[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],"
+                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextlost[GSCE],"
+                + "oncontextmenu[GSCE],oncontextrestored[GSCE],oncopy[GSCE],oncuechange[GSCE],oncut[GSCE],"
+                + "ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
                 + "ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],ondrop[GSCE],ondurationchange[GSCE],"
                 + "onemptied[GSCE],onended[GSCE],onerror[GSCE],onfocus[GSCE],onformdata[GSCE],"
                 + "ongotpointercapture[GSCE],oninput[GSCE],oninvalid[GSCE],onkeydown[GSCE],onkeypress[GSCE],"
@@ -3431,8 +3099,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],"
                 + "ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],"
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
-                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
-                + "tabIndex[GSCE],title[GSCE],"
+                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],popover[GSCE],showPopover(),"
+                + "spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],togglePopover(),"
                 + "translate[GSCE]",
             FF_ESR = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
@@ -3460,8 +3128,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
                 + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
                 + "tabIndex[GSCE],title[GSCE],"
-                + "translate[GSCE]",
-            IE = "cite,constructor,dateTime")
+                + "translate[GSCE]")
     @HtmlUnitNYI(CHROME = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -3488,7 +3155,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             EDGE = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -3515,7 +3182,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -3539,7 +3206,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF_ESR = "accessKey[GSCE],autofocus[GSCE],blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
                 + "hidden[GSCE],innerText[GSCE],isContentEditable[GCE],lang[GSCE],"
@@ -3561,8 +3228,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
-            IE = "constructor[]")
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]")
     public void big() throws Exception {
         test("big");
     }
@@ -3576,9 +3242,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor()",
             EDGE = "constructor()",
             FF = "constructor()",
-            FF_ESR = "constructor()",
-            IE = "cite,constructor,dateTime")
-    @HtmlUnitNYI(IE = "constructor[]")
+            FF_ESR = "constructor()")
     public void blink() throws Exception {
         test("blink");
     }
@@ -3592,9 +3256,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "cite[GSCE],constructor()",
             EDGE = "cite[GSCE],constructor()",
             FF = "cite[GSCE],constructor()",
-            FF_ESR = "cite[GSCE],constructor()",
-            IE = "cite,clear,constructor,width")
-    @HtmlUnitNYI(IE = "clear[GSCE],constructor[],width[GSCE]")
+            FF_ESR = "cite[GSCE],constructor()")
     public void blockquote() throws Exception {
         test("blockquote");
     }
@@ -3630,16 +3292,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onhashchange[GSCE],onlanguagechange[GSCE],onmessage[GSCE],onmessageerror[GSCE],onoffline[GSCE],"
                 + "ononline[GSCE],onpagehide[GSCE],onpageshow[GSCE],onpopstate[GSCE],onrejectionhandled[GSCE],"
                 + "onstorage[GSCE],onunhandledrejection[GSCE],onunload[GSCE],text[GSCE],"
-                + "vLink[GSCE]",
-            IE = "aLink,background,bgColor,bgProperties,bottomMargin,constructor,createTextRange(),leftMargin,link,"
-                + "noWrap,onafterprint,onbeforeprint,onbeforeunload,onblur,onerror,onfocus,onhashchange,onload,"
-                + "onmessage,onoffline,ononline,onpagehide,onpageshow,onpopstate,onresize,onstorage,onunload,"
-                + "rightMargin,scroll,text,topMargin,"
-                + "vLink")
-    @HtmlUnitNYI(IE = "aLink[GSCE],background[GSCE],bgColor[GSCE],constructor[],createTextRange(),link[GSCE],"
-                + "onafterprint[GSCE],onbeforeprint[GSCE],onbeforeunload[GSCE],onhashchange[GSCE],onmessage[GSCE],"
-                + "onoffline[GSCE],ononline[GSCE],onpagehide[GSCE],onpageshow[GSCE],onpopstate[GSCE],"
-                + "onresize[GSCE],onstorage[GSCE],onunload[GSCE],text[GSCE],vLink[GSCE]")
+                + "vLink[GSCE]")
     public void body() throws Exception {
         test("body");
     }
@@ -3677,8 +3330,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],"
-                + "togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             EDGE = "accessKey[GSCE],attachInternals(),attributeStyleMap[GCE],autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
                 + "editContext[GSCE],enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],"
@@ -3706,17 +3359,18 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],textprediction[GSCE],"
-                + "title[GSCE],togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "title[GSCE],togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             FF = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
-                + "enterKeyHint[GSCE],focus(),hidden[GSCE],inert[GSCE],innerText[GSCE],inputMode[GSCE],"
-                + "isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
+                + "enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],innerText[GSCE],"
+                + "inputMode[GSCE],isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
                 + "offsetParent[GCE],offsetTop[GCE],offsetWidth[GCE],onabort[GSCE],onanimationcancel[GSCE],"
                 + "onanimationend[GSCE],onanimationiteration[GSCE],onanimationstart[GSCE],onauxclick[GSCE],"
-                + "onbeforeinput[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],oncanplaythrough[GSCE],"
-                + "onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextmenu[GSCE],oncopy[GSCE],oncuechange[GSCE],"
-                + "oncut[GSCE],ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
+                + "onbeforeinput[GSCE],onbeforetoggle[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],"
+                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextlost[GSCE],"
+                + "oncontextmenu[GSCE],oncontextrestored[GSCE],oncopy[GSCE],oncuechange[GSCE],oncut[GSCE],"
+                + "ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
                 + "ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],ondrop[GSCE],ondurationchange[GSCE],"
                 + "onemptied[GSCE],onended[GSCE],onerror[GSCE],onfocus[GSCE],onformdata[GSCE],"
                 + "ongotpointercapture[GSCE],oninput[GSCE],oninvalid[GSCE],onkeydown[GSCE],onkeypress[GSCE],"
@@ -3732,8 +3386,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],"
                 + "ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],"
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
-                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
-                + "tabIndex[GSCE],title[GSCE],"
+                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],popover[GSCE],showPopover(),"
+                + "spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],togglePopover(),"
                 + "translate[GSCE]",
             FF_ESR = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
@@ -3761,8 +3415,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
                 + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
                 + "tabIndex[GSCE],title[GSCE],"
-                + "translate[GSCE]",
-            IE = "cite,constructor,dateTime")
+                + "translate[GSCE]")
     @HtmlUnitNYI(CHROME = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -3789,7 +3442,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             EDGE = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -3816,7 +3469,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -3840,7 +3493,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF_ESR = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -3863,8 +3516,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
-            IE = "constructor[]")
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]")
     public void b() throws Exception {
         test("b");
     }
@@ -3878,8 +3530,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "clear[GSCE],constructor()",
             EDGE = "clear[GSCE],constructor()",
             FF = "clear[GSCE],constructor()",
-            FF_ESR = "clear[GSCE],constructor()",
-            IE = "clear[GSCE],constructor[]")
+            FF_ESR = "clear[GSCE],constructor()")
     public void br() throws Exception {
         test("br");
     }
@@ -3901,16 +3552,14 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "type[GSCE],validationMessage[GCE],validity[GCE],value[GSCE],"
                 + "willValidate[GCE]",
             FF = "checkValidity(),constructor(),disabled[GSCE],form[GCE],formAction[GSCE],formEnctype[GSCE],"
-                + "formMethod[GSCE],formNoValidate[GSCE],formTarget[GSCE],labels[GCE],name[GSCE],reportValidity(),"
-                + "setCustomValidity(),type[GSCE],validationMessage[GCE],validity[GCE],value[GSCE],"
+                + "formMethod[GSCE],formNoValidate[GSCE],formTarget[GSCE],labels[GCE],name[GSCE],"
+                + "popoverTargetAction[GSCE],popoverTargetElement[GSCE],reportValidity(),setCustomValidity(),"
+                + "type[GSCE],validationMessage[GCE],validity[GCE],value[GSCE],"
                 + "willValidate[GCE]",
             FF_ESR = "checkValidity(),constructor(),disabled[GSCE],form[GCE],formAction[GSCE],formEnctype[GSCE],"
                 + "formMethod[GSCE],formNoValidate[GSCE],formTarget[GSCE],labels[GCE],name[GSCE],reportValidity(),"
                 + "setCustomValidity(),type[GSCE],validationMessage[GCE],validity[GCE],value[GSCE],"
-                + "willValidate[GCE]",
-            IE = "autofocus,checkValidity(),constructor,createTextRange(),form,formAction,formEnctype,formMethod,"
-                + "formNoValidate,formTarget,name,setCustomValidity(),status,type,validationMessage,validity,value,"
-                + "willValidate")
+                + "willValidate[GCE]")
     @HtmlUnitNYI(CHROME = "checkValidity(),constructor(),disabled[GSCE],form[GCE],formNoValidate[GSCE],"
                 + "labels[GCE],name[GSCE],setCustomValidity(),type[GSCE],validity[GCE],value[GSCE],willValidate[GCE]",
             EDGE = "checkValidity(),constructor(),disabled[GSCE],form[GCE],formNoValidate[GSCE],"
@@ -3918,9 +3567,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
             FF_ESR = "checkValidity(),constructor(),disabled[GSCE],form[GCE],formNoValidate[GSCE],"
                 + "labels[GCE],name[GSCE],setCustomValidity(),type[GSCE],validity[GCE],value[GSCE],willValidate[GCE]",
             FF = "checkValidity(),constructor(),disabled[GSCE],form[GCE],formNoValidate[GSCE],"
-                + "labels[GCE],name[GSCE],setCustomValidity(),type[GSCE],validity[GCE],value[GSCE],willValidate[GCE]",
-            IE = "checkValidity(),constructor[],createTextRange(),form[GCE],formNoValidate[GSCE],"
-                + "name[GSCE],setCustomValidity(),type[GSCE],validity[GCE],value[GSCE],willValidate[GCE]")
+                + "labels[GCE],name[GSCE],setCustomValidity(),type[GSCE],validity[GCE],value[GSCE],willValidate[GCE]")
     public void button() throws Exception {
         test("button");
     }
@@ -3942,13 +3589,11 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "width[GSCE]",
             FF_ESR = "captureStream(),constructor(),getContext(),height[GSCE],mozOpaque[GSCE],mozPrintCallback[GSCE],"
                 + "toBlob(),toDataURL(),transferControlToOffscreen(),"
-                + "width[GSCE]",
-            IE = "constructor,getContext(),height,msToBlob(),toDataURL(),width")
+                + "width[GSCE]")
     @HtmlUnitNYI(CHROME = "constructor(),getContext(),height[GSCE],toDataURL(),width[GSCE]",
             EDGE = "constructor(),getContext(),height[GSCE],toDataURL(),width[GSCE]",
             FF_ESR = "constructor(),getContext(),height[GSCE],toDataURL(),width[GSCE]",
-            FF = "constructor(),getContext(),height[GSCE],toDataURL(),width[GSCE]",
-            IE = "constructor[],getContext(),height[GSCE],toDataURL(),width[GSCE]")
+            FF = "constructor(),getContext(),height[GSCE],toDataURL(),width[GSCE]")
     public void canvas() throws Exception {
         test("canvas");
     }
@@ -3962,8 +3607,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "align[GSCE],constructor()",
             EDGE = "align[GSCE],constructor()",
             FF = "align[GSCE],constructor()",
-            FF_ESR = "align[GSCE],constructor()",
-            IE = "align[GSCE],constructor[],vAlign[GSCE]")
+            FF_ESR = "align[GSCE],constructor()")
     public void caption() throws Exception {
         test("caption");
     }
@@ -4001,8 +3645,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],"
-                + "togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             EDGE = "accessKey[GSCE],attachInternals(),attributeStyleMap[GCE],autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
                 + "editContext[GSCE],enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],"
@@ -4030,17 +3674,18 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],textprediction[GSCE],"
-                + "title[GSCE],togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "title[GSCE],togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             FF = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
-                + "enterKeyHint[GSCE],focus(),hidden[GSCE],inert[GSCE],innerText[GSCE],inputMode[GSCE],"
-                + "isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
+                + "enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],innerText[GSCE],"
+                + "inputMode[GSCE],isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
                 + "offsetParent[GCE],offsetTop[GCE],offsetWidth[GCE],onabort[GSCE],onanimationcancel[GSCE],"
                 + "onanimationend[GSCE],onanimationiteration[GSCE],onanimationstart[GSCE],onauxclick[GSCE],"
-                + "onbeforeinput[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],oncanplaythrough[GSCE],"
-                + "onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextmenu[GSCE],oncopy[GSCE],oncuechange[GSCE],"
-                + "oncut[GSCE],ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
+                + "onbeforeinput[GSCE],onbeforetoggle[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],"
+                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextlost[GSCE],"
+                + "oncontextmenu[GSCE],oncontextrestored[GSCE],oncopy[GSCE],oncuechange[GSCE],oncut[GSCE],"
+                + "ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
                 + "ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],ondrop[GSCE],ondurationchange[GSCE],"
                 + "onemptied[GSCE],onended[GSCE],onerror[GSCE],onfocus[GSCE],onformdata[GSCE],"
                 + "ongotpointercapture[GSCE],oninput[GSCE],oninvalid[GSCE],onkeydown[GSCE],onkeypress[GSCE],"
@@ -4056,8 +3701,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],"
                 + "ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],"
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
-                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
-                + "tabIndex[GSCE],title[GSCE],"
+                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],popover[GSCE],showPopover(),"
+                + "spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],togglePopover(),"
                 + "translate[GSCE]",
             FF_ESR = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
@@ -4085,8 +3730,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
                 + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
                 + "tabIndex[GSCE],title[GSCE],"
-                + "translate[GSCE]",
-            IE = "cite,clear,constructor,width")
+                + "translate[GSCE]")
     @HtmlUnitNYI(CHROME = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -4113,7 +3757,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             EDGE = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -4140,7 +3784,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -4164,7 +3808,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF_ESR = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -4187,8 +3831,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
-            IE = "clear[GSCE],constructor[],width[GSCE]")
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]")
     public void center() throws Exception {
         test("center");
     }
@@ -4226,8 +3869,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],"
-                + "togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             EDGE = "accessKey[GSCE],attachInternals(),attributeStyleMap[GCE],autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
                 + "editContext[GSCE],enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],"
@@ -4255,17 +3898,18 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],textprediction[GSCE],"
-                + "title[GSCE],togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "title[GSCE],togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             FF = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
-                + "enterKeyHint[GSCE],focus(),hidden[GSCE],inert[GSCE],innerText[GSCE],inputMode[GSCE],"
-                + "isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
+                + "enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],innerText[GSCE],"
+                + "inputMode[GSCE],isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
                 + "offsetParent[GCE],offsetTop[GCE],offsetWidth[GCE],onabort[GSCE],onanimationcancel[GSCE],"
                 + "onanimationend[GSCE],onanimationiteration[GSCE],onanimationstart[GSCE],onauxclick[GSCE],"
-                + "onbeforeinput[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],oncanplaythrough[GSCE],"
-                + "onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextmenu[GSCE],oncopy[GSCE],oncuechange[GSCE],"
-                + "oncut[GSCE],ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
+                + "onbeforeinput[GSCE],onbeforetoggle[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],"
+                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextlost[GSCE],"
+                + "oncontextmenu[GSCE],oncontextrestored[GSCE],oncopy[GSCE],oncuechange[GSCE],oncut[GSCE],"
+                + "ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
                 + "ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],ondrop[GSCE],ondurationchange[GSCE],"
                 + "onemptied[GSCE],onended[GSCE],onerror[GSCE],onfocus[GSCE],onformdata[GSCE],"
                 + "ongotpointercapture[GSCE],oninput[GSCE],oninvalid[GSCE],onkeydown[GSCE],onkeypress[GSCE],"
@@ -4281,8 +3925,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],"
                 + "ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],"
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
-                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
-                + "tabIndex[GSCE],title[GSCE],"
+                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],popover[GSCE],showPopover(),"
+                + "spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],togglePopover(),"
                 + "translate[GSCE]",
             FF_ESR = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
@@ -4310,8 +3954,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
                 + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
                 + "tabIndex[GSCE],title[GSCE],"
-                + "translate[GSCE]",
-            IE = "cite,constructor,dateTime")
+                + "translate[GSCE]")
     @HtmlUnitNYI(CHROME = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -4338,7 +3981,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             EDGE = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -4365,7 +4008,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -4389,7 +4032,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF_ESR = "accessKey[GSCE],autofocus[GSCE],blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
                 + "hidden[GSCE],innerText[GSCE],isContentEditable[GCE],lang[GSCE],"
@@ -4411,8 +4054,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
-            IE = "constructor[]")
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]")
     public void cite() throws Exception {
         test("cite");
     }
@@ -4450,8 +4092,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],"
-                + "togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             EDGE = "accessKey[GSCE],attachInternals(),attributeStyleMap[GCE],autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
                 + "editContext[GSCE],enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],"
@@ -4479,17 +4121,18 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],textprediction[GSCE],"
-                + "title[GSCE],togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "title[GSCE],togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             FF = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
-                + "enterKeyHint[GSCE],focus(),hidden[GSCE],inert[GSCE],innerText[GSCE],inputMode[GSCE],"
-                + "isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
+                + "enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],innerText[GSCE],"
+                + "inputMode[GSCE],isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
                 + "offsetParent[GCE],offsetTop[GCE],offsetWidth[GCE],onabort[GSCE],onanimationcancel[GSCE],"
                 + "onanimationend[GSCE],onanimationiteration[GSCE],onanimationstart[GSCE],onauxclick[GSCE],"
-                + "onbeforeinput[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],oncanplaythrough[GSCE],"
-                + "onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextmenu[GSCE],oncopy[GSCE],oncuechange[GSCE],"
-                + "oncut[GSCE],ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
+                + "onbeforeinput[GSCE],onbeforetoggle[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],"
+                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextlost[GSCE],"
+                + "oncontextmenu[GSCE],oncontextrestored[GSCE],oncopy[GSCE],oncuechange[GSCE],oncut[GSCE],"
+                + "ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
                 + "ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],ondrop[GSCE],ondurationchange[GSCE],"
                 + "onemptied[GSCE],onended[GSCE],onerror[GSCE],onfocus[GSCE],onformdata[GSCE],"
                 + "ongotpointercapture[GSCE],oninput[GSCE],oninvalid[GSCE],onkeydown[GSCE],onkeypress[GSCE],"
@@ -4505,8 +4148,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],"
                 + "ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],"
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
-                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
-                + "tabIndex[GSCE],title[GSCE],"
+                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],popover[GSCE],showPopover(),"
+                + "spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],togglePopover(),"
                 + "translate[GSCE]",
             FF_ESR = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
@@ -4534,8 +4177,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
                 + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
                 + "tabIndex[GSCE],title[GSCE],"
-                + "translate[GSCE]",
-            IE = "cite,constructor,dateTime")
+                + "translate[GSCE]")
     @HtmlUnitNYI(CHROME = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -4562,7 +4204,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             EDGE = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -4589,7 +4231,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -4613,7 +4255,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF_ESR = "accessKey[GSCE],autofocus[GSCE],blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
                 + "hidden[GSCE],innerText[GSCE],isContentEditable[GCE],lang[GSCE],"
@@ -4635,8 +4277,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
-            IE = "constructor[]")
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]")
     public void code() throws Exception {
         test("code");
     }
@@ -4650,9 +4291,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor()",
             EDGE = "constructor()",
             FF = "constructor()",
-            FF_ESR = "constructor()",
-            IE = "constructor,namedRecordset(),recordset")
-    @HtmlUnitNYI(IE = "constructor[]")
+            FF_ESR = "constructor()")
     public void command() throws Exception {
         test("command");
     }
@@ -4666,8 +4305,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor(),options[GCE]",
             EDGE = "constructor(),options[GCE]",
             FF = "constructor(),options[GCE]",
-            FF_ESR = "constructor(),options[GCE]",
-            IE = "constructor[],options[GCE]")
+            FF_ESR = "constructor(),options[GCE]")
     public void datalist() throws Exception {
         test("datalist");
     }
@@ -4705,8 +4343,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],"
-                + "togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             EDGE = "accessKey[GSCE],attachInternals(),attributeStyleMap[GCE],autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
                 + "editContext[GSCE],enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],"
@@ -4734,17 +4372,18 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],textprediction[GSCE],"
-                + "title[GSCE],togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "title[GSCE],togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             FF = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
-                + "enterKeyHint[GSCE],focus(),hidden[GSCE],inert[GSCE],innerText[GSCE],inputMode[GSCE],"
-                + "isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
+                + "enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],innerText[GSCE],"
+                + "inputMode[GSCE],isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
                 + "offsetParent[GCE],offsetTop[GCE],offsetWidth[GCE],onabort[GSCE],onanimationcancel[GSCE],"
                 + "onanimationend[GSCE],onanimationiteration[GSCE],onanimationstart[GSCE],onauxclick[GSCE],"
-                + "onbeforeinput[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],oncanplaythrough[GSCE],"
-                + "onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextmenu[GSCE],oncopy[GSCE],oncuechange[GSCE],"
-                + "oncut[GSCE],ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
+                + "onbeforeinput[GSCE],onbeforetoggle[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],"
+                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextlost[GSCE],"
+                + "oncontextmenu[GSCE],oncontextrestored[GSCE],oncopy[GSCE],oncuechange[GSCE],oncut[GSCE],"
+                + "ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
                 + "ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],ondrop[GSCE],ondurationchange[GSCE],"
                 + "onemptied[GSCE],onended[GSCE],onerror[GSCE],onfocus[GSCE],onformdata[GSCE],"
                 + "ongotpointercapture[GSCE],oninput[GSCE],oninvalid[GSCE],onkeydown[GSCE],onkeypress[GSCE],"
@@ -4760,8 +4399,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],"
                 + "ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],"
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
-                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
-                + "tabIndex[GSCE],title[GSCE],"
+                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],popover[GSCE],showPopover(),"
+                + "spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],togglePopover(),"
                 + "translate[GSCE]",
             FF_ESR = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
@@ -4789,8 +4428,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
                 + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
                 + "tabIndex[GSCE],title[GSCE],"
-                + "translate[GSCE]",
-            IE = "cite,constructor,dateTime")
+                + "translate[GSCE]")
     @HtmlUnitNYI(CHROME = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -4817,7 +4455,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             EDGE = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -4844,7 +4482,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -4868,7 +4506,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF_ESR = "accessKey[GSCE],autofocus[GSCE],blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
                 + "hidden[GSCE],innerText[GSCE],isContentEditable[GCE],lang[GSCE],"
@@ -4890,8 +4528,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
-            IE = "constructor[]")
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]")
     public void dfn() throws Exception {
         test("dfn");
     }
@@ -4929,8 +4566,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],"
-                + "togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             EDGE = "accessKey[GSCE],attachInternals(),attributeStyleMap[GCE],autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
                 + "editContext[GSCE],enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],"
@@ -4958,17 +4595,18 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],textprediction[GSCE],"
-                + "title[GSCE],togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "title[GSCE],togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             FF = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
-                + "enterKeyHint[GSCE],focus(),hidden[GSCE],inert[GSCE],innerText[GSCE],inputMode[GSCE],"
-                + "isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
+                + "enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],innerText[GSCE],"
+                + "inputMode[GSCE],isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
                 + "offsetParent[GCE],offsetTop[GCE],offsetWidth[GCE],onabort[GSCE],onanimationcancel[GSCE],"
                 + "onanimationend[GSCE],onanimationiteration[GSCE],onanimationstart[GSCE],onauxclick[GSCE],"
-                + "onbeforeinput[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],oncanplaythrough[GSCE],"
-                + "onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextmenu[GSCE],oncopy[GSCE],oncuechange[GSCE],"
-                + "oncut[GSCE],ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
+                + "onbeforeinput[GSCE],onbeforetoggle[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],"
+                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextlost[GSCE],"
+                + "oncontextmenu[GSCE],oncontextrestored[GSCE],oncopy[GSCE],oncuechange[GSCE],oncut[GSCE],"
+                + "ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
                 + "ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],ondrop[GSCE],ondurationchange[GSCE],"
                 + "onemptied[GSCE],onended[GSCE],onerror[GSCE],onfocus[GSCE],onformdata[GSCE],"
                 + "ongotpointercapture[GSCE],oninput[GSCE],oninvalid[GSCE],onkeydown[GSCE],onkeypress[GSCE],"
@@ -4984,8 +4622,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],"
                 + "ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],"
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
-                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
-                + "tabIndex[GSCE],title[GSCE],"
+                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],popover[GSCE],showPopover(),"
+                + "spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],togglePopover(),"
                 + "translate[GSCE]",
             FF_ESR = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
@@ -5013,8 +4651,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
                 + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
                 + "tabIndex[GSCE],title[GSCE],"
-                + "translate[GSCE]",
-            IE = "constructor[],noWrap[GSCE]")
+                + "translate[GSCE]")
     @HtmlUnitNYI(CHROME = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -5041,7 +4678,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             EDGE = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -5068,7 +4705,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -5092,7 +4729,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF_ESR = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -5115,7 +4752,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]")
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]")
     public void dd() throws Exception {
         test("dd");
     }
@@ -5129,8 +4766,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "cite[GSCE],constructor(),dateTime[GSCE]",
             EDGE = "cite[GSCE],constructor(),dateTime[GSCE]",
             FF = "cite[GSCE],constructor(),dateTime[GSCE]",
-            FF_ESR = "cite[GSCE],constructor(),dateTime[GSCE]",
-            IE = "cite[GSCE],constructor[],dateTime[GSCE]")
+            FF_ESR = "cite[GSCE],constructor(),dateTime[GSCE]")
     public void del() throws Exception {
         test("del");
     }
@@ -5144,9 +4780,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor(),name[GSCE],open[GSCE]",
             EDGE = "constructor(),name[GSCE],open[GSCE]",
             FF = "constructor(),open[GSCE]",
-            FF_ESR = "constructor(),open[GSCE]",
-            IE = "constructor,namedRecordset(),recordset")
-    @HtmlUnitNYI(IE = "constructor[]")
+            FF_ESR = "constructor(),open[GSCE]")
     public void details() throws Exception {
         test("details");
     }
@@ -5160,9 +4794,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "close(),constructor(),open[GSCE],returnValue[GSCE],show(),showModal()",
             EDGE = "close(),constructor(),open[GSCE],returnValue[GSCE],show(),showModal()",
             FF = "close(),constructor(),open[GSCE],returnValue[GSCE],show(),showModal()",
-            FF_ESR = "close(),constructor(),open[GSCE],returnValue[GSCE],show(),showModal()",
-            IE = "constructor,namedRecordset(),recordset")
-    @HtmlUnitNYI(IE = "constructor[]")
+            FF_ESR = "close(),constructor(),open[GSCE],returnValue[GSCE],show(),showModal()")
     public void dialog() throws Exception {
         test("dialog");
     }
@@ -5176,13 +4808,11 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "compact[GSCE],constructor()",
             EDGE = "compact[GSCE],constructor()",
             FF = "compact[GSCE],constructor()",
-            FF_ESR = "compact[GSCE],constructor()",
-            IE = "compact,constructor,type")
+            FF_ESR = "compact[GSCE],constructor()")
     @HtmlUnitNYI(CHROME = "constructor()",
             EDGE = "constructor()",
             FF_ESR = "constructor()",
-            FF = "constructor()",
-            IE = "constructor[]")
+            FF = "constructor()")
     public void dir() throws Exception {
         test("dir");
     }
@@ -5196,8 +4826,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "align[GSCE],constructor()",
             EDGE = "align[GSCE],constructor()",
             FF = "align[GSCE],constructor()",
-            FF_ESR = "align[GSCE],constructor()",
-            IE = "align[GSCE],constructor[],noWrap[GSCE]")
+            FF_ESR = "align[GSCE],constructor()")
     public void div() throws Exception {
         test("div");
     }
@@ -5211,13 +4840,11 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "compact[GSCE],constructor()",
             EDGE = "compact[GSCE],constructor()",
             FF = "compact[GSCE],constructor()",
-            FF_ESR = "compact[GSCE],constructor()",
-            IE = "compact,constructor")
+            FF_ESR = "compact[GSCE],constructor()")
     @HtmlUnitNYI(CHROME = "constructor()",
             EDGE = "constructor()",
             FF_ESR = "constructor()",
-            FF = "constructor()",
-            IE = "constructor[]")
+            FF = "constructor()")
     public void dl() throws Exception {
         test("dl");
     }
@@ -5255,8 +4882,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],"
-                + "togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             EDGE = "accessKey[GSCE],attachInternals(),attributeStyleMap[GCE],autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
                 + "editContext[GSCE],enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],"
@@ -5284,17 +4911,18 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],textprediction[GSCE],"
-                + "title[GSCE],togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "title[GSCE],togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             FF = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
-                + "enterKeyHint[GSCE],focus(),hidden[GSCE],inert[GSCE],innerText[GSCE],inputMode[GSCE],"
-                + "isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
+                + "enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],innerText[GSCE],"
+                + "inputMode[GSCE],isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
                 + "offsetParent[GCE],offsetTop[GCE],offsetWidth[GCE],onabort[GSCE],onanimationcancel[GSCE],"
                 + "onanimationend[GSCE],onanimationiteration[GSCE],onanimationstart[GSCE],onauxclick[GSCE],"
-                + "onbeforeinput[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],oncanplaythrough[GSCE],"
-                + "onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextmenu[GSCE],oncopy[GSCE],oncuechange[GSCE],"
-                + "oncut[GSCE],ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
+                + "onbeforeinput[GSCE],onbeforetoggle[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],"
+                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextlost[GSCE],"
+                + "oncontextmenu[GSCE],oncontextrestored[GSCE],oncopy[GSCE],oncuechange[GSCE],oncut[GSCE],"
+                + "ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
                 + "ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],ondrop[GSCE],ondurationchange[GSCE],"
                 + "onemptied[GSCE],onended[GSCE],onerror[GSCE],onfocus[GSCE],onformdata[GSCE],"
                 + "ongotpointercapture[GSCE],oninput[GSCE],oninvalid[GSCE],onkeydown[GSCE],onkeypress[GSCE],"
@@ -5310,8 +4938,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],"
                 + "ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],"
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
-                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
-                + "tabIndex[GSCE],title[GSCE],"
+                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],popover[GSCE],showPopover(),"
+                + "spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],togglePopover(),"
                 + "translate[GSCE]",
             FF_ESR = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
@@ -5339,8 +4967,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
                 + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
                 + "tabIndex[GSCE],title[GSCE],"
-                + "translate[GSCE]",
-            IE = "constructor[],noWrap[GSCE]")
+                + "translate[GSCE]")
     @HtmlUnitNYI(CHROME = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -5367,7 +4994,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             EDGE = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -5394,7 +5021,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -5418,7 +5045,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF_ESR = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -5441,7 +5068,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]")
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]")
     public void dt() throws Exception {
         test("dt");
     }
@@ -5459,15 +5086,11 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
             FF = "align[GSCE],constructor(),getSVGDocument(),height[GSCE],name[GSCE],src[GSCE],type[GSCE],"
                 + "width[GSCE]",
             FF_ESR = "align[GSCE],constructor(),getSVGDocument(),height[GSCE],name[GSCE],src[GSCE],type[GSCE],"
-                + "width[GSCE]",
-            IE = "constructor[],getSVGDocument(),height[GSCE],hidden,msPlayToDisabled,msPlayToPreferredSourceUri,"
-                + "msPlayToPrimary,name[GSCE],palette,pluginspage,readyState,src[GSCE],units,"
                 + "width[GSCE]")
     @HtmlUnitNYI(CHROME = "align[GSCE],constructor(),height[GSCE],name[GSCE],width[GSCE]",
             EDGE = "align[GSCE],constructor(),height[GSCE],name[GSCE],width[GSCE]",
             FF_ESR = "align[GSCE],constructor(),height[GSCE],name[GSCE],width[GSCE]",
-            FF = "align[GSCE],constructor(),height[GSCE],name[GSCE],width[GSCE]",
-            IE = "constructor[],height[GSCE],name[GSCE],width[GSCE]")
+            FF = "align[GSCE],constructor(),height[GSCE],name[GSCE],width[GSCE]")
     public void embed() throws Exception {
         test("embed");
     }
@@ -5505,8 +5128,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],"
-                + "togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             EDGE = "accessKey[GSCE],attachInternals(),attributeStyleMap[GCE],autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
                 + "editContext[GSCE],enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],"
@@ -5534,17 +5157,18 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],textprediction[GSCE],"
-                + "title[GSCE],togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "title[GSCE],togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             FF = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
-                + "enterKeyHint[GSCE],focus(),hidden[GSCE],inert[GSCE],innerText[GSCE],inputMode[GSCE],"
-                + "isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
+                + "enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],innerText[GSCE],"
+                + "inputMode[GSCE],isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
                 + "offsetParent[GCE],offsetTop[GCE],offsetWidth[GCE],onabort[GSCE],onanimationcancel[GSCE],"
                 + "onanimationend[GSCE],onanimationiteration[GSCE],onanimationstart[GSCE],onauxclick[GSCE],"
-                + "onbeforeinput[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],oncanplaythrough[GSCE],"
-                + "onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextmenu[GSCE],oncopy[GSCE],oncuechange[GSCE],"
-                + "oncut[GSCE],ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
+                + "onbeforeinput[GSCE],onbeforetoggle[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],"
+                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextlost[GSCE],"
+                + "oncontextmenu[GSCE],oncontextrestored[GSCE],oncopy[GSCE],oncuechange[GSCE],oncut[GSCE],"
+                + "ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
                 + "ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],ondrop[GSCE],ondurationchange[GSCE],"
                 + "onemptied[GSCE],onended[GSCE],onerror[GSCE],onfocus[GSCE],onformdata[GSCE],"
                 + "ongotpointercapture[GSCE],oninput[GSCE],oninvalid[GSCE],onkeydown[GSCE],onkeypress[GSCE],"
@@ -5560,8 +5184,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],"
                 + "ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],"
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
-                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
-                + "tabIndex[GSCE],title[GSCE],"
+                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],popover[GSCE],showPopover(),"
+                + "spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],togglePopover(),"
                 + "translate[GSCE]",
             FF_ESR = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
@@ -5589,8 +5213,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
                 + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
                 + "tabIndex[GSCE],title[GSCE],"
-                + "translate[GSCE]",
-            IE = "cite,constructor,dateTime")
+                + "translate[GSCE]")
     @HtmlUnitNYI(CHROME = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -5617,7 +5240,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             EDGE = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -5644,7 +5267,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -5668,7 +5291,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF_ESR = "accessKey[GSCE],autofocus[GSCE],blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
                 + "hidden[GSCE],innerText[GSCE],isContentEditable[GCE],lang[GSCE],"
@@ -5690,8 +5313,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
-            IE = "constructor[]")
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]")
     public void em() throws Exception {
         test("em");
     }
@@ -5713,9 +5335,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "willValidate[GCE]",
             FF_ESR = "checkValidity(),constructor(),disabled[GSCE],elements[GCE],form[GCE],name[GSCE],reportValidity(),"
                 + "setCustomValidity(),type[GCE],validationMessage[GCE],validity[GCE],"
-                + "willValidate[GCE]",
-            IE = "align,checkValidity(),constructor,form,setCustomValidity(),validationMessage,validity,"
-                + "willValidate")
+                + "willValidate[GCE]")
     @HtmlUnitNYI(CHROME = "checkValidity(),constructor(),disabled[GSCE],form[GCE],name[GSCE],"
                 + "setCustomValidity(),validity[GCE],willValidate[GCE]",
             EDGE = "checkValidity(),constructor(),disabled[GSCE],form[GCE],name[GSCE],"
@@ -5723,8 +5343,6 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
             FF_ESR = "checkValidity(),constructor(),disabled[GSCE],form[GCE],name[GSCE],"
                 + "setCustomValidity(),validity[GCE],willValidate[GCE]",
             FF = "checkValidity(),constructor(),disabled[GSCE],form[GCE],name[GSCE],"
-                + "setCustomValidity(),validity[GCE],willValidate[GCE]",
-            IE = "align[GSCE],checkValidity(),constructor[],disabled[GSCE],form[GCE],"
                 + "setCustomValidity(),validity[GCE],willValidate[GCE]")
     public void fieldset() throws Exception {
         test("fieldset");
@@ -5763,8 +5381,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],"
-                + "togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             EDGE = "accessKey[GSCE],attachInternals(),attributeStyleMap[GCE],autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
                 + "editContext[GSCE],enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],"
@@ -5792,17 +5410,18 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],textprediction[GSCE],"
-                + "title[GSCE],togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "title[GSCE],togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             FF = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
-                + "enterKeyHint[GSCE],focus(),hidden[GSCE],inert[GSCE],innerText[GSCE],inputMode[GSCE],"
-                + "isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
+                + "enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],innerText[GSCE],"
+                + "inputMode[GSCE],isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
                 + "offsetParent[GCE],offsetTop[GCE],offsetWidth[GCE],onabort[GSCE],onanimationcancel[GSCE],"
                 + "onanimationend[GSCE],onanimationiteration[GSCE],onanimationstart[GSCE],onauxclick[GSCE],"
-                + "onbeforeinput[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],oncanplaythrough[GSCE],"
-                + "onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextmenu[GSCE],oncopy[GSCE],oncuechange[GSCE],"
-                + "oncut[GSCE],ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
+                + "onbeforeinput[GSCE],onbeforetoggle[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],"
+                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextlost[GSCE],"
+                + "oncontextmenu[GSCE],oncontextrestored[GSCE],oncopy[GSCE],oncuechange[GSCE],oncut[GSCE],"
+                + "ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
                 + "ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],ondrop[GSCE],ondurationchange[GSCE],"
                 + "onemptied[GSCE],onended[GSCE],onerror[GSCE],onfocus[GSCE],onformdata[GSCE],"
                 + "ongotpointercapture[GSCE],oninput[GSCE],oninvalid[GSCE],onkeydown[GSCE],onkeypress[GSCE],"
@@ -5818,8 +5437,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],"
                 + "ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],"
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
-                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
-                + "tabIndex[GSCE],title[GSCE],"
+                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],popover[GSCE],showPopover(),"
+                + "spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],togglePopover(),"
                 + "translate[GSCE]",
             FF_ESR = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
@@ -5847,26 +5466,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
                 + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
                 + "tabIndex[GSCE],title[GSCE],"
-                + "translate[GSCE]",
-            IE = "accessKey,applyElement(),blur(),canHaveChildren,canHaveHTML,children,classList,className,"
-                + "clearAttributes(),click(),componentFromPoint(),constructor,contains(),contentEditable,"
-                + "createControlRange(),currentStyle,dataset,dir,disabled,dragDrop(),draggable,focus(),"
-                + "getAdjacentText(),getElementsByClassName(),hidden,hideFocus,id,innerHTML,innerText,"
-                + "insertAdjacentElement(),insertAdjacentHTML(),insertAdjacentText(),isContentEditable,isDisabled,"
-                + "isMultiLine,isTextEdit,lang,language,mergeAttributes(),msGetInputContext(),offsetHeight,"
-                + "offsetLeft,offsetParent,offsetTop,offsetWidth,onabort,onactivate,onbeforeactivate,onbeforecopy,"
-                + "onbeforecut,onbeforedeactivate,onbeforepaste,onblur,oncanplay,oncanplaythrough,onchange,onclick,"
-                + "oncontextmenu,oncopy,oncuechange,oncut,ondblclick,ondeactivate,ondrag,ondragend,ondragenter,"
-                + "ondragleave,ondragover,ondragstart,ondrop,ondurationchange,onemptied,onended,onerror,onfocus,"
-                + "onfocusin,onfocusout,onhelp,oninput,onkeydown,onkeypress,onkeyup,onload,onloadeddata,"
-                + "onloadedmetadata,onloadstart,onmousedown,onmouseenter,onmouseleave,onmousemove,onmouseout,"
-                + "onmouseover,onmouseup,onmousewheel,onmscontentzoom,onmsmanipulationstatechanged,onpaste,onpause,"
-                + "onplay,onplaying,onprogress,onratechange,onreset,onscroll,onseeked,onseeking,onselect,"
-                + "onselectstart,onstalled,onsubmit,onsuspend,ontimeupdate,onvolumechange,onwaiting,outerHTML,"
-                + "outerText,parentElement,parentTextEdit,recordNumber,releaseCapture(),removeNode(),"
-                + "replaceAdjacentText(),replaceNode(),runtimeStyle,scrollIntoView(),setActive(),setCapture(),"
-                + "sourceIndex,spellcheck,style,swapNode(),tabIndex,title,uniqueID,"
-                + "uniqueNumber")
+                + "translate[GSCE]")
     @HtmlUnitNYI(CHROME = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -5893,7 +5493,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             EDGE = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -5920,7 +5520,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -5944,7 +5544,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF_ESR = "accessKey[GSCE],autofocus[GSCE],blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
                 + "hidden[GSCE],innerText[GSCE],isContentEditable[GCE],lang[GSCE],"
@@ -5966,29 +5566,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
-            IE = "accessKey[GSCE],blur(),children[GCE],classList[GCE],className[GSCE],clearAttributes(),click(),"
-                + "constructor[],contains(),contentEditable[GSCE],currentStyle[GCE],dataset[GCE],dir[GSCE],"
-                + "disabled[GSCE],focus(),getElementsByClassName(),hidden[GSCE],id[GSCE],innerHTML[GSCE],"
-                + "innerText[GSCE],insertAdjacentElement(),insertAdjacentHTML(),insertAdjacentText(),"
-                + "isContentEditable[GCE],lang[GSCE],language[GSCE],mergeAttributes(),offsetHeight[GCE],"
-                + "offsetLeft[GCE],offsetParent[GCE],offsetTop[GCE],offsetWidth[GCE],onabort[GSCE],"
-                + "onactivate[GSCE],onbeforeactivate[GSCE],onbeforecopy[GSCE],onbeforecut[GSCE],"
-                + "onbeforedeactivate[GSCE],onbeforepaste[GSCE],onblur[GSCE],oncanplay[GSCE],"
-                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],oncontextmenu[GSCE],oncopy[GSCE],"
-                + "oncuechange[GSCE],oncut[GSCE],ondblclick[GSCE],ondeactivate[GSCE],ondrag[GSCE],"
-                + "ondragend[GSCE],ondragenter[GSCE],ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],"
-                + "ondrop[GSCE],ondurationchange[GSCE],onemptied[GSCE],onended[GSCE],onerror[GSCE],"
-                + "onfocus[GSCE],onfocusin[GSCE],onfocusout[GSCE],onhelp[GSCE],oninput[GSCE],onkeydown[GSCE],"
-                + "onkeypress[GSCE],onkeyup[GSCE],onload[GSCE],onloadeddata[GSCE],onloadedmetadata[GSCE],"
-                + "onloadstart[GSCE],onmousedown[GSCE],onmouseenter[GSCE],onmouseleave[GSCE],onmousemove[GSCE],"
-                + "onmouseout[GSCE],onmouseover[GSCE],onmouseup[GSCE],onmousewheel[GSCE],onmscontentzoom[GSCE],"
-                + "onmsmanipulationstatechanged[GSCE],onpaste[GSCE],onpause[GSCE],onplay[GSCE],onplaying[GSCE],"
-                + "onprogress[GSCE],onratechange[GSCE],onreset[GSCE],onscroll[GSCE],onseeked[GSCE],"
-                + "onseeking[GSCE],onselect[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
-                + "onsuspend[GSCE],ontimeupdate[GSCE],onvolumechange[GSCE],onwaiting[GSCE],outerHTML[GSCE],"
-                + "outerText[GCE],parentElement[GCE],releaseCapture(),removeNode(),runtimeStyle[GCE],"
-                + "scrollIntoView(),setActive(),setCapture(),style[GSCE],tabIndex[GSCE],title[GSCE],uniqueID[GCE]")
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]")
     public void figcaption() throws Exception {
         test("figcaption");
     }
@@ -6026,8 +5604,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],"
-                + "togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             EDGE = "accessKey[GSCE],attachInternals(),attributeStyleMap[GCE],autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
                 + "editContext[GSCE],enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],"
@@ -6055,17 +5633,18 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],textprediction[GSCE],"
-                + "title[GSCE],togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "title[GSCE],togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             FF = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
-                + "enterKeyHint[GSCE],focus(),hidden[GSCE],inert[GSCE],innerText[GSCE],inputMode[GSCE],"
-                + "isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
+                + "enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],innerText[GSCE],"
+                + "inputMode[GSCE],isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
                 + "offsetParent[GCE],offsetTop[GCE],offsetWidth[GCE],onabort[GSCE],onanimationcancel[GSCE],"
                 + "onanimationend[GSCE],onanimationiteration[GSCE],onanimationstart[GSCE],onauxclick[GSCE],"
-                + "onbeforeinput[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],oncanplaythrough[GSCE],"
-                + "onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextmenu[GSCE],oncopy[GSCE],oncuechange[GSCE],"
-                + "oncut[GSCE],ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
+                + "onbeforeinput[GSCE],onbeforetoggle[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],"
+                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextlost[GSCE],"
+                + "oncontextmenu[GSCE],oncontextrestored[GSCE],oncopy[GSCE],oncuechange[GSCE],oncut[GSCE],"
+                + "ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
                 + "ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],ondrop[GSCE],ondurationchange[GSCE],"
                 + "onemptied[GSCE],onended[GSCE],onerror[GSCE],onfocus[GSCE],onformdata[GSCE],"
                 + "ongotpointercapture[GSCE],oninput[GSCE],oninvalid[GSCE],onkeydown[GSCE],onkeypress[GSCE],"
@@ -6081,8 +5660,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],"
                 + "ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],"
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
-                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
-                + "tabIndex[GSCE],title[GSCE],"
+                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],popover[GSCE],showPopover(),"
+                + "spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],togglePopover(),"
                 + "translate[GSCE]",
             FF_ESR = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
@@ -6110,26 +5689,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
                 + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
                 + "tabIndex[GSCE],title[GSCE],"
-                + "translate[GSCE]",
-            IE = "accessKey,applyElement(),blur(),canHaveChildren,canHaveHTML,children,classList,className,"
-                + "clearAttributes(),click(),componentFromPoint(),constructor,contains(),contentEditable,"
-                + "createControlRange(),currentStyle,dataset,dir,disabled,dragDrop(),draggable,focus(),"
-                + "getAdjacentText(),getElementsByClassName(),hidden,hideFocus,id,innerHTML,innerText,"
-                + "insertAdjacentElement(),insertAdjacentHTML(),insertAdjacentText(),isContentEditable,isDisabled,"
-                + "isMultiLine,isTextEdit,lang,language,mergeAttributes(),msGetInputContext(),offsetHeight,"
-                + "offsetLeft,offsetParent,offsetTop,offsetWidth,onabort,onactivate,onbeforeactivate,onbeforecopy,"
-                + "onbeforecut,onbeforedeactivate,onbeforepaste,onblur,oncanplay,oncanplaythrough,onchange,onclick,"
-                + "oncontextmenu,oncopy,oncuechange,oncut,ondblclick,ondeactivate,ondrag,ondragend,ondragenter,"
-                + "ondragleave,ondragover,ondragstart,ondrop,ondurationchange,onemptied,onended,onerror,onfocus,"
-                + "onfocusin,onfocusout,onhelp,oninput,onkeydown,onkeypress,onkeyup,onload,onloadeddata,"
-                + "onloadedmetadata,onloadstart,onmousedown,onmouseenter,onmouseleave,onmousemove,onmouseout,"
-                + "onmouseover,onmouseup,onmousewheel,onmscontentzoom,onmsmanipulationstatechanged,onpaste,onpause,"
-                + "onplay,onplaying,onprogress,onratechange,onreset,onscroll,onseeked,onseeking,onselect,"
-                + "onselectstart,onstalled,onsubmit,onsuspend,ontimeupdate,onvolumechange,onwaiting,outerHTML,"
-                + "outerText,parentElement,parentTextEdit,recordNumber,releaseCapture(),removeNode(),"
-                + "replaceAdjacentText(),replaceNode(),runtimeStyle,scrollIntoView(),setActive(),setCapture(),"
-                + "sourceIndex,spellcheck,style,swapNode(),tabIndex,title,uniqueID,"
-                + "uniqueNumber")
+                + "translate[GSCE]")
     @HtmlUnitNYI(CHROME = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -6156,7 +5716,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             EDGE = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -6183,7 +5743,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -6207,7 +5767,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF_ESR = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -6230,29 +5790,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
-            IE = "accessKey[GSCE],blur(),children[GCE],classList[GCE],className[GSCE],clearAttributes(),click(),"
-                + "constructor[],contains(),contentEditable[GSCE],currentStyle[GCE],dataset[GCE],dir[GSCE],"
-                + "disabled[GSCE],focus(),getElementsByClassName(),hidden[GSCE],id[GSCE],innerHTML[GSCE],"
-                + "innerText[GSCE],insertAdjacentElement(),insertAdjacentHTML(),insertAdjacentText(),"
-                + "isContentEditable[GCE],lang[GSCE],language[GSCE],mergeAttributes(),offsetHeight[GCE],"
-                + "offsetLeft[GCE],offsetParent[GCE],offsetTop[GCE],offsetWidth[GCE],onabort[GSCE],"
-                + "onactivate[GSCE],onbeforeactivate[GSCE],onbeforecopy[GSCE],onbeforecut[GSCE],"
-                + "onbeforedeactivate[GSCE],onbeforepaste[GSCE],onblur[GSCE],oncanplay[GSCE],"
-                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],oncontextmenu[GSCE],oncopy[GSCE],"
-                + "oncuechange[GSCE],oncut[GSCE],ondblclick[GSCE],ondeactivate[GSCE],ondrag[GSCE],"
-                + "ondragend[GSCE],ondragenter[GSCE],ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],"
-                + "ondrop[GSCE],ondurationchange[GSCE],onemptied[GSCE],onended[GSCE],onerror[GSCE],"
-                + "onfocus[GSCE],onfocusin[GSCE],onfocusout[GSCE],onhelp[GSCE],oninput[GSCE],onkeydown[GSCE],"
-                + "onkeypress[GSCE],onkeyup[GSCE],onload[GSCE],onloadeddata[GSCE],onloadedmetadata[GSCE],"
-                + "onloadstart[GSCE],onmousedown[GSCE],onmouseenter[GSCE],onmouseleave[GSCE],onmousemove[GSCE],"
-                + "onmouseout[GSCE],onmouseover[GSCE],onmouseup[GSCE],onmousewheel[GSCE],onmscontentzoom[GSCE],"
-                + "onmsmanipulationstatechanged[GSCE],onpaste[GSCE],onpause[GSCE],onplay[GSCE],onplaying[GSCE],"
-                + "onprogress[GSCE],onratechange[GSCE],onreset[GSCE],onscroll[GSCE],onseeked[GSCE],"
-                + "onseeking[GSCE],onselect[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
-                + "onsuspend[GSCE],ontimeupdate[GSCE],onvolumechange[GSCE],onwaiting[GSCE],outerHTML[GSCE],"
-                + "outerText[GCE],parentElement[GCE],releaseCapture(),removeNode(),runtimeStyle[GCE],"
-                + "scrollIntoView(),setActive(),setCapture(),style[GSCE],tabIndex[GSCE],title[GSCE],uniqueID[GCE]")
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]")
     public void figure() throws Exception {
         test("figure");
     }
@@ -6266,8 +5804,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "color[GSCE],constructor(),face[GSCE],size[GSCE]",
             EDGE = "color[GSCE],constructor(),face[GSCE],size[GSCE]",
             FF = "color[GSCE],constructor(),face[GSCE],size[GSCE]",
-            FF_ESR = "color[GSCE],constructor(),face[GSCE],size[GSCE]",
-            IE = "color[GSCE],constructor[],face[GSCE],size[GSCE]")
+            FF_ESR = "color[GSCE],constructor(),face[GSCE],size[GSCE]")
     public void font() throws Exception {
         test("font");
     }
@@ -6293,10 +5830,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
             FF_ESR = "acceptCharset[GSCE],action[GSCE],autocomplete[GSCE],checkValidity(),constructor(),elements[GCE],"
                 + "encoding[GSCE],enctype[GSCE],length[GCE],method[GSCE],name[GSCE],noValidate[GSCE],rel[GSCE],"
                 + "relList[GSCE],reportValidity(),requestSubmit(),reset(),submit(),"
-                + "target[GSCE]",
-            IE = "acceptCharset,action,autocomplete,checkValidity(),constructor,elements,encoding,enctype,item(),"
-                + "length,method,name,namedItem(),noValidate,reset(),submit(),tags(),target,"
-                + "urns()")
+                + "target[GSCE]")
     @HtmlUnitNYI(CHROME = "action[GSCE],checkValidity(),constructor(),elements[GCE],encoding[GSCE],enctype[GSCE],"
                 + "length[GCE],method[GSCE],name[GSCE],noValidate[GSCE],rel[GSCE],relList[GSCE],"
                 + "requestSubmit(),reset(),submit(),target[GSCE]",
@@ -6308,9 +5842,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "requestSubmit(),reset(),submit(),target[GSCE]",
             FF = "action[GSCE],checkValidity(),constructor(),elements[GCE],encoding[GSCE],enctype[GSCE],"
                 + "length[GCE],method[GSCE],name[GSCE],noValidate[GSCE],rel[GSCE],relList[GSCE],"
-                + "requestSubmit(),reset(),submit(),target[GSCE]",
-            IE = "action[GSCE],checkValidity(),constructor[],elements[GCE],encoding[GSCE],enctype[GSCE],item(),"
-                + "length[GCE],method[GSCE],name[GSCE],noValidate[GSCE],reset(),submit(),target[GSCE]")
+                + "requestSubmit(),reset(),submit(),target[GSCE]")
     public void form() throws Exception {
         test("form");
     }
@@ -6324,8 +5856,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "append(),constructor(),delete(),entries(),forEach(),get(),getAll(),has(),keys(),set(),values()",
             EDGE = "append(),constructor(),delete(),entries(),forEach(),get(),getAll(),has(),keys(),set(),values()",
             FF = "append(),constructor(),delete(),entries(),forEach(),get(),getAll(),has(),keys(),set(),values()",
-            FF_ESR = "append(),constructor(),delete(),entries(),forEach(),get(),getAll(),has(),keys(),set(),values()",
-            IE = "append(),constructor()")
+            FF_ESR = "append(),constructor(),delete(),entries(),forEach(),get(),getAll(),has(),keys(),set(),values()")
     public void formData() throws Exception {
         testString("", "new FormData()");
     }
@@ -6363,8 +5894,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],"
-                + "togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             EDGE = "accessKey[GSCE],attachInternals(),attributeStyleMap[GCE],autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
                 + "editContext[GSCE],enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],"
@@ -6392,17 +5923,18 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],textprediction[GSCE],"
-                + "title[GSCE],togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "title[GSCE],togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             FF = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
-                + "enterKeyHint[GSCE],focus(),hidden[GSCE],inert[GSCE],innerText[GSCE],inputMode[GSCE],"
-                + "isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
+                + "enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],innerText[GSCE],"
+                + "inputMode[GSCE],isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
                 + "offsetParent[GCE],offsetTop[GCE],offsetWidth[GCE],onabort[GSCE],onanimationcancel[GSCE],"
                 + "onanimationend[GSCE],onanimationiteration[GSCE],onanimationstart[GSCE],onauxclick[GSCE],"
-                + "onbeforeinput[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],oncanplaythrough[GSCE],"
-                + "onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextmenu[GSCE],oncopy[GSCE],oncuechange[GSCE],"
-                + "oncut[GSCE],ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
+                + "onbeforeinput[GSCE],onbeforetoggle[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],"
+                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextlost[GSCE],"
+                + "oncontextmenu[GSCE],oncontextrestored[GSCE],oncopy[GSCE],oncuechange[GSCE],oncut[GSCE],"
+                + "ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
                 + "ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],ondrop[GSCE],ondurationchange[GSCE],"
                 + "onemptied[GSCE],onended[GSCE],onerror[GSCE],onfocus[GSCE],onformdata[GSCE],"
                 + "ongotpointercapture[GSCE],oninput[GSCE],oninvalid[GSCE],onkeydown[GSCE],onkeypress[GSCE],"
@@ -6418,8 +5950,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],"
                 + "ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],"
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
-                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
-                + "tabIndex[GSCE],title[GSCE],"
+                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],popover[GSCE],showPopover(),"
+                + "spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],togglePopover(),"
                 + "translate[GSCE]",
             FF_ESR = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
@@ -6447,27 +5979,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
                 + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
                 + "tabIndex[GSCE],title[GSCE],"
-                + "translate[GSCE]",
-            IE = "accessKey,applyElement(),blur(),canHaveChildren,canHaveHTML,children,classList,className,"
-                + "clearAttributes(),click(),componentFromPoint(),constructor,contains(),contentEditable,"
-                + "createControlRange(),currentStyle,dataset,dir,disabled,dragDrop(),draggable,focus(),"
-                + "getAdjacentText(),getElementsByClassName(),hidden,hideFocus,id,innerHTML,innerText,"
-                + "insertAdjacentElement(),insertAdjacentHTML(),insertAdjacentText(),isContentEditable,"
-                + "isDisabled,isMultiLine,isTextEdit,lang,language,mergeAttributes(),msGetInputContext(),"
-                + "offsetHeight,offsetLeft,offsetParent,offsetTop,offsetWidth,onabort,onactivate,"
-                + "onbeforeactivate,onbeforecopy,onbeforecut,onbeforedeactivate,onbeforepaste,onblur,"
-                + "oncanplay,oncanplaythrough,onchange,onclick,oncontextmenu,oncopy,oncuechange,oncut,"
-                + "ondblclick,ondeactivate,ondrag,ondragend,ondragenter,ondragleave,ondragover,ondragstart,"
-                + "ondrop,ondurationchange,onemptied,onended,onerror,onfocus,onfocusin,onfocusout,onhelp,"
-                + "oninput,onkeydown,onkeypress,onkeyup,onload,onloadeddata,onloadedmetadata,onloadstart,"
-                + "onmousedown,onmouseenter,onmouseleave,onmousemove,onmouseout,onmouseover,onmouseup,"
-                + "onmousewheel,onmscontentzoom,onmsmanipulationstatechanged,onpaste,onpause,onplay,"
-                + "onplaying,onprogress,onratechange,onreset,onscroll,onseeked,onseeking,onselect,"
-                + "onselectstart,onstalled,onsubmit,onsuspend,ontimeupdate,onvolumechange,onwaiting,"
-                + "outerHTML,outerText,parentElement,parentTextEdit,recordNumber,releaseCapture(),"
-                + "removeNode(),replaceAdjacentText(),replaceNode(),runtimeStyle,scrollIntoView(),"
-                + "setActive(),setCapture(),sourceIndex,spellcheck,style,swapNode(),tabIndex,title,"
-                + "uniqueID,uniqueNumber")
+                + "translate[GSCE]")
     @HtmlUnitNYI(CHROME = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -6494,7 +6006,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             EDGE = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -6521,7 +6033,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -6545,7 +6057,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF_ESR = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -6568,29 +6080,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
-            IE = "accessKey[GSCE],blur(),children[GCE],classList[GCE],className[GSCE],clearAttributes(),click(),"
-                + "constructor[],contains(),contentEditable[GSCE],currentStyle[GCE],dataset[GCE],dir[GSCE],"
-                + "disabled[GSCE],focus(),getElementsByClassName(),hidden[GSCE],id[GSCE],innerHTML[GSCE],"
-                + "innerText[GSCE],insertAdjacentElement(),insertAdjacentHTML(),insertAdjacentText(),"
-                + "isContentEditable[GCE],lang[GSCE],language[GSCE],mergeAttributes(),offsetHeight[GCE],"
-                + "offsetLeft[GCE],offsetParent[GCE],offsetTop[GCE],offsetWidth[GCE],onabort[GSCE],"
-                + "onactivate[GSCE],onbeforeactivate[GSCE],onbeforecopy[GSCE],onbeforecut[GSCE],"
-                + "onbeforedeactivate[GSCE],onbeforepaste[GSCE],onblur[GSCE],oncanplay[GSCE],"
-                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],oncontextmenu[GSCE],oncopy[GSCE],"
-                + "oncuechange[GSCE],oncut[GSCE],ondblclick[GSCE],ondeactivate[GSCE],ondrag[GSCE],"
-                + "ondragend[GSCE],ondragenter[GSCE],ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],"
-                + "ondrop[GSCE],ondurationchange[GSCE],onemptied[GSCE],onended[GSCE],onerror[GSCE],"
-                + "onfocus[GSCE],onfocusin[GSCE],onfocusout[GSCE],onhelp[GSCE],oninput[GSCE],onkeydown[GSCE],"
-                + "onkeypress[GSCE],onkeyup[GSCE],onload[GSCE],onloadeddata[GSCE],onloadedmetadata[GSCE],"
-                + "onloadstart[GSCE],onmousedown[GSCE],onmouseenter[GSCE],onmouseleave[GSCE],onmousemove[GSCE],"
-                + "onmouseout[GSCE],onmouseover[GSCE],onmouseup[GSCE],onmousewheel[GSCE],onmscontentzoom[GSCE],"
-                + "onmsmanipulationstatechanged[GSCE],onpaste[GSCE],onpause[GSCE],onplay[GSCE],onplaying[GSCE],"
-                + "onprogress[GSCE],onratechange[GSCE],onreset[GSCE],onscroll[GSCE],onseeked[GSCE],"
-                + "onseeking[GSCE],onselect[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
-                + "onsuspend[GSCE],ontimeupdate[GSCE],onvolumechange[GSCE],onwaiting[GSCE],outerHTML[GSCE],"
-                + "outerText[GCE],parentElement[GCE],releaseCapture(),removeNode(),runtimeStyle[GCE],"
-                + "scrollIntoView(),setActive(),setCapture(),style[GSCE],tabIndex[GSCE],title[GSCE],uniqueID[GCE]")
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]")
     public void footer() throws Exception {
         test("footer");
     }
@@ -6612,16 +6102,11 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "src[GSCE]",
             FF_ESR = "constructor(),contentDocument[GCE],contentWindow[GCE],frameBorder[GSCE],longDesc[GSCE],"
                 + "marginHeight[GSCE],marginWidth[GSCE],name[GSCE],noResize[GSCE],scrolling[GSCE],"
-                + "src[GSCE]",
-            IE = "border,borderColor,constructor,contentDocument,contentWindow,frameBorder,frameSpacing,"
-                + "getSVGDocument(),height,longDesc,marginHeight,marginWidth,name,noResize,onload,scrolling,"
-                + "security,src,"
-                + "width")
+                + "src[GSCE]")
     @HtmlUnitNYI(CHROME = "constructor(),contentDocument[GCE],contentWindow[GCE],name[GSCE],src[GSCE]",
             EDGE = "constructor(),contentDocument[GCE],contentWindow[GCE],name[GSCE],src[GSCE]",
             FF_ESR = "constructor(),contentDocument[GCE],contentWindow[GCE],name[GSCE],src[GSCE]",
-            FF = "constructor(),contentDocument[GCE],contentWindow[GCE],name[GSCE],src[GSCE]",
-            IE = "border[GSCE],constructor[],contentDocument[GCE],contentWindow[GCE],name[GSCE],src[GSCE]")
+            FF = "constructor(),contentDocument[GCE],contentWindow[GCE],name[GSCE],src[GSCE]")
     public void frame() throws Exception {
         test("frame");
     }
@@ -6655,11 +6140,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onmessage[GSCE],onmessageerror[GSCE],onoffline[GSCE],ononline[GSCE],onpagehide[GSCE],"
                 + "onpageshow[GSCE],onpopstate[GSCE],onrejectionhandled[GSCE],onstorage[GSCE],"
                 + "onunhandledrejection[GSCE],onunload[GSCE],"
-                + "rows[GSCE]",
-            IE = "border,borderColor,cols,constructor,frameBorder,frameSpacing,name,onafterprint,onbeforeprint,"
-                + "onbeforeunload,onblur,onerror,onfocus,onhashchange,onload,onmessage,onoffline,ononline,"
-                + "onpagehide,onpageshow,onresize,onstorage,onunload,"
-                + "rows")
+                + "rows[GSCE]")
     @HtmlUnitNYI(CHROME = "cols[GSCE],constructor(),onafterprint[GSCE],onbeforeprint[GSCE],onbeforeunload[GSCE],"
                 + "onhashchange[GSCE],onlanguagechange[GSCE],onmessage[GSCE],onmessageerror[GSCE],onoffline[GSCE],"
                 + "ononline[GSCE],onpagehide[GSCE],onpageshow[GSCE],onpopstate[GSCE],onrejectionhandled[GSCE],"
@@ -6667,10 +6148,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
             EDGE = "cols[GSCE],constructor(),onafterprint[GSCE],onbeforeprint[GSCE],onbeforeunload[GSCE],"
                 + "onhashchange[GSCE],onlanguagechange[GSCE],onmessage[GSCE],onmessageerror[GSCE],onoffline[GSCE],"
                 + "ononline[GSCE],onpagehide[GSCE],onpageshow[GSCE],onpopstate[GSCE],onrejectionhandled[GSCE],"
-                + "onstorage[GSCE],onunhandledrejection[GSCE],onunload[GSCE],rows[GSCE]",
-            IE = "border[GSCE],cols[GSCE],constructor[],onafterprint[GSCE],onbeforeprint[GSCE],"
-                + "onbeforeunload[GSCE],onhashchange[GSCE],onmessage[GSCE],onoffline[GSCE],ononline[GSCE],"
-                + "onpagehide[GSCE],onpageshow[GSCE],onresize[GSCE],onstorage[GSCE],onunload[GSCE],rows[GSCE]")
+                + "onstorage[GSCE],onunhandledrejection[GSCE],onunload[GSCE],rows[GSCE]")
     public void frameset() throws Exception {
         test("frameset");
     }
@@ -6684,9 +6162,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor()",
             EDGE = "constructor()",
             FF = "constructor()",
-            FF_ESR = "constructor()",
-            IE = "constructor,profile")
-    @HtmlUnitNYI(IE = "constructor[]")
+            FF_ESR = "constructor()")
     public void head() throws Exception {
         test("head");
     }
@@ -6724,8 +6200,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],"
-                + "togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             EDGE = "accessKey[GSCE],attachInternals(),attributeStyleMap[GCE],autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
                 + "editContext[GSCE],enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],"
@@ -6753,17 +6229,18 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],textprediction[GSCE],"
-                + "title[GSCE],togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "title[GSCE],togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             FF = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
-                + "enterKeyHint[GSCE],focus(),hidden[GSCE],inert[GSCE],innerText[GSCE],inputMode[GSCE],"
-                + "isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
+                + "enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],innerText[GSCE],"
+                + "inputMode[GSCE],isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
                 + "offsetParent[GCE],offsetTop[GCE],offsetWidth[GCE],onabort[GSCE],onanimationcancel[GSCE],"
                 + "onanimationend[GSCE],onanimationiteration[GSCE],onanimationstart[GSCE],onauxclick[GSCE],"
-                + "onbeforeinput[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],oncanplaythrough[GSCE],"
-                + "onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextmenu[GSCE],oncopy[GSCE],oncuechange[GSCE],"
-                + "oncut[GSCE],ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
+                + "onbeforeinput[GSCE],onbeforetoggle[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],"
+                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextlost[GSCE],"
+                + "oncontextmenu[GSCE],oncontextrestored[GSCE],oncopy[GSCE],oncuechange[GSCE],oncut[GSCE],"
+                + "ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
                 + "ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],ondrop[GSCE],ondurationchange[GSCE],"
                 + "onemptied[GSCE],onended[GSCE],onerror[GSCE],onfocus[GSCE],onformdata[GSCE],"
                 + "ongotpointercapture[GSCE],oninput[GSCE],oninvalid[GSCE],onkeydown[GSCE],onkeypress[GSCE],"
@@ -6779,8 +6256,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],"
                 + "ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],"
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
-                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
-                + "tabIndex[GSCE],title[GSCE],"
+                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],popover[GSCE],showPopover(),"
+                + "spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],togglePopover(),"
                 + "translate[GSCE]",
             FF_ESR = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
@@ -6808,26 +6285,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
                 + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
                 + "tabIndex[GSCE],title[GSCE],"
-                + "translate[GSCE]",
-            IE = "accessKey,applyElement(),blur(),canHaveChildren,canHaveHTML,children,classList,className,"
-                + "clearAttributes(),click(),componentFromPoint(),constructor,contains(),contentEditable,"
-                + "createControlRange(),currentStyle,dataset,dir,disabled,dragDrop(),draggable,focus(),"
-                + "getAdjacentText(),getElementsByClassName(),hidden,hideFocus,id,innerHTML,innerText,"
-                + "insertAdjacentElement(),insertAdjacentHTML(),insertAdjacentText(),isContentEditable,isDisabled,"
-                + "isMultiLine,isTextEdit,lang,language,mergeAttributes(),msGetInputContext(),offsetHeight,"
-                + "offsetLeft,offsetParent,offsetTop,offsetWidth,onabort,onactivate,onbeforeactivate,onbeforecopy,"
-                + "onbeforecut,onbeforedeactivate,onbeforepaste,onblur,oncanplay,oncanplaythrough,onchange,onclick,"
-                + "oncontextmenu,oncopy,oncuechange,oncut,ondblclick,ondeactivate,ondrag,ondragend,ondragenter,"
-                + "ondragleave,ondragover,ondragstart,ondrop,ondurationchange,onemptied,onended,onerror,onfocus,"
-                + "onfocusin,onfocusout,onhelp,oninput,onkeydown,onkeypress,onkeyup,onload,onloadeddata,"
-                + "onloadedmetadata,onloadstart,onmousedown,onmouseenter,onmouseleave,onmousemove,onmouseout,"
-                + "onmouseover,onmouseup,onmousewheel,onmscontentzoom,onmsmanipulationstatechanged,onpaste,onpause,"
-                + "onplay,onplaying,onprogress,onratechange,onreset,onscroll,onseeked,onseeking,onselect,"
-                + "onselectstart,onstalled,onsubmit,onsuspend,ontimeupdate,onvolumechange,onwaiting,outerHTML,"
-                + "outerText,parentElement,parentTextEdit,recordNumber,releaseCapture(),removeNode(),"
-                + "replaceAdjacentText(),replaceNode(),runtimeStyle,scrollIntoView(),setActive(),setCapture(),"
-                + "sourceIndex,spellcheck,style,swapNode(),tabIndex,title,uniqueID,"
-                + "uniqueNumber")
+                + "translate[GSCE]")
     @HtmlUnitNYI(CHROME = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -6854,7 +6312,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             EDGE = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -6881,7 +6339,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -6905,7 +6363,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF_ESR = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -6928,29 +6386,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
-            IE = "accessKey[GSCE],blur(),children[GCE],classList[GCE],className[GSCE],clearAttributes(),click(),"
-                + "constructor[],contains(),contentEditable[GSCE],currentStyle[GCE],dataset[GCE],dir[GSCE],"
-                + "disabled[GSCE],focus(),getElementsByClassName(),hidden[GSCE],id[GSCE],innerHTML[GSCE],"
-                + "innerText[GSCE],insertAdjacentElement(),insertAdjacentHTML(),insertAdjacentText(),"
-                + "isContentEditable[GCE],lang[GSCE],language[GSCE],mergeAttributes(),offsetHeight[GCE],"
-                + "offsetLeft[GCE],offsetParent[GCE],offsetTop[GCE],offsetWidth[GCE],onabort[GSCE],"
-                + "onactivate[GSCE],onbeforeactivate[GSCE],onbeforecopy[GSCE],onbeforecut[GSCE],"
-                + "onbeforedeactivate[GSCE],onbeforepaste[GSCE],onblur[GSCE],oncanplay[GSCE],"
-                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],oncontextmenu[GSCE],oncopy[GSCE],"
-                + "oncuechange[GSCE],oncut[GSCE],ondblclick[GSCE],ondeactivate[GSCE],ondrag[GSCE],"
-                + "ondragend[GSCE],ondragenter[GSCE],ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],"
-                + "ondrop[GSCE],ondurationchange[GSCE],onemptied[GSCE],onended[GSCE],onerror[GSCE],"
-                + "onfocus[GSCE],onfocusin[GSCE],onfocusout[GSCE],onhelp[GSCE],oninput[GSCE],onkeydown[GSCE],"
-                + "onkeypress[GSCE],onkeyup[GSCE],onload[GSCE],onloadeddata[GSCE],onloadedmetadata[GSCE],"
-                + "onloadstart[GSCE],onmousedown[GSCE],onmouseenter[GSCE],onmouseleave[GSCE],onmousemove[GSCE],"
-                + "onmouseout[GSCE],onmouseover[GSCE],onmouseup[GSCE],onmousewheel[GSCE],onmscontentzoom[GSCE],"
-                + "onmsmanipulationstatechanged[GSCE],onpaste[GSCE],onpause[GSCE],onplay[GSCE],onplaying[GSCE],"
-                + "onprogress[GSCE],onratechange[GSCE],onreset[GSCE],onscroll[GSCE],onseeked[GSCE],"
-                + "onseeking[GSCE],onselect[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
-                + "onsuspend[GSCE],ontimeupdate[GSCE],onvolumechange[GSCE],onwaiting[GSCE],outerHTML[GSCE],"
-                + "outerText[GCE],parentElement[GCE],releaseCapture(),removeNode(),runtimeStyle[GCE],"
-                + "scrollIntoView(),setActive(),setCapture(),style[GSCE],tabIndex[GSCE],title[GSCE],uniqueID[GCE]")
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]")
     public void header() throws Exception {
         test("header");
     }
@@ -6964,8 +6400,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "align[GSCE],constructor()",
             EDGE = "align[GSCE],constructor()",
             FF = "align[GSCE],constructor()",
-            FF_ESR = "align[GSCE],constructor()",
-            IE = "align[GSCE],clear[GSCE],constructor[]")
+            FF_ESR = "align[GSCE],constructor()")
     public void h1() throws Exception {
         test("h1");
     }
@@ -6979,8 +6414,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "align[GSCE],constructor()",
             EDGE = "align[GSCE],constructor()",
             FF = "align[GSCE],constructor()",
-            FF_ESR = "align[GSCE],constructor()",
-            IE = "align[GSCE],clear[GSCE],constructor[]")
+            FF_ESR = "align[GSCE],constructor()")
     public void h2() throws Exception {
         test("h2");
     }
@@ -6994,8 +6428,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "align[GSCE],constructor()",
             EDGE = "align[GSCE],constructor()",
             FF = "align[GSCE],constructor()",
-            FF_ESR = "align[GSCE],constructor()",
-            IE = "align[GSCE],clear[GSCE],constructor[]")
+            FF_ESR = "align[GSCE],constructor()")
     public void h3() throws Exception {
         test("h3");
     }
@@ -7009,8 +6442,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "align[GSCE],constructor()",
             EDGE = "align[GSCE],constructor()",
             FF = "align[GSCE],constructor()",
-            FF_ESR = "align[GSCE],constructor()",
-            IE = "align[GSCE],clear[GSCE],constructor[]")
+            FF_ESR = "align[GSCE],constructor()")
     public void h4() throws Exception {
         test("h4");
     }
@@ -7024,8 +6456,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "align[GSCE],constructor()",
             EDGE = "align[GSCE],constructor()",
             FF = "align[GSCE],constructor()",
-            FF_ESR = "align[GSCE],constructor()",
-            IE = "align[GSCE],clear[GSCE],constructor[]")
+            FF_ESR = "align[GSCE],constructor()")
     public void h5() throws Exception {
         test("h5");
     }
@@ -7039,8 +6470,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "align[GSCE],constructor()",
             EDGE = "align[GSCE],constructor()",
             FF = "align[GSCE],constructor()",
-            FF_ESR = "align[GSCE],constructor()",
-            IE = "align[GSCE],clear[GSCE],constructor[]")
+            FF_ESR = "align[GSCE],constructor()")
     public void h6() throws Exception {
         test("h6");
     }
@@ -7054,13 +6484,11 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "align[GSCE],color[GSCE],constructor(),noShade[GSCE],size[GSCE],width[GSCE]",
             EDGE = "align[GSCE],color[GSCE],constructor(),noShade[GSCE],size[GSCE],width[GSCE]",
             FF = "align[GSCE],color[GSCE],constructor(),noShade[GSCE],size[GSCE],width[GSCE]",
-            FF_ESR = "align[GSCE],color[GSCE],constructor(),noShade[GSCE],size[GSCE],width[GSCE]",
-            IE = "align,color,constructor,noShade,size,width")
+            FF_ESR = "align[GSCE],color[GSCE],constructor(),noShade[GSCE],size[GSCE],width[GSCE]")
     @HtmlUnitNYI(CHROME = "align[GSCE],color[GSCE],constructor(),width[GSCE]",
             EDGE = "align[GSCE],color[GSCE],constructor(),width[GSCE]",
             FF_ESR = "align[GSCE],color[GSCE],constructor(),width[GSCE]",
-            FF = "align[GSCE],color[GSCE],constructor(),width[GSCE]",
-            IE = "align[GSCE],color[GSCE],constructor[],width[GSCE]")
+            FF = "align[GSCE],color[GSCE],constructor(),width[GSCE]")
     public void hr() throws Exception {
         test("hr");
     }
@@ -7074,8 +6502,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor(),version[GSCE]",
             EDGE = "constructor(),version[GSCE]",
             FF = "constructor(),version[GSCE]",
-            FF_ESR = "constructor(),version[GSCE]",
-            IE = "constructor[],version[GSCE]")
+            FF_ESR = "constructor(),version[GSCE]")
     public void html() throws Exception {
         test("html");
     }
@@ -7086,17 +6513,17 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = "align[GSCE],allow[GSCE],allowFullscreen[GSCE],allowPaymentRequest[GSCE],constructor(),"
-                + "contentDocument[GCE],contentWindow[GCE],credentialless[GSCE],csp[GSCE],featurePolicy[GCE],"
-                + "frameBorder[GSCE],getSVGDocument(),height[GSCE],loading[GSCE],longDesc[GSCE],marginHeight[GSCE],"
-                + "marginWidth[GSCE],name[GSCE],privateToken[GSCE],referrerPolicy[GSCE],sandbox[GSCE],"
-                + "scrolling[GSCE],src[GSCE],srcdoc[GSCE],"
+    @Alerts(CHROME = "adAuctionHeaders[GSCE],align[GSCE],allow[GSCE],allowFullscreen[GSCE],allowPaymentRequest[GSCE],"
+                + "constructor(),contentDocument[GCE],contentWindow[GCE],credentialless[GSCE],csp[GSCE],"
+                + "featurePolicy[GCE],frameBorder[GSCE],getSVGDocument(),height[GSCE],loading[GSCE],longDesc[GSCE],"
+                + "marginHeight[GSCE],marginWidth[GSCE],name[GSCE],privateToken[GSCE],referrerPolicy[GSCE],"
+                + "sandbox[GSCE],scrolling[GSCE],sharedStorageWritable[GSCE],src[GSCE],srcdoc[GSCE],"
                 + "width[GSCE]",
-            EDGE = "align[GSCE],allow[GSCE],allowFullscreen[GSCE],allowPaymentRequest[GSCE],constructor(),"
-                + "contentDocument[GCE],contentWindow[GCE],credentialless[GSCE],csp[GSCE],featurePolicy[GCE],"
-                + "frameBorder[GSCE],getSVGDocument(),height[GSCE],loading[GSCE],longDesc[GSCE],marginHeight[GSCE],"
-                + "marginWidth[GSCE],name[GSCE],privateToken[GSCE],referrerPolicy[GSCE],sandbox[GSCE],"
-                + "scrolling[GSCE],src[GSCE],srcdoc[GSCE],"
+            EDGE = "adAuctionHeaders[GSCE],align[GSCE],allow[GSCE],allowFullscreen[GSCE],allowPaymentRequest[GSCE],"
+                + "constructor(),contentDocument[GCE],contentWindow[GCE],credentialless[GSCE],csp[GSCE],"
+                + "featurePolicy[GCE],frameBorder[GSCE],getSVGDocument(),height[GSCE],loading[GSCE],longDesc[GSCE],"
+                + "marginHeight[GSCE],marginWidth[GSCE],name[GSCE],privateToken[GSCE],referrerPolicy[GSCE],"
+                + "sandbox[GSCE],scrolling[GSCE],sharedStorageWritable[GSCE],src[GSCE],srcdoc[GSCE],"
                 + "width[GSCE]",
             FF = "align[GSCE],allow[GSCE],allowFullscreen[GSCE],constructor(),contentDocument[GCE],"
                 + "contentWindow[GCE],frameBorder[GSCE],getSVGDocument(),height[GSCE],loading[GSCE],longDesc[GSCE],"
@@ -7107,11 +6534,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "contentWindow[GCE],frameBorder[GSCE],getSVGDocument(),height[GSCE],longDesc[GSCE],"
                 + "marginHeight[GSCE],marginWidth[GSCE],name[GSCE],referrerPolicy[GSCE],sandbox[GSCE],"
                 + "scrolling[GSCE],src[GSCE],srcdoc[GSCE],"
-                + "width[GSCE]",
-            IE = "align,border,constructor,contentDocument,contentWindow,frameBorder,frameSpacing,getSVGDocument(),"
-                + "height,hspace,longDesc,marginHeight,marginWidth,name,noResize,onload,sandbox,scrolling,security,"
-                + "src,vspace,"
-                + "width")
+                + "width[GSCE]")
     @HtmlUnitNYI(CHROME = "align[GSCE],constructor(),contentDocument[GCE],contentWindow[GCE],"
                 + "height[GSCE],name[GSCE],src[GSCE],width[GSCE]",
             EDGE = "align[GSCE],constructor(),contentDocument[GCE],contentWindow[GCE],"
@@ -7119,8 +6542,6 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
             FF_ESR = "align[GSCE],constructor(),contentDocument[GCE],contentWindow[GCE],"
                 + "height[GSCE],name[GSCE],src[GSCE],width[GSCE]",
             FF = "align[GSCE],constructor(),contentDocument[GCE],contentWindow[GCE],"
-                + "height[GSCE],name[GSCE],src[GSCE],width[GSCE]",
-            IE = "align[GSCE],border[GSCE],constructor[],contentDocument[GCE],contentWindow[GCE],"
                 + "height[GSCE],name[GSCE],src[GSCE],width[GSCE]")
     public void iframe() throws Exception {
         test("iframe");
@@ -7135,8 +6556,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "cite[GSCE],constructor()",
             EDGE = "cite[GSCE],constructor()",
             FF = "cite[GSCE],constructor()",
-            FF_ESR = "cite[GSCE],constructor()",
-            IE = "cite[GSCE],constructor[],dateTime[GSCE]")
+            FF_ESR = "cite[GSCE],constructor()")
     public void q() throws Exception {
         test("q");
     }
@@ -7147,15 +6567,17 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = "align[GSCE],alt[GSCE],border[GSCE],complete[GCE],constructor(),crossOrigin[GSCE],currentSrc[GCE],"
-                + "decode(),decoding[GSCE],fetchPriority[GSCE],height[GSCE],hspace[GSCE],isMap[GSCE],loading[GSCE],"
-                + "longDesc[GSCE],lowsrc[GSCE],name[GSCE],naturalHeight[GCE],naturalWidth[GCE],referrerPolicy[GSCE],"
-                + "sizes[GSCE],src[GSCE],srcset[GSCE],useMap[GSCE],vspace[GSCE],width[GSCE],x[GCE],"
+    @Alerts(CHROME = "align[GSCE],alt[GSCE],attributionSrc[GSCE],border[GSCE],complete[GCE],constructor(),"
+                + "crossOrigin[GSCE],currentSrc[GCE],decode(),decoding[GSCE],fetchPriority[GSCE],height[GSCE],"
+                + "hspace[GSCE],isMap[GSCE],loading[GSCE],longDesc[GSCE],lowsrc[GSCE],name[GSCE],naturalHeight[GCE],"
+                + "naturalWidth[GCE],referrerPolicy[GSCE],sharedStorageWritable[GSCE],sizes[GSCE],src[GSCE],"
+                + "srcset[GSCE],useMap[GSCE],vspace[GSCE],width[GSCE],x[GCE],"
                 + "y[GCE]",
-            EDGE = "align[GSCE],alt[GSCE],border[GSCE],complete[GCE],constructor(),crossOrigin[GSCE],currentSrc[GCE],"
-                + "decode(),decoding[GSCE],fetchPriority[GSCE],height[GSCE],hspace[GSCE],isMap[GSCE],loading[GSCE],"
-                + "longDesc[GSCE],lowsrc[GSCE],name[GSCE],naturalHeight[GCE],naturalWidth[GCE],referrerPolicy[GSCE],"
-                + "sizes[GSCE],src[GSCE],srcset[GSCE],useMap[GSCE],vspace[GSCE],width[GSCE],x[GCE],"
+            EDGE = "align[GSCE],alt[GSCE],attributionSrc[GSCE],border[GSCE],complete[GCE],constructor(),"
+                + "crossOrigin[GSCE],currentSrc[GCE],decode(),decoding[GSCE],fetchPriority[GSCE],height[GSCE],"
+                + "hspace[GSCE],isMap[GSCE],loading[GSCE],longDesc[GSCE],lowsrc[GSCE],name[GSCE],naturalHeight[GCE],"
+                + "naturalWidth[GCE],referrerPolicy[GSCE],sharedStorageWritable[GSCE],sizes[GSCE],src[GSCE],"
+                + "srcset[GSCE],useMap[GSCE],vspace[GSCE],width[GSCE],x[GCE],"
                 + "y[GCE]",
             FF = "align[GSCE],alt[GSCE],border[GSCE],complete[GCE],constructor(),crossOrigin[GSCE],currentSrc[GCE],"
                 + "decode(),decoding[GSCE],height[GSCE],hspace[GSCE],isMap[GSCE],loading[GSCE],longDesc[GSCE],"
@@ -7166,11 +6588,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "decode(),decoding[GSCE],height[GSCE],hspace[GSCE],isMap[GSCE],loading[GSCE],longDesc[GSCE],"
                 + "lowsrc[GSCE],name[GSCE],naturalHeight[GCE],naturalWidth[GCE],referrerPolicy[GSCE],sizes[GSCE],"
                 + "src[GSCE],srcset[GSCE],useMap[GSCE],vspace[GSCE],width[GSCE],x[GCE],"
-                + "y[GCE]",
-            IE = "align,alt,border,complete,constructor,crossOrigin,dynsrc,fileCreatedDate,fileModifiedDate,"
-                + "fileUpdatedDate,height,href,hspace,isMap,longDesc,loop,lowsrc,mimeType,msPlayToDisabled,"
-                + "msPlayToPreferredSourceUri,msPlayToPrimary,name,nameProp,naturalHeight,naturalWidth,"
-                + "protocol,src,start,useMap,vrml,vspace,width")
+                + "y[GCE]")
     @HtmlUnitNYI(CHROME = "align[GSCE],alt[GSCE],border[GSCE],complete[GCE],constructor(),height[GSCE],name[GSCE],"
                 + "naturalHeight[GCE],naturalWidth[GCE],src[GSCE],width[GSCE]",
             EDGE = "align[GSCE],alt[GSCE],border[GSCE],complete[GCE],constructor(),height[GSCE],name[GSCE],"
@@ -7178,8 +6596,6 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
             FF_ESR = "align[GSCE],alt[GSCE],border[GSCE],complete[GCE],constructor(),height[GSCE],name[GSCE],"
                 + "naturalHeight[GCE],naturalWidth[GCE],src[GSCE],width[GSCE]",
             FF = "align[GSCE],alt[GSCE],border[GSCE],complete[GCE],constructor(),height[GSCE],name[GSCE],"
-                + "naturalHeight[GCE],naturalWidth[GCE],src[GSCE],width[GSCE]",
-            IE = "align[GSCE],alt[GSCE],border[GSCE],complete[GCE],constructor[WC],height[GSCE],name[GSCE],"
                 + "naturalHeight[GCE],naturalWidth[GCE],src[GSCE],width[GSCE]")
     public void img() throws Exception {
         test("img");
@@ -7195,13 +6611,14 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
             EDGE = "constructor()",
             FF = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
-                + "enterKeyHint[GSCE],focus(),hidden[GSCE],inert[GSCE],innerText[GSCE],inputMode[GSCE],"
-                + "isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
+                + "enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],innerText[GSCE],"
+                + "inputMode[GSCE],isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
                 + "offsetParent[GCE],offsetTop[GCE],offsetWidth[GCE],onabort[GSCE],onanimationcancel[GSCE],"
                 + "onanimationend[GSCE],onanimationiteration[GSCE],onanimationstart[GSCE],onauxclick[GSCE],"
-                + "onbeforeinput[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],oncanplaythrough[GSCE],"
-                + "onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextmenu[GSCE],oncopy[GSCE],oncuechange[GSCE],"
-                + "oncut[GSCE],ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
+                + "onbeforeinput[GSCE],onbeforetoggle[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],"
+                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextlost[GSCE],"
+                + "oncontextmenu[GSCE],oncontextrestored[GSCE],oncopy[GSCE],oncuechange[GSCE],oncut[GSCE],"
+                + "ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
                 + "ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],ondrop[GSCE],ondurationchange[GSCE],"
                 + "onemptied[GSCE],onended[GSCE],onerror[GSCE],onfocus[GSCE],onformdata[GSCE],"
                 + "ongotpointercapture[GSCE],oninput[GSCE],oninvalid[GSCE],onkeydown[GSCE],onkeypress[GSCE],"
@@ -7217,8 +6634,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],"
                 + "ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],"
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
-                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
-                + "tabIndex[GSCE],title[GSCE],"
+                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],popover[GSCE],showPopover(),"
+                + "spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],togglePopover(),"
                 + "translate[GSCE]",
             FF_ESR = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
@@ -7246,12 +6663,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
                 + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
                 + "tabIndex[GSCE],title[GSCE],"
-                + "translate[GSCE]",
-            IE = "align,alt,border,complete,constructor,crossOrigin,dynsrc,fileCreatedDate,fileModifiedDate,"
-                + "fileUpdatedDate,height,href,hspace,isMap,longDesc,loop,lowsrc,mimeType,msPlayToDisabled,"
-                + "msPlayToPreferredSourceUri,msPlayToPrimary,name,nameProp,naturalHeight,naturalWidth,protocol,src,"
-                + "start,useMap,vrml,vspace,"
-                + "width")
+                + "translate[GSCE]")
     @HtmlUnitNYI(FF_ESR = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],"
                 + "enterKeyHint[GSCE],focus(),hidden[GSCE],innerText[GSCE],isContentEditable[GCE],lang[GSCE],"
@@ -7271,7 +6683,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onresize[GSCE],onscroll[GSCE],onseeked[GSCE],onseeking[GSCE],onselect[GSCE],onselectionchange[GSCE],"
                 + "onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
-                + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],outerText[GCE],"
+                + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],outerText[GSCE],"
                 + "spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],"
@@ -7293,10 +6705,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onseeked[GSCE],onseeking[GSCE],onselect[GSCE],onselectionchange[GSCE],"
                 + "onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
-                + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],outerText[GCE],"
-                + "spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
-            IE = "align[GSCE],alt[GSCE],border[GSCE],complete[GCE],constructor[WC],height[GSCE],name[GSCE],"
-                + "naturalHeight[GCE],naturalWidth[GCE],src[GSCE],width[GSCE]")
+                + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],outerText[GSCE],"
+                + "spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]")
     public void image() throws Exception {
         test("image");
     }
@@ -7310,8 +6720,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "cite[GSCE],constructor(),dateTime[GSCE]",
             EDGE = "cite[GSCE],constructor(),dateTime[GSCE]",
             FF = "cite[GSCE],constructor(),dateTime[GSCE]",
-            FF_ESR = "cite[GSCE],constructor(),dateTime[GSCE]",
-            IE = "cite[GSCE],constructor[],dateTime[GSCE]")
+            FF_ESR = "cite[GSCE],constructor(),dateTime[GSCE]")
     public void ins() throws Exception {
         test("ins");
     }
@@ -7325,9 +6734,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor()",
             EDGE = "constructor()",
             FF = "constructor()",
-            FF_ESR = "constructor()",
-            IE = "action,constructor,form,prompt")
-    @HtmlUnitNYI(IE = "constructor[]")
+            FF_ESR = "constructor()")
     public void isindex() throws Exception {
         test("isindex");
     }
@@ -7365,8 +6772,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],"
-                + "togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             EDGE = "accessKey[GSCE],attachInternals(),attributeStyleMap[GCE],autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
                 + "editContext[GSCE],enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],"
@@ -7394,17 +6801,18 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],textprediction[GSCE],"
-                + "title[GSCE],togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "title[GSCE],togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             FF = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
-                + "enterKeyHint[GSCE],focus(),hidden[GSCE],inert[GSCE],innerText[GSCE],inputMode[GSCE],"
-                + "isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
+                + "enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],innerText[GSCE],"
+                + "inputMode[GSCE],isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
                 + "offsetParent[GCE],offsetTop[GCE],offsetWidth[GCE],onabort[GSCE],onanimationcancel[GSCE],"
                 + "onanimationend[GSCE],onanimationiteration[GSCE],onanimationstart[GSCE],onauxclick[GSCE],"
-                + "onbeforeinput[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],oncanplaythrough[GSCE],"
-                + "onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextmenu[GSCE],oncopy[GSCE],oncuechange[GSCE],"
-                + "oncut[GSCE],ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
+                + "onbeforeinput[GSCE],onbeforetoggle[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],"
+                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextlost[GSCE],"
+                + "oncontextmenu[GSCE],oncontextrestored[GSCE],oncopy[GSCE],oncuechange[GSCE],oncut[GSCE],"
+                + "ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
                 + "ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],ondrop[GSCE],ondurationchange[GSCE],"
                 + "onemptied[GSCE],onended[GSCE],onerror[GSCE],onfocus[GSCE],onformdata[GSCE],"
                 + "ongotpointercapture[GSCE],oninput[GSCE],oninvalid[GSCE],onkeydown[GSCE],onkeypress[GSCE],"
@@ -7420,8 +6828,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],"
                 + "ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],"
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
-                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
-                + "tabIndex[GSCE],title[GSCE],"
+                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],popover[GSCE],showPopover(),"
+                + "spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],togglePopover(),"
                 + "translate[GSCE]",
             FF_ESR = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
@@ -7449,8 +6857,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
                 + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
                 + "tabIndex[GSCE],title[GSCE],"
-                + "translate[GSCE]",
-            IE = "cite,constructor,dateTime")
+                + "translate[GSCE]")
     @HtmlUnitNYI(CHROME = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -7477,7 +6884,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             EDGE = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -7504,7 +6911,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -7528,7 +6935,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF_ESR = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -7551,8 +6958,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
-            IE = "constructor[]")
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]")
     public void i() throws Exception {
         test("i");
     }
@@ -7590,8 +6996,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],"
-                + "togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             EDGE = "accessKey[GSCE],attachInternals(),attributeStyleMap[GCE],autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
                 + "editContext[GSCE],enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],"
@@ -7619,17 +7025,18 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],textprediction[GSCE],"
-                + "title[GSCE],togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "title[GSCE],togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             FF = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
-                + "enterKeyHint[GSCE],focus(),hidden[GSCE],inert[GSCE],innerText[GSCE],inputMode[GSCE],"
-                + "isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
+                + "enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],innerText[GSCE],"
+                + "inputMode[GSCE],isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
                 + "offsetParent[GCE],offsetTop[GCE],offsetWidth[GCE],onabort[GSCE],onanimationcancel[GSCE],"
                 + "onanimationend[GSCE],onanimationiteration[GSCE],onanimationstart[GSCE],onauxclick[GSCE],"
-                + "onbeforeinput[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],oncanplaythrough[GSCE],"
-                + "onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextmenu[GSCE],oncopy[GSCE],oncuechange[GSCE],"
-                + "oncut[GSCE],ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
+                + "onbeforeinput[GSCE],onbeforetoggle[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],"
+                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextlost[GSCE],"
+                + "oncontextmenu[GSCE],oncontextrestored[GSCE],oncopy[GSCE],oncuechange[GSCE],oncut[GSCE],"
+                + "ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
                 + "ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],ondrop[GSCE],ondurationchange[GSCE],"
                 + "onemptied[GSCE],onended[GSCE],onerror[GSCE],onfocus[GSCE],onformdata[GSCE],"
                 + "ongotpointercapture[GSCE],oninput[GSCE],oninvalid[GSCE],onkeydown[GSCE],onkeypress[GSCE],"
@@ -7645,8 +7052,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],"
                 + "ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],"
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
-                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
-                + "tabIndex[GSCE],title[GSCE],"
+                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],popover[GSCE],showPopover(),"
+                + "spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],togglePopover(),"
                 + "translate[GSCE]",
             FF_ESR = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
@@ -7674,8 +7081,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
                 + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
                 + "tabIndex[GSCE],title[GSCE],"
-                + "translate[GSCE]",
-            IE = "cite,constructor,dateTime")
+                + "translate[GSCE]")
     @HtmlUnitNYI(CHROME = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -7702,7 +7108,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             EDGE = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -7729,7 +7135,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -7753,7 +7159,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF_ESR = "accessKey[GSCE],autofocus[GSCE],blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
                 + "hidden[GSCE],innerText[GSCE],isContentEditable[GCE],lang[GSCE],"
@@ -7775,8 +7181,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
-            IE = "constructor[]")
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]")
     public void kbd() throws Exception {
         test("kbd");
     }
@@ -7788,9 +7193,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor()",
             EDGE = "constructor()",
             FF = "constructor()",
-            FF_ESR = "constructor()",
-            IE = "cite,clear,constructor,width")
-    @HtmlUnitNYI(IE = "clear[GSCE],constructor[],width[GSCE]")
+            FF_ESR = "constructor()")
     public void keygen() throws Exception {
         test("keygen");
     }
@@ -7804,8 +7207,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor(),control[GCE],form[GCE],htmlFor[GSCE]",
             EDGE = "constructor(),control[GCE],form[GCE],htmlFor[GSCE]",
             FF = "constructor(),control[GCE],form[GCE],htmlFor[GSCE]",
-            FF_ESR = "constructor(),control[GCE],form[GCE],htmlFor[GSCE]",
-            IE = "constructor[],form[GCE],htmlFor[GSCE]")
+            FF_ESR = "constructor(),control[GCE],form[GCE],htmlFor[GSCE]")
     public void label() throws Exception {
         test("label");
     }
@@ -7843,8 +7245,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],"
-                + "togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             EDGE = "accessKey[GSCE],attachInternals(),attributeStyleMap[GCE],autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
                 + "editContext[GSCE],enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],"
@@ -7872,11 +7274,10 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],textprediction[GSCE],"
-                + "title[GSCE],togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "title[GSCE],togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             FF = "constructor()",
-            FF_ESR = "constructor()",
-            IE = "constructor,namedRecordset(),recordset")
+            FF_ESR = "constructor()")
     @HtmlUnitNYI(CHROME = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -7903,7 +7304,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             EDGE = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -7930,8 +7331,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
-            IE = "constructor[]")
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]")
     public void layer() throws Exception {
         test("layer");
     }
@@ -7945,8 +7345,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "align[GSCE],constructor(),form[GCE]",
             EDGE = "align[GSCE],constructor(),form[GCE]",
             FF = "align[GSCE],constructor(),form[GCE]",
-            FF_ESR = "align[GSCE],constructor(),form[GCE]",
-            IE = "align[GSCE],constructor[],form[GCE]")
+            FF_ESR = "align[GSCE],constructor(),form[GCE]")
     public void legend() throws Exception {
         test("legend");
     }
@@ -7960,9 +7359,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor(),width[GSCE]",
             EDGE = "constructor(),width[GSCE]",
             FF = "constructor(),width[GSCE]",
-            FF_ESR = "constructor(),width[GSCE]",
-            IE = "cite,clear,constructor,width")
-    @HtmlUnitNYI(IE = "clear[GSCE],constructor[],width[GSCE]")
+            FF_ESR = "constructor(),width[GSCE]")
     public void listing() throws Exception {
         test("listing");
     }
@@ -7976,13 +7373,11 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor(),type[GSCE],value[GSCE]",
             EDGE = "constructor(),type[GSCE],value[GSCE]",
             FF = "constructor(),type[GSCE],value[GSCE]",
-            FF_ESR = "constructor(),type[GSCE],value[GSCE]",
-            IE = "constructor,type,value")
+            FF_ESR = "constructor(),type[GSCE],value[GSCE]")
     @HtmlUnitNYI(CHROME = "constructor()",
             EDGE = "constructor()",
             FF_ESR = "constructor()",
-            FF = "constructor()",
-            IE = "constructor[]")
+            FF = "constructor()")
     public void li() throws Exception {
         test("li");
     }
@@ -8010,13 +7405,11 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
             FF_ESR = "as[GSCE],charset[GSCE],constructor(),crossOrigin[GSCE],disabled[GSCE],href[GSCE],hreflang[GSCE],"
                 + "imageSizes[GSCE],imageSrcset[GSCE],integrity[GSCE],media[GSCE],referrerPolicy[GSCE],rel[GSCE],"
                 + "relList[GSCE],rev[GSCE],sheet[GCE],sizes[GSCE],target[GSCE],"
-                + "type[GSCE]",
-            IE = "charset,constructor,href,hreflang,media,rel,rev,sheet,target,type")
+                + "type[GSCE]")
     @HtmlUnitNYI(CHROME = "constructor(),disabled[GSCE],href[GSCE],rel[GSCE],relList[GSCE],rev[GSCE],type[GSCE]",
             EDGE = "constructor(),disabled[GSCE],href[GSCE],rel[GSCE],relList[GSCE],rev[GSCE],type[GSCE]",
             FF_ESR = "constructor(),disabled[GSCE],href[GSCE],rel[GSCE],relList[GSCE],rev[GSCE],type[GSCE]",
-            FF = "constructor(),disabled[GSCE],href[GSCE],rel[GSCE],relList[GSCE],rev[GSCE],type[GSCE]",
-            IE = "constructor[],disabled[GSCE],href[GSCE],rel[GSCE],rev[GSCE],type[GSCE]")
+            FF = "constructor(),disabled[GSCE],href[GSCE],rel[GSCE],relList[GSCE],rev[GSCE],type[GSCE]")
     public void link() throws Exception {
         test("link");
     }
@@ -8054,8 +7447,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],"
-                + "togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             EDGE = "accessKey[GSCE],attachInternals(),attributeStyleMap[GCE],autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
                 + "editContext[GSCE],enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],"
@@ -8083,17 +7476,18 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],textprediction[GSCE],"
-                + "title[GSCE],togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "title[GSCE],togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             FF = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
-                + "enterKeyHint[GSCE],focus(),hidden[GSCE],inert[GSCE],innerText[GSCE],inputMode[GSCE],"
-                + "isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
+                + "enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],innerText[GSCE],"
+                + "inputMode[GSCE],isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
                 + "offsetParent[GCE],offsetTop[GCE],offsetWidth[GCE],onabort[GSCE],onanimationcancel[GSCE],"
                 + "onanimationend[GSCE],onanimationiteration[GSCE],onanimationstart[GSCE],onauxclick[GSCE],"
-                + "onbeforeinput[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],oncanplaythrough[GSCE],"
-                + "onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextmenu[GSCE],oncopy[GSCE],oncuechange[GSCE],"
-                + "oncut[GSCE],ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
+                + "onbeforeinput[GSCE],onbeforetoggle[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],"
+                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextlost[GSCE],"
+                + "oncontextmenu[GSCE],oncontextrestored[GSCE],oncopy[GSCE],oncuechange[GSCE],oncut[GSCE],"
+                + "ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
                 + "ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],ondrop[GSCE],ondurationchange[GSCE],"
                 + "onemptied[GSCE],onended[GSCE],onerror[GSCE],onfocus[GSCE],onformdata[GSCE],"
                 + "ongotpointercapture[GSCE],oninput[GSCE],oninvalid[GSCE],onkeydown[GSCE],onkeypress[GSCE],"
@@ -8109,8 +7503,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],"
                 + "ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],"
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
-                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
-                + "tabIndex[GSCE],title[GSCE],"
+                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],popover[GSCE],showPopover(),"
+                + "spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],togglePopover(),"
                 + "translate[GSCE]",
             FF_ESR = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
@@ -8138,8 +7532,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
                 + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
                 + "tabIndex[GSCE],title[GSCE],"
-                + "translate[GSCE]",
-            IE = "constructor,namedRecordset(),recordset")
+                + "translate[GSCE]")
     @HtmlUnitNYI(CHROME = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -8166,7 +7559,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             EDGE = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -8193,7 +7586,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -8217,7 +7610,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF_ESR = "accessKey[GSCE],autofocus[GSCE],blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
                 + "hidden[GSCE],innerText[GSCE],isContentEditable[GCE],lang[GSCE],"
@@ -8239,8 +7632,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
-           IE = "constructor[]")
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]")
     public void main() throws Exception {
         test("main");
     }
@@ -8254,8 +7646,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "areas[GCE],constructor(),name[GSCE]",
             EDGE = "areas[GCE],constructor(),name[GSCE]",
             FF = "areas[GCE],constructor(),name[GSCE]",
-            FF_ESR = "areas[GCE],constructor(),name[GSCE]",
-            IE = "areas[GCE],constructor[],name[GSCE]")
+            FF_ESR = "areas[GCE],constructor(),name[GSCE]")
     public void map() throws Exception {
         test("map");
     }
@@ -8293,8 +7684,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],"
-                + "togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             EDGE = "accessKey[GSCE],attachInternals(),attributeStyleMap[GCE],autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
                 + "editContext[GSCE],enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],"
@@ -8322,17 +7713,18 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],textprediction[GSCE],"
-                + "title[GSCE],togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "title[GSCE],togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             FF = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
-                + "enterKeyHint[GSCE],focus(),hidden[GSCE],inert[GSCE],innerText[GSCE],inputMode[GSCE],"
-                + "isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
+                + "enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],innerText[GSCE],"
+                + "inputMode[GSCE],isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
                 + "offsetParent[GCE],offsetTop[GCE],offsetWidth[GCE],onabort[GSCE],onanimationcancel[GSCE],"
                 + "onanimationend[GSCE],onanimationiteration[GSCE],onanimationstart[GSCE],onauxclick[GSCE],"
-                + "onbeforeinput[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],oncanplaythrough[GSCE],"
-                + "onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextmenu[GSCE],oncopy[GSCE],oncuechange[GSCE],"
-                + "oncut[GSCE],ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
+                + "onbeforeinput[GSCE],onbeforetoggle[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],"
+                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextlost[GSCE],"
+                + "oncontextmenu[GSCE],oncontextrestored[GSCE],oncopy[GSCE],oncuechange[GSCE],oncut[GSCE],"
+                + "ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
                 + "ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],ondrop[GSCE],ondurationchange[GSCE],"
                 + "onemptied[GSCE],onended[GSCE],onerror[GSCE],onfocus[GSCE],onformdata[GSCE],"
                 + "ongotpointercapture[GSCE],oninput[GSCE],oninvalid[GSCE],onkeydown[GSCE],onkeypress[GSCE],"
@@ -8348,8 +7740,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],"
                 + "ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],"
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
-                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
-                + "tabIndex[GSCE],title[GSCE],"
+                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],popover[GSCE],showPopover(),"
+                + "spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],togglePopover(),"
                 + "translate[GSCE]",
             FF_ESR = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
@@ -8377,26 +7769,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
                 + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
                 + "tabIndex[GSCE],title[GSCE],"
-                + "translate[GSCE]",
-            IE = "accessKey,applyElement(),blur(),canHaveChildren,canHaveHTML,children,classList,className,"
-                + "clearAttributes(),click(),componentFromPoint(),constructor,contains(),contentEditable,"
-                + "createControlRange(),currentStyle,dataset,dir,disabled,dragDrop(),draggable,focus(),"
-                + "getAdjacentText(),getElementsByClassName(),hidden,hideFocus,id,innerHTML,innerText,"
-                + "insertAdjacentElement(),insertAdjacentHTML(),insertAdjacentText(),isContentEditable,isDisabled,"
-                + "isMultiLine,isTextEdit,lang,language,mergeAttributes(),msGetInputContext(),offsetHeight,"
-                + "offsetLeft,offsetParent,offsetTop,offsetWidth,onabort,onactivate,onbeforeactivate,onbeforecopy,"
-                + "onbeforecut,onbeforedeactivate,onbeforepaste,onblur,oncanplay,oncanplaythrough,onchange,onclick,"
-                + "oncontextmenu,oncopy,oncuechange,oncut,ondblclick,ondeactivate,ondrag,ondragend,ondragenter,"
-                + "ondragleave,ondragover,ondragstart,ondrop,ondurationchange,onemptied,onended,onerror,onfocus,"
-                + "onfocusin,onfocusout,onhelp,oninput,onkeydown,onkeypress,onkeyup,onload,onloadeddata,"
-                + "onloadedmetadata,onloadstart,onmousedown,onmouseenter,onmouseleave,onmousemove,onmouseout,"
-                + "onmouseover,onmouseup,onmousewheel,onmscontentzoom,onmsmanipulationstatechanged,onpaste,onpause,"
-                + "onplay,onplaying,onprogress,onratechange,onreset,onscroll,onseeked,onseeking,onselect,"
-                + "onselectstart,onstalled,onsubmit,onsuspend,ontimeupdate,onvolumechange,onwaiting,outerHTML,"
-                + "outerText,parentElement,parentTextEdit,recordNumber,releaseCapture(),removeNode(),"
-                + "replaceAdjacentText(),replaceNode(),runtimeStyle,scrollIntoView(),setActive(),setCapture(),"
-                + "sourceIndex,spellcheck,style,swapNode(),tabIndex,title,uniqueID,"
-                + "uniqueNumber")
+                + "translate[GSCE]")
     @HtmlUnitNYI(CHROME = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -8423,7 +7796,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             EDGE = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -8450,7 +7823,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -8474,7 +7847,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF_ESR = "accessKey[GSCE],autofocus[GSCE],blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
                 + "hidden[GSCE],innerText[GSCE],isContentEditable[GCE],lang[GSCE],"
@@ -8496,29 +7869,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
-            IE = "accessKey[GSCE],blur(),children[GCE],classList[GCE],className[GSCE],clearAttributes(),click(),"
-                + "constructor[],contains(),contentEditable[GSCE],currentStyle[GCE],dataset[GCE],dir[GSCE],"
-                + "disabled[GSCE],focus(),getElementsByClassName(),hidden[GSCE],id[GSCE],innerHTML[GSCE],"
-                + "innerText[GSCE],insertAdjacentElement(),insertAdjacentHTML(),insertAdjacentText(),"
-                + "isContentEditable[GCE],lang[GSCE],language[GSCE],mergeAttributes(),offsetHeight[GCE],"
-                + "offsetLeft[GCE],offsetParent[GCE],offsetTop[GCE],offsetWidth[GCE],onabort[GSCE],"
-                + "onactivate[GSCE],onbeforeactivate[GSCE],onbeforecopy[GSCE],onbeforecut[GSCE],"
-                + "onbeforedeactivate[GSCE],onbeforepaste[GSCE],onblur[GSCE],oncanplay[GSCE],"
-                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],oncontextmenu[GSCE],oncopy[GSCE],"
-                + "oncuechange[GSCE],oncut[GSCE],ondblclick[GSCE],ondeactivate[GSCE],ondrag[GSCE],"
-                + "ondragend[GSCE],ondragenter[GSCE],ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],"
-                + "ondrop[GSCE],ondurationchange[GSCE],onemptied[GSCE],onended[GSCE],onerror[GSCE],"
-                + "onfocus[GSCE],onfocusin[GSCE],onfocusout[GSCE],onhelp[GSCE],oninput[GSCE],onkeydown[GSCE],"
-                + "onkeypress[GSCE],onkeyup[GSCE],onload[GSCE],onloadeddata[GSCE],onloadedmetadata[GSCE],"
-                + "onloadstart[GSCE],onmousedown[GSCE],onmouseenter[GSCE],onmouseleave[GSCE],onmousemove[GSCE],"
-                + "onmouseout[GSCE],onmouseover[GSCE],onmouseup[GSCE],onmousewheel[GSCE],onmscontentzoom[GSCE],"
-                + "onmsmanipulationstatechanged[GSCE],onpaste[GSCE],onpause[GSCE],onplay[GSCE],onplaying[GSCE],"
-                + "onprogress[GSCE],onratechange[GSCE],onreset[GSCE],onscroll[GSCE],onseeked[GSCE],"
-                + "onseeking[GSCE],onselect[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
-                + "onsuspend[GSCE],ontimeupdate[GSCE],onvolumechange[GSCE],onwaiting[GSCE],outerHTML[GSCE],"
-                + "outerText[GCE],parentElement[GCE],releaseCapture(),removeNode(),runtimeStyle[GCE],"
-                + "scrollIntoView(),setActive(),setCapture(),style[GSCE],tabIndex[GSCE],title[GSCE],uniqueID[GCE]")
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]")
     public void mark() throws Exception {
         test("mark");
     }
@@ -8536,21 +7887,16 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "scrollAmount[GSCE],scrollDelay[GSCE],start(),stop(),trueSpeed[GSCE],vspace[GSCE],"
                 + "width[GSCE]",
             FF = "behavior[GSCE],bgColor[GSCE],constructor(),direction[GSCE],height[GSCE],hspace[GSCE],loop[GSCE],"
-                + "onbounce[GSCE],onfinish[GSCE],onstart[GSCE],scrollAmount[GSCE],scrollDelay[GSCE],start(),stop(),"
-                + "trueSpeed[GSCE],vspace[GSCE],"
+                + "scrollAmount[GSCE],scrollDelay[GSCE],start(),stop(),trueSpeed[GSCE],vspace[GSCE],"
                 + "width[GSCE]",
             FF_ESR = "behavior[GSCE],bgColor[GSCE],constructor(),direction[GSCE],height[GSCE],hspace[GSCE],loop[GSCE],"
                 + "onbounce[GSCE],onfinish[GSCE],onstart[GSCE],scrollAmount[GSCE],scrollDelay[GSCE],start(),stop(),"
                 + "trueSpeed[GSCE],vspace[GSCE],"
-                + "width[GSCE]",
-            IE = "behavior,bgColor,constructor,direction,height,hspace,loop,onbounce,onfinish,onstart,scrollAmount,"
-                + "scrollDelay,start(),stop(),trueSpeed,vspace,"
-                + "width")
+                + "width[GSCE]")
     @HtmlUnitNYI(CHROME = "bgColor[GSCE],constructor(),height[GSCE],width[GSCE]",
             EDGE = "bgColor[GSCE],constructor(),height[GSCE],width[GSCE]",
             FF = "bgColor[GSCE],constructor(),height[GSCE],width[GSCE]",
-            FF_ESR = "bgColor[GSCE],constructor(),height[GSCE],width[GSCE]",
-            IE = "bgColor[GSCE],constructor[],height[GSCE],width[GSCE]")
+            FF_ESR = "bgColor[GSCE],constructor(),height[GSCE],width[GSCE]")
     public void marquee() throws Exception {
         test("marquee");
     }
@@ -8564,13 +7910,11 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "compact[GSCE],constructor()",
             EDGE = "compact[GSCE],constructor()",
             FF = "compact[GSCE],constructor()",
-            FF_ESR = "compact[GSCE],constructor()",
-            IE = "compact,constructor,type")
+            FF_ESR = "compact[GSCE],constructor()")
     @HtmlUnitNYI(CHROME = "constructor()",
             EDGE = "constructor()",
             FF_ESR = "constructor()",
-            FF = "constructor()",
-            IE = "constructor[],type[GSCE]")
+            FF = "constructor()")
     public void menu() throws Exception {
         test("menu");
     }
@@ -8584,9 +7928,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor()",
             EDGE = "constructor()",
             FF = "constructor()",
-            FF_ESR = "constructor()",
-            IE = "constructor,namedRecordset(),recordset")
-    @HtmlUnitNYI(IE = "constructor[]")
+            FF_ESR = "constructor()")
     public void menuitem() throws Exception {
         test("menuitem");
     }
@@ -8600,8 +7942,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor(),content[GSCE],httpEquiv[GSCE],media[GSCE],name[GSCE],scheme[GSCE]",
             EDGE = "constructor(),content[GSCE],httpEquiv[GSCE],media[GSCE],name[GSCE],scheme[GSCE]",
             FF = "constructor(),content[GSCE],httpEquiv[GSCE],media[GSCE],name[GSCE],scheme[GSCE]",
-            FF_ESR = "constructor(),content[GSCE],httpEquiv[GSCE],media[GSCE],name[GSCE],scheme[GSCE]",
-            IE = "charset[GSCE],constructor[],content[GSCE],httpEquiv[GSCE],name[GSCE],scheme[GSCE],url[GSCE]")
+            FF_ESR = "constructor(),content[GSCE],httpEquiv[GSCE],media[GSCE],name[GSCE],scheme[GSCE]")
     public void meta() throws Exception {
         test("meta");
     }
@@ -8615,13 +7956,11 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor(),high[GSCE],labels[GCE],low[GSCE],max[GSCE],min[GSCE],optimum[GSCE],value[GSCE]",
             EDGE = "constructor(),high[GSCE],labels[GCE],low[GSCE],max[GSCE],min[GSCE],optimum[GSCE],value[GSCE]",
             FF = "constructor(),high[GSCE],labels[GCE],low[GSCE],max[GSCE],min[GSCE],optimum[GSCE],value[GSCE]",
-            FF_ESR = "constructor(),high[GSCE],labels[GCE],low[GSCE],max[GSCE],min[GSCE],optimum[GSCE],value[GSCE]",
-            IE = "constructor,namedRecordset(),recordset")
+            FF_ESR = "constructor(),high[GSCE],labels[GCE],low[GSCE],max[GSCE],min[GSCE],optimum[GSCE],value[GSCE]")
     @HtmlUnitNYI(CHROME = "constructor(),high[GCE],labels[GCE],low[GCE],max[GCE],min[GCE],optimum[GCE],value[GCE]",
             EDGE = "constructor(),high[GCE],labels[GCE],low[GCE],max[GCE],min[GCE],optimum[GCE],value[GCE]",
             FF = "constructor(),high[GCE],labels[GCE],low[GCE],max[GCE],min[GCE],optimum[GCE],value[GCE]",
-            FF_ESR = "constructor(),high[GCE],labels[GCE],low[GCE],max[GCE],min[GCE],optimum[GCE],value[GCE]",
-            IE = "constructor[]")
+            FF_ESR = "constructor(),high[GCE],labels[GCE],low[GCE],max[GCE],min[GCE],optimum[GCE],value[GCE]")
     public void meter() throws Exception {
         test("meter");
     }
@@ -8635,9 +7974,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor()",
             EDGE = "constructor()",
             FF = "constructor()",
-            FF_ESR = "constructor()",
-            IE = "constructor,namedRecordset(),recordset")
-    @HtmlUnitNYI(IE = "constructor[]")
+            FF_ESR = "constructor()")
     public void multicol() throws Exception {
         test("multicol");
     }
@@ -8675,8 +8012,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],"
-                + "togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             EDGE = "accessKey[GSCE],attachInternals(),attributeStyleMap[GCE],autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
                 + "editContext[GSCE],enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],"
@@ -8704,17 +8041,18 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],textprediction[GSCE],"
-                + "title[GSCE],togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "title[GSCE],togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             FF = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
-                + "enterKeyHint[GSCE],focus(),hidden[GSCE],inert[GSCE],innerText[GSCE],inputMode[GSCE],"
-                + "isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
+                + "enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],innerText[GSCE],"
+                + "inputMode[GSCE],isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
                 + "offsetParent[GCE],offsetTop[GCE],offsetWidth[GCE],onabort[GSCE],onanimationcancel[GSCE],"
                 + "onanimationend[GSCE],onanimationiteration[GSCE],onanimationstart[GSCE],onauxclick[GSCE],"
-                + "onbeforeinput[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],oncanplaythrough[GSCE],"
-                + "onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextmenu[GSCE],oncopy[GSCE],oncuechange[GSCE],"
-                + "oncut[GSCE],ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
+                + "onbeforeinput[GSCE],onbeforetoggle[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],"
+                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextlost[GSCE],"
+                + "oncontextmenu[GSCE],oncontextrestored[GSCE],oncopy[GSCE],oncuechange[GSCE],oncut[GSCE],"
+                + "ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
                 + "ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],ondrop[GSCE],ondurationchange[GSCE],"
                 + "onemptied[GSCE],onended[GSCE],onerror[GSCE],onfocus[GSCE],onformdata[GSCE],"
                 + "ongotpointercapture[GSCE],oninput[GSCE],oninvalid[GSCE],onkeydown[GSCE],onkeypress[GSCE],"
@@ -8730,8 +8068,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],"
                 + "ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],"
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
-                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
-                + "tabIndex[GSCE],title[GSCE],"
+                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],popover[GSCE],showPopover(),"
+                + "spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],togglePopover(),"
                 + "translate[GSCE]",
             FF_ESR = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
@@ -8759,26 +8097,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
                 + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
                 + "tabIndex[GSCE],title[GSCE],"
-                + "translate[GSCE]",
-            IE = "accessKey,applyElement(),blur(),canHaveChildren,canHaveHTML,children,classList,className,"
-                + "clearAttributes(),click(),componentFromPoint(),constructor,contains(),contentEditable,"
-                + "createControlRange(),currentStyle,dataset,dir,disabled,dragDrop(),draggable,focus(),"
-                + "getAdjacentText(),getElementsByClassName(),hidden,hideFocus,id,innerHTML,innerText,"
-                + "insertAdjacentElement(),insertAdjacentHTML(),insertAdjacentText(),isContentEditable,isDisabled,"
-                + "isMultiLine,isTextEdit,lang,language,mergeAttributes(),msGetInputContext(),offsetHeight,"
-                + "offsetLeft,offsetParent,offsetTop,offsetWidth,onabort,onactivate,onbeforeactivate,onbeforecopy,"
-                + "onbeforecut,onbeforedeactivate,onbeforepaste,onblur,oncanplay,oncanplaythrough,onchange,onclick,"
-                + "oncontextmenu,oncopy,oncuechange,oncut,ondblclick,ondeactivate,ondrag,ondragend,ondragenter,"
-                + "ondragleave,ondragover,ondragstart,ondrop,ondurationchange,onemptied,onended,onerror,onfocus,"
-                + "onfocusin,onfocusout,onhelp,oninput,onkeydown,onkeypress,onkeyup,onload,onloadeddata,"
-                + "onloadedmetadata,onloadstart,onmousedown,onmouseenter,onmouseleave,onmousemove,onmouseout,"
-                + "onmouseover,onmouseup,onmousewheel,onmscontentzoom,onmsmanipulationstatechanged,onpaste,onpause,"
-                + "onplay,onplaying,onprogress,onratechange,onreset,onscroll,onseeked,onseeking,onselect,"
-                + "onselectstart,onstalled,onsubmit,onsuspend,ontimeupdate,onvolumechange,onwaiting,outerHTML,"
-                + "outerText,parentElement,parentTextEdit,recordNumber,releaseCapture(),removeNode(),"
-                + "replaceAdjacentText(),replaceNode(),runtimeStyle,scrollIntoView(),setActive(),setCapture(),"
-                + "sourceIndex,spellcheck,style,swapNode(),tabIndex,title,uniqueID,"
-                + "uniqueNumber")
+                + "translate[GSCE]")
     @HtmlUnitNYI(CHROME = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -8805,7 +8124,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             EDGE = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -8832,7 +8151,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -8856,7 +8175,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF_ESR = "accessKey[GSCE],autofocus[GSCE],blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
                 + "hidden[GSCE],innerText[GSCE],isContentEditable[GCE],lang[GSCE],"
@@ -8878,29 +8197,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
-            IE = "accessKey[GSCE],blur(),children[GCE],classList[GCE],className[GSCE],clearAttributes(),click(),"
-                + "constructor[],contains(),contentEditable[GSCE],currentStyle[GCE],dataset[GCE],dir[GSCE],"
-                + "disabled[GSCE],focus(),getElementsByClassName(),hidden[GSCE],id[GSCE],innerHTML[GSCE],"
-                + "innerText[GSCE],insertAdjacentElement(),insertAdjacentHTML(),insertAdjacentText(),"
-                + "isContentEditable[GCE],lang[GSCE],language[GSCE],mergeAttributes(),offsetHeight[GCE],"
-                + "offsetLeft[GCE],offsetParent[GCE],offsetTop[GCE],offsetWidth[GCE],onabort[GSCE],"
-                + "onactivate[GSCE],onbeforeactivate[GSCE],onbeforecopy[GSCE],onbeforecut[GSCE],"
-                + "onbeforedeactivate[GSCE],onbeforepaste[GSCE],onblur[GSCE],oncanplay[GSCE],"
-                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],oncontextmenu[GSCE],oncopy[GSCE],"
-                + "oncuechange[GSCE],oncut[GSCE],ondblclick[GSCE],ondeactivate[GSCE],ondrag[GSCE],"
-                + "ondragend[GSCE],ondragenter[GSCE],ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],"
-                + "ondrop[GSCE],ondurationchange[GSCE],onemptied[GSCE],onended[GSCE],onerror[GSCE],"
-                + "onfocus[GSCE],onfocusin[GSCE],onfocusout[GSCE],onhelp[GSCE],oninput[GSCE],onkeydown[GSCE],"
-                + "onkeypress[GSCE],onkeyup[GSCE],onload[GSCE],onloadeddata[GSCE],onloadedmetadata[GSCE],"
-                + "onloadstart[GSCE],onmousedown[GSCE],onmouseenter[GSCE],onmouseleave[GSCE],onmousemove[GSCE],"
-                + "onmouseout[GSCE],onmouseover[GSCE],onmouseup[GSCE],onmousewheel[GSCE],onmscontentzoom[GSCE],"
-                + "onmsmanipulationstatechanged[GSCE],onpaste[GSCE],onpause[GSCE],onplay[GSCE],onplaying[GSCE],"
-                + "onprogress[GSCE],onratechange[GSCE],onreset[GSCE],onscroll[GSCE],onseeked[GSCE],"
-                + "onseeking[GSCE],onselect[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
-                + "onsuspend[GSCE],ontimeupdate[GSCE],onvolumechange[GSCE],onwaiting[GSCE],outerHTML[GSCE],"
-                + "outerText[GCE],parentElement[GCE],releaseCapture(),removeNode(),runtimeStyle[GCE],"
-                + "scrollIntoView(),setActive(),setCapture(),style[GSCE],tabIndex[GSCE],title[GSCE],uniqueID[GCE]")
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]")
     public void nav() throws Exception {
         test("nav");
     }
@@ -8914,9 +8211,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor()",
             EDGE = "constructor()",
             FF = "constructor()",
-            FF_ESR = "constructor()",
-            IE = "constructor,n")
-    @HtmlUnitNYI(IE = "constructor[]")
+            FF_ESR = "constructor()")
     public void nextid() throws Exception {
         test("nextid");
     }
@@ -8954,8 +8249,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],"
-                + "togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             EDGE = "accessKey[GSCE],attachInternals(),attributeStyleMap[GCE],autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
                 + "editContext[GSCE],enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],"
@@ -8983,17 +8278,18 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],textprediction[GSCE],"
-                + "title[GSCE],togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "title[GSCE],togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             FF = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
-                + "enterKeyHint[GSCE],focus(),hidden[GSCE],inert[GSCE],innerText[GSCE],inputMode[GSCE],"
-                + "isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
+                + "enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],innerText[GSCE],"
+                + "inputMode[GSCE],isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
                 + "offsetParent[GCE],offsetTop[GCE],offsetWidth[GCE],onabort[GSCE],onanimationcancel[GSCE],"
                 + "onanimationend[GSCE],onanimationiteration[GSCE],onanimationstart[GSCE],onauxclick[GSCE],"
-                + "onbeforeinput[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],oncanplaythrough[GSCE],"
-                + "onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextmenu[GSCE],oncopy[GSCE],oncuechange[GSCE],"
-                + "oncut[GSCE],ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
+                + "onbeforeinput[GSCE],onbeforetoggle[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],"
+                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextlost[GSCE],"
+                + "oncontextmenu[GSCE],oncontextrestored[GSCE],oncopy[GSCE],oncuechange[GSCE],oncut[GSCE],"
+                + "ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
                 + "ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],ondrop[GSCE],ondurationchange[GSCE],"
                 + "onemptied[GSCE],onended[GSCE],onerror[GSCE],onfocus[GSCE],onformdata[GSCE],"
                 + "ongotpointercapture[GSCE],oninput[GSCE],oninvalid[GSCE],onkeydown[GSCE],onkeypress[GSCE],"
@@ -9009,8 +8305,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],"
                 + "ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],"
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
-                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
-                + "tabIndex[GSCE],title[GSCE],"
+                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],popover[GSCE],showPopover(),"
+                + "spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],togglePopover(),"
                 + "translate[GSCE]",
             FF_ESR = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
@@ -9038,8 +8334,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
                 + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
                 + "tabIndex[GSCE],title[GSCE],"
-                + "translate[GSCE]",
-            IE = "cite,constructor,dateTime")
+                + "translate[GSCE]")
     @HtmlUnitNYI(CHROME = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -9066,7 +8361,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             EDGE = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -9093,7 +8388,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -9117,7 +8412,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF_ESR = "accessKey[GSCE],autofocus[GSCE],blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
                 + "hidden[GSCE],innerText[GSCE],isContentEditable[GCE],lang[GSCE],"
@@ -9139,8 +8434,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
-            IE = "constructor[]")
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]")
     public void nobr() throws Exception {
         test("nobr");
     }
@@ -9178,8 +8472,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],"
-                + "togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             EDGE = "accessKey[GSCE],attachInternals(),attributeStyleMap[GCE],autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
                 + "editContext[GSCE],enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],"
@@ -9207,17 +8501,18 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],textprediction[GSCE],"
-                + "title[GSCE],togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "title[GSCE],togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             FF = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
-                + "enterKeyHint[GSCE],focus(),hidden[GSCE],inert[GSCE],innerText[GSCE],inputMode[GSCE],"
-                + "isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
+                + "enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],innerText[GSCE],"
+                + "inputMode[GSCE],isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
                 + "offsetParent[GCE],offsetTop[GCE],offsetWidth[GCE],onabort[GSCE],onanimationcancel[GSCE],"
                 + "onanimationend[GSCE],onanimationiteration[GSCE],onanimationstart[GSCE],onauxclick[GSCE],"
-                + "onbeforeinput[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],oncanplaythrough[GSCE],"
-                + "onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextmenu[GSCE],oncopy[GSCE],oncuechange[GSCE],"
-                + "oncut[GSCE],ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
+                + "onbeforeinput[GSCE],onbeforetoggle[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],"
+                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextlost[GSCE],"
+                + "oncontextmenu[GSCE],oncontextrestored[GSCE],oncopy[GSCE],oncuechange[GSCE],oncut[GSCE],"
+                + "ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
                 + "ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],ondrop[GSCE],ondurationchange[GSCE],"
                 + "onemptied[GSCE],onended[GSCE],onerror[GSCE],onfocus[GSCE],onformdata[GSCE],"
                 + "ongotpointercapture[GSCE],oninput[GSCE],oninvalid[GSCE],onkeydown[GSCE],onkeypress[GSCE],"
@@ -9233,8 +8528,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],"
                 + "ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],"
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
-                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
-                + "tabIndex[GSCE],title[GSCE],"
+                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],popover[GSCE],showPopover(),"
+                + "spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],togglePopover(),"
                 + "translate[GSCE]",
             FF_ESR = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
@@ -9262,26 +8557,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
                 + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
                 + "tabIndex[GSCE],title[GSCE],"
-                + "translate[GSCE]",
-            IE = "accessKey,applyElement(),blur(),canHaveChildren,canHaveHTML,children,classList,className,"
-                + "clearAttributes(),click(),componentFromPoint(),constructor,contains(),contentEditable,"
-                + "createControlRange(),currentStyle,dataset,dir,disabled,dragDrop(),draggable,focus(),"
-                + "getAdjacentText(),getElementsByClassName(),hidden,hideFocus,id,innerHTML,innerText,"
-                + "insertAdjacentElement(),insertAdjacentHTML(),insertAdjacentText(),isContentEditable,isDisabled,"
-                + "isMultiLine,isTextEdit,lang,language,mergeAttributes(),msGetInputContext(),offsetHeight,"
-                + "offsetLeft,offsetParent,offsetTop,offsetWidth,onabort,onactivate,onbeforeactivate,onbeforecopy,"
-                + "onbeforecut,onbeforedeactivate,onbeforepaste,onblur,oncanplay,oncanplaythrough,onchange,onclick,"
-                + "oncontextmenu,oncopy,oncuechange,oncut,ondblclick,ondeactivate,ondrag,ondragend,ondragenter,"
-                + "ondragleave,ondragover,ondragstart,ondrop,ondurationchange,onemptied,onended,onerror,onfocus,"
-                + "onfocusin,onfocusout,onhelp,oninput,onkeydown,onkeypress,onkeyup,onload,onloadeddata,"
-                + "onloadedmetadata,onloadstart,onmousedown,onmouseenter,onmouseleave,onmousemove,onmouseout,"
-                + "onmouseover,onmouseup,onmousewheel,onmscontentzoom,onmsmanipulationstatechanged,onpaste,onpause,"
-                + "onplay,onplaying,onprogress,onratechange,onreset,onscroll,onseeked,onseeking,onselect,"
-                + "onselectstart,onstalled,onsubmit,onsuspend,ontimeupdate,onvolumechange,onwaiting,outerHTML,"
-                + "outerText,parentElement,parentTextEdit,recordNumber,releaseCapture(),removeNode(),"
-                + "replaceAdjacentText(),replaceNode(),runtimeStyle,scrollIntoView(),setActive(),setCapture(),"
-                + "sourceIndex,spellcheck,style,swapNode(),tabIndex,title,uniqueID,"
-                + "uniqueNumber")
+                + "translate[GSCE]")
     @HtmlUnitNYI(CHROME = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -9308,7 +8584,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             EDGE = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -9335,7 +8611,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -9359,7 +8635,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF_ESR = "accessKey[GSCE],autofocus[GSCE],blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
                 + "hidden[GSCE],innerText[GSCE],isContentEditable[GCE],lang[GSCE],"
@@ -9381,29 +8657,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
-            IE = "accessKey[GSCE],blur(),children[GCE],classList[GCE],className[GSCE],clearAttributes(),click(),"
-                + "constructor[],contains(),contentEditable[GSCE],currentStyle[GCE],dataset[GCE],dir[GSCE],"
-                + "disabled[GSCE],focus(),getElementsByClassName(),hidden[GSCE],id[GSCE],innerHTML[GSCE],"
-                + "innerText[GSCE],insertAdjacentElement(),insertAdjacentHTML(),insertAdjacentText(),"
-                + "isContentEditable[GCE],lang[GSCE],language[GSCE],mergeAttributes(),offsetHeight[GCE],"
-                + "offsetLeft[GCE],offsetParent[GCE],offsetTop[GCE],offsetWidth[GCE],onabort[GSCE],"
-                + "onactivate[GSCE],onbeforeactivate[GSCE],onbeforecopy[GSCE],onbeforecut[GSCE],"
-                + "onbeforedeactivate[GSCE],onbeforepaste[GSCE],onblur[GSCE],oncanplay[GSCE],"
-                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],oncontextmenu[GSCE],oncopy[GSCE],"
-                + "oncuechange[GSCE],oncut[GSCE],ondblclick[GSCE],ondeactivate[GSCE],ondrag[GSCE],ondragend[GSCE],"
-                + "ondragenter[GSCE],ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],ondrop[GSCE],"
-                + "ondurationchange[GSCE],onemptied[GSCE],onended[GSCE],onerror[GSCE],onfocus[GSCE],onfocusin[GSCE],"
-                + "onfocusout[GSCE],onhelp[GSCE],oninput[GSCE],onkeydown[GSCE],onkeypress[GSCE],onkeyup[GSCE],"
-                + "onload[GSCE],onloadeddata[GSCE],onloadedmetadata[GSCE],onloadstart[GSCE],onmousedown[GSCE],"
-                + "onmouseenter[GSCE],onmouseleave[GSCE],onmousemove[GSCE],onmouseout[GSCE],onmouseover[GSCE],"
-                + "onmouseup[GSCE],onmousewheel[GSCE],onmscontentzoom[GSCE],onmsmanipulationstatechanged[GSCE],"
-                + "onpaste[GSCE],onpause[GSCE],onplay[GSCE],onplaying[GSCE],onprogress[GSCE],onratechange[GSCE],"
-                + "onreset[GSCE],onscroll[GSCE],onseeked[GSCE],onseeking[GSCE],onselect[GSCE],onselectstart[GSCE],"
-                + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerHTML[GSCE],outerText[GCE],parentElement[GCE],releaseCapture(),removeNode(),"
-                + "runtimeStyle[GCE],scrollIntoView(),setActive(),setCapture(),style[GSCE],"
-                + "tabIndex[GSCE],title[GSCE],uniqueID[GCE]")
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]")
     public void noembed() throws Exception {
         test("noembed");
     }
@@ -9441,8 +8695,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],"
-                + "togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             EDGE = "accessKey[GSCE],attachInternals(),attributeStyleMap[GCE],autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
                 + "editContext[GSCE],enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],"
@@ -9470,17 +8724,18 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],textprediction[GSCE],"
-                + "title[GSCE],togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "title[GSCE],togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             FF = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
-                + "enterKeyHint[GSCE],focus(),hidden[GSCE],inert[GSCE],innerText[GSCE],inputMode[GSCE],"
-                + "isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
+                + "enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],innerText[GSCE],"
+                + "inputMode[GSCE],isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
                 + "offsetParent[GCE],offsetTop[GCE],offsetWidth[GCE],onabort[GSCE],onanimationcancel[GSCE],"
                 + "onanimationend[GSCE],onanimationiteration[GSCE],onanimationstart[GSCE],onauxclick[GSCE],"
-                + "onbeforeinput[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],oncanplaythrough[GSCE],"
-                + "onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextmenu[GSCE],oncopy[GSCE],oncuechange[GSCE],"
-                + "oncut[GSCE],ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
+                + "onbeforeinput[GSCE],onbeforetoggle[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],"
+                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextlost[GSCE],"
+                + "oncontextmenu[GSCE],oncontextrestored[GSCE],oncopy[GSCE],oncuechange[GSCE],oncut[GSCE],"
+                + "ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
                 + "ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],ondrop[GSCE],ondurationchange[GSCE],"
                 + "onemptied[GSCE],onended[GSCE],onerror[GSCE],onfocus[GSCE],onformdata[GSCE],"
                 + "ongotpointercapture[GSCE],oninput[GSCE],oninvalid[GSCE],onkeydown[GSCE],onkeypress[GSCE],"
@@ -9496,8 +8751,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],"
                 + "ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],"
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
-                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
-                + "tabIndex[GSCE],title[GSCE],"
+                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],popover[GSCE],showPopover(),"
+                + "spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],togglePopover(),"
                 + "translate[GSCE]",
             FF_ESR = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
@@ -9525,26 +8780,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
                 + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
                 + "tabIndex[GSCE],title[GSCE],"
-                + "translate[GSCE]",
-            IE = "accessKey,applyElement(),blur(),canHaveChildren,canHaveHTML,children,classList,className,"
-                + "clearAttributes(),click(),componentFromPoint(),constructor,contains(),contentEditable,"
-                + "createControlRange(),currentStyle,dataset,dir,disabled,dragDrop(),draggable,focus(),"
-                + "getAdjacentText(),getElementsByClassName(),hidden,hideFocus,id,innerHTML,innerText,"
-                + "insertAdjacentElement(),insertAdjacentHTML(),insertAdjacentText(),isContentEditable,isDisabled,"
-                + "isMultiLine,isTextEdit,lang,language,mergeAttributes(),msGetInputContext(),offsetHeight,"
-                + "offsetLeft,offsetParent,offsetTop,offsetWidth,onabort,onactivate,onbeforeactivate,onbeforecopy,"
-                + "onbeforecut,onbeforedeactivate,onbeforepaste,onblur,oncanplay,oncanplaythrough,onchange,onclick,"
-                + "oncontextmenu,oncopy,oncuechange,oncut,ondblclick,ondeactivate,ondrag,ondragend,ondragenter,"
-                + "ondragleave,ondragover,ondragstart,ondrop,ondurationchange,onemptied,onended,onerror,onfocus,"
-                + "onfocusin,onfocusout,onhelp,oninput,onkeydown,onkeypress,onkeyup,onload,onloadeddata,"
-                + "onloadedmetadata,onloadstart,onmousedown,onmouseenter,onmouseleave,onmousemove,onmouseout,"
-                + "onmouseover,onmouseup,onmousewheel,onmscontentzoom,onmsmanipulationstatechanged,onpaste,onpause,"
-                + "onplay,onplaying,onprogress,onratechange,onreset,onscroll,onseeked,onseeking,onselect,"
-                + "onselectstart,onstalled,onsubmit,onsuspend,ontimeupdate,onvolumechange,onwaiting,outerHTML,"
-                + "outerText,parentElement,parentTextEdit,recordNumber,releaseCapture(),removeNode(),"
-                + "replaceAdjacentText(),replaceNode(),runtimeStyle,scrollIntoView(),setActive(),setCapture(),"
-                + "sourceIndex,spellcheck,style,swapNode(),tabIndex,title,uniqueID,"
-                + "uniqueNumber")
+                + "translate[GSCE]")
     @HtmlUnitNYI(CHROME = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -9571,7 +8807,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             EDGE = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -9598,7 +8834,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -9622,7 +8858,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF_ESR = "accessKey[GSCE],autofocus[GSCE],blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
                 + "hidden[GSCE],innerText[GSCE],isContentEditable[GCE],lang[GSCE],"
@@ -9644,29 +8880,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
-            IE = "accessKey[GSCE],blur(),children[GCE],classList[GCE],className[GSCE],clearAttributes(),click(),"
-                + "constructor[],contains(),contentEditable[GSCE],currentStyle[GCE],dataset[GCE],dir[GSCE],"
-                + "disabled[GSCE],focus(),getElementsByClassName(),hidden[GSCE],id[GSCE],innerHTML[GSCE],"
-                + "innerText[GSCE],insertAdjacentElement(),insertAdjacentHTML(),insertAdjacentText(),"
-                + "isContentEditable[GCE],lang[GSCE],language[GSCE],mergeAttributes(),offsetHeight[GCE],"
-                + "offsetLeft[GCE],offsetParent[GCE],offsetTop[GCE],offsetWidth[GCE],onabort[GSCE],"
-                + "onactivate[GSCE],onbeforeactivate[GSCE],onbeforecopy[GSCE],onbeforecut[GSCE],"
-                + "onbeforedeactivate[GSCE],onbeforepaste[GSCE],onblur[GSCE],oncanplay[GSCE],"
-                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],oncontextmenu[GSCE],oncopy[GSCE],"
-                + "oncuechange[GSCE],oncut[GSCE],ondblclick[GSCE],ondeactivate[GSCE],ondrag[GSCE],"
-                + "ondragend[GSCE],ondragenter[GSCE],ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],"
-                + "ondrop[GSCE],ondurationchange[GSCE],onemptied[GSCE],onended[GSCE],onerror[GSCE],"
-                + "onfocus[GSCE],onfocusin[GSCE],onfocusout[GSCE],onhelp[GSCE],oninput[GSCE],onkeydown[GSCE],"
-                + "onkeypress[GSCE],onkeyup[GSCE],onload[GSCE],onloadeddata[GSCE],onloadedmetadata[GSCE],"
-                + "onloadstart[GSCE],onmousedown[GSCE],onmouseenter[GSCE],onmouseleave[GSCE],onmousemove[GSCE],"
-                + "onmouseout[GSCE],onmouseover[GSCE],onmouseup[GSCE],onmousewheel[GSCE],onmscontentzoom[GSCE],"
-                + "onmsmanipulationstatechanged[GSCE],onpaste[GSCE],onpause[GSCE],onplay[GSCE],onplaying[GSCE],"
-                + "onprogress[GSCE],onratechange[GSCE],onreset[GSCE],onscroll[GSCE],onseeked[GSCE],"
-                + "onseeking[GSCE],onselect[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
-                + "onsuspend[GSCE],ontimeupdate[GSCE],onvolumechange[GSCE],onwaiting[GSCE],outerHTML[GSCE],"
-                + "outerText[GCE],parentElement[GCE],releaseCapture(),removeNode(),runtimeStyle[GCE],"
-                + "scrollIntoView(),setActive(),setCapture(),style[GSCE],tabIndex[GSCE],title[GSCE],uniqueID[GCE]")
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]")
     public void noframes() throws Exception {
         test("noframes");
     }
@@ -9704,8 +8918,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],"
-                + "togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             EDGE = "accessKey[GSCE],attachInternals(),attributeStyleMap[GCE],autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
                 + "editContext[GSCE],enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],"
@@ -9733,11 +8947,10 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],textprediction[GSCE],"
-                + "title[GSCE],togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "title[GSCE],togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             FF = "constructor()",
-            FF_ESR = "constructor()",
-            IE = "constructor,namedRecordset(),recordset")
+            FF_ESR = "constructor()")
     @HtmlUnitNYI(CHROME = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -9764,7 +8977,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             EDGE = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -9791,8 +9004,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
-            IE = "constructor[]")
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]")
     public void nolayer() throws Exception {
         test("nolayer");
     }
@@ -9830,8 +9042,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],"
-                + "togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             EDGE = "accessKey[GSCE],attachInternals(),attributeStyleMap[GCE],autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
                 + "editContext[GSCE],enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],"
@@ -9859,17 +9071,18 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],textprediction[GSCE],"
-                + "title[GSCE],togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "title[GSCE],togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             FF = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
-                + "enterKeyHint[GSCE],focus(),hidden[GSCE],inert[GSCE],innerText[GSCE],inputMode[GSCE],"
-                + "isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
+                + "enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],innerText[GSCE],"
+                + "inputMode[GSCE],isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
                 + "offsetParent[GCE],offsetTop[GCE],offsetWidth[GCE],onabort[GSCE],onanimationcancel[GSCE],"
                 + "onanimationend[GSCE],onanimationiteration[GSCE],onanimationstart[GSCE],onauxclick[GSCE],"
-                + "onbeforeinput[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],oncanplaythrough[GSCE],"
-                + "onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextmenu[GSCE],oncopy[GSCE],oncuechange[GSCE],"
-                + "oncut[GSCE],ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
+                + "onbeforeinput[GSCE],onbeforetoggle[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],"
+                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextlost[GSCE],"
+                + "oncontextmenu[GSCE],oncontextrestored[GSCE],oncopy[GSCE],oncuechange[GSCE],oncut[GSCE],"
+                + "ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
                 + "ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],ondrop[GSCE],ondurationchange[GSCE],"
                 + "onemptied[GSCE],onended[GSCE],onerror[GSCE],onfocus[GSCE],onformdata[GSCE],"
                 + "ongotpointercapture[GSCE],oninput[GSCE],oninvalid[GSCE],onkeydown[GSCE],onkeypress[GSCE],"
@@ -9885,8 +9098,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],"
                 + "ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],"
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
-                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
-                + "tabIndex[GSCE],title[GSCE],"
+                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],popover[GSCE],showPopover(),"
+                + "spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],togglePopover(),"
                 + "translate[GSCE]",
             FF_ESR = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
@@ -9914,8 +9127,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
                 + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
                 + "tabIndex[GSCE],title[GSCE],"
-                + "translate[GSCE]",
-            IE = "cite,clear,constructor,width")
+                + "translate[GSCE]")
     @HtmlUnitNYI(CHROME = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -9942,7 +9154,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             EDGE = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -9969,7 +9181,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -9993,7 +9205,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF_ESR = "accessKey[GSCE],autofocus[GSCE],blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
                 + "hidden[GSCE],innerText[GSCE],isContentEditable[GCE],lang[GSCE],"
@@ -10015,29 +9227,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
-            IE = "accessKey[GSCE],blur(),children[GCE],classList[GCE],className[GSCE],clearAttributes(),click(),"
-                + "constructor[],contains(),contentEditable[GSCE],currentStyle[GCE],dataset[GCE],dir[GSCE],"
-                + "disabled[GSCE],focus(),getElementsByClassName(),hidden[GSCE],id[GSCE],innerHTML[GSCE],"
-                + "innerText[GSCE],insertAdjacentElement(),insertAdjacentHTML(),insertAdjacentText(),"
-                + "isContentEditable[GCE],lang[GSCE],language[GSCE],mergeAttributes(),offsetHeight[GCE],"
-                + "offsetLeft[GCE],offsetParent[GCE],offsetTop[GCE],offsetWidth[GCE],onabort[GSCE],"
-                + "onactivate[GSCE],onbeforeactivate[GSCE],onbeforecopy[GSCE],onbeforecut[GSCE],"
-                + "onbeforedeactivate[GSCE],onbeforepaste[GSCE],onblur[GSCE],oncanplay[GSCE],"
-                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],oncontextmenu[GSCE],oncopy[GSCE],"
-                + "oncuechange[GSCE],oncut[GSCE],ondblclick[GSCE],ondeactivate[GSCE],ondrag[GSCE],"
-                + "ondragend[GSCE],ondragenter[GSCE],ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],"
-                + "ondrop[GSCE],ondurationchange[GSCE],onemptied[GSCE],onended[GSCE],onerror[GSCE],"
-                + "onfocus[GSCE],onfocusin[GSCE],onfocusout[GSCE],onhelp[GSCE],oninput[GSCE],onkeydown[GSCE],"
-                + "onkeypress[GSCE],onkeyup[GSCE],onload[GSCE],onloadeddata[GSCE],onloadedmetadata[GSCE],"
-                + "onloadstart[GSCE],onmousedown[GSCE],onmouseenter[GSCE],onmouseleave[GSCE],onmousemove[GSCE],"
-                + "onmouseout[GSCE],onmouseover[GSCE],onmouseup[GSCE],onmousewheel[GSCE],onmscontentzoom[GSCE],"
-                + "onmsmanipulationstatechanged[GSCE],onpaste[GSCE],onpause[GSCE],onplay[GSCE],onplaying[GSCE],"
-                + "onprogress[GSCE],onratechange[GSCE],onreset[GSCE],onscroll[GSCE],onseeked[GSCE],"
-                + "onseeking[GSCE],onselect[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
-                + "onsuspend[GSCE],ontimeupdate[GSCE],onvolumechange[GSCE],onwaiting[GSCE],outerHTML[GSCE],"
-                + "outerText[GCE],parentElement[GCE],releaseCapture(),removeNode(),runtimeStyle[GCE],"
-                + "scrollIntoView(),setActive(),setCapture(),style[GSCE],tabIndex[GSCE],title[GSCE],uniqueID[GCE]")
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]")
     public void noscript() throws Exception {
         test("noscript");
     }
@@ -10071,12 +9261,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "getSVGDocument(),height[GSCE],hspace[GSCE],name[GSCE],reportValidity(),setCustomValidity(),"
                 + "standby[GSCE],type[GSCE],useMap[GSCE],validationMessage[GCE],validity[GCE],vspace[GSCE],"
                 + "width[GSCE],"
-                + "willValidate[GCE]",
-            IE = "align,alt,altHtml,archive,BaseHref,border,checkValidity(),classid,code,codeBase,codeType,"
-                + "constructor,contentDocument,data,declare,form,getSVGDocument(),height,hspace,msPlayToDisabled,"
-                + "msPlayToPreferredSourceUri,msPlayToPrimary,name,namedRecordset(),object,readyState,recordset,"
-                + "setCustomValidity(),standby,type,useMap,validationMessage,validity,vspace,width,"
-                + "willValidate")
+                + "willValidate[GCE]")
     @HtmlUnitNYI(CHROME = "align[GSCE],border[GSCE],checkValidity(),constructor(),form[GCE],height[GSCE],"
                 + "name[GSCE],setCustomValidity(),validity[GCE],width[GSCE],willValidate[GCE]",
             EDGE = "align[GSCE],border[GSCE],checkValidity(),constructor(),form[GCE],height[GSCE],"
@@ -10084,9 +9269,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
             FF_ESR = "align[GSCE],border[GSCE],checkValidity(),constructor(),form[GCE],height[GSCE],"
                 + "name[GSCE],setCustomValidity(),validity[GCE],width[GSCE],willValidate[GCE]",
             FF = "align[GSCE],border[GSCE],checkValidity(),constructor(),form[GCE],height[GSCE],"
-                + "name[GSCE],setCustomValidity(),validity[GCE],width[GSCE],willValidate[GCE]",
-            IE = "align[GSCE],alt[GSCE],border[GSCE],checkValidity(),classid[GSCE],constructor[],"
-                + "form[GCE],height[GSCE],name[GSCE],setCustomValidity(),validity[GCE],width[GSCE],willValidate[GCE]")
+                + "name[GSCE],setCustomValidity(),validity[GCE],width[GSCE],willValidate[GCE]")
     public void object() throws Exception {
         test("object");
     }
@@ -10100,13 +9283,11 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "compact[GSCE],constructor(),reversed[GSCE],start[GSCE],type[GSCE]",
             EDGE = "compact[GSCE],constructor(),reversed[GSCE],start[GSCE],type[GSCE]",
             FF = "compact[GSCE],constructor(),reversed[GSCE],start[GSCE],type[GSCE]",
-            FF_ESR = "compact[GSCE],constructor(),reversed[GSCE],start[GSCE],type[GSCE]",
-            IE = "compact,constructor,start,type")
+            FF_ESR = "compact[GSCE],constructor(),reversed[GSCE],start[GSCE],type[GSCE]")
     @HtmlUnitNYI(CHROME = "constructor(),type[GSCE]",
             EDGE = "constructor(),type[GSCE]",
             FF_ESR = "constructor(),type[GSCE]",
-            FF = "constructor(),type[GSCE]",
-            IE = "constructor[],type[GSCE]")
+            FF = "constructor(),type[GSCE]")
     public void ol() throws Exception {
         test("ol");
     }
@@ -10120,9 +9301,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor(),disabled[GSCE],label[GSCE]",
             EDGE = "constructor(),disabled[GSCE],label[GSCE]",
             FF = "constructor(),disabled[GSCE],label[GSCE]",
-            FF_ESR = "constructor(),disabled[GSCE],label[GSCE]",
-            IE = "constructor,defaultSelected,form,index,label,selected,text,value")
-    @HtmlUnitNYI(IE = "constructor[],disabled[GSCE],label[GSCE]")
+            FF_ESR = "constructor(),disabled[GSCE],label[GSCE]")
     public void optgroup() throws Exception {
         test("optgroup");
     }
@@ -10140,9 +9319,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
             FF = "constructor(),defaultSelected[GSCE],disabled[GSCE],form[GCE],index[GCE],label[GSCE],"
                 + "selected[GSCE],text[GSCE],value[GSCE]",
             FF_ESR = "constructor(),defaultSelected[GSCE],disabled[GSCE],form[GCE],index[GCE],label[GSCE],"
-                + "selected[GSCE],text[GSCE],value[GSCE]",
-            IE = "constructor,defaultSelected[GSCE],form[GCE],index[GCE],label[GSCE],selected[GSCE],"
-                + "text[GSCE],value[GSCE]")
+                + "selected[GSCE],text[GSCE],value[GSCE]")
     @HtmlUnitNYI(CHROME = "constructor(),defaultSelected[GCE],disabled[GSCE],form[GCE],index[GCE],label[GSCE],"
                 + "selected[GSCE],text[GSCE],value[GSCE]",
             EDGE = "constructor(),defaultSelected[GCE],disabled[GSCE],form[GCE],index[GCE],label[GSCE],"
@@ -10150,9 +9327,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
             FF = "constructor(),defaultSelected[GCE],disabled[GSCE],form[GCE],index[GCE],label[GSCE],"
                 + "selected[GSCE],text[GSCE],value[GSCE]",
             FF_ESR = "constructor(),defaultSelected[GCE],disabled[GSCE],form[GCE],index[GCE],label[GSCE],"
-                + "selected[GSCE],text[GSCE],value[GSCE]",
-            IE = "constructor[WC],defaultSelected[GCE],disabled[GSCE],form[GCE],index[GCE],"
-                + "label[GSCE],selected[GSCE],text[GSCE],value[GSCE]")
+                + "selected[GSCE],text[GSCE],value[GSCE]")
     public void option() throws Exception {
         test("option");
     }
@@ -10174,8 +9349,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "willValidate[GCE]",
             FF_ESR = "checkValidity(),constructor(),defaultValue[GSCE],form[GCE],htmlFor[GSCE],labels[GCE],name[GSCE],"
                 + "reportValidity(),setCustomValidity(),type[GCE],validationMessage[GCE],validity[GCE],value[GSCE],"
-                + "willValidate[GCE]",
-            IE = "constructor,namedRecordset(),recordset")
+                + "willValidate[GCE]")
     @HtmlUnitNYI(CHROME = "checkValidity(),constructor(),form[GCE],labels[GCE],name[GSCE],setCustomValidity(),"
                 + "validity[GCE],willValidate[GCE]",
             EDGE = "checkValidity(),constructor(),form[GCE],labels[GCE],name[GSCE],setCustomValidity(),"
@@ -10183,8 +9357,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
             FF_ESR = "checkValidity(),constructor(),form[GCE],labels[GCE],name[GSCE],setCustomValidity(),"
                 + "validity[GCE],willValidate[GCE]",
             FF = "checkValidity(),constructor(),form[GCE],labels[GCE],name[GSCE],setCustomValidity(),"
-                + "validity[GCE],willValidate[GCE]",
-            IE = "constructor[]")
+                + "validity[GCE],willValidate[GCE]")
     public void output() throws Exception {
         test("output");
     }
@@ -10198,8 +9371,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "align[GSCE],constructor()",
             EDGE = "align[GSCE],constructor()",
             FF = "align[GSCE],constructor()",
-            FF_ESR = "align[GSCE],constructor()",
-            IE = "align[GSCE],clear[GSCE],constructor[]")
+            FF_ESR = "align[GSCE],constructor()")
     public void p() throws Exception {
         test("p");
     }
@@ -10213,8 +9385,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor(),name[GSCE],type[GSCE],value[GSCE],valueType[GSCE]",
             EDGE = "constructor(),name[GSCE],type[GSCE],value[GSCE],valueType[GSCE]",
             FF = "constructor(),name[GSCE],type[GSCE],value[GSCE],valueType[GSCE]",
-            FF_ESR = "constructor(),name[GSCE],type[GSCE],value[GSCE],valueType[GSCE]",
-            IE = "constructor[],name[GCE],type[GCE],value[GCE],valueType[GCE]")
+            FF_ESR = "constructor(),name[GSCE],type[GSCE],value[GSCE],valueType[GSCE]")
     @HtmlUnitNYI(CHROME = "constructor(),name[GCE],type[GCE],value[GCE],valueType[GCE]",
             EDGE = "constructor(),name[GCE],type[GCE],value[GCE],valueType[GCE]",
             FF = "constructor(),name[GCE],type[GCE],value[GCE],valueType[GCE]",
@@ -10244,10 +9415,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
             FF_ESR = "clearMarks(),clearMeasures(),clearResourceTimings(),constructor(),eventCounts[GCE],getEntries(),"
                 + "getEntriesByName(),getEntriesByType(),mark(),measure(),navigation[GCE],now(),"
                 + "onresourcetimingbufferfull[GSCE],setResourceTimingBufferSize(),timeOrigin[GCE],timing[GCE],"
-                + "toJSON()",
-            IE = "clearMarks(),clearMeasures(),clearResourceTimings(),constructor,getEntries(),"
-                + "getEntriesByName(),getEntriesByType(),getMarks(),getMeasures(),mark(),measure(),"
-                + "navigation,now(),setResourceTimingBufferSize(),timing,toJSON()")
+                + "toJSON()")
     @HtmlUnitNYI(CHROME = "constructor(),getEntries(),getEntriesByName(),getEntriesByType(),"
                 + "navigation[GCE],now(),timing[GCE]",
             EDGE = "constructor(),getEntries(),getEntriesByName(),getEntriesByType(),"
@@ -10255,8 +9423,6 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
             FF = "constructor(),getEntries(),getEntriesByName(),getEntriesByType(),"
                 + "navigation[GCE],now(),timing[GCE]",
             FF_ESR = "constructor(),getEntries(),getEntriesByName(),getEntriesByType(),"
-                + "navigation[GCE],now(),timing[GCE]",
-            IE = "constructor[],getEntries(),getEntriesByName(),getEntriesByType(),"
                 + "navigation[GCE],now(),timing[GCE]")
     public void performance() throws Exception {
         testString("", "performance");
@@ -10295,8 +9461,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],"
-                + "togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             EDGE = "accessKey[GSCE],attachInternals(),attributeStyleMap[GCE],autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
                 + "editContext[GSCE],enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],"
@@ -10324,17 +9490,18 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],textprediction[GSCE],"
-                + "title[GSCE],togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "title[GSCE],togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             FF = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
-                + "enterKeyHint[GSCE],focus(),hidden[GSCE],inert[GSCE],innerText[GSCE],inputMode[GSCE],"
-                + "isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
+                + "enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],innerText[GSCE],"
+                + "inputMode[GSCE],isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
                 + "offsetParent[GCE],offsetTop[GCE],offsetWidth[GCE],onabort[GSCE],onanimationcancel[GSCE],"
                 + "onanimationend[GSCE],onanimationiteration[GSCE],onanimationstart[GSCE],onauxclick[GSCE],"
-                + "onbeforeinput[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],oncanplaythrough[GSCE],"
-                + "onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextmenu[GSCE],oncopy[GSCE],oncuechange[GSCE],"
-                + "oncut[GSCE],ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
+                + "onbeforeinput[GSCE],onbeforetoggle[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],"
+                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextlost[GSCE],"
+                + "oncontextmenu[GSCE],oncontextrestored[GSCE],oncopy[GSCE],oncuechange[GSCE],oncut[GSCE],"
+                + "ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
                 + "ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],ondrop[GSCE],ondurationchange[GSCE],"
                 + "onemptied[GSCE],onended[GSCE],onerror[GSCE],onfocus[GSCE],onformdata[GSCE],"
                 + "ongotpointercapture[GSCE],oninput[GSCE],oninvalid[GSCE],onkeydown[GSCE],onkeypress[GSCE],"
@@ -10350,8 +9517,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],"
                 + "ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],"
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
-                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
-                + "tabIndex[GSCE],title[GSCE],"
+                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],popover[GSCE],showPopover(),"
+                + "spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],togglePopover(),"
                 + "translate[GSCE]",
             FF_ESR = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
@@ -10379,8 +9546,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
                 + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
                 + "tabIndex[GSCE],title[GSCE],"
-                + "translate[GSCE]",
-            IE = "cite,clear,constructor,width")
+                + "translate[GSCE]")
     @HtmlUnitNYI(CHROME = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -10407,7 +9573,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             EDGE = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -10434,7 +9600,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -10458,7 +9624,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF_ESR = "accessKey[GSCE],autofocus[GSCE],blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
                 + "hidden[GSCE],innerText[GSCE],isContentEditable[GCE],lang[GSCE],"
@@ -10480,8 +9646,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
-            IE = "clear[GSCE],constructor[],width[GSCE]")
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]")
     public void plaintext() throws Exception {
         test("plaintext");
     }
@@ -10495,8 +9660,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor(),width[GSCE]",
             EDGE = "constructor(),width[GSCE]",
             FF = "constructor(),width[GSCE]",
-            FF_ESR = "constructor(),width[GSCE]",
-            IE = "cite[GSCE],clear[GSCE],constructor[],width[GSCE]")
+            FF_ESR = "constructor(),width[GSCE]")
     public void pre() throws Exception {
         test("pre");
     }
@@ -10510,13 +9674,11 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor(),labels[GCE],max[GSCE],position[GCE],value[GSCE]",
             EDGE = "constructor(),labels[GCE],max[GSCE],position[GCE],value[GSCE]",
             FF = "constructor(),labels[GCE],max[GSCE],position[GCE],value[GSCE]",
-            FF_ESR = "constructor(),labels[GCE],max[GSCE],position[GCE],value[GSCE]",
-            IE = "constructor,form,max,position,value")
+            FF_ESR = "constructor(),labels[GCE],max[GSCE],position[GCE],value[GSCE]")
     @HtmlUnitNYI(CHROME = "constructor(),labels[GCE],max[GCE],value[GCE]",
             EDGE = "constructor(),labels[GCE],max[GCE],value[GCE]",
             FF_ESR = "constructor(),labels[GCE],max[GCE],value[GCE]",
-            FF = "constructor(),labels[GCE],max[GCE],value[GCE]",
-            IE = "constructor[],max[GCE],value[GCE]")
+            FF = "constructor(),labels[GCE],max[GCE],value[GCE]")
     public void progress() throws Exception {
         test("progress");
     }
@@ -10554,8 +9716,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],"
-                + "togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             EDGE = "accessKey[GSCE],attachInternals(),attributeStyleMap[GCE],autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
                 + "editContext[GSCE],enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],"
@@ -10583,17 +9745,18 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],textprediction[GSCE],"
-                + "title[GSCE],togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "title[GSCE],togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             FF = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
-                + "enterKeyHint[GSCE],focus(),hidden[GSCE],inert[GSCE],innerText[GSCE],inputMode[GSCE],"
-                + "isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
+                + "enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],innerText[GSCE],"
+                + "inputMode[GSCE],isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
                 + "offsetParent[GCE],offsetTop[GCE],offsetWidth[GCE],onabort[GSCE],onanimationcancel[GSCE],"
                 + "onanimationend[GSCE],onanimationiteration[GSCE],onanimationstart[GSCE],onauxclick[GSCE],"
-                + "onbeforeinput[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],oncanplaythrough[GSCE],"
-                + "onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextmenu[GSCE],oncopy[GSCE],oncuechange[GSCE],"
-                + "oncut[GSCE],ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
+                + "onbeforeinput[GSCE],onbeforetoggle[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],"
+                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextlost[GSCE],"
+                + "oncontextmenu[GSCE],oncontextrestored[GSCE],oncopy[GSCE],oncuechange[GSCE],oncut[GSCE],"
+                + "ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
                 + "ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],ondrop[GSCE],ondurationchange[GSCE],"
                 + "onemptied[GSCE],onended[GSCE],onerror[GSCE],onfocus[GSCE],onformdata[GSCE],"
                 + "ongotpointercapture[GSCE],oninput[GSCE],oninvalid[GSCE],onkeydown[GSCE],onkeypress[GSCE],"
@@ -10609,8 +9772,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],"
                 + "ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],"
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
-                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
-                + "tabIndex[GSCE],title[GSCE],"
+                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],popover[GSCE],showPopover(),"
+                + "spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],togglePopover(),"
                 + "translate[GSCE]",
             FF_ESR = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
@@ -10638,8 +9801,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
                 + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
                 + "tabIndex[GSCE],title[GSCE],"
-                + "translate[GSCE]",
-            IE = "cite,constructor,dateTime")
+                + "translate[GSCE]")
     @HtmlUnitNYI(CHROME = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -10666,7 +9828,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             EDGE = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -10693,10 +9855,9 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF_ESR = "constructor()",
-            FF = "constructor()",
-            IE = "constructor[]")
+            FF = "constructor()")
     public void rb() throws Exception {
         test("rb");
     }
@@ -10710,8 +9871,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor()",
             EDGE = "constructor()",
             FF = "constructor()",
-            FF_ESR = "constructor()",
-            IE = "constructor[]")
+            FF_ESR = "constructor()")
     public void rbc() throws Exception {
         test("rbc");
     }
@@ -10749,8 +9909,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],"
-                + "togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             EDGE = "accessKey[GSCE],attachInternals(),attributeStyleMap[GCE],autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
                 + "editContext[GSCE],enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],"
@@ -10778,17 +9938,18 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],textprediction[GSCE],"
-                + "title[GSCE],togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "title[GSCE],togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             FF = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
-                + "enterKeyHint[GSCE],focus(),hidden[GSCE],inert[GSCE],innerText[GSCE],inputMode[GSCE],"
-                + "isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
+                + "enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],innerText[GSCE],"
+                + "inputMode[GSCE],isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
                 + "offsetParent[GCE],offsetTop[GCE],offsetWidth[GCE],onabort[GSCE],onanimationcancel[GSCE],"
                 + "onanimationend[GSCE],onanimationiteration[GSCE],onanimationstart[GSCE],onauxclick[GSCE],"
-                + "onbeforeinput[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],oncanplaythrough[GSCE],"
-                + "onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextmenu[GSCE],oncopy[GSCE],oncuechange[GSCE],"
-                + "oncut[GSCE],ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
+                + "onbeforeinput[GSCE],onbeforetoggle[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],"
+                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextlost[GSCE],"
+                + "oncontextmenu[GSCE],oncontextrestored[GSCE],oncopy[GSCE],oncuechange[GSCE],oncut[GSCE],"
+                + "ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
                 + "ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],ondrop[GSCE],ondurationchange[GSCE],"
                 + "onemptied[GSCE],onended[GSCE],onerror[GSCE],onfocus[GSCE],onformdata[GSCE],"
                 + "ongotpointercapture[GSCE],oninput[GSCE],oninvalid[GSCE],onkeydown[GSCE],onkeypress[GSCE],"
@@ -10804,8 +9965,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],"
                 + "ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],"
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
-                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
-                + "tabIndex[GSCE],title[GSCE],"
+                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],popover[GSCE],showPopover(),"
+                + "spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],togglePopover(),"
                 + "translate[GSCE]",
             FF_ESR = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
@@ -10833,8 +9994,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
                 + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
                 + "tabIndex[GSCE],title[GSCE],"
-                + "translate[GSCE]",
-            IE = "cite,constructor,dateTime")
+                + "translate[GSCE]")
     @HtmlUnitNYI(CHROME = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -10861,7 +10021,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             EDGE = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -10888,10 +10048,9 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF_ESR = "constructor()",
-            FF = "constructor()",
-            IE = "constructor[]")
+            FF = "constructor()")
     public void rp() throws Exception {
         test("rp");
     }
@@ -10929,8 +10088,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],"
-                + "togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             EDGE = "accessKey[GSCE],attachInternals(),attributeStyleMap[GCE],autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
                 + "editContext[GSCE],enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],"
@@ -10958,17 +10117,18 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],textprediction[GSCE],"
-                + "title[GSCE],togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "title[GSCE],togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             FF = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
-                + "enterKeyHint[GSCE],focus(),hidden[GSCE],inert[GSCE],innerText[GSCE],inputMode[GSCE],"
-                + "isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
+                + "enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],innerText[GSCE],"
+                + "inputMode[GSCE],isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
                 + "offsetParent[GCE],offsetTop[GCE],offsetWidth[GCE],onabort[GSCE],onanimationcancel[GSCE],"
                 + "onanimationend[GSCE],onanimationiteration[GSCE],onanimationstart[GSCE],onauxclick[GSCE],"
-                + "onbeforeinput[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],oncanplaythrough[GSCE],"
-                + "onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextmenu[GSCE],oncopy[GSCE],oncuechange[GSCE],"
-                + "oncut[GSCE],ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
+                + "onbeforeinput[GSCE],onbeforetoggle[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],"
+                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextlost[GSCE],"
+                + "oncontextmenu[GSCE],oncontextrestored[GSCE],oncopy[GSCE],oncuechange[GSCE],oncut[GSCE],"
+                + "ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
                 + "ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],ondrop[GSCE],ondurationchange[GSCE],"
                 + "onemptied[GSCE],onended[GSCE],onerror[GSCE],onfocus[GSCE],onformdata[GSCE],"
                 + "ongotpointercapture[GSCE],oninput[GSCE],oninvalid[GSCE],onkeydown[GSCE],onkeypress[GSCE],"
@@ -10984,8 +10144,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],"
                 + "ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],"
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
-                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
-                + "tabIndex[GSCE],title[GSCE],"
+                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],popover[GSCE],showPopover(),"
+                + "spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],togglePopover(),"
                 + "translate[GSCE]",
             FF_ESR = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
@@ -11013,8 +10173,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
                 + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
                 + "tabIndex[GSCE],title[GSCE],"
-                + "translate[GSCE]",
-            IE = "cite,constructor,dateTime")
+                + "translate[GSCE]")
     @HtmlUnitNYI(CHROME = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -11041,7 +10200,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             EDGE = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -11068,10 +10227,9 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF_ESR = "constructor()",
-            FF = "constructor()",
-            IE = "constructor[]")
+            FF = "constructor()")
     public void rt() throws Exception {
         test("rt");
     }
@@ -11110,8 +10268,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],"
-                + "togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             EDGE = "accessKey[GSCE],attachInternals(),attributeStyleMap[GCE],autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
                 + "editContext[GSCE],enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],"
@@ -11139,17 +10297,18 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],textprediction[GSCE],"
-                + "title[GSCE],togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "title[GSCE],togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             FF = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
-                + "enterKeyHint[GSCE],focus(),hidden[GSCE],inert[GSCE],innerText[GSCE],inputMode[GSCE],"
-                + "isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
+                + "enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],innerText[GSCE],"
+                + "inputMode[GSCE],isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
                 + "offsetParent[GCE],offsetTop[GCE],offsetWidth[GCE],onabort[GSCE],onanimationcancel[GSCE],"
                 + "onanimationend[GSCE],onanimationiteration[GSCE],onanimationstart[GSCE],onauxclick[GSCE],"
-                + "onbeforeinput[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],oncanplaythrough[GSCE],"
-                + "onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextmenu[GSCE],oncopy[GSCE],oncuechange[GSCE],"
-                + "oncut[GSCE],ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
+                + "onbeforeinput[GSCE],onbeforetoggle[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],"
+                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextlost[GSCE],"
+                + "oncontextmenu[GSCE],oncontextrestored[GSCE],oncopy[GSCE],oncuechange[GSCE],oncut[GSCE],"
+                + "ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
                 + "ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],ondrop[GSCE],ondurationchange[GSCE],"
                 + "onemptied[GSCE],onended[GSCE],onerror[GSCE],onfocus[GSCE],onformdata[GSCE],"
                 + "ongotpointercapture[GSCE],oninput[GSCE],oninvalid[GSCE],onkeydown[GSCE],onkeypress[GSCE],"
@@ -11165,8 +10324,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],"
                 + "ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],"
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
-                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
-                + "tabIndex[GSCE],title[GSCE],"
+                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],popover[GSCE],showPopover(),"
+                + "spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],togglePopover(),"
                 + "translate[GSCE]",
             FF_ESR = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
@@ -11194,8 +10353,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
                 + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
                 + "tabIndex[GSCE],title[GSCE],"
-                + "translate[GSCE]",
-            IE = "cite,constructor,dateTime")
+                + "translate[GSCE]")
     @HtmlUnitNYI(CHROME = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -11222,7 +10380,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             EDGE = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -11249,10 +10407,9 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF_ESR = "constructor()",
-            FF = "constructor()",
-            IE = "constructor[]")
+            FF = "constructor()")
     public void rtc() throws Exception {
         test("rtc");
     }
@@ -11290,8 +10447,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],"
-                + "togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             EDGE = "accessKey[GSCE],attachInternals(),attributeStyleMap[GCE],autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
                 + "editContext[GSCE],enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],"
@@ -11319,17 +10476,18 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],textprediction[GSCE],"
-                + "title[GSCE],togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "title[GSCE],togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             FF = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
-                + "enterKeyHint[GSCE],focus(),hidden[GSCE],inert[GSCE],innerText[GSCE],inputMode[GSCE],"
-                + "isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
+                + "enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],innerText[GSCE],"
+                + "inputMode[GSCE],isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
                 + "offsetParent[GCE],offsetTop[GCE],offsetWidth[GCE],onabort[GSCE],onanimationcancel[GSCE],"
                 + "onanimationend[GSCE],onanimationiteration[GSCE],onanimationstart[GSCE],onauxclick[GSCE],"
-                + "onbeforeinput[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],oncanplaythrough[GSCE],"
-                + "onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextmenu[GSCE],oncopy[GSCE],oncuechange[GSCE],"
-                + "oncut[GSCE],ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
+                + "onbeforeinput[GSCE],onbeforetoggle[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],"
+                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextlost[GSCE],"
+                + "oncontextmenu[GSCE],oncontextrestored[GSCE],oncopy[GSCE],oncuechange[GSCE],oncut[GSCE],"
+                + "ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
                 + "ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],ondrop[GSCE],ondurationchange[GSCE],"
                 + "onemptied[GSCE],onended[GSCE],onerror[GSCE],onfocus[GSCE],onformdata[GSCE],"
                 + "ongotpointercapture[GSCE],oninput[GSCE],oninvalid[GSCE],onkeydown[GSCE],onkeypress[GSCE],"
@@ -11345,8 +10503,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],"
                 + "ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],"
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
-                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
-                + "tabIndex[GSCE],title[GSCE],"
+                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],popover[GSCE],showPopover(),"
+                + "spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],togglePopover(),"
                 + "translate[GSCE]",
             FF_ESR = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
@@ -11374,8 +10532,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
                 + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
                 + "tabIndex[GSCE],title[GSCE],"
-                + "translate[GSCE]",
-            IE = "cite,constructor,dateTime")
+                + "translate[GSCE]")
     @HtmlUnitNYI(CHROME = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -11402,7 +10559,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             EDGE = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -11429,10 +10586,9 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF_ESR = "constructor()",
-            FF = "constructor()",
-            IE = "constructor[]")
+            FF = "constructor()")
     public void ruby() throws Exception {
         test("ruby");
     }
@@ -11470,8 +10626,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],"
-                + "togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             EDGE = "accessKey[GSCE],attachInternals(),attributeStyleMap[GCE],autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
                 + "editContext[GSCE],enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],"
@@ -11499,17 +10655,18 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],textprediction[GSCE],"
-                + "title[GSCE],togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "title[GSCE],togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             FF = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
-                + "enterKeyHint[GSCE],focus(),hidden[GSCE],inert[GSCE],innerText[GSCE],inputMode[GSCE],"
-                + "isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
+                + "enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],innerText[GSCE],"
+                + "inputMode[GSCE],isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
                 + "offsetParent[GCE],offsetTop[GCE],offsetWidth[GCE],onabort[GSCE],onanimationcancel[GSCE],"
                 + "onanimationend[GSCE],onanimationiteration[GSCE],onanimationstart[GSCE],onauxclick[GSCE],"
-                + "onbeforeinput[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],oncanplaythrough[GSCE],"
-                + "onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextmenu[GSCE],oncopy[GSCE],oncuechange[GSCE],"
-                + "oncut[GSCE],ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
+                + "onbeforeinput[GSCE],onbeforetoggle[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],"
+                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextlost[GSCE],"
+                + "oncontextmenu[GSCE],oncontextrestored[GSCE],oncopy[GSCE],oncuechange[GSCE],oncut[GSCE],"
+                + "ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
                 + "ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],ondrop[GSCE],ondurationchange[GSCE],"
                 + "onemptied[GSCE],onended[GSCE],onerror[GSCE],onfocus[GSCE],onformdata[GSCE],"
                 + "ongotpointercapture[GSCE],oninput[GSCE],oninvalid[GSCE],onkeydown[GSCE],onkeypress[GSCE],"
@@ -11525,8 +10682,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],"
                 + "ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],"
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
-                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
-                + "tabIndex[GSCE],title[GSCE],"
+                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],popover[GSCE],showPopover(),"
+                + "spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],togglePopover(),"
                 + "translate[GSCE]",
             FF_ESR = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
@@ -11554,8 +10711,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
                 + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
                 + "tabIndex[GSCE],title[GSCE],"
-                + "translate[GSCE]",
-            IE = "cite,constructor,dateTime")
+                + "translate[GSCE]")
     @HtmlUnitNYI(CHROME = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),hidden[GSCE],innerText[GSCE],isContentEditable[GCE],"
@@ -11578,7 +10734,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],"
                 + "ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             EDGE = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),hidden[GSCE],innerText[GSCE],isContentEditable[GCE],"
@@ -11601,7 +10757,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],"
                 + "ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF_ESR = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],"
                 + "enterKeyHint[GSCE],focus(),hidden[GSCE],innerText[GSCE],isContentEditable[GCE],lang[GSCE],"
@@ -11622,7 +10778,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onseeked[GSCE],onseeking[GSCE],onselect[GSCE],onselectionchange[GSCE],"
                 + "onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
-                + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],outerText[GCE],"
+                + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],outerText[GSCE],"
                 + "spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],"
@@ -11644,9 +10800,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onseeked[GSCE],onseeking[GSCE],onselect[GSCE],onselectionchange[GSCE],"
                 + "onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
-                + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],outerText[GCE],"
-                + "spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
-            IE = "constructor[]")
+                + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],outerText[GSCE],"
+                + "spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]")
     public void s() throws Exception {
         test("s");
     }
@@ -11684,8 +10839,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],"
-                + "togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             EDGE = "accessKey[GSCE],attachInternals(),attributeStyleMap[GCE],autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
                 + "editContext[GSCE],enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],"
@@ -11713,17 +10868,18 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],textprediction[GSCE],"
-                + "title[GSCE],togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "title[GSCE],togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             FF = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
-                + "enterKeyHint[GSCE],focus(),hidden[GSCE],inert[GSCE],innerText[GSCE],inputMode[GSCE],"
-                + "isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
+                + "enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],innerText[GSCE],"
+                + "inputMode[GSCE],isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
                 + "offsetParent[GCE],offsetTop[GCE],offsetWidth[GCE],onabort[GSCE],onanimationcancel[GSCE],"
                 + "onanimationend[GSCE],onanimationiteration[GSCE],onanimationstart[GSCE],onauxclick[GSCE],"
-                + "onbeforeinput[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],oncanplaythrough[GSCE],"
-                + "onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextmenu[GSCE],oncopy[GSCE],oncuechange[GSCE],"
-                + "oncut[GSCE],ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
+                + "onbeforeinput[GSCE],onbeforetoggle[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],"
+                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextlost[GSCE],"
+                + "oncontextmenu[GSCE],oncontextrestored[GSCE],oncopy[GSCE],oncuechange[GSCE],oncut[GSCE],"
+                + "ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
                 + "ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],ondrop[GSCE],ondurationchange[GSCE],"
                 + "onemptied[GSCE],onended[GSCE],onerror[GSCE],onfocus[GSCE],onformdata[GSCE],"
                 + "ongotpointercapture[GSCE],oninput[GSCE],oninvalid[GSCE],onkeydown[GSCE],onkeypress[GSCE],"
@@ -11739,8 +10895,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],"
                 + "ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],"
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
-                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
-                + "tabIndex[GSCE],title[GSCE],"
+                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],popover[GSCE],showPopover(),"
+                + "spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],togglePopover(),"
                 + "translate[GSCE]",
             FF_ESR = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
@@ -11768,8 +10924,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
                 + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
                 + "tabIndex[GSCE],title[GSCE],"
-                + "translate[GSCE]",
-            IE = "cite,constructor,dateTime")
+                + "translate[GSCE]")
     @HtmlUnitNYI(CHROME = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),hidden[GSCE],innerText[GSCE],isContentEditable[GCE],"
@@ -11791,7 +10946,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onseeked[GSCE],onseeking[GSCE],onselect[GSCE],onselectionchange[GSCE],"
                 + "onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
-                + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],outerText[GCE],"
+                + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "style[GSCE],tabIndex[GSCE],title[GSCE]",
             EDGE = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
@@ -11814,7 +10969,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onseeked[GSCE],onseeking[GSCE],onselect[GSCE],onselectionchange[GSCE],"
                 + "onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
-                + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],outerText[GCE],"
+                + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF_ESR = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],"
@@ -11835,7 +10990,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onresize[GSCE],onscroll[GSCE],onseeked[GSCE],onseeking[GSCE],onselect[GSCE],onselectionchange[GSCE],"
                 + "onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
-                + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],outerText[GCE],"
+                + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],outerText[GSCE],"
                 + "spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],"
@@ -11857,9 +11012,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onseeked[GSCE],onseeking[GSCE],onselect[GSCE],onselectionchange[GSCE],"
                 + "onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
-                + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],outerText[GCE],"
-                + "spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
-            IE = "constructor[]")
+                + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],outerText[GSCE],"
+                + "spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]")
     public void samp() throws Exception {
         test("samp");
     }
@@ -11870,26 +11024,24 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = "async[GSCE],blocking[GSCE],charset[GSCE],constructor(),crossOrigin[GSCE],defer[GSCE],event[GSCE],"
-                + "fetchPriority[GSCE],htmlFor[GSCE],integrity[GSCE],noModule[GSCE],referrerPolicy[GSCE],src[GSCE],"
-                + "text[GSCE],"
+    @Alerts(CHROME = "async[GSCE],attributionSrc[GSCE],blocking[GSCE],charset[GSCE],constructor(),crossOrigin[GSCE],"
+                + "defer[GSCE],event[GSCE],fetchPriority[GSCE],htmlFor[GSCE],integrity[GSCE],noModule[GSCE],"
+                + "referrerPolicy[GSCE],src[GSCE],text[GSCE],"
                 + "type[GSCE]",
-            EDGE = "async[GSCE],blocking[GSCE],charset[GSCE],constructor(),crossOrigin[GSCE],defer[GSCE],event[GSCE],"
-                + "fetchPriority[GSCE],htmlFor[GSCE],integrity[GSCE],noModule[GSCE],referrerPolicy[GSCE],src[GSCE],"
-                + "text[GSCE],"
+            EDGE = "async[GSCE],attributionSrc[GSCE],blocking[GSCE],charset[GSCE],constructor(),crossOrigin[GSCE],"
+                + "defer[GSCE],event[GSCE],fetchPriority[GSCE],htmlFor[GSCE],integrity[GSCE],noModule[GSCE],"
+                + "referrerPolicy[GSCE],src[GSCE],text[GSCE],"
                 + "type[GSCE]",
             FF = "async[GSCE],charset[GSCE],constructor(),crossOrigin[GSCE],defer[GSCE],event[GSCE],htmlFor[GSCE],"
                 + "integrity[GSCE],noModule[GSCE],referrerPolicy[GSCE],src[GSCE],text[GSCE],"
                 + "type[GSCE]",
             FF_ESR = "async[GSCE],charset[GSCE],constructor(),crossOrigin[GSCE],defer[GSCE],event[GSCE],htmlFor[GSCE],"
                 + "integrity[GSCE],noModule[GSCE],referrerPolicy[GSCE],src[GSCE],text[GSCE],"
-                + "type[GSCE]",
-            IE = "async,charset,constructor,crossOrigin,defer,event,htmlFor,src,text,type")
+                + "type[GSCE]")
     @HtmlUnitNYI(CHROME = "async[GSCE],constructor(),src[GSCE],text[GSCE],type[GSCE]",
             EDGE = "async[GSCE],constructor(),src[GSCE],text[GSCE],type[GSCE]",
             FF_ESR = "async[GSCE],constructor(),src[GSCE],text[GSCE],type[GSCE]",
-            FF = "async[GSCE],constructor(),src[GSCE],text[GSCE],type[GSCE]",
-            IE = "async[GSCE],constructor[],src[GSCE],text[GSCE],type[GSCE]")
+            FF = "async[GSCE],constructor(),src[GSCE],text[GSCE],type[GSCE]")
     public void script() throws Exception {
         test("script");
     }
@@ -11927,8 +11079,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],"
-                + "togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             EDGE = "accessKey[GSCE],attachInternals(),attributeStyleMap[GCE],autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
                 + "editContext[GSCE],enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],"
@@ -11956,17 +11108,18 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],textprediction[GSCE],"
-                + "title[GSCE],togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "title[GSCE],togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             FF = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
-                + "enterKeyHint[GSCE],focus(),hidden[GSCE],inert[GSCE],innerText[GSCE],inputMode[GSCE],"
-                + "isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
+                + "enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],innerText[GSCE],"
+                + "inputMode[GSCE],isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
                 + "offsetParent[GCE],offsetTop[GCE],offsetWidth[GCE],onabort[GSCE],onanimationcancel[GSCE],"
                 + "onanimationend[GSCE],onanimationiteration[GSCE],onanimationstart[GSCE],onauxclick[GSCE],"
-                + "onbeforeinput[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],oncanplaythrough[GSCE],"
-                + "onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextmenu[GSCE],oncopy[GSCE],oncuechange[GSCE],"
-                + "oncut[GSCE],ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
+                + "onbeforeinput[GSCE],onbeforetoggle[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],"
+                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextlost[GSCE],"
+                + "oncontextmenu[GSCE],oncontextrestored[GSCE],oncopy[GSCE],oncuechange[GSCE],oncut[GSCE],"
+                + "ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
                 + "ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],ondrop[GSCE],ondurationchange[GSCE],"
                 + "onemptied[GSCE],onended[GSCE],onerror[GSCE],onfocus[GSCE],onformdata[GSCE],"
                 + "ongotpointercapture[GSCE],oninput[GSCE],oninvalid[GSCE],onkeydown[GSCE],onkeypress[GSCE],"
@@ -11982,8 +11135,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],"
                 + "ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],"
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
-                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
-                + "tabIndex[GSCE],title[GSCE],"
+                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],popover[GSCE],showPopover(),"
+                + "spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],togglePopover(),"
                 + "translate[GSCE]",
             FF_ESR = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
@@ -12011,26 +11164,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
                 + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
                 + "tabIndex[GSCE],title[GSCE],"
-                + "translate[GSCE]",
-            IE = "accessKey,applyElement(),blur(),canHaveChildren,canHaveHTML,children,classList,className,"
-                + "clearAttributes(),click(),componentFromPoint(),constructor,contains(),contentEditable,"
-                + "createControlRange(),currentStyle,dataset,dir,disabled,dragDrop(),draggable,focus(),"
-                + "getAdjacentText(),getElementsByClassName(),hidden,hideFocus,id,innerHTML,innerText,"
-                + "insertAdjacentElement(),insertAdjacentHTML(),insertAdjacentText(),isContentEditable,isDisabled,"
-                + "isMultiLine,isTextEdit,lang,language,mergeAttributes(),msGetInputContext(),offsetHeight,"
-                + "offsetLeft,offsetParent,offsetTop,offsetWidth,onabort,onactivate,onbeforeactivate,onbeforecopy,"
-                + "onbeforecut,onbeforedeactivate,onbeforepaste,onblur,oncanplay,oncanplaythrough,onchange,onclick,"
-                + "oncontextmenu,oncopy,oncuechange,oncut,ondblclick,ondeactivate,ondrag,ondragend,ondragenter,"
-                + "ondragleave,ondragover,ondragstart,ondrop,ondurationchange,onemptied,onended,onerror,onfocus,"
-                + "onfocusin,onfocusout,onhelp,oninput,onkeydown,onkeypress,onkeyup,onload,onloadeddata,"
-                + "onloadedmetadata,onloadstart,onmousedown,onmouseenter,onmouseleave,onmousemove,onmouseout,"
-                + "onmouseover,onmouseup,onmousewheel,onmscontentzoom,onmsmanipulationstatechanged,onpaste,onpause,"
-                + "onplay,onplaying,onprogress,onratechange,onreset,onscroll,onseeked,onseeking,onselect,"
-                + "onselectstart,onstalled,onsubmit,onsuspend,ontimeupdate,onvolumechange,onwaiting,outerHTML,"
-                + "outerText,parentElement,parentTextEdit,recordNumber,releaseCapture(),removeNode(),"
-                + "replaceAdjacentText(),replaceNode(),runtimeStyle,scrollIntoView(),setActive(),setCapture(),"
-                + "sourceIndex,spellcheck,style,swapNode(),tabIndex,title,uniqueID,"
-                + "uniqueNumber")
+                + "translate[GSCE]")
     @HtmlUnitNYI(CHROME = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -12057,7 +11191,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             EDGE = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -12084,7 +11218,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -12108,7 +11242,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF_ESR = "accessKey[GSCE],autofocus[GSCE],blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
                 + "hidden[GSCE],innerText[GSCE],isContentEditable[GCE],lang[GSCE],"
@@ -12130,29 +11264,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
-            IE = "accessKey[GSCE],blur(),children[GCE],classList[GCE],className[GSCE],clearAttributes(),click(),"
-                + "constructor[],contains(),contentEditable[GSCE],currentStyle[GCE],dataset[GCE],dir[GSCE],"
-                + "disabled[GSCE],focus(),getElementsByClassName(),hidden[GSCE],id[GSCE],innerHTML[GSCE],"
-                + "innerText[GSCE],insertAdjacentElement(),insertAdjacentHTML(),insertAdjacentText(),"
-                + "isContentEditable[GCE],lang[GSCE],language[GSCE],mergeAttributes(),offsetHeight[GCE],"
-                + "offsetLeft[GCE],offsetParent[GCE],offsetTop[GCE],offsetWidth[GCE],onabort[GSCE],"
-                + "onactivate[GSCE],onbeforeactivate[GSCE],onbeforecopy[GSCE],onbeforecut[GSCE],"
-                + "onbeforedeactivate[GSCE],onbeforepaste[GSCE],onblur[GSCE],oncanplay[GSCE],"
-                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],oncontextmenu[GSCE],oncopy[GSCE],"
-                + "oncuechange[GSCE],oncut[GSCE],ondblclick[GSCE],ondeactivate[GSCE],ondrag[GSCE],"
-                + "ondragend[GSCE],ondragenter[GSCE],ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],"
-                + "ondrop[GSCE],ondurationchange[GSCE],onemptied[GSCE],onended[GSCE],onerror[GSCE],"
-                + "onfocus[GSCE],onfocusin[GSCE],onfocusout[GSCE],onhelp[GSCE],oninput[GSCE],onkeydown[GSCE],"
-                + "onkeypress[GSCE],onkeyup[GSCE],onload[GSCE],onloadeddata[GSCE],onloadedmetadata[GSCE],"
-                + "onloadstart[GSCE],onmousedown[GSCE],onmouseenter[GSCE],onmouseleave[GSCE],onmousemove[GSCE],"
-                + "onmouseout[GSCE],onmouseover[GSCE],onmouseup[GSCE],onmousewheel[GSCE],onmscontentzoom[GSCE],"
-                + "onmsmanipulationstatechanged[GSCE],onpaste[GSCE],onpause[GSCE],onplay[GSCE],onplaying[GSCE],"
-                + "onprogress[GSCE],onratechange[GSCE],onreset[GSCE],onscroll[GSCE],onseeked[GSCE],"
-                + "onseeking[GSCE],onselect[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
-                + "onsuspend[GSCE],ontimeupdate[GSCE],onvolumechange[GSCE],onwaiting[GSCE],outerHTML[GSCE],"
-                + "outerText[GCE],parentElement[GCE],releaseCapture(),removeNode(),runtimeStyle[GCE],"
-                + "scrollIntoView(),setActive(),setCapture(),style[GSCE],tabIndex[GSCE],title[GSCE],uniqueID[GCE]")
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]")
     public void section() throws Exception {
         test("section");
     }
@@ -12182,10 +11294,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "labels[GCE],length[GSCE],multiple[GSCE],name[GSCE],namedItem(),options[GCE],remove(),"
                 + "reportValidity(),required[GSCE],selectedIndex[GSCE],selectedOptions[GCE],setCustomValidity(),"
                 + "size[GSCE],type[GCE],validationMessage[GCE],validity[GCE],value[GSCE],"
-                + "willValidate[GCE]",
-            IE = "add(),autofocus,checkValidity(),constructor,form,item(),length,multiple,name,namedItem(),options,"
-                + "remove(),required,selectedIndex,setCustomValidity(),size,tags(),type,urns(),validationMessage,"
-                + "validity,value,willValidate")
+                + "willValidate[GCE]")
     @HtmlUnitNYI(CHROME = "add(),checkValidity(),constructor(),disabled[GSCE],form[GCE],item(),"
                 + "labels[GCE],length[GSCE],multiple[GSCE],name[GSCE],options[GCE],remove(),required[GSCE],"
                 + "selectedIndex[GSCE],setCustomValidity(),size[GSCE],type[GCE],validity[GCE],value[GSCE],"
@@ -12201,10 +11310,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
             FF = "add(),checkValidity(),constructor(),disabled[GSCE],form[GCE],item(),"
                 + "labels[GCE],length[GSCE],multiple[GSCE],name[GSCE],options[GCE],remove(),required[GSCE],"
                 + "selectedIndex[GSCE],setCustomValidity(),size[GSCE],type[GCE],validity[GCE],value[GSCE],"
-                + "willValidate[GCE]",
-            IE = "add(),checkValidity(),constructor[],form[GCE],item(),length[GSCE],multiple[GSCE],"
-                + "name[GSCE],options[GCE],remove(),required[GSCE],selectedIndex[GSCE],setCustomValidity(),"
-                + "size[GSCE],type[GCE],validity[GCE],value[GSCE],willValidate[GCE]")
+                + "willValidate[GCE]")
     public void select() throws Exception {
         test("select");
     }
@@ -12218,10 +11324,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "add(),constructor(),length[GSCE],remove(),selectedIndex[GSCE]",
             EDGE = "add(),constructor(),length[GSCE],remove(),selectedIndex[GSCE]",
             FF = "add(),constructor(),length[GSCE],remove(),selectedIndex[GSCE]",
-            FF_ESR = "add(),constructor(),length[GSCE],remove(),selectedIndex[GSCE]",
-            IE = "__defineGetter__(),__defineSetter__(),__lookupGetter__(),__lookupSetter__(),"
-                    + "constructor(),hasOwnProperty(),isPrototypeOf(),propertyIsEnumerable(),"
-                    + "toLocaleString(),toString(),valueOf()")
+            FF_ESR = "add(),constructor(),length[GSCE],remove(),selectedIndex[GSCE]")
     @HtmlUnitNYI(CHROME = "add(),constructor(),item(),length[GSCE],remove(),selectedIndex[GSCE]",
             EDGE = "add(),constructor(),item(),length[GSCE],remove(),selectedIndex[GSCE]",
             FF_ESR = "add(),constructor(),item(),length[GSCE],remove(),selectedIndex[GSCE]",
@@ -12263,8 +11366,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],"
-                + "togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             EDGE = "accessKey[GSCE],attachInternals(),attributeStyleMap[GCE],autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
                 + "editContext[GSCE],enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],"
@@ -12292,17 +11395,18 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],textprediction[GSCE],"
-                + "title[GSCE],togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "title[GSCE],togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             FF = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
-                + "enterKeyHint[GSCE],focus(),hidden[GSCE],inert[GSCE],innerText[GSCE],inputMode[GSCE],"
-                + "isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
+                + "enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],innerText[GSCE],"
+                + "inputMode[GSCE],isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
                 + "offsetParent[GCE],offsetTop[GCE],offsetWidth[GCE],onabort[GSCE],onanimationcancel[GSCE],"
                 + "onanimationend[GSCE],onanimationiteration[GSCE],onanimationstart[GSCE],onauxclick[GSCE],"
-                + "onbeforeinput[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],oncanplaythrough[GSCE],"
-                + "onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextmenu[GSCE],oncopy[GSCE],oncuechange[GSCE],"
-                + "oncut[GSCE],ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
+                + "onbeforeinput[GSCE],onbeforetoggle[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],"
+                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextlost[GSCE],"
+                + "oncontextmenu[GSCE],oncontextrestored[GSCE],oncopy[GSCE],oncuechange[GSCE],oncut[GSCE],"
+                + "ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
                 + "ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],ondrop[GSCE],ondurationchange[GSCE],"
                 + "onemptied[GSCE],onended[GSCE],onerror[GSCE],onfocus[GSCE],onformdata[GSCE],"
                 + "ongotpointercapture[GSCE],oninput[GSCE],oninvalid[GSCE],onkeydown[GSCE],onkeypress[GSCE],"
@@ -12318,8 +11422,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],"
                 + "ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],"
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
-                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
-                + "tabIndex[GSCE],title[GSCE],"
+                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],popover[GSCE],showPopover(),"
+                + "spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],togglePopover(),"
                 + "translate[GSCE]",
             FF_ESR = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
@@ -12347,8 +11451,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
                 + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
                 + "tabIndex[GSCE],title[GSCE],"
-                + "translate[GSCE]",
-            IE = "cite,constructor,dateTime")
+                + "translate[GSCE]")
     @HtmlUnitNYI(CHROME = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -12375,7 +11478,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             EDGE = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -12402,7 +11505,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -12426,7 +11529,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF_ESR = "accessKey[GSCE],autofocus[GSCE],blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
                 + "hidden[GSCE],innerText[GSCE],isContentEditable[GCE],lang[GSCE],"
@@ -12448,8 +11551,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
-            IE = "constructor[]")
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]")
     public void small() throws Exception {
         test("small");
     }
@@ -12463,13 +11565,11 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor(),height[GSCE],media[GSCE],sizes[GSCE],src[GSCE],srcset[GSCE],type[GSCE],width[GSCE]",
             EDGE = "constructor(),height[GSCE],media[GSCE],sizes[GSCE],src[GSCE],srcset[GSCE],type[GSCE],width[GSCE]",
             FF = "constructor(),height[GSCE],media[GSCE],sizes[GSCE],src[GSCE],srcset[GSCE],type[GSCE],width[GSCE]",
-            FF_ESR = "constructor(),height[GSCE],media[GSCE],sizes[GSCE],src[GSCE],srcset[GSCE],type[GSCE],width[GSCE]",
-            IE = "constructor,media,msKeySystem,src,type")
+            FF_ESR = "constructor(),height[GSCE],media[GSCE],sizes[GSCE],src[GSCE],srcset[GSCE],type[GSCE],width[GSCE]")
     @HtmlUnitNYI(CHROME = "constructor()",
             EDGE = "constructor()",
             FF_ESR = "constructor()",
-            FF = "constructor()",
-            IE = "constructor[]")
+            FF = "constructor()")
     public void source() throws Exception {
         test("source");
     }
@@ -12483,8 +11583,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor()",
             EDGE = "constructor()",
             FF = "constructor()",
-            FF_ESR = "constructor()",
-            IE = "constructor[]")
+            FF_ESR = "constructor()")
     public void span() throws Exception {
         test("span");
     }
@@ -12522,8 +11621,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],"
-                + "togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             EDGE = "accessKey[GSCE],attachInternals(),attributeStyleMap[GCE],autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
                 + "editContext[GSCE],enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],"
@@ -12551,17 +11650,18 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],textprediction[GSCE],"
-                + "title[GSCE],togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "title[GSCE],togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             FF = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
-                + "enterKeyHint[GSCE],focus(),hidden[GSCE],inert[GSCE],innerText[GSCE],inputMode[GSCE],"
-                + "isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
+                + "enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],innerText[GSCE],"
+                + "inputMode[GSCE],isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
                 + "offsetParent[GCE],offsetTop[GCE],offsetWidth[GCE],onabort[GSCE],onanimationcancel[GSCE],"
                 + "onanimationend[GSCE],onanimationiteration[GSCE],onanimationstart[GSCE],onauxclick[GSCE],"
-                + "onbeforeinput[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],oncanplaythrough[GSCE],"
-                + "onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextmenu[GSCE],oncopy[GSCE],oncuechange[GSCE],"
-                + "oncut[GSCE],ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
+                + "onbeforeinput[GSCE],onbeforetoggle[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],"
+                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextlost[GSCE],"
+                + "oncontextmenu[GSCE],oncontextrestored[GSCE],oncopy[GSCE],oncuechange[GSCE],oncut[GSCE],"
+                + "ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
                 + "ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],ondrop[GSCE],ondurationchange[GSCE],"
                 + "onemptied[GSCE],onended[GSCE],onerror[GSCE],onfocus[GSCE],onformdata[GSCE],"
                 + "ongotpointercapture[GSCE],oninput[GSCE],oninvalid[GSCE],onkeydown[GSCE],onkeypress[GSCE],"
@@ -12577,8 +11677,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],"
                 + "ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],"
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
-                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
-                + "tabIndex[GSCE],title[GSCE],"
+                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],popover[GSCE],showPopover(),"
+                + "spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],togglePopover(),"
                 + "translate[GSCE]",
             FF_ESR = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
@@ -12606,8 +11706,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
                 + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
                 + "tabIndex[GSCE],title[GSCE],"
-                + "translate[GSCE]",
-            IE = "cite,constructor,dateTime")
+                + "translate[GSCE]")
     @HtmlUnitNYI(CHROME = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -12634,7 +11733,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             EDGE = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -12661,7 +11760,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -12685,7 +11784,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF_ESR = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -12708,8 +11807,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
-            IE = "constructor[]")
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]")
     public void strike() throws Exception {
         test("strike");
     }
@@ -12747,8 +11845,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],"
-                + "togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             EDGE = "accessKey[GSCE],attachInternals(),attributeStyleMap[GCE],autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
                 + "editContext[GSCE],enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],"
@@ -12776,17 +11874,18 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],textprediction[GSCE],"
-                + "title[GSCE],togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "title[GSCE],togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             FF = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
-                + "enterKeyHint[GSCE],focus(),hidden[GSCE],inert[GSCE],innerText[GSCE],inputMode[GSCE],"
-                + "isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
+                + "enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],innerText[GSCE],"
+                + "inputMode[GSCE],isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
                 + "offsetParent[GCE],offsetTop[GCE],offsetWidth[GCE],onabort[GSCE],onanimationcancel[GSCE],"
                 + "onanimationend[GSCE],onanimationiteration[GSCE],onanimationstart[GSCE],onauxclick[GSCE],"
-                + "onbeforeinput[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],oncanplaythrough[GSCE],"
-                + "onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextmenu[GSCE],oncopy[GSCE],oncuechange[GSCE],"
-                + "oncut[GSCE],ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
+                + "onbeforeinput[GSCE],onbeforetoggle[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],"
+                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextlost[GSCE],"
+                + "oncontextmenu[GSCE],oncontextrestored[GSCE],oncopy[GSCE],oncuechange[GSCE],oncut[GSCE],"
+                + "ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
                 + "ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],ondrop[GSCE],ondurationchange[GSCE],"
                 + "onemptied[GSCE],onended[GSCE],onerror[GSCE],onfocus[GSCE],onformdata[GSCE],"
                 + "ongotpointercapture[GSCE],oninput[GSCE],oninvalid[GSCE],onkeydown[GSCE],onkeypress[GSCE],"
@@ -12802,8 +11901,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],"
                 + "ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],"
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
-                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
-                + "tabIndex[GSCE],title[GSCE],"
+                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],popover[GSCE],showPopover(),"
+                + "spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],togglePopover(),"
                 + "translate[GSCE]",
             FF_ESR = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
@@ -12831,8 +11930,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
                 + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
                 + "tabIndex[GSCE],title[GSCE],"
-                + "translate[GSCE]",
-            IE = "cite,constructor,dateTime")
+                + "translate[GSCE]")
     @HtmlUnitNYI(CHROME = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -12859,7 +11957,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             EDGE = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -12886,7 +11984,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -12910,7 +12008,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF_ESR = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -12933,8 +12031,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
-            IE = "constructor[]")
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]")
     public void strong() throws Exception {
         test("strong");
     }
@@ -12948,12 +12045,10 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "blocking[GSCE],constructor(),disabled[GSCE],media[GSCE],sheet[GCE],type[GSCE]",
             EDGE = "blocking[GSCE],constructor(),disabled[GSCE],media[GSCE],sheet[GCE],type[GSCE]",
             FF = "constructor(),disabled[GSCE],media[GSCE],sheet[GCE],type[GSCE]",
-            FF_ESR = "constructor(),disabled[GSCE],media[GSCE],sheet[GCE],type[GSCE]",
-            IE = "constructor,media,sheet,type")
+            FF_ESR = "constructor(),disabled[GSCE],media[GSCE],sheet[GCE],type[GSCE]")
     @HtmlUnitNYI(
             CHROME = "constructor(),disabled[GSCE],media[GSCE],sheet[GCE],type[GSCE]",
-            EDGE = "constructor(),disabled[GSCE],media[GSCE],sheet[GCE],type[GSCE]",
-            IE = "constructor[],disabled[GSCE],media[GSCE],sheet[GCE],type[GSCE]")
+            EDGE = "constructor(),disabled[GSCE],media[GSCE],sheet[GCE],type[GSCE]")
     public void style() throws Exception {
         test("style");
     }
@@ -12991,8 +12086,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],"
-                + "togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             EDGE = "accessKey[GSCE],attachInternals(),attributeStyleMap[GCE],autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
                 + "editContext[GSCE],enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],"
@@ -13020,17 +12115,18 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],textprediction[GSCE],"
-                + "title[GSCE],togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "title[GSCE],togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             FF = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
-                + "enterKeyHint[GSCE],focus(),hidden[GSCE],inert[GSCE],innerText[GSCE],inputMode[GSCE],"
-                + "isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
+                + "enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],innerText[GSCE],"
+                + "inputMode[GSCE],isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
                 + "offsetParent[GCE],offsetTop[GCE],offsetWidth[GCE],onabort[GSCE],onanimationcancel[GSCE],"
                 + "onanimationend[GSCE],onanimationiteration[GSCE],onanimationstart[GSCE],onauxclick[GSCE],"
-                + "onbeforeinput[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],oncanplaythrough[GSCE],"
-                + "onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextmenu[GSCE],oncopy[GSCE],oncuechange[GSCE],"
-                + "oncut[GSCE],ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
+                + "onbeforeinput[GSCE],onbeforetoggle[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],"
+                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextlost[GSCE],"
+                + "oncontextmenu[GSCE],oncontextrestored[GSCE],oncopy[GSCE],oncuechange[GSCE],oncut[GSCE],"
+                + "ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
                 + "ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],ondrop[GSCE],ondurationchange[GSCE],"
                 + "onemptied[GSCE],onended[GSCE],onerror[GSCE],onfocus[GSCE],onformdata[GSCE],"
                 + "ongotpointercapture[GSCE],oninput[GSCE],oninvalid[GSCE],onkeydown[GSCE],onkeypress[GSCE],"
@@ -13046,8 +12142,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],"
                 + "ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],"
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
-                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
-                + "tabIndex[GSCE],title[GSCE],"
+                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],popover[GSCE],showPopover(),"
+                + "spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],togglePopover(),"
                 + "translate[GSCE]",
             FF_ESR = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
@@ -13075,8 +12171,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
                 + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
                 + "tabIndex[GSCE],title[GSCE],"
-                + "translate[GSCE]",
-            IE = "cite,constructor,dateTime")
+                + "translate[GSCE]")
     @HtmlUnitNYI(CHROME = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -13103,7 +12198,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             EDGE = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -13130,7 +12225,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -13154,7 +12249,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF_ESR = "accessKey[GSCE],autofocus[GSCE],blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
                 + "hidden[GSCE],innerText[GSCE],isContentEditable[GCE],lang[GSCE],"
@@ -13176,8 +12271,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
-            IE = "constructor[]")
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]")
     public void sub() throws Exception {
         test("sub");
     }
@@ -13215,8 +12309,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],"
-                + "togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             EDGE = "accessKey[GSCE],attachInternals(),attributeStyleMap[GCE],autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
                 + "editContext[GSCE],enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],"
@@ -13244,17 +12338,18 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],textprediction[GSCE],"
-                + "title[GSCE],togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "title[GSCE],togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             FF = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
-                + "enterKeyHint[GSCE],focus(),hidden[GSCE],inert[GSCE],innerText[GSCE],inputMode[GSCE],"
-                + "isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
+                + "enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],innerText[GSCE],"
+                + "inputMode[GSCE],isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
                 + "offsetParent[GCE],offsetTop[GCE],offsetWidth[GCE],onabort[GSCE],onanimationcancel[GSCE],"
                 + "onanimationend[GSCE],onanimationiteration[GSCE],onanimationstart[GSCE],onauxclick[GSCE],"
-                + "onbeforeinput[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],oncanplaythrough[GSCE],"
-                + "onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextmenu[GSCE],oncopy[GSCE],oncuechange[GSCE],"
-                + "oncut[GSCE],ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
+                + "onbeforeinput[GSCE],onbeforetoggle[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],"
+                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextlost[GSCE],"
+                + "oncontextmenu[GSCE],oncontextrestored[GSCE],oncopy[GSCE],oncuechange[GSCE],oncut[GSCE],"
+                + "ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
                 + "ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],ondrop[GSCE],ondurationchange[GSCE],"
                 + "onemptied[GSCE],onended[GSCE],onerror[GSCE],onfocus[GSCE],onformdata[GSCE],"
                 + "ongotpointercapture[GSCE],oninput[GSCE],oninvalid[GSCE],onkeydown[GSCE],onkeypress[GSCE],"
@@ -13270,8 +12365,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],"
                 + "ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],"
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
-                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
-                + "tabIndex[GSCE],title[GSCE],"
+                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],popover[GSCE],showPopover(),"
+                + "spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],togglePopover(),"
                 + "translate[GSCE]",
             FF_ESR = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
@@ -13299,8 +12394,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
                 + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
                 + "tabIndex[GSCE],title[GSCE],"
-                + "translate[GSCE]",
-            IE = "constructor,namedRecordset(),recordset")
+                + "translate[GSCE]")
     @HtmlUnitNYI(CHROME = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -13327,7 +12421,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             EDGE = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -13354,7 +12448,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -13378,7 +12472,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF_ESR = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -13401,8 +12495,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
-            IE = "constructor[]")
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]")
     public void summary() throws Exception {
         test("summary");
     }
@@ -13440,8 +12533,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],"
-                + "togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             EDGE = "accessKey[GSCE],attachInternals(),attributeStyleMap[GCE],autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
                 + "editContext[GSCE],enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],"
@@ -13469,17 +12562,18 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],textprediction[GSCE],"
-                + "title[GSCE],togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "title[GSCE],togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             FF = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
-                + "enterKeyHint[GSCE],focus(),hidden[GSCE],inert[GSCE],innerText[GSCE],inputMode[GSCE],"
-                + "isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
+                + "enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],innerText[GSCE],"
+                + "inputMode[GSCE],isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
                 + "offsetParent[GCE],offsetTop[GCE],offsetWidth[GCE],onabort[GSCE],onanimationcancel[GSCE],"
                 + "onanimationend[GSCE],onanimationiteration[GSCE],onanimationstart[GSCE],onauxclick[GSCE],"
-                + "onbeforeinput[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],oncanplaythrough[GSCE],"
-                + "onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextmenu[GSCE],oncopy[GSCE],oncuechange[GSCE],"
-                + "oncut[GSCE],ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
+                + "onbeforeinput[GSCE],onbeforetoggle[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],"
+                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextlost[GSCE],"
+                + "oncontextmenu[GSCE],oncontextrestored[GSCE],oncopy[GSCE],oncuechange[GSCE],oncut[GSCE],"
+                + "ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
                 + "ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],ondrop[GSCE],ondurationchange[GSCE],"
                 + "onemptied[GSCE],onended[GSCE],onerror[GSCE],onfocus[GSCE],onformdata[GSCE],"
                 + "ongotpointercapture[GSCE],oninput[GSCE],oninvalid[GSCE],onkeydown[GSCE],onkeypress[GSCE],"
@@ -13495,8 +12589,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],"
                 + "ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],"
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
-                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
-                + "tabIndex[GSCE],title[GSCE],"
+                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],popover[GSCE],showPopover(),"
+                + "spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],togglePopover(),"
                 + "translate[GSCE]",
             FF_ESR = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
@@ -13524,8 +12618,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
                 + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
                 + "tabIndex[GSCE],title[GSCE],"
-                + "translate[GSCE]",
-            IE = "cite,constructor,dateTime")
+                + "translate[GSCE]")
     @HtmlUnitNYI(CHROME = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -13552,7 +12645,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             EDGE = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -13579,7 +12672,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -13603,7 +12696,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF_ESR = "accessKey[GSCE],autofocus[GSCE],blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
                 + "hidden[GSCE],innerText[GSCE],isContentEditable[GCE],lang[GSCE],"
@@ -13625,8 +12718,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
-            IE = "constructor[]")
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]")
     public void sup() throws Exception {
         test("sup");
     }
@@ -13640,9 +12732,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor()",
             EDGE = "constructor()",
             FF = "constructor()",
-            FF_ESR = "constructor()",
-            IE = "constructor,namedRecordset(),recordset")
-    @HtmlUnitNYI(IE = "constructor[]")
+            FF_ESR = "constructor()")
     public void svg() throws Exception {
         test("svg");
     }
@@ -13672,12 +12762,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "constructor(),createCaption(),createTBody(),createTFoot(),createTHead(),deleteCaption(),"
                 + "deleteRow(),deleteTFoot(),deleteTHead(),frame[GSCE],insertRow(),rows[GCE],rules[GSCE],"
                 + "summary[GSCE],tBodies[GCE],tFoot[GSCE],tHead[GSCE],"
-                + "width[GSCE]",
-            IE = "align,background,bgColor,border,borderColor,borderColorDark,borderColorLight,caption,cellPadding,"
-                + "cells,cellSpacing,cols,constructor,createCaption(),createTBody(),createTFoot(),createTHead(),"
-                + "deleteCaption(),deleteRow(),deleteTFoot(),deleteTHead(),frame,height,insertRow(),moveRow(),rows,"
-                + "rules,summary,tBodies,tFoot,tHead,"
-                + "width")
+                + "width[GSCE]")
     @HtmlUnitNYI(CHROME = "bgColor[GSCE],border[GSCE],caption[GSCE],cellPadding[GSCE],cellSpacing[GSCE],"
                 + "constructor(),createCaption(),createTBody(),"
                 + "createTFoot(),createTHead(),deleteCaption(),deleteTFoot(),deleteTHead(),"
@@ -13693,11 +12778,6 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
             FF = "bgColor[GSCE],border[GSCE],caption[GSCE],cellPadding[GSCE],cellSpacing[GSCE],"
                 + "constructor(),createCaption(),createTBody(),"
                 + "createTFoot(),createTHead(),deleteCaption(),deleteTFoot(),deleteTHead(),"
-                + "rules[GSCE],summary[GSCE],tBodies[GCE],tFoot[GSCE],tHead[GSCE],width[GSCE]",
-            IE = "bgColor[GSCE],border[GSCE],borderColor[GSCE],borderColorDark[GSCE],borderColorLight[GSCE],"
-                + "caption[GSCE],cellPadding[GSCE],cellSpacing[GSCE],"
-                + "constructor[],createCaption(),createTBody(),createTFoot(),createTHead(),deleteCaption(),"
-                + "deleteTFoot(),deleteTHead(),"
                 + "rules[GSCE],summary[GSCE],tBodies[GCE],tFoot[GSCE],tHead[GSCE],width[GSCE]")
     public void table() throws Exception {
         test("table");
@@ -13712,13 +12792,11 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "align[GSCE],ch[GSCE],chOff[GSCE],constructor(),span[GSCE],vAlign[GSCE],width[GSCE]",
             EDGE = "align[GSCE],ch[GSCE],chOff[GSCE],constructor(),span[GSCE],vAlign[GSCE],width[GSCE]",
             FF = "align[GSCE],ch[GSCE],chOff[GSCE],constructor(),span[GSCE],vAlign[GSCE],width[GSCE]",
-            FF_ESR = "align[GSCE],ch[GSCE],chOff[GSCE],constructor(),span[GSCE],vAlign[GSCE],width[GSCE]",
-            IE = "align,ch,chOff,constructor,span,vAlign,width")
+            FF_ESR = "align[GSCE],ch[GSCE],chOff[GSCE],constructor(),span[GSCE],vAlign[GSCE],width[GSCE]")
     @HtmlUnitNYI(CHROME = "constructor(),span[GSCE],width[GSCE]",
             EDGE = "constructor(),span[GSCE],width[GSCE]",
             FF_ESR = "constructor(),span[GSCE],width[GSCE]",
-            FF = "constructor(),span[GSCE],width[GSCE]",
-            IE = "constructor[],span[GSCE],width[GSCE]")
+            FF = "constructor(),span[GSCE],width[GSCE]")
     public void col() throws Exception {
         test("col");
     }
@@ -13732,13 +12810,11 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "align[GSCE],ch[GSCE],chOff[GSCE],constructor(),span[GSCE],vAlign[GSCE],width[GSCE]",
             EDGE = "align[GSCE],ch[GSCE],chOff[GSCE],constructor(),span[GSCE],vAlign[GSCE],width[GSCE]",
             FF = "align[GSCE],ch[GSCE],chOff[GSCE],constructor(),span[GSCE],vAlign[GSCE],width[GSCE]",
-            FF_ESR = "align[GSCE],ch[GSCE],chOff[GSCE],constructor(),span[GSCE],vAlign[GSCE],width[GSCE]",
-            IE = "align,ch,chOff,constructor,span,vAlign,width")
+            FF_ESR = "align[GSCE],ch[GSCE],chOff[GSCE],constructor(),span[GSCE],vAlign[GSCE],width[GSCE]")
     @HtmlUnitNYI(CHROME = "constructor(),span[GSCE],width[GSCE]",
             EDGE = "constructor(),span[GSCE],width[GSCE]",
             FF_ESR = "constructor(),span[GSCE],width[GSCE]",
-            FF = "constructor(),span[GSCE],width[GSCE]",
-            IE = "constructor[],span[GSCE],width[GSCE]")
+            FF = "constructor(),span[GSCE],width[GSCE]")
     public void colgroup() throws Exception {
         test("colgroup");
     }
@@ -13752,13 +12828,11 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "align[GSCE],ch[GSCE],chOff[GSCE],constructor(),deleteRow(),insertRow(),rows[GCE],vAlign[GSCE]",
             EDGE = "align[GSCE],ch[GSCE],chOff[GSCE],constructor(),deleteRow(),insertRow(),rows[GCE],vAlign[GSCE]",
             FF = "align[GSCE],ch[GSCE],chOff[GSCE],constructor(),deleteRow(),insertRow(),rows[GCE],vAlign[GSCE]",
-            FF_ESR = "align[GSCE],ch[GSCE],chOff[GSCE],constructor(),deleteRow(),insertRow(),rows[GCE],vAlign[GSCE]",
-            IE = "align,bgColor,ch,chOff,constructor,deleteRow(),insertRow(),moveRow(),rows,vAlign")
+            FF_ESR = "align[GSCE],ch[GSCE],chOff[GSCE],constructor(),deleteRow(),insertRow(),rows[GCE],vAlign[GSCE]")
     @HtmlUnitNYI(CHROME = "ch[GSCE],chOff[GSCE],constructor(),vAlign[GSCE]",
             EDGE = "ch[GSCE],chOff[GSCE],constructor(),vAlign[GSCE]",
             FF_ESR = "ch[GSCE],chOff[GSCE],constructor(),vAlign[GSCE]",
-            FF = "ch[GSCE],chOff[GSCE],constructor(),vAlign[GSCE]",
-            IE = "bgColor[GSCE],ch[GSCE],chOff[GSCE],constructor[],vAlign[GSCE]")
+            FF = "ch[GSCE],chOff[GSCE],constructor(),vAlign[GSCE]")
     public void tbody() throws Exception {
         test("tbody");
     }
@@ -13784,8 +12858,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
             FF_ESR = "abbr[GSCE],align[GSCE],axis[GSCE],bgColor[GSCE],cellIndex[GCE],ch[GSCE],chOff[GSCE],"
                 + "colSpan[GSCE],constructor(),headers[GSCE],height[GSCE],noWrap[GSCE],rowSpan[GSCE],scope[GSCE],"
                 + "vAlign[GSCE],"
-                + "width[GSCE]",
-            IE = "constructor[]")
+                + "width[GSCE]")
     @HtmlUnitNYI(CHROME = "abbr[GSCE],axis[GSCE],bgColor[GSCE],cellIndex[GCE],colSpan[GSCE],constructor(),"
                 + "headers[GSCE],height[GSCE],noWrap[GSCE],rowSpan[GSCE],scope[GSCE],width[GSCE]",
             EDGE = "abbr[GSCE],axis[GSCE],bgColor[GSCE],cellIndex[GCE],colSpan[GSCE],constructor(),"
@@ -13819,8 +12892,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
             FF_ESR = "abbr[GSCE],align[GSCE],axis[GSCE],bgColor[GSCE],cellIndex[GCE],ch[GSCE],chOff[GSCE],"
                 + "colSpan[GSCE],constructor(),headers[GSCE],height[GSCE],noWrap[GSCE],rowSpan[GSCE],scope[GSCE],"
                 + "vAlign[GSCE],"
-                + "width[GSCE]",
-            IE = "constructor,scope")
+                + "width[GSCE]")
     @HtmlUnitNYI(CHROME = "abbr[GSCE],axis[GSCE],bgColor[GSCE],cellIndex[GCE],colSpan[GSCE],"
                 + "constructor(),headers[GSCE],height[GSCE],noWrap[GSCE],rowSpan[GSCE],scope[GSCE],width[GSCE]",
             EDGE = "abbr[GSCE],axis[GSCE],bgColor[GSCE],cellIndex[GCE],colSpan[GSCE],"
@@ -13828,8 +12900,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
             FF_ESR = "abbr[GSCE],axis[GSCE],bgColor[GSCE],cellIndex[GCE],colSpan[GSCE],"
                 + "constructor(),headers[GSCE],height[GSCE],noWrap[GSCE],rowSpan[GSCE],scope[GSCE],width[GSCE]",
             FF = "abbr[GSCE],axis[GSCE],bgColor[GSCE],cellIndex[GCE],colSpan[GSCE],"
-                + "constructor(),headers[GSCE],height[GSCE],noWrap[GSCE],rowSpan[GSCE],scope[GSCE],width[GSCE]",
-            IE = "constructor[]")
+                + "constructor(),headers[GSCE],height[GSCE],noWrap[GSCE],rowSpan[GSCE],scope[GSCE],width[GSCE]")
     public void th() throws Exception {
         test("th");
     }
@@ -13851,10 +12922,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "vAlign[GSCE]",
             FF_ESR = "align[GSCE],bgColor[GSCE],cells[GCE],ch[GSCE],chOff[GSCE],constructor(),deleteCell(),"
                 + "insertCell(),rowIndex[GCE],sectionRowIndex[GCE],"
-                + "vAlign[GSCE]",
-            IE = "align,bgColor,borderColor,borderColorDark,borderColorLight,cells,ch,chOff,constructor,"
-                + "deleteCell(),height,insertCell(),rowIndex,sectionRowIndex,"
-                + "vAlign")
+                + "vAlign[GSCE]")
     @HtmlUnitNYI(CHROME = "bgColor[GSCE],cells[GCE],constructor(),deleteCell(),insertCell(),"
                 + "rowIndex[GCE],sectionRowIndex[GCE]",
             EDGE = "bgColor[GSCE],cells[GCE],constructor(),deleteCell(),insertCell(),"
@@ -13862,10 +12930,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
             FF_ESR = "bgColor[GSCE],cells[GCE],constructor(),deleteCell(),insertCell(),"
                 + "rowIndex[GCE],sectionRowIndex[GCE]",
             FF = "bgColor[GSCE],cells[GCE],constructor(),deleteCell(),insertCell(),"
-                + "rowIndex[GCE],sectionRowIndex[GCE]",
-            IE = "bgColor[GSCE],borderColor[GSCE],borderColorDark[GSCE],borderColorLight[GSCE],cells[GCE],"
-                + "constructor[],"
-                + "deleteCell(),insertCell(),rowIndex[GCE],sectionRowIndex[GCE]")
+                + "rowIndex[GCE],sectionRowIndex[GCE]")
     public void tr() throws Exception {
         test("tr");
     }
@@ -13902,11 +12967,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "readOnly[GSCE],reportValidity(),required[GSCE],rows[GSCE],select(),selectionDirection[GSCE],"
                 + "selectionEnd[GSCE],selectionStart[GSCE],setCustomValidity(),setRangeText(),setSelectionRange(),"
                 + "textLength[GCE],type[GCE],validationMessage[GCE],validity[GCE],value[GSCE],willValidate[GCE],"
-                + "wrap[GSCE]",
-            IE = "autofocus,checkValidity(),cols,constructor,createTextRange(),defaultValue,form,maxLength,name,"
-                + "placeholder,readOnly,required,rows,select(),selectionEnd,selectionStart,setCustomValidity(),"
-                + "setSelectionRange(),status,type,validationMessage,validity,value,willValidate,"
-                + "wrap")
+                + "wrap[GSCE]")
     @HtmlUnitNYI(CHROME = "checkValidity(),cols[GSCE],constructor(),defaultValue[GSCE],disabled[GSCE],"
                 + "form[GCE],labels[GCE],"
                 + "maxLength[GSCE],minLength[GSCE],name[GSCE],placeholder[GSCE],readOnly[GSCE],required[GSCE],"
@@ -13928,11 +12989,6 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "form[GCE],labels[GCE],maxLength[GSCE],minLength[GSCE],name[GSCE],"
                 + "placeholder[GSCE],readOnly[GSCE],required[GSCE],rows[GSCE],select(),selectionEnd[GSCE],"
                 + "selectionStart[GSCE],setCustomValidity(),setSelectionRange(),textLength[GCE],type[GCE],"
-                + "validity[GCE],value[GSCE],willValidate[GCE]",
-            IE = "checkValidity(),cols[GSCE],constructor[],createTextRange(),defaultValue[GSCE],"
-                + "form[GCE],maxLength[GSCE],name[GSCE],placeholder[GSCE],"
-                + "readOnly[GSCE],required[GSCE],rows[GSCE],select(),selectionEnd[GSCE],"
-                + "selectionStart[GSCE],setCustomValidity(),setSelectionRange(),type[GCE],"
                 + "validity[GCE],value[GSCE],willValidate[GCE]")
     public void textarea() throws Exception {
         test("textarea");
@@ -13947,13 +13003,11 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "align[GSCE],ch[GSCE],chOff[GSCE],constructor(),deleteRow(),insertRow(),rows[GCE],vAlign[GSCE]",
             EDGE = "align[GSCE],ch[GSCE],chOff[GSCE],constructor(),deleteRow(),insertRow(),rows[GCE],vAlign[GSCE]",
             FF = "align[GSCE],ch[GSCE],chOff[GSCE],constructor(),deleteRow(),insertRow(),rows[GCE],vAlign[GSCE]",
-            FF_ESR = "align[GSCE],ch[GSCE],chOff[GSCE],constructor(),deleteRow(),insertRow(),rows[GCE],vAlign[GSCE]",
-            IE = "align,bgColor,ch,chOff,constructor,deleteRow(),insertRow(),moveRow(),rows,vAlign")
+            FF_ESR = "align[GSCE],ch[GSCE],chOff[GSCE],constructor(),deleteRow(),insertRow(),rows[GCE],vAlign[GSCE]")
     @HtmlUnitNYI(CHROME = "ch[GSCE],chOff[GSCE],constructor(),vAlign[GSCE]",
             EDGE = "ch[GSCE],chOff[GSCE],constructor(),vAlign[GSCE]",
             FF_ESR = "ch[GSCE],chOff[GSCE],constructor(),vAlign[GSCE]",
-            FF = "ch[GSCE],chOff[GSCE],constructor(),vAlign[GSCE]",
-            IE = "bgColor[GSCE],ch[GSCE],chOff[GSCE],constructor[],vAlign[GSCE]")
+            FF = "ch[GSCE],chOff[GSCE],constructor(),vAlign[GSCE]")
     public void tfoot() throws Exception {
         test("tfoot");
     }
@@ -13967,13 +13021,11 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "align[GSCE],ch[GSCE],chOff[GSCE],constructor(),deleteRow(),insertRow(),rows[GCE],vAlign[GSCE]",
             EDGE = "align[GSCE],ch[GSCE],chOff[GSCE],constructor(),deleteRow(),insertRow(),rows[GCE],vAlign[GSCE]",
             FF = "align[GSCE],ch[GSCE],chOff[GSCE],constructor(),deleteRow(),insertRow(),rows[GCE],vAlign[GSCE]",
-            FF_ESR = "align[GSCE],ch[GSCE],chOff[GSCE],constructor(),deleteRow(),insertRow(),rows[GCE],vAlign[GSCE]",
-            IE = "align,bgColor,ch,chOff,constructor,deleteRow(),insertRow(),moveRow(),rows,vAlign")
+            FF_ESR = "align[GSCE],ch[GSCE],chOff[GSCE],constructor(),deleteRow(),insertRow(),rows[GCE],vAlign[GSCE]")
     @HtmlUnitNYI(CHROME = "ch[GSCE],chOff[GSCE],constructor(),vAlign[GSCE]",
             EDGE = "ch[GSCE],chOff[GSCE],constructor(),vAlign[GSCE]",
             FF_ESR = "ch[GSCE],chOff[GSCE],constructor(),vAlign[GSCE]",
-            FF = "ch[GSCE],chOff[GSCE],constructor(),vAlign[GSCE]",
-            IE = "bgColor[GSCE],ch[GSCE],chOff[GSCE],constructor[],vAlign[GSCE]")
+            FF = "ch[GSCE],chOff[GSCE],constructor(),vAlign[GSCE]")
     public void thead() throws Exception {
         test("thead");
     }
@@ -14011,8 +13063,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],"
-                + "togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             EDGE = "accessKey[GSCE],attachInternals(),attributeStyleMap[GCE],autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
                 + "editContext[GSCE],enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],"
@@ -14040,17 +13092,18 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],textprediction[GSCE],"
-                + "title[GSCE],togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "title[GSCE],togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             FF = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
-                + "enterKeyHint[GSCE],focus(),hidden[GSCE],inert[GSCE],innerText[GSCE],inputMode[GSCE],"
-                + "isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
+                + "enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],innerText[GSCE],"
+                + "inputMode[GSCE],isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
                 + "offsetParent[GCE],offsetTop[GCE],offsetWidth[GCE],onabort[GSCE],onanimationcancel[GSCE],"
                 + "onanimationend[GSCE],onanimationiteration[GSCE],onanimationstart[GSCE],onauxclick[GSCE],"
-                + "onbeforeinput[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],oncanplaythrough[GSCE],"
-                + "onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextmenu[GSCE],oncopy[GSCE],oncuechange[GSCE],"
-                + "oncut[GSCE],ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
+                + "onbeforeinput[GSCE],onbeforetoggle[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],"
+                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextlost[GSCE],"
+                + "oncontextmenu[GSCE],oncontextrestored[GSCE],oncopy[GSCE],oncuechange[GSCE],oncut[GSCE],"
+                + "ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
                 + "ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],ondrop[GSCE],ondurationchange[GSCE],"
                 + "onemptied[GSCE],onended[GSCE],onerror[GSCE],onfocus[GSCE],onformdata[GSCE],"
                 + "ongotpointercapture[GSCE],oninput[GSCE],oninvalid[GSCE],onkeydown[GSCE],onkeypress[GSCE],"
@@ -14066,8 +13119,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],"
                 + "ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],"
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
-                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
-                + "tabIndex[GSCE],title[GSCE],"
+                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],popover[GSCE],showPopover(),"
+                + "spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],togglePopover(),"
                 + "translate[GSCE]",
             FF_ESR = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
@@ -14095,8 +13148,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
                 + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
                 + "tabIndex[GSCE],title[GSCE],"
-                + "translate[GSCE]",
-            IE = "cite,constructor,dateTime")
+                + "translate[GSCE]")
     @HtmlUnitNYI(CHROME = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -14123,7 +13175,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             EDGE = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -14150,7 +13202,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -14174,7 +13226,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF_ESR = "accessKey[GSCE],autofocus[GSCE],blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
                 + "hidden[GSCE],innerText[GSCE],isContentEditable[GCE],lang[GSCE],"
@@ -14196,8 +13248,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
-            IE = "constructor[]")
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]")
     public void tt() throws Exception {
         test("tt");
     }
@@ -14211,9 +13262,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor(),dateTime[GSCE]",
             EDGE = "constructor(),dateTime[GSCE]",
             FF = "constructor(),dateTime[GSCE]",
-            FF_ESR = "constructor(),dateTime[GSCE]",
-            IE = "constructor,namedRecordset(),recordset")
-    @HtmlUnitNYI(IE = "constructor[]")
+            FF_ESR = "constructor(),dateTime[GSCE]")
     public void time() throws Exception {
         test("time");
     }
@@ -14227,8 +13276,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor(),text[GSCE]",
             EDGE = "constructor(),text[GSCE]",
             FF = "constructor(),text[GSCE]",
-            FF_ESR = "constructor(),text[GSCE]",
-            IE = "constructor[],text[GSCE]")
+            FF_ESR = "constructor(),text[GSCE]")
     public void title() throws Exception {
         test("title");
     }
@@ -14250,13 +13298,11 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "track[GCE]",
             FF_ESR = "constructor(),default[GSCE],ERROR[E],kind[GSCE],label[GSCE],LOADED[E],LOADING[E],NONE[E],"
                 + "readyState[GCE],src[GSCE],srclang[GSCE],"
-                + "track[GCE]",
-            IE = "constructor,default,ERROR,kind,label,LOADED,LOADING,NONE,readyState,src,srclang,track")
+                + "track[GCE]")
     @HtmlUnitNYI(CHROME = "constructor(),ERROR[E],LOADED[E],LOADING[E],NONE[E]",
             EDGE = "constructor(),ERROR[E],LOADED[E],LOADING[E],NONE[E]",
             FF_ESR = "constructor(),ERROR[E],LOADED[E],LOADING[E],NONE[E]",
-            FF = "constructor(),ERROR[E],LOADED[E],LOADING[E],NONE[E]",
-            IE = "constructor[],ERROR[E],LOADED[E],LOADING[E],NONE[E]")
+            FF = "constructor(),ERROR[E],LOADED[E],LOADING[E],NONE[E]")
     public void track() throws Exception {
         test("track");
     }
@@ -14294,8 +13340,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],"
-                + "togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             EDGE = "accessKey[GSCE],attachInternals(),attributeStyleMap[GCE],autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
                 + "editContext[GSCE],enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],"
@@ -14323,17 +13369,18 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],textprediction[GSCE],"
-                + "title[GSCE],togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "title[GSCE],togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             FF = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
-                + "enterKeyHint[GSCE],focus(),hidden[GSCE],inert[GSCE],innerText[GSCE],inputMode[GSCE],"
-                + "isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
+                + "enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],innerText[GSCE],"
+                + "inputMode[GSCE],isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
                 + "offsetParent[GCE],offsetTop[GCE],offsetWidth[GCE],onabort[GSCE],onanimationcancel[GSCE],"
                 + "onanimationend[GSCE],onanimationiteration[GSCE],onanimationstart[GSCE],onauxclick[GSCE],"
-                + "onbeforeinput[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],oncanplaythrough[GSCE],"
-                + "onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextmenu[GSCE],oncopy[GSCE],oncuechange[GSCE],"
-                + "oncut[GSCE],ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
+                + "onbeforeinput[GSCE],onbeforetoggle[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],"
+                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextlost[GSCE],"
+                + "oncontextmenu[GSCE],oncontextrestored[GSCE],oncopy[GSCE],oncuechange[GSCE],oncut[GSCE],"
+                + "ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
                 + "ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],ondrop[GSCE],ondurationchange[GSCE],"
                 + "onemptied[GSCE],onended[GSCE],onerror[GSCE],onfocus[GSCE],onformdata[GSCE],"
                 + "ongotpointercapture[GSCE],oninput[GSCE],oninvalid[GSCE],onkeydown[GSCE],onkeypress[GSCE],"
@@ -14349,8 +13396,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],"
                 + "ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],"
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
-                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
-                + "tabIndex[GSCE],title[GSCE],"
+                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],popover[GSCE],showPopover(),"
+                + "spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],togglePopover(),"
                 + "translate[GSCE]",
             FF_ESR = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
@@ -14378,8 +13425,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
                 + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
                 + "tabIndex[GSCE],title[GSCE],"
-                + "translate[GSCE]",
-            IE = "cite,constructor,dateTime")
+                + "translate[GSCE]")
     @HtmlUnitNYI(CHROME = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -14406,7 +13452,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             EDGE = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -14433,7 +13479,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -14457,7 +13503,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF_ESR = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -14480,8 +13526,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
-            IE = "constructor[]")
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]")
     public void u() throws Exception {
         test("u");
     }
@@ -14495,13 +13540,11 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "compact[GSCE],constructor(),type[GSCE]",
             EDGE = "compact[GSCE],constructor(),type[GSCE]",
             FF = "compact[GSCE],constructor(),type[GSCE]",
-            FF_ESR = "compact[GSCE],constructor(),type[GSCE]",
-            IE = "compact,constructor,type")
+            FF_ESR = "compact[GSCE],constructor(),type[GSCE]")
     @HtmlUnitNYI(CHROME = "constructor(),type[GSCE]",
             EDGE = "constructor(),type[GSCE]",
             FF_ESR = "constructor(),type[GSCE]",
-            FF = "constructor(),type[GSCE]",
-            IE = "constructor[],type[GSCE]")
+            FF = "constructor(),type[GSCE]")
     public void ul() throws Exception {
         test("ul");
     }
@@ -14539,8 +13582,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],"
-                + "togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             EDGE = "accessKey[GSCE],attachInternals(),attributeStyleMap[GCE],autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
                 + "editContext[GSCE],enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],"
@@ -14568,17 +13611,18 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],textprediction[GSCE],"
-                + "title[GSCE],togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "title[GSCE],togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             FF = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
-                + "enterKeyHint[GSCE],focus(),hidden[GSCE],inert[GSCE],innerText[GSCE],inputMode[GSCE],"
-                + "isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
+                + "enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],innerText[GSCE],"
+                + "inputMode[GSCE],isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
                 + "offsetParent[GCE],offsetTop[GCE],offsetWidth[GCE],onabort[GSCE],onanimationcancel[GSCE],"
                 + "onanimationend[GSCE],onanimationiteration[GSCE],onanimationstart[GSCE],onauxclick[GSCE],"
-                + "onbeforeinput[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],oncanplaythrough[GSCE],"
-                + "onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextmenu[GSCE],oncopy[GSCE],oncuechange[GSCE],"
-                + "oncut[GSCE],ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
+                + "onbeforeinput[GSCE],onbeforetoggle[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],"
+                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextlost[GSCE],"
+                + "oncontextmenu[GSCE],oncontextrestored[GSCE],oncopy[GSCE],oncuechange[GSCE],oncut[GSCE],"
+                + "ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
                 + "ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],ondrop[GSCE],ondurationchange[GSCE],"
                 + "onemptied[GSCE],onended[GSCE],onerror[GSCE],onfocus[GSCE],onformdata[GSCE],"
                 + "ongotpointercapture[GSCE],oninput[GSCE],oninvalid[GSCE],onkeydown[GSCE],onkeypress[GSCE],"
@@ -14594,8 +13638,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],"
                 + "ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],"
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
-                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
-                + "tabIndex[GSCE],title[GSCE],"
+                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],popover[GSCE],showPopover(),"
+                + "spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],togglePopover(),"
                 + "translate[GSCE]",
             FF_ESR = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
@@ -14623,8 +13667,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
                 + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
                 + "tabIndex[GSCE],title[GSCE],"
-                + "translate[GSCE]",
-            IE = "cite,constructor,dateTime")
+                + "translate[GSCE]")
     @HtmlUnitNYI(CHROME = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -14651,7 +13694,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             EDGE = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -14678,7 +13721,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -14702,7 +13745,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF_ESR = "accessKey[GSCE],autofocus[GSCE],blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
                 + "hidden[GSCE],innerText[GSCE],isContentEditable[GCE],lang[GSCE],"
@@ -14724,8 +13767,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
-            IE = "constructor[]")
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]")
     public void var() throws Exception {
         test("var");
     }
@@ -14758,13 +13800,11 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
             FF_ESR = "constructor(),getVideoPlaybackQuality(),height[GSCE],mozDecodedFrames[GCE],mozFrameDelay[GCE],"
                 + "mozHasAudio[GCE],mozPaintedFrames[GCE],mozParsedFrames[GCE],mozPresentedFrames[GCE],poster[GSCE],"
                 + "videoHeight[GCE],videoWidth[GCE],"
-                + "width[GSCE]",
-            IE = "constructor,getVideoPlaybackQuality(),height,msZoom,poster,videoHeight,videoWidth,width")
+                + "width[GSCE]")
     @HtmlUnitNYI(CHROME = "constructor(),height[GSCE],width[GSCE]",
             EDGE = "constructor(),height[GSCE],width[GSCE]",
             FF_ESR = "constructor(),height[GSCE],width[GSCE]",
-            FF = "constructor(),height[GSCE],width[GSCE]",
-            IE = "constructor[],height[GSCE],width[GSCE]")
+            FF = "constructor(),height[GSCE],width[GSCE]")
     public void video() throws Exception {
         test("video");
     }
@@ -14802,8 +13842,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],"
-                + "togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             EDGE = "accessKey[GSCE],attachInternals(),attributeStyleMap[GCE],autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
                 + "editContext[GSCE],enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],"
@@ -14831,17 +13871,18 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],"
                 + "popover[GSCE],showPopover(),spellcheck[GSCE],style[GSCE],tabIndex[GSCE],textprediction[GSCE],"
-                + "title[GSCE],togglePopover(),translate[GSCE],"
-                + "virtualKeyboardPolicy[GSCE]",
+                + "title[GSCE],togglePopover(),translate[GSCE],virtualKeyboardPolicy[GSCE],"
+                + "writingSuggestions[GSCE]",
             FF = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
-                + "enterKeyHint[GSCE],focus(),hidden[GSCE],inert[GSCE],innerText[GSCE],inputMode[GSCE],"
-                + "isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
+                + "enterKeyHint[GSCE],focus(),hidden[GSCE],hidePopover(),inert[GSCE],innerText[GSCE],"
+                + "inputMode[GSCE],isContentEditable[GCE],lang[GSCE],nonce[GSCE],offsetHeight[GCE],offsetLeft[GCE],"
                 + "offsetParent[GCE],offsetTop[GCE],offsetWidth[GCE],onabort[GSCE],onanimationcancel[GSCE],"
                 + "onanimationend[GSCE],onanimationiteration[GSCE],onanimationstart[GSCE],onauxclick[GSCE],"
-                + "onbeforeinput[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],oncanplaythrough[GSCE],"
-                + "onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextmenu[GSCE],oncopy[GSCE],oncuechange[GSCE],"
-                + "oncut[GSCE],ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
+                + "onbeforeinput[GSCE],onbeforetoggle[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],"
+                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextlost[GSCE],"
+                + "oncontextmenu[GSCE],oncontextrestored[GSCE],oncopy[GSCE],oncuechange[GSCE],oncut[GSCE],"
+                + "ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
                 + "ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],ondrop[GSCE],ondurationchange[GSCE],"
                 + "onemptied[GSCE],onended[GSCE],onerror[GSCE],onfocus[GSCE],onformdata[GSCE],"
                 + "ongotpointercapture[GSCE],oninput[GSCE],oninvalid[GSCE],onkeydown[GSCE],onkeypress[GSCE],"
@@ -14857,8 +13898,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],"
                 + "ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],"
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
-                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
-                + "tabIndex[GSCE],title[GSCE],"
+                + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],popover[GSCE],showPopover(),"
+                + "spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE],togglePopover(),"
                 + "translate[GSCE]",
             FF_ESR = "accessKey[GSCE],accessKeyLabel[GCE],attachInternals(),autocapitalize[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],dir[GSCE],draggable[GSCE],"
@@ -14886,26 +13927,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
                 + "onwebkittransitionend[GSCE],onwheel[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],"
                 + "tabIndex[GSCE],title[GSCE],"
-                + "translate[GSCE]",
-            IE = "accessKey,applyElement(),blur(),canHaveChildren,canHaveHTML,children,classList,className,"
-                + "clearAttributes(),click(),componentFromPoint(),constructor,contains(),contentEditable,"
-                + "createControlRange(),currentStyle,dataset,dir,disabled,dragDrop(),draggable,focus(),"
-                + "getAdjacentText(),getElementsByClassName(),hidden,hideFocus,id,innerHTML,innerText,"
-                + "insertAdjacentElement(),insertAdjacentHTML(),insertAdjacentText(),isContentEditable,isDisabled,"
-                + "isMultiLine,isTextEdit,lang,language,mergeAttributes(),msGetInputContext(),offsetHeight,"
-                + "offsetLeft,offsetParent,offsetTop,offsetWidth,onabort,onactivate,onbeforeactivate,onbeforecopy,"
-                + "onbeforecut,onbeforedeactivate,onbeforepaste,onblur,oncanplay,oncanplaythrough,onchange,onclick,"
-                + "oncontextmenu,oncopy,oncuechange,oncut,ondblclick,ondeactivate,ondrag,ondragend,ondragenter,"
-                + "ondragleave,ondragover,ondragstart,ondrop,ondurationchange,onemptied,onended,onerror,onfocus,"
-                + "onfocusin,onfocusout,onhelp,oninput,onkeydown,onkeypress,onkeyup,onload,onloadeddata,"
-                + "onloadedmetadata,onloadstart,onmousedown,onmouseenter,onmouseleave,onmousemove,onmouseout,"
-                + "onmouseover,onmouseup,onmousewheel,onmscontentzoom,onmsmanipulationstatechanged,onpaste,onpause,"
-                + "onplay,onplaying,onprogress,onratechange,onreset,onscroll,onseeked,onseeking,onselect,"
-                + "onselectstart,onstalled,onsubmit,onsuspend,ontimeupdate,onvolumechange,onwaiting,outerHTML,"
-                + "outerText,parentElement,parentTextEdit,recordNumber,releaseCapture(),removeNode(),"
-                + "replaceAdjacentText(),replaceNode(),runtimeStyle,scrollIntoView(),setActive(),setCapture(),"
-                + "sourceIndex,spellcheck,style,swapNode(),tabIndex,title,uniqueID,"
-                + "uniqueNumber")
+                + "translate[GSCE]")
     @HtmlUnitNYI(CHROME = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -14932,7 +13954,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             EDGE = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -14959,7 +13981,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],"
                 + "ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],"
                 + "ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],onwheel[GSCE],"
-                + "outerText[GCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "outerText[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF = "accessKey[GSCE],autofocus[GSCE],"
                 + "blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
@@ -14983,7 +14005,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
             FF_ESR = "accessKey[GSCE],autofocus[GSCE],blur(),click(),constructor(),contentEditable[GSCE],dataset[GCE],"
                 + "dir[GSCE],enterKeyHint[GSCE],focus(),"
                 + "hidden[GSCE],innerText[GSCE],isContentEditable[GCE],lang[GSCE],"
@@ -15005,29 +14027,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
                 + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],"
                 + "ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],outerText[GCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]",
-            IE = "accessKey[GSCE],blur(),children[GCE],classList[GCE],className[GSCE],clearAttributes(),click(),"
-                + "constructor[],contains(),contentEditable[GSCE],currentStyle[GCE],dataset[GCE],dir[GSCE],"
-                + "disabled[GSCE],focus(),getElementsByClassName(),hidden[GSCE],id[GSCE],innerHTML[GSCE],"
-                + "innerText[GSCE],insertAdjacentElement(),insertAdjacentHTML(),insertAdjacentText(),"
-                + "isContentEditable[GCE],lang[GSCE],language[GSCE],mergeAttributes(),offsetHeight[GCE],"
-                + "offsetLeft[GCE],offsetParent[GCE],offsetTop[GCE],offsetWidth[GCE],onabort[GSCE],"
-                + "onactivate[GSCE],onbeforeactivate[GSCE],onbeforecopy[GSCE],onbeforecut[GSCE],"
-                + "onbeforedeactivate[GSCE],onbeforepaste[GSCE],onblur[GSCE],oncanplay[GSCE],"
-                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],oncontextmenu[GSCE],oncopy[GSCE],"
-                + "oncuechange[GSCE],oncut[GSCE],ondblclick[GSCE],ondeactivate[GSCE],ondrag[GSCE],"
-                + "ondragend[GSCE],ondragenter[GSCE],ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],"
-                + "ondrop[GSCE],ondurationchange[GSCE],onemptied[GSCE],onended[GSCE],onerror[GSCE],"
-                + "onfocus[GSCE],onfocusin[GSCE],onfocusout[GSCE],onhelp[GSCE],oninput[GSCE],onkeydown[GSCE],"
-                + "onkeypress[GSCE],onkeyup[GSCE],onload[GSCE],onloadeddata[GSCE],onloadedmetadata[GSCE],"
-                + "onloadstart[GSCE],onmousedown[GSCE],onmouseenter[GSCE],onmouseleave[GSCE],onmousemove[GSCE],"
-                + "onmouseout[GSCE],onmouseover[GSCE],onmouseup[GSCE],onmousewheel[GSCE],onmscontentzoom[GSCE],"
-                + "onmsmanipulationstatechanged[GSCE],onpaste[GSCE],onpause[GSCE],onplay[GSCE],onplaying[GSCE],"
-                + "onprogress[GSCE],onratechange[GSCE],onreset[GSCE],onscroll[GSCE],onseeked[GSCE],"
-                + "onseeking[GSCE],onselect[GSCE],onselectstart[GSCE],onstalled[GSCE],onsubmit[GSCE],"
-                + "onsuspend[GSCE],ontimeupdate[GSCE],onvolumechange[GSCE],onwaiting[GSCE],outerHTML[GSCE],"
-                + "outerText[GCE],parentElement[GCE],releaseCapture(),removeNode(),runtimeStyle[GCE],"
-                + "scrollIntoView(),setActive(),setCapture(),style[GSCE],tabIndex[GSCE],title[GSCE],uniqueID[GCE]")
+                + "onwaiting[GSCE],outerText[GSCE],spellcheck[GSCE],style[GSCE],tabIndex[GSCE],title[GSCE]")
     public void wbr() throws Exception {
         test("wbr");
     }
@@ -15041,9 +14041,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor(),width[GSCE]",
             EDGE = "constructor(),width[GSCE]",
             FF = "constructor(),width[GSCE]",
-            FF_ESR = "constructor(),width[GSCE]",
-            IE = "cite,clear,constructor,width")
-    @HtmlUnitNYI(IE = "clear[GSCE],constructor[],width[GSCE]")
+            FF_ESR = "constructor(),width[GSCE]")
     public void xmp() throws Exception {
         test("xmp");
     }
@@ -15083,12 +14081,12 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "form[GCE],formAction[GSCE],formEnctype[GSCE],formMethod[GSCE],formNoValidate[GSCE],"
                 + "formTarget[GSCE],height[GSCE],indeterminate[GSCE],labels[GCE],list[GCE],max[GSCE],"
                 + "maxLength[GSCE],min[GSCE],minLength[GSCE],mozIsTextField(),multiple[GSCE],name[GSCE],"
-                + "pattern[GSCE],placeholder[GSCE],readOnly[GSCE],reportValidity(),required[GSCE],select(),"
-                + "selectionDirection[GSCE],selectionEnd[GSCE],selectionStart[GSCE],setCustomValidity(),"
-                + "setRangeText(),setSelectionRange(),showPicker(),size[GSCE],src[GSCE],step[GSCE],stepDown(),"
-                + "stepUp(),textLength[GCE],type[GSCE],useMap[GSCE],validationMessage[GCE],validity[GCE],"
-                + "value[GSCE],valueAsDate[GSCE],valueAsNumber[GSCE],webkitdirectory[GSCE],webkitEntries[GCE],"
-                + "width[GSCE],"
+                + "pattern[GSCE],placeholder[GSCE],popoverTargetAction[GSCE],popoverTargetElement[GSCE],"
+                + "readOnly[GSCE],reportValidity(),required[GSCE],select(),selectionDirection[GSCE],"
+                + "selectionEnd[GSCE],selectionStart[GSCE],setCustomValidity(),setRangeText(),setSelectionRange(),"
+                + "showPicker(),size[GSCE],src[GSCE],step[GSCE],stepDown(),stepUp(),textLength[GCE],type[GSCE],"
+                + "useMap[GSCE],validationMessage[GCE],validity[GCE],value[GSCE],valueAsDate[GSCE],"
+                + "valueAsNumber[GSCE],webkitdirectory[GSCE],webkitEntries[GCE],width[GSCE],"
                 + "willValidate[GCE]",
             FF_ESR = "accept[GSCE],align[GSCE],alt[GSCE],autocomplete[GSCE],checked[GSCE],checkValidity(),"
                 + "constructor(),defaultChecked[GSCE],defaultValue[GSCE],disabled[GSCE],files[GSCE],form[GCE],"
@@ -15100,14 +14098,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "showPicker(),size[GSCE],src[GSCE],step[GSCE],stepDown(),stepUp(),textLength[GCE],type[GSCE],"
                 + "useMap[GSCE],validationMessage[GCE],validity[GCE],value[GSCE],valueAsDate[GSCE],"
                 + "valueAsNumber[GSCE],webkitdirectory[GSCE],webkitEntries[GCE],width[GSCE],"
-                + "willValidate[GCE]",
-            IE = "accept,align,alt,autocomplete,autofocus,border,checked,checkValidity(),complete,constructor,"
-                + "createTextRange(),defaultChecked,defaultValue,dynsrc,files,form,formAction,formEnctype,"
-                + "formMethod,formNoValidate,formTarget,height,hspace,indeterminate,list,loop,lowsrc,max,maxLength,"
-                + "min,multiple,name,pattern,placeholder,readOnly,required,select(),selectionEnd,selectionStart,"
-                + "setCustomValidity(),setSelectionRange(),size,src,start,status,step,stepDown(),stepUp(),type,"
-                + "useMap,validationMessage,validity,value,valueAsNumber,vrml,vspace,width,"
-                + "willValidate")
+                + "willValidate[GCE]")
     @HtmlUnitNYI(CHROME = "accept[GSCE],align[GSCE],alt[GSCE],autocomplete[GSCE],checked[GSCE],checkValidity(),"
                 + "constructor(),defaultChecked[GSCE],defaultValue[GSCE],disabled[GSCE],files[GCE],form[GCE],"
                 + "formNoValidate[GSCE],height[GSCE],labels[GCE],max[GSCE],maxLength[GSCE],"
@@ -15135,13 +14126,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "min[GSCE],minLength[GSCE],name[GSCE],placeholder[GSCE],readOnly[GSCE],required[GSCE],"
                 + "select(),selectionEnd[GSCE],selectionStart[GSCE],setCustomValidity(),"
                 + "setSelectionRange(),size[GSCE],src[GSCE],step[GSCE],textLength[GCE],type[GSCE],"
-                + "validity[GCE],value[GSCE],width[GSCE],willValidate[GCE]",
-            IE = "accept[GSCE],align[GSCE],alt[GSCE],autocomplete[GSCE],border[GSCE],checked[GSCE],"
-                + "checkValidity(),constructor[],createTextRange(),defaultChecked[GSCE],defaultValue[GSCE],"
-                + "files[GCE],form[GCE],formNoValidate[GSCE],height[GSCE],max[GSCE],maxLength[GSCE],"
-                + "min[GSCE],name[GSCE],placeholder[GSCE],readOnly[GSCE],required[GSCE],select(),"
-                + "selectionEnd[GSCE],selectionStart[GSCE],setCustomValidity(),setSelectionRange(),size[GSCE],"
-                + "src[GSCE],step[GSCE],type[GSCE],validity[GCE],value[GSCE],width[GSCE],willValidate[GCE]")
+                + "validity[GCE],value[GSCE],width[GSCE],willValidate[GCE]")
     public void input() throws Exception {
         test("input");
     }
@@ -15155,9 +14140,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor(),value[GSCE]",
             EDGE = "constructor(),value[GSCE]",
             FF = "constructor(),value[GSCE]",
-            FF_ESR = "constructor(),value[GSCE]",
-            IE = "constructor,namedRecordset(),recordset")
-    @HtmlUnitNYI(IE = "constructor[]")
+            FF_ESR = "constructor(),value[GSCE]")
     public void data() throws Exception {
         test("data");
     }
@@ -15171,9 +14154,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor()",
             EDGE = "constructor()",
             FF = "constructor()",
-            FF_ESR = "constructor()",
-            IE = "constructor,namedRecordset(),recordset")
-    @HtmlUnitNYI(IE = "constructor[]")
+            FF_ESR = "constructor()")
     public void content() throws Exception {
         test("content");
     }
@@ -15187,9 +14168,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor()",
             EDGE = "constructor()",
             FF = "constructor()",
-            FF_ESR = "constructor()",
-            IE = "constructor,namedRecordset(),recordset")
-    @HtmlUnitNYI(IE = "constructor[]")
+            FF_ESR = "constructor()")
     public void picutre() throws Exception {
         test("picture");
     }
@@ -15200,14 +14179,18 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = "constructor(),content[GCE],shadowRoot[GCE],shadowRootMode[GSCE]",
-            EDGE = "constructor(),content[GCE],shadowRoot[GCE],shadowRootMode[GSCE]",
-            FF = "constructor(),content[GCE]",
-            FF_ESR = "constructor(),content[GCE]",
-            IE = "constructor,namedRecordset(),recordset")
+    @Alerts(CHROME = "constructor(),content[GCE],shadowRootClonable[GSCE],shadowRootDelegatesFocus[GSCE],"
+                + "shadowRootMode[GSCE],"
+                + "shadowRootSerializable[GSCE]",
+            EDGE = "constructor(),content[GCE],shadowRootClonable[GSCE],shadowRootDelegatesFocus[GSCE],"
+                + "shadowRootMode[GSCE],"
+                + "shadowRootSerializable[GSCE]",
+            FF = "constructor(),content[GCE],shadowRootClonable[GSCE],shadowRootDelegatesFocus[GSCE],"
+                + "shadowRootMode[GSCE]",
+            FF_ESR = "constructor(),content[GCE]")
     @HtmlUnitNYI(CHROME = "constructor(),content[GCE]",
             EDGE = "constructor(),content[GCE]",
-            IE = "constructor[]")
+            FF = "constructor(),content[GCE]")
     public void template() throws Exception {
         test("template");
     }
@@ -15309,10 +14292,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "DOM_VK_WIN_OEM_WSCTRL[E],DOM_VK_X[E],DOM_VK_Y[E],DOM_VK_Z[E],DOM_VK_ZOOM[E],getModifierState(),"
                 + "initKeyboardEvent(),isComposing[GCE],key[GCE],keyCode[GCE],location[GCE],metaKey[GCE],"
                 + "repeat[GCE],"
-                + "shiftKey[GCE]",
-            IE = "altKey,char,charCode,constructor,ctrlKey,DOM_KEY_LOCATION_JOYSTICK,DOM_KEY_LOCATION_LEFT,"
-                + "DOM_KEY_LOCATION_MOBILE,DOM_KEY_LOCATION_NUMPAD,DOM_KEY_LOCATION_RIGHT,DOM_KEY_LOCATION_STANDARD,"
-                + "getModifierState(),initKeyboardEvent(),key,keyCode,locale,location,metaKey,repeat,shiftKey,which")
+                + "shiftKey[GCE]")
     @HtmlUnitNYI(CHROME = "altKey[GCE],charCode[GCE],code[GCE],constructor(),ctrlKey[GCE],"
                 + "DOM_KEY_LOCATION_LEFT[E],DOM_KEY_LOCATION_NUMPAD[E],DOM_KEY_LOCATION_RIGHT[E],"
                 + "DOM_KEY_LOCATION_STANDARD[E],"
@@ -15402,11 +14382,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "DOM_VK_WIN_OEM_PA3[E],DOM_VK_WIN_OEM_RESET[E],DOM_VK_WIN_OEM_WSCTRL[E],DOM_VK_X[E],DOM_VK_Y[E],"
                 + "DOM_VK_Z[E],DOM_VK_ZOOM[E],"
                 + "initKeyboardEvent(),isComposing[GCE],key[GCE],keyCode[GCE],location[GCE],"
-                + "metaKey[GCE],repeat[GCE],shiftKey[GCE]",
-            IE = "altKey[GCE],char[GCE],charCode[GCE],constructor[],ctrlKey[GCE],DOM_KEY_LOCATION_JOYSTICK[E],"
-                + "DOM_KEY_LOCATION_LEFT[E],DOM_KEY_LOCATION_MOBILE[E],DOM_KEY_LOCATION_NUMPAD[E],"
-                + "DOM_KEY_LOCATION_RIGHT[E],DOM_KEY_LOCATION_STANDARD[E],initKeyboardEvent(),key[GCE],"
-                + "keyCode[GCE],location[GCE],metaKey[GCE],repeat[GCE],shiftKey[GCE],which[GCE]")
+                + "metaKey[GCE],repeat[GCE],shiftKey[GCE]")
     public void keyboardEvent() throws Exception {
         testString("", "document.createEvent('KeyboardEvent')");
     }
@@ -15438,11 +14414,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "defaultPrevented[GCE],eventPhase[GCE],explicitOriginalTarget[GCE],initEvent(),META_MASK[E],"
                 + "NONE[E],originalTarget[GCE],preventDefault(),returnValue[GSCE],SHIFT_MASK[E],srcElement[GCE],"
                 + "stopImmediatePropagation(),stopPropagation(),target[GCE],timeStamp[GCE],"
-                + "type[GCE]",
-            IE = "AT_TARGET[E],bubbles[GCE],BUBBLING_PHASE[E],cancelable[GCE],cancelBubble[GSCE],CAPTURING_PHASE[E],"
-                + "constructor[],currentTarget[GCE],defaultPrevented[GCE],eventPhase[GCE],initEvent(),"
-                + "preventDefault(),srcElement[GSCE],stopImmediatePropagation(),stopPropagation(),"
-                + "target[GCE],timeStamp[GCE],type[GCE]")
+                + "type[GCE]")
     @HtmlUnitNYI(CHROME = "AT_TARGET[E],bubbles[GCE],BUBBLING_PHASE[E],cancelable[GCE],cancelBubble[GSCE],"
                 + "CAPTURING_PHASE[E],composed[GCE],constructor(),currentTarget[GCE],defaultPrevented[GCE],"
                 + "eventPhase[GCE],initEvent(),NONE[E],preventDefault(),returnValue[GSCE],srcElement[GCE],"
@@ -15480,15 +14452,13 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "which[GCE]",
             FF_ESR = "constructor(),detail[GCE],initUIEvent(),layerX[GCE],layerY[GCE],rangeOffset[GCE],"
                 + "rangeParent[GCE],SCROLL_PAGE_DOWN[E],SCROLL_PAGE_UP[E],view[GCE],"
-                + "which[GCE]",
-            IE = "constructor,detail,deviceSessionId,initUIEvent(),view")
+                + "which[GCE]")
     @HtmlUnitNYI(CHROME = "constructor(),detail[GCE],initUIEvent(),view[GCE],which[GCE]",
             EDGE = "constructor(),detail[GCE],initUIEvent(),view[GCE],which[GCE]",
             FF_ESR = "constructor(),detail[GCE],initUIEvent(),SCROLL_PAGE_DOWN[E],SCROLL_PAGE_UP[E],"
                 + "view[GCE],which[GCE]",
             FF = "constructor(),detail[GCE],initUIEvent(),SCROLL_PAGE_DOWN[E],SCROLL_PAGE_UP[E],"
-                + "view[GCE],which[GCE]",
-            IE = "constructor[],detail[GCE],initUIEvent(),view[GCE]")
+                + "view[GCE],which[GCE]")
     public void uiEvent() throws Exception {
         testString("", "document.createEvent('UIEvent')");
     }
@@ -15510,8 +14480,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "username[GSCE]",
             FF_ESR = "constructor(),hash[GSCE],host[GSCE],hostname[GSCE],href[GSCE],origin[GCE],password[GSCE],"
                 + "pathname[GSCE],port[GSCE],protocol[GSCE],search[GSCE],searchParams[GCE],toJSON(),toString(),"
-                + "username[GSCE]",
-            IE = "exception")
+                + "username[GSCE]")
     public void url() throws Exception {
         testString("", "new URL('http://developer.mozilla.org')");
     }
@@ -15533,8 +14502,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "username[GSCE]",
             FF_ESR = "constructor(),hash[GSCE],host[GSCE],hostname[GSCE],href[GSCE],origin[GCE],password[GSCE],"
                 + "pathname[GSCE],port[GSCE],protocol[GSCE],search[GSCE],searchParams[GCE],toJSON(),toString(),"
-                + "username[GSCE]",
-            IE = "exception")
+                + "username[GSCE]")
     public void webkitURL() throws Exception {
         testString("", "new webkitURL('http://developer.mozilla.org')");
     }
@@ -15548,13 +14516,11 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor(),dataTransfer[GCE]",
             EDGE = "constructor(),dataTransfer[GCE]",
             FF = "constructor(),dataTransfer[GCE],initDragEvent()",
-            FF_ESR = "constructor(),dataTransfer[GCE],initDragEvent()",
-            IE = "constructor,dataTransfer,initDragEvent(),msConvertURL()")
+            FF_ESR = "constructor(),dataTransfer[GCE],initDragEvent()")
     @HtmlUnitNYI(CHROME = "constructor()",
             EDGE = "constructor()",
             FF_ESR = "constructor()",
-            FF = "constructor()",
-            IE = "constructor[]")
+            FF = "constructor()")
     public void dragEvent() throws Exception {
         testString("", "document.createEvent('DragEvent')");
     }
@@ -15580,8 +14546,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
             FF_ESR = "constructor(),getCoalescedEvents(),getPredictedEvents(),height[GCE],isPrimary[GCE],"
                 + "pointerId[GCE],pointerType[GCE],pressure[GCE],tangentialPressure[GCE],tiltX[GCE],tiltY[GCE],"
                 + "twist[GCE],"
-                + "width[GCE]",
-            IE = "exception")
+                + "width[GCE]")
     @HtmlUnitNYI(CHROME = "altitudeAngle[GCE],azimuthAngle[GCE],constructor(),height[GCE],isPrimary[GCE],"
                 + "pointerId[GCE],pointerType[GCE],pressure[GCE],tiltX[GCE],tiltY[GCE],width[GCE]",
             EDGE = "altitudeAngle[GCE],azimuthAngle[GCE],constructor(),height[GCE],isPrimary[GCE],"
@@ -15603,12 +14568,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "exception",
             EDGE = "exception",
             FF = "exception",
-            FF_ESR = "exception",
-            IE = "constructor,height,hwTimestamp,initPointerEvent(),isPrimary,pointerId,pointerType,pressure,"
-                + "rotation,tiltX,tiltY,"
-                + "width")
-    @HtmlUnitNYI(IE = "constructor[],height[GCE],initPointerEvent(),isPrimary[GCE],pointerId[GCE],"
-                + "pointerType[GCE],pressure[GCE],tiltX[GCE],tiltY[GCE],width[GCE]")
+            FF_ESR = "exception")
     public void pointerEvent2() throws Exception {
         testString("", " document.createEvent('PointerEvent')");
     }
@@ -15626,12 +14586,9 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "DOM_DELTA_PAGE[E],DOM_DELTA_PIXEL[E],wheelDelta[GCE],wheelDeltaX[GCE],"
                 + "wheelDeltaY[GCE]",
             FF = "exception",
-            FF_ESR = "exception",
-            IE = "constructor,deltaMode,deltaX,deltaY,deltaZ,DOM_DELTA_LINE,DOM_DELTA_PAGE,DOM_DELTA_PIXEL,"
-                + "initWheelEvent()")
+            FF_ESR = "exception")
     @HtmlUnitNYI(CHROME = "constructor(),DOM_DELTA_LINE[E],DOM_DELTA_PAGE[E],DOM_DELTA_PIXEL[E]",
-            EDGE = "constructor(),DOM_DELTA_LINE[E],DOM_DELTA_PAGE[E],DOM_DELTA_PIXEL[E]",
-            IE = "constructor[],DOM_DELTA_LINE[E],DOM_DELTA_PAGE[E],DOM_DELTA_PIXEL[E]")
+            EDGE = "constructor(),DOM_DELTA_LINE[E],DOM_DELTA_PAGE[E],DOM_DELTA_PIXEL[E]")
     public void wheelEvent() throws Exception {
         testString("", "document.createEvent('WheelEvent')");
     }
@@ -15665,10 +14622,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "MOZ_SOURCE_MOUSE[E],MOZ_SOURCE_PEN[E],MOZ_SOURCE_TOUCH[E],MOZ_SOURCE_UNKNOWN[E],"
                 + "mozInputSource[GCE],mozPressure[GCE],offsetX[GCE],offsetY[GCE],pageX[GCE],pageY[GCE],"
                 + "relatedTarget[GCE],screenX[GCE],screenY[GCE],shiftKey[GCE],x[GCE],"
-                + "y[GCE]",
-            IE = "altKey,button,buttons,clientX,clientY,constructor,ctrlKey,fromElement,getModifierState(),"
-                + "initMouseEvent(),layerX,layerY,metaKey,offsetX,offsetY,pageX,pageY,relatedTarget,screenX,screenY,"
-                + "shiftKey,toElement,which,x,y")
+                + "y[GCE]")
     @HtmlUnitNYI(CHROME = "altKey[GCE],button[GCE],buttons[GCE],clientX[GCE],clientY[GCE],constructor(),ctrlKey[GCE],"
                 + "initMouseEvent(),metaKey[GCE],pageX[GCE],pageY[GCE],screenX[GCE],screenY[GCE],shiftKey[GCE]",
             EDGE = "altKey[GCE],button[GCE],buttons[GCE],clientX[GCE],clientY[GCE],constructor(),ctrlKey[GCE],"
@@ -15682,10 +14636,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "initMouseEvent(),metaKey[GCE],MOZ_SOURCE_CURSOR[E],"
                 + "MOZ_SOURCE_ERASER[E],MOZ_SOURCE_KEYBOARD[E],MOZ_SOURCE_MOUSE[E],MOZ_SOURCE_PEN[E],"
                 + "MOZ_SOURCE_TOUCH[E],MOZ_SOURCE_UNKNOWN[E],"
-                + "pageX[GCE],pageY[GCE],screenX[GCE],screenY[GCE],shiftKey[GCE]",
-            IE = "altKey[GCE],button[GCE],buttons[GCE],clientX[GCE],clientY[GCE],constructor[],ctrlKey[GCE],"
-                + "initMouseEvent(),metaKey[GCE],pageX[GCE],pageY[GCE],"
-                + "screenX[GCE],screenY[GCE],shiftKey[GCE],which[GCE]")
+                + "pageX[GCE],pageY[GCE],screenX[GCE],screenY[GCE],shiftKey[GCE]")
     public void mouseEvent() throws Exception {
         testString("", "document.createEvent('MouseEvent')");
     }
@@ -15701,13 +14652,11 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor(),data[GCE],initCompositionEvent()",
             EDGE = "constructor(),data[GCE],initCompositionEvent()",
             FF = "constructor(),data[GCE],initCompositionEvent(),locale[GCE]",
-            FF_ESR = "constructor(),data[GCE],initCompositionEvent(),locale[GCE]",
-            IE = "constructor,data[GCE],initCompositionEvent(),locale")
+            FF_ESR = "constructor(),data[GCE],initCompositionEvent(),locale[GCE]")
     @HtmlUnitNYI(CHROME = "constructor(),data[GCE]",
             EDGE = "constructor(),data[GCE]",
             FF_ESR = "constructor(),data[GCE]",
-            FF = "constructor(),data[GCE]",
-            IE = "constructor[],data[GCE]")
+            FF = "constructor(),data[GCE]")
     public void compositionEvent() throws Exception {
         testString("", "document.createEvent('CompositionEvent')");
     }
@@ -15721,13 +14670,11 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor(),relatedTarget[GCE]",
             EDGE = "constructor(),relatedTarget[GCE]",
             FF = "constructor(),relatedTarget[GCE]",
-            FF_ESR = "constructor(),relatedTarget[GCE]",
-            IE = "constructor,initFocusEvent(),relatedTarget")
+            FF_ESR = "constructor(),relatedTarget[GCE]")
     @HtmlUnitNYI(CHROME = "constructor()",
             EDGE = "constructor()",
             FF_ESR = "constructor()",
-            FF = "constructor()",
-            IE = "constructor[]")
+            FF = "constructor()")
     public void focusEvent() throws Exception {
         testString("", "document.createEvent('FocusEvent')");
     }
@@ -15741,8 +14688,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor(),data[GCE],dataTransfer[GCE],getTargetRanges(),inputType[GCE],isComposing[GCE]",
             EDGE = "constructor(),data[GCE],dataTransfer[GCE],getTargetRanges(),inputType[GCE],isComposing[GCE]",
             FF = "constructor(),data[GCE],dataTransfer[GCE],getTargetRanges(),inputType[GCE],isComposing[GCE]",
-            FF_ESR = "constructor(),data[GCE],dataTransfer[GCE],getTargetRanges(),inputType[GCE],isComposing[GCE]",
-            IE = "exception")
+            FF_ESR = "constructor(),data[GCE],dataTransfer[GCE],getTargetRanges(),inputType[GCE],isComposing[GCE]")
     @HtmlUnitNYI(CHROME = "constructor(),data[GCE],inputType[GCE],isComposing[GCE]",
             EDGE = "constructor(),data[GCE],inputType[GCE],isComposing[GCE]",
             FF_ESR = "constructor(),data[GCE],inputType[GCE],isComposing[GCE]",
@@ -15760,9 +14706,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "exception",
             EDGE = "exception",
             FF = "exception",
-            FF_ESR = "exception",
-            IE = "constructor,initMouseWheelEvent(),wheelDelta")
-    @HtmlUnitNYI(IE = "constructor[]")
+            FF_ESR = "exception")
     public void mouseWheelEvent() throws Exception {
         testString("", "document.createEvent('MouseWheelEvent')");
     }
@@ -15787,20 +14731,11 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor(),data[GCE],initTextEvent()",
             EDGE = "constructor(),data[GCE],initTextEvent()",
             FF = "constructor(),data[GCE],initCompositionEvent(),locale[GCE]",
-            FF_ESR = "constructor(),data[GCE],initCompositionEvent(),locale[GCE]",
-            IE = "constructor,data,DOM_INPUT_METHOD_DROP,DOM_INPUT_METHOD_HANDWRITING,DOM_INPUT_METHOD_IME,"
-                + "DOM_INPUT_METHOD_KEYBOARD,DOM_INPUT_METHOD_MULTIMODAL,DOM_INPUT_METHOD_OPTION,"
-                + "DOM_INPUT_METHOD_PASTE,DOM_INPUT_METHOD_SCRIPT,DOM_INPUT_METHOD_UNKNOWN,DOM_INPUT_METHOD_VOICE,"
-                + "initTextEvent(),inputMethod,"
-                + "locale")
+            FF_ESR = "constructor(),data[GCE],initCompositionEvent(),locale[GCE]")
     @HtmlUnitNYI(CHROME = "constructor(),data[GCE]",
             EDGE = "constructor(),data[GCE]",
             FF_ESR = "constructor(),data[GCE]",
-            FF = "constructor(),data[GCE]",
-            IE = "constructor[],DOM_INPUT_METHOD_DROP[E],DOM_INPUT_METHOD_HANDWRITING[E],DOM_INPUT_METHOD_IME[E],"
-                + "DOM_INPUT_METHOD_KEYBOARD[E],DOM_INPUT_METHOD_MULTIMODAL[E],DOM_INPUT_METHOD_OPTION[E],"
-                + "DOM_INPUT_METHOD_PASTE[E],DOM_INPUT_METHOD_SCRIPT[E],DOM_INPUT_METHOD_UNKNOWN[E],"
-                + "DOM_INPUT_METHOD_VOICE[E]")
+            FF = "constructor(),data[GCE]")
     public void textEvent() throws Exception {
         testString("", "document.createEvent('TextEvent')");
     }
@@ -15818,8 +14753,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "targetTouches[GCE],"
                 + "touches[GCE]",
             FF = "exception",
-            FF_ESR = "exception",
-            IE = "exception")
+            FF_ESR = "exception")
     @HtmlUnitNYI(CHROME = "constructor()",
             EDGE = "constructor()")
     public void touchEvent2() throws Exception {
@@ -15835,13 +14769,11 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "assign(),assignedElements(),assignedNodes(),constructor(),name[GSCE]",
             EDGE = "assign(),assignedElements(),assignedNodes(),constructor(),name[GSCE]",
             FF = "assign(),assignedElements(),assignedNodes(),constructor(),name[GSCE]",
-            FF_ESR = "assign(),assignedElements(),assignedNodes(),constructor(),name[GSCE]",
-            IE = "constructor,namedRecordset(),recordset")
+            FF_ESR = "assign(),assignedElements(),assignedNodes(),constructor(),name[GSCE]")
     @HtmlUnitNYI(CHROME = "constructor()",
             EDGE = "constructor()",
             FF_ESR = "constructor()",
-            FF = "constructor()",
-            IE = "constructor[]")
+            FF = "constructor()")
     public void slot() throws Exception {
         test("slot");
     }
@@ -15866,12 +14798,13 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "fragmentDirective[GCE],fullscreen[GSCE],fullscreenElement[GSCE],fullscreenEnabled[GSCE],"
                 + "getAnimations(),getElementById(),getElementsByClassName(),getElementsByName(),"
                 + "getElementsByTagName(),getElementsByTagNameNS(),getSelection(),hasFocus(),hasPrivateToken(),"
-                + "hasRedemptionRecord(),hasStorageAccess(),head[GCE],hidden[GCE],images[GCE],implementation[GCE],"
-                + "importNode(),inputEncoding[GCE],lastElementChild[GCE],lastModified[GCE],linkColor[GSCE],"
-                + "links[GCE],onabort[GSCE],onanimationend[GSCE],onanimationiteration[GSCE],onanimationstart[GSCE],"
-                + "onauxclick[GSCE],onbeforecopy[GSCE],onbeforecut[GSCE],onbeforeinput[GSCE],onbeforematch[GSCE],"
-                + "onbeforepaste[GSCE],onbeforetoggle[GSCE],onbeforexrselect[GSCE],onblur[GSCE],oncancel[GSCE],"
-                + "oncanplay[GSCE],oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],onclose[GSCE],"
+                + "hasRedemptionRecord(),hasStorageAccess(),hasUnpartitionedCookieAccess(),head[GCE],hidden[GCE],"
+                + "images[GCE],implementation[GCE],importNode(),inputEncoding[GCE],lastElementChild[GCE],"
+                + "lastModified[GCE],linkColor[GSCE],links[GCE],onabort[GSCE],onanimationend[GSCE],"
+                + "onanimationiteration[GSCE],onanimationstart[GSCE],onauxclick[GSCE],onbeforecopy[GSCE],"
+                + "onbeforecut[GSCE],onbeforeinput[GSCE],onbeforematch[GSCE],onbeforepaste[GSCE],"
+                + "onbeforetoggle[GSCE],onbeforexrselect[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],"
+                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],onclose[GSCE],"
                 + "oncontentvisibilityautostatechange[GSCE],oncontextlost[GSCE],oncontextmenu[GSCE],"
                 + "oncontextrestored[GSCE],oncopy[GSCE],oncuechange[GSCE],oncut[GSCE],ondblclick[GSCE],ondrag[GSCE],"
                 + "ondragend[GSCE],ondragenter[GSCE],ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],"
@@ -15918,12 +14851,13 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "fragmentDirective[GCE],fullscreen[GSCE],fullscreenElement[GSCE],fullscreenEnabled[GSCE],"
                 + "getAnimations(),getElementById(),getElementsByClassName(),getElementsByName(),"
                 + "getElementsByTagName(),getElementsByTagNameNS(),getSelection(),hasFocus(),hasPrivateToken(),"
-                + "hasRedemptionRecord(),hasStorageAccess(),head[GCE],hidden[GCE],images[GCE],implementation[GCE],"
-                + "importNode(),inputEncoding[GCE],lastElementChild[GCE],lastModified[GCE],linkColor[GSCE],"
-                + "links[GCE],onabort[GSCE],onanimationend[GSCE],onanimationiteration[GSCE],onanimationstart[GSCE],"
-                + "onauxclick[GSCE],onbeforecopy[GSCE],onbeforecut[GSCE],onbeforeinput[GSCE],onbeforematch[GSCE],"
-                + "onbeforepaste[GSCE],onbeforetoggle[GSCE],onbeforexrselect[GSCE],onblur[GSCE],oncancel[GSCE],"
-                + "oncanplay[GSCE],oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],onclose[GSCE],"
+                + "hasRedemptionRecord(),hasStorageAccess(),hasUnpartitionedCookieAccess(),head[GCE],hidden[GCE],"
+                + "images[GCE],implementation[GCE],importNode(),inputEncoding[GCE],lastElementChild[GCE],"
+                + "lastModified[GCE],linkColor[GSCE],links[GCE],onabort[GSCE],onanimationend[GSCE],"
+                + "onanimationiteration[GSCE],onanimationstart[GSCE],onauxclick[GSCE],onbeforecopy[GSCE],"
+                + "onbeforecut[GSCE],onbeforeinput[GSCE],onbeforematch[GSCE],onbeforepaste[GSCE],"
+                + "onbeforetoggle[GSCE],onbeforexrselect[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],"
+                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],onclose[GSCE],"
                 + "oncontentvisibilityautostatechange[GSCE],oncontextlost[GSCE],oncontextmenu[GSCE],"
                 + "oncontextrestored[GSCE],oncopy[GSCE],oncuechange[GSCE],oncut[GSCE],ondblclick[GSCE],ondrag[GSCE],"
                 + "ondragend[GSCE],ondragenter[GSCE],ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],"
@@ -15975,9 +14909,10 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "mozFullScreenElement[GCE],mozFullScreenEnabled[GCE],mozSetImageElement(),onabort[GSCE],"
                 + "onafterscriptexecute[GSCE],onanimationcancel[GSCE],onanimationend[GSCE],"
                 + "onanimationiteration[GSCE],onanimationstart[GSCE],onauxclick[GSCE],onbeforeinput[GSCE],"
-                + "onbeforescriptexecute[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],oncanplaythrough[GSCE],"
-                + "onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextmenu[GSCE],oncopy[GSCE],oncuechange[GSCE],"
-                + "oncut[GSCE],ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
+                + "onbeforescriptexecute[GSCE],onbeforetoggle[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],"
+                + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextlost[GSCE],"
+                + "oncontextmenu[GSCE],oncontextrestored[GSCE],oncopy[GSCE],oncuechange[GSCE],oncut[GSCE],"
+                + "ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
                 + "ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],ondrop[GSCE],ondurationchange[GSCE],"
                 + "onemptied[GSCE],onended[GSCE],onerror[GSCE],onfocus[GSCE],onformdata[GSCE],"
                 + "onfullscreenchange[GSCE],onfullscreenerror[GSCE],ongotpointercapture[GSCE],oninput[GSCE],"
@@ -16047,8 +14982,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "releaseEvents(),replaceChildren(),requestStorageAccess(),rootElement[GCE],scripts[GCE],"
                 + "scrollingElement[GCE],selectedStyleSheetSet[GSCE],styleSheets[GCE],styleSheetSets[GCE],"
                 + "timeline[GCE],title[GSCE],URL[GCE],visibilityState[GCE],vlinkColor[GSCE],write(),"
-                + "writeln()",
-            IE = "exception")
+                + "writeln()")
     @HtmlUnitNYI(CHROME = "exception",
             EDGE = "exception",
             FF_ESR = "exception",
@@ -16066,8 +15000,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor()",
             EDGE = "constructor()",
             FF = "constructor()",
-            FF_ESR = "constructor()",
-            IE = "constructor[]")
+            FF_ESR = "constructor()")
     @HtmlUnitNYI(CHROME = "constructor(),cookie[GSCE],dispatchEvent(),documentElement[GCE],getElementById(),"
                 + "open(),write(),writeln()",
             EDGE = "constructor(),cookie[GSCE],dispatchEvent(),documentElement[GCE],getElementById(),"
@@ -16075,8 +15008,6 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
             FF_ESR = "close(),constructor(),cookie[GSCE],dispatchEvent(),documentElement[GCE],getElementById(),"
                 + "open(),write(),writeln()",
             FF = "close(),constructor(),cookie[GSCE],dispatchEvent(),documentElement[GCE],getElementById(),"
-                + "open(),write(),writeln()",
-            IE = "constructor[],cookie[GSCE],dispatchEvent(),documentElement[GCE],getElementById(),"
                 + "open(),write(),writeln()")
     public void htmlDocument() throws Exception {
         testString("", "document");
@@ -16091,13 +15022,11 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor()",
             EDGE = "constructor()",
             FF = "constructor()",
-            FF_ESR = "constructor()",
-            IE = "constructor[]")
+            FF_ESR = "constructor()")
     @HtmlUnitNYI(CHROME = "constructor(),getElementsByTagName()",
             EDGE = "constructor(),getElementsByTagName()",
             FF_ESR = "constructor(),getElementsByTagName()",
-            FF = "constructor(),getElementsByTagName()",
-            IE = "constructor[],getElementsByTagName()")
+            FF = "constructor(),getElementsByTagName()")
     public void xmlDocument() throws Exception {
         testString("", "xmlDocument");
     }
@@ -16156,26 +15085,26 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "viewportElement[GCE]",
             FF = "autofocus[GSCE],blur(),className[GCE],constructor(),dataset[GCE],focus(),id[GSCE],nonce[GSCE],"
                 + "onabort[GSCE],onanimationcancel[GSCE],onanimationend[GSCE],onanimationiteration[GSCE],"
-                + "onanimationstart[GSCE],onauxclick[GSCE],onbeforeinput[GSCE],onblur[GSCE],oncancel[GSCE],"
-                + "oncanplay[GSCE],oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],onclose[GSCE],"
-                + "oncontextmenu[GSCE],oncopy[GSCE],oncuechange[GSCE],oncut[GSCE],ondblclick[GSCE],ondrag[GSCE],"
-                + "ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],ondragleave[GSCE],ondragover[GSCE],"
-                + "ondragstart[GSCE],ondrop[GSCE],ondurationchange[GSCE],onemptied[GSCE],onended[GSCE],"
-                + "onerror[GSCE],onfocus[GSCE],onformdata[GSCE],ongotpointercapture[GSCE],oninput[GSCE],"
-                + "oninvalid[GSCE],onkeydown[GSCE],onkeypress[GSCE],onkeyup[GSCE],onload[GSCE],onloadeddata[GSCE],"
-                + "onloadedmetadata[GSCE],onloadstart[GSCE],onlostpointercapture[GSCE],onmousedown[GSCE],"
-                + "onmouseenter[GSCE],onmouseleave[GSCE],onmousemove[GSCE],onmouseout[GSCE],onmouseover[GSCE],"
-                + "onmouseup[GSCE],onmozfullscreenchange[GSCE],onmozfullscreenerror[GSCE],onpaste[GSCE],"
-                + "onpause[GSCE],onplay[GSCE],onplaying[GSCE],onpointercancel[GSCE],onpointerdown[GSCE],"
-                + "onpointerenter[GSCE],onpointerleave[GSCE],onpointermove[GSCE],onpointerout[GSCE],"
-                + "onpointerover[GSCE],onpointerup[GSCE],onprogress[GSCE],onratechange[GSCE],onreset[GSCE],"
-                + "onresize[GSCE],onscroll[GSCE],onscrollend[GSCE],onsecuritypolicyviolation[GSCE],onseeked[GSCE],"
-                + "onseeking[GSCE],onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onslotchange[GSCE],"
-                + "onstalled[GSCE],onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],"
-                + "ontransitioncancel[GSCE],ontransitionend[GSCE],ontransitionrun[GSCE],ontransitionstart[GSCE],"
-                + "onvolumechange[GSCE],onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
-                + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],ownerSVGElement[GCE],"
-                + "style[GSCE],tabIndex[GSCE],"
+                + "onanimationstart[GSCE],onauxclick[GSCE],onbeforeinput[GSCE],onbeforetoggle[GSCE],onblur[GSCE],"
+                + "oncancel[GSCE],oncanplay[GSCE],oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],onclose[GSCE],"
+                + "oncontextlost[GSCE],oncontextmenu[GSCE],oncontextrestored[GSCE],oncopy[GSCE],oncuechange[GSCE],"
+                + "oncut[GSCE],ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],ondragenter[GSCE],ondragexit[GSCE],"
+                + "ondragleave[GSCE],ondragover[GSCE],ondragstart[GSCE],ondrop[GSCE],ondurationchange[GSCE],"
+                + "onemptied[GSCE],onended[GSCE],onerror[GSCE],onfocus[GSCE],onformdata[GSCE],"
+                + "ongotpointercapture[GSCE],oninput[GSCE],oninvalid[GSCE],onkeydown[GSCE],onkeypress[GSCE],"
+                + "onkeyup[GSCE],onload[GSCE],onloadeddata[GSCE],onloadedmetadata[GSCE],onloadstart[GSCE],"
+                + "onlostpointercapture[GSCE],onmousedown[GSCE],onmouseenter[GSCE],onmouseleave[GSCE],"
+                + "onmousemove[GSCE],onmouseout[GSCE],onmouseover[GSCE],onmouseup[GSCE],onmozfullscreenchange[GSCE],"
+                + "onmozfullscreenerror[GSCE],onpaste[GSCE],onpause[GSCE],onplay[GSCE],onplaying[GSCE],"
+                + "onpointercancel[GSCE],onpointerdown[GSCE],onpointerenter[GSCE],onpointerleave[GSCE],"
+                + "onpointermove[GSCE],onpointerout[GSCE],onpointerover[GSCE],onpointerup[GSCE],onprogress[GSCE],"
+                + "onratechange[GSCE],onreset[GSCE],onresize[GSCE],onscroll[GSCE],onscrollend[GSCE],"
+                + "onsecuritypolicyviolation[GSCE],onseeked[GSCE],onseeking[GSCE],onselect[GSCE],"
+                + "onselectionchange[GSCE],onselectstart[GSCE],onslotchange[GSCE],onstalled[GSCE],onsubmit[GSCE],"
+                + "onsuspend[GSCE],ontimeupdate[GSCE],ontoggle[GSCE],ontransitioncancel[GSCE],ontransitionend[GSCE],"
+                + "ontransitionrun[GSCE],ontransitionstart[GSCE],onvolumechange[GSCE],onwaiting[GSCE],"
+                + "onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],onwebkitanimationstart[GSCE],"
+                + "onwebkittransitionend[GSCE],onwheel[GSCE],ownerSVGElement[GCE],style[GSCE],tabIndex[GSCE],"
                 + "viewportElement[GCE]",
             FF_ESR = "autofocus[GSCE],blur(),className[GCE],constructor(),dataset[GCE],focus(),id[GSCE],nonce[GSCE],"
                 + "onabort[GSCE],onanimationcancel[GSCE],onanimationend[GSCE],onanimationiteration[GSCE],"
@@ -16199,22 +15128,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onwaiting[GSCE],onwebkitanimationend[GSCE],onwebkitanimationiteration[GSCE],"
                 + "onwebkitanimationstart[GSCE],onwebkittransitionend[GSCE],onwheel[GSCE],ownerSVGElement[GCE],"
                 + "style[GSCE],tabIndex[GSCE],"
-                + "viewportElement[GCE]",
-            IE = "childElementCount,clientHeight,clientLeft,clientTop,clientWidth,constructor,firstElementChild,"
-                + "getAttribute(),getAttributeNode(),getAttributeNodeNS(),getAttributeNS(),getBoundingClientRect(),"
-                + "getClientRects(),getElementsByTagName(),getElementsByTagNameNS(),hasAttribute(),hasAttributeNS(),"
-                + "lastElementChild,msContentZoomFactor,msGetRegionContent(),msGetUntransformedBounds(),"
-                + "msMatchesSelector(),msRegionOverflow,msReleasePointerCapture(),msRequestFullscreen(),"
-                + "msSetPointerCapture(),msZoomTo(),nextElementSibling,ongotpointercapture,onlostpointercapture,"
-                + "onmsgesturechange,onmsgesturedoubletap,onmsgestureend,onmsgesturehold,onmsgesturestart,"
-                + "onmsgesturetap,onmsgotpointercapture,onmsinertiastart,onmslostpointercapture,onmspointercancel,"
-                + "onmspointerdown,onmspointerenter,onmspointerleave,onmspointermove,onmspointerout,onmspointerover,"
-                + "onmspointerup,onpointercancel,onpointerdown,onpointerenter,onpointerleave,onpointermove,"
-                + "onpointerout,onpointerover,onpointerup,previousElementSibling,querySelector(),querySelectorAll(),"
-                + "releasePointerCapture(),removeAttribute(),removeAttributeNode(),removeAttributeNS(),scrollHeight,"
-                + "scrollLeft,scrollTop,scrollWidth,setAttribute(),setAttributeNode(),setAttributeNodeNS(),"
-                + "setAttributeNS(),setPointerCapture(),"
-                + "tagName")
+                + "viewportElement[GCE]")
     @HtmlUnitNYI(CHROME = "constructor(),onabort[GSCE],onauxclick[GSCE],onblur[GSCE],oncancel[GSCE],oncanplay[GSCE],"
                 + "oncanplaythrough[GSCE],onchange[GSCE],onclick[GSCE],onclose[GSCE],oncontextmenu[GSCE],"
                 + "oncopy[GSCE],oncuechange[GSCE],oncut[GSCE],ondblclick[GSCE],ondrag[GSCE],ondragend[GSCE],"
@@ -16272,22 +15186,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "onratechange[GSCE],onreset[GSCE],onresize[GSCE],onscroll[GSCE],onscrollend[GSCE],onseeked[GSCE],"
                 + "onseeking[GSCE],onselect[GSCE],onselectionchange[GSCE],onselectstart[GSCE],onstalled[GSCE],"
                 + "onsubmit[GSCE],onsuspend[GSCE],ontimeupdate[GSCE],onvolumechange[GSCE],"
-                + "onwaiting[GSCE],style[GSCE]",
-            IE = "attributes[GCE],childElementCount[GCE],clientHeight[GCE],clientLeft[GCE],clientTop[GCE],"
-                + "clientWidth[GCE],constructor[],firstElementChild[GCE],getAttribute(),getAttributeNode(),"
-                + "getAttributeNodeNS(),getAttributeNS(),getBoundingClientRect(),getClientRects(),"
-                + "getElementsByTagName(),getElementsByTagNameNS(),hasAttribute(),hasAttributeNS(),"
-                + "lastElementChild[GCE],msMatchesSelector(),nextElementSibling[GCE],ongotpointercapture[GSCE],"
-                + "onlostpointercapture[GSCE],onmsgesturechange[GSCE],onmsgesturedoubletap[GSCE],"
-                + "onmsgestureend[GSCE],onmsgesturehold[GSCE],onmsgesturestart[GSCE],onmsgesturetap[GSCE],"
-                + "onmsgotpointercapture[GSCE],onmsinertiastart[GSCE],onmslostpointercapture[GSCE],"
-                + "onmspointercancel[GSCE],onmspointerdown[GSCE],onmspointerenter[GSCE],onmspointerleave[GSCE],"
-                + "onmspointermove[GSCE],onmspointerout[GSCE],onmspointerover[GSCE],onmspointerup[GSCE],"
-                + "onpointercancel[GSCE],onpointerdown[GSCE],onpointerenter[GSCE],onpointerleave[GSCE],"
-                + "onpointermove[GSCE],onpointerout[GSCE],onpointerover[GSCE],onpointerup[GSCE],"
-                + "previousElementSibling[GCE],querySelector(),querySelectorAll(),removeAttribute(),"
-                + "removeAttributeNode(),removeAttributeNS(),scrollHeight[GCE],scrollLeft[GSCE],scrollTop[GSCE],"
-                + "scrollWidth[GCE],setAttribute(),setAttributeNode(),setAttributeNS(),tagName[GCE]")
+                + "onwaiting[GSCE],style[GSCE]")
     public void svgElement() throws Exception {
         testString("", "svg");
     }
@@ -16307,10 +15206,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "value[GSCE]",
             FF_ESR = "constructor(),localName[GCE],name[GCE],namespaceURI[GCE],ownerElement[GCE],prefix[GCE],"
                 + "specified[GCE],"
-                + "value[GSCE]",
-            IE = "constructor,expando,name,ownerElement,specified,value")
-    @HtmlUnitNYI(IE = "constructor[],expando[GCE],localName[GCE],name[GCE],namespaceURI[GCE],"
-                + "ownerElement[GCE],prefix[GCE],specified[GCE],value[GSCE]")
+                + "value[GSCE]")
     public void nodeAndAttr() throws Exception {
         testString("", "document.createAttribute('some_attrib')");
     }
@@ -16346,13 +15242,6 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "intersectsNode(),isPointInRange(),selectNode(),selectNodeContents(),setEnd(),setEndAfter(),"
                 + "setEndBefore(),setStart(),setStartAfter(),setStartBefore(),START_TO_END[E],START_TO_START[E],"
                 + "surroundContents(),"
-                + "toString()",
-            IE = "cloneContents(),cloneRange(),collapse(),collapsed[GCE],commonAncestorContainer[GCE],"
-                + "compareBoundaryPoints(),constructor[],createContextualFragment(),deleteContents(),detach(),"
-                + "END_TO_END[E],END_TO_START[E],endContainer[GCE],endOffset[GCE],extractContents(),"
-                + "getBoundingClientRect(),getClientRects(),insertNode(),selectNode(),selectNodeContents(),"
-                + "setEnd(),setEndAfter(),setEndBefore(),setStart(),setStartAfter(),setStartBefore(),"
-                + "START_TO_END[E],START_TO_START[E],startContainer[GCE],startOffset[GCE],surroundContents(),"
                 + "toString()")
     @HtmlUnitNYI(CHROME = "cloneContents(),cloneRange(),collapse(),commonAncestorContainer[GCE],"
                 + "compareBoundaryPoints(),constructor(),createContextualFragment(),deleteContents(),detach(),"
@@ -16397,8 +15286,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "replaceChildren()",
             FF_ESR = "append(),childElementCount[GCE],children[GCE],constructor(),firstElementChild[GCE],"
                 + "getElementById(),lastElementChild[GCE],prepend(),querySelector(),querySelectorAll(),"
-                + "replaceChildren()",
-            IE = "constructor,querySelector(),querySelectorAll(),removeNode(),replaceNode(),swapNode()")
+                + "replaceChildren()")
     @HtmlUnitNYI(CHROME = "childElementCount[GCE],children[GCE],constructor(),firstElementChild[GCE],"
                 + "getElementById(),lastElementChild[GCE],querySelector(),querySelectorAll()",
             EDGE = "childElementCount[GCE],children[GCE],constructor(),firstElementChild[GCE],"
@@ -16406,8 +15294,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
             FF_ESR = "childElementCount[GCE],children[GCE],constructor(),firstElementChild[GCE],"
                 + "getElementById(),lastElementChild[GCE],querySelector(),querySelectorAll()",
             FF = "childElementCount[GCE],children[GCE],constructor(),firstElementChild[GCE],"
-                + "getElementById(),lastElementChild[GCE],querySelector(),querySelectorAll()",
-            IE = "constructor[],querySelector(),querySelectorAll()")
+                + "getElementById(),lastElementChild[GCE],querySelector(),querySelectorAll()")
     public void documentFragment() throws Exception {
         testString("", "document.createDocumentFragment()");
     }
@@ -16429,8 +15316,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "suspend()",
             FF_ESR = "baseLatency[GCE],close(),constructor(),createMediaElementSource(),createMediaStreamDestination(),"
                 + "createMediaStreamSource(),createMediaStreamTrackSource(),getOutputTimestamp(),outputLatency[GCE],"
-                + "suspend()",
-            IE = "exception")
+                + "suspend()")
     @HtmlUnitNYI(CHROME = "constructor()",
             EDGE = "constructor()",
             FF_ESR = "constructor()",
@@ -16446,8 +15332,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor(),length[GCE],oncomplete[GSCE],resume(),startRendering(),suspend()",
             EDGE = "constructor(),length[GCE],oncomplete[GSCE],resume(),startRendering(),suspend()",
             FF = "constructor(),length[GCE],oncomplete[GSCE],startRendering()",
-            FF_ESR = "constructor(),length[GCE],oncomplete[GSCE],startRendering()",
-            IE = "exception")
+            FF_ESR = "constructor(),length[GCE],oncomplete[GSCE],startRendering()")
     @HtmlUnitNYI(CHROME = "constructor(),startRendering()",
             EDGE = "constructor(),startRendering()",
             FF_ESR = "constructor(),startRendering()",
@@ -16475,8 +15360,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
             FF_ESR = "cancelScheduledValues(),constructor(),defaultValue[GCE],exponentialRampToValueAtTime(),"
                 + "linearRampToValueAtTime(),maxValue[GCE],minValue[GCE],setTargetAtTime(),setValueAtTime(),"
                 + "setValueCurveAtTime(),"
-                + "value[GSCE]",
-            IE = "exception")
+                + "value[GSCE]")
     @HtmlUnitNYI(CHROME = "constructor(),defaultValue[GCE],maxValue[GCE],minValue[GCE],value[GSCE]",
             EDGE = "constructor(),defaultValue[GCE],maxValue[GCE],minValue[GCE],value[GSCE]",
             FF_ESR = "constructor(),defaultValue[GCE],maxValue[GCE],minValue[GCE],value[GSCE]",
@@ -16492,8 +15376,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor(),gain[GCE]",
             EDGE = "constructor(),gain[GCE]",
             FF = "constructor(),gain[GCE]",
-            FF_ESR = "constructor(),gain[GCE]",
-            IE = "exception")
+            FF_ESR = "constructor(),gain[GCE]")
     public void gainNode() throws Exception {
         testString("var audioCtx = new AudioContext();", "new GainNode(audioCtx)");
     }
@@ -16505,8 +15388,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor(),returnValue[GSCE]",
             EDGE = "constructor(),returnValue[GSCE]",
             FF = "constructor(),returnValue[GSCE]",
-            FF_ESR = "constructor(),returnValue[GSCE]",
-            IE = "exception")
+            FF_ESR = "constructor(),returnValue[GSCE]")
     public void beforeUnloadEvent() throws Exception {
         testString("", "document.createEvent('BeforeUnloadEvent')");
     }
@@ -16518,8 +15400,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "code[GCE],constructor(),reason[GCE],wasClean[GCE]",
             EDGE = "code[GCE],constructor(),reason[GCE],wasClean[GCE]",
             FF = "code[GCE],constructor(),reason[GCE],wasClean[GCE]",
-            FF_ESR = "code[GCE],constructor(),reason[GCE],wasClean[GCE]",
-            IE = "exception")
+            FF_ESR = "code[GCE],constructor(),reason[GCE],wasClean[GCE]")
     public void closeEvent() throws Exception {
         testString("", "new CloseEvent('type-close')");
     }
@@ -16531,8 +15412,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor(),data[GCE],timecode[GCE]",
             EDGE = "constructor(),data[GCE],timecode[GCE]",
             FF = "constructor(),data[GCE]",
-            FF_ESR = "constructor(),data[GCE]",
-            IE = "exception")
+            FF_ESR = "constructor(),data[GCE]")
     @HtmlUnitNYI(CHROME = "constructor(),data[GCE]",
             EDGE = "constructor(),data[GCE]")
     public void blobEvent() throws Exception {
@@ -16554,8 +15434,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "targetTouches[GCE],"
                 + "touches[GCE]",
             FF = "exception",
-            FF_ESR = "exception",
-            IE = "exception")
+            FF_ESR = "exception")
     @HtmlUnitNYI(CHROME = "constructor()",
             EDGE = "constructor()")
     public void touchEvent() throws Exception {
@@ -16577,8 +15456,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "rotationRate[GCE]",
             FF_ESR = "acceleration[GCE],accelerationIncludingGravity[GCE],constructor(),initDeviceMotionEvent(),"
                 + "interval[GCE],"
-                + "rotationRate[GCE]",
-            IE = "exception")
+                + "rotationRate[GCE]")
     @HtmlUnitNYI(CHROME = "constructor()",
             EDGE = "constructor()",
             FF = "constructor()",
@@ -16596,8 +15474,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "colno[GCE],constructor(),error[GCE],filename[GCE],lineno[GCE],message[GCE]",
             EDGE = "colno[GCE],constructor(),error[GCE],filename[GCE],lineno[GCE],message[GCE]",
             FF = "colno[GCE],constructor(),error[GCE],filename[GCE],lineno[GCE],message[GCE]",
-            FF_ESR = "colno[GCE],constructor(),error[GCE],filename[GCE],lineno[GCE],message[GCE]",
-            IE = "exception")
+            FF_ESR = "colno[GCE],constructor(),error[GCE],filename[GCE],lineno[GCE],message[GCE]")
     @HtmlUnitNYI(CHROME = "constructor()",
             EDGE = "constructor()",
             FF_ESR = "constructor()",
@@ -16615,8 +15492,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor(),gamepad[GCE]",
             EDGE = "constructor(),gamepad[GCE]",
             FF = "constructor(),gamepad[GCE]",
-            FF_ESR = "constructor(),gamepad[GCE]",
-            IE = "exception")
+            FF_ESR = "constructor(),gamepad[GCE]")
     @HtmlUnitNYI(CHROME = "constructor()",
             EDGE = "constructor()",
             FF_ESR = "constructor()",
@@ -16642,14 +15518,11 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "REMOVAL[E]",
             FF_ESR = "ADDITION[E],attrChange[GCE],attrName[GCE],constructor(),initMutationEvent(),MODIFICATION[E],"
                 + "newValue[GCE],prevValue[GCE],relatedNode[GCE],"
-                + "REMOVAL[E]",
-            IE = "ADDITION[E],attrChange[GCE],attrName[GCE],constructor,initMutationEvent(),MODIFICATION[E],"
-                + "newValue[GCE],prevValue[GCE],relatedNode[GCE],REMOVAL[E]")
+                + "REMOVAL[E]")
     @HtmlUnitNYI(CHROME = "ADDITION[E],constructor(),MODIFICATION[E],REMOVAL[E]",
             EDGE = "ADDITION[E],constructor(),MODIFICATION[E],REMOVAL[E]",
             FF_ESR = "ADDITION[E],constructor(),MODIFICATION[E],REMOVAL[E]",
-            FF = "ADDITION[E],constructor(),MODIFICATION[E],REMOVAL[E]",
-            IE = "ADDITION[E],constructor[],MODIFICATION[E],REMOVAL[E]")
+            FF = "ADDITION[E],constructor(),MODIFICATION[E],REMOVAL[E]")
     public void mutationEvent() throws Exception {
         testString("", "document.createEvent('MutationEvent')");
     }
@@ -16672,8 +15545,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor(),persisted[GCE]",
             EDGE = "constructor(),persisted[GCE]",
             FF = "constructor(),persisted[GCE]",
-            FF_ESR = "constructor(),persisted[GCE]",
-            IE = "exception")
+            FF_ESR = "constructor(),persisted[GCE]")
     @HtmlUnitNYI(CHROME = "constructor()",
             EDGE = "constructor()",
             FF = "constructor()",
@@ -16691,13 +15563,11 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor(),length[GCE],onaddsourcebuffer[GSCE],onremovesourcebuffer[GSCE]",
             EDGE = "constructor(),length[GCE],onaddsourcebuffer[GSCE],onremovesourcebuffer[GSCE]",
             FF = "constructor(),length[GCE],onaddsourcebuffer[GSCE],onremovesourcebuffer[GSCE]",
-            FF_ESR = "constructor(),length[GCE],onaddsourcebuffer[GSCE],onremovesourcebuffer[GSCE]",
-            IE = "addEventListener(),constructor,dispatchEvent(),item(),length,removeEventListener()")
+            FF_ESR = "constructor(),length[GCE],onaddsourcebuffer[GSCE],onremovesourcebuffer[GSCE]")
     @HtmlUnitNYI(CHROME = "exception",
             EDGE = "exception",
             FF = "exception",
-            FF_ESR = "exception",
-            IE = "exception")
+            FF_ESR = "exception")
     public void sourceBufferList() throws Exception {
         testString("var mediaSource = new MediaSource;", "mediaSource.sourceBuffers");
     }
@@ -16711,9 +15581,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor(),item(),length[GCE],namedItem()",
             EDGE = "constructor(),item(),length[GCE],namedItem()",
             FF = "constructor(),item(),length[GCE],namedItem()",
-            FF_ESR = "constructor(),item(),length[GCE],namedItem()",
-            IE = "constructor,item(),length,namedItem(),tags(),urns()")
-    @HtmlUnitNYI(IE = "constructor[],item(),length[GCE],namedItem(),tags()")
+            FF_ESR = "constructor(),item(),length[GCE],namedItem()")
     public void htmlCollection() throws Exception {
         testString("", "document.getElementsByTagName('div')");
     }
@@ -16727,9 +15595,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor(),item(),length[GCE],namedItem()",
             EDGE = "constructor(),item(),length[GCE],namedItem()",
             FF = "constructor(),item(),length[GCE],namedItem()",
-            FF_ESR = "constructor(),item(),length[GCE],namedItem()",
-            IE = "constructor,item(),length,namedItem(),tags(),urns()")
-    @HtmlUnitNYI(IE = "constructor[],item(),length[GCE],namedItem(),tags()")
+            FF_ESR = "constructor(),item(),length[GCE],namedItem()")
     public void htmlCollectionDocumentAnchors() throws Exception {
         testString("", "document.anchors");
     }
@@ -16743,9 +15609,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor(),item(),length[GCE],namedItem()",
             EDGE = "constructor(),item(),length[GCE],namedItem()",
             FF = "constructor(),item(),length[GCE],namedItem()",
-            FF_ESR = "constructor(),item(),length[GCE],namedItem()",
-            IE = "constructor,item(),length,namedItem(),tags(),urns()")
-    @HtmlUnitNYI(IE = "constructor[],item(),length[GCE],namedItem(),tags()")
+            FF_ESR = "constructor(),item(),length[GCE],namedItem()")
     public void htmlCollectionDocumentApplets() throws Exception {
         testString("", "document.applets");
     }
@@ -16759,9 +15623,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor(),item(),length[GCE],namedItem()",
             EDGE = "constructor(),item(),length[GCE],namedItem()",
             FF = "constructor(),item(),length[GCE],namedItem()",
-            FF_ESR = "constructor(),item(),length[GCE],namedItem()",
-            IE = "constructor,item(),length,namedItem(),tags(),urns()")
-    @HtmlUnitNYI(IE = "constructor[],item(),length[GCE],namedItem(),tags()")
+            FF_ESR = "constructor(),item(),length[GCE],namedItem()")
     public void htmlCollectionDocumentEmbeds() throws Exception {
         testString("", "document.embeds");
     }
@@ -16775,9 +15637,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor(),item(),length[GCE],namedItem()",
             EDGE = "constructor(),item(),length[GCE],namedItem()",
             FF = "constructor(),item(),length[GCE],namedItem()",
-            FF_ESR = "constructor(),item(),length[GCE],namedItem()",
-            IE = "constructor,item(),length,namedItem(),tags(),urns()")
-    @HtmlUnitNYI(IE = "constructor[],item(),length[GCE],namedItem(),tags()")
+            FF_ESR = "constructor(),item(),length[GCE],namedItem()")
     public void htmlCollectionDocumentForms() throws Exception {
         testString("", "document.forms");
     }
@@ -16791,9 +15651,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor(),item(),length[GCE],namedItem()",
             EDGE = "constructor(),item(),length[GCE],namedItem()",
             FF = "constructor(),item(),length[GCE],namedItem()",
-            FF_ESR = "constructor(),item(),length[GCE],namedItem()",
-            IE = "constructor,item(),length,namedItem(),tags(),urns()")
-    @HtmlUnitNYI(IE = "constructor[],item(),length[GCE],namedItem(),tags()")
+            FF_ESR = "constructor(),item(),length[GCE],namedItem()")
     public void htmlCollectionDocumentImages() throws Exception {
         testString("", "document.images");
     }
@@ -16807,9 +15665,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor(),item(),length[GCE],namedItem()",
             EDGE = "constructor(),item(),length[GCE],namedItem()",
             FF = "constructor(),item(),length[GCE],namedItem()",
-            FF_ESR = "constructor(),item(),length[GCE],namedItem()",
-            IE = "constructor,item(),length,namedItem(),tags(),urns()")
-    @HtmlUnitNYI(IE = "constructor[],item(),length[GCE],namedItem(),tags()")
+            FF_ESR = "constructor(),item(),length[GCE],namedItem()")
     public void htmlCollectionDocumentLinks() throws Exception {
         testString("", "document.links");
     }
@@ -16823,9 +15679,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor(),item(),length[GCE],namedItem()",
             EDGE = "constructor(),item(),length[GCE],namedItem()",
             FF = "constructor(),item(),length[GCE],namedItem()",
-            FF_ESR = "constructor(),item(),length[GCE],namedItem()",
-            IE = "constructor,item(),length,namedItem(),tags(),urns()")
-    @HtmlUnitNYI(IE = "constructor[],item(),length[GCE],namedItem(),tags()")
+            FF_ESR = "constructor(),item(),length[GCE],namedItem()")
     public void htmlCollectionDocumentScripts() throws Exception {
         testString("", "document.scripts");
     }
@@ -16839,8 +15693,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor(),entries(),forEach(),item(),keys(),length[GCE],values()",
             EDGE = "constructor(),entries(),forEach(),item(),keys(),length[GCE],values()",
             FF = "constructor(),entries(),forEach(),item(),keys(),length[GCE],values()",
-            FF_ESR = "constructor(),entries(),forEach(),item(),keys(),length[GCE],values()",
-            IE = "constructor[],item(),length[GCE]")
+            FF_ESR = "constructor(),entries(),forEach(),item(),keys(),length[GCE],values()")
     public void nodeListElementById() throws Exception {
         testString("", "document.getElementById('myLog').childNodes");
     }
@@ -16854,8 +15707,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor(),entries(),forEach(),item(),keys(),length[GCE],values()",
             EDGE = "constructor(),entries(),forEach(),item(),keys(),length[GCE],values()",
             FF = "constructor(),entries(),forEach(),item(),keys(),length[GCE],values()",
-            FF_ESR = "constructor(),entries(),forEach(),item(),keys(),length[GCE],values()",
-            IE = "constructor[],item(),length[GCE]")
+            FF_ESR = "constructor(),entries(),forEach(),item(),keys(),length[GCE],values()")
     public void nodeListElementsByName() throws Exception {
         testString("", "document.getElementsByName('myLog')");
     }
@@ -16869,8 +15721,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor(),entries(),forEach(),item(),keys(),length[GCE],values()",
             EDGE = "constructor(),entries(),forEach(),item(),keys(),length[GCE],values()",
             FF = "constructor(),entries(),forEach(),item(),keys(),length[GCE],values()",
-            FF_ESR = "constructor(),entries(),forEach(),item(),keys(),length[GCE],values()",
-            IE = "exception")
+            FF_ESR = "constructor(),entries(),forEach(),item(),keys(),length[GCE],values()")
     public void nodeListButtonLabels() throws Exception {
         testString("var button = document.createElement('button');", "button.labels");
     }
@@ -16890,19 +15741,15 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
             FF = "-moz-animation-delay[GSCE],-moz-animation-direction[GSCE],-moz-animation-duration[GSCE],"
                 + "-moz-animation-fill-mode[GSCE],-moz-animation-iteration-count[GSCE],-moz-animation-name[GSCE],"
                 + "-moz-animation-play-state[GSCE],-moz-animation-timing-function[GSCE],-moz-animation[GSCE],"
-                + "-moz-appearance[GSCE],-moz-backface-visibility[GSCE],-moz-border-end-color[GSCE],"
-                + "-moz-border-end-style[GSCE],-moz-border-end-width[GSCE],-moz-border-end[GSCE],"
-                + "-moz-border-image[GSCE],-moz-border-start-color[GSCE],-moz-border-start-style[GSCE],"
-                + "-moz-border-start-width[GSCE],-moz-border-start[GSCE],-moz-box-align[GSCE],"
-                + "-moz-box-direction[GSCE],-moz-box-flex[GSCE],-moz-box-ordinal-group[GSCE],-moz-box-orient[GSCE],"
-                + "-moz-box-pack[GSCE],-moz-box-sizing[GSCE],-moz-float-edge[GSCE],-moz-font-feature-settings[GSCE],"
-                + "-moz-font-language-override[GSCE],-moz-force-broken-image-icon[GSCE],-moz-hyphens[GSCE],"
-                + "-moz-margin-end[GSCE],-moz-margin-start[GSCE],-moz-orient[GSCE],-moz-padding-end[GSCE],"
-                + "-moz-padding-start[GSCE],-moz-perspective-origin[GSCE],-moz-perspective[GSCE],"
-                + "-moz-tab-size[GSCE],-moz-text-size-adjust[GSCE],-moz-transform-origin[GSCE],"
-                + "-moz-transform-style[GSCE],-moz-transform[GSCE],-moz-transition-delay[GSCE],"
-                + "-moz-transition-duration[GSCE],-moz-transition-property[GSCE],"
-                + "-moz-transition-timing-function[GSCE],-moz-transition[GSCE],-moz-user-focus[GSCE],"
+                + "-moz-appearance[GSCE],-moz-border-end-color[GSCE],-moz-border-end-style[GSCE],"
+                + "-moz-border-end-width[GSCE],-moz-border-end[GSCE],-moz-border-image[GSCE],"
+                + "-moz-border-start-color[GSCE],-moz-border-start-style[GSCE],-moz-border-start-width[GSCE],"
+                + "-moz-border-start[GSCE],-moz-box-align[GSCE],-moz-box-direction[GSCE],-moz-box-flex[GSCE],"
+                + "-moz-box-ordinal-group[GSCE],-moz-box-orient[GSCE],-moz-box-pack[GSCE],-moz-box-sizing[GSCE],"
+                + "-moz-float-edge[GSCE],-moz-font-feature-settings[GSCE],-moz-font-language-override[GSCE],"
+                + "-moz-force-broken-image-icon[GSCE],-moz-hyphens[GSCE],-moz-margin-end[GSCE],"
+                + "-moz-margin-start[GSCE],-moz-orient[GSCE],-moz-padding-end[GSCE],-moz-padding-start[GSCE],"
+                + "-moz-tab-size[GSCE],-moz-text-size-adjust[GSCE],-moz-transform-origin[GSCE],-moz-transform[GSCE],"
                 + "-moz-user-input[GSCE],-moz-user-modify[GSCE],-moz-user-select[GSCE],-moz-window-dragging[GSCE],"
                 + "-webkit-align-content[GSCE],-webkit-align-items[GSCE],-webkit-align-self[GSCE],"
                 + "-webkit-animation-delay[GSCE],-webkit-animation-direction[GSCE],-webkit-animation-duration[GSCE],"
@@ -16995,32 +15842,33 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "contain-intrinsic-width[GSCE],contain[GSCE],container-name[GSCE],container-type[GSCE],"
                 + "container[GSCE],containerName[GSCE],containerType[GSCE],containIntrinsicBlockSize[GSCE],"
                 + "containIntrinsicHeight[GSCE],containIntrinsicInlineSize[GSCE],containIntrinsicSize[GSCE],"
-                + "containIntrinsicWidth[GSCE],content[GSCE],counter-increment[GSCE],counter-reset[GSCE],"
-                + "counter-set[GSCE],counterIncrement[GSCE],counterReset[GSCE],counterSet[GSCE],cssFloat[GSCE],"
-                + "cursor[GSCE],cx[GSCE],cy[GSCE],d[GSCE],direction[GSCE],display[GSCE],dominant-baseline[GSCE],"
-                + "dominantBaseline[GSCE],empty-cells[GSCE],emptyCells[GSCE],fill-opacity[GSCE],fill-rule[GSCE],"
-                + "fill[GSCE],fillOpacity[GSCE],fillRule[GSCE],filter[GSCE],flex-basis[GSCE],flex-direction[GSCE],"
-                + "flex-flow[GSCE],flex-grow[GSCE],flex-shrink[GSCE],flex-wrap[GSCE],flex[GSCE],flexBasis[GSCE],"
-                + "flexDirection[GSCE],flexFlow[GSCE],flexGrow[GSCE],flexShrink[GSCE],flexWrap[GSCE],float[GSCE],"
-                + "flood-color[GSCE],flood-opacity[GSCE],floodColor[GSCE],floodOpacity[GSCE],font-family[GSCE],"
-                + "font-feature-settings[GSCE],font-kerning[GSCE],font-language-override[GSCE],"
-                + "font-optical-sizing[GSCE],font-palette[GSCE],font-size-adjust[GSCE],font-size[GSCE],"
-                + "font-stretch[GSCE],font-style[GSCE],font-synthesis-position[GSCE],"
-                + "font-synthesis-small-caps[GSCE],font-synthesis-style[GSCE],font-synthesis-weight[GSCE],"
-                + "font-synthesis[GSCE],font-variant-alternates[GSCE],font-variant-caps[GSCE],"
-                + "font-variant-east-asian[GSCE],font-variant-ligatures[GSCE],font-variant-numeric[GSCE],"
-                + "font-variant-position[GSCE],font-variant[GSCE],font-variation-settings[GSCE],font-weight[GSCE],"
-                + "font[GSCE],fontFamily[GSCE],fontFeatureSettings[GSCE],fontKerning[GSCE],"
-                + "fontLanguageOverride[GSCE],fontOpticalSizing[GSCE],fontPalette[GSCE],fontSize[GSCE],"
-                + "fontSizeAdjust[GSCE],fontStretch[GSCE],fontStyle[GSCE],fontSynthesis[GSCE],"
-                + "fontSynthesisPosition[GSCE],fontSynthesisSmallCaps[GSCE],fontSynthesisStyle[GSCE],"
-                + "fontSynthesisWeight[GSCE],fontVariant[GSCE],fontVariantAlternates[GSCE],fontVariantCaps[GSCE],"
-                + "fontVariantEastAsian[GSCE],fontVariantLigatures[GSCE],fontVariantNumeric[GSCE],"
-                + "fontVariantPosition[GSCE],fontVariationSettings[GSCE],fontWeight[GSCE],forced-color-adjust[GSCE],"
-                + "forcedColorAdjust[GSCE],gap[GSCE],grid-area[GSCE],grid-auto-columns[GSCE],grid-auto-flow[GSCE],"
-                + "grid-auto-rows[GSCE],grid-column-end[GSCE],grid-column-gap[GSCE],grid-column-start[GSCE],"
-                + "grid-column[GSCE],grid-gap[GSCE],grid-row-end[GSCE],grid-row-gap[GSCE],grid-row-start[GSCE],"
-                + "grid-row[GSCE],grid-template-areas[GSCE],grid-template-columns[GSCE],grid-template-rows[GSCE],"
+                + "containIntrinsicWidth[GSCE],content-visibility[GSCE],content[GSCE],contentVisibility[GSCE],"
+                + "counter-increment[GSCE],counter-reset[GSCE],counter-set[GSCE],counterIncrement[GSCE],"
+                + "counterReset[GSCE],counterSet[GSCE],cssFloat[GSCE],cursor[GSCE],cx[GSCE],cy[GSCE],d[GSCE],"
+                + "direction[GSCE],display[GSCE],dominant-baseline[GSCE],dominantBaseline[GSCE],empty-cells[GSCE],"
+                + "emptyCells[GSCE],fill-opacity[GSCE],fill-rule[GSCE],fill[GSCE],fillOpacity[GSCE],fillRule[GSCE],"
+                + "filter[GSCE],flex-basis[GSCE],flex-direction[GSCE],flex-flow[GSCE],flex-grow[GSCE],"
+                + "flex-shrink[GSCE],flex-wrap[GSCE],flex[GSCE],flexBasis[GSCE],flexDirection[GSCE],flexFlow[GSCE],"
+                + "flexGrow[GSCE],flexShrink[GSCE],flexWrap[GSCE],float[GSCE],flood-color[GSCE],flood-opacity[GSCE],"
+                + "floodColor[GSCE],floodOpacity[GSCE],font-family[GSCE],font-feature-settings[GSCE],"
+                + "font-kerning[GSCE],font-language-override[GSCE],font-optical-sizing[GSCE],font-palette[GSCE],"
+                + "font-size-adjust[GSCE],font-size[GSCE],font-stretch[GSCE],font-style[GSCE],"
+                + "font-synthesis-position[GSCE],font-synthesis-small-caps[GSCE],font-synthesis-style[GSCE],"
+                + "font-synthesis-weight[GSCE],font-synthesis[GSCE],font-variant-alternates[GSCE],"
+                + "font-variant-caps[GSCE],font-variant-east-asian[GSCE],font-variant-ligatures[GSCE],"
+                + "font-variant-numeric[GSCE],font-variant-position[GSCE],font-variant[GSCE],"
+                + "font-variation-settings[GSCE],font-weight[GSCE],font[GSCE],fontFamily[GSCE],"
+                + "fontFeatureSettings[GSCE],fontKerning[GSCE],fontLanguageOverride[GSCE],fontOpticalSizing[GSCE],"
+                + "fontPalette[GSCE],fontSize[GSCE],fontSizeAdjust[GSCE],fontStretch[GSCE],fontStyle[GSCE],"
+                + "fontSynthesis[GSCE],fontSynthesisPosition[GSCE],fontSynthesisSmallCaps[GSCE],"
+                + "fontSynthesisStyle[GSCE],fontSynthesisWeight[GSCE],fontVariant[GSCE],fontVariantAlternates[GSCE],"
+                + "fontVariantCaps[GSCE],fontVariantEastAsian[GSCE],fontVariantLigatures[GSCE],"
+                + "fontVariantNumeric[GSCE],fontVariantPosition[GSCE],fontVariationSettings[GSCE],fontWeight[GSCE],"
+                + "forced-color-adjust[GSCE],forcedColorAdjust[GSCE],gap[GSCE],grid-area[GSCE],"
+                + "grid-auto-columns[GSCE],grid-auto-flow[GSCE],grid-auto-rows[GSCE],grid-column-end[GSCE],"
+                + "grid-column-gap[GSCE],grid-column-start[GSCE],grid-column[GSCE],grid-gap[GSCE],"
+                + "grid-row-end[GSCE],grid-row-gap[GSCE],grid-row-start[GSCE],grid-row[GSCE],"
+                + "grid-template-areas[GSCE],grid-template-columns[GSCE],grid-template-rows[GSCE],"
                 + "grid-template[GSCE],grid[GSCE],gridArea[GSCE],gridAutoColumns[GSCE],gridAutoFlow[GSCE],"
                 + "gridAutoRows[GSCE],gridColumn[GSCE],gridColumnEnd[GSCE],gridColumnGap[GSCE],"
                 + "gridColumnStart[GSCE],gridGap[GSCE],gridRow[GSCE],gridRowEnd[GSCE],gridRowGap[GSCE],"
@@ -17055,40 +15903,37 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "MozAnimationDelay[GSCE],MozAnimationDirection[GSCE],MozAnimationDuration[GSCE],"
                 + "MozAnimationFillMode[GSCE],MozAnimationIterationCount[GSCE],MozAnimationName[GSCE],"
                 + "MozAnimationPlayState[GSCE],MozAnimationTimingFunction[GSCE],MozAppearance[GSCE],"
-                + "MozBackfaceVisibility[GSCE],MozBorderEnd[GSCE],MozBorderEndColor[GSCE],MozBorderEndStyle[GSCE],"
-                + "MozBorderEndWidth[GSCE],MozBorderImage[GSCE],MozBorderStart[GSCE],MozBorderStartColor[GSCE],"
-                + "MozBorderStartStyle[GSCE],MozBorderStartWidth[GSCE],MozBoxAlign[GSCE],MozBoxDirection[GSCE],"
-                + "MozBoxFlex[GSCE],MozBoxOrdinalGroup[GSCE],MozBoxOrient[GSCE],MozBoxPack[GSCE],MozBoxSizing[GSCE],"
+                + "MozBorderEnd[GSCE],MozBorderEndColor[GSCE],MozBorderEndStyle[GSCE],MozBorderEndWidth[GSCE],"
+                + "MozBorderImage[GSCE],MozBorderStart[GSCE],MozBorderStartColor[GSCE],MozBorderStartStyle[GSCE],"
+                + "MozBorderStartWidth[GSCE],MozBoxAlign[GSCE],MozBoxDirection[GSCE],MozBoxFlex[GSCE],"
+                + "MozBoxOrdinalGroup[GSCE],MozBoxOrient[GSCE],MozBoxPack[GSCE],MozBoxSizing[GSCE],"
                 + "MozFloatEdge[GSCE],MozFontFeatureSettings[GSCE],MozFontLanguageOverride[GSCE],"
                 + "MozForceBrokenImageIcon[GSCE],MozHyphens[GSCE],MozMarginEnd[GSCE],MozMarginStart[GSCE],"
-                + "MozOrient[GSCE],MozPaddingEnd[GSCE],MozPaddingStart[GSCE],MozPerspective[GSCE],"
-                + "MozPerspectiveOrigin[GSCE],MozTabSize[GSCE],MozTextSizeAdjust[GSCE],MozTransform[GSCE],"
-                + "MozTransformOrigin[GSCE],MozTransformStyle[GSCE],MozTransition[GSCE],MozTransitionDelay[GSCE],"
-                + "MozTransitionDuration[GSCE],MozTransitionProperty[GSCE],MozTransitionTimingFunction[GSCE],"
-                + "MozUserFocus[GSCE],MozUserInput[GSCE],MozUserModify[GSCE],MozUserSelect[GSCE],"
-                + "MozWindowDragging[GSCE],object-fit[GSCE],object-position[GSCE],objectFit[GSCE],"
-                + "objectPosition[GSCE],offset-anchor[GSCE],offset-distance[GSCE],offset-path[GSCE],"
-                + "offset-position[GSCE],offset-rotate[GSCE],offset[GSCE],offsetAnchor[GSCE],offsetDistance[GSCE],"
-                + "offsetPath[GSCE],offsetPosition[GSCE],offsetRotate[GSCE],opacity[GSCE],order[GSCE],"
-                + "outline-color[GSCE],outline-offset[GSCE],outline-style[GSCE],outline-width[GSCE],outline[GSCE],"
-                + "outlineColor[GSCE],outlineOffset[GSCE],outlineStyle[GSCE],outlineWidth[GSCE],"
-                + "overflow-anchor[GSCE],overflow-block[GSCE],overflow-clip-margin[GSCE],overflow-inline[GSCE],"
-                + "overflow-wrap[GSCE],overflow-x[GSCE],overflow-y[GSCE],overflow[GSCE],overflowAnchor[GSCE],"
-                + "overflowBlock[GSCE],overflowClipMargin[GSCE],overflowInline[GSCE],overflowWrap[GSCE],"
-                + "overflowX[GSCE],overflowY[GSCE],overscroll-behavior-block[GSCE],overscroll-behavior-inline[GSCE],"
-                + "overscroll-behavior-x[GSCE],overscroll-behavior-y[GSCE],overscroll-behavior[GSCE],"
-                + "overscrollBehavior[GSCE],overscrollBehaviorBlock[GSCE],overscrollBehaviorInline[GSCE],"
-                + "overscrollBehaviorX[GSCE],overscrollBehaviorY[GSCE],padding-block-end[GSCE],"
-                + "padding-block-start[GSCE],padding-block[GSCE],padding-bottom[GSCE],padding-inline-end[GSCE],"
-                + "padding-inline-start[GSCE],padding-inline[GSCE],padding-left[GSCE],padding-right[GSCE],"
-                + "padding-top[GSCE],padding[GSCE],paddingBlock[GSCE],paddingBlockEnd[GSCE],paddingBlockStart[GSCE],"
-                + "paddingBottom[GSCE],paddingInline[GSCE],paddingInlineEnd[GSCE],paddingInlineStart[GSCE],"
-                + "paddingLeft[GSCE],paddingRight[GSCE],paddingTop[GSCE],page-break-after[GSCE],"
-                + "page-break-before[GSCE],page-break-inside[GSCE],page[GSCE],pageBreakAfter[GSCE],"
-                + "pageBreakBefore[GSCE],pageBreakInside[GSCE],paint-order[GSCE],paintOrder[GSCE],"
-                + "perspective-origin[GSCE],perspective[GSCE],perspectiveOrigin[GSCE],place-content[GSCE],"
-                + "place-items[GSCE],place-self[GSCE],placeContent[GSCE],placeItems[GSCE],placeSelf[GSCE],"
-                + "pointer-events[GSCE],pointerEvents[GSCE],position[GSCE],print-color-adjust[GSCE],"
+                + "MozOrient[GSCE],MozPaddingEnd[GSCE],MozPaddingStart[GSCE],MozTabSize[GSCE],"
+                + "MozTextSizeAdjust[GSCE],MozTransform[GSCE],MozTransformOrigin[GSCE],MozUserInput[GSCE],"
+                + "MozUserModify[GSCE],MozUserSelect[GSCE],MozWindowDragging[GSCE],object-fit[GSCE],"
+                + "object-position[GSCE],objectFit[GSCE],objectPosition[GSCE],offset-anchor[GSCE],"
+                + "offset-distance[GSCE],offset-path[GSCE],offset-position[GSCE],offset-rotate[GSCE],offset[GSCE],"
+                + "offsetAnchor[GSCE],offsetDistance[GSCE],offsetPath[GSCE],offsetPosition[GSCE],offsetRotate[GSCE],"
+                + "opacity[GSCE],order[GSCE],outline-color[GSCE],outline-offset[GSCE],outline-style[GSCE],"
+                + "outline-width[GSCE],outline[GSCE],outlineColor[GSCE],outlineOffset[GSCE],outlineStyle[GSCE],"
+                + "outlineWidth[GSCE],overflow-anchor[GSCE],overflow-block[GSCE],overflow-clip-margin[GSCE],"
+                + "overflow-inline[GSCE],overflow-wrap[GSCE],overflow-x[GSCE],overflow-y[GSCE],overflow[GSCE],"
+                + "overflowAnchor[GSCE],overflowBlock[GSCE],overflowClipMargin[GSCE],overflowInline[GSCE],"
+                + "overflowWrap[GSCE],overflowX[GSCE],overflowY[GSCE],overscroll-behavior-block[GSCE],"
+                + "overscroll-behavior-inline[GSCE],overscroll-behavior-x[GSCE],overscroll-behavior-y[GSCE],"
+                + "overscroll-behavior[GSCE],overscrollBehavior[GSCE],overscrollBehaviorBlock[GSCE],"
+                + "overscrollBehaviorInline[GSCE],overscrollBehaviorX[GSCE],overscrollBehaviorY[GSCE],"
+                + "padding-block-end[GSCE],padding-block-start[GSCE],padding-block[GSCE],padding-bottom[GSCE],"
+                + "padding-inline-end[GSCE],padding-inline-start[GSCE],padding-inline[GSCE],padding-left[GSCE],"
+                + "padding-right[GSCE],padding-top[GSCE],padding[GSCE],paddingBlock[GSCE],paddingBlockEnd[GSCE],"
+                + "paddingBlockStart[GSCE],paddingBottom[GSCE],paddingInline[GSCE],paddingInlineEnd[GSCE],"
+                + "paddingInlineStart[GSCE],paddingLeft[GSCE],paddingRight[GSCE],paddingTop[GSCE],"
+                + "page-break-after[GSCE],page-break-before[GSCE],page-break-inside[GSCE],page[GSCE],"
+                + "pageBreakAfter[GSCE],pageBreakBefore[GSCE],pageBreakInside[GSCE],paint-order[GSCE],"
+                + "paintOrder[GSCE],perspective-origin[GSCE],perspective[GSCE],perspectiveOrigin[GSCE],"
+                + "place-content[GSCE],place-items[GSCE],place-self[GSCE],placeContent[GSCE],placeItems[GSCE],"
+                + "placeSelf[GSCE],pointer-events[GSCE],pointerEvents[GSCE],position[GSCE],print-color-adjust[GSCE],"
                 + "printColorAdjust[GSCE],quotes[GSCE],r[GSCE],resize[GSCE],right[GSCE],rotate[GSCE],row-gap[GSCE],"
                 + "rowGap[GSCE],ruby-align[GSCE],ruby-position[GSCE],rubyAlign[GSCE],rubyPosition[GSCE],rx[GSCE],"
                 + "ry[GSCE],scale[GSCE],scroll-behavior[GSCE],scroll-margin-block-end[GSCE],"
@@ -17122,17 +15967,18 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "text-emphasis-position[GSCE],text-emphasis-style[GSCE],text-emphasis[GSCE],text-indent[GSCE],"
                 + "text-justify[GSCE],text-orientation[GSCE],text-overflow[GSCE],text-rendering[GSCE],"
                 + "text-shadow[GSCE],text-transform[GSCE],text-underline-offset[GSCE],text-underline-position[GSCE],"
-                + "text-wrap[GSCE],textAlign[GSCE],textAlignLast[GSCE],textAnchor[GSCE],textCombineUpright[GSCE],"
-                + "textDecoration[GSCE],textDecorationColor[GSCE],textDecorationLine[GSCE],"
-                + "textDecorationSkipInk[GSCE],textDecorationStyle[GSCE],textDecorationThickness[GSCE],"
-                + "textEmphasis[GSCE],textEmphasisColor[GSCE],textEmphasisPosition[GSCE],textEmphasisStyle[GSCE],"
-                + "textIndent[GSCE],textJustify[GSCE],textOrientation[GSCE],textOverflow[GSCE],textRendering[GSCE],"
-                + "textShadow[GSCE],textTransform[GSCE],textUnderlineOffset[GSCE],textUnderlinePosition[GSCE],"
-                + "textWrap[GSCE],top[GSCE],touch-action[GSCE],touchAction[GSCE],transform-box[GSCE],"
-                + "transform-origin[GSCE],transform-style[GSCE],transform[GSCE],transformBox[GSCE],"
-                + "transformOrigin[GSCE],transformStyle[GSCE],transition-delay[GSCE],transition-duration[GSCE],"
-                + "transition-property[GSCE],transition-timing-function[GSCE],transition[GSCE],"
-                + "transitionDelay[GSCE],transitionDuration[GSCE],transitionProperty[GSCE],"
+                + "text-wrap-mode[GSCE],text-wrap-style[GSCE],text-wrap[GSCE],textAlign[GSCE],textAlignLast[GSCE],"
+                + "textAnchor[GSCE],textCombineUpright[GSCE],textDecoration[GSCE],textDecorationColor[GSCE],"
+                + "textDecorationLine[GSCE],textDecorationSkipInk[GSCE],textDecorationStyle[GSCE],"
+                + "textDecorationThickness[GSCE],textEmphasis[GSCE],textEmphasisColor[GSCE],"
+                + "textEmphasisPosition[GSCE],textEmphasisStyle[GSCE],textIndent[GSCE],textJustify[GSCE],"
+                + "textOrientation[GSCE],textOverflow[GSCE],textRendering[GSCE],textShadow[GSCE],"
+                + "textTransform[GSCE],textUnderlineOffset[GSCE],textUnderlinePosition[GSCE],textWrap[GSCE],"
+                + "textWrapMode[GSCE],textWrapStyle[GSCE],top[GSCE],touch-action[GSCE],touchAction[GSCE],"
+                + "transform-box[GSCE],transform-origin[GSCE],transform-style[GSCE],transform[GSCE],"
+                + "transformBox[GSCE],transformOrigin[GSCE],transformStyle[GSCE],transition-delay[GSCE],"
+                + "transition-duration[GSCE],transition-property[GSCE],transition-timing-function[GSCE],"
+                + "transition[GSCE],transitionDelay[GSCE],transitionDuration[GSCE],transitionProperty[GSCE],"
                 + "transitionTimingFunction[GSCE],translate[GSCE],unicode-bidi[GSCE],unicodeBidi[GSCE],"
                 + "user-select[GSCE],userSelect[GSCE],vector-effect[GSCE],vectorEffect[GSCE],vertical-align[GSCE],"
                 + "verticalAlign[GSCE],visibility[GSCE],WebkitAlignContent[GSCE],webkitAlignContent[GSCE],"
@@ -17178,11 +16024,11 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "WebkitTransitionDelay[GSCE],webkitTransitionDelay[GSCE],WebkitTransitionDuration[GSCE],"
                 + "webkitTransitionDuration[GSCE],WebkitTransitionProperty[GSCE],webkitTransitionProperty[GSCE],"
                 + "WebkitTransitionTimingFunction[GSCE],webkitTransitionTimingFunction[GSCE],WebkitUserSelect[GSCE],"
-                + "webkitUserSelect[GSCE],white-space[GSCE],whiteSpace[GSCE],width[GSCE],will-change[GSCE],"
-                + "willChange[GSCE],word-break[GSCE],word-spacing[GSCE],word-wrap[GSCE],wordBreak[GSCE],"
-                + "wordSpacing[GSCE],wordWrap[GSCE],writing-mode[GSCE],writingMode[GSCE],x[GSCE],y[GSCE],"
-                + "z-index[GSCE],"
-                + "zIndex[GSCE]",
+                + "webkitUserSelect[GSCE],white-space-collapse[GSCE],white-space[GSCE],whiteSpace[GSCE],"
+                + "whiteSpaceCollapse[GSCE],width[GSCE],will-change[GSCE],willChange[GSCE],word-break[GSCE],"
+                + "word-spacing[GSCE],word-wrap[GSCE],wordBreak[GSCE],wordSpacing[GSCE],wordWrap[GSCE],"
+                + "writing-mode[GSCE],writingMode[GSCE],x[GSCE],y[GSCE],z-index[GSCE],zIndex[GSCE],"
+                + "zoom[GSCE]",
             FF_ESR = "-moz-animation-delay[GSCE],-moz-animation-direction[GSCE],-moz-animation-duration[GSCE],"
                 + "-moz-animation-fill-mode[GSCE],-moz-animation-iteration-count[GSCE],-moz-animation-name[GSCE],"
                 + "-moz-animation-play-state[GSCE],-moz-animation-timing-function[GSCE],-moz-animation[GSCE],"
@@ -17474,54 +16320,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "willChange[GSCE],word-break[GSCE],word-spacing[GSCE],word-wrap[GSCE],wordBreak[GSCE],"
                 + "wordSpacing[GSCE],wordWrap[GSCE],writing-mode[GSCE],writingMode[GSCE],x[GSCE],y[GSCE],"
                 + "z-index[GSCE],"
-                + "zIndex[GSCE]",
-            IE = "alignContent,alignItems,alignmentBaseline,alignSelf,animation,animationDelay,animationDirection,"
-                + "animationDuration,animationFillMode,animationIterationCount,animationName,animationPlayState,"
-                + "animationTimingFunction,backfaceVisibility,background,backgroundAttachment,backgroundClip,"
-                + "backgroundColor,backgroundImage,backgroundOrigin,backgroundPosition,backgroundRepeat,"
-                + "backgroundSize,baselineShift,border,borderBottom,borderBottomColor,borderBottomLeftRadius,"
-                + "borderBottomRightRadius,borderBottomStyle,borderBottomWidth,borderCollapse,borderColor,"
-                + "borderImage,borderImageOutset,borderImageRepeat,borderImageSlice,borderImageSource,"
-                + "borderImageWidth,borderLeft,borderLeftColor,borderLeftStyle,borderLeftWidth,borderRadius,"
-                + "borderRight,borderRightColor,borderRightStyle,borderRightWidth,borderSpacing,borderStyle,"
-                + "borderTop,borderTopColor,borderTopLeftRadius,borderTopRightRadius,borderTopStyle,borderTopWidth,"
-                + "borderWidth,bottom,boxShadow,boxSizing,breakAfter,breakBefore,breakInside,captionSide,clear,clip,"
-                + "clipPath,clipRule,color,colorInterpolationFilters,columnCount,columnFill,columnGap,columnRule,"
-                + "columnRuleColor,columnRuleStyle,columnRuleWidth,columns,columnSpan,columnWidth,constructor,"
-                + "content,counterIncrement,counterReset,cssFloat,cssText,cursor,direction,display,dominantBaseline,"
-                + "emptyCells,enableBackground,fill,fillOpacity,fillRule,filter,flex,flexBasis,flexDirection,"
-                + "flexFlow,flexGrow,flexShrink,flexWrap,floodColor,floodOpacity,font,fontFamily,"
-                + "fontFeatureSettings,fontSize,fontSizeAdjust,fontStretch,fontStyle,fontVariant,fontWeight,"
-                + "getPropertyPriority(),getPropertyValue(),glyphOrientationHorizontal,glyphOrientationVertical,"
-                + "height,item(),justifyContent,kerning,left,length,letterSpacing,lightingColor,lineHeight,"
-                + "listStyle,listStyleImage,listStylePosition,listStyleType,margin,marginBottom,marginLeft,"
-                + "marginRight,marginTop,marker,markerEnd,markerMid,markerStart,mask,maxHeight,maxWidth,minHeight,"
-                + "minWidth,msAnimation,msAnimationDelay,msAnimationDirection,msAnimationDuration,"
-                + "msAnimationFillMode,msAnimationIterationCount,msAnimationName,msAnimationPlayState,"
-                + "msAnimationTimingFunction,msBackfaceVisibility,msContentZoomChaining,msContentZooming,"
-                + "msContentZoomLimit,msContentZoomLimitMax,msContentZoomLimitMin,msContentZoomSnap,"
-                + "msContentZoomSnapPoints,msContentZoomSnapType,msFlex,msFlexAlign,msFlexDirection,msFlexFlow,"
-                + "msFlexItemAlign,msFlexLinePack,msFlexNegative,msFlexOrder,msFlexPack,msFlexPositive,"
-                + "msFlexPreferredSize,msFlexWrap,msFlowFrom,msFlowInto,msFontFeatureSettings,msGridColumn,"
-                + "msGridColumnAlign,msGridColumns,msGridColumnSpan,msGridRow,msGridRowAlign,msGridRows,"
-                + "msGridRowSpan,msHighContrastAdjust,msHyphenateLimitChars,msHyphenateLimitLines,"
-                + "msHyphenateLimitZone,msHyphens,msImeAlign,msOverflowStyle,msPerspective,msPerspectiveOrigin,"
-                + "msScrollChaining,msScrollLimit,msScrollLimitXMax,msScrollLimitXMin,msScrollLimitYMax,"
-                + "msScrollLimitYMin,msScrollRails,msScrollSnapPointsX,msScrollSnapPointsY,msScrollSnapType,"
-                + "msScrollSnapX,msScrollSnapY,msScrollTranslation,msTextCombineHorizontal,msTextSizeAdjust,"
-                + "msTouchAction,msTouchSelect,msTransform,msTransformOrigin,msTransformStyle,msTransition,"
-                + "msTransitionDelay,msTransitionDuration,msTransitionProperty,msTransitionTimingFunction,"
-                + "msUserSelect,msWrapFlow,msWrapMargin,msWrapThrough,opacity,order,orphans,outline,outlineColor,"
-                + "outlineStyle,outlineWidth,overflow,overflowX,overflowY,padding,paddingBottom,paddingLeft,"
-                + "paddingRight,paddingTop,pageBreakAfter,pageBreakBefore,pageBreakInside,parentRule,perspective,"
-                + "perspectiveOrigin,pointerEvents,position,quotes,removeProperty(),right,rubyAlign,rubyOverhang,"
-                + "rubyPosition,setProperty(),stopColor,stopOpacity,stroke,strokeDasharray,strokeDashoffset,"
-                + "strokeLinecap,strokeLinejoin,strokeMiterlimit,strokeOpacity,strokeWidth,tableLayout,textAlign,"
-                + "textAlignLast,textAnchor,textDecoration,textIndent,textJustify,textOverflow,textShadow,"
-                + "textTransform,textUnderlinePosition,top,touchAction,transform,transformOrigin,transformStyle,"
-                + "transition,transitionDelay,transitionDuration,transitionProperty,transitionTimingFunction,"
-                + "unicodeBidi,verticalAlign,visibility,whiteSpace,widows,width,wordBreak,wordSpacing,wordWrap,"
-                + "zIndex")
+                + "zIndex[GSCE]")
     @HtmlUnitNYI(CHROME = "backgroundAttachment[GSCE],backgroundColor[GSCE],backgroundImage[GSCE],"
                 + "backgroundPosition[GSCE],backgroundRepeat[GSCE],borderBottomColor[GSCE],borderBottomStyle[GSCE],"
                 + "borderBottomWidth[GSCE],borderLeftColor[GSCE],borderLeftStyle[GSCE],borderLeftWidth[GSCE],"
@@ -17551,25 +16350,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "textIndent[GSCE],top[GSCE],verticalAlign[GSCE],widows[GSCE],width[GSCE],wordSpacing[GSCE],"
                 + "zIndex[GSCE]",
             FF_ESR = "constructor()",
-            FF = "constructor()",
-            IE = "accelerator[GSCE],backgroundAttachment[GSCE],backgroundColor[GSCE],backgroundImage[GSCE],"
-                + "backgroundPosition[GSCE],backgroundRepeat[GSCE],borderBottomColor[GSCE],borderBottomStyle[GSCE],"
-                + "borderBottomWidth[GSCE],borderLeftColor[GSCE],borderLeftStyle[GSCE],borderLeftWidth[GSCE],"
-                + "borderRightColor[GSCE],borderRightStyle[GSCE],borderRightWidth[GSCE],borderTop[GSCE],"
-                + "borderTopColor[GSCE],borderTopStyle[GSCE],borderTopWidth[GSCE],bottom[GSCE],color[GSCE],"
-                + "constructor[],cssFloat[GSCE],cssText[GSCE],display[GSCE],font[GSCE],fontFamily[GSCE],"
-                + "fontSize[GSCE],getAttribute(),getPropertyPriority(),getPropertyValue(),height[GSCE],item(),"
-                + "left[GSCE],length[GCE],letterSpacing[GSCE],lineHeight[GSCE],margin[GSCE],marginBottom[GSCE],"
-                + "marginLeft[GSCE],marginRight[GSCE],marginTop[GSCE],maxHeight[GSCE],maxWidth[GSCE],"
-                + "minHeight[GSCE],minWidth[GSCE],msImeAlign[GSCE],opacity[GSCE],orphans[GSCE],outline[GSCE],"
-                + "outlineWidth[GSCE],padding[GSCE],paddingBottom[GSCE],paddingLeft[GSCE],paddingRight[GSCE],"
-                + "paddingTop[GSCE],parentRule[GSCE],pixelBottom[GSCE],pixelHeight[GSCE],pixelLeft[GSCE],"
-                + "pixelRight[GSCE],pixelTop[GSCE],pixelWidth[GSCE],posBottom[GSCE],posHeight[GSCE],position[GSCE],"
-                + "posLeft[GSCE],posRight[GSCE],posTop[GSCE],posWidth[GSCE],removeAttribute(),removeProperty(),"
-                + "right[GSCE],rubyAlign[GSCE],setAttribute(),setProperty(),textDecorationBlink[GSCE],"
-                + "textDecorationLineThrough[GSCE],textDecorationNone[GSCE],textDecorationOverline[GSCE],"
-                + "textDecorationUnderline[GSCE],textIndent[GSCE],top[GSCE],verticalAlign[GSCE],widows[GSCE],"
-                + "width[GSCE],wordSpacing[GSCE],zIndex[GSCE]")
+            FF = "constructor()")
     public void computedStyle() throws Exception {
         testString("", "window.getComputedStyle(document.body)");
     }
@@ -17589,19 +16370,15 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
             FF = "-moz-animation-delay[GSCE],-moz-animation-direction[GSCE],-moz-animation-duration[GSCE],"
                 + "-moz-animation-fill-mode[GSCE],-moz-animation-iteration-count[GSCE],-moz-animation-name[GSCE],"
                 + "-moz-animation-play-state[GSCE],-moz-animation-timing-function[GSCE],-moz-animation[GSCE],"
-                + "-moz-appearance[GSCE],-moz-backface-visibility[GSCE],-moz-border-end-color[GSCE],"
-                + "-moz-border-end-style[GSCE],-moz-border-end-width[GSCE],-moz-border-end[GSCE],"
-                + "-moz-border-image[GSCE],-moz-border-start-color[GSCE],-moz-border-start-style[GSCE],"
-                + "-moz-border-start-width[GSCE],-moz-border-start[GSCE],-moz-box-align[GSCE],"
-                + "-moz-box-direction[GSCE],-moz-box-flex[GSCE],-moz-box-ordinal-group[GSCE],-moz-box-orient[GSCE],"
-                + "-moz-box-pack[GSCE],-moz-box-sizing[GSCE],-moz-float-edge[GSCE],-moz-font-feature-settings[GSCE],"
-                + "-moz-font-language-override[GSCE],-moz-force-broken-image-icon[GSCE],-moz-hyphens[GSCE],"
-                + "-moz-margin-end[GSCE],-moz-margin-start[GSCE],-moz-orient[GSCE],-moz-padding-end[GSCE],"
-                + "-moz-padding-start[GSCE],-moz-perspective-origin[GSCE],-moz-perspective[GSCE],"
-                + "-moz-tab-size[GSCE],-moz-text-size-adjust[GSCE],-moz-transform-origin[GSCE],"
-                + "-moz-transform-style[GSCE],-moz-transform[GSCE],-moz-transition-delay[GSCE],"
-                + "-moz-transition-duration[GSCE],-moz-transition-property[GSCE],"
-                + "-moz-transition-timing-function[GSCE],-moz-transition[GSCE],-moz-user-focus[GSCE],"
+                + "-moz-appearance[GSCE],-moz-border-end-color[GSCE],-moz-border-end-style[GSCE],"
+                + "-moz-border-end-width[GSCE],-moz-border-end[GSCE],-moz-border-image[GSCE],"
+                + "-moz-border-start-color[GSCE],-moz-border-start-style[GSCE],-moz-border-start-width[GSCE],"
+                + "-moz-border-start[GSCE],-moz-box-align[GSCE],-moz-box-direction[GSCE],-moz-box-flex[GSCE],"
+                + "-moz-box-ordinal-group[GSCE],-moz-box-orient[GSCE],-moz-box-pack[GSCE],-moz-box-sizing[GSCE],"
+                + "-moz-float-edge[GSCE],-moz-font-feature-settings[GSCE],-moz-font-language-override[GSCE],"
+                + "-moz-force-broken-image-icon[GSCE],-moz-hyphens[GSCE],-moz-margin-end[GSCE],"
+                + "-moz-margin-start[GSCE],-moz-orient[GSCE],-moz-padding-end[GSCE],-moz-padding-start[GSCE],"
+                + "-moz-tab-size[GSCE],-moz-text-size-adjust[GSCE],-moz-transform-origin[GSCE],-moz-transform[GSCE],"
                 + "-moz-user-input[GSCE],-moz-user-modify[GSCE],-moz-user-select[GSCE],-moz-window-dragging[GSCE],"
                 + "-webkit-align-content[GSCE],-webkit-align-items[GSCE],-webkit-align-self[GSCE],"
                 + "-webkit-animation-delay[GSCE],-webkit-animation-direction[GSCE],-webkit-animation-duration[GSCE],"
@@ -17694,32 +16471,33 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "contain-intrinsic-width[GSCE],contain[GSCE],container-name[GSCE],container-type[GSCE],"
                 + "container[GSCE],containerName[GSCE],containerType[GSCE],containIntrinsicBlockSize[GSCE],"
                 + "containIntrinsicHeight[GSCE],containIntrinsicInlineSize[GSCE],containIntrinsicSize[GSCE],"
-                + "containIntrinsicWidth[GSCE],content[GSCE],counter-increment[GSCE],counter-reset[GSCE],"
-                + "counter-set[GSCE],counterIncrement[GSCE],counterReset[GSCE],counterSet[GSCE],cssFloat[GSCE],"
-                + "cursor[GSCE],cx[GSCE],cy[GSCE],d[GSCE],direction[GSCE],display[GSCE],dominant-baseline[GSCE],"
-                + "dominantBaseline[GSCE],empty-cells[GSCE],emptyCells[GSCE],fill-opacity[GSCE],fill-rule[GSCE],"
-                + "fill[GSCE],fillOpacity[GSCE],fillRule[GSCE],filter[GSCE],flex-basis[GSCE],flex-direction[GSCE],"
-                + "flex-flow[GSCE],flex-grow[GSCE],flex-shrink[GSCE],flex-wrap[GSCE],flex[GSCE],flexBasis[GSCE],"
-                + "flexDirection[GSCE],flexFlow[GSCE],flexGrow[GSCE],flexShrink[GSCE],flexWrap[GSCE],float[GSCE],"
-                + "flood-color[GSCE],flood-opacity[GSCE],floodColor[GSCE],floodOpacity[GSCE],font-family[GSCE],"
-                + "font-feature-settings[GSCE],font-kerning[GSCE],font-language-override[GSCE],"
-                + "font-optical-sizing[GSCE],font-palette[GSCE],font-size-adjust[GSCE],font-size[GSCE],"
-                + "font-stretch[GSCE],font-style[GSCE],font-synthesis-position[GSCE],"
-                + "font-synthesis-small-caps[GSCE],font-synthesis-style[GSCE],font-synthesis-weight[GSCE],"
-                + "font-synthesis[GSCE],font-variant-alternates[GSCE],font-variant-caps[GSCE],"
-                + "font-variant-east-asian[GSCE],font-variant-ligatures[GSCE],font-variant-numeric[GSCE],"
-                + "font-variant-position[GSCE],font-variant[GSCE],font-variation-settings[GSCE],font-weight[GSCE],"
-                + "font[GSCE],fontFamily[GSCE],fontFeatureSettings[GSCE],fontKerning[GSCE],"
-                + "fontLanguageOverride[GSCE],fontOpticalSizing[GSCE],fontPalette[GSCE],fontSize[GSCE],"
-                + "fontSizeAdjust[GSCE],fontStretch[GSCE],fontStyle[GSCE],fontSynthesis[GSCE],"
-                + "fontSynthesisPosition[GSCE],fontSynthesisSmallCaps[GSCE],fontSynthesisStyle[GSCE],"
-                + "fontSynthesisWeight[GSCE],fontVariant[GSCE],fontVariantAlternates[GSCE],fontVariantCaps[GSCE],"
-                + "fontVariantEastAsian[GSCE],fontVariantLigatures[GSCE],fontVariantNumeric[GSCE],"
-                + "fontVariantPosition[GSCE],fontVariationSettings[GSCE],fontWeight[GSCE],forced-color-adjust[GSCE],"
-                + "forcedColorAdjust[GSCE],gap[GSCE],grid-area[GSCE],grid-auto-columns[GSCE],grid-auto-flow[GSCE],"
-                + "grid-auto-rows[GSCE],grid-column-end[GSCE],grid-column-gap[GSCE],grid-column-start[GSCE],"
-                + "grid-column[GSCE],grid-gap[GSCE],grid-row-end[GSCE],grid-row-gap[GSCE],grid-row-start[GSCE],"
-                + "grid-row[GSCE],grid-template-areas[GSCE],grid-template-columns[GSCE],grid-template-rows[GSCE],"
+                + "containIntrinsicWidth[GSCE],content-visibility[GSCE],content[GSCE],contentVisibility[GSCE],"
+                + "counter-increment[GSCE],counter-reset[GSCE],counter-set[GSCE],counterIncrement[GSCE],"
+                + "counterReset[GSCE],counterSet[GSCE],cssFloat[GSCE],cursor[GSCE],cx[GSCE],cy[GSCE],d[GSCE],"
+                + "direction[GSCE],display[GSCE],dominant-baseline[GSCE],dominantBaseline[GSCE],empty-cells[GSCE],"
+                + "emptyCells[GSCE],fill-opacity[GSCE],fill-rule[GSCE],fill[GSCE],fillOpacity[GSCE],fillRule[GSCE],"
+                + "filter[GSCE],flex-basis[GSCE],flex-direction[GSCE],flex-flow[GSCE],flex-grow[GSCE],"
+                + "flex-shrink[GSCE],flex-wrap[GSCE],flex[GSCE],flexBasis[GSCE],flexDirection[GSCE],flexFlow[GSCE],"
+                + "flexGrow[GSCE],flexShrink[GSCE],flexWrap[GSCE],float[GSCE],flood-color[GSCE],flood-opacity[GSCE],"
+                + "floodColor[GSCE],floodOpacity[GSCE],font-family[GSCE],font-feature-settings[GSCE],"
+                + "font-kerning[GSCE],font-language-override[GSCE],font-optical-sizing[GSCE],font-palette[GSCE],"
+                + "font-size-adjust[GSCE],font-size[GSCE],font-stretch[GSCE],font-style[GSCE],"
+                + "font-synthesis-position[GSCE],font-synthesis-small-caps[GSCE],font-synthesis-style[GSCE],"
+                + "font-synthesis-weight[GSCE],font-synthesis[GSCE],font-variant-alternates[GSCE],"
+                + "font-variant-caps[GSCE],font-variant-east-asian[GSCE],font-variant-ligatures[GSCE],"
+                + "font-variant-numeric[GSCE],font-variant-position[GSCE],font-variant[GSCE],"
+                + "font-variation-settings[GSCE],font-weight[GSCE],font[GSCE],fontFamily[GSCE],"
+                + "fontFeatureSettings[GSCE],fontKerning[GSCE],fontLanguageOverride[GSCE],fontOpticalSizing[GSCE],"
+                + "fontPalette[GSCE],fontSize[GSCE],fontSizeAdjust[GSCE],fontStretch[GSCE],fontStyle[GSCE],"
+                + "fontSynthesis[GSCE],fontSynthesisPosition[GSCE],fontSynthesisSmallCaps[GSCE],"
+                + "fontSynthesisStyle[GSCE],fontSynthesisWeight[GSCE],fontVariant[GSCE],fontVariantAlternates[GSCE],"
+                + "fontVariantCaps[GSCE],fontVariantEastAsian[GSCE],fontVariantLigatures[GSCE],"
+                + "fontVariantNumeric[GSCE],fontVariantPosition[GSCE],fontVariationSettings[GSCE],fontWeight[GSCE],"
+                + "forced-color-adjust[GSCE],forcedColorAdjust[GSCE],gap[GSCE],grid-area[GSCE],"
+                + "grid-auto-columns[GSCE],grid-auto-flow[GSCE],grid-auto-rows[GSCE],grid-column-end[GSCE],"
+                + "grid-column-gap[GSCE],grid-column-start[GSCE],grid-column[GSCE],grid-gap[GSCE],"
+                + "grid-row-end[GSCE],grid-row-gap[GSCE],grid-row-start[GSCE],grid-row[GSCE],"
+                + "grid-template-areas[GSCE],grid-template-columns[GSCE],grid-template-rows[GSCE],"
                 + "grid-template[GSCE],grid[GSCE],gridArea[GSCE],gridAutoColumns[GSCE],gridAutoFlow[GSCE],"
                 + "gridAutoRows[GSCE],gridColumn[GSCE],gridColumnEnd[GSCE],gridColumnGap[GSCE],"
                 + "gridColumnStart[GSCE],gridGap[GSCE],gridRow[GSCE],gridRowEnd[GSCE],gridRowGap[GSCE],"
@@ -17754,40 +16532,37 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "MozAnimationDelay[GSCE],MozAnimationDirection[GSCE],MozAnimationDuration[GSCE],"
                 + "MozAnimationFillMode[GSCE],MozAnimationIterationCount[GSCE],MozAnimationName[GSCE],"
                 + "MozAnimationPlayState[GSCE],MozAnimationTimingFunction[GSCE],MozAppearance[GSCE],"
-                + "MozBackfaceVisibility[GSCE],MozBorderEnd[GSCE],MozBorderEndColor[GSCE],MozBorderEndStyle[GSCE],"
-                + "MozBorderEndWidth[GSCE],MozBorderImage[GSCE],MozBorderStart[GSCE],MozBorderStartColor[GSCE],"
-                + "MozBorderStartStyle[GSCE],MozBorderStartWidth[GSCE],MozBoxAlign[GSCE],MozBoxDirection[GSCE],"
-                + "MozBoxFlex[GSCE],MozBoxOrdinalGroup[GSCE],MozBoxOrient[GSCE],MozBoxPack[GSCE],MozBoxSizing[GSCE],"
+                + "MozBorderEnd[GSCE],MozBorderEndColor[GSCE],MozBorderEndStyle[GSCE],MozBorderEndWidth[GSCE],"
+                + "MozBorderImage[GSCE],MozBorderStart[GSCE],MozBorderStartColor[GSCE],MozBorderStartStyle[GSCE],"
+                + "MozBorderStartWidth[GSCE],MozBoxAlign[GSCE],MozBoxDirection[GSCE],MozBoxFlex[GSCE],"
+                + "MozBoxOrdinalGroup[GSCE],MozBoxOrient[GSCE],MozBoxPack[GSCE],MozBoxSizing[GSCE],"
                 + "MozFloatEdge[GSCE],MozFontFeatureSettings[GSCE],MozFontLanguageOverride[GSCE],"
                 + "MozForceBrokenImageIcon[GSCE],MozHyphens[GSCE],MozMarginEnd[GSCE],MozMarginStart[GSCE],"
-                + "MozOrient[GSCE],MozPaddingEnd[GSCE],MozPaddingStart[GSCE],MozPerspective[GSCE],"
-                + "MozPerspectiveOrigin[GSCE],MozTabSize[GSCE],MozTextSizeAdjust[GSCE],MozTransform[GSCE],"
-                + "MozTransformOrigin[GSCE],MozTransformStyle[GSCE],MozTransition[GSCE],MozTransitionDelay[GSCE],"
-                + "MozTransitionDuration[GSCE],MozTransitionProperty[GSCE],MozTransitionTimingFunction[GSCE],"
-                + "MozUserFocus[GSCE],MozUserInput[GSCE],MozUserModify[GSCE],MozUserSelect[GSCE],"
-                + "MozWindowDragging[GSCE],object-fit[GSCE],object-position[GSCE],objectFit[GSCE],"
-                + "objectPosition[GSCE],offset-anchor[GSCE],offset-distance[GSCE],offset-path[GSCE],"
-                + "offset-position[GSCE],offset-rotate[GSCE],offset[GSCE],offsetAnchor[GSCE],offsetDistance[GSCE],"
-                + "offsetPath[GSCE],offsetPosition[GSCE],offsetRotate[GSCE],opacity[GSCE],order[GSCE],"
-                + "outline-color[GSCE],outline-offset[GSCE],outline-style[GSCE],outline-width[GSCE],outline[GSCE],"
-                + "outlineColor[GSCE],outlineOffset[GSCE],outlineStyle[GSCE],outlineWidth[GSCE],"
-                + "overflow-anchor[GSCE],overflow-block[GSCE],overflow-clip-margin[GSCE],overflow-inline[GSCE],"
-                + "overflow-wrap[GSCE],overflow-x[GSCE],overflow-y[GSCE],overflow[GSCE],overflowAnchor[GSCE],"
-                + "overflowBlock[GSCE],overflowClipMargin[GSCE],overflowInline[GSCE],overflowWrap[GSCE],"
-                + "overflowX[GSCE],overflowY[GSCE],overscroll-behavior-block[GSCE],overscroll-behavior-inline[GSCE],"
-                + "overscroll-behavior-x[GSCE],overscroll-behavior-y[GSCE],overscroll-behavior[GSCE],"
-                + "overscrollBehavior[GSCE],overscrollBehaviorBlock[GSCE],overscrollBehaviorInline[GSCE],"
-                + "overscrollBehaviorX[GSCE],overscrollBehaviorY[GSCE],padding-block-end[GSCE],"
-                + "padding-block-start[GSCE],padding-block[GSCE],padding-bottom[GSCE],padding-inline-end[GSCE],"
-                + "padding-inline-start[GSCE],padding-inline[GSCE],padding-left[GSCE],padding-right[GSCE],"
-                + "padding-top[GSCE],padding[GSCE],paddingBlock[GSCE],paddingBlockEnd[GSCE],paddingBlockStart[GSCE],"
-                + "paddingBottom[GSCE],paddingInline[GSCE],paddingInlineEnd[GSCE],paddingInlineStart[GSCE],"
-                + "paddingLeft[GSCE],paddingRight[GSCE],paddingTop[GSCE],page-break-after[GSCE],"
-                + "page-break-before[GSCE],page-break-inside[GSCE],page[GSCE],pageBreakAfter[GSCE],"
-                + "pageBreakBefore[GSCE],pageBreakInside[GSCE],paint-order[GSCE],paintOrder[GSCE],"
-                + "perspective-origin[GSCE],perspective[GSCE],perspectiveOrigin[GSCE],place-content[GSCE],"
-                + "place-items[GSCE],place-self[GSCE],placeContent[GSCE],placeItems[GSCE],placeSelf[GSCE],"
-                + "pointer-events[GSCE],pointerEvents[GSCE],position[GSCE],print-color-adjust[GSCE],"
+                + "MozOrient[GSCE],MozPaddingEnd[GSCE],MozPaddingStart[GSCE],MozTabSize[GSCE],"
+                + "MozTextSizeAdjust[GSCE],MozTransform[GSCE],MozTransformOrigin[GSCE],MozUserInput[GSCE],"
+                + "MozUserModify[GSCE],MozUserSelect[GSCE],MozWindowDragging[GSCE],object-fit[GSCE],"
+                + "object-position[GSCE],objectFit[GSCE],objectPosition[GSCE],offset-anchor[GSCE],"
+                + "offset-distance[GSCE],offset-path[GSCE],offset-position[GSCE],offset-rotate[GSCE],offset[GSCE],"
+                + "offsetAnchor[GSCE],offsetDistance[GSCE],offsetPath[GSCE],offsetPosition[GSCE],offsetRotate[GSCE],"
+                + "opacity[GSCE],order[GSCE],outline-color[GSCE],outline-offset[GSCE],outline-style[GSCE],"
+                + "outline-width[GSCE],outline[GSCE],outlineColor[GSCE],outlineOffset[GSCE],outlineStyle[GSCE],"
+                + "outlineWidth[GSCE],overflow-anchor[GSCE],overflow-block[GSCE],overflow-clip-margin[GSCE],"
+                + "overflow-inline[GSCE],overflow-wrap[GSCE],overflow-x[GSCE],overflow-y[GSCE],overflow[GSCE],"
+                + "overflowAnchor[GSCE],overflowBlock[GSCE],overflowClipMargin[GSCE],overflowInline[GSCE],"
+                + "overflowWrap[GSCE],overflowX[GSCE],overflowY[GSCE],overscroll-behavior-block[GSCE],"
+                + "overscroll-behavior-inline[GSCE],overscroll-behavior-x[GSCE],overscroll-behavior-y[GSCE],"
+                + "overscroll-behavior[GSCE],overscrollBehavior[GSCE],overscrollBehaviorBlock[GSCE],"
+                + "overscrollBehaviorInline[GSCE],overscrollBehaviorX[GSCE],overscrollBehaviorY[GSCE],"
+                + "padding-block-end[GSCE],padding-block-start[GSCE],padding-block[GSCE],padding-bottom[GSCE],"
+                + "padding-inline-end[GSCE],padding-inline-start[GSCE],padding-inline[GSCE],padding-left[GSCE],"
+                + "padding-right[GSCE],padding-top[GSCE],padding[GSCE],paddingBlock[GSCE],paddingBlockEnd[GSCE],"
+                + "paddingBlockStart[GSCE],paddingBottom[GSCE],paddingInline[GSCE],paddingInlineEnd[GSCE],"
+                + "paddingInlineStart[GSCE],paddingLeft[GSCE],paddingRight[GSCE],paddingTop[GSCE],"
+                + "page-break-after[GSCE],page-break-before[GSCE],page-break-inside[GSCE],page[GSCE],"
+                + "pageBreakAfter[GSCE],pageBreakBefore[GSCE],pageBreakInside[GSCE],paint-order[GSCE],"
+                + "paintOrder[GSCE],perspective-origin[GSCE],perspective[GSCE],perspectiveOrigin[GSCE],"
+                + "place-content[GSCE],place-items[GSCE],place-self[GSCE],placeContent[GSCE],placeItems[GSCE],"
+                + "placeSelf[GSCE],pointer-events[GSCE],pointerEvents[GSCE],position[GSCE],print-color-adjust[GSCE],"
                 + "printColorAdjust[GSCE],quotes[GSCE],r[GSCE],resize[GSCE],right[GSCE],rotate[GSCE],row-gap[GSCE],"
                 + "rowGap[GSCE],ruby-align[GSCE],ruby-position[GSCE],rubyAlign[GSCE],rubyPosition[GSCE],rx[GSCE],"
                 + "ry[GSCE],scale[GSCE],scroll-behavior[GSCE],scroll-margin-block-end[GSCE],"
@@ -17821,17 +16596,18 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "text-emphasis-position[GSCE],text-emphasis-style[GSCE],text-emphasis[GSCE],text-indent[GSCE],"
                 + "text-justify[GSCE],text-orientation[GSCE],text-overflow[GSCE],text-rendering[GSCE],"
                 + "text-shadow[GSCE],text-transform[GSCE],text-underline-offset[GSCE],text-underline-position[GSCE],"
-                + "text-wrap[GSCE],textAlign[GSCE],textAlignLast[GSCE],textAnchor[GSCE],textCombineUpright[GSCE],"
-                + "textDecoration[GSCE],textDecorationColor[GSCE],textDecorationLine[GSCE],"
-                + "textDecorationSkipInk[GSCE],textDecorationStyle[GSCE],textDecorationThickness[GSCE],"
-                + "textEmphasis[GSCE],textEmphasisColor[GSCE],textEmphasisPosition[GSCE],textEmphasisStyle[GSCE],"
-                + "textIndent[GSCE],textJustify[GSCE],textOrientation[GSCE],textOverflow[GSCE],textRendering[GSCE],"
-                + "textShadow[GSCE],textTransform[GSCE],textUnderlineOffset[GSCE],textUnderlinePosition[GSCE],"
-                + "textWrap[GSCE],top[GSCE],touch-action[GSCE],touchAction[GSCE],transform-box[GSCE],"
-                + "transform-origin[GSCE],transform-style[GSCE],transform[GSCE],transformBox[GSCE],"
-                + "transformOrigin[GSCE],transformStyle[GSCE],transition-delay[GSCE],transition-duration[GSCE],"
-                + "transition-property[GSCE],transition-timing-function[GSCE],transition[GSCE],"
-                + "transitionDelay[GSCE],transitionDuration[GSCE],transitionProperty[GSCE],"
+                + "text-wrap-mode[GSCE],text-wrap-style[GSCE],text-wrap[GSCE],textAlign[GSCE],textAlignLast[GSCE],"
+                + "textAnchor[GSCE],textCombineUpright[GSCE],textDecoration[GSCE],textDecorationColor[GSCE],"
+                + "textDecorationLine[GSCE],textDecorationSkipInk[GSCE],textDecorationStyle[GSCE],"
+                + "textDecorationThickness[GSCE],textEmphasis[GSCE],textEmphasisColor[GSCE],"
+                + "textEmphasisPosition[GSCE],textEmphasisStyle[GSCE],textIndent[GSCE],textJustify[GSCE],"
+                + "textOrientation[GSCE],textOverflow[GSCE],textRendering[GSCE],textShadow[GSCE],"
+                + "textTransform[GSCE],textUnderlineOffset[GSCE],textUnderlinePosition[GSCE],textWrap[GSCE],"
+                + "textWrapMode[GSCE],textWrapStyle[GSCE],top[GSCE],touch-action[GSCE],touchAction[GSCE],"
+                + "transform-box[GSCE],transform-origin[GSCE],transform-style[GSCE],transform[GSCE],"
+                + "transformBox[GSCE],transformOrigin[GSCE],transformStyle[GSCE],transition-delay[GSCE],"
+                + "transition-duration[GSCE],transition-property[GSCE],transition-timing-function[GSCE],"
+                + "transition[GSCE],transitionDelay[GSCE],transitionDuration[GSCE],transitionProperty[GSCE],"
                 + "transitionTimingFunction[GSCE],translate[GSCE],unicode-bidi[GSCE],unicodeBidi[GSCE],"
                 + "user-select[GSCE],userSelect[GSCE],vector-effect[GSCE],vectorEffect[GSCE],vertical-align[GSCE],"
                 + "verticalAlign[GSCE],visibility[GSCE],WebkitAlignContent[GSCE],webkitAlignContent[GSCE],"
@@ -17877,11 +16653,11 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "WebkitTransitionDelay[GSCE],webkitTransitionDelay[GSCE],WebkitTransitionDuration[GSCE],"
                 + "webkitTransitionDuration[GSCE],WebkitTransitionProperty[GSCE],webkitTransitionProperty[GSCE],"
                 + "WebkitTransitionTimingFunction[GSCE],webkitTransitionTimingFunction[GSCE],WebkitUserSelect[GSCE],"
-                + "webkitUserSelect[GSCE],white-space[GSCE],whiteSpace[GSCE],width[GSCE],will-change[GSCE],"
-                + "willChange[GSCE],word-break[GSCE],word-spacing[GSCE],word-wrap[GSCE],wordBreak[GSCE],"
-                + "wordSpacing[GSCE],wordWrap[GSCE],writing-mode[GSCE],writingMode[GSCE],x[GSCE],y[GSCE],"
-                + "z-index[GSCE],"
-                + "zIndex[GSCE]",
+                + "webkitUserSelect[GSCE],white-space-collapse[GSCE],white-space[GSCE],whiteSpace[GSCE],"
+                + "whiteSpaceCollapse[GSCE],width[GSCE],will-change[GSCE],willChange[GSCE],word-break[GSCE],"
+                + "word-spacing[GSCE],word-wrap[GSCE],wordBreak[GSCE],wordSpacing[GSCE],wordWrap[GSCE],"
+                + "writing-mode[GSCE],writingMode[GSCE],x[GSCE],y[GSCE],z-index[GSCE],zIndex[GSCE],"
+                + "zoom[GSCE]",
             FF_ESR = "-moz-animation-delay[GSCE],-moz-animation-direction[GSCE],-moz-animation-duration[GSCE],"
                 + "-moz-animation-fill-mode[GSCE],-moz-animation-iteration-count[GSCE],-moz-animation-name[GSCE],"
                 + "-moz-animation-play-state[GSCE],-moz-animation-timing-function[GSCE],-moz-animation[GSCE],"
@@ -18173,11 +16949,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "willChange[GSCE],word-break[GSCE],word-spacing[GSCE],word-wrap[GSCE],wordBreak[GSCE],"
                 + "wordSpacing[GSCE],wordWrap[GSCE],writing-mode[GSCE],writingMode[GSCE],x[GSCE],y[GSCE],"
                 + "z-index[GSCE],"
-                + "zIndex[GSCE]",
-            IE = "constructor,pixelBottom,pixelHeight,pixelLeft,pixelRight,pixelTop,pixelWidth,posBottom,posHeight,"
-                + "posLeft,posRight,posTop,posWidth,textDecorationBlink,textDecorationLineThrough,"
-                + "textDecorationNone,textDecorationOverline,"
-                + "textDecorationUnderline")
+                + "zIndex[GSCE]")
     @HtmlUnitNYI(CHROME = "backgroundAttachment[GSCE],backgroundColor[GSCE],backgroundImage[GSCE],"
                 + "backgroundPosition[GSCE],backgroundRepeat[GSCE],borderBottomColor[GSCE],borderBottomStyle[GSCE],"
                 + "borderBottomWidth[GSCE],borderLeftColor[GSCE],borderLeftStyle[GSCE],borderLeftWidth[GSCE],"
@@ -18231,25 +17003,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "outline[GSCE],outlineWidth[GSCE],padding[GSCE],paddingBottom[GSCE],paddingLeft[GSCE],"
                 + "paddingRight[GSCE],paddingTop[GSCE],parentRule[GSCE],position[GSCE],removeProperty(),"
                 + "right[GSCE],rubyAlign[GSCE],setProperty(),textIndent[GSCE],top[GSCE],verticalAlign[GSCE],"
-                + "width[GSCE],wordSpacing[GSCE],zIndex[GSCE]",
-            IE = "accelerator[GSCE],backgroundAttachment[GSCE],backgroundColor[GSCE],backgroundImage[GSCE],"
-                + "backgroundPosition[GSCE],backgroundRepeat[GSCE],borderBottomColor[GSCE],"
-                + "borderBottomStyle[GSCE],borderBottomWidth[GSCE],borderLeftColor[GSCE],borderLeftStyle[GSCE],"
-                + "borderLeftWidth[GSCE],borderRightColor[GSCE],borderRightStyle[GSCE],borderRightWidth[GSCE],"
-                + "borderTop[GSCE],borderTopColor[GSCE],borderTopStyle[GSCE],borderTopWidth[GSCE],bottom[GSCE],"
-                + "color[GSCE],constructor[],cssFloat[GSCE],cssText[GSCE],display[GSCE],font[GSCE],"
-                + "fontFamily[GSCE],fontSize[GSCE],getAttribute(),getPropertyPriority(),getPropertyValue(),"
-                + "height[GSCE],item(),left[GSCE],length[GCE],letterSpacing[GSCE],lineHeight[GSCE],margin[GSCE],"
-                + "marginBottom[GSCE],marginLeft[GSCE],marginRight[GSCE],marginTop[GSCE],maxHeight[GSCE],"
-                + "maxWidth[GSCE],minHeight[GSCE],minWidth[GSCE],msImeAlign[GSCE],opacity[GSCE],orphans[GSCE],"
-                + "outline[GSCE],outlineWidth[GSCE],padding[GSCE],paddingBottom[GSCE],paddingLeft[GSCE],"
-                + "paddingRight[GSCE],paddingTop[GSCE],parentRule[GSCE],pixelBottom[GSCE],pixelHeight[GSCE],"
-                + "pixelLeft[GSCE],pixelRight[GSCE],pixelTop[GSCE],pixelWidth[GSCE],posBottom[GSCE],"
-                + "posHeight[GSCE],position[GSCE],posLeft[GSCE],posRight[GSCE],posTop[GSCE],posWidth[GSCE],"
-                + "removeAttribute(),removeProperty(),right[GSCE],rubyAlign[GSCE],setAttribute(),setProperty(),"
-                + "textDecorationBlink[GSCE],textDecorationLineThrough[GSCE],textDecorationNone[GSCE],"
-                + "textDecorationOverline[GSCE],textDecorationUnderline[GSCE],textIndent[GSCE],top[GSCE],"
-                + "verticalAlign[GSCE],widows[GSCE],width[GSCE],wordSpacing[GSCE],zIndex[GSCE]")
+                + "width[GSCE],wordSpacing[GSCE],zIndex[GSCE]")
     public void cssStyleDeclaration() throws Exception {
         testString("", "document.body.style");
     }
@@ -18263,9 +17017,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor()",
             EDGE = "constructor()",
             FF = "constructor()",
-            FF_ESR = "constructor()",
-            IE = "assign(),constructor[],hash[GSCE],host[GSCE],hostname[GSCE],href[GSCE],"
-                + "origin[GCE],pathname[GSCE],port[GSCE],protocol[GSCE],reload(),replace(),search[GSCE],toString()")
+            FF_ESR = "constructor()")
     public void location() throws Exception {
         testString("", "window.location");
         testString("", "document.location");
@@ -18290,20 +17042,11 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
             FF_ESR = "availHeight[GCE],availLeft[GCE],availTop[GCE],availWidth[GCE],colorDepth[GCE],constructor(),"
                 + "height[GCE],left[GCE],mozLockOrientation(),mozOrientation[GCE],mozUnlockOrientation(),"
                 + "onmozorientationchange[GSCE],orientation[GCE],pixelDepth[GCE],top[GCE],"
-                + "width[GCE]",
-            IE = "addEventListener(),availHeight[GCE],availWidth[GCE],bufferDepth[GSCE],colorDepth[GCE],"
-                + "constructor[],deviceXDPI[GCE],deviceYDPI[GCE],dispatchEvent(),fontSmoothingEnabled[GCE],"
-                + "height[GCE],logicalXDPI[GCE],logicalYDPI[GCE],msLockOrientation(),msOrientation[GCE],"
-                + "msUnlockOrientation(),onmsorientationchange[GSCE],pixelDepth[GCE],removeEventListener(),"
-                + "systemXDPI[GCE],systemYDPI[GCE],width[GCE]")
+                + "width[GCE]")
     @HtmlUnitNYI(FF = "availHeight[GCE],availLeft[GCE],availTop[GCE],availWidth[GCE],colorDepth[GCE],constructor(),"
                 + "height[GCE],left[GCE],mozOrientation[GCE],orientation[GCE],pixelDepth[GCE],top[GCE],width[GCE]",
             FF_ESR = "availHeight[GCE],availLeft[GCE],availTop[GCE],availWidth[GCE],colorDepth[GCE],constructor(),"
-                 + "height[GCE],left[GCE],mozOrientation[GCE],orientation[GCE],pixelDepth[GCE],top[GCE],width[GCE]",
-            IE = "availHeight[GCE],availWidth[GCE],bufferDepth[GSCE],colorDepth[GCE],constructor[],"
-                + "deviceXDPI[GCE],deviceYDPI[GCE],fontSmoothingEnabled[GCE],height[GCE],"
-                + "logicalXDPI[GCE],logicalYDPI[GCE],pixelDepth[GCE],"
-                + "systemXDPI[GCE],systemYDPI[GCE],width[GCE]")
+                 + "height[GCE],left[GCE],mozOrientation[GCE],orientation[GCE],pixelDepth[GCE],top[GCE],width[GCE]")
     public void screen() throws Exception {
         testString("", "window.screen");
     }
@@ -18317,8 +17060,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "angle[GCE],constructor(),lock(),onchange[GSCE],type[GCE],unlock()",
             EDGE = "angle[GCE],constructor(),lock(),onchange[GSCE],type[GCE],unlock()",
             FF = "angle[GCE],constructor(),lock(),onchange[GSCE],type[GCE],unlock()",
-            FF_ESR = "angle[GCE],constructor(),lock(),onchange[GSCE],type[GCE],unlock()",
-            IE = "exception")
+            FF_ESR = "angle[GCE],constructor(),lock(),onchange[GSCE],type[GCE],unlock()")
     @HtmlUnitNYI(CHROME = "angle[GCE],constructor(),onchange[GSCE],type[GCE]",
             EDGE = "angle[GCE],constructor(),onchange[GSCE],type[GCE]",
             FF = "angle[GCE],constructor(),onchange[GSCE],type[GCE]",
@@ -18336,8 +17078,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor(),getRandomValues(),randomUUID(),subtle[GCE]",
             EDGE = "constructor(),getRandomValues(),randomUUID(),subtle[GCE]",
             FF = "constructor(),getRandomValues(),randomUUID(),subtle[GCE]",
-            FF_ESR = "constructor(),getRandomValues(),randomUUID(),subtle[GCE]",
-            IE = "exception")
+            FF_ESR = "constructor(),getRandomValues(),randomUUID(),subtle[GCE]")
     public void crypto() throws Exception {
         testString("", "window.crypto");
     }
@@ -18359,8 +17100,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "wrapKey()",
             FF_ESR = "constructor(),decrypt(),deriveBits(),deriveKey(),digest(),encrypt(),exportKey(),generateKey(),"
                 + "importKey(),sign(),unwrapKey(),verify(),"
-                + "wrapKey()",
-            IE = "exception")
+                + "wrapKey()")
     public void cryptoSubtle() throws Exception {
         testString("", "window.crypto.subtle");
     }
@@ -18374,8 +17114,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "exception",
             EDGE = "exception",
             FF = "exception",
-            FF_ESR = "exception",
-            IE = "exception")
+            FF_ESR = "exception")
     public void xPathResult() throws Exception {
         testString("var res = document.evaluate('/html/body', document, null, XPathResult.ANY_TYPE, null);", "res");
     }
@@ -18389,8 +17128,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor()",
             EDGE = "constructor()",
             FF = "constructor()",
-            FF_ESR = "constructor()",
-            IE = "constructor[]")
+            FF_ESR = "constructor()")
     public void cDATASection() throws Exception {
         final String setup = " var doc = document.implementation.createDocument('', '', null);\n"
                 + "var root = doc.appendChild(doc.createElement('root'));\n"
@@ -18408,8 +17146,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "after(),before(),constructor(),name[GCE],publicId[GCE],remove(),replaceWith(),systemId[GCE]",
             EDGE = "after(),before(),constructor(),name[GCE],publicId[GCE],remove(),replaceWith(),systemId[GCE]",
             FF = "after(),before(),constructor(),name[GCE],publicId[GCE],remove(),replaceWith(),systemId[GCE]",
-            FF_ESR = "after(),before(),constructor(),name[GCE],publicId[GCE],remove(),replaceWith(),systemId[GCE]",
-            IE = "constructor[],entities[GCE],internalSubset[GCE],name[GCE],notations[GCE],publicId[GCE],systemId[GCE]")
+            FF_ESR = "after(),before(),constructor(),name[GCE],publicId[GCE],remove(),replaceWith(),systemId[GCE]")
     public void documentType() throws Exception {
         testString("", "document.firstChild");
     }
@@ -18423,8 +17160,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "arrayBuffer(),constructor(),size[GCE],slice(),stream(),text(),type[GCE]",
             EDGE = "arrayBuffer(),constructor(),size[GCE],slice(),stream(),text(),type[GCE]",
             FF = "arrayBuffer(),constructor(),size[GCE],slice(),stream(),text(),type[GCE]",
-            FF_ESR = "arrayBuffer(),constructor(),size[GCE],slice(),stream(),text(),type[GCE]",
-            IE = "constructor(),size[GCE],slice(),stream(),type[GCE]")
+            FF_ESR = "arrayBuffer(),constructor(),size[GCE],slice(),stream(),text(),type[GCE]")
     public void blob() throws Exception {
         testString("", "new Blob([1, 2], { type: \"text/html\" })");
     }
@@ -18446,8 +17182,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
                 + "values()",
             FF_ESR = "append(),constructor(),delete(),entries(),forEach(),get(),getAll(),has(),keys(),set(),size[GCE],"
                 + "sort(),toString(),"
-                + "values()",
-            IE = "exception")
+                + "values()")
     @HtmlUnitNYI(CHROME = "append(),constructor(),delete(),entries(),forEach(),get(),getAll(),"
                 + "has(),keys(),set(),size[GCE],toString(),values()",
             EDGE = "append(),constructor(),delete(),entries(),forEach(),get(),getAll(),"
@@ -18473,8 +17208,6 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
             FF = "constructor(),getNamedItem(),getNamedItemNS(),item(),length[GCE],removeNamedItem(),"
                 + "removeNamedItemNS(),setNamedItem(),setNamedItemNS()",
             FF_ESR = "constructor(),getNamedItem(),getNamedItemNS(),item(),length[GCE],removeNamedItem(),"
-                + "removeNamedItemNS(),setNamedItem(),setNamedItemNS()",
-            IE = "constructor[],getNamedItem(),getNamedItemNS(),item(),length[GCE],removeNamedItem(),"
                 + "removeNamedItemNS(),setNamedItem(),setNamedItemNS()")
     public void namedNodeMap() throws Exception {
         testString("", "element.attributes");
@@ -18489,8 +17222,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor(),disconnect(),observe(),takeRecords()",
             EDGE = "constructor(),disconnect(),observe(),takeRecords()",
             FF = "constructor(),disconnect(),observe(),takeRecords()",
-            FF_ESR = "constructor(),disconnect(),observe(),takeRecords()",
-            IE = "constructor(),disconnect(),observe(),takeRecords()")
+            FF_ESR = "constructor(),disconnect(),observe(),takeRecords()")
     public void mutationObserver() throws Exception {
         testString("", "new MutationObserver(function(m) {})");
     }
@@ -18504,8 +17236,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(CHROME = "constructor(),disconnect(),observe(),takeRecords()",
             EDGE = "constructor(),disconnect(),observe(),takeRecords()",
             FF = "exception",
-            FF_ESR = "exception",
-            IE = "exception")
+            FF_ESR = "exception")
     public void webKitMutationObserver() throws Exception {
         testString("", "new WebKitMutationObserver(function(m) {})");
     }
@@ -18516,10 +17247,8 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "addRule(),constructor(),cssRules[GCE],deleteRule(),insertRule(),"
-                + "ownerRule[GCE],removeRule(),replace(),replaceSync(),rules[GCE]",
-            IE = "addRule(),constructor[],cssRules[GCE],deleteRule(),href[GCE],insertRule(),"
-                + "ownerNode[GCE],owningElement[GCE],removeRule(),rules[GCE]")
+    @Alerts("addRule(),constructor(),cssRules[GCE],deleteRule(),insertRule(),"
+                + "ownerRule[GCE],removeRule(),replace(),replaceSync(),rules[GCE]")
     @HtmlUnitNYI(CHROME = "addRule(),constructor(),cssRules[GCE],deleteRule(),"
                 + "insertRule(),removeRule(),rules[GCE]",
             EDGE = "addRule(),constructor(),cssRules[GCE],deleteRule(),"
@@ -18538,8 +17267,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "constructor(),selectorText[GSCE],style[GSCE]",
-            IE = "constructor[],selectorText[GCE],style[GCE]")
+    @Alerts("constructor(),selectorText[GSCE],style[GSCE]")
     @HtmlUnitNYI(CHROME = "constructor(),selectorText[GSCE],style[GCE]",
             EDGE = "constructor(),selectorText[GSCE],style[GCE]",
             FF = "constructor(),selectorText[GSCE],style[GCE]",
@@ -18554,8 +17282,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "constructor(),media[GSCE]",
-            IE = "constructor[],media[GCE]")
+    @Alerts("constructor(),media[GSCE]")
     @HtmlUnitNYI(CHROME = "constructor(),media[GCE]",
             EDGE = "constructor(),media[GCE]",
             FF = "constructor(),media[GCE]",
@@ -18570,8 +17297,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "constructor(),style[GCE]",
-            IE = "constructor[]")
+    @Alerts("constructor(),style[GCE]")
     @HtmlUnitNYI(CHROME = "constructor()",
             EDGE = "constructor()",
             FF = "constructor()",
@@ -18586,8 +17312,7 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "constructor(),href[GCE],layerName[GCE],media[GSCE],styleSheet[GCE],supportsText[GCE]",
-            IE = "constructor[],href[GCE],media[GCE],styleSheet[GCE]")
+    @Alerts("constructor(),href[GCE],layerName[GCE],media[GSCE],styleSheet[GCE],supportsText[GCE]")
     @HtmlUnitNYI(CHROME = "constructor(),href[GCE],media[GCE],styleSheet[GCE]",
             EDGE = "constructor(),href[GCE],media[GCE],styleSheet[GCE]",
             FF = "constructor(),href[GCE],media[GCE],styleSheet[GCE]",
@@ -18605,13 +17330,78 @@ public class ElementOwnPropertiesTest extends WebDriverTestCase {
     @Alerts(DEFAULT = "constructor(),cssRules[GCE],deleteRule(),insertRule(),"
                 + "selectorText[GSCE],style[GSCE],styleMap[GCE]",
             FF = "constructor(),selectorText[GSCE],style[GSCE]",
-            FF_ESR = "constructor(),selectorText[GSCE],style[GSCE]",
-            IE = "constructor[],readOnly[GCE],selectorText[GSCE],style[GCE]")
+            FF_ESR = "constructor(),selectorText[GSCE],style[GSCE]")
     @HtmlUnitNYI(CHROME = "constructor(),selectorText[GSCE],style[GCE]",
             EDGE = "constructor(),selectorText[GSCE],style[GCE]",
             FF = "constructor(),selectorText[GSCE],style[GCE]",
             FF_ESR = "constructor(),selectorText[GSCE],style[GCE]")
     public void cssStyleRule() throws Exception {
         testString("", "document.styleSheets[4].cssRules[0]");
+    }
+
+    /**
+     * Test {@link org.htmlunit.javascript.host.geo.Geolocation}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "clearWatch(),constructor(),getCurrentPosition(),watchPosition()",
+            EDGE = "clearWatch(),constructor(),getCurrentPosition(),watchPosition()",
+            FF = "clearWatch(),constructor(),getCurrentPosition(),watchPosition()",
+            FF_ESR = "clearWatch(),constructor(),getCurrentPosition(),watchPosition()")
+    public void geolocation() throws Exception {
+        testString("", " navigator.geolocation");
+    }
+
+    /**
+     * Test {@link org.htmlunit.javascript.host.geo.Geolocation}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "abort(),constructor(),DONE[E],getAllResponseHeaders(),getResponseHeader(),HEADERS_RECEIVED[E],"
+                + "LOADING[E],onreadystatechange[GSCE],open(),OPENED[E],overrideMimeType(),readyState[GCE],"
+                + "response[GCE],responseText[GCE],responseType[GSCE],responseURL[GCE],responseXML[GCE],send(),"
+                + "setAttributionReporting(),setPrivateToken(),setRequestHeader(),status[GCE],statusText[GCE],"
+                + "timeout[GSCE],UNSENT[E],upload[GCE],"
+                + "withCredentials[GSCE]",
+            EDGE = "abort(),constructor(),DONE[E],getAllResponseHeaders(),getResponseHeader(),HEADERS_RECEIVED[E],"
+                + "LOADING[E],onreadystatechange[GSCE],open(),OPENED[E],overrideMimeType(),readyState[GCE],"
+                + "response[GCE],responseText[GCE],responseType[GSCE],responseURL[GCE],responseXML[GCE],send(),"
+                + "setAttributionReporting(),setPrivateToken(),setRequestHeader(),status[GCE],statusText[GCE],"
+                + "timeout[GSCE],UNSENT[E],upload[GCE],"
+                + "withCredentials[GSCE]",
+            FF = "abort(),constructor(),DONE[E],getAllResponseHeaders(),getResponseHeader(),HEADERS_RECEIVED[E],"
+                + "LOADING[E],mozAnon[GCE],mozSystem[GCE],onreadystatechange[GSCE],open(),OPENED[E],"
+                + "overrideMimeType(),readyState[GCE],response[GCE],responseText[GCE],responseType[GSCE],"
+                + "responseURL[GCE],responseXML[GCE],send(),setRequestHeader(),status[GCE],statusText[GCE],"
+                + "timeout[GSCE],UNSENT[E],upload[GCE],withCredentials[GSCE]",
+            FF_ESR = "abort(),constructor(),DONE[E],getAllResponseHeaders(),getResponseHeader(),HEADERS_RECEIVED[E],"
+                + "LOADING[E],mozAnon[GCE],mozSystem[GCE],onreadystatechange[GSCE],open(),OPENED[E],"
+                + "overrideMimeType(),readyState[GCE],response[GCE],responseText[GCE],responseType[GSCE],"
+                + "responseURL[GCE],responseXML[GCE],send(),setRequestHeader(),status[GCE],statusText[GCE],"
+                + "timeout[GSCE],UNSENT[E],upload[GCE],withCredentials[GSCE]")
+    @HtmlUnitNYI(CHROME = "abort(),constructor(),DONE[E],getAllResponseHeaders(),getResponseHeader(),"
+                + "HEADERS_RECEIVED[E],LOADING[E],onreadystatechange[GSCE],open(),OPENED[E],overrideMimeType(),"
+                + "readyState[GCE],response[GCE],responseText[GCE],responseType[GSCE],responseXML[GCE],send(),"
+                + "setRequestHeader(),status[GCE],statusText[GCE],timeout[GSCE],UNSENT[E],"
+                + "upload[GCE],withCredentials[GSCE]",
+            EDGE = "abort(),constructor(),DONE[E],getAllResponseHeaders(),getResponseHeader(),"
+                + "HEADERS_RECEIVED[E],LOADING[E],onreadystatechange[GSCE],open(),OPENED[E],overrideMimeType(),"
+                + "readyState[GCE],response[GCE],responseText[GCE],responseType[GSCE],responseXML[GCE],send(),"
+                + "setRequestHeader(),status[GCE],statusText[GCE],timeout[GSCE],UNSENT[E],"
+                + "upload[GCE],withCredentials[GSCE]",
+            FF = "abort(),constructor(),DONE[E],getAllResponseHeaders(),getResponseHeader(),"
+                + "HEADERS_RECEIVED[E],LOADING[E],onreadystatechange[GSCE],open(),OPENED[E],overrideMimeType(),"
+                + "readyState[GCE],response[GCE],responseText[GCE],responseType[GSCE],responseXML[GCE],send(),"
+                + "setRequestHeader(),status[GCE],statusText[GCE],timeout[GSCE],UNSENT[E],"
+                + "upload[GCE],withCredentials[GSCE]",
+            FF_ESR = "abort(),constructor(),DONE[E],getAllResponseHeaders(),getResponseHeader(),"
+                + "HEADERS_RECEIVED[E],LOADING[E],onreadystatechange[GSCE],open(),OPENED[E],overrideMimeType(),"
+                + "readyState[GCE],response[GCE],responseText[GCE],responseType[GSCE],responseXML[GCE],send(),"
+                + "setRequestHeader(),status[GCE],statusText[GCE],timeout[GSCE],UNSENT[E],"
+                + "upload[GCE],withCredentials[GSCE]")
+    public void xmlHttpRequest() throws Exception {
+        testString("", "new XMLHttpRequest()");
     }
 }

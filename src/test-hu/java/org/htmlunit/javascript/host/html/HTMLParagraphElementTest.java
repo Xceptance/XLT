@@ -61,8 +61,7 @@ public class HTMLParagraphElementTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"", "hello", "left", "hi", "right"},
-            IE = {"", "error", "", "left", "error", "left", "right"})
+    @Alerts({"", "hello", "left", "hi", "right"})
     public void align() throws Exception {
         final String html =
             "<html>\n"
@@ -100,10 +99,8 @@ public class HTMLParagraphElementTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "undefined", "undefined", "undefined", "undefined", "undefined",
-                       "undefined", "left", "none", "right", "all", "2", "abc", "8"},
-            IE = {"", "left", "all", "right", "none", "", "", "!", "!", "!", "left", "none", "right", "all", "none",
-                  "", ""})
+    @Alerts({"undefined", "undefined", "undefined", "undefined", "undefined", "undefined",
+             "undefined", "left", "none", "right", "all", "2", "abc", "8"})
     public void clear() throws Exception {
         final String html
             = "<html><body>\n"

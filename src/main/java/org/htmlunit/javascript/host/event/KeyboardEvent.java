@@ -15,11 +15,8 @@
 package org.htmlunit.javascript.host.event;
 
 import static org.htmlunit.BrowserVersionFeatures.JS_EVENT_KEYBOARD_CTOR_WHICH;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -62,14 +59,6 @@ public class KeyboardEvent extends UIEvent {
     /** Constant for {@code DOM_KEY_LOCATION_NUMPAD}. */
     @JsxConstant
     public static final int DOM_KEY_LOCATION_NUMPAD = 3;
-
-    /** Constant for {@code DOM_KEY_LOCATION_MOBILE}. */
-    @JsxConstant(IE)
-    public static final int DOM_KEY_LOCATION_MOBILE = 4;
-
-    /** Constant for {@code DOM_KEY_LOCATION_JOYSTICK}. */
-    @JsxConstant(IE)
-    public static final int DOM_KEY_LOCATION_JOYSTICK = 5;
 
     /** Constant for {@code DOM_VK_CANCEL}. */
     @JsxConstant({FF, FF_ESR})
@@ -1054,7 +1043,7 @@ public class KeyboardEvent extends UIEvent {
      * @param type the event type
      * @param details the event details (optional)
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     @Override
     public void jsConstructor(final String type, final ScriptableObject details) {
         super.jsConstructor(type, details);
@@ -1184,7 +1173,6 @@ public class KeyboardEvent extends UIEvent {
      * Returns the numeric keyCode of the key pressed, or the charCode for an alphanumeric key pressed.
      * @return the numeric keyCode of the key pressed, or the charCode for an alphanumeric key pressed
      */
-    @JsxGetter(IE)
     @Override
     public int getWhich() {
         return which_;
@@ -1252,33 +1240,10 @@ public class KeyboardEvent extends UIEvent {
     }
 
     /**
-     * Returns the value of a key or keys pressed by the user.
-     * @return the value of a key or keys pressed by the user
-     */
-    @JsxGetter(IE)
-    public String getChar() {
-        int code = getKeyCode();
-        if (code == 0) {
-            code = getCharCode();
-        }
-        switch (code) {
-            case DOM_VK_SHIFT:
-                return "";
-            case DOM_VK_RETURN:
-                return "\n";
-            case DOM_VK_PERIOD:
-                return ".";
-
-            default:
-                return String.valueOf(isShiftKey() ? (char) which_ : Character.toLowerCase((char) which_));
-        }
-    }
-
-    /**
      * Returns a physical key on the keyboard.
      * @return a physical key on the keyboard
      */
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxGetter
     public String getCode() {
         return code_;
     }
@@ -1346,7 +1311,7 @@ public class KeyboardEvent extends UIEvent {
      * Returns whether or not the event is fired after the compositionstart and before the compositionend events.
      * @return whether or not the event is fired while composing
      */
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxGetter
     public boolean getIsComposing() {
         return isComposing_;
     }

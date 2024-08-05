@@ -16,9 +16,6 @@ package org.htmlunit.javascript.host.canvas;
 
 import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import org.htmlunit.javascript.HtmlUnitScriptable;
 import org.htmlunit.javascript.JavaScriptEngine;
@@ -340,9 +337,6 @@ public class WebGLRenderingContext extends HtmlUnitScriptable {
     /** The constant {@code TEXTURE}. */
     @JsxConstant
     public static final int TEXTURE = 0x1702;
-    /** The constant {@code STENCIL_INDEX}. */
-    @JsxConstant(IE)
-    public static final int STENCIL_INDEX = 0x1901;
     /** The constant {@code DEPTH_COMPONENT}. */
     @JsxConstant
     public static final int DEPTH_COMPONENT = 0x1902;
@@ -439,9 +433,15 @@ public class WebGLRenderingContext extends HtmlUnitScriptable {
     /** The constant {@code RGBA4}. */
     @JsxConstant
     public static final int RGBA4 = 0x8056;
+    /** The constant {@code RGB8}. */
+    @JsxConstant({CHROME, EDGE})
+    public static final int RGB8 = 0x8051;
     /** The constant {@code RGB5_A1}. */
     @JsxConstant
     public static final int RGB5_A1 = 0x8057;
+    /** The constant {@code RGBA8}. */
+    @JsxConstant({CHROME, EDGE})
+    public static final int RGBA8 = 0x8058;
     /** The constant {@code TEXTURE_BINDING_2D}. */
     @JsxConstant
     public static final int TEXTURE_BINDING_2D = 0x8069;
@@ -941,7 +941,7 @@ public class WebGLRenderingContext extends HtmlUnitScriptable {
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
         throw JavaScriptEngine.reportRuntimeError("Illegal constructor.");
     }

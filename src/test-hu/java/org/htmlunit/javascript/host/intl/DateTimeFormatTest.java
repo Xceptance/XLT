@@ -35,10 +35,8 @@ public class DateTimeFormatTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"zh-CN", "gregory", "latn", "UTC", "undefined", "undefined", "undefined",
-                       "numeric", "numeric", "numeric", "undefined", "undefined", "undefined", "undefined"},
-            IE = {"zh-Hans-CN", "gregory", "latn", "UTC", "undefined", "undefined", "undefined",
-                  "numeric", "numeric", "numeric", "undefined", "undefined", "undefined", "undefined"})
+    @Alerts({"zh-CN", "gregory", "latn", "UTC", "undefined", "undefined", "undefined",
+             "numeric", "numeric", "numeric", "undefined", "undefined", "undefined", "undefined"})
     @HtmlUnitNYI(CHROME = {"undefined", "undefined", "undefined", "undefined", "undefined", "undefined", "undefined",
                            "undefined", "undefined", "undefined", "undefined", "undefined", "undefined", "undefined"},
             EDGE = {"undefined", "undefined", "undefined", "undefined", "undefined", "undefined", "undefined",
@@ -46,9 +44,7 @@ public class DateTimeFormatTest extends WebDriverTestCase {
             FF = {"undefined", "undefined", "undefined", "undefined", "undefined", "undefined", "undefined",
                   "undefined", "undefined", "undefined", "undefined", "undefined", "undefined", "undefined"},
             FF_ESR = {"undefined", "undefined", "undefined", "undefined", "undefined", "undefined", "undefined",
-                      "undefined", "undefined", "undefined", "undefined", "undefined", "undefined", "undefined"},
-            IE = {"undefined", "undefined", "undefined", "undefined", "undefined", "undefined", "undefined",
-                  "undefined", "undefined", "undefined", "undefined", "undefined", "undefined", "undefined"})
+                      "undefined", "undefined", "undefined", "undefined", "undefined", "undefined", "undefined"})
     public void resolvedOptionsValues() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
                 + "<html><head>\n"
@@ -107,8 +103,7 @@ public class DateTimeFormatTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"true", "12/20/2013"},
-            IE = {"true", "\u200E12\u200E/\u200E20\u200E/\u200E2013"})
+    @Alerts({"true", "12/20/2013"})
     public void dateTimeFormat() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
                 + "<html><head>\n"

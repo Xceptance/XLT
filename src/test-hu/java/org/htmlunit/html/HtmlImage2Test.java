@@ -16,7 +16,6 @@ package org.htmlunit.html;
 
 import static org.htmlunit.junit.BrowserRunner.TestedBrowser.CHROME;
 import static org.htmlunit.junit.BrowserRunner.TestedBrowser.EDGE;
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 
 import java.io.InputStream;
 import java.net.URL;
@@ -84,9 +83,7 @@ public class HtmlImage2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "2",
-            IE = "1")
-    @NotYetImplemented(IE)
+    @Alerts("2")
     public void loadImage() throws Exception {
         loadImage("src='img.jpg'");
         loadImageInnerHtml("src='img.jpg'");
@@ -152,9 +149,7 @@ public class HtmlImage2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "2",
-            IE = "1")
-    @NotYetImplemented(IE)
+    @Alerts("2")
     public void loadImageWrongType() throws Exception {
         loadImage("src='" + URL_FIRST + "'");
         loadImageInnerHtml("src='" + URL_FIRST + "'");
@@ -166,9 +161,8 @@ public class HtmlImage2Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "2",
             CHROME = "1",
-            EDGE = "1",
-            IE = "1")
-    @NotYetImplemented({CHROME, EDGE, IE})
+            EDGE = "1")
+    @NotYetImplemented({CHROME, EDGE})
     public void loadImageWrongType2() throws Exception {
         loadImageImportNodeHtml("src='" + URL_FIRST + "'");
     }
@@ -288,8 +282,7 @@ public class HtmlImage2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "false",
-            IE = "true")
+    @Alerts("false")
     public void isDisplayedNoSource() throws Exception {
         isDisplayed("");
     }
@@ -298,8 +291,7 @@ public class HtmlImage2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "false",
-            IE = "true")
+    @Alerts("false")
     public void isDisplayedEmptySource() throws Exception {
         isDisplayed("src=''");
     }
@@ -420,8 +412,6 @@ public class HtmlImage2Test extends WebDriverTestCase {
 
         expandExpectedAlertsVariables(URL_SECOND);
         loadPageVerifyTitle2(html);
-
-        shutDownRealIE();
     }
 
     /**

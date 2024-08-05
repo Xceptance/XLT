@@ -14,18 +14,9 @@
  */
 package org.htmlunit.html;
 
-import static org.htmlunit.BrowserVersionFeatures.EVENT_MOUSE_ON_DISABLED;
-import static org.htmlunit.BrowserVersionFeatures.HTMLINPUT_ATTRIBUTE_MIN_MAX_LENGTH_SUPPORTED;
-import static org.htmlunit.BrowserVersionFeatures.HTMLINPUT_DOES_NOT_CLICK_SURROUNDING_ANCHOR;
-import static org.htmlunit.BrowserVersionFeatures.HTMLINPUT_TYPE_COLOR_NOT_SUPPORTED;
-import static org.htmlunit.BrowserVersionFeatures.HTMLINPUT_TYPE_DATETIME_LOCAL_SUPPORTED;
-import static org.htmlunit.BrowserVersionFeatures.HTMLINPUT_TYPE_DATETIME_SUPPORTED;
 import static org.htmlunit.BrowserVersionFeatures.HTMLINPUT_TYPE_IMAGE_IGNORES_CUSTOM_VALIDITY;
 import static org.htmlunit.BrowserVersionFeatures.HTMLINPUT_TYPE_MONTH_SUPPORTED;
 import static org.htmlunit.BrowserVersionFeatures.HTMLINPUT_TYPE_WEEK_SUPPORTED;
-import static org.htmlunit.BrowserVersionFeatures.JS_INPUT_CHANGE_TYPE_DROPS_VALUE;
-import static org.htmlunit.BrowserVersionFeatures.JS_INPUT_SET_TYPE_LOWERCASE;
-import static org.htmlunit.BrowserVersionFeatures.JS_INPUT_SET_UNSUPORTED_TYPE_EXCEPTION;
 import static org.htmlunit.html.HtmlForm.ATTRIBUTE_FORMNOVALIDATE;
 
 import java.net.MalformedURLException;
@@ -46,7 +37,6 @@ import org.htmlunit.ScriptResult;
 import org.htmlunit.SgmlPage;
 import org.htmlunit.WebClient;
 import org.htmlunit.javascript.AbstractJavaScriptEngine;
-import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.host.event.Event;
 import org.htmlunit.javascript.host.event.MouseEvent;
 import org.htmlunit.javascript.host.html.HTMLInputElement;
@@ -569,7 +559,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
      */
     @Override
     protected boolean propagateClickStateUpdateToParent() {
-        return !hasFeature(HTMLINPUT_DOES_NOT_CLICK_SURROUNDING_ANCHOR);
+        return true;
     }
 
     /**
@@ -577,7 +567,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
      */
     @Override
     public boolean handles(final Event event) {
-        if (event instanceof MouseEvent && hasFeature(EVENT_MOUSE_ON_DISABLED)) {
+        if (event instanceof MouseEvent) {
             return true;
         }
 
@@ -952,7 +942,6 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
     private boolean isMaxLengthValid() {
         if (!isMinMaxLengthSupported()
                 || valueModifiedByJavascript_
-                || !hasFeature(HTMLINPUT_ATTRIBUTE_MIN_MAX_LENGTH_SUPPORTED)
                 || getMaxLength() == Integer.MAX_VALUE
                 || getDefaultValue().equals(getValue())) {
             return true;
@@ -971,7 +960,6 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
     private boolean isMinLengthValid() {
         if (!isMinMaxLengthSupported()
                 || valueModifiedByJavascript_
-                || !hasFeature(HTMLINPUT_ATTRIBUTE_MIN_MAX_LENGTH_SUPPORTED)
                 || getMinLength() == Integer.MIN_VALUE
                 || getDefaultValue().equals(getValue())) {
             return true;
@@ -1077,7 +1065,6 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
     public boolean isTooShortValidityState() {
         if (!isMinMaxLengthSupported()
                 || valueModifiedByJavascript_
-                || !hasFeature(HTMLINPUT_ATTRIBUTE_MIN_MAX_LENGTH_SUPPORTED)
                 || getMinLength() == Integer.MIN_VALUE
                 || getDefaultValue().equals(getValue())) {
             return false;
@@ -1167,18 +1154,10 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
         final WebClient webClient = page.getWebClient();
         final BrowserVersion browser = webClient.getBrowserVersion();
         if (!currentType.equalsIgnoreCase(newType)) {
-            if (newType != null && browser.hasFeature(JS_INPUT_SET_TYPE_LOWERCASE)) {
-                newType = org.htmlunit.util.StringUtils.toRootLowerCase(newType);
-            }
-
             if (!isSupported(org.htmlunit.util.StringUtils
                                     .toRootLowerCase(newType), browser)) {
                 if (setThroughAttribute) {
                     newType = "text";
-                }
-                else if (browser.hasFeature(JS_INPUT_SET_UNSUPORTED_TYPE_EXCEPTION)) {
-                    throw JavaScriptEngine.reportRuntimeError("Invalid argument '" + newType
-                            + "' for setting property type.");
                 }
             }
 
@@ -1207,19 +1186,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
                         .getFactory(HtmlInput.TAG_NAME)
                         .createElement(page, HtmlInput.TAG_NAME, attributes);
 
-                if (browser.hasFeature(JS_INPUT_CHANGE_TYPE_DROPS_VALUE)) {
-                    // a hack for the moment (IE)
-                    if (!(newInput instanceof HtmlSubmitInput)
-                            && !(newInput instanceof HtmlResetInput)
-                            && !(newInput instanceof HtmlCheckBoxInput)
-                            && !(newInput instanceof HtmlRadioButtonInput)
-                            && !(newInput instanceof HtmlImageInput)) {
-                        newInput.setRawValue(getRawValue());
-                    }
-                }
-                else {
-                    newInput.adjustValueAfterTypeChange(this, browser);
-                }
+                newInput.adjustValueAfterTypeChange(this, browser);
 
                 // the input hasn't yet been inserted into the DOM tree (likely has been
                 // created via document.createElement()), so simply replace it with the
@@ -1258,24 +1225,16 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
     private static boolean isSupported(final String type, final BrowserVersion browserVersion) {
         boolean supported = false;
         switch (type) {
-            case "date":
-                supported = browserVersion.hasFeature(HTMLINPUT_TYPE_DATETIME_SUPPORTED);
-                break;
-            case "datetime-local":
-                supported = browserVersion.hasFeature(HTMLINPUT_TYPE_DATETIME_LOCAL_SUPPORTED);
-                break;
             case "month":
                 supported = browserVersion.hasFeature(HTMLINPUT_TYPE_MONTH_SUPPORTED);
-                break;
-            case "time":
-                supported = browserVersion.hasFeature(HTMLINPUT_TYPE_DATETIME_SUPPORTED);
                 break;
             case "week":
                 supported = browserVersion.hasFeature(HTMLINPUT_TYPE_WEEK_SUPPORTED);
                 break;
             case "color":
-                supported = !browserVersion.hasFeature(HTMLINPUT_TYPE_COLOR_NOT_SUPPORTED);
-                break;
+            case "date":
+            case "datetime-local":
+            case "time":
             case "email":
             case "text":
             case "submit":

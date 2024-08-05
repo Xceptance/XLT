@@ -16,7 +16,6 @@ package org.htmlunit.javascript.host;
 
 import static org.htmlunit.junit.BrowserRunner.TestedBrowser.FF;
 import static org.htmlunit.junit.BrowserRunner.TestedBrowser.FF_ESR;
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -383,8 +382,7 @@ public class Window2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "undefined",
-            IE = "function")
+    @Alerts("undefined")
     public void collectGarbage() throws Exception {
         final String html = "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
@@ -426,8 +424,7 @@ public class Window2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"function Node() { [native code] }", "function Element() { [native code] }"},
-            IE = {"[object Node]", "[object Element]"})
+    @Alerts({"function Node() { [native code] }", "function Element() { [native code] }"})
     public void windowProperties() throws Exception {
         final String html = "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
@@ -738,10 +735,8 @@ public class Window2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"[object Window]", "[object Window] (true)", "1234 (true)", "null (true)", "undefined (true)",
-                       "[object Window] (true)", "[object Window] (true)", "[object Window] (true)"},
-            IE = {"[object Window]", "[object Window] (true)", "exception", "null (true)", "undefined (true)",
-                  "[object Window] (true)", "[object Window] (true)", "[object Window] (true)"})
+    @Alerts({"[object Window]", "[object Window] (true)", "1234 (true)", "null (true)", "undefined (true)",
+             "[object Window] (true)", "[object Window] (true)", "[object Window] (true)"})
     public void set_opener() throws Exception {
         final String html = "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
@@ -781,8 +776,7 @@ public class Window2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"exception", "exception", "exception", "exception"},
-            IE = {"JScript", "11", "0", "number"})
+    @Alerts({"exception", "exception", "exception", "exception"})
     public void IEScriptEngineXxx() throws Exception {
         final String html = "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
@@ -801,11 +795,10 @@ public class Window2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = {"true", "true", "138", "true", "true", "16"},
-            EDGE = {"true", "true", "138", "true", "true", "64"},
+    @Alerts(CHROME = {"true", "true", "147", "true", "true", "16"},
+            EDGE = {"true", "true", "136", "true", "true", "64"},
             FF = {"true", "true", "91", "true", "true", "12"},
-            FF_ESR = {"true", "true", "91", "true", "true", "12"},
-            IE = {"true", "true", "86", "true", "true", "16"})
+            FF_ESR = {"true", "true", "91", "true", "true", "12"})
     public void heightsAndWidths() throws Exception {
         final String html
             = "<html><body onload='test()'><script>\n"
@@ -827,9 +820,7 @@ public class Window2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"true", "1234"},
-            IE = {"true", "1256"})
-    @NotYetImplemented(IE)
+    @Alerts({"true", "1234"})
     public void setInnerWidth() throws Exception {
         final String html
             = "<html><body onload='test()'><script>\n"
@@ -848,9 +839,7 @@ public class Window2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"true", "1234"},
-            IE = {"true", "682"})
-    @NotYetImplemented(IE)
+    @Alerts({"true", "1234"})
     public void setInnerHeight() throws Exception {
         final String html
             = "<html><body onload='test()'><script>\n"
@@ -869,9 +858,7 @@ public class Window2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"true", "1234"},
-            IE = {"true", "1272"})
-    @NotYetImplemented(IE)
+    @Alerts({"true", "1234"})
     public void setOuterWidth() throws Exception {
         final String html
             = "<html><body onload='test()'><script>\n"
@@ -890,9 +877,7 @@ public class Window2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"true", "1234"},
-            IE = {"true", "768"})
-    @NotYetImplemented(IE)
+    @Alerts({"true", "1234"})
     public void setOuterHeight() throws Exception {
         final String html
             = "<html><body onload='test()'><script>\n"
@@ -912,11 +897,10 @@ public class Window2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = {"630", "1256", "613", "1239"},
-            EDGE = {"630", "1208", "615", "1193"},
+    @Alerts(CHROME = {"621", "1256", "604", "1239"},
+            EDGE = {"632", "1208", "617", "1193"},
             FF = {"677", "1260", "660", "1243"},
-            FF_ESR = {"677", "1260", "660", "1243"},
-            IE = {"682", "1256", "665", "1239"})
+            FF_ESR = {"677", "1260", "660", "1243"})
     @NotYetImplemented
     // TODO width and height calculation needs to be reworked in HtmlUnit
     // but as the calculation might be effected by e.g. current windows style it is not that simple
@@ -1004,11 +988,69 @@ public class Window2Test extends WebDriverTestCase {
     }
 
     /**
+     * Regression test for bug 2897457.
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"0", "0", "0", "0"},
-            IE = {"0", "0", "undefined", "undefined"})
+    @Alerts(DEFAULT = {"0,0", "100,200", "110,230", "0,0", "no scrollByLines()", "0,0", "no scrollByPages()"},
+            FF = {"0,0", "100,200", "110,230", "0,0", "0,0", "0,0", "0,0"},
+            FF_ESR = {"0,0", "100,200", "110,230", "0,0", "0,0", "0,0", "0,0"})
+    @NotYetImplemented({FF, FF_ESR})
+    public void scrollingOptions1() throws Exception {
+        scrollingOptions(true);
+    }
+
+    /**
+     * Regression test for bug 2897457.
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = {"0,0", "0,0", "0,0", "0,0", "no scrollByLines()", "0,0", "no scrollByPages()"},
+            FF = {"0,0", "0,0", "0,0", "0,0", "0,0", "0,0", "0,0"},
+            FF_ESR = {"0,0", "0,0", "0,0", "0,0", "0,0", "0,0", "0,0"})
+    public void scrollingOptions2() throws Exception {
+        scrollingOptions(false);
+    }
+
+    private void scrollingOptions(final boolean addHugeDiv) throws Exception {
+        final String html
+            = "<html><body onload='test()'>\n"
+            + (addHugeDiv ? "<div id='d' style='width:10000px;height:10000px;background-color:blue;'></div>\n" : "")
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "function test() {\n"
+            + "  var b = document.body;\n"
+            + "  log(b.scrollLeft + ',' + b.scrollTop);\n"
+            + "  window.scrollTo({left: 100, top: 200});\n"
+            + "  log(b.scrollLeft + ',' + b.scrollTop);\n"
+            + "  window.scrollBy({left: 10, top: 30});\n"
+            + "  log(b.scrollLeft + ',' + b.scrollTop);\n"
+            + "  window.scrollTo({left: -5, top: -20});\n"
+            + "  log(b.scrollLeft + ',' + b.scrollTop);\n"
+            + "  if(window.scrollByLines) {\n"
+            + "    window.scrollByLines(5);\n"
+            + "    log(b.scrollLeft + ',' + b.scrollTop);\n"
+            + "  } else {\n"
+            + "    log('no scrollByLines()');\n"
+            + "  }\n"
+            + "  window.scroll({left: 0, top: 0});\n"
+            + "  log(b.scrollLeft + ',' + b.scrollTop);\n"
+            + "  if(window.scrollByPages) {\n"
+            + "    window.scrollByPages(2);\n"
+            + "    log(b.scrollLeft + ',' + b.scrollTop);\n"
+            + "  } else {\n"
+            + "    log('no scrollByPages()');\n"
+            + "  }\n"
+            + "}\n"
+            + "</script></body></html>";
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"0", "0", "0", "0"})
     public void pageXOffset() throws Exception {
         final String html
             = "<html><body onload='test()'><script>\n"
@@ -1342,9 +1384,7 @@ public class Window2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"string string 8 number object", "string string 1 number object"},
-            IE = {"string string 8 number object", "string string 9 number object"})
-    @NotYetImplemented(IE)
+    @Alerts({"string string 8 number object", "string string 1 number object"})
     public void onErrorExceptionInstance2() throws Exception {
         final String html
                 = "<html>\n"
@@ -1456,9 +1496,7 @@ public class Window2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "false",
-            IE = "true")
-    @HtmlUnitNYI(IE = "false")
+    @Alerts("false")
     public void getComputedStyleCached() throws Exception {
         final String html = "<html><body>\n"
             + "<div id='myDiv'></div>\n"
@@ -1540,25 +1578,19 @@ public class Window2Test extends WebDriverTestCase {
         final String html = "<html>\n"
             + "<head>\n"
             + "  <script>\n"
+            + LOG_TEXTAREA_FUNCTION
             + "    function test() {\n"
             + "      var id = window.setTimeout( function() { log('result'); }, 20);\n"
             + "      log(typeof id);\n"
             + "      log('done');\n"
             + "    }\n"
-            + "\n"
-            + "    function log(x) {\n"
-            + "      document.getElementById('log').value += x + '\\n';\n"
-            + "    }\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
-            + "  <textarea id='log' cols='80' rows='40'></textarea>\n"
+            + LOG_TEXTAREA
             + "</body>\n"
             + "</html>\n";
 
-        final WebDriver driver = loadPage2(html);
-        Thread.sleep(200);
-        final String text = driver.findElement(By.id("log")).getAttribute("value").trim().replaceAll("\r", "");
-        assertEquals(String.join("\n", getExpectedAlerts()), text);
+        loadPageVerifyTextArea2(html);
     }
 
     /**
@@ -1570,25 +1602,19 @@ public class Window2Test extends WebDriverTestCase {
         final String html = "<html>\n"
             + "<head>\n"
             + "  <script>\n"
+            + LOG_TEXTAREA_FUNCTION
             + "    function test() {\n"
             + "      var id = window.setTimeout( function(p1) { log(p1); }, 20, 42);\n"
             + "      log(typeof id);\n"
             + "      log('done');\n"
             + "    }\n"
-            + "\n"
-            + "    function log(x) {\n"
-            + "      document.getElementById('log').value += x + '\\n';\n"
-            + "    }\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
-            + "  <textarea id='log' cols='80' rows='40'></textarea>\n"
+            + LOG_TEXTAREA
             + "</body>\n"
             + "</html>\n";
 
-        final WebDriver driver = loadPage2(html);
-        Thread.sleep(200);
-        final String text = driver.findElement(By.id("log")).getAttribute("value").trim().replaceAll("\r", "");
-        assertEquals(String.join("\n", getExpectedAlerts()), text);
+        loadPageVerifyTextArea2(html);
     }
 
     /**
@@ -1600,26 +1626,20 @@ public class Window2Test extends WebDriverTestCase {
         final String html = "<html>\n"
             + "<head>\n"
             + "  <script>\n"
+            + LOG_TEXTAREA_FUNCTION
             + "    function test() {\n"
             + "      try{\n"
             + "        var id = window.setTimeout('log(7)');\n"
             + "        log('done 2');\n"
             + "      } catch(e) { log(e); }\n"
             + "    }\n"
-            + "\n"
-            + "    function log(x) {\n"
-            + "      document.getElementById('log').value += x + '\\n';\n"
-            + "    }\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
-            + "  <textarea id='log' cols='80' rows='40'></textarea>\n"
+            + LOG_TEXTAREA
             + "</body>\n"
             + "</html>\n";
 
-        final WebDriver driver = loadPage2(html);
-        Thread.sleep(200);
-        final String text = driver.findElement(By.id("log")).getAttribute("value").trim().replaceAll("\r", "");
-        assertEquals(String.join("\n", getExpectedAlerts()), text);
+        loadPageVerifyTextArea2(html);
     }
 
     /**
@@ -1631,26 +1651,20 @@ public class Window2Test extends WebDriverTestCase {
         final String html = "<html>\n"
             + "<head>\n"
             + "  <script>\n"
+            + LOG_TEXTAREA_FUNCTION
             + "    function test() {\n"
             + "      try{\n"
             + "        window.setTimeout();\n"
             + "        log('done');\n"
             + "      } catch(e) { log(e instanceof TypeError); }\n"
             + "    }\n"
-            + "\n"
-            + "    function log(x) {\n"
-            + "      document.getElementById('log').value += x + '\\n';\n"
-            + "    }\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
-            + "  <textarea id='log' cols='80' rows='40'></textarea>\n"
+            + LOG_TEXTAREA
             + "</body>\n"
             + "</html>\n";
 
-        final WebDriver driver = loadPage2(html);
-        Thread.sleep(200);
-        final String text = driver.findElement(By.id("log")).getAttribute("value").trim().replaceAll("\r", "");
-        assertEquals(String.join("\n", getExpectedAlerts()), text);
+        loadPageVerifyTextArea2(html);
     }
 
     /**
@@ -1695,26 +1709,20 @@ public class Window2Test extends WebDriverTestCase {
         final String html = "<html>\n"
             + "<head>\n"
             + "  <script>\n"
+            + LOG_TEXTAREA_FUNCTION
             + "    var id;\n"
             + "    function test() {\n"
             + "      id = window.setInterval( function() { log('result'); clearInterval(id); }, 20);\n"
             + "      log(typeof id);\n"
             + "      log('done');\n"
             + "    }\n"
-            + "\n"
-            + "    function log(x) {\n"
-            + "      document.getElementById('log').value += x + '\\n';\n"
-            + "    }\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
-            + "  <textarea id='log' cols='80' rows='40'></textarea>\n"
+            + LOG_TEXTAREA
             + "</body>\n"
             + "</html>\n";
 
-        final WebDriver driver = loadPage2(html);
-        Thread.sleep(200);
-        final String text = driver.findElement(By.id("log")).getAttribute("value").trim().replaceAll("\r", "");
-        assertEquals(String.join("\n", getExpectedAlerts()), text);
+        loadPageVerifyTextArea2(html);
     }
 
     /**
@@ -1726,26 +1734,20 @@ public class Window2Test extends WebDriverTestCase {
         final String html = "<html>\n"
             + "<head>\n"
             + "  <script>\n"
+            + LOG_TEXTAREA_FUNCTION
             + "    var id;\n"
             + "    function test() {\n"
             + "      id = window.setInterval( function(p1) { log(p1); clearInterval(id); }, 20, 42);\n"
             + "      log(typeof id);\n"
             + "      log('done');\n"
             + "    }\n"
-            + "\n"
-            + "    function log(x) {\n"
-            + "      document.getElementById('log').value += x + '\\n';\n"
-            + "    }\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
-            + "  <textarea id='log' cols='80' rows='40'></textarea>\n"
+            + LOG_TEXTAREA
             + "</body>\n"
             + "</html>\n";
 
-        final WebDriver driver = loadPage2(html);
-        Thread.sleep(200);
-        final String text = driver.findElement(By.id("log")).getAttribute("value").trim().replaceAll("\r", "");
-        assertEquals(String.join("\n", getExpectedAlerts()), text);
+        loadPageVerifyTextArea2(html);
     }
 
     /**
@@ -1757,6 +1759,7 @@ public class Window2Test extends WebDriverTestCase {
         final String html = "<html>\n"
             + "<head>\n"
             + "  <script>\n"
+            + LOG_TEXTAREA_FUNCTION
             + "    var id;\n"
             + "    function test() {\n"
             + "      try{\n"
@@ -1764,20 +1767,13 @@ public class Window2Test extends WebDriverTestCase {
             + "        log('done 2');\n"
             + "      } catch(e) { log(e); }\n"
             + "    }\n"
-            + "\n"
-            + "    function log(x) {\n"
-            + "      document.getElementById('log').value += x + '\\n';\n"
-            + "    }\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
-            + "  <textarea id='log' cols='80' rows='40'></textarea>\n"
+            + LOG_TEXTAREA
             + "</body>\n"
             + "</html>\n";
 
-        final WebDriver driver = loadPage2(html);
-        Thread.sleep(200);
-        final String text = driver.findElement(By.id("log")).getAttribute("value").trim().replaceAll("\r", "");
-        assertEquals(String.join("\n", getExpectedAlerts()), text);
+        loadPageVerifyTextArea2(html);
     }
 
     /**
@@ -1789,26 +1785,20 @@ public class Window2Test extends WebDriverTestCase {
         final String html = "<html>\n"
             + "<head>\n"
             + "  <script>\n"
+            + LOG_TEXTAREA_FUNCTION
             + "    function test() {\n"
             + "      try{\n"
             + "        window.setInterval();\n"
             + "        log('done');\n"
             + "      } catch(e) { log(e instanceof TypeError); }\n"
             + "    }\n"
-            + "\n"
-            + "    function log(x) {\n"
-            + "      document.getElementById('log').value += x + '\\n';\n"
-            + "    }\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
-            + "  <textarea id='log' cols='80' rows='40'></textarea>\n"
+            + LOG_TEXTAREA
             + "</body>\n"
             + "</html>\n";
 
-        final WebDriver driver = loadPage2(html);
-        Thread.sleep(200);
-        final String text = driver.findElement(By.id("log")).getAttribute("value").trim().replaceAll("\r", "");
-        assertEquals(String.join("\n", getExpectedAlerts()), text);
+        loadPageVerifyTextArea2(html);
     }
 
     /**
@@ -2079,8 +2069,7 @@ public class Window2Test extends WebDriverTestCase {
     @Alerts(DEFAULT = {"[object Window]", "function Window() { [native code] }",
                        "TEMPORARY, PERSISTENT, "},
             FF = {"[object Window]", "function Window() { [native code] }", ""},
-            FF_ESR = {"[object Window]", "function Window() { [native code] }", ""},
-            IE = {"[object Window]", "[object Window]", ""})
+            FF_ESR = {"[object Window]", "function Window() { [native code] }", ""})
     public void enumeratedProperties() throws Exception {
         final String html
             = "<html><head>\n"
@@ -2144,8 +2133,7 @@ public class Window2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "undefined",
-            IE = "function")
+    @Alerts("undefined")
     public void showModalDialog() throws Exception {
         final String html
             = "<html><body><script>\n"
@@ -2160,8 +2148,7 @@ public class Window2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "undefined",
-            IE = "function")
+    @Alerts("undefined")
     public void showModelessDialog() throws Exception {
         final String html
             = "<html><body><script>\n"
@@ -2177,8 +2164,7 @@ public class Window2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "function",
-            IE = "undefined")
+    @Alerts("function")
     public void find() throws Exception {
         final String html
             = "<html><body><script>\n"
@@ -2355,8 +2341,7 @@ public class Window2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "0",
-            IE = "exception")
+    @Alerts("0")
     public void constructorError() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -2416,13 +2401,11 @@ public class Window2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"[object Window]", "[object WindowProperties]", "[object EventTarget]", "[object Object]"},
-            IE = "exception")
+    @Alerts({"[object Window]", "[object WindowProperties]", "[object EventTarget]", "[object Object]"})
     @HtmlUnitNYI(CHROME = {"[object Window]", "[object EventTarget]", "[object Object]"},
             EDGE = {"[object Window]", "[object EventTarget]", "[object Object]"},
             FF = {"[object Window]", "[object EventTarget]", "[object Object]"},
-            FF_ESR = {"[object Window]", "[object EventTarget]", "[object Object]"},
-            IE = {"[object Window]", "[object EventTarget]", "[object Object]"})
+            FF_ESR = {"[object Window]", "[object EventTarget]", "[object Object]"})
     public void test__proto__() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -2447,8 +2430,7 @@ public class Window2Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"[object Navigator]", "##test##"},
                 FF = {"[object Navigator]", "[object Navigator]"},
-                FF_ESR = {"[object Navigator]", "[object Navigator]"},
-                IE = {"[object Navigator]", "[object Navigator]"})
+                FF_ESR = {"[object Navigator]", "[object Navigator]"})
     public void clientInformation() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -2494,8 +2476,7 @@ public class Window2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object Window]", "true", "true"},
-            IE = "globalThis is undefined")
+    @Alerts({"[object Window]", "true", "true"})
     public void globalThis() throws Exception {
         final String html
             = "<html><head></head><body>\n"
@@ -2622,14 +2603,11 @@ public class Window2Test extends WebDriverTestCase {
             FF = {"undefined", "{\"enumerable\":true,\"configurable\":true}",
                   "[object Event]", "{\"enumerable\":true,\"configurable\":true}"},
             FF_ESR = {"undefined", "{\"enumerable\":true,\"configurable\":true}",
-                      "[object Event]", "{\"enumerable\":true,\"configurable\":true}"},
-            IE = {"undefined", "undefined", "[object Event]", "undefined"})
+                      "[object Event]", "{\"enumerable\":true,\"configurable\":true}"})
     @HtmlUnitNYI(CHROME = {"undefined", "{\"enumerable\":true,\"configurable\":true}",
                            "[object Event]", "{\"enumerable\":true,\"configurable\":true}"},
             EDGE = {"undefined", "{\"enumerable\":true,\"configurable\":true}",
-                    "[object Event]", "{\"enumerable\":true,\"configurable\":true}"},
-            IE = {"undefined", "{\"enumerable\":true,\"configurable\":true}",
-                  "[object Event]", "{\"enumerable\":true,\"configurable\":true}"})
+                    "[object Event]", "{\"enumerable\":true,\"configurable\":true}"})
     public void eventProperty() throws Exception {
         final String html = "<html><head>\n"
                 + "<script>\n"
@@ -2653,9 +2631,7 @@ public class Window2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "{\"value\":7,\"writable\":true,\"enumerable\":true,\"configurable\":true}",
-            IE = "undefined")
-    @HtmlUnitNYI(IE = "{\"value\":7,\"writable\":true,\"enumerable\":true,\"configurable\":true}")
+    @Alerts("{\"value\":7,\"writable\":true,\"enumerable\":true,\"configurable\":true}")
     public void eventPropertyReplaced() throws Exception {
         final String html = "<html><head>\n"
                 + "<script>\n"
@@ -2677,8 +2653,7 @@ public class Window2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "not available")
+    @Alerts("true")
     public void isSecureContextLocalhost() throws Exception {
         final String html
             = "<html><body><script>\n"
@@ -2693,8 +2668,7 @@ public class Window2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "false",
-            IE = "not available")
+    @Alerts("false")
     public void isSecureContextHttp() throws Exception {
         final String html
             = "<html><body><script>\n"
@@ -2710,8 +2684,7 @@ public class Window2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "null")
+    @Alerts("true")
     public void isSecureContextHttpS() throws Exception {
         final WebDriver driver = loadPage2(new URL("https://www.wetator.org/HtmlUnit"), StandardCharsets.UTF_8);
 
@@ -2724,8 +2697,7 @@ public class Window2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "null")
+    @Alerts("true")
     public void isSecureContextFile() throws Exception {
         final String html
             = "<html><body><script>\n"
@@ -2753,8 +2725,7 @@ public class Window2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "false",
-            IE = "null")
+    @Alerts("false")
     public void isSecureContextAboutBlank() throws Exception {
         final WebDriver driver = getWebDriver();
         driver.get("about:blank");

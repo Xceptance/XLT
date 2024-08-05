@@ -32,10 +32,8 @@ public class HTMLDetailsElementTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"false", "null", "true", "", "false", "null", "true", "",
-                       "true", "", "true", "TrUE", "false", "null"},
-            IE = {"undefined", "null", "true", "null", "false", "null", "true", "null",
-                  "faLSE", "null", "faLSE", "TrUE", "faLSE", "null"})
+    @Alerts({"false", "null", "true", "", "false", "null", "true", "",
+             "true", "", "true", "TrUE", "false", "null"})
     public void open() throws Exception {
         final String html =
             "<html>\n"
@@ -89,8 +87,7 @@ public class HTMLDetailsElementTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"false", "null", "false", "null", "true", "", "true", "blah", "false", "null"},
-            IE = {"undefined", "null", "", "null", "abc", "null", "abc", "blah", "abc", "null"})
+    @Alerts({"false", "null", "false", "null", "true", "", "true", "blah", "false", "null"})
     public void openString() throws Exception {
         final String html =
             "<html>\n"

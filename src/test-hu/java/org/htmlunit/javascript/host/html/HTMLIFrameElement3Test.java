@@ -27,11 +27,9 @@ import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.BuggyWebDriver;
 import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
-import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -293,11 +291,6 @@ public class HTMLIFrameElement3Test extends WebDriverTestCase {
             + "<iframe id='iframe1'></iframe>\n"
             + "</body></html>";
 
-        // [IE] real IE waits for the page to load until infinity
-        if (useRealBrowser() && getBrowserVersion().isIE()) {
-            Assert.fail("Blocks real IE");
-        }
-
         loadPageVerifyTitle2(html);
     }
 
@@ -305,8 +298,7 @@ public class HTMLIFrameElement3Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"", "100", "foo", "20%", "-5", "30.2", "400", "abc", "-5", "100.2", "10%", "-12.56"},
-            IE = {"", "100", "", "20%", "-5", "30", "error", "400", "100", "-5", "100", "10%", "-12"})
+    @Alerts({"", "100", "foo", "20%", "-5", "30.2", "400", "abc", "-5", "100.2", "10%", "-12.56"})
     public void width() throws Exception {
         final String html
             = "<!DOCTYPE html>\n"
@@ -360,8 +352,7 @@ public class HTMLIFrameElement3Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"", "100", "foo", "20%", "-5", "30.2", "400", "abc", "-5", "100.2", "10%", "-12.56"},
-            IE = {"", "100", "", "20%", "-5", "30", "error", "400", "100", "-5", "100", "10%", "-12"})
+    @Alerts({"", "100", "foo", "20%", "-5", "30.2", "400", "abc", "-5", "100.2", "10%", "-12.56"})
     public void height() throws Exception {
         final String html
             = "<!DOCTYPE html>\n"
@@ -418,8 +409,7 @@ public class HTMLIFrameElement3Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"uninitialized", "complete"},
             CHROME = {"complete", "complete"},
-            EDGE = {"complete", "complete"},
-            IE = {"loading", "complete"})
+            EDGE = {"complete", "complete"})
     @HtmlUnitNYI(CHROME = {"loading", "complete"},
             EDGE = {"loading", "complete"},
             FF = {"loading", "complete"},
@@ -469,8 +459,7 @@ public class HTMLIFrameElement3Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "128px",
-            IE = "128")
+    @Alerts("128px")
     public void width_px() throws Exception {
         final String html
             = "<!DOCTYPE html>\n"
@@ -495,9 +484,7 @@ public class HTMLIFrameElement3Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"[object HTMLIFrameElement]", "[object HTMLIFrameElement]", "", ""},
-            IE = {"[object Window]", "[object HTMLIFrameElement]", "undefined", ""})
-    @HtmlUnitNYI(IE = {"[object HTMLIFrameElement]", "[object HTMLIFrameElement]", "", ""})
+    @Alerts({"[object HTMLIFrameElement]", "[object HTMLIFrameElement]", "", ""})
     public void idByName() throws Exception {
         final String html
             = HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -766,8 +753,7 @@ public class HTMLIFrameElement3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"loaded", "null"},
-            IE = {"loaded", "error"})
+    @Alerts({"loaded", "null"})
     public void deny() throws Exception {
         retrictByHeader(
                 new NameValuePair(HttpHeader.X_FRAME_OPTIONS, "DENY"),
@@ -778,10 +764,8 @@ public class HTMLIFrameElement3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "null",
-            CHROME = {"loaded", "null"},
-            EDGE = {"loaded", "null"},
-            IE = {"loaded", "[object HTMLDocument]"})
+    @Alerts(DEFAULT = {"loaded", "null"},
+            FF_ESR = "null")
     public void csp_None() throws Exception {
         retrictByHeader(
                 new NameValuePair(HttpHeader.CONTENT_SECURIRY_POLICY, "frame-ancestors 'none';"),
@@ -825,10 +809,8 @@ public class HTMLIFrameElement3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "null",
-            CHROME = {"loaded", "null"},
-            EDGE = {"loaded", "null"},
-            IE = {"loaded", "[object HTMLDocument]"})
+    @Alerts(DEFAULT = {"loaded", "null"},
+            FF_ESR = "null")
     public void csp_UrlDifferentPort() throws Exception {
         retrictByHeader(
                 new NameValuePair(HttpHeader.CONTENT_SECURIRY_POLICY, "frame-ancestors 'self';"),
@@ -839,10 +821,8 @@ public class HTMLIFrameElement3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "null",
-            CHROME = {"loaded", "null"},
-            EDGE = {"loaded", "null"},
-            IE = {"loaded", "[object HTMLDocument]"})
+    @Alerts(DEFAULT = {"loaded", "null"},
+            FF_ESR = "null")
     public void csp_many() throws Exception {
         retrictByHeader(
                 new NameValuePair(HttpHeader.CONTENT_SECURIRY_POLICY,
@@ -894,9 +874,7 @@ public class HTMLIFrameElement3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"loaded", "[object HTMLDocument]", "2"},
-            IE = {"loaded", "[object HTMLDocument]", "1"})
-    @HtmlUnitNYI(IE = {"loaded", "[object HTMLDocument]", "2"})
+    @Alerts({"loaded", "[object HTMLDocument]", "2"})
     public void recursive() throws Exception {
         final String html
             = "<!DOCTYPE html>\n"
@@ -932,8 +910,7 @@ public class HTMLIFrameElement3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"loaded", "3"},
-            IE = {"loaded", "2"})
+    @Alerts({"loaded", "3"})
     @HtmlUnitNYI(
             CHROME = {"loaded", "2"},
             EDGE = {"loaded", "2"},
@@ -974,15 +951,11 @@ public class HTMLIFrameElement3Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"loaded", "6"},
             FF_ESR = {"loaded", "19"},
-            FF = {"loaded", "19"},
-            IE = {"loaded", "2"})
-    @BuggyWebDriver(IE = "")
-    // this kill the real ie
+            FF = {"loaded", "19"})
     @HtmlUnitNYI(CHROME = {"loaded", "21"},
             EDGE = {"loaded", "21"},
             FF = {"loaded", "21"},
-            FF_ESR = {"loaded", "21"},
-            IE = {"loaded", "21"})
+            FF_ESR = {"loaded", "21"})
     public void recursiveContentRedirectHeader() throws Exception {
         final String html
             = "<!DOCTYPE html>\n"

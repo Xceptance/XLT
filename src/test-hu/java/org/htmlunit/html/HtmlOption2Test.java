@@ -48,15 +48,11 @@ public class HtmlOption2Test extends WebDriverTestCase {
             CHROME = {"option1", "", "Number Three", "Number 4",
                       "      option1\n       Number Three\n      Number 4\n    "},
             EDGE = {"option1", "", "Number Three", "Number 4",
-                    "      option1\n       Number Three\n      Number 4\n    "},
-            IE = {"option1", "", "Number Three", "Number 4",
-                  "option1 Number Three Number 4"})
+                    "      option1\n       Number Three\n      Number 4\n    "})
     @HtmlUnitNYI(CHROME = {"option1", "", "Number Three", "Number 4",
                            "option1\nNumber Three\nNumber 4"},
             EDGE = {"option1", "", "Number Three", "Number 4",
-                    "option1\nNumber Three\nNumber 4"},
-            IE = {"option1", "", "Number Three", "Number 4",
-                  "option1\nNumber Three\nNumber 4"})
+                    "option1\nNumber Three\nNumber 4"})
     public void getVisibleText() throws Exception {
         final String htmlContent
             = "<html>\n"
@@ -121,8 +117,7 @@ public class HtmlOption2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "oDown,sDown,dDown,oUp,sUp,dUp,",
-            IE = "sDown,dDown,sUp,dUp,")
+    @Alerts("oDown,sDown,dDown,oUp,sUp,dUp,")
     // there seems to be a bug in selenium; for FF >= 10 this triggers
     // "sDown,dDown,sUp,dUp,oDown,sDown,dDown,oUp,sUp,dUp," but a
     // manual test shows, that this is wrong.

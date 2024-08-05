@@ -22,7 +22,6 @@ import java.net.URL;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import org.htmlunit.util.MimeType;
 import org.junit.Test;
@@ -57,15 +56,6 @@ public class XMLDocumentTest extends WebDriverTestCase {
     public static final String LOAD_NATIVE_XML_DOCUMENT_FROM_FILE_FUNCTION = ""
             + "  function " + LOAD_XML_DOCUMENT_FROM_FILE_FUNCTION_NAME + "(file) {\n"
             + "    xhttp = new XMLHttpRequest();\n"
-            + "    xhttp.open(\"GET\", file, false);\n"
-            + "    xhttp.send();\n"
-            + "    return xhttp.responseXML;\n"
-            + "  }\n";
-
-    /** Helper. */
-    public static final String LOAD_ACTIVEX_XML_DOCUMENT_FROM_FILE_FUNCTION = ""
-            + "  function " + LOAD_XML_DOCUMENT_FROM_FILE_FUNCTION_NAME + "(file) {\n"
-            + "    xhttp = new ActiveXObject(\"Microsoft.XMLHTTP\");\n"
             + "    xhttp.open(\"GET\", file, false);\n"
             + "    xhttp.send();\n"
             + "    return xhttp.responseXML;\n"
@@ -111,12 +101,6 @@ public class XMLDocumentTest extends WebDriverTestCase {
             + "  function " + SERIALIZE_XML_DOCUMENT_TO_STRING_FUNCTION_NAME + "(doc) {\n"
             + "    serializer = new XMLSerializer();\n"
             + "    return serializer.serializeToString(doc);\n"
-            + "  }\n";
-
-    /** Helper. */
-    public static final String SERIALIZE_ACTIVEX_XML_DOCUMENT_TO_STRING_FUNCTION = ""
-            + "  function " + SERIALIZE_XML_DOCUMENT_TO_STRING_FUNCTION_NAME + "(doc) {\n"
-            + "    return doc.xml;\n"
             + "  }\n";
 
     /**
@@ -414,9 +398,6 @@ public class XMLDocumentTest extends WebDriverTestCase {
     @Test
     @Alerts({"book", "exception /title", "exception title"})
     public void selectNodes_fromRoot() throws Exception {
-        // IE works only if running alone
-        shutDownRealIE();
-
         final String html = "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -526,9 +507,7 @@ public class XMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "exception",
-            IE = {"true", "true", "true", "true", "true", "true", "true", "true",
-                "false", "true", "true", "true", "true", "true", "true", "true", "true"})
+    @Alerts("exception")
     public void parseError() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -573,8 +552,7 @@ public class XMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "http://myNS",
-            IE = {})
+    @Alerts("http://myNS")
     public void createNSResolver() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -661,8 +639,7 @@ public class XMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "button",
-            IE = {})
+    @Alerts("button")
     public void evaluate() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -686,16 +663,11 @@ public class XMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"same doc: false", "in first: 3", "book", "ownerDocument: doc1", "getRootNode(): doc1",
-                       "in 2nd: 3", "ownerDocument: doc2", "getRootNode(): doc2",
-                       "first child ownerDocument: doc2", "first child getRootNode(): doc2", "in first: 2", "in 2nd: 4",
-                       "ownerDocument: doc1", "getRootNode(): doc1", "in first: 2", "in 2nd: 3",
-                       "ownerDocument: doc2", "getRootNode(): doc2", "in first: 1", "in 2nd: 4"},
-            IE = {"same doc: false", "in first: 3", "book", "ownerDocument: doc1", "-",
-                  "in 2nd: 3", "ownerDocument: doc2", "-",
-                  "first child ownerDocument: doc2", "-", "in first: 2", "in 2nd: 4",
-                  "ownerDocument: doc1", "-", "in first: 2", "in 2nd: 3",
-                  "ownerDocument: doc2", "-", "in first: 1", "in 2nd: 4"})
+    @Alerts({"same doc: false", "in first: 3", "book", "ownerDocument: doc1", "getRootNode(): doc1",
+             "in 2nd: 3", "ownerDocument: doc2", "getRootNode(): doc2",
+             "first child ownerDocument: doc2", "first child getRootNode(): doc2", "in first: 2", "in 2nd: 4",
+             "ownerDocument: doc1", "getRootNode(): doc1", "in first: 2", "in 2nd: 3",
+             "ownerDocument: doc2", "getRootNode(): doc2", "in first: 1", "in 2nd: 4"})
     public void moveChildBetweenDocuments() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -763,8 +735,6 @@ public class XMLDocumentTest extends WebDriverTestCase {
     @Test
     @Alerts({"1", "0", "1", "0"})
     public void getElementsByTagName() throws Exception {
-        shutDownRealIE();
-
         final String html = "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -799,8 +769,7 @@ public class XMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"0", "1", "0", "1"},
-            IE = {"1", "0"})
+    @Alerts({"0", "1", "0", "1"})
     public void getElementsByTagNameWithNamespace() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -838,8 +807,7 @@ public class XMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"false", "false", "true", "false"},
-            IE = {"false", "false", "false", "false"})
+    @Alerts({"false", "false", "true", "false"})
     // XML ID handling not yet correctly implemented
     public void getElementById_xml() throws Exception {
         final String html = "<html><head>\n"
@@ -875,8 +843,7 @@ public class XMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"true", "true"},
-            IE = {"false", "false"})
+    @Alerts({"true", "true"})
     // XML ID handling not yet correctly implemented
     public void getElementById_html() throws Exception {
         final String html = "<html><head>\n"
@@ -929,8 +896,7 @@ public class XMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "0",
-            IE = "exception")
+    @Alerts("0")
     public void xpathWithNamespaces() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -971,8 +937,7 @@ public class XMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {},
-            IE = "1")
+    @Alerts({})
     public void selectionNamespaces() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -1048,10 +1013,7 @@ public class XMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object XMLDocument]", "OK"},
-            IE = {"[object Document]", "OK"})
-    @HtmlUnitNYI(IE = {"[object XMLDocument]", "OK"})
-    // Real IE seems to generate always an (HTML)Document within an iframe.
+    @Alerts({"[object XMLDocument]", "OK"})
     public void test() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -1083,9 +1045,7 @@ public class XMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "[object HTMLDocument]",
-            IE = "[object Document]")
-    @HtmlUnitNYI(IE = "[object HTMLDocument]")
+    @Alerts("[object HTMLDocument]")
     public void html() throws Exception {
         final String svg
             = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
@@ -1102,8 +1062,7 @@ public class XMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "[object XMLDocument]",
-            IE = "[object Document]")
+    @Alerts("[object XMLDocument]")
     @NotYetImplemented
     public void svg() throws Exception {
         final String svg
@@ -1144,9 +1103,7 @@ public class XMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "about:blank",
-            IE = "§§URL§§")
-    @HtmlUnitNYI(IE = "about:blank")
+    @Alerts("about:blank")
     public void url() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"

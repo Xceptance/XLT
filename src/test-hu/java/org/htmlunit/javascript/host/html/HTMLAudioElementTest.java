@@ -56,8 +56,7 @@ public class HTMLAudioElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object HTMLAudioElement]", "function HTMLAudioElement() { [native code] }"},
-            IE = {"[object HTMLAudioElement]", "[object HTMLAudioElement]"})
+    @Alerts({"[object HTMLAudioElement]", "function HTMLAudioElement() { [native code] }"})
     public void type() throws Exception {
         final String html = ""
             + "<html><head>\n"
@@ -105,8 +104,7 @@ public class HTMLAudioElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object HTMLAudioElement]", "[object Promise]", "done"},
-            IE = {"[object HTMLAudioElement]", "undefined", "done"})
+    @Alerts({"[object HTMLAudioElement]", "[object Promise]", "done"})
     public void audio() throws Exception {
         final String html = ""
             + "<html><head>\n"
@@ -138,7 +136,7 @@ public class HTMLAudioElementTest extends WebDriverTestCase {
     protected void parentOf(final String parent, final String child) throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head>\n"
-            + "<title>" + (getBrowserVersion().isIE() ? "Blank Page" : "New Tab") + "</title>\n"
+            + "<title>New Tab</title>\n"
             + "<script>\n"
             + LOG_TEXTAREA_FUNCTION
             + "  function test() {\n"
@@ -170,8 +168,7 @@ public class HTMLAudioElementTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = "false",
             EDGE = "false",
             FF = "false",
-            FF_ESR = "false",
-            IE = "false")
+            FF_ESR = "false")
     public void Audio_HTMLAudioElement() throws Exception {
         parentOf("Audio", "HTMLAudioElement");
     }
@@ -209,9 +206,7 @@ public class HTMLAudioElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object HTMLAudioElement]", "maybe", "done"},
-            IE = {"[object HTMLAudioElement]", "", "done"})
-    @HtmlUnitNYI(IE = {"[object HTMLAudioElement]", "maybe", "done"})
+    @Alerts({"[object HTMLAudioElement]", "maybe", "done"})
     public void nullConstructor() throws Exception {
         final String html = ""
             + "<html><head>\n"
@@ -260,9 +255,7 @@ public class HTMLAudioElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "maybe",
-            IE = "")
-    @HtmlUnitNYI(IE = "maybe")
+    @Alerts("maybe")
     public void canPlayType_AudioOgg() throws Exception {
         canPlayType("audio/ogg");
     }
@@ -271,9 +264,7 @@ public class HTMLAudioElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "maybe",
-            IE = "")
-    @HtmlUnitNYI(IE = "maybe")
+    @Alerts("maybe")
     public void canPlayType_VideoOgg() throws Exception {
         canPlayType("video/ogg");
     }
@@ -282,9 +273,7 @@ public class HTMLAudioElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "maybe",
-            IE = "")
-    @HtmlUnitNYI(IE = "maybe")
+    @Alerts("maybe")
     public void canPlayType_ApplicationOgg() throws Exception {
         canPlayType("application/ogg");
     }
@@ -306,8 +295,7 @@ public class HTMLAudioElementTest extends WebDriverTestCase {
             FF = "maybe",
             FF_ESR = "maybe")
     @HtmlUnitNYI(CHROME = "maybe",
-            EDGE = "maybe",
-            IE = "maybe")
+            EDGE = "maybe")
     public void canPlayType_AudioWave() throws Exception {
         canPlayType("audio/wave");
     }
@@ -316,9 +304,7 @@ public class HTMLAudioElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "maybe",
-            IE = "")
-    @HtmlUnitNYI(IE = "maybe")
+    @Alerts("maybe")
     public void canPlayType_AudioWav() throws Exception {
         canPlayType("audio/wav");
     }
@@ -327,9 +313,7 @@ public class HTMLAudioElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "maybe",
-            IE = "")
-    @HtmlUnitNYI(IE = "maybe")
+    @Alerts("maybe")
     public void canPlayType_AudioXWav() throws Exception {
         canPlayType("audio/x-wav");
     }
@@ -342,8 +326,7 @@ public class HTMLAudioElementTest extends WebDriverTestCase {
             FF = "maybe",
             FF_ESR = "maybe")
     @HtmlUnitNYI(CHROME = "maybe",
-            EDGE = "maybe",
-            IE = "maybe")
+            EDGE = "maybe")
     public void canPlayType_AudioPnWav() throws Exception {
         canPlayType("audio/x-pn-wav");
     }
@@ -352,9 +335,7 @@ public class HTMLAudioElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "maybe",
-            IE = "")
-    @HtmlUnitNYI(IE = "maybe")
+    @Alerts("maybe")
     public void canPlayType_AudioWebm() throws Exception {
         canPlayType("audio/webm");
     }
@@ -363,9 +344,7 @@ public class HTMLAudioElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "maybe",
-            IE = "")
-    @HtmlUnitNYI(IE = "maybe")
+    @Alerts("maybe")
     public void canPlayType_VideoWebm() throws Exception {
         canPlayType("video/webm");
     }
@@ -389,11 +368,9 @@ public class HTMLAudioElementTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "probably",
             FF = "maybe",
-            FF_ESR = "maybe",
-            IE = "")
+            FF_ESR = "maybe")
     @HtmlUnitNYI(CHROME = "maybe",
-            EDGE = "maybe",
-            IE = "maybe")
+            EDGE = "maybe")
     public void canPlayType_AudioFlac() throws Exception {
         canPlayType("audio/flac");
     }
@@ -406,8 +383,7 @@ public class HTMLAudioElementTest extends WebDriverTestCase {
             FF = "maybe",
             FF_ESR = "maybe")
     @HtmlUnitNYI(CHROME = "maybe",
-            EDGE = "maybe",
-            IE = "maybe")
+            EDGE = "maybe")
     public void canPlayType_AudioXFlac() throws Exception {
         canPlayType("audio/x-flac");
     }
@@ -561,9 +537,7 @@ public class HTMLAudioElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"string", ""},
-            IE = {"string", "§§URL§§horse.mp3"})
-    @HtmlUnitNYI(IE = {"string", ""})
+    @Alerts({"string", ""})
     public void currentSrc() throws Exception {
         final String html
             = "<html><body>\n"

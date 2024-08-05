@@ -14,14 +14,11 @@
  */
 package org.htmlunit.javascript.host.dom;
 
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
-import org.htmlunit.corejs.javascript.Undefined;
 import org.htmlunit.javascript.HtmlUnitScriptable;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstant;
 import org.htmlunit.javascript.configuration.JsxConstructor;
@@ -114,12 +111,6 @@ public class DOMException extends HtmlUnitScriptable {
     /** Data clone error. */
     @JsxConstant
     public static final int DATA_CLONE_ERR = 25;
-    /** Parse error. */
-    @JsxConstant(IE)
-    public static final int PARSE_ERR = 81;
-    /** Serialize error. */
-    @JsxConstant(IE)
-    public static final int SERIALIZE_ERR = 82;
 
     private final int code_;
     private final String message_;
@@ -137,7 +128,7 @@ public class DOMException extends HtmlUnitScriptable {
     /**
      * JavaScript constructor.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
     }
 
@@ -158,7 +149,7 @@ public class DOMException extends HtmlUnitScriptable {
     @JsxGetter
     public Object getCode() {
         if (code_ == -1) {
-            return Undefined.instance;
+            return JavaScriptEngine.Undefined;
         }
         return code_;
     }
@@ -170,7 +161,7 @@ public class DOMException extends HtmlUnitScriptable {
     @JsxGetter
     public Object getMessage() {
         if (message_ == null) {
-            return Undefined.instance;
+            return JavaScriptEngine.Undefined;
         }
         return message_;
     }
@@ -182,7 +173,7 @@ public class DOMException extends HtmlUnitScriptable {
     @JsxGetter({FF, FF_ESR})
     public Object getLineNumber() {
         if (lineNumber_ == -1) {
-            return Undefined.instance;
+            return JavaScriptEngine.Undefined;
         }
         return lineNumber_;
     }
@@ -194,7 +185,7 @@ public class DOMException extends HtmlUnitScriptable {
     @JsxGetter({FF, FF_ESR})
     public Object getFilename() {
         if (fileName_ == null) {
-            return Undefined.instance;
+            return JavaScriptEngine.Undefined;
         }
         return fileName_;
     }

@@ -14,10 +14,6 @@
  */
 package org.htmlunit.html;
 
-import static org.htmlunit.BrowserVersionFeatures.DOM_NORMALIZE_REMOVE_CHILDREN;
-import static org.htmlunit.BrowserVersionFeatures.QUERYSELECTORALL_NOT_IN_QUIRKS;
-import static org.htmlunit.BrowserVersionFeatures.XPATH_SELECTION_NAMESPACES;
-
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Serializable;
@@ -38,7 +34,6 @@ import org.htmlunit.WebAssert;
 import org.htmlunit.WebClient;
 import org.htmlunit.WebClient.PooledCSS3Parser;
 import org.htmlunit.WebWindow;
-import org.htmlunit.activex.javascript.msxml.XMLDOMDocument;
 import org.htmlunit.css.ComputedCssStyleDeclaration;
 import org.htmlunit.css.CssStyleSheet;
 import org.htmlunit.css.StyleAttributes;
@@ -55,9 +50,6 @@ import org.htmlunit.html.xpath.XPathHelper;
 import org.htmlunit.javascript.HtmlUnitScriptable;
 import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.host.event.Event;
-import org.htmlunit.javascript.host.html.HTMLDocument;
-import org.htmlunit.util.StringUtils;
-import org.htmlunit.xml.XmlPage;
 import org.htmlunit.xpath.xml.utils.PrefixResolver;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
@@ -65,8 +57,6 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.UserDataHandler;
 import org.xml.sax.SAXException;
-
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
  * Base class for nodes in the HTML DOM tree. This class is modeled after the
@@ -91,19 +81,19 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  */
 public abstract class DomNode implements Cloneable, Serializable, Node {
 
-    /** A ready state constant for IE (state 1). */
+    /** A ready state constant (state 1). */
     public static final String READY_STATE_UNINITIALIZED = "uninitialized";
 
-    /** A ready state constant for IE (state 2). */
+    /** A ready state constant (state 2). */
     public static final String READY_STATE_LOADING = "loading";
 
-    /** A ready state constant for IE (state 3). */
+    /** A ready state constant (state 3). */
     public static final String READY_STATE_LOADED = "loaded";
 
-    /** A ready state constant for IE (state 4). */
+    /** A ready state constant (state 4). */
     public static final String READY_STATE_INTERACTIVE = "interactive";
 
-    /** A ready state constant for IE (state 5). */
+    /** A ready state constant (state 5). */
     public static final String READY_STATE_COMPLETE = "complete";
 
     /** The name of the "element" property. Used when watching property change events. */
@@ -135,7 +125,7 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
      */
     private HtmlUnitScriptable scriptObject_;
 
-    /** The ready state is an IE-only value that is available to a large number of elements. */
+    /** The ready state is an value that is available to a large number of elements. */
     private String readyState_;
 
     /**
@@ -235,7 +225,6 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
      * Returns the page that contains this node.
      * @return the page that contains this node
      */
-    @SuppressFBWarnings("EI_EXPOSE_REP")
     public SgmlPage getPage() {
         return page_;
     }
@@ -244,7 +233,6 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
      * Returns the page that contains this node.
      * @return the page that contains this node
      */
-    @SuppressFBWarnings("EI_EXPOSE_REP")
     public HtmlPage getHtmlPageOrNull() {
         if (page_ == null || !page_.isHtmlPage()) {
             return null;
@@ -276,7 +264,6 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
      * {@inheritDoc}
      */
     @Override
-    @SuppressFBWarnings("EI_EXPOSE_REP")
     public DomNode getLastChild() {
         if (firstChild_ != null) {
             // last child is stored as the previous sibling of first child
@@ -289,7 +276,6 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
      * {@inheritDoc}
      */
     @Override
-    @SuppressFBWarnings("EI_EXPOSE_REP")
     public DomNode getParentNode() {
         return parent_;
     }
@@ -318,7 +304,6 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
      * {@inheritDoc}
      */
     @Override
-    @SuppressFBWarnings("EI_EXPOSE_REP")
     public DomNode getPreviousSibling() {
         if (parent_ == null || this == parent_.firstChild_) {
             // previous sibling of first child points to last child
@@ -331,7 +316,6 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
      * {@inheritDoc}
      */
     @Override
-    @SuppressFBWarnings("EI_EXPOSE_REP")
     public DomNode getNextSibling() {
         return nextSibling_;
     }
@@ -340,7 +324,6 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
      * {@inheritDoc}
      */
     @Override
-    @SuppressFBWarnings("EI_EXPOSE_REP")
     public DomNode getFirstChild() {
         return firstChild_;
     }
@@ -432,7 +415,6 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
     public void normalize() {
         for (DomNode child = getFirstChild(); child != null; child = child.getNextSibling()) {
             if (child instanceof DomText) {
-                final boolean removeChildTextNodes = hasFeature(DOM_NORMALIZE_REMOVE_CHILDREN);
                 final StringBuilder dataBuilder = new StringBuilder();
                 DomNode toRemove = child;
                 DomText firstText = null;
@@ -440,7 +422,7 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
                 while (toRemove instanceof DomText && !(toRemove instanceof DomCDataSection)) {
                     final DomNode nextChild = toRemove.getNextSibling();
                     dataBuilder.append(toRemove.getTextContent());
-                    if (removeChildTextNodes || firstText != null) {
+                    if (firstText != null) {
                         toRemove.remove();
                     }
                     if (firstText == null) {
@@ -449,13 +431,7 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
                     toRemove = nextChild;
                 }
                 if (firstText != null) {
-                    if (removeChildTextNodes) {
-                        final DomText newText = new DomText(getPage(), dataBuilder.toString());
-                        insertBefore(newText, toRemove);
-                    }
-                    else {
-                        firstText.setData(dataBuilder.toString());
-                    }
+                    firstText.setData(dataBuilder.toString());
                 }
             }
         }
@@ -1506,29 +1482,6 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
     }
 
     /**
-     * Parses the SelectionNamespaces property into a map of prefix/namespace pairs.
-     * The default namespace (specified by xmlns=) is placed in the map using the
-     * empty string ("") key.
-     *
-     * @param selectionNS the value of the SelectionNamespaces property
-     * @return map of prefix/namespace value pairs
-     */
-    private static Map<String, String> parseSelectionNamespaces(final String selectionNS) {
-        final Map<String, String> result = new HashMap<>();
-        final String[] toks = StringUtils.splitAtJavaWhitespace(selectionNS);
-        for (final String tok : toks) {
-            if (tok.startsWith("xmlns=")) {
-                result.put("", tok.substring(7, tok.length() - 7));
-            }
-            else if (tok.startsWith("xmlns:")) {
-                final String[] prefix = tok.substring(6).split("=");
-                result.put(prefix[0], prefix[1].substring(1, prefix[1].length() - 1));
-            }
-        }
-        return result.isEmpty() ? null : result;
-    }
-
-    /**
      * Evaluates the specified XPath expression from this node, returning the matching elements.
      * <br>
      * Note: This implies that the ',' point to this node but the general axis like '//' are still
@@ -1543,43 +1496,7 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
      * @see #getCanonicalXPath()
      */
     public <T> List<T> getByXPath(final String xpathExpr) {
-        // strange feature of the old IE XML support
-        if (!hasFeature(XPATH_SELECTION_NAMESPACES)) {
-            return XPathHelper.getByXPath(this, xpathExpr, null);
-        }
-
-        // See if the document has the SelectionNamespaces property defined. If so,
-        // create a PrefixResolver that resolves the defined namespaces.
-        PrefixResolver prefixResolver = null;
-        final Document doc = getOwnerDocument();
-        if (doc instanceof XmlPage) {
-            final HtmlUnitScriptable scriptable = ((XmlPage) doc).getScriptableObject();
-            if (scriptable instanceof XMLDOMDocument) {
-                final String selectionNS = ((XMLDOMDocument) scriptable).getProperty("SelectionNamespaces");
-                if (selectionNS != null && !selectionNS.isEmpty()) {
-                    final Map<String, String> namespaces = parseSelectionNamespaces(selectionNS.toString());
-                    if (namespaces != null) {
-                        prefixResolver = new PrefixResolver() {
-                            @Override
-                            public String getNamespaceForPrefix(final String prefix) {
-                                return namespaces.get(prefix);
-                            }
-
-                            @Override
-                            public String getNamespaceForPrefix(final String prefix, final Node node) {
-                                throw new UnsupportedOperationException();
-                            }
-
-                            @Override
-                            public boolean handlesNullPrefixes() {
-                                return false;
-                            }
-                        };
-                    }
-                }
-            }
-        }
-        return XPathHelper.getByXPath(this, xpathExpr, prefixResolver);
+        return XPathHelper.getByXPath(this, xpathExpr, null);
     }
 
     /**
@@ -1854,14 +1771,7 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
             }
 
             if (selectorList != null) {
-                int documentMode = 9;
-                if (webClient.getBrowserVersion().hasFeature(QUERYSELECTORALL_NOT_IN_QUIRKS)) {
-                    final HtmlUnitScriptable sobj = getPage().getScriptableObject();
-                    if (sobj instanceof HTMLDocument) {
-                        documentMode = ((HTMLDocument) sobj).getDocumentMode();
-                    }
-                }
-                CssStyleSheet.validateSelectors(selectorList, documentMode, this);
+                CssStyleSheet.validateSelectors(selectorList, 9, this);
 
             }
             return selectorList;

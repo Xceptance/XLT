@@ -16,7 +16,6 @@ package org.htmlunit.javascript;
 
 import static org.htmlunit.junit.BrowserRunner.TestedBrowser.CHROME;
 import static org.htmlunit.junit.BrowserRunner.TestedBrowser.EDGE;
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
@@ -44,9 +43,8 @@ public class NativeArrayTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"1<>5", "5<>2", "1<>2", "5<>1", "2<>1", "1<>1", "5<>9"},
             CHROME = {"5<>1", "2<>5", "2<>5", "2<>1", "1<>2", "1<>1", "9<>2", "9<>5"},
-            EDGE = {"5<>1", "2<>5", "2<>5", "2<>1", "1<>2", "1<>1", "9<>2", "9<>5"},
-            IE = {"5<>1", "2<>5", "2<>1", "2<>5", "1<>5", "1<>2", "1<>1", "9<>5"})
-    @NotYetImplemented({CHROME, EDGE, IE})
+            EDGE = {"5<>1", "2<>5", "2<>5", "2<>1", "1<>2", "1<>1", "9<>2", "9<>5"})
+    @NotYetImplemented({CHROME, EDGE})
     public void sortSteps() throws Exception {
         final String html
             = "<html><head><script>\n"
@@ -133,8 +131,7 @@ public class NativeArrayTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "function Array() { [native code] }",
-            IE = "function Array() { [native code] } ")
+    @Alerts("function Array() { [native code] }")
     public void constructorToString() throws Exception {
         final String html
             = "<html><head><script>\n"
@@ -200,8 +197,7 @@ public class NativeArrayTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"3", "a", "b", "c"},
-            IE = "not supported")
+    @Alerts({"3", "a", "b", "c"})
     public void fromString() throws Exception {
         final String html
             = "<html>\n"
@@ -229,8 +225,7 @@ public class NativeArrayTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"3", "a", "b", "c"},
-            IE = "not supported")
+    @Alerts({"3", "a", "b", "c"})
     public void fromArray() throws Exception {
         final String html
             = "<html>\n"
@@ -258,8 +253,7 @@ public class NativeArrayTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"3", "a", "b", "c"},
-            IE = "not supported")
+    @Alerts({"3", "a", "b", "c"})
     public void fromArrayIterator() throws Exception {
         final String html
             = "<html>\n"
@@ -288,8 +282,7 @@ public class NativeArrayTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"4", "T", "e", "s", "t"},
-            IE = "not supported")
+    @Alerts({"4", "T", "e", "s", "t"})
     public void fromStringIterator() throws Exception {
         final String html
             = "<html>\n"
@@ -317,8 +310,7 @@ public class NativeArrayTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"2", "abc", "[object Window]"},
-            IE = "not supported")
+    @Alerts({"2", "abc", "[object Window]"})
     public void fromSet() throws Exception {
         final String html
             = "<html>\n"
@@ -347,8 +339,7 @@ public class NativeArrayTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"3", "1,2", "3,4", "5,6"},
-            IE = "not supported")
+    @Alerts({"3", "1,2", "3,4", "5,6"})
     public void fromMap() throws Exception {
         final String html
             = "<html>\n"
@@ -377,8 +368,7 @@ public class NativeArrayTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"1", "by"},
-            IE = "not supported")
+    @Alerts({"1", "by"})
     public void fromUserDefinedIterable() throws Exception {
         final String html
             = "<html>\n"
@@ -420,8 +410,7 @@ public class NativeArrayTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "TypeError",
-            IE = "not supported")
+    @Alerts("TypeError")
     public void fromObject() throws Exception {
         final String html
             = "<html>\n"
@@ -452,8 +441,7 @@ public class NativeArrayTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "0",
-            IE = "not supported")
+    @Alerts("0")
     public void fromNativeObject() throws Exception {
         final String html
             = "<html>\n"
@@ -481,8 +469,7 @@ public class NativeArrayTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"1", "abc"},
-            IE = "not supported")
+    @Alerts({"1", "abc"})
     public void fromArguments() throws Exception {
         final String html
             = "<html>\n"
@@ -545,9 +532,7 @@ public class NativeArrayTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"function", "20"},
-            IE = "undefined")
-    @NotYetImplemented(IE)
+    @Alerts({"function", "20"})
     public void find() throws Exception {
         final String html
             = "<html>\n"
@@ -573,9 +558,7 @@ public class NativeArrayTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"function", "20"},
-            IE = "undefined")
-    @NotYetImplemented(IE)
+    @Alerts({"function", "20"})
     public void findPrototype() throws Exception {
         final String html
             = "<html>\n"
@@ -628,9 +611,7 @@ public class NativeArrayTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"function", "1"},
-            IE = "undefined")
-    @NotYetImplemented(IE)
+    @Alerts({"function", "1"})
     public void findIndex() throws Exception {
         final String html
             = "<html>\n"
@@ -656,9 +637,7 @@ public class NativeArrayTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"function", "1"},
-            IE = "undefined")
-    @NotYetImplemented(IE)
+    @Alerts({"function", "1"})
     public void findIndexPrototype() throws Exception {
         final String html
             = "<html>\n"
@@ -2079,8 +2058,7 @@ public class NativeArrayTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "3",
-            IE = "not supported")
+    @Alerts("3")
     public void of() throws Exception {
         final String html
             = "<html>\n"

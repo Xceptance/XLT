@@ -14,35 +14,6 @@
  */
 package org.htmlunit.javascript.host.dom;
 
-import static org.htmlunit.BrowserVersionFeatures.JS_DOMIMPLEMENTATION_CREATE_HTMLDOCOMENT_REQUIRES_TITLE;
-import static org.htmlunit.BrowserVersionFeatures.JS_DOMIMPLEMENTATION_FEATURE_CORE_3;
-import static org.htmlunit.BrowserVersionFeatures.JS_DOMIMPLEMENTATION_FEATURE_CSS2_1;
-import static org.htmlunit.BrowserVersionFeatures.JS_DOMIMPLEMENTATION_FEATURE_CSS2_3;
-import static org.htmlunit.BrowserVersionFeatures.JS_DOMIMPLEMENTATION_FEATURE_CSS3_1;
-import static org.htmlunit.BrowserVersionFeatures.JS_DOMIMPLEMENTATION_FEATURE_CSS3_2;
-import static org.htmlunit.BrowserVersionFeatures.JS_DOMIMPLEMENTATION_FEATURE_CSS3_3;
-import static org.htmlunit.BrowserVersionFeatures.JS_DOMIMPLEMENTATION_FEATURE_CSS_1;
-import static org.htmlunit.BrowserVersionFeatures.JS_DOMIMPLEMENTATION_FEATURE_CSS_2;
-import static org.htmlunit.BrowserVersionFeatures.JS_DOMIMPLEMENTATION_FEATURE_CSS_3;
-import static org.htmlunit.BrowserVersionFeatures.JS_DOMIMPLEMENTATION_FEATURE_EVENTS_1;
-import static org.htmlunit.BrowserVersionFeatures.JS_DOMIMPLEMENTATION_FEATURE_KEYBOARDEVENTS;
-import static org.htmlunit.BrowserVersionFeatures.JS_DOMIMPLEMENTATION_FEATURE_LS;
-import static org.htmlunit.BrowserVersionFeatures.JS_DOMIMPLEMENTATION_FEATURE_MUTATIONNAMEEVENTS;
-import static org.htmlunit.BrowserVersionFeatures.JS_DOMIMPLEMENTATION_FEATURE_RANGE_1;
-import static org.htmlunit.BrowserVersionFeatures.JS_DOMIMPLEMENTATION_FEATURE_RANGE_3;
-import static org.htmlunit.BrowserVersionFeatures.JS_DOMIMPLEMENTATION_FEATURE_STYLESHEETS;
-import static org.htmlunit.BrowserVersionFeatures.JS_DOMIMPLEMENTATION_FEATURE_SVG_BASICSTRUCTURE_1_2;
-import static org.htmlunit.BrowserVersionFeatures.JS_DOMIMPLEMENTATION_FEATURE_TEXTEVENTS;
-import static org.htmlunit.BrowserVersionFeatures.JS_DOMIMPLEMENTATION_FEATURE_UIEVENTS_2;
-import static org.htmlunit.BrowserVersionFeatures.JS_DOMIMPLEMENTATION_FEATURE_VALIDATION;
-import static org.htmlunit.BrowserVersionFeatures.JS_DOMIMPLEMENTATION_FEATURE_VIEWS_1;
-import static org.htmlunit.BrowserVersionFeatures.JS_DOMIMPLEMENTATION_FEATURE_VIEWS_3;
-import static org.htmlunit.BrowserVersionFeatures.JS_DOMIMPLEMENTATION_FEATURE_XPATH;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-
 import java.io.IOException;
 
 import org.htmlunit.StringWebResponse;
@@ -83,7 +54,7 @@ public class DOMImplementation extends HtmlUnitScriptable {
     /**
      * JavaScript constructor.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
     }
 
@@ -105,7 +76,7 @@ public class DOMImplementation extends HtmlUnitScriptable {
                     case "2.0":
                         return true;
                     case "3.0":
-                        return getBrowserVersion().hasFeature(JS_DOMIMPLEMENTATION_FEATURE_CORE_3);
+                        return true;
                     default:
                 }
                 break;
@@ -113,26 +84,26 @@ public class DOMImplementation extends HtmlUnitScriptable {
             case "Views":
                 switch (version) {
                     case "1.0":
-                        return getBrowserVersion().hasFeature(JS_DOMIMPLEMENTATION_FEATURE_VIEWS_1);
+                        return true;
                     case "2.0":
                         return true;
                     case "3.0":
-                        return getBrowserVersion().hasFeature(JS_DOMIMPLEMENTATION_FEATURE_VIEWS_3);
+                        return true;
                     default:
                 }
                 break;
 
             case "StyleSheets":
-                return getBrowserVersion().hasFeature(JS_DOMIMPLEMENTATION_FEATURE_STYLESHEETS);
+                return true;
 
             case "CSS":
                 switch (version) {
                     case "1.0":
-                        return getBrowserVersion().hasFeature(JS_DOMIMPLEMENTATION_FEATURE_CSS_1);
+                        return true;
                     case "2.0":
-                        return getBrowserVersion().hasFeature(JS_DOMIMPLEMENTATION_FEATURE_CSS_2);
+                        return true;
                     case "3.0":
-                        return getBrowserVersion().hasFeature(JS_DOMIMPLEMENTATION_FEATURE_CSS_3);
+                        return true;
                     default:
                 }
                 break;
@@ -140,11 +111,11 @@ public class DOMImplementation extends HtmlUnitScriptable {
             case "CSS2":
                 switch (version) {
                     case "1.0":
-                        return getBrowserVersion().hasFeature(JS_DOMIMPLEMENTATION_FEATURE_CSS2_1);
+                        return true;
                     case "2.0":
                         return true;
                     case "3.0":
-                        return getBrowserVersion().hasFeature(JS_DOMIMPLEMENTATION_FEATURE_CSS2_3);
+                        return true;
                     default:
                 }
                 break;
@@ -152,11 +123,11 @@ public class DOMImplementation extends HtmlUnitScriptable {
             case "CSS3":
                 switch (version) {
                     case "1.0":
-                        return getBrowserVersion().hasFeature(JS_DOMIMPLEMENTATION_FEATURE_CSS3_1);
+                        return true;
                     case "2.0":
-                        return getBrowserVersion().hasFeature(JS_DOMIMPLEMENTATION_FEATURE_CSS3_2);
+                        return true;
                     case "3.0":
-                        return getBrowserVersion().hasFeature(JS_DOMIMPLEMENTATION_FEATURE_CSS3_3);
+                        return true;
                     default:
                 }
                 break;
@@ -167,7 +138,7 @@ public class DOMImplementation extends HtmlUnitScriptable {
             case "MutationEvents":
                 switch (version) {
                     case "1.0":
-                        return getBrowserVersion().hasFeature(JS_DOMIMPLEMENTATION_FEATURE_EVENTS_1);
+                        return true;
                     case "2.0":
                     case "3.0":
                         return true;
@@ -179,7 +150,7 @@ public class DOMImplementation extends HtmlUnitScriptable {
                 switch (version) {
                     case "1.0":
                     case "2.0":
-                        return getBrowserVersion().hasFeature(JS_DOMIMPLEMENTATION_FEATURE_UIEVENTS_2);
+                        return true;
                     case "3.0":
                         return true;
                     default:
@@ -187,36 +158,36 @@ public class DOMImplementation extends HtmlUnitScriptable {
                 break;
 
             case "KeyboardEvents":
-                return getBrowserVersion().hasFeature(JS_DOMIMPLEMENTATION_FEATURE_KEYBOARDEVENTS);
+                return true;
 
             case "MutationNameEvents":
-                return getBrowserVersion().hasFeature(JS_DOMIMPLEMENTATION_FEATURE_MUTATIONNAMEEVENTS);
+                return true;
 
             case "TextEvents":
-                return getBrowserVersion().hasFeature(JS_DOMIMPLEMENTATION_FEATURE_TEXTEVENTS);
+                return true;
 
             case "LS":
             case "LS-Async":
-                return getBrowserVersion().hasFeature(JS_DOMIMPLEMENTATION_FEATURE_LS);
+                return true;
 
             case "Range":
             case "Traversal":
                 switch (version) {
                     case "1.0":
-                        return getBrowserVersion().hasFeature(JS_DOMIMPLEMENTATION_FEATURE_RANGE_1);
+                        return true;
                     case "2.0":
                         return true;
                     case "3.0":
-                        return getBrowserVersion().hasFeature(JS_DOMIMPLEMENTATION_FEATURE_RANGE_3);
+                        return true;
                     default:
                 }
                 break;
 
             case "Validation":
-                return getBrowserVersion().hasFeature(JS_DOMIMPLEMENTATION_FEATURE_VALIDATION);
+                return true;
 
             case "XPath":
-                return getBrowserVersion().hasFeature(JS_DOMIMPLEMENTATION_FEATURE_XPATH);
+                return true;
 
             case "http://www.w3.org/TR/SVG11/feature#BasicStructure":
             case "http://www.w3.org/TR/SVG11/feature#Shape":
@@ -225,7 +196,7 @@ public class DOMImplementation extends HtmlUnitScriptable {
                     case "1.1":
                         return true;
                     case "1.2":
-                        return getBrowserVersion().hasFeature(JS_DOMIMPLEMENTATION_FEATURE_SVG_BASICSTRUCTURE_1_2);
+                        return true;
                     default:
                 }
                 break;
@@ -267,11 +238,6 @@ public class DOMImplementation extends HtmlUnitScriptable {
      */
     @JsxFunction
     public HTMLDocument createHTMLDocument(final Object titleObj) {
-        if (JavaScriptEngine.isUndefined(titleObj)
-                && getBrowserVersion().hasFeature(JS_DOMIMPLEMENTATION_CREATE_HTMLDOCOMENT_REQUIRES_TITLE)) {
-            throw JavaScriptEngine.reportRuntimeError("Title is required");
-        }
-
         // a similar impl is in
         // org.htmlunit.javascript.host.dom.DOMParser.parseFromString(String, Object)
         try {

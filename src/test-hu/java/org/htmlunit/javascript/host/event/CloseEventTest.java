@@ -18,7 +18,6 @@ import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.BuggyWebDriver;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -50,8 +49,7 @@ public class CloseEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object CloseEvent]", "type-close", "false", "false", "false", "0", "", "false"},
-            IE = "exception")
+    @Alerts({"[object CloseEvent]", "type-close", "false", "false", "false", "0", "", "false"})
     public void create_ctor() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"
@@ -73,8 +71,7 @@ public class CloseEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object CloseEvent]", "type-close", "true", "false", "false", "42", "test-reason", "true"},
-            IE = "exception")
+    @Alerts({"[object CloseEvent]", "type-close", "true", "false", "false", "42", "test-reason", "true"})
     public void create_ctorWithDetails() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"
@@ -103,9 +100,7 @@ public class CloseEventTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"[object CloseEvent]", "", "false", "false", "false", "0", "", "false"},
             FF = "exception",
-            FF_ESR = "exception",
-            IE = {"[object CloseEvent]", "", "false", "false", "undefined", "0", "", "false"})
-    @BuggyWebDriver(IE = {"[object CloseEvent]", "", "false", "false", "undefined", "0", "exception"})
+            FF_ESR = "exception")
     public void create_createEvent() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"
@@ -129,8 +124,7 @@ public class CloseEventTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "no initCloseEvent",
             FF = "exception",
-            FF_ESR = "exception",
-            IE = {"[object CloseEvent]", "close", "true", "false", "undefined", "42", "time to close", "true"})
+            FF_ESR = "exception")
     public void initCloseEvent() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"

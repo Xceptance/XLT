@@ -14,8 +14,6 @@
  */
 package org.htmlunit.html;
 
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
-
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Collections;
@@ -27,6 +25,7 @@ import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.BuggyWebDriver;
 import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -227,9 +226,7 @@ public class HtmlElement2Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "[object HTMLInputElement] [object HTMLBodyElement]",
             CHROME = "[object HTMLInputElement] onblur onfocusout [object HTMLBodyElement]",
-            EDGE = "[object HTMLInputElement] onblur onfocusout [object HTMLBodyElement]",
-            IE = "[object HTMLInputElement] null")
-    @NotYetImplemented(IE)
+            EDGE = "[object HTMLInputElement] onblur onfocusout [object HTMLBodyElement]")
     public void removeActiveElement() throws Exception {
         final String html =
                HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -262,9 +259,7 @@ public class HtmlElement2Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "[object HTMLInputElement] [object HTMLBodyElement]",
             CHROME = "[object HTMLInputElement] onblur1 onfocusout1 [object HTMLBodyElement]",
-            EDGE = "[object HTMLInputElement] onblur1 onfocusout1 [object HTMLBodyElement]",
-            IE = "[object HTMLInputElement] null")
-    @NotYetImplemented(IE)
+            EDGE = "[object HTMLInputElement] onblur1 onfocusout1 [object HTMLBodyElement]")
     public void removeParentOfActiveElement() throws Exception {
         final String html =
                 HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -304,9 +299,6 @@ public class HtmlElement2Test extends WebDriverTestCase {
      */
     @Test
     @Alerts({"before appendChild;after appendChild;image onload;after removeChild;", "2"})
-    // HtmlUnit loads images synchron - because of this the removeChild is called before the
-    // node is appended and fails
-    @NotYetImplemented
     public void addRemove() throws Exception {
         try (InputStream is = getClass().getClassLoader().getResourceAsStream("testfiles/tiny-jpg.img")) {
             final byte[] directBytes = IOUtils.toByteArray(is);
@@ -404,7 +396,7 @@ public class HtmlElement2Test extends WebDriverTestCase {
             + "</body></html>\n";
 
         final String xml = "<html xmlns=\"http://www.w3.org/1999/xhtml\"></html>";
-        getMockWebConnection().setResponse(URL_SECOND, xml, "application/xml");
+        getMockWebConnection().setResponse(URL_SECOND, xml, MimeType.APPLICATION_XML);
         loadPage2(html);
         verifyTitle2(DEFAULT_WAIT_TIME, getWebDriver(), getExpectedAlerts());
     }

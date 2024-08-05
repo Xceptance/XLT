@@ -14,12 +14,9 @@
  */
 package org.htmlunit.javascript.host.html;
 
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
-
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -566,14 +563,10 @@ public class HTMLTableElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"table: [object HTMLTableElement]",
-                       "row: [object HTMLTableRowElement]",
-                       "headcell: [object HTMLTableCellElement]",
-                       "datacell: [object HTMLTableCellElement]"},
-            IE = {"table: [object HTMLTableElement]",
-                  "row: [object HTMLTableRowElement]",
-                  "headcell: [object HTMLTableHeaderCellElement]",
-                  "datacell: [object HTMLTableDataCellElement]"})
+    @Alerts({"table: [object HTMLTableElement]",
+             "row: [object HTMLTableRowElement]",
+             "headcell: [object HTMLTableCellElement]",
+             "datacell: [object HTMLTableCellElement]"})
     public void stringValues() throws Exception {
         final String html =
             "<html><head>\n"
@@ -674,8 +667,7 @@ public class HTMLTableElementTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"", "hello", "left", "hi", "right"},
-            IE = {"", "error", "", "left", "error", "left", "right"})
+    @Alerts({"", "hello", "left", "hi", "right"})
     public void align() throws Exception {
         final String html =
             "<html>\n"
@@ -719,8 +711,7 @@ public class HTMLTableElementTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"", "#0000aa", "x"},
-            IE = {"", "#0000aa", "#0"})
+    @Alerts({"", "#0000aa", "x"})
     public void bgColor() throws Exception {
         final String html =
             "<html>\n"
@@ -805,9 +796,7 @@ public class HTMLTableElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "#667788", "unknown", "undefined", "undefined", "undefined"},
-            IE = {"", "#667788", "#000000", "red", "#123456", "#000000"})
-    @NotYetImplemented(IE)
+    @Alerts({"undefined", "#667788", "unknown", "undefined", "undefined", "undefined"})
     public void borderColor() throws Exception {
         final String html
             = "<html><body>\n"
@@ -842,9 +831,7 @@ public class HTMLTableElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "undefined", "undefined", "undefined", "undefined", "undefined"},
-            IE = {"", "", "", "red", "#123456", "#000000"})
-    @NotYetImplemented(IE)
+    @Alerts({"undefined", "undefined", "undefined", "undefined", "undefined", "undefined"})
     public void borderColorDark() throws Exception {
         final String html
             = "<html><body>\n"
@@ -879,9 +866,7 @@ public class HTMLTableElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "undefined", "undefined", "undefined", "undefined", "undefined"},
-            IE = {"", "", "", "red", "#123456", "#000000"})
-    @NotYetImplemented(IE)
+    @Alerts({"undefined", "undefined", "undefined", "undefined", "undefined", "undefined"})
     public void borderColorLight() throws Exception {
         final String html
             = "<html><body>\n"
@@ -952,8 +937,7 @@ public class HTMLTableElementTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"none", "groups", "rows", "cols", "wrong", ""},
-            IE = {"none", "groups", "rows", "cols", "", ""})
+    @Alerts({"none", "groups", "rows", "cols", "wrong", ""})
     public void getRules() throws Exception {
         final String html
             = "<html><body>\n"
@@ -979,8 +963,7 @@ public class HTMLTableElementTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"groUPs", "8", "foo", "rows", "cols"},
-            IE = {"groups", "error", "groups", "error", "groups", "rows", "cols"})
+    @Alerts({"groUPs", "8", "foo", "rows", "cols"})
     public void setRules() throws Exception {
         final String html
             = "<html><body>\n"

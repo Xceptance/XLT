@@ -16,7 +16,6 @@ package org.htmlunit.javascript.host.html;
 
 import static org.htmlunit.junit.BrowserRunner.TestedBrowser.FF;
 import static org.htmlunit.junit.BrowserRunner.TestedBrowser.FF_ESR;
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -153,8 +152,7 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "onchange-select; onclick-option; onclick-select;",
-            IE = "onchange-select; onclick-select;")
+    @Alerts("onchange-select; onclick-option; onclick-select;")
     @BuggyWebDriver(CHROME = "onchange-select; onclick-select;",
             EDGE = "onchange-select; onclick-select;",
             FF = "onchange-select; onclick-select;",
@@ -197,8 +195,7 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "change-SELECT; click-OPTION; click-OPTION;",
-            IE = "change-SELECT; click-SELECT;")
+    @Alerts("change-SELECT; click-OPTION; click-OPTION;")
     @BuggyWebDriver(CHROME = "change-SELECT; click-SELECT;",
             EDGE = "change-SELECT; click-SELECT;",
             FF = "change-SELECT; click-SELECT;",
@@ -256,8 +253,7 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "onchange-select; change-SELECT; onclick-option; click-OPTION; onclick-select; click-OPTION;",
-            IE = "onchange-select; change-SELECT; onclick-select; click-SELECT;")
+    @Alerts("onchange-select; change-SELECT; onclick-option; click-OPTION; onclick-select; click-OPTION;")
     @BuggyWebDriver(CHROME = "onchange-select; change-SELECT; onclick-select; click-SELECT;",
             EDGE = "onchange-select; change-SELECT; onclick-select; click-SELECT;",
             FF = "onchange-select; change-SELECT; onclick-select; click-SELECT;",
@@ -546,8 +542,7 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "undefined"},
-            IE = {"null", "undefined"})
+    @Alerts({"undefined", "undefined"})
     public void optionIndexOutOfBound() throws Exception {
         final String html =
             HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -791,8 +786,7 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object HTMLOptionsCollection]", "0", "1"},
-            IE = {"[object HTMLSelectElement]", "0", "1"})
+    @Alerts({"[object HTMLOptionsCollection]", "0", "1"})
     public void with_new() throws Exception {
         final String html =
             HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -821,9 +815,7 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object HTMLOptionsCollection]", "0", "exception", "0"},
-            IE = {"[object HTMLSelectElement]", "0", "1"})
-    @NotYetImplemented(IE)
+    @Alerts({"[object HTMLOptionsCollection]", "0", "exception", "0"})
     public void without_new() throws Exception {
         final String html =
             HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -1047,8 +1039,7 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
                             + "The document has been mutated since the result was returned",
                       "1", "0", "o2",
                       "InvalidStateError: XPathResult.iterateNext: "
-                            + "The document has been mutated since the result was returned"},
-            IE = {"evaluate not supported", "1", "0", "evaluate not supported"})
+                            + "The document has been mutated since the result was returned"})
     @HtmlUnitNYI(CHROME = {"o2", "1", "0", "o2"},
             EDGE = {"o2", "1", "0", "o2"},
             FF = {"o2", "1", "0", "o2"},
@@ -1080,8 +1071,7 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
                         + "The document has been mutated since the result was returned",
                       "1", "1", "o2",
                       "InvalidStateError: XPathResult.iterateNext: "
-                        + "The document has been mutated since the result was returned"},
-            IE = {"evaluate not supported", "1", "1", "evaluate not supported"})
+                        + "The document has been mutated since the result was returned"})
     @HtmlUnitNYI(CHROME = {"o2", "1", "1", "o2"},
             EDGE = {"o2", "1", "1", "o2"},
             FF = {"o2", "1", "1", "o2"},
@@ -1113,8 +1103,7 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
                             + "The document has been mutated since the result was returned",
                       "1", "-1", "o2",
                       "InvalidStateError: XPathResult.iterateNext: "
-                            + "The document has been mutated since the result was returned"},
-            IE = {"evaluate not supported", "1", "-1", "evaluate not supported"})
+                            + "The document has been mutated since the result was returned"})
     @HtmlUnitNYI(CHROME = {"o2", "1", "-1", "o2"},
             EDGE = {"o2", "1", "-1", "o2"},
             FF = {"o2", "1", "-1", "o2"},
@@ -1146,8 +1135,7 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
                             + "The document has been mutated since the result was returned",
                       "1", "1", "o2",
                       "InvalidStateError: XPathResult.iterateNext: "
-                            + "The document has been mutated since the result was returned"},
-            IE = {"evaluate not supported", "1", "1", "evaluate not supported"})
+                            + "The document has been mutated since the result was returned"})
     @HtmlUnitNYI(CHROME = {"o2", "1", "1", "o2"},
             EDGE = {"o2", "1", "1", "o2"},
             FF = {"o2", "1", "1", "o2"},
@@ -1420,11 +1408,8 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"false-null", "true-true", "false-null",
-                       "false-null", "true-true", "false-null"},
-            IE = {"false-null", "true-true", "true-",
-                  "false-null", "true-true", "false-null"})
-    @NotYetImplemented(IE)
+    @Alerts({"false-null", "true-true", "false-null",
+             "false-null", "true-true", "false-null"})
     public void createOption() throws Exception {
         final String html =
             HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -1472,8 +1457,7 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "o-mouse over [option1]s-mouse over [option1]",
-            IE = "")
+    @Alerts("o-mouse over [option1]s-mouse over [option1]")
     public void mouseOver() throws Exception {
         shutDownAll();
 
@@ -1525,8 +1509,7 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "o-mouse over [option1] s-mouse over [option1]",
-            IE = "")
+    @Alerts("o-mouse over [option1] s-mouse over [option1]")
     public void mouseOverDisabledSelect() throws Exception {
         shutDownAll();
 
@@ -1581,8 +1564,7 @@ public class HTMLOptionElement2Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "o-mouse over [option1] s-mouse over [option1]",
             FF = "s-mouse over [select1] o-mouse over [option1] s-mouse over [option1]",
-            FF_ESR = "s-mouse over [select1] o-mouse over [option1] s-mouse over [option1]",
-            IE = "")
+            FF_ESR = "s-mouse over [select1] o-mouse over [option1] s-mouse over [option1]")
     public void mouseOverDisabledOption() throws Exception {
         shutDownAll();
 

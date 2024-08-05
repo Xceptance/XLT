@@ -382,11 +382,7 @@ public class MalformedHtmlTest extends WebDriverTestCase {
             FF_ESR = {"4", "#text:\\n\\s\\s", "A:null", "A:null", "#text:YZ\\n\\n",
                       "2", "innerDiv", "A:null", "1", "#text:W", "exception",
                       "outerA", "BODY:null", "2", "#text:V", "true", "false",
-                      "innerA", "BODY:null", "1", "#text:X", "false", "true", "exception"},
-            IE = {"4", "#text:\\n\\s\\s", "A:null", "A:null", "#text:YZ\\n\\n",
-                  "2", "innerDiv", "A:null", "1", "#text:W", "exception",
-                  "outerA", "BODY:null", "2", "#text:V", "true", "false",
-                  "innerA", "BODY:null", "1", "#text:X", "false", "true", "exception"})
+                      "innerA", "BODY:null", "1", "#text:X", "false", "true", "exception"})
     // Input:
     // <a id="outerA">V<div id="innerDiv">W<a id="innerA">X</a>Y</div>Z</a>
     // CHROME and IE generate:
@@ -982,9 +978,7 @@ public class MalformedHtmlTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"3", "1b", "1a", "1c", "0", "TABLE"},
-            IE = {"3", "1a", "1b", "1c", "0", "TABLE"})
-    @HtmlUnitNYI(IE = {"3", "1b", "1a", "1c", "0", "TABLE"})
+    @Alerts({"3", "1b", "1a", "1c", "0", "TABLE"})
     public void formInTable9() throws Exception {
         final String html = "<html>\n"
                 + "<body>\n"
@@ -1120,8 +1114,7 @@ public class MalformedHtmlTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = {"", "0", "1"},
             EDGE = {"", "0", "1"},
             FF = {"", "0", "1"},
-            FF_ESR = {"", "0", "1"},
-            IE = {"", "0", "1"})
+            FF_ESR = {"", "0", "1"})
     public void siblingWithoutContentBeforeFrameset() throws Exception {
         final String html = "<html>\n"
                 + "<div id='div1'><span></span></div>\n"
@@ -1152,8 +1145,7 @@ public class MalformedHtmlTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = {"", "0", "1"},
             EDGE = {"", "0", "1"},
             FF = {"", "0", "1"},
-            FF_ESR = {"", "0", "1"},
-            IE = {"", "0", "1"})
+            FF_ESR = {"", "0", "1"})
     public void siblingWithWhitespaceContentBeforeFrameset() throws Exception {
         final String html = "<html>\n"
                 + "<div id='div1'>     \t \r \r\n</div>\n"
@@ -1295,8 +1287,7 @@ public class MalformedHtmlTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = {"", "0", "1"},
             EDGE = {"", "0", "1"},
             FF = {"", "0", "1"},
-            FF_ESR = {"", "0", "1"},
-            IE = {"", "0", "1"})
+            FF_ESR = {"", "0", "1"})
     public void framesetInsideDiv() throws Exception {
         final String html = "<html>\n"
                 + "<div id='tester'>\n"
@@ -1328,8 +1319,7 @@ public class MalformedHtmlTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = {"", "0", "1"},
             EDGE = {"", "0", "1"},
             FF = {"", "0", "1"},
-            FF_ESR = {"", "0", "1"},
-            IE = {"", "0", "1"})
+            FF_ESR = {"", "0", "1"})
     public void framesetInsideForm() throws Exception {
         final String html = "<html>\n"
                 + "<form id='tester'>\n"
@@ -1428,5 +1418,28 @@ public class MalformedHtmlTest extends WebDriverTestCase {
         driver.findElement(By.id("myLink")).click();
 
         assertEquals(getExpectedAlerts()[0], getMockWebConnection().getLastWebRequest().getUrl());
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"5", "3", "[object HTMLSelectElement]", "[object HTMLTableElement]", "[object HTMLScriptElement]"})
+    public void selectInsideEmptyTable() throws Exception {
+        final String html = "<html><head></head><body>\n"
+                + "<table><select name='Lang'><option value='da'>Dansk</option></select></table>\n"
+                + "<script>\n"
+                + LOG_TITLE_FUNCTION
+                + "log(document.body.childNodes.length);\n"
+                + "log(document.body.children.length);\n"
+                + "log(document.body.children[0]);\n"
+                + "log(document.body.children[1]);\n"
+                + "log(document.body.children[2]);\n"
+                + "</script>\n"
+                + "</body></html>";
+
+        expandExpectedAlertsVariables(URL_FIRST);
+
+        loadPageVerifyTitle2(html);
     }
 }

@@ -27,7 +27,6 @@ import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.BuggyWebDriver;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import org.htmlunit.util.NameValuePair;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -78,8 +77,7 @@ public class HtmlAreaTest extends WebDriverTestCase {
     @Test
     @Alerts("§§URL§§")
     @BuggyWebDriver(FF = "WebDriverException",
-                    FF_ESR = "WebDriverException",
-                    IE = "WebDriverException")
+                    FF_ESR = "WebDriverException")
     public void referer() throws Exception {
         expandExpectedAlertsVariables(URL_FIRST);
 
@@ -281,9 +279,7 @@ public class HtmlAreaTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"false", "false", "true"},
-            IE = {"false", "false", "false"})
-    @HtmlUnitNYI(IE = {"false", "false", "true"})
+    @Alerts({"false", "false", "true"})
     public void isDisplayedEmptyCircle() throws Exception {
         final String html = "<html><head><title>Page A</title></head>\n"
                 + "<body>\n"

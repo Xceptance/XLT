@@ -14,12 +14,6 @@
  */
 package org.htmlunit.javascript.host.xml;
 
-import static org.htmlunit.BrowserVersionFeatures.JS_FORM_DATA_CONTENT_TYPE_PLAIN_IF_FILE_TYPE_UNKNOWN;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -164,12 +158,7 @@ public class FormData extends HtmlUnitScriptable {
             }
             contentType = file.getType();
             if (StringUtils.isEmpty(contentType)) {
-                if (getBrowserVersion().hasFeature(JS_FORM_DATA_CONTENT_TYPE_PLAIN_IF_FILE_TYPE_UNKNOWN)) {
-                    contentType = MimeType.TEXT_PLAIN;
-                }
-                else {
-                    contentType = MimeType.APPLICATION_OCTET_STREAM;
-                }
+                contentType = MimeType.APPLICATION_OCTET_STREAM;
             }
             requestParameters_.add(new KeyDataPair(name, file.getFile(), fileName, contentType, (Charset) null));
         }
@@ -182,7 +171,7 @@ public class FormData extends HtmlUnitScriptable {
      * Removes the entry (if exists).
      * @param name the name of the field to remove
      */
-    @JsxFunction(functionName = "delete", value = {CHROME, EDGE, FF, FF_ESR})
+    @JsxFunction(functionName = "delete")
     public void delete_js(final String name) {
         if (StringUtils.isEmpty(name)) {
             return;
@@ -195,7 +184,7 @@ public class FormData extends HtmlUnitScriptable {
      * @param name the name of the field to check
      * @return the first value found for the give name
      */
-    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
+    @JsxFunction
     public String get(final String name) {
         if (StringUtils.isEmpty(name)) {
             return null;
@@ -213,7 +202,7 @@ public class FormData extends HtmlUnitScriptable {
      * @param name the name of the field to check
      * @return the values found for the give name
      */
-    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
+    @JsxFunction
     public Scriptable getAll(final String name) {
         if (StringUtils.isEmpty(name)) {
             return JavaScriptEngine.newArray(this, 0);
@@ -234,7 +223,7 @@ public class FormData extends HtmlUnitScriptable {
      * @param name the name of the field to check
      * @return true if the name exists
      */
-    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
+    @JsxFunction
     public boolean has(final String name) {
         if (StringUtils.isEmpty(name)) {
             return false;
@@ -255,7 +244,7 @@ public class FormData extends HtmlUnitScriptable {
      * @param value the field's value
      * @param filename the filename reported to the server (optional)
      */
-    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
+    @JsxFunction
     public void set(final String name, final Object value, final Object filename) {
         if (StringUtils.isEmpty(name)) {
             return;
@@ -297,8 +286,8 @@ public class FormData extends HtmlUnitScriptable {
     /**
      * @return An Iterator that contains all the requestParameters name[0] and value[1]
      */
-    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
-    @JsxSymbol(value = {CHROME, EDGE, FF, FF_ESR}, symbolName = "iterator")
+    @JsxFunction
+    @JsxSymbol(symbolName = "iterator")
     public Scriptable entries() {
         return new FormDataIterator(this, "FormData Iterator", FormDataIterator.Type.BOTH, requestParameters_);
     }
@@ -317,7 +306,7 @@ public class FormData extends HtmlUnitScriptable {
      * all key/value pairs contained in this object via a callback function.
      * @param callback Function to execute on each key/value pairs
      */
-    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
+    @JsxFunction
     public void forEach(final Object callback) {
         if (!(callback instanceof Function)) {
             throw JavaScriptEngine.typeError(
@@ -344,7 +333,7 @@ public class FormData extends HtmlUnitScriptable {
      *
      * @return an iterator.
      */
-    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
+    @JsxFunction
     public Object keys() {
         return new FormDataIterator(getParentScope(),
                 "FormData Iterator", FormDataIterator.Type.KEYS, requestParameters_);
@@ -356,7 +345,7 @@ public class FormData extends HtmlUnitScriptable {
      *
      * @return an iterator.
      */
-    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
+    @JsxFunction
     public Object values() {
         return new FormDataIterator(getParentScope(),
                 "FormData Iterator", FormDataIterator.Type.VALUES, requestParameters_);
