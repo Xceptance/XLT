@@ -88,8 +88,8 @@
         <resolver:dependencies id="depsFromPom" pomRef="xlt.pom" />
 
         <resolver:resolve dependenciesref="depsFromPom" remotereposref="resolver.repositories">
-            <files refid="deps.fileset" scopes="compile" />
-            <files refid="provided.fileset" scopes="compile,provided" />
+            <files refid="deps.fileset" scopes="compile,runtime" />
+            <files refid="provided.fileset" scopes="provided" />
         </resolver:resolve>
 
         <condition property="need.copy.deps">

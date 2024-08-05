@@ -13,30 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package util.xlt;
-
-import java.util.ArrayList;
-import java.util.List;
+package com.xceptance.xlt.engine.metrics;
 
 import com.xceptance.xlt.api.engine.Data;
-import com.xceptance.xlt.engine.DataManagerImpl;
-import com.xceptance.xlt.engine.SessionImpl;
 
-/**
- * Mock implementation of {@link DataManagerImpl} that allows easy access to the data records logged.
- */
-public class MockDataManager extends DataManagerImpl
+public interface MetricsReporter
 {
-    public List<Data> dataRecords = new ArrayList<>();
-
-    public MockDataManager(final SessionImpl session)
-    {
-        super(session);
-    }
-
-    @Override
-    public void logDataRecord(final Data data)
-    {
-        dataRecords.add(data);
-    }
+    public void reportMetrics(final Data data);
 }

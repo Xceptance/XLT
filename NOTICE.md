@@ -238,6 +238,12 @@ okhttp
   * Homepage: https://github.com/square/okhttp
   * More information in folder: doc/3rd-party-licenses/okhttp
 
+opentelemetry
+
+  * License: Apache License 2.0
+  * Homepage: https://github.com/open-telemetry
+  * More information in folder: doc/3rd-party-licenses/opentelemetry
+
 pegdown
 
   * License: Apache License 2.0
