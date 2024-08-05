@@ -9,9 +9,13 @@ import org.apache.commons.lang3.StringUtils;
 import com.xceptance.xlt.api.util.XltProperties;
 import com.xceptance.xlt.common.XltConstants;
 
-import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
 
+/**
+ * All SDK management takes place here, away from the instrumentation code, which should only access the OpenTelemetry
+ * APIs.
+ */
 public final class OpenTelemetryConfiguration
 {
     /** Default c'tor. Declared private to prevent external instantiation. */
@@ -20,7 +24,17 @@ public final class OpenTelemetryConfiguration
         // empty on purpose
     }
 
-    public static OpenTelemetrySdk initialize(final XltProperties props, final Consumer<Map<String, String>> propsCustomizer)
+    /**
+     * Initializes the OpenTelemetry SDK according to properties found in given {@link XltProperties} instance supported
+     * by {@link AutoConfiguredOpenTelemetrySdk}.
+     *
+     * @param props
+     *            the properties to use for configuration
+     * @param propsCustomizer
+     *            an optional property customizer
+     * @return ready-to-use OpenTelemetry instance
+     */
+    public static OpenTelemetry initialize(final XltProperties props, final Consumer<Map<String, String>> propsCustomizer)
     {
         final Map<String, String> otelProps = lookupProperties(props);
 
@@ -32,12 +46,28 @@ public final class OpenTelemetryConfiguration
         return initialize(otelProps);
     }
 
-    public static OpenTelemetrySdk initialize(final XltProperties props)
+    /**
+     * Initializes the OpenTelemetry SDK according to properties found in given {@link XltProperties} instance supported
+     * by {@link AutoConfiguredOpenTelemetrySdk}.
+     *
+     * @param props
+     *            the properties to use for configuration
+     * @return ready-to-use OpenTelemetry instance
+     */
+    public static OpenTelemetry initialize(final XltProperties props)
     {
         return initialize(props, null);
     }
 
-    public static OpenTelemetrySdk initialize(final Map<String, String> properties)
+    /**
+     * Initializes the OpenTelemetry SDK according to given properties supported by
+     * {@link AutoConfiguredOpenTelemetrySdk}.
+     *
+     * @param properties
+     *            the properties to use for configuration
+     * @return ready-to-use OpenTelemetry instance
+     */
+    public static OpenTelemetry initialize(final Map<String, String> properties)
     {
         return AutoConfiguredOpenTelemetrySdk.builder().addPropertiesSupplier(() -> properties).build().getOpenTelemetrySdk();
     }

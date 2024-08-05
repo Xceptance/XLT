@@ -9,10 +9,10 @@ import com.xceptance.xlt.api.engine.Session;
 import com.xceptance.xlt.api.engine.TransactionData;
 import com.xceptance.xlt.engine.metrics.MetricsReporter;
 
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.logs.LogRecordBuilder;
 import io.opentelemetry.api.logs.Severity;
-import io.opentelemetry.sdk.OpenTelemetrySdk;
 
 public class OtelMetricsReporter implements MetricsReporter
 {
@@ -39,11 +39,11 @@ public class OtelMetricsReporter implements MetricsReporter
 
     private static final String LOG_TYPE_EVENT = "event";
 
-    private final OpenTelemetrySdk _otelSdk;
+    private final OpenTelemetry _otel;
 
-    public OtelMetricsReporter(final OpenTelemetrySdk otelSdk)
+    public OtelMetricsReporter(final OpenTelemetry otel)
     {
-        this._otelSdk = otelSdk;
+        this._otel = otel;
     }
 
     @Override
@@ -103,6 +103,6 @@ public class OtelMetricsReporter implements MetricsReporter
      */
     private io.opentelemetry.api.logs.Logger getLogger()
     {
-        return this._otelSdk.getSdkLoggerProvider().get(getClass().getName());
+        return this._otel.getLogsBridge().get(getClass().getName());
     }
 }
