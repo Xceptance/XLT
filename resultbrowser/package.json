@@ -23,17 +23,17 @@
   "author": "Benjamin Ortmann",
   "license": "ISC",
   "devDependencies": {
-    "@parcel/optimizer-data-url": "2.8.3",
-    "@parcel/transformer-inline-string": "2.8.3",
+    "@parcel/optimizer-data-url": "2.12.0",
+    "@parcel/transformer-inline-string": "2.12.0",
     "http-server": "14.1.1",
-    "inline-source": "8.0.2",
+    "inline-source": "8.0.3",
     "inline-source-cli": "2.0.0",
     "onchange": "7.1.0",
-    "parcel": "2.8.3",
+    "parcel": "2.12.0",
     "parcel-plugin-inline-source": "1.0.0",
-    "parcel-resolver-ignore": "2.1.3"
+    "parcel-resolver-ignore": "2.2.0"
   },
   "overrides": {
-    "inline-source": "8.0.2"
+    "inline-source": "8.0.3"
   }
 }
