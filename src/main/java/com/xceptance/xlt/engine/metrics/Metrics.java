@@ -28,7 +28,7 @@ import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.engine.Session;
 import com.xceptance.xlt.api.util.XltProperties;
 import com.xceptance.xlt.engine.metrics.graphite.GraphiteMetricsReporter;
-import com.xceptance.xlt.engine.metrics.otel.OpenTelemetryConfiguration;
+import com.xceptance.xlt.engine.metrics.otel.OpenTelemetryFactory;
 import com.xceptance.xlt.engine.metrics.otel.OtelMetricsReporter;
 
 /**
@@ -104,8 +104,8 @@ public class Metrics
             if (otelEnabled)
             {
                 create("otel",
-                       () -> new OtelMetricsReporter(OpenTelemetryConfiguration.initialize(props, Metrics::defaultOtelProps)))
-                                                                                                                              .ifPresent(reporters::add);
+                       () -> new OtelMetricsReporter(OpenTelemetryFactory.create(props, Metrics::defaultOtelProps)))
+                                                                                                                    .ifPresent(reporters::add);
             }
         }
         else
