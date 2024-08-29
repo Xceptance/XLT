@@ -1,0 +1,184 @@
+package com.xceptance.xlt.engine;
+
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+
+import com.xceptance.xlt.api.engine.DataLogger;
+import com.xceptance.xlt.api.engine.Session;
+import com.xceptance.xlt.api.util.XltLogger;
+
+public class DataLoggerImpl implements DataLogger
+{
+    /**
+     * Back-reference to session using this data logger.
+     */
+    private final Session session;
+    
+    private volatile BufferedWriter logger;
+    
+    private String header = null;
+    
+    private String filename;
+    
+    private String extension = "csv"; //may be changed, but set this as default
+    
+    protected DataLoggerImpl(final Session session, final String scope)
+    {
+        this.session = session;
+        this.filename = scope; //may be changed, but set this as default
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setHeader(String header)
+    {
+        this.header = header;
+        //TODO when do we write this header? can be basically set and reset at any time in the process?
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setExtension(String extension)
+    {
+        this.extension = extension;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setFilename(String filename)
+    {
+        this.filename = filename;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void log(String lineOfData)
+    {
+        final BufferedWriter writer = logger != null ? logger : getTimerLogger();
+
+        // no statistics logger configured -> exit here
+        if (writer == null)
+        {
+            return;
+        }
+
+        // write the log line - TODO csv validation might be useful here? in case we have csv... whatever
+        try
+        {
+            // this safes us from synchronization, the writer is already synchronized
+            StringBuilder s = new StringBuilder(lineOfData);
+            s = removeLineSeparators(s, ' ');
+            s.append(System.lineSeparator());
+            
+            writer.write(s.toString());
+            writer.flush();
+        }
+        catch (final IOException ex)
+        {
+            XltLogger.runTimeLogger.error("Failed to write data:", ex);
+        }
+    }
+    
+    /**
+     * Returns the output logger. The logger is created if necessary.
+     *
+     * @return the logger creating the timer output
+     */
+    private BufferedWriter getTimerLogger()
+    {
+        // check if logger has already been initialized
+        if (logger != null)
+        {
+            return logger;
+        }
+
+        // only one can create the logger
+        synchronized (this)
+        {
+            // was someone else faster?
+            if (logger != null)
+            {
+                return logger;
+            }
+
+            // get the appropriate timer file
+            final Path file = getLoggerFile();
+
+            // creation of timer file has failed for any reason -> exit here
+            if (file == null)
+            {
+                return null;
+            }
+
+            try
+            {
+                // we append to an existing file
+                logger = Files.newBufferedWriter(file, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+            }
+            catch (IOException e)
+            {
+                XltLogger.runTimeLogger.error("Cannot create writer for file: " + file.toString(), e);
+            }
+        }
+
+        return logger;
+    }
+    
+    /**
+     * Returns the logger file for the current session. If it does not exist yet, it will be created.
+     *
+     * @return logger file
+     */
+    Path getLoggerFile()
+    {
+        // create file handle for new logger file rooted at the session's result directory
+        // will create the directory as well!
+        final Path dir = session.getResultsDirectory();
+
+        if (dir == null)
+        {
+            throw new RuntimeException("Missing result dir, see previous exceptions.");
+        }
+
+        final Path file = dir.resolve(filename + '.' + extension);
+
+        return file;
+    }
+    
+    /**
+     * Removes LF and CR and replaces it with something else. This is an in-place operation on the passed buffer.
+     *
+     * @param the
+     *            buffer to check
+     * @param the
+     *            replacement character
+     * @return a cleaned buffer
+     */
+    static StringBuilder removeLineSeparators(final StringBuilder src, final char replacementChar)
+    {
+        for (int i = 0; i < src.length(); i++)
+        {
+            var c = src.charAt(i);
+
+            if (c == '\n' || c == '\r')
+            {
+                src.setCharAt(i, replacementChar);
+            }
+        }
+
+        return src;
+    }
+
+}

@@ -115,6 +115,13 @@ public abstract class Session
      * @return the data manager
      */
     public abstract DataManager getDataManager();
+    
+    /**
+     * Logs a line of custom data in the datalogger of the given scope.
+     * (Shortcut method for getDataManager().dataLogger(scope).log(lineOfData))
+     *
+     */
+    public abstract void logData(String scope, String lineOfData);
 
     /**
      * Returns the total count of agents that take part in a load test.

@@ -438,6 +438,15 @@ public class SessionImpl extends Session
     {
         return dataManagerImpl;
     }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void logData(String scope, String lineOfData)
+    {
+        getDataManager().dataLogger(scope).log(lineOfData);
+    }
 
     /**
      * {@inheritDoc}

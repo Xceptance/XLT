@@ -21,11 +21,13 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.HashMap;
 import java.util.Optional;
 import java.util.function.Supplier;
 
 import com.xceptance.common.util.CsvUtils;
 import com.xceptance.xlt.api.engine.Data;
+import com.xceptance.xlt.api.engine.DataLogger;
 import com.xceptance.xlt.api.engine.DataManager;
 import com.xceptance.xlt.api.engine.EventData;
 import com.xceptance.xlt.api.engine.GlobalClock;
@@ -70,6 +72,8 @@ public class DataManagerImpl implements DataManager
      * Logger responsible for logging the statistics to the timer file(s).
      */
     private volatile BufferedWriter logger;
+    
+    private HashMap<String, DataLogger> dataLoggers = new HashMap<String, DataLogger>();
 
     /**
      * Our metrics provider.
@@ -389,5 +393,23 @@ public class DataManagerImpl implements DataManager
         }
 
         return src;
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public DataLogger dataLogger(String scope)
+    {
+        DataLogger dataLogger = dataLoggers.get(scope);
+        
+        // check if dataLogger has already been initialized
+        // otherwise create one, add it to the list and return it
+        if (dataLogger == null)
+        {            
+            dataLogger = new DataLoggerImpl(session, scope);
+            dataLoggers.put(scope, dataLogger);
+        }
+        
+        return dataLogger;
     }
 }
