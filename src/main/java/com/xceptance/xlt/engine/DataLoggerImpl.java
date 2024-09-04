@@ -20,7 +20,7 @@ public class DataLoggerImpl implements DataLogger
     
     private volatile BufferedWriter logger;
     
-    private String header = null;
+    //private String header = null;
     
     private String filename;
     
@@ -38,8 +38,39 @@ public class DataLoggerImpl implements DataLogger
     @Override
     public void setHeader(String header)
     {
-        this.header = header;
+        //this.header = header;
         //TODO when do we write this header? can be basically set and reset at any time in the process?
+        
+        Path file = getLoggerFile();
+        try
+        {
+            if (!Files.exists(file) || Files.size(file) == 0)
+            {
+                // if there is nothing logged yet we can add a header, otherwise it would be a line of content?
+            
+                final BufferedWriter writer = logger != null ? logger : getTimerLogger();
+   
+                // no statistics logger configured -> exit here
+                if (writer == null)
+                {
+                    return;
+                }
+   
+                // write the header line - TODO csv validation might be useful here? in case we have csv... whatever
+                // this safes us from synchronization, the writer is already synchronized
+                StringBuilder s = new StringBuilder(header);
+                s = removeLineSeparators(s, ' ');
+                s.append(System.lineSeparator());
+                
+                writer.write(s.toString());
+                writer.flush();
+            }
+        }
+        catch (final IOException ex)
+        {
+            XltLogger.runTimeLogger.error("Failed to write custom data header:", ex);
+        }
+        
     }
 
     /**
@@ -141,7 +172,7 @@ public class DataLoggerImpl implements DataLogger
      *
      * @return logger file
      */
-    Path getLoggerFile()
+    private Path getLoggerFile()
     {
         // create file handle for new logger file rooted at the session's result directory
         // will create the directory as well!
