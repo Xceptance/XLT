@@ -15,11 +15,13 @@
  */
 package com.xceptance.xlt.engine.dns;
 
+import java.lang.reflect.Array;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +31,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.caucho.hessian.io.InetAddressHandle;
 import com.xceptance.xlt.api.util.XltException;
 import com.xceptance.xlt.api.util.XltProperties;
 import com.xceptance.xlt.api.util.XltRandom;
@@ -174,10 +177,19 @@ public class XltDnsResolver implements HostNameResolver
             addresses = addressesByHostName.get(host);
         }
 
-        // Check for override in configuration file
-        final String overrideIp = getOverrideIp(host);
-        if (overrideIp != null) {
-            return new InetAddress[] { InetAddress.getByName(overrideIp) };
+        // Check for override in configuration file and obtain them if available
+
+        final String[] overrideIps = getOverrideIp(host);
+
+        if (overrideIps != null) 
+        {
+            InetAddress[] inetAddresses = new InetAddress[overrideIps.length];
+        
+            for (int i = 0; i < overrideIps.length; i++) 
+            {
+                 inetAddresses[i] = InetAddress.getByName(overrideIps[i]); 
+            }
+            return inetAddresses;
         }
 
         if (addresses == null) // caching not enabled or host name not cached yet
@@ -215,13 +227,23 @@ public class XltDnsResolver implements HostNameResolver
         return addresses;
     }
     
-    //get ip specified in project.properties file of the test suite
-    private String getOverrideIp(final String hostname) {
+    // obtain overriding ip adresses specified in project.properties file of the test suite
+    private String[] getOverrideIp(final String hostname) 
+    {
         final XltProperties properties = XltProperties.getInstance();
-        // System.err.println("********" + hostname  + " ***************");
-        return properties.getProperty("com.xceptance.xlt.dns.override." + hostname);
+        final String overrideAddresses = properties.getProperty("com.xceptance.xlt.dns.override." + hostname);
+        
+        if(overrideAddresses == null)
+        { 
+            return null;
+        }
+        else
+        {
+            String[] overrideAddressesArray = overrideAddresses.split(",");
+            return overrideAddressesArray;
+        }
       }
-      
+
     /**
      * Performs the actual address resolution using the passed resolver and measures the resolution time.
      */
