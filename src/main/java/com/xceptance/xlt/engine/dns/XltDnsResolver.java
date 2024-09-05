@@ -174,6 +174,12 @@ public class XltDnsResolver implements HostNameResolver
             addresses = addressesByHostName.get(host);
         }
 
+        // Check for override in configuration file
+        final String overrideIp = getOverrideIp(host);
+        if (overrideIp != null) {
+            return new InetAddress[] { InetAddress.getByName(overrideIp) };
+        }
+
         if (addresses == null) // caching not enabled or host name not cached yet
         {
             // perform address resolution
@@ -208,7 +214,14 @@ public class XltDnsResolver implements HostNameResolver
 
         return addresses;
     }
-
+    
+    //get ip specified in project.properties file of the test suite
+    private String getOverrideIp(final String hostname) {
+        final XltProperties properties = XltProperties.getInstance();
+        // System.err.println("********" + hostname  + " ***************");
+        return properties.getProperty("com.xceptance.xlt.dns.override." + hostname);
+      }
+      
     /**
      * Performs the actual address resolution using the passed resolver and measures the resolution time.
      */
