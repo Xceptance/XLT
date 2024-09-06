@@ -114,11 +114,15 @@ public class XltDnsResolver implements HostNameResolver
      */
     private final HostNameResolver resolver;
 
+    final HashMap<String, InetAddress[]> inetAddressHashMap;
+
     /**
      * Creates a new instance and configures it according to the project configuration files.
      */
     public XltDnsResolver()
     {
+        inetAddressHashMap = new HashMap<String, InetAddress[]>();
+
         final XltProperties props = XltProperties.getInstance();
 
         recordAddresses = props.getProperty(PROP_RECORD_ADDRESSES, false);
@@ -139,6 +143,8 @@ public class XltDnsResolver implements HostNameResolver
 
         final String providerName = StringUtils.defaultIfBlank(props.getProperty(PROP_PROVIDER), PlatformHostNameResolver.PROVIDER_NAME);
         resolver = createResolver(providerName);
+
+        mapHostNames("posters.xceptance.io");
     }
 
     /**
@@ -179,17 +185,12 @@ public class XltDnsResolver implements HostNameResolver
 
         // Check for override in configuration file and obtain them if available
 
-        final String[] overrideIps = getOverrideIp(host);
+        final InetAddress[] overrideIps = inetAddressHashMap.get(host);
 
         if (overrideIps != null) 
         {
-            InetAddress[] inetAddresses = new InetAddress[overrideIps.length];
-        
-            for (int i = 0; i < overrideIps.length; i++) 
-            {
-                 inetAddresses[i] = InetAddress.getByName(overrideIps[i]); 
-            }
-            return inetAddresses;
+
+            addresses = overrideIps;
         }
 
         if (addresses == null) // caching not enabled or host name not cached yet
@@ -228,20 +229,27 @@ public class XltDnsResolver implements HostNameResolver
     }
     
     // obtain overriding ip adresses specified in project.properties file of the test suite
-    private String[] getOverrideIp(final String hostname) 
+    private void mapHostNames(final String hostname) 
     {
         final XltProperties properties = XltProperties.getInstance();
         final String overrideAddresses = properties.getProperty("com.xceptance.xlt.dns.override." + hostname);
-        
-        if(overrideAddresses == null)
-        { 
-            return null;
-        }
-        else
+
+        String[] addressArray = StringUtils.split(overrideAddresses, ",");
+        InetAddress[] inetAddresses = new InetAddress[addressArray.length];
+
+        for (int i = 0; i < addressArray.length; i++) 
         {
-            String[] overrideAddressesArray = overrideAddresses.split(",");
-            return overrideAddressesArray;
+            try
+            {
+                inetAddresses[i] = InetAddress.getByName(addressArray[i].trim());
+            }
+            catch (UnknownHostException e)
+            {
+                System.err.println("***** Error Populating inetAdresses array *****");
+            }
         }
+
+        inetAddressHashMap.put(hostname, inetAddresses);
       }
 
     /**
