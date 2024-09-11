@@ -88,23 +88,50 @@ public class CustomLogsReportProvider extends AbstractReportProvider
     public static class CustomLogFinder extends SimpleFileVisitor<Path> 
     {
         Set<String> foundScopes = new HashSet<String>();
+        Set<String> foundScopesDir = new HashSet<String>();
+        boolean containsTimers = false;
 
         // Print information about each type of file.
         @Override
         public FileVisitResult visitFile(Path file, BasicFileAttributes attr) 
         {
-            System.out.format("Visiting %s \n", file);
-            if (attr.isDirectory() && XltConstants.CONFIG_DIR_NAME.equals(file.getFileName().toString()))
+            if (attr.isRegularFile() && file.getFileName().toString().startsWith(XltConstants.TIMER_FILENAME)) 
             {
-                return SKIP_SUBTREE;
+                containsTimers = true;
             } 
-            else if (attr.isRegularFile() && !XltConstants.TIMER_FILENAME.equals(file.getFileName().toString())) 
+            if (attr.isRegularFile() && !(file.getFileName().toString().startsWith(XltConstants.TIMER_FILENAME))) 
             {
-                System.out.format("Custom data file: %s \n", file);
-                foundScopes.add(file.getFileName().toString());
+                foundScopesDir.add(file.getFileName().toString());
             } 
             return CONTINUE;
         }
+        
+        @Override
+        public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attr) 
+        {
+            containsTimers = false;
+            foundScopesDir = new HashSet<String>();
+            if (attr.isDirectory() && XltConstants.CONFIG_DIR_NAME.equals(dir.getFileName().toString()))
+            {
+                System.out.format("SKIPPING %s \n", dir.getFileName());
+                return SKIP_SUBTREE;
+            } 
+            return CONTINUE;
+        }
+        
+        @Override
+        public FileVisitResult postVisitDirectory(Path dir, IOException ex) 
+        {
+            if (containsTimers)
+            {
+                System.out.format("Timers in %s \n", dir.getFileName());
+                foundScopes.addAll(foundScopesDir);
+                System.out.format("Custom data files: %s \n", foundScopesDir);
+                containsTimers = false;
+            } 
+            return CONTINUE;
+        }
+        
         
         Set<String> getResult() 
         {
