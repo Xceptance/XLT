@@ -16,21 +16,24 @@ public class DataLoggerImpl implements DataLogger
     /**
      * Back-reference to session using this data logger.
      */
-    private final Session session;
+    private Session session;
     
     private volatile BufferedWriter logger;
     
-    //private String header = null;
-    
     private String filename;
     
-    private String extension = "csv"; //may be changed, but set this as default
+    private String extension;
     
-    protected DataLoggerImpl(final Session session, final String scope)
+    protected DataLoggerImpl(Session session, String scope)
+    {
+        new DataLoggerImpl(session, scope, "csv");
+    }
+    
+    protected DataLoggerImpl(Session session, String scope, String extension)
     {
         this.session = session;
-        this.filename = scope; //may be changed, but set this as default
-    }
+        this.filename = scope; 
+    }    
 
     /**
      * {@inheritDoc}
@@ -38,37 +41,45 @@ public class DataLoggerImpl implements DataLogger
     @Override
     public void setHeader(String header)
     {
-        //this.header = header;
-        //TODO when do we write this header? can be basically set and reset at any time in the process?
-        
-        Path file = getLoggerFile();
-        try
-        {
-            if (!Files.exists(file) || Files.size(file) == 0)
+        if ("csv".equals(this.extension))
+        {        
+            Path file = getLoggerFile();
+            try
             {
-                // if there is nothing logged yet we can add a header, otherwise it would be a line of content?
-            
-                final BufferedWriter writer = logger != null ? logger : getTimerLogger();
-   
-                // no statistics logger configured -> exit here
-                if (writer == null)
+                if (!Files.exists(file) || Files.size(file) == 0)
                 {
-                    return;
+                    // if there is nothing logged yet we can add a header, otherwise it would be a line of content?
+              
+                    final BufferedWriter writer = logger != null ? logger : getTimerLogger();
+       
+                    // no logger configured -> exit here
+                    if (writer == null)
+                    {
+                        return;
+                    }
+       
+                    // write the header line - TODO csv validation might be useful here? in case we have csv... whatever
+                    // this safes us from synchronization, the writer is already synchronized
+                    StringBuilder s = new StringBuilder(header);
+                    s = removeLineSeparators(s, ' ');
+                    s.append(System.lineSeparator());
+                    
+                    writer.write(s.toString());
+                    writer.flush();
                 }
-   
-                // write the header line - TODO csv validation might be useful here? in case we have csv... whatever
-                // this safes us from synchronization, the writer is already synchronized
-                StringBuilder s = new StringBuilder(header);
-                s = removeLineSeparators(s, ' ');
-                s.append(System.lineSeparator());
-                
-                writer.write(s.toString());
-                writer.flush();
+                else
+                {
+                    XltLogger.runTimeLogger.warn("Did not write custom data header because logfile already contains data: " + file);
+                }
+            }
+            catch (final IOException ex)
+            {
+                XltLogger.runTimeLogger.error("Failed to write custom data header:", ex);
             }
         }
-        catch (final IOException ex)
+        else
         {
-            XltLogger.runTimeLogger.error("Failed to write custom data header:", ex);
+            XltLogger.runTimeLogger.warn("Did not write custom data header because logfile is not csv format but " + this.extension);
         }
         
     }
@@ -86,20 +97,11 @@ public class DataLoggerImpl implements DataLogger
      * {@inheritDoc}
      */
     @Override
-    public void setFilename(String filename)
-    {
-        this.filename = filename;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public void log(String lineOfData)
     {
         final BufferedWriter writer = logger != null ? logger : getTimerLogger();
 
-        // no statistics logger configured -> exit here
+        // no logger configured -> exit here
         if (writer == null)
         {
             return;

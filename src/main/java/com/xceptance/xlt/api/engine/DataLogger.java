@@ -8,6 +8,9 @@ package com.xceptance.xlt.api.engine;
 public interface DataLogger
 {
     /**
+     * Adds a header to the log file. 
+     * This only makes sense for csv files and only if no data is in the file yet, 
+     * so the header may not be written if this is not the case.
      * @param header
      */
     public void setHeader(String header);
@@ -15,17 +18,12 @@ public interface DataLogger
     //by a fixed delimiter defined seperately?
     
     /**
+     * Sets the file extension. System requirements apply.
      * @param extension
      */
     public void setExtension(String extension);
     //TODO is this csv by default or do we want other options? can user set any extension and basically save a 
     //textfile? are there system limits as to what is allowed as a file extension (guess so)?
-    
-    /**
-     * @param filename
-     */
-    public void setFilename(String filename);
-    //TODO are there system requirements for filename that have to be met (guess so)?
     
     /**
      * @param lineOfData
