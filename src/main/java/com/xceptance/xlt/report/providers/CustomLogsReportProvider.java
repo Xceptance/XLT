@@ -17,17 +17,20 @@ package com.xceptance.xlt.report.providers;
 
 import static java.nio.file.FileVisitResult.CONTINUE;
 import static java.nio.file.FileVisitResult.SKIP_SUBTREE;
+import static java.nio.file.StandardCopyOption.COPY_ATTRIBUTES;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.CopyOption;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.HashSet;
 import java.util.Set;
-
-import org.apache.commons.vfs2.FileObject;
 
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.report.AbstractReportProvider;
@@ -51,18 +54,22 @@ public class CustomLogsReportProvider extends AbstractReportProvider
         final Path resultsDir = ((ReportGeneratorConfiguration) getConfiguration()).getResultsDirectory().getPath();
     
         CustomLogFinder finder = new CustomLogFinder();
+        
+        finder.setResultsDir(resultsDir.toString());
+        finder.setReportDir(getConfiguration().getReportDirectory().getAbsolutePath());
         try
         {
-            System.out.format("Walk file tree for %s \n", resultsDir);
             Files.walkFileTree(resultsDir, finder);
         }
         catch (IOException e)
         {
-            System.err.println("Failed to get walk file tree searching for custom data logs. Cause: " + e.getMessage());
+            System.err.println("Failed to walk file tree searching for custom data logs. Cause: " + e.getMessage());
         }
 
-        // add the found scopes
+        // add the found scopes to report
         report.scopes.addAll(finder.getResult());
+        
+        //TODO zip up the report directories for every found scope, then add the link/size info to the report
 
         return report;
     }
@@ -88,8 +95,22 @@ public class CustomLogsReportProvider extends AbstractReportProvider
     public static class CustomLogFinder extends SimpleFileVisitor<Path> 
     {
         Set<String> foundScopes = new HashSet<String>();
-        Set<String> foundScopesDir = new HashSet<String>();
+        Set<Path> foundScopeFiles = new HashSet<Path>();
+        
+        String resultsDir = null;
+        String reportDir = null;
+        
         boolean containsTimers = false;
+        
+        public void setResultsDir(String resultsDir)
+        {
+            this.resultsDir = resultsDir;
+        }
+        
+        public void setReportDir(String reportDir)
+        {
+            this.reportDir = reportDir;
+        }
 
         // Print information about each type of file.
         @Override
@@ -101,7 +122,7 @@ public class CustomLogsReportProvider extends AbstractReportProvider
             } 
             if (attr.isRegularFile() && !(file.getFileName().toString().startsWith(XltConstants.TIMER_FILENAME))) 
             {
-                foundScopesDir.add(file.getFileName().toString());
+                foundScopeFiles.add(file);
             } 
             return CONTINUE;
         }
@@ -110,10 +131,9 @@ public class CustomLogsReportProvider extends AbstractReportProvider
         public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attr) 
         {
             containsTimers = false;
-            foundScopesDir = new HashSet<String>();
+            foundScopeFiles = new HashSet<Path>();
             if (attr.isDirectory() && XltConstants.CONFIG_DIR_NAME.equals(dir.getFileName().toString()))
             {
-                System.out.format("SKIPPING %s \n", dir.getFileName());
                 return SKIP_SUBTREE;
             } 
             return CONTINUE;
@@ -122,12 +142,29 @@ public class CustomLogsReportProvider extends AbstractReportProvider
         @Override
         public FileVisitResult postVisitDirectory(Path dir, IOException ex) 
         {
-            if (containsTimers)
+            if (containsTimers && !foundScopeFiles.isEmpty())
             {
-                System.out.format("Timers in %s \n", dir.getFileName());
-                foundScopes.addAll(foundScopesDir);
-                System.out.format("Custom data files: %s \n", foundScopesDir);
+                for (Path scopeFile : foundScopeFiles)
+                {
+                    final String scopeName = scopeFile.getFileName().toString().substring(0, scopeFile.getFileName().toString().lastIndexOf('.'));
+                    foundScopes.add(scopeName);
+                    
+                    String target = reportDir + File.separator + scopeName + scopeFile.toString().substring(resultsDir.length());
+                    File targetf = new File(target);
+                    targetf.mkdirs();
+                    
+                    try
+                    {
+                        Files.copy(scopeFile, Paths.get(target), new CopyOption[] { COPY_ATTRIBUTES, REPLACE_EXISTING });
+                    }
+                    catch (IOException e)
+                    {
+                        System.err.println("Failed to copy custom data log file to report. Cause: " + e.getMessage());
+                    }
+                }
                 containsTimers = false;
+                
+                
             } 
             return CONTINUE;
         }
@@ -135,6 +172,7 @@ public class CustomLogsReportProvider extends AbstractReportProvider
         
         Set<String> getResult() 
         {
+            System.out.format("Found custom data logs for scopes: %s \n", foundScopes);
             return foundScopes;
         }
     }
