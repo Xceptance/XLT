@@ -32,6 +32,9 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.commons.io.FileUtils;
+
+import com.xceptance.common.util.zip.ZipUtils;
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.report.AbstractReportProvider;
 import com.xceptance.xlt.common.XltConstants;
@@ -42,6 +45,8 @@ import com.xceptance.xlt.report.ReportGeneratorConfiguration;
  */
 public class CustomLogsReportProvider extends AbstractReportProvider
 {
+
+    private static final String CUSTOM_DATA = "custom_data_logs";
 
     /**
      * {@inheritDoc}
@@ -66,10 +71,35 @@ public class CustomLogsReportProvider extends AbstractReportProvider
             System.err.println("Failed to walk file tree searching for custom data logs. Cause: " + e.getMessage());
         }
 
-        // add the found scopes to report
-        report.scopes.addAll(finder.getResult());
+        //zip up the report directories for every found scope, then add the link/size info
+        Set<String> scopes = finder.getResult();
         
-        //TODO zip up the report directories for every found scope, then add the link/size info to the report
+        for (String scope : scopes)
+        {    
+            CustomLogReport clr = new CustomLogReport();
+            clr.scope = scope;
+            
+            Path sourcePath = Paths.get(getConfiguration().getReportDirectory() + File.separator + scope + File.separator);
+            Path targetDir = Paths.get(getConfiguration().getReportDirectory() + File.separator + CUSTOM_DATA);
+            Path targetPath = Paths.get(targetDir + File.separator + scope + ".zip");
+            
+            try
+            {
+                targetDir.toFile().mkdirs();
+                ZipUtils.zipDirectory(sourcePath.toFile(), targetPath.toFile());
+                FileUtils.deleteDirectory(sourcePath.toFile());
+                
+                clr.size = Files.size(targetPath);
+                clr.path = Paths.get(CUSTOM_DATA + File.separator + scope + ".zip").toString();
+            }
+            catch (IOException e)
+            {
+                System.err.println("Unable to zip custom data logs. Cause: " + e.getMessage());
+            }
+            
+            report.scopes.add(clr);
+        }
+              
 
         return report;
     }

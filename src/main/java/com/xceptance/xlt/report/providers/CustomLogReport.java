@@ -15,16 +15,26 @@
  */
 package com.xceptance.xlt.report.providers;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
 /**
- * Represents the custom log files written during the test run.
+ * Represents the total number of requests that were using a certain HTTP request method.
  */
-@XStreamAlias("customLogs")
-public class CustomLogsReport
+@XStreamAlias("customLog")
+public class CustomLogReport
 {
-    public List<CustomLogReport> scopes = new ArrayList<CustomLogReport>();
+    /**
+     * The scope name of the given logs
+     */
+    public String scope;
+
+    /**
+     * The file size of the collected data
+     */
+    public long size;
+    
+    /**
+     * The link to the collected data
+     */
+    public String path;
 }
