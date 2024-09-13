@@ -204,6 +204,29 @@
             </div>
         </div>
 
+        <div class="section" id="custom-data-logs-summary">
+            <xsl:call-template name="headline-custom-data-logs-summary"/>
+
+            <div class="content">
+                <xsl:call-template name="description-custom-data-logs-summary"/>
+
+                <xsl:if test="count(customLogs/customLog) &gt; 0">
+                    <div class="custom-logs">
+                        <xsl:for-each select="customLogs/customLog">
+
+                            <xsl:sort select="scope"/>
+                            <xsl:value-of select="scope"></xsl:value-of> - 
+                            <a>
+                            	<xsl:attribute name="href"><xsl:value-of select="path"/></xsl:attribute>
+                            	<xsl:value-of select="path"/>
+                            </a> (<xsl:value-of select="format-number(size, '#,##0.###')"></xsl:value-of> B)
+
+                        </xsl:for-each>
+                    </div>
+                </xsl:if>
+            </div>
+        </div>
+
     </xsl:template>
 
 </xsl:stylesheet>

@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
+import com.thoughtworks.xstream.annotations.XStreamImplicit;
 
 /**
  * Represents the custom log files written during the test run.
@@ -26,5 +27,6 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
 @XStreamAlias("customLogs")
 public class CustomLogsReport
 {
-    public List<CustomLogReport> scopes = new ArrayList<CustomLogReport>();
+    @XStreamImplicit
+    public List<CustomLogReport> customLogs = new ArrayList<CustomLogReport>();
 }

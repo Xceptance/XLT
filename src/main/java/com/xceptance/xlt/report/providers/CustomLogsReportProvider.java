@@ -97,7 +97,7 @@ public class CustomLogsReportProvider extends AbstractReportProvider
                 System.err.println("Unable to zip custom data logs. Cause: " + e.getMessage());
             }
             
-            report.scopes.add(clr);
+            report.customLogs.add(clr);
         }
               
 
