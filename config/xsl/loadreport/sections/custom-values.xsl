@@ -215,12 +215,11 @@
                         <xsl:for-each select="customLogs/customLog">
 
                             <xsl:sort select="scope"/>
-                            <xsl:value-of select="scope"></xsl:value-of> - 
                             <a>
                             	<xsl:attribute name="href"><xsl:value-of select="path"/></xsl:attribute>
-                            	<xsl:value-of select="path"/>
+                            	<xsl:value-of select="scope"/>
                             </a> (<xsl:value-of select="format-number(size, '#,##0.###')"></xsl:value-of> B)
-
+							<br />
                         </xsl:for-each>
                     </div>
                 </xsl:if>
