@@ -25,15 +25,11 @@ import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import org.apache.commons.io.FileUtils;
-
-import com.xceptance.common.util.zip.ZipUtils;
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.report.AbstractReportProvider;
 import com.xceptance.xlt.common.XltConstants;
@@ -124,12 +120,9 @@ public class CustomLogsReportProvider extends AbstractReportProvider
     public static class CustomLogFinder extends SimpleFileVisitor<Path> 
     {
         Map<String, ZipOutputStream> foundScopes = new HashMap<String, ZipOutputStream>();
-        Set<Path> foundScopeFiles = new HashSet<Path>();
         
         Path baseDir = null;
         Path targetDir = null;
-        
-        boolean containsTimers = false;
         
         public void setBaseDir(Path baseDir)
         {
@@ -141,69 +134,46 @@ public class CustomLogsReportProvider extends AbstractReportProvider
             this.targetDir = targetDir;
         }
 
-        // Print information about each type of file.
         @Override
-        public FileVisitResult visitFile(Path file, BasicFileAttributes attr) 
+        public FileVisitResult visitFile(Path file, BasicFileAttributes attr) throws IOException
         {
-            if (attr.isRegularFile() && file.getFileName().toString().startsWith(XltConstants.TIMER_FILENAME)) 
+            if (attr.isRegularFile() && file.getFileName().toString().startsWith(XltConstants.CUSTOM_LOG_PREFIX)) 
             {
-                containsTimers = true;
-            } 
-            if (attr.isRegularFile() && !(file.getFileName().toString().startsWith(XltConstants.TIMER_FILENAME))) 
-            {
-                foundScopeFiles.add(file);
-            } 
+                final String scopeName = file.getFileName().toString().substring(XltConstants.CUSTOM_LOG_PREFIX.length(), file.getFileName().toString().lastIndexOf('.'));
+                
+                if (foundScopes.isEmpty())
+                {
+                    //for the very first scope we have to create the directory to contain all logs in the report
+                    targetDir.toFile().mkdirs();
+                }
+                
+                // if scope has already been used, there is a stream for it
+                ZipOutputStream scopeStream = foundScopes.get(scopeName);
+                // if scope/stream does not exist yet, create one and add it to list
+                if (scopeStream == null)
+                {
+                    FileOutputStream fos = new FileOutputStream(targetDir.toString() + File.separator + scopeName + ".zip");
+                    scopeStream = new ZipOutputStream(fos);
+                    foundScopes.put(scopeName, scopeStream);
+                }
+                
+                // add zip entry, copy current log file for scope    
+                scopeStream.putNextEntry(new ZipEntry(baseDir.relativize(file).toString()));
+                Files.copy(file, scopeStream);
+                scopeStream.closeEntry();
+            }  
             return FileVisitResult.CONTINUE;
         }
         
         @Override
         public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attr) 
         {
-            containsTimers = false;
-            foundScopeFiles = new HashSet<Path>();
             if (attr.isDirectory() && XltConstants.CONFIG_DIR_NAME.equals(dir.getFileName().toString()))
             {
                 return FileVisitResult.SKIP_SUBTREE;
             } 
             return FileVisitResult.CONTINUE;
-        }
-        
-        @Override
-        public FileVisitResult postVisitDirectory(Path dir, IOException ex) throws IOException 
-        {
-            if (containsTimers && !foundScopeFiles.isEmpty())
-            {
-                for (Path scopeFile : foundScopeFiles)
-                {
-                    final String scopeName = scopeFile.getFileName().toString().substring(0, scopeFile.getFileName().toString().lastIndexOf('.'));
-                    
-                    if (foundScopes.isEmpty())
-                    {
-                        //for the very first scope we have to create the directory to contain all logs in the report
-                        targetDir.toFile().mkdirs();
-                    }
-                    
-                    // if scope has already been used, there is a stream for it
-                    ZipOutputStream scopeStream = foundScopes.get(scopeName);
-                    // if scope/stream does not exist yet, create one and add it to list
-                    if (scopeStream == null)
-                    {
-                        FileOutputStream fos = new FileOutputStream(targetDir.toString() + File.separator + scopeName + ".zip");
-                        scopeStream = new ZipOutputStream(fos);
-                        foundScopes.put(scopeName, scopeStream);
-                    }
-                    
-                    // add zip entry, copy current log file for scope    
-                    scopeStream.putNextEntry(new ZipEntry(baseDir.relativize(scopeFile).toString()));
-                    Files.copy(scopeFile, scopeStream);
-                    scopeStream.closeEntry();                    
-                }
-                containsTimers = false;
-                
-                
-            } 
-            return FileVisitResult.CONTINUE;
-        }        
+        }       
         
         void closeAllStreams() 
         {
@@ -221,7 +191,10 @@ public class CustomLogsReportProvider extends AbstractReportProvider
         
         Set<String> getResult() 
         {
-            System.out.format("Found custom data logs for scopes: %s \n", foundScopes.keySet());
+            if (!foundScopes.isEmpty())
+            {
+                System.out.format("Found custom data logs for scopes: %s \n", foundScopes.keySet());
+            }
             return foundScopes.keySet();
         }
     }

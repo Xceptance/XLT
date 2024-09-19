@@ -10,6 +10,7 @@ import java.nio.file.StandardOpenOption;
 import com.xceptance.xlt.api.engine.DataLogger;
 import com.xceptance.xlt.api.engine.Session;
 import com.xceptance.xlt.api.util.XltLogger;
+import com.xceptance.xlt.common.XltConstants;
 
 public class DataLoggerImpl implements DataLogger
 {
@@ -32,7 +33,7 @@ public class DataLoggerImpl implements DataLogger
     protected DataLoggerImpl(Session session, String scope, String extension)
     {
         this.session = session;
-        this.filename = scope; 
+        this.filename = XltConstants.CUSTOM_LOG_PREFIX + scope; 
     }    
 
     /**
