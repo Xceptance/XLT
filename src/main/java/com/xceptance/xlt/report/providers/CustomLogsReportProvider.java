@@ -15,22 +15,21 @@
  */
 package com.xceptance.xlt.report.providers;
 
-import static java.nio.file.FileVisitResult.CONTINUE;
-import static java.nio.file.FileVisitResult.SKIP_SUBTREE;
-import static java.nio.file.StandardCopyOption.COPY_ATTRIBUTES;
-import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
-
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.CopyOption;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.FileUtils;
 
@@ -57,11 +56,13 @@ public class CustomLogsReportProvider extends AbstractReportProvider
         final CustomLogsReport report = new CustomLogsReport();
 
         final Path resultsDir = ((ReportGeneratorConfiguration) getConfiguration()).getResultsDirectory().getPath();
+        final Path targetDir = Paths.get(getConfiguration().getReportDirectory() + File.separator + CUSTOM_DATA);
     
         CustomLogFinder finder = new CustomLogFinder();
         
-        finder.setResultsDir(resultsDir.toString());
-        finder.setReportDir(getConfiguration().getReportDirectory().getAbsolutePath());
+        finder.setBaseDir(resultsDir);
+        finder.setTargetDir(targetDir);
+        
         try
         {
             Files.walkFileTree(resultsDir, finder);
@@ -69,6 +70,10 @@ public class CustomLogsReportProvider extends AbstractReportProvider
         catch (IOException e)
         {
             System.err.println("Failed to walk file tree searching for custom data logs. Cause: " + e.getMessage());
+        }
+        finally 
+        {
+            finder.closeAllStreams(); //this closes the ZipOutputStreams, so this MUST be done
         }
 
         //zip up the report directories for every found scope, then add the link/size info
@@ -79,22 +84,16 @@ public class CustomLogsReportProvider extends AbstractReportProvider
             CustomLogReport clr = new CustomLogReport();
             clr.scope = scope;
             
-            Path sourcePath = Paths.get(getConfiguration().getReportDirectory() + File.separator + scope + File.separator);
-            Path targetDir = Paths.get(getConfiguration().getReportDirectory() + File.separator + CUSTOM_DATA);
             Path targetPath = Paths.get(targetDir + File.separator + scope + ".zip");
             
             try
-            {
-                targetDir.toFile().mkdirs();
-                ZipUtils.zipDirectory(sourcePath.toFile(), targetPath.toFile());
-                FileUtils.deleteDirectory(sourcePath.toFile());
-                
+            {                
                 clr.size = Files.size(targetPath);
-                clr.path = Paths.get(CUSTOM_DATA + File.separator + scope + ".zip").toString();
+                clr.path = CUSTOM_DATA + File.separator + scope + ".zip";
             }
             catch (IOException e)
             {
-                System.err.println("Unable to zip custom data logs. Cause: " + e.getMessage());
+                System.err.println("Unable to collect information for custom data logs for " + scope + ". Cause: " + e.getMessage());
             }
             
             report.customLogs.add(clr);
@@ -124,22 +123,22 @@ public class CustomLogsReportProvider extends AbstractReportProvider
     
     public static class CustomLogFinder extends SimpleFileVisitor<Path> 
     {
-        Set<String> foundScopes = new HashSet<String>();
+        Map<String, ZipOutputStream> foundScopes = new HashMap<String, ZipOutputStream>();
         Set<Path> foundScopeFiles = new HashSet<Path>();
         
-        String resultsDir = null;
-        String reportDir = null;
+        Path baseDir = null;
+        Path targetDir = null;
         
         boolean containsTimers = false;
         
-        public void setResultsDir(String resultsDir)
+        public void setBaseDir(Path baseDir)
         {
-            this.resultsDir = resultsDir;
+            this.baseDir = baseDir;
         }
         
-        public void setReportDir(String reportDir)
+        public void setTargetDir(Path targetDir)
         {
-            this.reportDir = reportDir;
+            this.targetDir = targetDir;
         }
 
         // Print information about each type of file.
@@ -154,7 +153,7 @@ public class CustomLogsReportProvider extends AbstractReportProvider
             {
                 foundScopeFiles.add(file);
             } 
-            return CONTINUE;
+            return FileVisitResult.CONTINUE;
         }
         
         @Override
@@ -164,46 +163,66 @@ public class CustomLogsReportProvider extends AbstractReportProvider
             foundScopeFiles = new HashSet<Path>();
             if (attr.isDirectory() && XltConstants.CONFIG_DIR_NAME.equals(dir.getFileName().toString()))
             {
-                return SKIP_SUBTREE;
+                return FileVisitResult.SKIP_SUBTREE;
             } 
-            return CONTINUE;
+            return FileVisitResult.CONTINUE;
         }
         
         @Override
-        public FileVisitResult postVisitDirectory(Path dir, IOException ex) 
+        public FileVisitResult postVisitDirectory(Path dir, IOException ex) throws IOException 
         {
             if (containsTimers && !foundScopeFiles.isEmpty())
             {
                 for (Path scopeFile : foundScopeFiles)
                 {
                     final String scopeName = scopeFile.getFileName().toString().substring(0, scopeFile.getFileName().toString().lastIndexOf('.'));
-                    foundScopes.add(scopeName);
                     
-                    String target = reportDir + File.separator + scopeName + scopeFile.toString().substring(resultsDir.length());
-                    File targetf = new File(target);
-                    targetf.mkdirs();
+                    if (foundScopes.isEmpty())
+                    {
+                        //for the very first scope we have to create the directory to contain all logs in the report
+                        targetDir.toFile().mkdirs();
+                    }
                     
-                    try
+                    // if scope has already been used, there is a stream for it
+                    ZipOutputStream scopeStream = foundScopes.get(scopeName);
+                    // if scope/stream does not exist yet, create one and add it to list
+                    if (scopeStream == null)
                     {
-                        Files.copy(scopeFile, Paths.get(target), new CopyOption[] { COPY_ATTRIBUTES, REPLACE_EXISTING });
+                        FileOutputStream fos = new FileOutputStream(targetDir.toString() + File.separator + scopeName + ".zip");
+                        scopeStream = new ZipOutputStream(fos);
+                        foundScopes.put(scopeName, scopeStream);
                     }
-                    catch (IOException e)
-                    {
-                        System.err.println("Failed to copy custom data log file to report. Cause: " + e.getMessage());
-                    }
+                    
+                    // add zip entry, copy current log file for scope    
+                    scopeStream.putNextEntry(new ZipEntry(baseDir.relativize(scopeFile).toString()));
+                    Files.copy(scopeFile, scopeStream);
+                    scopeStream.closeEntry();                    
                 }
                 containsTimers = false;
                 
                 
             } 
-            return CONTINUE;
-        }
+            return FileVisitResult.CONTINUE;
+        }        
         
+        void closeAllStreams() 
+        {
+            for (ZipOutputStream zos : foundScopes.values())
+            {
+                try {
+                    // VERY IMPORTANT: CLOSE ALL OPEN STREAMS
+                    zos.close();
+                } 
+                catch (IOException e) {
+                    System.err.println("Unable to zip custom data logs to report. Cause: " + e.getMessage());
+                }
+            }
+        }
         
         Set<String> getResult() 
         {
-            System.out.format("Found custom data logs for scopes: %s \n", foundScopes);
-            return foundScopes;
+            System.out.format("Found custom data logs for scopes: %s \n", foundScopes.keySet());
+            return foundScopes.keySet();
         }
     }
 }
