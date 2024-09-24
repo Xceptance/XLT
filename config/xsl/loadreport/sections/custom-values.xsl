@@ -209,20 +209,38 @@
 
             <div class="content">
                 <xsl:call-template name="description-custom-data-logs-summary"/>
-
-                <xsl:if test="count(customLogs/customLog) &gt; 0">
-                    <div class="custom-logs">
-                        <xsl:for-each select="customLogs/customLog">
-
-                            <xsl:sort select="scope"/>
-                            <a>
-                            	<xsl:attribute name="href"><xsl:value-of select="path"/></xsl:attribute>
-                            	<xsl:value-of select="scope"/>
-                            </a> (<xsl:value-of select="format-number(size, '#,##0.###')"></xsl:value-of> B)
-							<br />
-                        </xsl:for-each>
-                    </div>
-                </xsl:if>
+                
+                <table class="c-tab-content table-autosort:0">
+                    <thead>
+                        <tr>
+                            <th>Scope</th>
+                            <th>Size</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    <xsl:choose>
+                    <xsl:when test="count(customLogs/customLog) &gt; 0">
+                    <xsl:for-each select="customLogs/customLog">
+	                    <xsl:sort select="scope"/>
+	                    <tr>
+	                    	<td>
+	                    		<a>
+                            		<xsl:attribute name="href"><xsl:value-of select="path"/></xsl:attribute>
+                            		<xsl:value-of select="scope"/>
+                            	</a>
+                            </td>
+	                    	<td><xsl:value-of select="format-number(size, '#,##0.###')"></xsl:value-of> B</td>
+	                    </tr>
+                    </xsl:for-each>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <tr>
+                        	<td colspan="2" class="no-data">No data available</td>
+                        </tr>
+                    </xsl:otherwise>
+                    </xsl:choose>	
+                    </tbody>
+                </table>
             </div>
         </div>
 
