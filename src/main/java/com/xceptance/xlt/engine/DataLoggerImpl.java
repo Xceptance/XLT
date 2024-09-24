@@ -17,7 +17,7 @@ public class DataLoggerImpl implements DataLogger
     /**
      * Back-reference to session using this data logger.
      */
-    private Session session;
+    private final Session session;
     
     private volatile BufferedWriter logger;
     
@@ -25,15 +25,18 @@ public class DataLoggerImpl implements DataLogger
     
     private String extension;
     
-    protected DataLoggerImpl(Session session, String scope)
-    {
-        new DataLoggerImpl(session, scope, "csv");
-    }
-    
-    protected DataLoggerImpl(Session session, String scope, String extension)
+    protected DataLoggerImpl(final Session session, String scope)
     {
         this.session = session;
         this.filename = XltConstants.CUSTOM_LOG_PREFIX + scope; 
+        this.extension = "csv";
+    }
+    
+    protected DataLoggerImpl(final Session session, String scope, String extension)
+    {
+        this.session = session;
+        this.filename = XltConstants.CUSTOM_LOG_PREFIX + scope; 
+        this.extension = extension;
     }    
 
     /**
