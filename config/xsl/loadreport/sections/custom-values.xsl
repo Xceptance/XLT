@@ -223,13 +223,17 @@
                     <xsl:for-each select="customLogs/customLog">
 	                    <xsl:sort select="scope"/>
 	                    <tr>
-	                    	<td>
+	                    	<td class="key">
 	                    		<a>
                             		<xsl:attribute name="href"><xsl:value-of select="path"/></xsl:attribute>
                             		<xsl:value-of select="scope"/>
                             	</a>
                             </td>
-	                    	<td><xsl:value-of select="format-number(size, '#,##0.###')"></xsl:value-of> B</td>
+	                    	<td class="value">
+	                    		<xsl:call-template name="format-bytes">
+		                            <xsl:with-param name="bytes" select="size"/>
+		                        </xsl:call-template>
+	                    	</td>
 	                    </tr>
                     </xsl:for-each>
                     </xsl:when>
