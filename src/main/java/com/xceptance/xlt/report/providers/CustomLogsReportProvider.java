@@ -18,17 +18,19 @@ package com.xceptance.xlt.report.providers;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.FileVisitResult;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+
+import org.apache.commons.vfs2.FileObject;
+import org.apache.commons.vfs2.FileType;
 
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.report.AbstractReportProvider;
@@ -42,6 +44,11 @@ public class CustomLogsReportProvider extends AbstractReportProvider
 {
 
     private static final String CUSTOM_DATA = "custom_data_logs";
+    
+    private Map<String, ZipOutputStream> foundScopes = new HashMap<String, ZipOutputStream>();
+    
+    private Path baseDir = null;
+    private Path targetDir = null;
 
     /**
      * {@inheritDoc}
@@ -51,17 +58,14 @@ public class CustomLogsReportProvider extends AbstractReportProvider
     {
         final CustomLogsReport report = new CustomLogsReport();
 
-        final Path resultsDir = ((ReportGeneratorConfiguration) getConfiguration()).getResultsDirectory().getPath();
-        final Path targetDir = Paths.get(getConfiguration().getReportDirectory() + File.separator + CUSTOM_DATA);
-    
-        CustomLogFinder finder = new CustomLogFinder();
+        FileObject results = ((ReportGeneratorConfiguration) getConfiguration()).getResultsDirectory();
         
-        finder.setBaseDir(resultsDir);
-        finder.setTargetDir(targetDir);
+        baseDir = results.getPath();
+        targetDir = Paths.get(getConfiguration().getReportDirectory() + File.separator + CUSTOM_DATA);       
         
         try
         {
-            Files.walkFileTree(resultsDir, finder);
+            findLogs(results);
         }
         catch (IOException e)
         {
@@ -69,11 +73,11 @@ public class CustomLogsReportProvider extends AbstractReportProvider
         }
         finally 
         {
-            finder.closeAllStreams(); //this closes the ZipOutputStreams, so this MUST be done
+            closeAllStreams(); // this closes the ZipOutputStreams, so this MUST be done
         }
 
-        //zip up the report directories for every found scope, then add the link/size info
-        Set<String> scopes = finder.getResult();
+        // add the link/size info for found scopes
+        Set<String> scopes = getResult();
         
         for (String scope : scopes)
         {    
@@ -115,31 +119,28 @@ public class CustomLogsReportProvider extends AbstractReportProvider
     public boolean wantsDataRecords()
     {
         return false;
-    }
-    
-    public static class CustomLogFinder extends SimpleFileVisitor<Path> 
-    {
-        Map<String, ZipOutputStream> foundScopes = new HashMap<String, ZipOutputStream>();
-        
-        Path baseDir = null;
-        Path targetDir = null;
-        
-        public void setBaseDir(Path baseDir)
-        {
-            this.baseDir = baseDir;
-        }
-        
-        public void setTargetDir(Path targetDir)
-        {
-            this.targetDir = targetDir;
-        }
+    }        
 
-        @Override
-        public FileVisitResult visitFile(Path file, BasicFileAttributes attr) throws IOException
+    /**
+     * Recursive method to walk the directory tree searching for custom log files. 
+     * Found files are directly put into a zip archive for the corresponding custom data scope in the report.
+     * @param file the directory or file to start from
+     * @throws IOException
+     */
+    private void findLogs (FileObject file) throws IOException
+    {
+        if (file.getType() == FileType.FOLDER && !XltConstants.CONFIG_DIR_NAME.equals(file.getName().getBaseName().toString()))
         {
-            if (attr.isRegularFile() && file.getFileName().toString().startsWith(XltConstants.CUSTOM_LOG_PREFIX)) 
+            for (final FileObject fo : file.getChildren())
             {
-                final String scopeName = file.getFileName().toString().substring(XltConstants.CUSTOM_LOG_PREFIX.length(), file.getFileName().toString().lastIndexOf('.'));
+                findLogs(fo);
+            }
+        }
+        else if (file.getType() == FileType.FILE)
+        {
+            if (file.getName().getBaseName().toString().startsWith(XltConstants.CUSTOM_LOG_PREFIX)) 
+            {
+                final String scopeName = file.getName().getBaseName().toString().substring(XltConstants.CUSTOM_LOG_PREFIX.length(), file.getName().getBaseName().toString().lastIndexOf('.'));
                 
                 if (foundScopes.isEmpty())
                 {
@@ -158,44 +159,59 @@ public class CustomLogsReportProvider extends AbstractReportProvider
                 }
                 
                 // add zip entry, copy current log file for scope    
-                scopeStream.putNextEntry(new ZipEntry(baseDir.relativize(file).toString()));
-                Files.copy(file, scopeStream);
+                scopeStream.putNextEntry(new ZipEntry(baseDir.relativize(file.getPath()).toString().replaceAll("\\\\", "/")));
+                writeDataToZip(file, scopeStream);
                 scopeStream.closeEntry();
-            }  
-            return FileVisitResult.CONTINUE;
+            }
         }
+        return;
+    }
+
+    private void writeDataToZip(FileObject file, ZipOutputStream scopeStream) throws IOException
+    {
+        final boolean isCompressed = "gz".equalsIgnoreCase(file.getName().getExtension());
         
-        @Override
-        public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attr) 
+        InputStream in = isCompressed ? 
+            new GZIPInputStream(file.getContent().getInputStream(), 1024 * 16) : //TODO is my data EVER zipped? it should be, but how does it happen?
+            file.getContent().getInputStream();
+        byte[] buffer = new byte[1024];
+
+        int len;
+        while ((len = in.read(buffer)) > 0) 
         {
-            if (attr.isDirectory() && XltConstants.CONFIG_DIR_NAME.equals(dir.getFileName().toString()))
-            {
-                return FileVisitResult.SKIP_SUBTREE;
+            scopeStream.write(buffer, 0, len);
+        }
+        //TODO see DataReaderThread for how to count lines while reading for additional info
+        
+        in.close();
+    }
+    
+    /**
+     * Close all output streams that have been opened during file search for copying the found data to the report.
+     */
+    private void closeAllStreams() 
+    {
+        for (ZipOutputStream zos : foundScopes.values())
+        {
+            try {
+                // VERY IMPORTANT: CLOSE ALL OPEN STREAMS
+                zos.close();
             } 
-            return FileVisitResult.CONTINUE;
-        }       
-        
-        void closeAllStreams() 
-        {
-            for (ZipOutputStream zos : foundScopes.values())
-            {
-                try {
-                    // VERY IMPORTANT: CLOSE ALL OPEN STREAMS
-                    zos.close();
-                } 
-                catch (IOException e) {
-                    System.err.println("Unable to zip custom data logs to report. Cause: " + e.getMessage());
-                }
+            catch (IOException e) {
+                System.err.println("Unable to zip custom data logs to report. Cause: " + e.getMessage());
             }
         }
-        
-        Set<String> getResult() 
+    }
+    
+    /**
+     * @return A collection of the found custom data scope names.
+     */
+    private Set<String> getResult() 
+    {
+        if (!foundScopes.isEmpty())
         {
-            if (!foundScopes.isEmpty())
-            {
-                System.out.format("Found custom data logs for scopes: %s \n", foundScopes.keySet());
-            }
-            return foundScopes.keySet();
+            System.out.format("Found custom data logs for scopes: %s \n", foundScopes.keySet());
         }
+        return foundScopes.keySet();
     }
 }
