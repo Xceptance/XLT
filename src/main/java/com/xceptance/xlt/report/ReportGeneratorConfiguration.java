@@ -1518,7 +1518,6 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
             {
                 // Log it and continue with next rule.
                 final String errMsg = "Request processing rule '" + basePropertyName + "' is invalid. " + imre.getMessage();
-                XltLogger.reportLogger.error(errMsg, imre);
                 System.err.println(errMsg);
                 // remember that we encountered an invalid merge rule
                 invalidRulePresent = true;

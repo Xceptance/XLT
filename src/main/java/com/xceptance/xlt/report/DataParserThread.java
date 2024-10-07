@@ -81,20 +81,24 @@ class DataParserThread implements Runnable
     private final ReportGeneratorConfiguration config;
 
     /**
+     * The request processing rules for this thread. Each parser thread gets its own copy of the rule set. This way,
+     * there is no shared state between threads, hence we can more efficiently cache and process stuff.
+     */
+    private final List<RequestProcessingRule> requestProcessingRules;
+
+    /**
      * Constructor.
      *
+     * @param dispatcher
+     *            the dispatcher that coordinates result processing
      * @param dataRecordFactory
      *            the data record factory
      * @param fromTime
      *            the start time
      * @param toTime
      *            the end time
-     * @param requestProcessingRules
-     *            the request processing rules
-     * @param dispatcher
-     *            the dispatcher that coordinates result processing
-     * @param removeIndexesFromRequestNames
-     *            whether to automatically remove any indexes from request names
+     * @param config
+     *            the report generator settings
      */
     public DataParserThread(final Dispatcher dispatcher, final DataRecordFactory dataRecordFactory, final long fromTime, final long toTime,
                             final ReportGeneratorConfiguration config)
@@ -104,6 +108,8 @@ class DataParserThread implements Runnable
         this.toTime = toTime;
         this.dispatcher = dispatcher;
         this.config = config;
+
+        requestProcessingRules = config.getRequestProcessingRules();
     }
 
     /**
@@ -112,9 +118,6 @@ class DataParserThread implements Runnable
     @Override
     public void run()
     {
-        // each parser gets its own rules. They are all identical, but don't share state, hence we can more
-        // efficiently cache and process
-        final List<RequestProcessingRule> requestProcessingRules = config.getRequestProcessingRules();
         final boolean removeIndexes = config.getRemoveIndexesFromRequestNames();
 
         final double SAMPLELIMIT = 1 / ((double) config.dataSampleFactor);
@@ -218,7 +221,8 @@ class DataParserThread implements Runnable
                     }
                     catch (final Exception ex)
                     {
-                        final String msg = String.format("Failed to parse data record at line %,d in file '%s': %s\nLine is: ", lineNumber, file, ex, lines.get(i).toString());
+                        final String msg = String.format("Failed to parse data record at line %,d in file '%s': %s\nLine is: ", lineNumber,
+                                                         file, ex, lines.get(i).toString());
                         LOG.error(msg, ex);
 
                         continue;
@@ -295,16 +299,14 @@ class DataParserThread implements Runnable
      * discarding requests.
      *
      * @param requestData
-     *              the request data record
+     *            the request data record
      * @param requestProcessingRules
-     *              the rules to apply
+     *            the rules to apply
      * @param removeIndexesFromRequestNames
-     *              in case we want to clean the name too
-     *
+     *            in case we want to clean the name too
      * @return the processed request data record, or <code>null</code> if the data record is to be discarded
      */
-    private RequestData postprocess(final RequestData requestData,
-                                    final List<RequestProcessingRule> requestProcessingRules,
+    private RequestData postprocess(final RequestData requestData, final List<RequestProcessingRule> requestProcessingRules,
                                     final boolean removeIndexesFromRequestNames)
     {
         // fix up the name first (Product.1.2 -> Product) if so configured
@@ -356,12 +358,11 @@ class DataParserThread implements Runnable
             }
         }
 
-        // ok, we processed all rules for this dataset, get us the final hashcode for the name, because we need that later
+        // ok, we processed all rules for this dataset, get us the final hashcode for the name, because we need that
+        // later
         // here the cache is likely still hot, so this is less expensive
         requestData.getName().hashCode();
 
         return requestData;
     }
-
-
 }
