@@ -39,7 +39,6 @@ import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.report.ReportProvider;
 import com.xceptance.xlt.api.report.ReportProviderConfiguration;
 import com.xceptance.xlt.api.util.XltException;
-import com.xceptance.xlt.api.util.XltLogger;
 import com.xceptance.xlt.api.util.XltProperties;
 import com.xceptance.xlt.common.XltConstants;
 import com.xceptance.xlt.common.XltPropertyNames;
@@ -79,14 +78,14 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
          */
         public enum ChartCappingMethod
         {
-         /** No capping (default). */
-         NONE,
+            /** No capping (default). */
+            NONE,
 
-         /** Cap at an absolute value. */
-         ABSOLUTE,
+            /** Cap at an absolute value. */
+            ABSOLUTE,
 
-         /** Cap at the n-fold of the average value. */
-         NFOLD_OF_AVERAGE
+            /** Cap at the n-fold of the average value. */
+            NFOLD_OF_AVERAGE
         };
 
         /**
@@ -94,11 +93,11 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
          */
         public enum ChartCappingMode
         {
-         /** Cap the chart at the capping value only if necessary. */
-         SMART,
+            /** Cap the chart at the capping value only if necessary. */
+            SMART,
 
-         /** Always cap the chart at the capping value even if the maximum values are below the capping value. */
-         ALWAYS
+            /** Always cap the chart at the capping value even if the maximum values are below the capping value. */
+            ALWAYS
         };
 
         /**
@@ -163,9 +162,13 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
     // Special settings for profiling and debugging
     private static final String PROP_PARSER_THREAD_COUNT = PROP_PREFIX + "parser.threads";
+
     private static final String PROP_READER_THREAD_COUNT = PROP_PREFIX + "reader.threads";
+
     private static final String PROP_THREAD_QUEUE_SIZE = PROP_PREFIX + "queue.bucketsize";
+
     private static final String PROP_THREAD_QUEUE_LENGTH = PROP_PREFIX + "queue.length";
+
     private static final String PROP_DATA_SAMPLE_FACTOR = PROP_PREFIX + "data.sampleFactor";
 
     private static final String PROP_TRANSFORMATIONS_PREFIX = PROP_PREFIX + "transformations.";
@@ -243,8 +246,11 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     private boolean noAgentCharts;
 
     public final int readerThreadCount;
+
     public final int parserThreadCount;
+
     public final int threadQueueBucketSize;
+
     public final int threadQueueLength;
 
     public final int dataSampleFactor;
@@ -276,11 +282,11 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     private final int transactionErrorOverviewChartLimit;
 
     private final int errorDetailsChartLimit;
-    
+
     private final int directoryLimitPerError;
-    
+
     private final double directoryReplacementChance;
-    
+
     private final int stackTracesLimit;
 
     private final Map<Pattern, Double> apdexThresholdsByActionNamePattern = new HashMap<>();
@@ -408,9 +414,9 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
         directoryLimitPerError = getIntProperty(XltPropertyNames.ReportGenerator.Errors.DIRECTORY_LIMIT_PER_ERROR, 10);
         directoryReplacementChance = getDoubleProperty(XltPropertyNames.ReportGenerator.Errors.DIRECTORY_REPLACEMENT_CHANCE, 0.1);
-        
+
         stackTracesLimit = getIntProperty(XltPropertyNames.ReportGenerator.Errors.STACKTRACES_LIMIT, 500);
-        
+
         // event settings
         groupEventsByTestCase = getBooleanProperty(PROP_PREFIX + "events.groupByTestCase", true);
         eventLimit = getIntProperty(PROP_PREFIX + "events.eventLimit", 100);
@@ -483,7 +489,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
             }
             sb.append("\n");
 
-            throw new RuntimeException(sb.toString());
+            throw new XltException(sb.toString());
         }
     }
 
@@ -791,7 +797,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     {
         return errorDetailsChartLimit;
     }
-    
+
     /**
      * The maximum number of directory hints remembered for a certain error (stack trace).
      *
@@ -801,9 +807,10 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     {
         return directoryLimitPerError;
     }
-    
+
     /**
-     * The chance to replace directory hints remembered for a certain error (stack trace) when the maximum number is reached.
+     * The chance to replace directory hints remembered for a certain error (stack trace) when the maximum number is
+     * reached.
      *
      * @return the chance to replace listed directory hints
      */
@@ -811,7 +818,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     {
         return directoryReplacementChance;
     }
-    
+
     /**
      * The maximum number of errors that will be saved complete with their stack trace.
      *
@@ -1001,7 +1008,6 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
         return eventLimit;
     }
 
-
     /**
      * Indicates whether or not to group events by test case.
      *
@@ -1011,7 +1017,6 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     {
         return eventMessageLimit;
     }
-
 
     /**
      * Returns whether to automatically remove any indexes from the request name (i.e. "HomePage.1.27" -> "HomePage").
@@ -1491,15 +1496,15 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
             // ensure that either newName or dropOnMatch is set
             if (StringUtils.isNotBlank(newName) == dropOnMatch)
             {
-                throw new RuntimeException(String.format("Either specify property '%s' or set property '%s' to true",
-                                                         basePropertyName + ".newName", basePropertyName + ".dropOnMatch"));
+                throw new XltException(String.format("Either specify property '%s' or set property '%s' to true",
+                                                     basePropertyName + ".newName", basePropertyName + ".dropOnMatch"));
             }
 
             // ensure that dropOnMatch and stopOnMatch are not contradicting
             if (dropOnMatch && !stopOnMatch)
             {
-                throw new RuntimeException(String.format("If property '%s' is true, property '%s' cannot be false",
-                                                         basePropertyName + ".dropOnMatch", basePropertyName + ".stopOnMatch"));
+                throw new XltException(String.format("If property '%s' is true, property '%s' cannot be false",
+                                                     basePropertyName + ".dropOnMatch", basePropertyName + ".stopOnMatch"));
             }
 
             // create and validate the rules
@@ -1518,7 +1523,6 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
             {
                 // Log it and continue with next rule.
                 final String errMsg = "Request processing rule '" + basePropertyName + "' is invalid. " + imre.getMessage();
-                XltLogger.reportLogger.error(errMsg, imre);
                 System.err.println(errMsg);
                 // remember that we encountered an invalid merge rule
                 invalidRulePresent = true;
@@ -1527,7 +1531,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
         if (invalidRulePresent)
         {
-            throw new RuntimeException("Please check your configuration. At least one request processing rule is invalid and needs to be fixed.");
+            throw new XltException("Please check your configuration. At least one request processing rule is invalid and needs to be fixed.");
         }
 
         return requestProcessingRules;
