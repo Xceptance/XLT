@@ -19,7 +19,6 @@
 
 package com.xceptance.xlt.engine.xltdriver;
 
-import static org.openqa.selenium.remote.Browser.HTMLUNIT;
 import static org.openqa.selenium.remote.CapabilityType.ACCEPT_INSECURE_CERTS;
 import static org.openqa.selenium.remote.CapabilityType.PAGE_LOAD_STRATEGY;
 
@@ -61,7 +60,6 @@ import org.htmlunit.SgmlPage;
 import org.htmlunit.StringWebResponse;
 import org.htmlunit.TopLevelWindow;
 import org.htmlunit.UnexpectedPage;
-import org.htmlunit.Version;
 import org.htmlunit.WaitingRefreshHandler;
 import org.htmlunit.WebClient;
 import org.htmlunit.WebClientOptions;
@@ -97,7 +95,6 @@ import org.openqa.selenium.InvalidCookieDomainException;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.NoSuchSessionException;
 import org.openqa.selenium.NoSuchWindowException;
-import org.openqa.selenium.Platform;
 import org.openqa.selenium.Proxy;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.TimeoutException;
@@ -107,6 +104,7 @@ import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.WrapsElement;
 import com.xceptance.xlt.engine.xltdriver.logging.HtmlUnitLogs;
+import com.xceptance.xlt.engine.xltdriver.options.HtmlUnitDriverOptions;
 import com.xceptance.xlt.engine.xltdriver.w3.Action;
 import com.xceptance.xlt.engine.xltdriver.w3.Algorithms;
 import org.openqa.selenium.interactions.Interactive;
@@ -135,6 +133,7 @@ import com.xceptance.xlt.api.engine.Session;
  * @author Rob Winch
  * @author Andrei Solntsev
  * @author Martin Bartoš
+ * @author Scott Babcock
  */
 public class HtmlUnitDriver implements WebDriver, JavascriptExecutor, HasCapabilities, Interactive {
 
@@ -210,9 +209,11 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor, HasCapabil
      * @param enableJavascript whether to enable JavaScript support or not
      */
     public HtmlUnitDriver(final BrowserVersion version, final boolean enableJavascript) {
-        this(version, enableJavascript, null);
+        this(new HtmlUnitDriverOptions(version, enableJavascript));
+    }
 
-        modifyWebClient(webClient_);
+    public HtmlUnitDriver(final Capabilities desiredCapabilities, final Capabilities requiredCapabilities) {
+        this(new DesiredCapabilities(desiredCapabilities, requiredCapabilities));
     }
 
     /**
@@ -224,23 +225,12 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor, HasCapabil
      *                     session
      */
     public HtmlUnitDriver(final Capabilities capabilities) {
-        this(BrowserVersionDeterminer.determine(capabilities),
-                capabilities.getCapability(JAVASCRIPT_ENABLED) == null || capabilities.is(JAVASCRIPT_ENABLED),
-                Proxy.extractFrom(capabilities));
+        final HtmlUnitDriverOptions driverOptions = new HtmlUnitDriverOptions(capabilities);
+        webClient_ = newWebClient(driverOptions.getWebClientVersion());
 
-        setDownloadImages(capabilities.is(DOWNLOAD_IMAGES_CAPABILITY));
+        setAcceptInsecureCerts(Boolean.FALSE != driverOptions.getCapability(ACCEPT_INSECURE_CERTS));
 
-        if (alert_ != null) {
-            alert_.handleBrowserCapabilities(capabilities);
-        }
-
-        Boolean acceptInsecureCerts = (Boolean) capabilities.getCapability(ACCEPT_INSECURE_CERTS);
-        if (acceptInsecureCerts == null) {
-            acceptInsecureCerts = true;
-        }
-        setAcceptInsecureCerts(acceptInsecureCerts);
-
-        final String pageLoadStrategyString = (String) capabilities.getCapability(PAGE_LOAD_STRATEGY);
+        final String pageLoadStrategyString = (String) driverOptions.getCapability(PAGE_LOAD_STRATEGY);
         if ("none".equals(pageLoadStrategyString)) {
             pageLoadStrategy_ = PageLoadStrategy.NONE;
         }
@@ -248,25 +238,10 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor, HasCapabil
             pageLoadStrategy_ = PageLoadStrategy.EAGER;
         }
 
-        modifyWebClient(webClient_);
-    }
-
-    public HtmlUnitDriver(final Capabilities desiredCapabilities, final Capabilities requiredCapabilities) {
-        this(new DesiredCapabilities(desiredCapabilities, requiredCapabilities));
-    }
-
-    private HtmlUnitDriver(final BrowserVersion version, final boolean enableJavascript, final Proxy proxy) {
-        webClient_ = newWebClient(version);
-
         final WebClientOptions clientOptions = webClient_.getOptions();
-        clientOptions.setHomePage(UrlUtils.URL_ABOUT_BLANK.toString());
-        clientOptions.setThrowExceptionOnFailingStatusCode(false);
-        clientOptions.setPrintContentOnFailingStatusCode(false);
-        clientOptions.setRedirectEnabled(true);
-        clientOptions.setUseInsecureSSL(true);
+        driverOptions.applyOptions(clientOptions);
 
-        setJavascriptEnabled(enableJavascript);
-        setProxySettings(proxy);
+        setProxySettings(Proxy.extractFrom(driverOptions));
 
         webClient_.setRefreshHandler(new WaitingRefreshHandler());
         webClient_.setClipboardHandler(new AwtClipboardHandler());
@@ -274,6 +249,7 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor, HasCapabil
         elementFinder_ = new HtmlUnitElementFinder();
 
         alert_ = new HtmlUnitAlert(this);
+        alert_.handleBrowserCapabilities(driverOptions);
         currentWindow_ = new HtmlUnitWindow(webClient_.getCurrentWindow());
 
         defaultExecutor_ = Executors.newCachedThreadPool();
@@ -337,6 +313,7 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor, HasCapabil
         });
 
         resetKeyboardAndMouseState();
+        modifyWebClient(webClient_);
     }
 
     /**
@@ -635,13 +612,7 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor, HasCapabil
 
     @Override
     public Capabilities getCapabilities() {
-        final DesiredCapabilities capabilities = new DesiredCapabilities(HTMLUNIT.browserName(), "", Platform.ANY);
-
-        capabilities.setPlatform(Platform.getCurrent());
-        capabilities.setVersion(Version.getProductVersion());
-
-        capabilities.setCapability(HtmlUnitDriver.JAVASCRIPT_ENABLED, isJavascriptEnabled());
-        return capabilities;
+        return new HtmlUnitDriverOptions(getBrowserVersion()).importOptions(webClient_.getOptions());
     }
 
     @Override
@@ -839,12 +810,31 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor, HasCapabil
 
     @Override
     public void quit() {
-        if (webClient_ != null) {
-            alert_.close();
-            webClient_.close();
-            webClient_ = null;
+        // closing the web client while some async processes are running
+        // will produce strange effects; therefore wait until they are done
+        while (runAsyncRunning_) {
+            try {
+                Thread.sleep(10);
+            }
+            catch (final InterruptedException e) {
+                throw new RuntimeException(e);
+            }
         }
-        defaultExecutor_.shutdown();
+
+        conditionLock_.lock();
+        runAsyncRunning_ = true;
+        try {
+            if (webClient_ != null) {
+                alert_.close();
+                webClient_.close();
+                webClient_ = null;
+            }
+            defaultExecutor_.shutdown();
+        }
+        finally {
+            runAsyncRunning_ = false;
+            conditionLock_.unlock();
+        }
     }
 
     @Override
@@ -954,7 +944,14 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor, HasCapabil
                 || arg instanceof Number // special case the underlying type
                 || arg instanceof String
                 || arg instanceof Boolean
-                || arg.getClass().isArray()
+
+                || arg instanceof Object[]
+                || arg instanceof int[]
+                || arg instanceof long[]
+                || arg instanceof float[]
+                || arg instanceof double[]
+                || arg instanceof boolean[]
+
                 || arg instanceof Collection<?> || arg instanceof Map<?, ?>)) {
             throw new IllegalArgumentException(
                     "Argument must be a string, number, boolean or WebElement: " + arg + " (" + arg.getClass() + ")");
@@ -964,13 +961,11 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor, HasCapabil
             final HtmlUnitWebElement webElement = (HtmlUnitWebElement) arg;
             assertElementNotStale(webElement.getElement());
             return webElement.getElement().getScriptableObject();
-
         }
         else if (arg instanceof HtmlElement) {
             final HtmlElement element = (HtmlElement) arg;
             assertElementNotStale(element);
             return element.getScriptableObject();
-
         }
         else if (arg instanceof Collection<?>) {
             final List<Object> list = new ArrayList<>();
@@ -978,25 +973,60 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor, HasCapabil
                 list.add(parseArgumentIntoJavascriptParameter(scope, o));
             }
             return Context.getCurrentContext().newArray(scope, list.toArray());
-
         }
-        else if (arg.getClass().isArray()) {
+
+        else if (arg instanceof Object[]) {
             final List<Object> list = new ArrayList<>();
             for (final Object o : (Object[]) arg) {
                 list.add(parseArgumentIntoJavascriptParameter(scope, o));
             }
             return Context.getCurrentContext().newArray(scope, list.toArray());
-
         }
-        else if (arg instanceof Map<?, ?>) {
-            final Map<?, ?> argmap = (Map<?, ?>) arg;
-            final Scriptable map = Context.getCurrentContext().newObject(scope);
-            for (final Map.Entry<?, ?> entry : argmap.entrySet()) {
-                map.put((String) entry.getKey(), map, parseArgumentIntoJavascriptParameter(scope, entry.getValue()));
+        else if (arg instanceof int[]) {
+            final List<Object> list = new ArrayList<>();
+            for (final Object o : (int[]) arg) {
+                list.add(parseArgumentIntoJavascriptParameter(scope, o));
             }
-            return map;
-
+            return Context.getCurrentContext().newArray(scope, list.toArray());
         }
+        else if (arg instanceof long[]) {
+            final List<Object> list = new ArrayList<>();
+            for (final Object o : (long[]) arg) {
+                list.add(parseArgumentIntoJavascriptParameter(scope, o));
+            }
+            return Context.getCurrentContext().newArray(scope, list.toArray());
+        }
+        else if (arg instanceof float[]) {
+            final List<Object> list = new ArrayList<>();
+            for (final Object o : (float[]) arg) {
+                list.add(parseArgumentIntoJavascriptParameter(scope, o));
+            }
+            return Context.getCurrentContext().newArray(scope, list.toArray());
+        }
+        else if (arg instanceof double[]) {
+            final List<Object> list = new ArrayList<>();
+            for (final Object o : (double[]) arg) {
+                list.add(parseArgumentIntoJavascriptParameter(scope, o));
+            }
+            return Context.getCurrentContext().newArray(scope, list.toArray());
+        }
+        else if (arg instanceof boolean[]) {
+            final List<Object> list = new ArrayList<>();
+            for (final Object o : (boolean[]) arg) {
+                list.add(parseArgumentIntoJavascriptParameter(scope, o));
+            }
+            return Context.getCurrentContext().newArray(scope, list.toArray());
+        }
+
+        else if (arg instanceof Map<?, ?>) {
+            final Map<?, ?> map = (Map<?, ?>) arg;
+            final Scriptable obj = Context.getCurrentContext().newObject(scope);
+            for (final Map.Entry<?, ?> entry : map.entrySet()) {
+                obj.put((String) entry.getKey(), obj, parseArgumentIntoJavascriptParameter(scope, entry.getValue()));
+            }
+            return obj;
+        }
+
         else {
             return arg;
         }
@@ -1174,6 +1204,10 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor, HasCapabil
 
     protected HtmlUnitWebElement toWebElement(final DomElement element) {
         return getElementsMap().addIfAbsent(this, element);
+    }
+
+    public HtmlUnitWebElement toWebElement(final String elementId) {
+        return getElementsMap().getWebElement(elementId);
     }
 
     public boolean isJavascriptEnabled() {
@@ -1360,10 +1394,12 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor, HasCapabil
 
     protected static class ElementsMap {
         private final Map<SgmlPage, Map<DomElement, HtmlUnitWebElement>> elementsMapByPage_;
+        private final Map<String, HtmlUnitWebElement> elementsMapById_;
         private int idCounter_;
 
         public ElementsMap() {
             elementsMapByPage_ = new WeakHashMap<>();
+            elementsMapById_ = new HashMap<>();
             idCounter_ = 0;
         }
 
@@ -1376,12 +1412,25 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor, HasCapabil
                 idCounter_++;
                 e = new HtmlUnitWebElement(driver, idCounter_, element);
                 pageMap.put(element, e);
+                elementsMapById_.put(Integer.toString(idCounter_), e);
             }
             return e;
         }
 
         public void remove(final Page page) {
-            elementsMapByPage_.remove(page);
+            final Map<DomElement, HtmlUnitWebElement> pageMap = elementsMapByPage_.remove(page);
+            if (pageMap != null) {
+                pageMap.values().forEach(element -> elementsMapById_.remove(Integer.toString(element.getId())));
+            }
+        }
+
+        public HtmlUnitWebElement getWebElement(final String elementId) {
+            final HtmlUnitWebElement webElement = elementsMapById_.get(elementId);
+            if (webElement == null) {
+                throw new StaleElementReferenceException(
+                        "Failed finding web element associated with identifier: " + elementId);
+            }
+            return webElement;
         }
     }
 
