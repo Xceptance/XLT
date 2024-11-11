@@ -35,16 +35,11 @@ import org.htmlunit.javascript.configuration.JsxFunction;
 public class External extends HtmlUnitScriptable {
 
     /**
-     * The constructor.
-     */
-    public External() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 
     /**
@@ -61,6 +56,6 @@ public class External extends HtmlUnitScriptable {
      */
     @JsxFunction(functionName = "IsSearchProviderInstalled")
     public Object isSearchProviderInstalled() {
-        return JavaScriptEngine.Undefined;
+        return JavaScriptEngine.UNDEFINED;
     }
 }

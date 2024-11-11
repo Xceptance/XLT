@@ -30,15 +30,10 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 public class WebkitSpeechRecognitionError extends Event {
 
     /**
-     * Creates a new instance.
-     */
-    public WebkitSpeechRecognitionError() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @JsxConstructor(functionName = "SpeechRecognitionErrorEvent")
     public void jsConstructor() {
+        // nothing to do
     }
 }

@@ -14,8 +14,6 @@
  */
 package org.htmlunit.html;
 
-import static org.htmlunit.BrowserVersionFeatures.HTMLINPUT_CHECKBOX_DOES_NOT_CLICK_SURROUNDING_ANCHOR;
-
 import java.io.IOException;
 import java.util.Map;
 
@@ -156,7 +154,7 @@ public class HtmlRadioButtonInput extends HtmlInput implements LabelableElement 
         for (final HtmlElement htmlElement : htmlPage.getHtmlElementDescendants()) {
             if (htmlElement instanceof HtmlRadioButtonInput) {
                 final HtmlRadioButtonInput radioInput = (HtmlRadioButtonInput) htmlElement;
-                if (name.equals(radioInput.getAttribute(DomElement.NAME_ATTRIBUTE))
+                if (name.equals(radioInput.getAttribute(NAME_ATTRIBUTE))
                         && radioInput.getEnclosingForm() == null) {
                     if (radioInput == this) {
                         setCheckedInternal(true);
@@ -279,8 +277,7 @@ public class HtmlRadioButtonInput extends HtmlInput implements LabelableElement 
      */
     @Override
     protected boolean propagateClickStateUpdateToParent() {
-        return !hasFeature(HTMLINPUT_CHECKBOX_DOES_NOT_CLICK_SURROUNDING_ANCHOR)
-                && super.propagateClickStateUpdateToParent();
+        return false;
     }
 
     @Override
@@ -296,7 +293,7 @@ public class HtmlRadioButtonInput extends HtmlInput implements LabelableElement 
         for (final HtmlElement htmlElement : getPage().getHtmlElementDescendants()) {
             if (htmlElement instanceof HtmlRadioButtonInput) {
                 final HtmlRadioButtonInput radioInput = (HtmlRadioButtonInput) htmlElement;
-                if (name.equals(radioInput.getAttribute(DomElement.NAME_ATTRIBUTE))
+                if (name.equals(radioInput.getAttribute(NAME_ATTRIBUTE))
                         && radioInput.isChecked()) {
                     return false;
                 }

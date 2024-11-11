@@ -14,6 +14,9 @@
  */
 package org.htmlunit.html;
 
+import static org.htmlunit.BrowserVersionFeatures.HTML_LAYER_TAG;
+
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -23,7 +26,8 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.htmlunit.SgmlPage;
-import org.htmlunit.javascript.configuration.JavaScriptConfiguration;
+import org.htmlunit.cyberneko.xerces.util.XMLAttributesImpl;
+import org.htmlunit.cyberneko.xerces.xni.QName;
 import org.htmlunit.util.OrderedFastHashMap;
 import org.xml.sax.Attributes;
 
@@ -47,24 +51,29 @@ import org.xml.sax.Attributes;
  */
 public class DefaultElementFactory implements ElementFactory {
 
+    // for performance optimization
+    static final class OrderedFastHashMapWithLowercaseKeys<K, V> extends OrderedFastHashMap<K, V> {
+        OrderedFastHashMapWithLowercaseKeys(final int size) {
+            super(size);
+        }
+    }
+
     /** Logging support. */
     private static final Log LOG = LogFactory.getLog(DefaultElementFactory.class);
-
-    private static final String KEYGEN_ = "keygen";
 
     /**
      * You can generate your own test cases by looking into ElementTestSource.generateTestForHtmlElements.
      */
     public static final List<String> SUPPORTED_TAGS_ = Collections.unmodifiableList(Arrays.asList(
-        KEYGEN_, HtmlAbbreviated.TAG_NAME, HtmlAcronym.TAG_NAME,
+        HtmlAbbreviated.TAG_NAME, HtmlAcronym.TAG_NAME,
         HtmlAnchor.TAG_NAME, HtmlAddress.TAG_NAME, HtmlArea.TAG_NAME,
         HtmlArticle.TAG_NAME, HtmlAside.TAG_NAME, HtmlAudio.TAG_NAME,
-        HtmlBackgroundSound.TAG_NAME, HtmlBase.TAG_NAME, HtmlBaseFont.TAG_NAME,
+        HtmlBase.TAG_NAME, HtmlBaseFont.TAG_NAME,
         HtmlBidirectionalIsolation.TAG_NAME, HtmlBidirectionalOverride.TAG_NAME, HtmlBig.TAG_NAME,
-        HtmlBlink.TAG_NAME, HtmlBlockQuote.TAG_NAME, HtmlBody.TAG_NAME, HtmlBold.TAG_NAME,
+        HtmlBlockQuote.TAG_NAME, HtmlBody.TAG_NAME, HtmlBold.TAG_NAME,
         HtmlBreak.TAG_NAME, HtmlButton.TAG_NAME, HtmlCanvas.TAG_NAME, HtmlCaption.TAG_NAME,
         HtmlCenter.TAG_NAME, HtmlCitation.TAG_NAME, HtmlCode.TAG_NAME,
-        HtmlCommand.TAG_NAME, HtmlData.TAG_NAME, HtmlDataList.TAG_NAME,
+        HtmlData.TAG_NAME, HtmlDataList.TAG_NAME,
         HtmlDefinition.TAG_NAME, HtmlDefinitionDescription.TAG_NAME,
         HtmlDeletedText.TAG_NAME, HtmlDetails.TAG_NAME, HtmlDialog.TAG_NAME, HtmlDirectory.TAG_NAME,
         HtmlDivision.TAG_NAME, HtmlDefinitionList.TAG_NAME,
@@ -80,13 +89,13 @@ public class DefaultElementFactory implements ElementFactory {
         HtmlInlineQuotation.TAG_NAME,
         HtmlImage.TAG_NAME, HtmlImage.TAG_NAME2,
         HtmlInput.TAG_NAME,
-        HtmlInsertedText.TAG_NAME, HtmlIsIndex.TAG_NAME,
+        HtmlInsertedText.TAG_NAME,
         HtmlItalic.TAG_NAME,
         HtmlKeyboard.TAG_NAME, HtmlLabel.TAG_NAME, HtmlLayer.TAG_NAME,
         HtmlLegend.TAG_NAME, HtmlListing.TAG_NAME, HtmlListItem.TAG_NAME,
         HtmlLink.TAG_NAME, HtmlMain.TAG_NAME, HtmlMap.TAG_NAME, HtmlMark.TAG_NAME, HtmlMarquee.TAG_NAME,
-        HtmlMenu.TAG_NAME, HtmlMenuItem.TAG_NAME, HtmlMeta.TAG_NAME, HtmlMeter.TAG_NAME, HtmlMultiColumn.TAG_NAME,
-        HtmlNav.TAG_NAME, HtmlNextId.TAG_NAME,
+        HtmlMenu.TAG_NAME, HtmlMeta.TAG_NAME, HtmlMeter.TAG_NAME,
+        HtmlNav.TAG_NAME,
         HtmlNoBreak.TAG_NAME, HtmlNoEmbed.TAG_NAME, HtmlNoFrames.TAG_NAME,
         HtmlNoLayer.TAG_NAME,
         HtmlNoScript.TAG_NAME, HtmlObject.TAG_NAME, HtmlOrderedList.TAG_NAME,
@@ -130,20 +139,6 @@ public class DefaultElementFactory implements ElementFactory {
     @Override
     public HtmlElement createElementNS(final SgmlPage page, final String namespaceURI,
             final String qualifiedName, final Attributes attributes) {
-        return createElementNS(page, namespaceURI, qualifiedName, attributes, false);
-    }
-
-    /**
-     * @param page the owning page
-     * @param namespaceURI the URI that identifies an XML namespace
-     * @param qualifiedName the qualified name of the element type to instantiate
-     * @param attributes initial attributes, possibly {@code null}
-     * @param checkBrowserCompatibility if true and the page doesn't support this element, return null
-     * @return the newly created element
-     */
-    @Override
-    public HtmlElement createElementNS(final SgmlPage page, final String namespaceURI,
-            final String qualifiedName, final Attributes attributes, final boolean checkBrowserCompatibility) {
         final Map<String, DomAttr> attributeMap = toMap(page, attributes);
 
         final HtmlElement element;
@@ -156,12 +151,7 @@ public class DefaultElementFactory implements ElementFactory {
             tagName = qualifiedName.substring(colonIndex + 1).toLowerCase(Locale.ROOT);
         }
 
-        boolean doBrowserCompatibilityCheck = checkBrowserCompatibility;
         switch (tagName) {
-            case KEYGEN_:
-                element = new HtmlUnknownElement(page, qualifiedName, attributeMap);
-                break;
-
             case HtmlAbbreviated.TAG_NAME:
                 element = new HtmlAbbreviated(qualifiedName, page, attributeMap);
                 break;
@@ -194,10 +184,6 @@ public class DefaultElementFactory implements ElementFactory {
                 element = new HtmlAudio(qualifiedName, page, attributeMap);
                 break;
 
-            case HtmlBackgroundSound.TAG_NAME:
-                element = new HtmlBackgroundSound(qualifiedName, page, attributeMap);
-                break;
-
             case HtmlBase.TAG_NAME:
                 element = new HtmlBase(qualifiedName, page, attributeMap);
                 break;
@@ -216,10 +202,6 @@ public class DefaultElementFactory implements ElementFactory {
 
             case HtmlBig.TAG_NAME:
                 element = new HtmlBig(qualifiedName, page, attributeMap);
-                break;
-
-            case HtmlBlink.TAG_NAME:
-                element = new HtmlBlink(qualifiedName, page, attributeMap);
                 break;
 
             case HtmlBlockQuote.TAG_NAME:
@@ -266,10 +248,6 @@ public class DefaultElementFactory implements ElementFactory {
 
             case HtmlCode.TAG_NAME:
                 element = new HtmlCode(qualifiedName, page, attributeMap);
-                break;
-
-            case HtmlCommand.TAG_NAME:
-                element = new HtmlCommand(qualifiedName, page, attributeMap);
                 break;
 
             case HtmlData.TAG_NAME:
@@ -427,15 +405,10 @@ public class DefaultElementFactory implements ElementFactory {
 
             case HtmlInput.TAG_NAME:
                 element = createInputElement(qualifiedName, page, attributeMap);
-                doBrowserCompatibilityCheck = false;
                 break;
 
             case HtmlInsertedText.TAG_NAME:
                 element = new HtmlInsertedText(qualifiedName, page, attributeMap);
-                break;
-
-            case HtmlIsIndex.TAG_NAME:
-                element = new HtmlIsIndex(qualifiedName, page, attributeMap);
                 break;
 
             case HtmlItalic.TAG_NAME:
@@ -451,7 +424,13 @@ public class DefaultElementFactory implements ElementFactory {
                 break;
 
             case HtmlLayer.TAG_NAME:
-                element = new HtmlLayer(qualifiedName, page, attributeMap);
+                if (page.getWebClient().getBrowserVersion().hasFeature(HTML_LAYER_TAG)) {
+                    element = new HtmlLayer(qualifiedName, page, attributeMap);
+                }
+                else {
+                    element = UnknownElementFactory.INSTANCE
+                            .createElementNS(page, namespaceURI, qualifiedName, attributes);
+                }
                 break;
 
             case HtmlLegend.TAG_NAME:
@@ -490,10 +469,6 @@ public class DefaultElementFactory implements ElementFactory {
                 element = new HtmlMenu(qualifiedName, page, attributeMap);
                 break;
 
-            case HtmlMenuItem.TAG_NAME:
-                element = new HtmlMenuItem(qualifiedName, page, attributeMap);
-                break;
-
             case HtmlMeta.TAG_NAME:
                 element = new HtmlMeta(qualifiedName, page, attributeMap);
                 break;
@@ -502,16 +477,8 @@ public class DefaultElementFactory implements ElementFactory {
                 element = new HtmlMeter(qualifiedName, page, attributeMap);
                 break;
 
-            case HtmlMultiColumn.TAG_NAME:
-                element = new HtmlMultiColumn(qualifiedName, page, attributeMap);
-                break;
-
             case HtmlNav.TAG_NAME:
                 element = new HtmlNav(qualifiedName, page, attributeMap);
-                break;
-
-            case HtmlNextId.TAG_NAME:
-                element = new HtmlNextId(qualifiedName, page, attributeMap);
                 break;
 
             case HtmlNoBreak.TAG_NAME:
@@ -527,7 +494,13 @@ public class DefaultElementFactory implements ElementFactory {
                 break;
 
             case HtmlNoLayer.TAG_NAME:
-                element = new HtmlNoLayer(qualifiedName, page, attributeMap);
+                if (page.getWebClient().getBrowserVersion().hasFeature(HTML_LAYER_TAG)) {
+                    element = new HtmlNoLayer(qualifiedName, page, attributeMap);
+                }
+                else {
+                    element = UnknownElementFactory.INSTANCE
+                            .createElementNS(page, namespaceURI, qualifiedName, attributes);
+                }
                 break;
 
             case HtmlNoScript.TAG_NAME:
@@ -680,7 +653,6 @@ public class DefaultElementFactory implements ElementFactory {
 
             case HtmlTableDataCell.TAG_NAME:
                 element = new HtmlTableDataCell(qualifiedName, page, attributeMap);
-                doBrowserCompatibilityCheck = false;
                 break;
 
             case HtmlTableFooter.TAG_NAME:
@@ -693,7 +665,6 @@ public class DefaultElementFactory implements ElementFactory {
 
             case HtmlTableHeaderCell.TAG_NAME:
                 element = new HtmlTableHeaderCell(qualifiedName, page, attributeMap);
-                doBrowserCompatibilityCheck = false;
                 break;
 
             case HtmlTableRow.TAG_NAME:
@@ -748,13 +719,6 @@ public class DefaultElementFactory implements ElementFactory {
                 throw new IllegalStateException("Cannot find HtmlElement for " + qualifiedName);
         }
 
-        if (doBrowserCompatibilityCheck) {
-            final JavaScriptConfiguration config =
-                    JavaScriptConfiguration.getInstance(page.getWebClient().getBrowserVersion());
-            if (config.getDomJavaScriptMappingFor(element.getClass()) == null) {
-                return UnknownElementFactory.instance.createElementNS(page, namespaceURI, qualifiedName, attributes);
-            }
-        }
         return element;
     }
 
@@ -766,29 +730,63 @@ public class DefaultElementFactory implements ElementFactory {
      * @return the map of attribute values for {@link HtmlElement}s
      */
     static Map<String, DomAttr> toMap(final SgmlPage page, final Attributes attributes) {
-        final int length = attributes == null ? 0 : attributes.getLength();
-        final Map<String, DomAttr> attributeMap = new OrderedFastHashMap<>(length);
+        if (attributes == null) {
+            return new OrderedFastHashMapWithLowercaseKeys<>(0);
+        }
 
-        for (int i = 0; i < length; i++) {
-            final String qName = attributes.getQName(i);
+        final int length = attributes.getLength();
+        final Map<String, DomAttr> attributeMap = new OrderedFastHashMapWithLowercaseKeys<>(length);
 
-            // browsers consider only first attribute (ex: <div id='foo' id='something'>...</div>)
-            if (!attributeMap.containsKey(qName)) {
-                String namespaceURI = attributes.getURI(i);
+        // small performance optimization if we know the attributes we can avoid some index lookups
+        if (attributes instanceof XMLAttributesImpl) {
+            final ArrayList<XMLAttributesImpl.Attribute> attribs = ((XMLAttributesImpl) attributes).getAttributes();
+            for (final XMLAttributesImpl.Attribute attribute : attribs) {
+                final QName qName = attribute.getQName();
+                final String name = qName.getRawname();
 
+                String namespaceURI = qName.getUri();
                 if (namespaceURI != null && namespaceURI.isEmpty()) {
                     namespaceURI = null;
                 }
 
-                final DomAttr newAttr = new DomAttr(page, namespaceURI, qName, attributes.getValue(i), true);
-                attributeMap.put(qName, newAttr);
+                DomAttr attr = new DomAttr(page, namespaceURI, name, attribute.getValue(), true);
+                attr = attributeMap.put(name, attr);
+
+                // browsers consider only first attribute (ex: <div id='foo' id='something'>...</div>)
+                // for performance reasons we do not check for the existence of the key first
+                // because this is the unusual case
+                if (attr != null) {
+                    attributeMap.put(name, attr);
+                }
+            }
+
+            return attributeMap;
+        }
+
+        for (int i = 0; i < length; i++) {
+            final String qName = attributes.getQName(i);
+
+            String namespaceURI = attributes.getURI(i);
+
+            if (namespaceURI != null && namespaceURI.isEmpty()) {
+                namespaceURI = null;
+            }
+
+            DomAttr attr = new DomAttr(page, namespaceURI, qName, attributes.getValue(i), true);
+            attr = attributeMap.put(qName, attr);
+
+            // browsers consider only first attribute (ex: <div id='foo' id='something'>...</div>)
+            // for performance reasons we do not check for the existence of the key first
+            // because this is the unusual case
+            if (attr != null) {
+                attributeMap.put(qName, attr);
             }
         }
 
         return attributeMap;
     }
 
-    private HtmlElement createInputElement(final String qualifiedName, final SgmlPage page,
+    private static HtmlElement createInputElement(final String qualifiedName, final SgmlPage page,
                                                 final Map<String, DomAttr> attributeMap) {
         String type = "";
         if (attributeMap != null) {

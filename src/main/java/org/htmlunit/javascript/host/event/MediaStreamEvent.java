@@ -27,15 +27,10 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 public class MediaStreamEvent extends Event {
 
     /**
-     * Creates an instance.
-     */
-    public MediaStreamEvent() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 }

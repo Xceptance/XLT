@@ -40,6 +40,7 @@ import org.htmlunit.javascript.host.crypto.SubtleCrypto;
 import org.htmlunit.javascript.host.css.ComputedCSSStyleDeclaration;
 import org.htmlunit.javascript.host.dom.CDATASection;
 import org.htmlunit.javascript.host.dom.NodeList;
+import org.htmlunit.javascript.host.dom.XPathEvaluator;
 import org.htmlunit.javascript.host.dom.XPathResult;
 import org.htmlunit.javascript.host.html.HTMLCollection;
 import org.htmlunit.javascript.host.performance.Performance;
@@ -156,6 +157,11 @@ public class ElementOwnPropertySymbolsTest extends WebDriverTestCase {
                 + "  <style>\n"
                 + "    h3 { color: blue;  }\n"
                 + "  </style>\n"
+
+                + "  <form name='myForm', id='myFormId'>"
+                + "    <input type='radio' name='first'/><input type='radio' name='first'/>"
+                + "    <input id='fileItem' type='file' />"
+                + "  </form>"
 
                 + LOG_TEXTAREA
                 + "</body></html>";
@@ -1661,8 +1667,6 @@ public class ElementOwnPropertySymbolsTest extends WebDriverTestCase {
      */
     @Test
     @Alerts("Symbol(Symbol.toStringTag) [C] [HTMLElement]")
-    @HtmlUnitNYI(FF = "Symbol(Symbol.toStringTag) [C] [HTMLUnknownElement]",
-            FF_ESR = "Symbol(Symbol.toStringTag) [C] [HTMLUnknownElement]")
     public void rb() throws Exception {
         test("rb");
     }
@@ -1685,8 +1689,6 @@ public class ElementOwnPropertySymbolsTest extends WebDriverTestCase {
      */
     @Test
     @Alerts("Symbol(Symbol.toStringTag) [C] [HTMLElement]")
-    @HtmlUnitNYI(FF = "Symbol(Symbol.toStringTag) [C] [HTMLUnknownElement]",
-            FF_ESR = "Symbol(Symbol.toStringTag) [C] [HTMLUnknownElement]")
     public void rp() throws Exception {
         test("rp");
     }
@@ -1698,8 +1700,6 @@ public class ElementOwnPropertySymbolsTest extends WebDriverTestCase {
      */
     @Test
     @Alerts("Symbol(Symbol.toStringTag) [C] [HTMLElement]")
-    @HtmlUnitNYI(FF = "Symbol(Symbol.toStringTag) [C] [HTMLUnknownElement]",
-            FF_ESR = "Symbol(Symbol.toStringTag) [C] [HTMLUnknownElement]")
     public void rt() throws Exception {
         test("rt");
     }
@@ -1711,8 +1711,6 @@ public class ElementOwnPropertySymbolsTest extends WebDriverTestCase {
      */
     @Test
     @Alerts("Symbol(Symbol.toStringTag) [C] [HTMLElement]")
-    @HtmlUnitNYI(FF = "Symbol(Symbol.toStringTag) [C] [HTMLUnknownElement]",
-            FF_ESR = "Symbol(Symbol.toStringTag) [C] [HTMLUnknownElement]")
     public void rtc() throws Exception {
         test("rtc");
     }
@@ -1724,8 +1722,6 @@ public class ElementOwnPropertySymbolsTest extends WebDriverTestCase {
      */
     @Test
     @Alerts("Symbol(Symbol.toStringTag) [C] [HTMLElement]")
-    @HtmlUnitNYI(FF = "Symbol(Symbol.toStringTag) [C] [HTMLUnknownElement]",
-            FF_ESR = "Symbol(Symbol.toStringTag) [C] [HTMLUnknownElement]")
     public void ruby() throws Exception {
         test("ruby");
     }
@@ -2357,7 +2353,6 @@ public class ElementOwnPropertySymbolsTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "Symbol(Symbol.toStringTag) [C] [TextEvent]",
-            FF = "Symbol(Symbol.toStringTag) [C] [CompositionEvent]",
             FF_ESR = "Symbol(Symbol.toStringTag) [C] [CompositionEvent]")
     public void textEvent() throws Exception {
         testString("", "document.createEvent('TextEvent')");
@@ -2594,7 +2589,9 @@ public class ElementOwnPropertySymbolsTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("Symbol(Symbol.toStringTag) [C] [MutationEvent]")
+    @Alerts(DEFAULT = "exception",
+            FF = "Symbol(Symbol.toStringTag) [C] [MutationEvent]",
+            FF_ESR = "Symbol(Symbol.toStringTag) [C] [MutationEvent]")
     public void mutationEvent() throws Exception {
         testString("", "document.createEvent('MutationEvent')");
     }
@@ -2840,6 +2837,28 @@ public class ElementOwnPropertySymbolsTest extends WebDriverTestCase {
     }
 
     /**
+     * Test {@link XPathEvaluator}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("Symbol(Symbol.toStringTag) [C] [XPathEvaluator]")
+    public void xPathEvaluator() throws Exception {
+        testString("", "new XPathEvaluator()");
+    }
+
+    /**
+     * Test {@link XPathExpression}.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("Symbol(Symbol.toStringTag) [C] [XPathExpression]")
+    public void xPathExpression() throws Exception {
+        testString("var res = new XPathEvaluator().createExpression('//span')", "res");
+    }
+
+    /**
      * Test {@link XPathResult}.
      *
      * @throws Exception if the test fails
@@ -3037,5 +3056,163 @@ public class ElementOwnPropertySymbolsTest extends WebDriverTestCase {
             FF_ESR = "Symbol(Symbol.toStringTag) [C] [XMLHttpRequest]")
     public void xmlHttpRequest() throws Exception {
         testString("", "new XMLHttpRequest()");
+    }
+
+    /**
+     * Test Request.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "Symbol(Symbol.toStringTag) [C] [Request]",
+            EDGE = "Symbol(Symbol.toStringTag) [C] [Request]",
+            FF = "Symbol(Symbol.toStringTag) [C] [Request]",
+            FF_ESR = "Symbol(Symbol.toStringTag) [C] [Request]")
+    public void request() throws Exception {
+        testString("", "new Request('https://www.htmlunit.org')");
+    }
+
+    /**
+     * Test Response.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "Symbol(Symbol.toStringTag) [C] [Response]",
+            EDGE = "Symbol(Symbol.toStringTag) [C] [Response]",
+            FF = "Symbol(Symbol.toStringTag) [C] [Response]",
+            FF_ESR = "Symbol(Symbol.toStringTag) [C] [Response]")
+    public void response() throws Exception {
+        testString("", "new Response()");
+    }
+
+    /**
+     * Test RadioNodeList.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "Symbol(Symbol.iterator) [WC] [function],Symbol(Symbol.toStringTag) [C] [RadioNodeList]",
+            EDGE = "Symbol(Symbol.iterator) [WC] [function],Symbol(Symbol.toStringTag) [C] [RadioNodeList]",
+            FF = "Symbol(Symbol.iterator) [WC] [function],Symbol(Symbol.toStringTag) [C] [RadioNodeList]",
+            FF_ESR = "Symbol(Symbol.iterator) [WC] [function],Symbol(Symbol.toStringTag) [C] [RadioNodeList]")
+    public void radioNodeList() throws Exception {
+        testString("", "document.myForm.first");
+    }
+
+    /**
+     * Test HTMLFormControlsCollection.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(CHROME = "Symbol(Symbol.iterator) [WC] [function],"
+                    + "Symbol(Symbol.toStringTag) [C] [HTMLFormControlsCollection]",
+            EDGE = "Symbol(Symbol.iterator) [WC] [function],"
+                    + "Symbol(Symbol.toStringTag) [C] [HTMLFormControlsCollection]",
+            FF = "Symbol(Symbol.iterator) [WC] [function],"
+                    + "Symbol(Symbol.toStringTag) [C] [HTMLFormControlsCollection]",
+            FF_ESR = "Symbol(Symbol.iterator) [WC] [function],"
+                    + "Symbol(Symbol.toStringTag) [C] [HTMLFormControlsCollection]")
+    public void htmlFormControlsCollection() throws Exception {
+        testString("", "document.myForm.elements");
+    }
+
+    /**
+     * Test {@link org.htmlunit.javascript.host.abort.AbortController}.
+     *
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(CHROME = "Symbol(Symbol.toStringTag) [C] [AbortController]",
+            EDGE = "Symbol(Symbol.toStringTag) [C] [AbortController]",
+            FF = "Symbol(Symbol.toStringTag) [C] [AbortController]",
+            FF_ESR = "Symbol(Symbol.toStringTag) [C] [AbortController]")
+    public void abortController() throws Exception {
+        testString("", "new AbortController()");
+    }
+
+    /**
+     * Test {@link org.htmlunit.javascript.host.abort.AbortSignal}.
+     *
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(CHROME = "Symbol(Symbol.toStringTag) [C] [AbortSignal]",
+            EDGE = "Symbol(Symbol.toStringTag) [C] [AbortSignal]",
+            FF = "Symbol(Symbol.toStringTag) [C] [AbortSignal]",
+            FF_ESR = "Symbol(Symbol.toStringTag) [C] [AbortSignal]")
+    public void abortSignal() throws Exception {
+        testString("", "new AbortController().signal");
+    }
+
+    /**
+     * Test {@link org.htmlunit.javascript.host.dom.DOMTokenList}.
+     *
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(CHROME = "Symbol(Symbol.iterator) [WC] [function],Symbol(Symbol.toStringTag) [C] [DOMTokenList]",
+            EDGE = "Symbol(Symbol.iterator) [WC] [function],Symbol(Symbol.toStringTag) [C] [DOMTokenList]",
+            FF = "Symbol(Symbol.iterator) [WC] [function],Symbol(Symbol.toStringTag) [C] [DOMTokenList]",
+            FF_ESR = "Symbol(Symbol.iterator) [WC] [function],Symbol(Symbol.toStringTag) [C] [DOMTokenList]")
+    public void domTokenList() throws Exception {
+        testString("", "document.body.classList");
+    }
+
+    /**
+     * Test {@link org.htmlunit.javascript.host.draganddrop.DataTransfer}.
+     *
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(CHROME = "Symbol(Symbol.toStringTag) [C] [DataTransfer]",
+            EDGE = "Symbol(Symbol.toStringTag) [C] [DataTransfer]",
+            FF = "Symbol(Symbol.toStringTag) [C] [DataTransfer]",
+            FF_ESR = "Symbol(Symbol.toStringTag) [C] [DataTransfer]")
+    public void dataTransfer() throws Exception {
+        testString("", "new DataTransfer()");
+    }
+
+    /**
+     * Test {@link org.htmlunit.javascript.host.draganddrop.DataTransferItemList}.
+     *
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(CHROME = "Symbol(Symbol.iterator) [WC] [function],Symbol(Symbol.toStringTag) [C] [DataTransferItemList]",
+            EDGE = "Symbol(Symbol.iterator) [WC] [function],Symbol(Symbol.toStringTag) [C] [DataTransferItemList]",
+            FF = "Symbol(Symbol.iterator) [WC] [function],Symbol(Symbol.toStringTag) [C] [DataTransferItemList]",
+            FF_ESR = "Symbol(Symbol.iterator) [WC] [function],Symbol(Symbol.toStringTag) [C] [DataTransferItemList]")
+    public void dataTransferItemList() throws Exception {
+        testString("", "new DataTransfer().items");
+    }
+
+    /**
+     * Test {@link org.htmlunit.javascript.host.file.FileList}.
+     *
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(CHROME = "Symbol(Symbol.iterator) [WC] [function],Symbol(Symbol.toStringTag) [C] [FileList]",
+            EDGE = "Symbol(Symbol.iterator) [WC] [function],Symbol(Symbol.toStringTag) [C] [FileList]",
+            FF = "Symbol(Symbol.iterator) [WC] [function],Symbol(Symbol.toStringTag) [C] [FileList]",
+            FF_ESR = "Symbol(Symbol.iterator) [WC] [function],Symbol(Symbol.toStringTag) [C] [FileList]")
+    public void fileList() throws Exception {
+        testString("", "new DataTransfer().files");
+    }
+
+    /**
+     * Test {@link org.htmlunit.javascript.host.file.FileList}.
+     *
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(CHROME = "Symbol(Symbol.iterator) [WC] [function],Symbol(Symbol.toStringTag) [C] [FileList]",
+            EDGE = "Symbol(Symbol.iterator) [WC] [function],Symbol(Symbol.toStringTag) [C] [FileList]",
+            FF = "Symbol(Symbol.iterator) [WC] [function],Symbol(Symbol.toStringTag) [C] [FileList]",
+            FF_ESR = "Symbol(Symbol.iterator) [WC] [function],Symbol(Symbol.toStringTag) [C] [FileList]")
+    public void fileList2() throws Exception {
+        testString("", "document.getElementById('fileItem').files");
     }
 }

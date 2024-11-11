@@ -23,6 +23,7 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -59,8 +60,8 @@ import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.EcmaError;
 import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.JavaScriptException;
-import org.htmlunit.corejs.javascript.NativeObject;
 import org.htmlunit.corejs.javascript.NativeConsole.Level;
+import org.htmlunit.corejs.javascript.NativeObject;
 import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.corejs.javascript.ScriptableObject;
 import org.htmlunit.corejs.javascript.Slot;
@@ -133,6 +134,8 @@ import org.htmlunit.xml.XmlPage;
  * @author Carsten Steul
  * @author Colin Alworth
  * @author Atsushi Nakagawa
+ * @author Sven Strickroth
+ *
  * @see <a href="http://msdn.microsoft.com/en-us/library/ms535873.aspx">MSDN documentation</a>
  */
 @JsxClass
@@ -147,6 +150,39 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
     /** To be documented. */
     @JsxConstant({CHROME, EDGE})
     public static final int PERSISTENT = 1;
+
+    private static final Method GETTER_LENGTH;
+    private static final Method SETTER_LENGTH;
+    private static final Method GETTER_SELF;
+    private static final Method SETTER_SELF;
+    private static final Method GETTER_PARENT;
+    private static final Method SETTER_PARENT;
+    private static final Method GETTER_FRAMES;
+    private static final Method SETTER_FRAMES;
+
+    static {
+        try {
+            GETTER_LENGTH = Window.class.getDeclaredMethod("jsGetLength");
+            SETTER_LENGTH = Window.class.getDeclaredMethod("jsSetLength", Scriptable.class);
+
+            GETTER_SELF = Window.class.getDeclaredMethod("jsGetSelf");
+            SETTER_SELF = Window.class.getDeclaredMethod("jsSetSelf", Scriptable.class);
+
+            GETTER_PARENT = Window.class.getDeclaredMethod("jsGetParent");
+            SETTER_PARENT = Window.class.getDeclaredMethod("jsSetParent", Scriptable.class);
+
+            GETTER_FRAMES = Window.class.getDeclaredMethod("jsGetFrames");
+            SETTER_FRAMES = Window.class.getDeclaredMethod("jsSetFrames", Scriptable.class);
+        }
+        catch (NoSuchMethodException | SecurityException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private Scriptable lengthShadow_;
+    private Scriptable selfShadow_;
+    private Scriptable parentShadow_;
+    private Scriptable framesShadow_;
 
     private Document document_;
     private DocumentProxy documentProxy_;
@@ -165,6 +201,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
     private Object opener_;
     private Object top_ = NOT_FOUND; // top can be set from JS to any value!
     private Crypto crypto_;
+    private Scriptable performance_;
 
     private final EnumMap<Type, Storage> storages_ = new EnumMap<>(Type.class);
 
@@ -178,12 +215,6 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
             id_ = id;
             callback_ = callback;
         }
-    }
-
-    /**
-     * Creates an instance.
-     */
-    public Window() {
     }
 
     /**
@@ -339,7 +370,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
     @JsxGetter
     public Object getEvent() {
         if (currentEvent_ == null) {
-            return JavaScriptEngine.Undefined;
+            return JavaScriptEngine.UNDEFINED;
         }
         return currentEvent_;
     }
@@ -390,9 +421,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
         final WebClient webClient = getWebWindow().getWebClient();
 
         if (webClient.getOptions().isPopupBlockerEnabled()) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Ignoring window.open() invocation because popups are blocked.");
-            }
+            LOG.debug("Ignoring window.open() invocation because popups are blocked.");
             return null;
         }
 
@@ -411,12 +440,12 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
         }
 
         // if specified name is the name of an existing window, then hold it
-        if (StringUtils.isEmpty(urlString) && !"".equals(windowName)) {
+        if (StringUtils.isEmpty(urlString) && !org.htmlunit.util.StringUtils.isEmptyString(windowName)) {
             try {
                 final WebWindow webWindow = webClient.getWebWindowByName(windowName);
                 return getProxy(webWindow);
             }
-            catch (final WebWindowNotFoundException e) {
+            catch (final WebWindowNotFoundException ignored) {
                 // nothing
             }
         }
@@ -539,7 +568,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
     /**
      * @param clientInformation the new value
      */
-    @JsxSetter({CHROME, EDGE})
+    @JsxSetter({CHROME, EDGE, FF})
     public void setClientInformation(final Object clientInformation) {
         clientInformation_ = clientInformation;
     }
@@ -550,15 +579,6 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
      */
     @JsxGetter(propertyName = "window")
     public Window getWindow_js() {
-        return this;
-    }
-
-    /**
-     * Returns the {@code self} property.
-     * @return this
-     */
-    @JsxGetter
-    public Window getSelf() {
         return this;
     }
 
@@ -721,6 +741,11 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
         webWindow_ = webWindow;
         webWindow_.setScriptableObject(this);
 
+        defineProperty("length", null, GETTER_LENGTH, SETTER_LENGTH, ScriptableObject.READONLY);
+        defineProperty("self", null, GETTER_SELF, SETTER_SELF, ScriptableObject.READONLY);
+        defineProperty("parent", null, GETTER_PARENT, SETTER_PARENT, ScriptableObject.READONLY);
+        defineProperty("frames", null, GETTER_FRAMES, SETTER_FRAMES, ScriptableObject.READONLY);
+
         windowProxy_ = new WindowProxy(webWindow_);
 
         if (pageToEnclose instanceof XmlPage) {
@@ -826,16 +851,6 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
     }
 
     /**
-     * Returns the value of the {@code parent} property.
-     * @return the value of the {@code parent} property
-     */
-    @JsxGetter
-    public ScriptableObject getParent() {
-        final WebWindow parent = getWebWindow().getParentWindow();
-        return parent.getScriptableObject();
-    }
-
-    /**
      * Returns the value of the {@code opener} property.
      * @return the value of the {@code opener}, or {@code null} for a top level window
      */
@@ -871,25 +886,132 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
     }
 
     /**
-     * Returns the value of the {@code frames} property.
-     * @return the value of the {@code frames} property
-     */
-    @JsxGetter(propertyName = "frames")
-    public Window getFrames_js() {
-        return this;
-    }
-
-    /**
      * Returns the number of frames contained by this window.
      * @return the number of frames contained by this window
      */
     @JsxGetter
-    public int getLength() {
+    public Object getLength() {
+        return JavaScriptEngine.UNDEFINED;
+    }
+
+    /**
+     * Gets the {@code length} property. Setting this shadows the
+     * defined value (see https://webidl.spec.whatwg.org/#Replaceable)
+     * @return the shadow value if set otherwise the number of frames
+     */
+    public Object jsGetLength() {
+        if (lengthShadow_ != null) {
+            return lengthShadow_;
+        }
+
         final HTMLCollection frames = getFrames();
         if (frames != null) {
             return frames.getLength();
         }
         return 0;
+    }
+
+    /**
+     * Sets the {@code length} property. Setting this shadows the
+     * defined value (see https://webidl.spec.whatwg.org/#Replaceable)
+     * @param lengthShadow the value to overwrite the defined property value
+     */
+    public void jsSetLength(final Scriptable lengthShadow) {
+        lengthShadow_ = lengthShadow;
+    }
+
+    /**
+     * Returns the {@code self} property.
+     * @return this
+     */
+    @JsxGetter
+    public Object getSelf() {
+        return JavaScriptEngine.UNDEFINED;
+    }
+
+    /**
+     * Gets the {@code self} property. Setting this shadows the
+     * defined value (see https://webidl.spec.whatwg.org/#Replaceable)
+     * @return the shadow value if set otherwise the number of frames
+     */
+    public Object jsGetSelf() {
+        if (selfShadow_ != null) {
+            return selfShadow_;
+        }
+
+        return this;
+    }
+
+    /**
+     * Sets the {@code self} property. Setting this shadows the
+     * defined value (see https://webidl.spec.whatwg.org/#Replaceable)
+     * @param selfShadow the value to overwrite the defined property value
+     */
+    public void jsSetSelf(final Scriptable selfShadow) {
+        selfShadow_ = selfShadow;
+    }
+
+    /**
+     * Returns the value of the {@code parent} property.
+     * @return the value of the {@code parent} property
+     */
+    @JsxGetter
+    public Object getParent() {
+        return JavaScriptEngine.UNDEFINED;
+    }
+
+    /**
+     * Gets the {@code parent} property. Setting this shadows the
+     * defined value (see https://webidl.spec.whatwg.org/#Replaceable)
+     * @return the shadow value if set otherwise the number of frames
+     */
+    public Object jsGetParent() {
+        if (parentShadow_ != null) {
+            return parentShadow_;
+        }
+
+        final WebWindow parent = getWebWindow().getParentWindow();
+        return parent.getScriptableObject();
+    }
+
+    /**
+     * Sets the {@code parent} property. Setting this shadows the
+     * defined value (see https://webidl.spec.whatwg.org/#Replaceable)
+     * @param parentShadow the value to overwrite the defined property value
+     */
+    public void jsSetParent(final Scriptable parentShadow) {
+        parentShadow_ = parentShadow;
+    }
+
+    /**
+     * Returns the value of the {@code frames} property.
+     * @return the value of the {@code frames} property
+     */
+    @JsxGetter(propertyName = "frames")
+    public Object getFrames_js() {
+        return JavaScriptEngine.UNDEFINED;
+    }
+
+    /**
+     * Gets the {@code frames} property. Setting this shadows the
+     * defined value (see https://webidl.spec.whatwg.org/#Replaceable)
+     * @return the shadow value if set otherwise the number of frames
+     */
+    public Object jsGetFrames() {
+        if (framesShadow_ != null) {
+            return framesShadow_;
+        }
+
+        return this;
+    }
+
+    /**
+     * Sets the {@code frames} property. Setting this shadows the
+     * defined value (see https://webidl.spec.whatwg.org/#Replaceable)
+     * @param framesShadow the value to overwrite the defined property value
+     */
+    public void jsSetFrames(final Scriptable framesShadow) {
+        framesShadow_ = framesShadow;
     }
 
     /**
@@ -926,9 +1048,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
      */
     @JsxFunction
     public void blur() {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("window.blur() not implemented");
-        }
+        LOG.debug("window.blur() not implemented");
     }
 
     /**
@@ -962,9 +1082,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
      */
     @JsxFunction
     public void moveTo(final int x, final int y) {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("window.moveTo() not implemented");
-        }
+        LOG.debug("window.moveTo() not implemented");
     }
 
     /**
@@ -974,9 +1092,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
      */
     @JsxFunction
     public void moveBy(final int x, final int y) {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("window.moveBy() not implemented");
-        }
+        LOG.debug("window.moveBy() not implemented");
     }
 
     /**
@@ -986,9 +1102,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
      */
     @JsxFunction
     public void resizeBy(final int width, final int height) {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("window.resizeBy() not implemented");
-        }
+        LOG.debug("window.resizeBy() not implemented");
     }
 
     /**
@@ -998,9 +1112,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
      */
     @JsxFunction
     public void resizeTo(final int width, final int height) {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("window.resizeTo() not implemented");
-        }
+        LOG.debug("window.resizeTo() not implemented");
     }
 
     /**
@@ -1121,7 +1233,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
      * @return the {@code onload} property
      */
     @JsxGetter
-    public Object getOnload() {
+    public Function getOnload() {
         return getEventHandler(Event.TYPE_LOAD);
     }
 
@@ -1148,7 +1260,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
      * @return the {@code onblur} property
      */
     @JsxGetter
-    public Object getOnblur() {
+    public Function getOnblur() {
         return getEventHandler(Event.TYPE_BLUR);
     }
 
@@ -1157,7 +1269,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
      * @return the {@code onclick} property
      */
     @JsxGetter
-    public Object getOnclick() {
+    public Function getOnclick() {
         return getEventHandler(MouseEvent.TYPE_CLICK);
     }
 
@@ -1175,7 +1287,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
      * @return the {@code ondblclick} property
      */
     @JsxGetter
-    public Object getOndblclick() {
+    public Function getOndblclick() {
         return getEventHandler(MouseEvent.TYPE_DBL_CLICK);
     }
 
@@ -1193,7 +1305,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
      * @return the {@code onhashchange} property
      */
     @JsxGetter
-    public Object getOnhashchange() {
+    public Function getOnhashchange() {
         return getEventHandler(Event.TYPE_HASH_CHANGE);
     }
 
@@ -1229,7 +1341,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
      * @return the value of the window's {@code onbeforeunload} property
      */
     @JsxGetter
-    public Object getOnbeforeunload() {
+    public Function getOnbeforeunload() {
         return getEventHandler(Event.TYPE_BEFORE_UNLOAD);
     }
 
@@ -1247,7 +1359,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
      * @return the value of the window's {@code onerror} property
      */
     @JsxGetter
-    public Object getOnerror() {
+    public Function getOnerror() {
         return getEventHandler(Event.TYPE_ERROR);
     }
 
@@ -1265,7 +1377,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
      * @return the value of the window's {@code onmessage} property
      */
     @JsxGetter
-    public Object getOnmessage() {
+    public Function getOnmessage() {
         return getEventHandler(Event.TYPE_MESSAGE);
     }
 
@@ -1363,12 +1475,12 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
     @Override
     public Object get(final int index, final Scriptable start) {
         if (index < 0 || getWebWindow() == null) {
-            return JavaScriptEngine.Undefined;
+            return JavaScriptEngine.UNDEFINED;
         }
 
         final HTMLCollection frames = getFrames();
         if (frames == null || index >= frames.getLength()) {
-            return JavaScriptEngine.Undefined;
+            return JavaScriptEngine.UNDEFINED;
         }
         return frames.item(Integer.valueOf(index));
     }
@@ -1552,17 +1664,13 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
     public void print() {
         final PrintHandler handler = getWebWindow().getWebClient().getPrintHandler();
         if (handler == null) {
-            if (LOG.isInfoEnabled()) {
-                LOG.info("No PrintHandler installed - window.print() ignored");
-            }
+            LOG.info("No PrintHandler installed - window.print() ignored");
             return;
         }
 
         final SgmlPage sgmlPage = getDocument().getPage();
         if (!(sgmlPage instanceof HtmlPage)) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Page is not an HtmlPage - window.print() ignored");
-            }
+            LOG.debug("Page is not an HtmlPage - window.print() ignored");
             return;
         }
 
@@ -1799,7 +1907,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
      * @return the handler
      */
     @JsxGetter
-    public Object getOnchange() {
+    public Function getOnchange() {
         return getEventHandler(Event.TYPE_CHANGE);
     }
 
@@ -1817,7 +1925,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
      * @return the handler
      */
     @JsxGetter
-    public Object getOnsubmit() {
+    public Function getOnsubmit() {
         return getEventHandler(Event.TYPE_SUBMIT);
     }
 
@@ -1854,7 +1962,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
             targetOrigin = JavaScriptEngine.toString(args[1]);
         }
 
-        Object transfer = JavaScriptEngine.Undefined;
+        Object transfer = JavaScriptEngine.UNDEFINED;
         if (args.length > 2) {
             transfer = args[2];
         }
@@ -1867,9 +1975,9 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
         final Page page = webWindow.getEnclosedPage();
         final URL senderURL = page.getUrl();
 
-        if (!"*".equals(targetOrigin)) {
+        if (!org.htmlunit.util.StringUtils.equalsChar('*', targetOrigin)) {
             final URL targetURL;
-            if ("/".equals(targetOrigin)) {
+            if (org.htmlunit.util.StringUtils.equalsChar('/', targetOrigin)) {
                 targetURL = senderURL;
             }
             else {
@@ -1939,15 +2047,33 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
     }
 
     /**
-     * Returns the {@code performance} property.
-     * @return the {@code performance} property
+     * The performance attribute is defined as replacable
+     * (https://w3c.github.io/hr-time/#the-performance-attribute) but not implemented
+     * as that.
+     * @return the value of the {@code performance} property
      */
     @JsxGetter
-    public Performance getPerformance() {
-        final Performance performance = new Performance();
-        performance.setParentScope(this);
-        performance.setPrototype(getPrototype(performance.getClass()));
-        return performance;
+    public Scriptable getPerformance() {
+        if (performance_ == null) {
+            final Performance performance = new Performance();
+            performance.setParentScope(this);
+            performance.setPrototype(getPrototype(performance.getClass()));
+            performance_ = performance;
+        }
+        return performance_;
+    }
+
+    /**
+     * The performance attribute is defined as replacable
+     * (https://w3c.github.io/hr-time/#the-performance-attribute) but not implemented
+     * as that.
+     *
+     * Sets the {@code performance} property.
+     * @param performance the value to overwrite the defined property value
+     */
+    @JsxSetter
+    public void setPerformance(final Scriptable performance) {
+        performance_ = performance;
     }
 
     /**
@@ -2041,6 +2167,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
      */
     @Override
     public void close() {
+        // nothing to do
     }
 
     /**

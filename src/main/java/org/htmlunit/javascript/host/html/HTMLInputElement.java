@@ -61,12 +61,6 @@ public class HTMLInputElement extends HTMLElement {
     private NodeList labels_;
 
     /**
-     * Creates an instance.
-     */
-    public HTMLInputElement() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @Override
@@ -221,7 +215,7 @@ public class HTMLInputElement extends HTMLElement {
      * @return the selection start
      */
     @JsxGetter
-    public Object getSelectionStart() {
+    public Integer getSelectionStart() {
         final DomNode dom = getDomNodeOrDie();
         if (dom instanceof SelectableTextInput) {
             if ("number".equalsIgnoreCase(getType())) {
@@ -262,7 +256,7 @@ public class HTMLInputElement extends HTMLElement {
      * @return the selection end
      */
     @JsxGetter
-    public Object getSelectionEnd() {
+    public Integer getSelectionEnd() {
         final DomNode dom = getDomNodeOrDie();
         if (dom instanceof SelectableTextInput) {
             if ("number".equalsIgnoreCase(getType())) {
@@ -485,7 +479,8 @@ public class HTMLInputElement extends HTMLElement {
         if (htmlInput instanceof HtmlNumberInput) {
             final String valueAttr = htmlInput.getValue();
             if (!valueAttr.isEmpty()) {
-                if ("-".equals(valueAttr) || "+".equals(valueAttr)) {
+                if (org.htmlunit.util.StringUtils.equalsChar('-', valueAttr)
+                        || org.htmlunit.util.StringUtils.equalsChar('+', valueAttr)) {
                     return "";
                 }
 
@@ -628,7 +623,7 @@ public class HTMLInputElement extends HTMLElement {
      * @return the {@code files} property
      */
     @JsxGetter
-    public Object getFiles() {
+    public FileList getFiles() {
         final HtmlInput htmlInput = getDomNodeOrDie();
         if (htmlInput instanceof HtmlFileInput) {
             final FileList list = new FileList(((HtmlFileInput) htmlInput).getFiles());

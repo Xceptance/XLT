@@ -27,15 +27,10 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 public class IDBVersionChangeEvent extends Event {
 
     /**
-     * Creates a new instance.
-     */
-    public IDBVersionChangeEvent() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 }

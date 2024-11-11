@@ -60,7 +60,7 @@ public class DomAttr extends DomNamespaceNode implements Attr {
      */
     @Override
     public short getNodeType() {
-        return org.w3c.dom.Node.ATTRIBUTE_NODE;
+        return ATTRIBUTE_NODE;
     }
 
     /**
@@ -176,11 +176,11 @@ public class DomAttr extends DomNamespaceNode implements Attr {
     public void setTextContent(final String textContent) {
         final boolean mappedElement = HtmlPage.isMappedElement(getOwnerDocument(), getName());
         if (mappedElement) {
-            ((HtmlPage) getPage()).removeMappedElement((HtmlElement) getOwnerElement());
+            ((HtmlPage) getPage()).removeMappedElement(getOwnerElement(), false, false);
         }
         setValue(textContent);
         if (mappedElement) {
-            ((HtmlPage) getPage()).addMappedElement(getOwnerElement());
+            ((HtmlPage) getPage()).addMappedElement(getOwnerElement(), false);
         }
     }
 }

@@ -18,7 +18,6 @@ import static org.htmlunit.BrowserVersionFeatures.HTMLIMAGE_HTMLELEMENT;
 import static org.htmlunit.BrowserVersionFeatures.HTMLIMAGE_HTMLUNKNOWNELEMENT;
 
 import java.io.IOException;
-import java.util.Deque;
 import java.util.function.Supplier;
 
 import org.apache.commons.lang3.function.FailableSupplier;
@@ -31,6 +30,7 @@ import org.htmlunit.WebWindow;
 import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.LambdaConstructor;
 import org.htmlunit.corejs.javascript.LambdaFunction;
+import org.htmlunit.corejs.javascript.NativePromise;
 import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.corejs.javascript.ScriptableObject;
 import org.htmlunit.html.DomNode;
@@ -49,6 +49,7 @@ import org.htmlunit.javascript.host.html.HTMLUnknownElement;
  * @author Daniel Gredler
  * @author Ahmed Ashour
  * @author Ronald Brill
+ * @author Sven Strickroth
  */
 public class HtmlUnitScriptable extends ScriptableObject implements Cloneable {
 
@@ -262,7 +263,7 @@ public class HtmlUnitScriptable extends ScriptableObject implements Cloneable {
         }
         else {
             try {
-                scriptable = javaScriptClass.newInstance();
+                scriptable = javaScriptClass.getDeclaredConstructor().newInstance();
             }
             catch (final Exception e) {
                 throw JavaScriptEngine.throwAsScriptRuntimeEx(e);
@@ -344,18 +345,16 @@ public class HtmlUnitScriptable extends ScriptableObject implements Cloneable {
     }
 
     /**
-     * Gets the scriptable used at starting scope for the execution of current script.
-     * @return the scope as defined in {@link JavaScriptEngine#callFunction}
-     * or {@link JavaScriptEngine#execute}.
+     * <span style="color:red">INTERNAL API - SUBJECT TO CHANGE AT ANY TIME - USE AT YOUR OWN RISK.</span><br>
+     *
+     * @return the window that is set as the top call scope
      */
-    protected Scriptable getStartingScope() {
-        @SuppressWarnings("unchecked")
-        final Deque<Scriptable> stack =
-                (Deque<Scriptable>) Context.getCurrentContext().getThreadLocal(JavaScriptEngine.KEY_STARTING_SCOPE);
-        if (null == stack) {
-            return null;
+    protected static Window getWindowFromTopCallScope() throws RuntimeException {
+        final Scriptable top = JavaScriptEngine.getTopCallScope();
+        if (top instanceof Window) {
+            return (Window) top;
         }
-        return stack.peek();
+        throw new RuntimeException("Unable to find window in scope");
     }
 
     /**
@@ -421,24 +420,24 @@ public class HtmlUnitScriptable extends ScriptableObject implements Cloneable {
         }
     }
 
-    protected Object setupPromise(final FailableSupplier<Object, IOException> resolver) {
+    protected NativePromise setupPromise(final FailableSupplier<Object, IOException> resolver) {
         final Scriptable scope = ScriptableObject.getTopLevelScope(this);
         final LambdaConstructor ctor = (LambdaConstructor) getProperty(scope, "Promise");
 
         try {
             final LambdaFunction resolve = (LambdaFunction) getProperty(ctor, "resolve");
-            return resolve.call(Context.getCurrentContext(), this, ctor, new Object[] {resolver.get()});
+            return (NativePromise) resolve.call(Context.getCurrentContext(), this, ctor, new Object[] {resolver.get()});
         }
         catch (final IOException e) {
             final LambdaFunction reject = (LambdaFunction) getProperty(ctor, "reject");
-            return reject.call(Context.getCurrentContext(), this, ctor, new Object[] {e.getMessage()});
+            return (NativePromise) reject.call(Context.getCurrentContext(), this, ctor, new Object[] {e.getMessage()});
         }
     }
 
-    protected Object setupRejectedPromise(final Supplier<Object> resolver) {
+    protected NativePromise setupRejectedPromise(final Supplier<Object> resolver) {
         final Scriptable scope = ScriptableObject.getTopLevelScope(this);
         final LambdaConstructor ctor = (LambdaConstructor) getProperty(scope, "Promise");
         final LambdaFunction reject = (LambdaFunction) getProperty(ctor, "reject");
-        return reject.call(Context.getCurrentContext(), this, ctor, new Object[] {resolver.get()});
+        return (NativePromise) reject.call(Context.getCurrentContext(), this, ctor, new Object[] {resolver.get()});
     }
 }

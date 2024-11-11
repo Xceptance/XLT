@@ -14,9 +14,13 @@
  */
 package org.htmlunit.javascript.host.dom;
 
+import org.htmlunit.corejs.javascript.Context;
+import org.htmlunit.corejs.javascript.Function;
+import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.cssparser.parser.CSSException;
 import org.htmlunit.html.DomDocumentFragment;
 import org.htmlunit.html.DomNode;
+import org.htmlunit.html.HtmlPage;
 import org.htmlunit.javascript.HtmlUnitScriptable;
 import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
@@ -40,18 +44,61 @@ import org.htmlunit.javascript.host.html.HTMLCollection;
 public class DocumentFragment extends Node {
 
     /**
-     * Creates an instance.
-     */
-    public DocumentFragment() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @Override
     @JsxConstructor
     public void jsConstructor() {
         super.jsConstructor();
+
+        final HtmlPage page = (HtmlPage) getWindow().getWebWindow().getEnclosedPage();
+        final DomDocumentFragment fragment = new DomDocumentFragment(page);
+        setDomNode(fragment);
+    }
+
+    /**
+     * Inserts a set of Node objects or string objects after the last child
+     * of the document fragment. String objects are inserted as equivalent Text nodes.
+     * @param context the context
+     * @param scope the scope
+     * @param thisObj this object
+     * @param args the arguments
+     * @param function the function
+     */
+    @JsxFunction
+    public static void append(final Context context, final Scriptable scope,
+            final Scriptable thisObj, final Object[] args, final Function function) {
+        Node.append(context, thisObj, args, function);
+    }
+
+    /**
+     * Inserts a set of Node objects or string objects before the first child
+     * of the document fragment. String objects are inserted as equivalent Text nodes.
+     * @param context the context
+     * @param scope the scope
+     * @param thisObj this object
+     * @param args the arguments
+     * @param function the function
+     */
+    @JsxFunction
+    public static void prepend(final Context context, final Scriptable scope,
+            final Scriptable thisObj, final Object[] args, final Function function) {
+        Node.prepend(context, thisObj, args, function);
+    }
+
+    /**
+     * Replaces the existing children of a DocumentFragment with a specified
+     * new set of children. These can be string or Node objects.
+     * @param context the context
+     * @param scope the scope
+     * @param thisObj this object
+     * @param args the arguments
+     * @param function the function
+     */
+    @JsxFunction
+    public static void replaceChildren(final Context context, final Scriptable scope,
+            final Scriptable thisObj, final Object[] args, final Function function) {
+        Node.replaceChildren(context, thisObj, args, function);
     }
 
     /**
@@ -166,7 +213,7 @@ public class DocumentFragment extends Node {
      * {@inheritDoc}
      */
     @Override
-    public Object getRootNode() {
+    public Node getRootNode() {
         return this;
     }
 }

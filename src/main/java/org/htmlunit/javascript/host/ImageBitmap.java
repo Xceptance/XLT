@@ -28,15 +28,10 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 public class ImageBitmap extends HtmlUnitScriptable {
 
     /**
-     * Creates an instance.
-     */
-    public ImageBitmap() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 }

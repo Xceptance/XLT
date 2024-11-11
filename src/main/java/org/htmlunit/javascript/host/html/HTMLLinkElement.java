@@ -34,6 +34,7 @@ import org.htmlunit.javascript.host.dom.DOMTokenList;
  *
  * @author Ahmed Ashour
  * @author Ronald Brill
+ * @author Sven Strickroth
  */
 @JsxClass(domClass = HtmlLink.class)
 public class HTMLLinkElement extends HTMLElement {
@@ -45,12 +46,6 @@ public class HTMLLinkElement extends HTMLElement {
      * <code>&lt;link rel="stylesheet" type="text/css" href="..." /&gt;</code>).
      */
     private CSSStyleSheet sheet_;
-
-    /**
-     * Creates an instance.
-     */
-    public HTMLLinkElement() {
-    }
 
     /**
      * JavaScript constructor.
@@ -164,16 +159,12 @@ public class HTMLLinkElement extends HTMLElement {
             }
             catch (final RuntimeException e) {
                 // Got something unexpected; we can throw an exception in this case.
-                if (LOG.isErrorEnabled()) {
-                    LOG.error("RuntimeException loading stylesheet", e);
-                }
+                LOG.error("RuntimeException loading stylesheet", e);
                 throw JavaScriptEngine.reportRuntimeError("Exception: " + e);
             }
             catch (final Exception e) {
                 // Got something unexpected; we can throw an exception in this case.
-                if (LOG.isErrorEnabled()) {
-                    LOG.error("Exception loading stylesheet", e);
-                }
+                LOG.error("Exception loading stylesheet", e);
                 throw JavaScriptEngine.reportRuntimeError("Exception: " + e);
             }
         }

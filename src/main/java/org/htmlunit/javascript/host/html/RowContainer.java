@@ -41,18 +41,11 @@ import org.htmlunit.javascript.configuration.JsxSetter;
 public class RowContainer extends HTMLElement {
 
     /**
-     * Creates an instance.
-     */
-    public RowContainer() {
-        // Empty.
-    }
-
-    /**
      * Returns the rows in the element.
      * @return the rows in the element
      */
     @JsxGetter
-    public Object getRows() {
+    public HTMLCollection getRows() {
         final HTMLCollection rows = new HTMLCollection(getDomNodeOrDie(), false);
         rows.setIsMatchingPredicate(
                 (Predicate<DomNode> & Serializable)
@@ -76,7 +69,7 @@ public class RowContainer extends HTMLElement {
      */
     @JsxFunction
     public void deleteRow(int rowIndex) {
-        final HTMLCollection rows = (HTMLCollection) getRows();
+        final HTMLCollection rows = getRows();
         final int rowCount = rows.getLength();
         if (rowIndex == -1) {
             rowIndex = rowCount - 1;
@@ -98,12 +91,12 @@ public class RowContainer extends HTMLElement {
      * @return the newly-created row
      */
     @JsxFunction
-    public Object insertRow(final Object index) {
+    public HtmlUnitScriptable insertRow(final Object index) {
         int rowIndex = -1;
         if (!JavaScriptEngine.isUndefined(index)) {
             rowIndex = (int) JavaScriptEngine.toNumber(index);
         }
-        final HTMLCollection rows = (HTMLCollection) getRows();
+        final HTMLCollection rows = getRows();
         final int rowCount = rows.getLength();
         final int r;
         if (rowIndex == -1 || rowIndex == rowCount) {
@@ -126,8 +119,8 @@ public class RowContainer extends HTMLElement {
      * @param index the index where the row should be inserted (0 &lt;= index &lt;= nbRows)
      * @return the inserted row
      */
-    public Object insertRow(final int index) {
-        final HTMLCollection rows = (HTMLCollection) getRows();
+    public HtmlUnitScriptable insertRow(final int index) {
+        final HTMLCollection rows = getRows();
         final int rowCount = rows.getLength();
         final DomElement newRow = ((HtmlPage) getDomNodeOrDie().getPage()).createElement("tr");
         if (rowCount == 0) {

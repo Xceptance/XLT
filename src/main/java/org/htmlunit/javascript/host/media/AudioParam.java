@@ -34,12 +34,6 @@ public class AudioParam extends HtmlUnitScriptable {
     /**
      * Creates a new instance.
      */
-    public AudioParam() {
-    }
-
-    /**
-     * Creates a new instance.
-     */
     @JsxConstructor
     public void jsConstructor() {
         value_ = getDefaultValue();
@@ -73,6 +67,7 @@ public class AudioParam extends HtmlUnitScriptable {
      * @return the maxValue
      */
     @JsxGetter
+    @SuppressWarnings("PMD.UseUnderscoresInNumericLiterals")
     public double getMaxValue() {
         return 3.4028234663852886e+38;
     }
@@ -81,6 +76,7 @@ public class AudioParam extends HtmlUnitScriptable {
      * @return the minValue
      */
     @JsxGetter
+    @SuppressWarnings("PMD.UseUnderscoresInNumericLiterals")
     public double getMinValue() {
         return -3.4028234663852886e+38;
     }

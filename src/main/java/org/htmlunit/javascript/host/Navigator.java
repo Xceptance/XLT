@@ -57,16 +57,11 @@ public class Navigator extends HtmlUnitScriptable {
     private MediaDevices mediaDevices_;
 
     /**
-     * Creates an instance.
-     */
-    public Navigator() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 
     /**

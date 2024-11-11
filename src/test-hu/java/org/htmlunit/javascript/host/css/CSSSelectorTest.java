@@ -1848,6 +1848,60 @@ public class CSSSelectorTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
+    @Alerts({"1", "fs"})
+    public void disabledFieldset() throws Exception {
+        final String html = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "function test() {\n"
+            + "  found = document.querySelectorAll('fieldset[disabled]');\n"
+            + "  log(found.length);\n"
+            + "  for (var i = 0; i < found.length; i++) { log(found[i].id); }\n"
+            + "}\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <form>\n"
+            + "    <input name='foo' value='bar'/>\n"
+            + "    <fieldset id='fs' disabled>\n"
+            + "      <input name='do' value='rey'/>\n"
+            + "    </fieldset>\n"
+            + "  </form>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts({"2", "fs", "i2"})
+    public void disabledFieldsetDisables() throws Exception {
+        final String html = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "function test() {\n"
+            + "  found = document.querySelectorAll(':disabled');\n"
+            + "  log(found.length);\n"
+            + "  for (var i = 0; i < found.length; i++) { log(found[i].id); }\n"
+            + "}\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <form>\n"
+            + "    <input id='i1' name='foo' value='bar'/>\n"
+            + "    <fieldset id='fs' disabled>\n"
+            + "      <input id='i2' name='do' value='rey'/>\n"
+            + "    </fieldset>\n"
+            + "  </form>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
     @Alerts({"1", "id2"})
     public void target() throws Exception {
         final String html =
@@ -1945,11 +1999,11 @@ public class CSSSelectorTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"1", "[object HTMLHeadingElement]"},
-            FF_ESR = "exception")
+    @Alerts({"1", "[object HTMLHeadingElement]"})
     @HtmlUnitNYI(CHROME = "exception",
             EDGE = "exception",
-            FF = "exception")
+            FF = "exception",
+            FF_ESR = "exception")
     public void has() throws Exception {
         final String html = "<html><head>\n"
             + "<meta http-equiv='X-UA-Compatible' content='IE=edge'>\n"

@@ -345,8 +345,7 @@ public class HostParentOfDTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "false",
-            FF_ESR = "true")
+    @Alerts("false")
     public void _DOMRequest_DOMRequest() throws Exception {
         test("DOMRequest", "DOMRequest");
     }
@@ -2214,7 +2213,9 @@ public class HostParentOfDTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("true")
+    @Alerts(DEFAULT = "false",
+            FF = "true",
+            FF_ESR = "true")
     public void _Event_MutationEvent() throws Exception {
         test("Event", "MutationEvent");
     }
@@ -2363,7 +2364,6 @@ public class HostParentOfDTest extends HostParentOf {
      */
     @Test
     @Alerts(DEFAULT = "true",
-            FF = "false",
             FF_ESR = "false")
     public void _Event_TextEvent() throws Exception {
         test("Event", "TextEvent");
@@ -2474,6 +2474,15 @@ public class HostParentOfDTest extends HostParentOf {
     @Alerts("true")
     public void _EventSource_EventSource() throws Exception {
         test("EventSource", "EventSource");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("true")
+    public void _EventTarget_AbortSignal() throws Exception {
+        test("EventTarget", "AbortSignal");
     }
 
     /**
@@ -2738,8 +2747,7 @@ public class HostParentOfDTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "false",
-            FF_ESR = "true")
+    @Alerts("false")
     public void _EventTarget_DOMRequest() throws Exception {
         test("EventTarget", "DOMRequest");
     }

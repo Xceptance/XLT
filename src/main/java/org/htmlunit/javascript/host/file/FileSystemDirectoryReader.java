@@ -30,15 +30,10 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 public class FileSystemDirectoryReader extends HtmlUnitScriptable {
 
     /**
-     * Creates a new instance.
-     */
-    public FileSystemDirectoryReader() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 }

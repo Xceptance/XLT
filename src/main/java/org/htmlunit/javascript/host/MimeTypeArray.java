@@ -30,16 +30,11 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 public class MimeTypeArray extends SimpleArray {
 
     /**
-     * Creates an instance.
-     */
-    public MimeTypeArray() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 
     /**

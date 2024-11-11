@@ -94,7 +94,7 @@ public class JavaScriptConfigurationTest extends SimpleWebTestCase {
      */
     @Test
     public void memoryLeak() throws Exception {
-        final RandomStringGenerator generator = new RandomStringGenerator.Builder().withinRange('a', 'z').build();
+        final RandomStringGenerator generator = new RandomStringGenerator.Builder().withinRange('a', 'z').get();
 
         long count = 0;
         while (count++ < 3000) {
@@ -135,12 +135,18 @@ public class JavaScriptConfigurationTest extends SimpleWebTestCase {
                 try {
                     klass = Class.forName(className);
                 }
-                catch (final Throwable t) {
+                catch (final Throwable e) {
                     continue;
                 }
                 if ("org.htmlunit.javascript.host.intl".equals(klass.getPackage().getName())
-                        || "Reflect".equals(klass.getSimpleName())
+
+                        // Worker
+                        || "WorkerGlobalScope".equals(klass.getSimpleName())
                         || "DedicatedWorkerGlobalScope".equals(klass.getSimpleName())
+                        || "WorkerLocation".equals(klass.getSimpleName())
+                        || "WorkerNavigator".equals(klass.getSimpleName())
+
+                        // ProxyConfig
                         || "ProxyAutoConfig".equals(klass.getSimpleName())) {
                     continue;
                 }

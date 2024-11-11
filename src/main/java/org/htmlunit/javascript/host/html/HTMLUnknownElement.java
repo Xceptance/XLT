@@ -36,12 +36,6 @@ import org.htmlunit.xml.XmlPage;
 public class HTMLUnknownElement extends HTMLElement {
 
     /**
-     * Creates an instance.
-     */
-    public HTMLUnknownElement() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @Override
@@ -102,7 +96,8 @@ public class HTMLUnknownElement extends HTMLElement {
      */
     @Override
     protected boolean isEndTagForbidden() {
-        if ("BGSOUND".equals(getNodeName())) {
+        final String nodeName = getNodeName();
+        if ("BGSOUND".equals(nodeName) || "KEYGEN".equals(nodeName)) {
             return true;
         }
         return super.isEndTagForbidden();

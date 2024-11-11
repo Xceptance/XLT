@@ -27,7 +27,6 @@ import org.htmlunit.WebClient;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.util.MimeType;
-import org.htmlunit.util.NameValuePair;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -71,8 +70,8 @@ public class HTMLImageElement2Test extends SimpleWebTestCase {
         try (InputStream is = getClass().getClassLoader().getResourceAsStream("testfiles/tiny-jpg.img")) {
             final byte[] directBytes = IOUtils.toByteArray(is);
 
-            final List<NameValuePair> emptyList = Collections.emptyList();
-            getMockWebConnection().setResponse(URL_SECOND, directBytes, 200, "ok", MimeType.IMAGE_JPEG, emptyList);
+            getMockWebConnection().setResponse(URL_SECOND, directBytes, 200, "ok",
+                    MimeType.IMAGE_JPEG, Collections.emptyList());
         }
 
         final String html =
@@ -105,6 +104,7 @@ public class HTMLImageElement2Test extends SimpleWebTestCase {
         final HtmlPage page = loadPage(html);
         page.getElementById("myId").click();
         assertEquals(getExpectedAlerts(), collectedAlerts);
+        assertEquals(1, getMockWebConnection().getRequestCount());
         assertEquals(URL_FIRST, getMockWebConnection().getLastWebRequest().getUrl());
     }
 
@@ -118,8 +118,8 @@ public class HTMLImageElement2Test extends SimpleWebTestCase {
         try (InputStream is = getClass().getClassLoader().getResourceAsStream("testfiles/tiny-jpg.img")) {
             final byte[] directBytes = IOUtils.toByteArray(is);
 
-            final List<NameValuePair> emptyList = Collections.emptyList();
-            getMockWebConnection().setResponse(URL_SECOND, directBytes, 200, "ok", MimeType.IMAGE_JPEG, emptyList);
+            getMockWebConnection().setResponse(URL_SECOND, directBytes, 200, "ok",
+                    MimeType.IMAGE_JPEG, Collections.emptyList());
         }
 
         final String html =
@@ -145,17 +145,14 @@ public class HTMLImageElement2Test extends SimpleWebTestCase {
 
         try (WebClient webClient = new WebClient(getBrowserVersion(), false, null, -1)) {
             final List<String> collectedAlerts = new ArrayList<>();
-            webClient.setAlertHandler(new CollectingAlertHandler(collectedAlerts));
 
-            final MockWebConnection webConnection = getMockWebConnection();
-            webConnection.setResponse(URL_FIRST, html);
+            final HtmlPage page = loadPage(webClient, html, collectedAlerts);
+            assertFalse(page.getWebClient().isJavaScriptEngineEnabled());
 
-            webClient.setWebConnection(webConnection);
-
-            final HtmlPage page = loadPage(html);
             page.getElementById("myId").click();
             assertEquals(getExpectedAlerts(), collectedAlerts);
-            assertEquals(URL_SECOND, webConnection.getLastWebRequest().getUrl());
+            assertEquals(1, getMockWebConnection().getRequestCount());
+            assertEquals(URL_FIRST, getMockWebConnection().getLastWebRequest().getUrl());
         }
     }
 

@@ -50,7 +50,6 @@ import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import org.htmlunit.util.MimeType;
-import org.htmlunit.util.NameValuePair;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -230,7 +229,7 @@ public class WindowTest extends SimpleWebTestCase {
             assertEquals(secondFrame.getEnclosedWindow(), webClient.getWebWindowByName("secondFrame"));
             // Expected path
         }
-        catch (final WebWindowNotFoundException exception) {
+        catch (final WebWindowNotFoundException e) {
             fail("Expected secondFrame would be found before click.");
         }
         final HtmlAnchor anchor = secondPage.getHtmlElementById("link");
@@ -246,7 +245,7 @@ public class WindowTest extends SimpleWebTestCase {
             assertEquals(secondFrame.getEnclosedWindow(), webClient.getWebWindowByName("secondFrame"));
             // Expected path
         }
-        catch (final WebWindowNotFoundException exception) {
+        catch (final WebWindowNotFoundException e) {
             fail("Expected secondFrame would be found after click.");
         }
 
@@ -366,14 +365,14 @@ public class WindowTest extends SimpleWebTestCase {
             webClient.getWebWindowByName("secondFrame");
             fail("Did not expect secondFrame to still exist after click.");
         }
-        catch (final WebWindowNotFoundException exception) {
+        catch (final WebWindowNotFoundException e) {
             // Expected path
         }
         try {
             webClient.getWebWindowByName("thirdFrame");
             fail("Did not expect thirdFrame to still exist after click.");
         }
-        catch (final WebWindowNotFoundException exception) {
+        catch (final WebWindowNotFoundException e) {
             // Expected path
         }
     }
@@ -433,14 +432,14 @@ public class WindowTest extends SimpleWebTestCase {
             assertSame(namedWindow.getEnclosedPage(), fourthPage);
             // Expected path
         }
-        catch (final WebWindowNotFoundException exception) {
+        catch (final WebWindowNotFoundException e) {
             fail("Expected secondFrame would be found after click.");
         }
         try {
             webClient.getWebWindowByName("thirdFrame");
             fail("Did not expect thirdFrame to still exist after click.");
         }
-        catch (final WebWindowNotFoundException exception) {
+        catch (final WebWindowNotFoundException e) {
             // Expected path
         }
     }
@@ -907,9 +906,8 @@ public class WindowTest extends SimpleWebTestCase {
             0x01, 0x00, 0x01, 0x00, 0x00, 0x02, 0x02, 0x44,
             0x01, 0x00, 0x3b});
 
-        final List<NameValuePair> emptyList = Collections.emptyList();
-        webConnection.setResponse(URL_FIRST, firstContent, 200, "OK", MimeType.TEXT_HTML, emptyList);
-        webConnection.setResponse(URL_SECOND, secondContent, 200, "OK", MimeType.IMAGE_GIF, emptyList);
+        webConnection.setResponse(URL_FIRST, firstContent, 200, "OK", MimeType.TEXT_HTML, Collections.emptyList());
+        webConnection.setResponse(URL_SECOND, secondContent, 200, "OK", MimeType.IMAGE_GIF, Collections.emptyList());
         webClient.setWebConnection(webConnection);
 
         final HtmlPage firstPage = webClient.getPage(URL_FIRST);
@@ -966,9 +964,8 @@ public class WindowTest extends SimpleWebTestCase {
             + "</body></html>";
         final String secondContent = "Hello World";
 
-        final List<NameValuePair> emptyList = Collections.emptyList();
-        webConnection.setResponse(URL_FIRST, firstContent, 200, "OK", MimeType.TEXT_HTML, emptyList);
-        webConnection.setResponse(URL_SECOND, secondContent, 200, "OK", MimeType.TEXT_PLAIN, emptyList);
+        webConnection.setResponse(URL_FIRST, firstContent, 200, "OK", MimeType.TEXT_HTML, Collections.emptyList());
+        webConnection.setResponse(URL_SECOND, secondContent, 200, "OK", MimeType.TEXT_PLAIN, Collections.emptyList());
         webClient.setWebConnection(webConnection);
 
         final HtmlPage firstPage = webClient.getPage(URL_FIRST);
@@ -1025,9 +1022,8 @@ public class WindowTest extends SimpleWebTestCase {
             + "</body></html>";
         final String secondContent = "<junk></junk>\n";
 
-        final List<NameValuePair> emptyList = Collections.emptyList();
-        webConnection.setResponse(URL_FIRST, firstContent, 200, "OK", MimeType.TEXT_HTML, emptyList);
-        webConnection.setResponse(URL_SECOND, secondContent, 200, "OK", MimeType.TEXT_XML, emptyList);
+        webConnection.setResponse(URL_FIRST, firstContent, 200, "OK", MimeType.TEXT_HTML, Collections.emptyList());
+        webConnection.setResponse(URL_SECOND, secondContent, 200, "OK", MimeType.TEXT_XML, Collections.emptyList());
         webClient.setWebConnection(webConnection);
 
         final HtmlPage firstPage = webClient.getPage(URL_FIRST);
@@ -1084,9 +1080,8 @@ public class WindowTest extends SimpleWebTestCase {
             + "</body></html>";
         final String secondContent = "var x=1;\n";
 
-        final List<NameValuePair> emptyList = Collections.emptyList();
-        webConnection.setResponse(URL_FIRST, firstContent, 200, "OK", MimeType.TEXT_HTML, emptyList);
-        webConnection.setResponse(URL_SECOND, secondContent, 200, "OK", "text/javascript", emptyList);
+        webConnection.setResponse(URL_FIRST, firstContent, 200, "OK", MimeType.TEXT_HTML, Collections.emptyList());
+        webConnection.setResponse(URL_SECOND, secondContent, 200, "OK", "text/javascript", Collections.emptyList());
         webClient.setWebConnection(webConnection);
 
         final HtmlPage firstPage = webClient.getPage(URL_FIRST);

@@ -53,6 +53,7 @@ public class Storage extends HtmlUnitScriptable {
      * Public default constructor only for the prototype.
      */
     public Storage() {
+        super();
         store_ = null;
     }
 
@@ -61,6 +62,7 @@ public class Storage extends HtmlUnitScriptable {
      */
     @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 
     /**
@@ -69,6 +71,7 @@ public class Storage extends HtmlUnitScriptable {
      * @param store the storage itself
      */
     public Storage(final Window window, final Map<String, String> store) {
+        super();
         store_ = store;
         storeSize_ = 0L;
         setParentScope(window);
@@ -94,7 +97,7 @@ public class Storage extends HtmlUnitScriptable {
      */
     @Override
     public Object get(final String name, final Scriptable start) {
-        if (store_ == null || (RESERVED_NAMES_.contains(name))) {
+        if (store_ == null || RESERVED_NAMES_.contains(name)) {
             return super.get(name, start);
         }
         final Object value = getItem(name);

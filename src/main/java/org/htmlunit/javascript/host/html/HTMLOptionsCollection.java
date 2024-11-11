@@ -52,6 +52,7 @@ public class HTMLOptionsCollection extends HtmlUnitScriptable {
      * Creates an instance.
      */
     public HTMLOptionsCollection() {
+        super();
     }
 
     /**
@@ -59,6 +60,7 @@ public class HTMLOptionsCollection extends HtmlUnitScriptable {
      */
     @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 
     /**
@@ -66,6 +68,7 @@ public class HTMLOptionsCollection extends HtmlUnitScriptable {
      * @param parentScope parent scope
      */
     public HTMLOptionsCollection(final HtmlUnitScriptable parentScope) {
+        super();
         setParentScope(parentScope);
         setPrototype(getPrototype(getClass()));
     }
@@ -89,11 +92,11 @@ public class HTMLOptionsCollection extends HtmlUnitScriptable {
     @Override
     public Object get(final int index, final Scriptable start) {
         if (htmlSelect_ == null || index < 0) {
-            return JavaScriptEngine.Undefined;
+            return JavaScriptEngine.UNDEFINED;
         }
 
         if (index >= htmlSelect_.getOptionSize()) {
-            return JavaScriptEngine.Undefined;
+            return JavaScriptEngine.UNDEFINED;
         }
 
         return getScriptableFor(htmlSelect_.getOption(index));
@@ -129,7 +132,11 @@ public class HTMLOptionsCollection extends HtmlUnitScriptable {
      */
     @JsxFunction
     public Object item(final int index) {
-        return get(index, null);
+        final Object item = get(index, this);
+        if (JavaScriptEngine.UNDEFINED == item) {
+            return null;
+        }
+        return item;
     }
 
     /**

@@ -42,12 +42,6 @@ public class HTMLTextAreaElement extends HTMLElement {
     private NodeList labels_;
 
     /**
-     * Creates an instance.
-     */
-    public HTMLTextAreaElement() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @Override
@@ -273,7 +267,7 @@ public class HTMLTextAreaElement extends HTMLElement {
      * @return the maximum number of characters in this text area
      */
     @JsxGetter
-    public Object getMaxLength() {
+    public int getMaxLength() {
         final String maxLength = getDomNodeOrDie().getAttribute("maxLength");
 
         try {
@@ -309,7 +303,7 @@ public class HTMLTextAreaElement extends HTMLElement {
      * @return the minimum number of characters in this text area
      */
     @JsxGetter
-    public Object getMinLength() {
+    public int getMinLength() {
         final String minLength = getDomNodeOrDie().getAttribute("minLength");
 
         try {

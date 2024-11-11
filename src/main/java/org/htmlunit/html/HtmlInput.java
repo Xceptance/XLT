@@ -124,7 +124,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
      * @return the value of the attribute {@code type} or an empty string if that attribute isn't defined
      */
     public final String getTypeAttribute() {
-        final String type = getAttributeDirect(DomElement.TYPE_ATTRIBUTE);
+        final String type = getAttributeDirect(TYPE_ATTRIBUTE);
         if (ATTRIBUTE_NOT_DEFINED == type) {
             return "text";
         }
@@ -200,7 +200,20 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
      */
     @Override
     public final boolean isDisabled() {
-        return hasAttribute(ATTRIBUTE_DISABLED);
+        if (hasAttribute(ATTRIBUTE_DISABLED)) {
+            return true;
+        }
+
+        DomNode node = getParentNode();
+        while (node != null) {
+            if (node instanceof DisabledElement
+                    && ((DisabledElement) node).isDisabled()) {
+                return true;
+            }
+            node = node.getParentNode();
+        }
+
+        return false;
     }
 
     /**
@@ -316,7 +329,9 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
             }
             catch (final MalformedURLException e) {
                 // Log the error and fall through to the return values below.
-                LOG.warn(e.getMessage(), e);
+                if (LOG.isWarnEnabled()) {
+                    LOG.warn(e.getMessage(), e);
+                }
             }
         }
         return src;
@@ -328,7 +343,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
      * @param src the {@code src} attribute
      */
     public void setSrcAttribute(final String src) {
-        setAttribute(HtmlElement.SRC_ATTRIBUTE, src);
+        setAttribute(SRC_ATTRIBUTE, src);
     }
 
     /**
@@ -694,6 +709,9 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
         executeOnChangeHandlerIfAppropriate(this);
     }
 
+    /**
+     * @return returns the raw value
+     */
     protected Object getInternalValue() {
         return getRawValue();
     }
@@ -878,7 +896,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
 
     protected boolean isCustomValidityValid() {
         if (isCustomErrorValidityState()) {
-            final String type = getAttributeDirect(DomElement.TYPE_ATTRIBUTE).toLowerCase(Locale.ROOT);
+            final String type = getAttributeDirect(TYPE_ATTRIBUTE).toLowerCase(Locale.ROOT);
             if (!"button".equals(type)
                     && !"hidden".equals(type)
                     && !"reset".equals(type)
@@ -998,7 +1016,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
         try {
             return Pattern.matches(javaPattern, value);
         }
-        catch (final Exception e) {
+        catch (final Exception ignored) {
             // ignore if regex invalid
         }
         return true;
@@ -1024,7 +1042,7 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
      * @return whether this is a checkbox or a radio button
      */
     public boolean isCheckable() {
-        final String type = getAttributeDirect(DomElement.TYPE_ATTRIBUTE).toLowerCase(Locale.ROOT);
+        final String type = getAttributeDirect(TYPE_ATTRIBUTE).toLowerCase(Locale.ROOT);
         return "radio".equals(type) || "checkbox".equals(type);
     }
 
@@ -1032,13 +1050,8 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
      * @return false for type submit/resest/image/button otherwise true
      */
     public boolean isSubmitable() {
-        final String type = getAttributeDirect(DomElement.TYPE_ATTRIBUTE).toLowerCase(Locale.ROOT);
+        final String type = getAttributeDirect(TYPE_ATTRIBUTE).toLowerCase(Locale.ROOT);
         return !"submit".equals(type) && !"image".equals(type) && !"reset".equals(type) && !"button".equals(type);
-    }
-
-    @Override
-    public boolean hasBadInputValidityState() {
-        return false;
     }
 
     @Override
@@ -1052,16 +1065,6 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
     }
 
     @Override
-    public boolean isStepMismatchValidityState() {
-        return false;
-    }
-
-    @Override
-    public boolean isTooLongValidityState() {
-        return false;
-    }
-
-    @Override
     public boolean isTooShortValidityState() {
         if (!isMinMaxLengthSupported()
                 || valueModifiedByJavascript_
@@ -1071,21 +1074,6 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
         }
 
         return getValue().length() < getMinLength();
-    }
-
-    @Override
-    public boolean hasTypeMismatchValidityState() {
-        return false;
-    }
-
-    @Override
-    public boolean hasRangeOverflowValidityState() {
-        return false;
-    }
-
-    @Override
-    public boolean hasRangeUnderflowValidityState() {
-        return false;
     }
 
     @Override
@@ -1183,8 +1171,8 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
             // create a new one only if we have a new type
             if (ATTRIBUTE_NOT_DEFINED != currentType || !"text".equalsIgnoreCase(newType)) {
                 final HtmlInput newInput = (HtmlInput) webClient.getPageCreator().getHtmlParser()
-                        .getFactory(HtmlInput.TAG_NAME)
-                        .createElement(page, HtmlInput.TAG_NAME, attributes);
+                        .getFactory(TAG_NAME)
+                        .createElement(page, TAG_NAME, attributes);
 
                 newInput.adjustValueAfterTypeChange(this, browser);
 

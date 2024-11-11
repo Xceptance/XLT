@@ -49,13 +49,34 @@ public final class StringUtils {
                                 + "\\s*((0|[1-9]\\d?|100)(.\\d*)?)%\\s*\\)");
     private static final Pattern ILLEGAL_FILE_NAME_CHARS = Pattern.compile("\\\\|/|\\||:|\\?|\\*|\"|<|>|\\p{Cntrl}");
 
-    private static final Map<String, String> CamelizeCache_ = new ConcurrentHashMap<>();
+    private static final Map<String, String> CAMELIZE_CACHE = new ConcurrentHashMap<>();
 
     /**
      * Disallow instantiation of this class.
      */
     private StringUtils() {
         // Empty.
+    }
+
+    /**
+     * Returns true if the param is not null and empty. This is different from
+     * {@link org.apache.commons.lang3.StringUtils#isEmpty(CharSequence)} because
+     * this returns false if the provided string is null.
+     *
+     * @param s the string to check
+     * @return true if the param is not null and empty
+     */
+    public static boolean isEmptyString(final CharSequence s) {
+        return s != null && s.length() == 0;
+    }
+
+    /**
+     * @param expected the char that we expect
+     * @param s the string to check
+     * @return true if the provided string has only one char and this matches the expectation
+     */
+    public static boolean equalsChar(final char expected, final CharSequence s) {
+        return s != null && s.length() == 1 && expected == s.charAt(0);
     }
 
     /**
@@ -316,7 +337,7 @@ public final class StringUtils {
             return null;
         }
 
-        String result = CamelizeCache_.get(string);
+        String result = CAMELIZE_CACHE.get(string);
         if (null != result) {
             return result;
         }
@@ -325,7 +346,7 @@ public final class StringUtils {
         final int pos = string.indexOf('-');
         if (pos == -1 || pos == string.length() - 1) {
             // cache also this strings for performance
-            CamelizeCache_.put(string, string);
+            CAMELIZE_CACHE.put(string, string);
             return string;
         }
 
@@ -342,7 +363,7 @@ public final class StringUtils {
             i++;
         }
         result = builder.toString();
-        CamelizeCache_.put(string, result);
+        CAMELIZE_CACHE.put(string, result);
 
         return result;
     }

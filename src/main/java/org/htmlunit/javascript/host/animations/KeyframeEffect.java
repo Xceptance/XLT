@@ -27,15 +27,10 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 public class KeyframeEffect extends HtmlUnitScriptable {
 
     /**
-     * Creates a new instance.
-     */
-    public KeyframeEffect() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 }

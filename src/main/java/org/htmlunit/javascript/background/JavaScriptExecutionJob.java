@@ -28,6 +28,7 @@ import org.htmlunit.html.HtmlPage;
  *
  * @author Daniel Gredler
  * @author Ronald Brill
+ * @author Sven Strickroth
  */
 abstract class JavaScriptExecutionJob extends BasicJavaScriptJob {
 
@@ -70,15 +71,11 @@ abstract class JavaScriptExecutionJob extends BasicJavaScriptJob {
         try {
             // Verify that the window is still open
             if (w.isClosed()) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Enclosing window is now closed. Execution cancelled.");
-                }
+                LOG.debug("Enclosing window is now closed. Execution cancelled.");
                 return;
             }
             if (!w.getWebClient().containsWebWindow(w)) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Enclosing window is now closed. Execution cancelled.");
-                }
+                LOG.debug("Enclosing window is now closed. Execution cancelled.");
                 return;
             }
 
@@ -86,9 +83,7 @@ abstract class JavaScriptExecutionJob extends BasicJavaScriptJob {
             final Page enclosedPage = w.getEnclosedPage();
             if (enclosedPage == null || !enclosedPage.isHtmlPage()) {
                 if (enclosedPage == null) {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("The page that originated this job doesn't exist anymore. Execution cancelled.");
-                    }
+                    LOG.debug("The page that originated this job doesn't exist anymore. Execution cancelled.");
                     return;
                 }
                 if (LOG.isDebugEnabled()) {

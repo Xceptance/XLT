@@ -49,6 +49,7 @@ import org.htmlunit.xml.XmlPage;
  * @author Ronald Brill
  * @author Chuck Dumont
  * @author Frank Danek
+ * @author Sven Strickroth
  */
 @JsxClass
 public class XMLDocument extends Document {
@@ -76,6 +77,8 @@ public class XMLDocument extends Document {
      * @param enclosingWindow the window
      */
     public XMLDocument(final WebWindow enclosingWindow) {
+        super();
+
         if (enclosingWindow != null) {
             try {
                 final XmlPage page = new XmlPage((WebResponse) null, enclosingWindow);
@@ -116,7 +119,7 @@ public class XMLDocument extends Document {
                 final XmlPage page = createParserErrorXmlPage("Syntax Error", webWindow);
                 setDomNode(page);
             }
-            catch (final IOException eI) {
+            catch (final IOException ex) {
                 LOG.error("Could not handle ParserError", e);
             }
 
@@ -150,7 +153,7 @@ public class XMLDocument extends Document {
                     = ((JavaScriptEngine) getWindow().getWebWindow().getWebClient()
                         .getJavaScriptEngine()).getJavaScriptClass(domNode.getClass());
                 try {
-                    scriptable = javaScriptClass.newInstance();
+                    scriptable = javaScriptClass.getDeclaredConstructor().newInstance();
                 }
                 catch (final Exception e) {
                     throw JavaScriptEngine.throwAsScriptRuntimeEx(e);

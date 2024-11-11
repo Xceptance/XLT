@@ -39,15 +39,10 @@ public class SVGUnitTypes extends HtmlUnitScriptable {
     public static final int SVG_UNIT_TYPE_OBJECTBOUNDINGBOX = 2;
 
     /**
-     * Creates an instance.
-     */
-    public SVGUnitTypes() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 }

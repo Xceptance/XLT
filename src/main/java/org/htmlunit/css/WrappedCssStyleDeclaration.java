@@ -54,6 +54,7 @@ public class WrappedCssStyleDeclaration extends AbstractCssStyleDeclaration {
      */
     public WrappedCssStyleDeclaration(final CSSStyleDeclarationImpl cssStyleDeclarationImpl,
                 final BrowserVersion browserVersion) {
+        super();
         cssStyleDeclarationImpl_ = cssStyleDeclarationImpl;
         browserVersion_ = browserVersion;
     }
@@ -130,8 +131,8 @@ public class WrappedCssStyleDeclaration extends AbstractCssStyleDeclaration {
      * {@inheritDoc}
      */
     @Override
-    public Object item(final int index) {
-        return cssStyleDeclarationImpl_.getProperties().get(index);
+    public String item(final int index) {
+        return cssStyleDeclarationImpl_.getProperties().get(index).toString();
     }
 
     /**

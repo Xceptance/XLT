@@ -56,6 +56,8 @@ public class Architecture2Test {
     @ArchTest
     public static void allHostTestShouldTestTheSameObjects(final JavaClasses classes) {
         compare(classes, "HostClassNameTest", "HostTypeOfTest");
+        compare(classes, "HostClassNameTest", "DedicatedWorkerGlobalScopeClassNameTest");
+        compare(classes, "HostClassNameTest", "DedicatedWorkerGlobalScopeTypeOfTest");
     }
 
     private static void compare(final JavaClasses classes, final String oneName, final String anotherName) {
@@ -142,6 +144,8 @@ public class Architecture2Test {
         .that()
             .doNotHaveFullyQualifiedName("org.htmlunit.BrowserVersion")
             .and().doNotHaveFullyQualifiedName("org.htmlunit.javascript.configuration.AbstractJavaScriptConfiguration")
+            .and().doNotHaveFullyQualifiedName("org.htmlunit.javascript.host.worker.DedicatedWorkerGlobalScope")
+
             .and().doNotHaveFullyQualifiedName("org.htmlunit.css.BrowserConfiguration$FF")
             .and().doNotHaveFullyQualifiedName("org.htmlunit.css.BrowserConfiguration$FFNotIterable")
             .and().doNotHaveFullyQualifiedName("org.htmlunit.css.BrowserConfiguration$FFESR")
@@ -162,11 +166,4 @@ public class Architecture2Test {
             .and().doNotHaveFullyQualifiedName("org.htmlunit.javascript.host.intl.DateTimeFormat")
             .and().doNotHaveFullyQualifiedName("org.htmlunit.javascript.host.intl.NumberFormat")
         .should().callMethod(BrowserVersion.class, "isFirefoxESR", new Class[] {});
-
-    /**
-     * Do not use BrowserVersion.isIE().
-     */
-    @ArchTest
-    public static final ArchRule isIE = noClasses()
-        .should().callMethod(BrowserVersion.class, "isIE", new Class[] {});
 }

@@ -34,12 +34,6 @@ import org.htmlunit.javascript.configuration.JsxSetter;
 public class HTMLPreElement extends HTMLElement {
 
     /**
-     * Creates an instance.
-     */
-    public HTMLPreElement() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @Override
@@ -53,7 +47,7 @@ public class HTMLPreElement extends HTMLElement {
      * @return the {@code width} property
      */
     @JsxGetter(propertyName = "width")
-    public Object getWidth_js() {
+    public Integer getWidth_js() {
         final String value = getDomNodeOrDie().getAttributeDirect("width");
         final Integer intValue = HTMLCanvasElement.getValue(value);
         if (intValue != null) {

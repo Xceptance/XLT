@@ -64,6 +64,7 @@ public class HtmlUnitRegExpProxy extends RegExpImpl {
      * @param wrapped the original proxy
      */
     public HtmlUnitRegExpProxy(final RegExpProxy wrapped) {
+        super();
         wrapped_ = wrapped;
     }
 
@@ -78,13 +79,17 @@ public class HtmlUnitRegExpProxy extends RegExpImpl {
             return doAction(cx, scope, thisObj, args, actionType);
         }
         catch (final RegExStickyNotSupportedException e) {
-            LOG.warn(e.getMessage(), e);
+            if (LOG.isWarnEnabled()) {
+                LOG.warn(e.getMessage(), e);
+            }
             return wrapped_.action(cx, scope, thisObj, args, actionType);
         }
         catch (final StackOverflowError e) {
             // TODO: We shouldn't have to catch this exception and fall back to Rhino's regex support!
             // See HtmlUnitRegExpProxyTest.stackOverflow()
-            LOG.warn(e.getMessage(), e);
+            if (LOG.isWarnEnabled()) {
+                LOG.warn(e.getMessage(), e);
+            }
             return wrapped_.action(cx, scope, thisObj, args, actionType);
         }
     }
@@ -118,7 +123,9 @@ public class HtmlUnitRegExpProxy extends RegExpImpl {
                                             reData.isGlobal() || RA_REPLACE_ALL == actionType);
                 }
                 catch (final PatternSyntaxException e) {
-                    LOG.warn(e.getMessage(), e);
+                    if (LOG.isWarnEnabled()) {
+                        LOG.warn(e.getMessage(), e);
+                    }
                 }
             }
         }
@@ -165,7 +172,7 @@ public class HtmlUnitRegExpProxy extends RegExpImpl {
                 for (int i = 0; i <= matcher.groupCount(); i++) {
                     Object group = matcher.group(i);
                     if (group == null) {
-                        group = JavaScriptEngine.Undefined;
+                        group = JavaScriptEngine.UNDEFINED;
                     }
                     groups.add(group);
                 }

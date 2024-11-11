@@ -1109,6 +1109,30 @@ public class HtmlPageTest extends SimpleWebTestCase {
     }
 
     /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void asXml_noscript() throws Exception {
+        final String html = "<html>"
+            + "<body>"
+            + "<noscript><p><strong>your browser does not support JavaScript</strong></p></noscript>"
+            + "</body></html>";
+
+        final String expected = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>"
+                + "<html>"
+                + "  <head/>"
+                + "  <body>"
+                + "    <noscript>"
+                + "      &lt;p&gt;&lt;strong&gt;your browser does not support JavaScript&lt;/strong&gt;&lt;/p&gt;"
+                + "    </noscript>"
+                + "  </body>"
+                + "</html>";
+
+        final HtmlPage page = loadPage(html);
+        assertEquals(expected, page.asXml().replaceAll("[\\n\\r]", ""));
+    }
+
+    /**
      * @exception Exception if the test fails
      */
     @Test
@@ -1488,8 +1512,7 @@ public class HtmlPageTest extends SimpleWebTestCase {
             page.getHtmlElementById("id2");
             fail("should have thrown ElementNotFoundException");
         }
-        catch (final ElementNotFoundException enfe) {
-            // expected
+        catch (final ElementNotFoundException expected) {
         }
         assertNotNull(clone.getHtmlElementById("id2"));
     }

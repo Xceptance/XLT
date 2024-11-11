@@ -790,4 +790,123 @@ public class HTMLTextAreaElementTest extends WebDriverTestCase {
 
         assertTitle(driver, getExpectedAlerts()[0]);
     }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"HtmlUnit", "</> htmx rocks!"})
+    public void innerHtml() throws Exception {
+        final String html =
+            "<html>\n"
+            + "  <head>\n"
+            + "    <title>Page Title</title>\n"
+            + "    <script>\n"
+            + LOG_TEXTAREA_FUNCTION
+            + "      function test() {\n"
+            + "        var textarea = document.getElementsByTagName('textarea')[0];\n"
+            + "        log(textarea.value);\n"
+            + "        textarea.innerHTML = '</> htmx rocks!';\n"
+            + "        log(textarea.value);\n"
+            + "      }\n"
+            + "    </script>\n"
+            + "  </head>\n"
+            + "  <body onload='test()'>"
+            + "    <textarea>HtmlUnit</textarea>\n"
+            + LOG_TEXTAREA
+            + "  </body>\n"
+            + "</html>";
+
+        loadPageVerifyTextArea2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"HtmlUnit", "<div>htmx rocks</div>"})
+    public void innerHtmlTag() throws Exception {
+        final String html =
+            "<html>\n"
+            + "  <head>\n"
+            + "    <title>Page Title</title>\n"
+            + "    <script>\n"
+            + LOG_TEXTAREA_FUNCTION
+            + "      function test() {\n"
+            + "        var textarea = document.getElementsByTagName('textarea')[0];\n"
+            + "        log(textarea.value);\n"
+            + "        textarea.innerHTML = '<div>htmx rocks</div>';\n"
+            + "        log(textarea.value);\n"
+            + "      }\n"
+            + "    </script>\n"
+            + "  </head>\n"
+            + "  <body onload='test()'>\n"
+            + "    <textarea>HtmlUnit</textarea>\n"
+            + LOG_TEXTAREA
+            + "  </body>\n"
+            + "</html>";
+
+        loadPageVerifyTextArea2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"", "</> htmx rocks!"})
+    public void innerHtmlEscaping() throws Exception {
+        final String html =
+            "<html>\n"
+            + "  <head>\n"
+            + "    <title>Page Title</title>\n"
+            + "    <script>\n"
+            + LOG_TEXTAREA_FUNCTION
+            + "      function test() {\n"
+            + "        var textarea = document.getElementsByTagName('textarea')[0];\n"
+            + "        log(textarea.value);\n"
+            + "        textarea.innerHTML = '&lt;/> htmx rocks!';\n"
+            + "        log(textarea.value);\n"
+            + "      }\n"
+            + "    </script>\n"
+            + "  </head>\n"
+            + "  <body onload='test()'>\n"
+            + "    <textarea></textarea>\n"
+            + LOG_TEXTAREA
+            + "  </body>\n"
+            + "</html>";
+
+        loadPageVerifyTextArea2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts({"true", "false", "true", "false", "true"})
+    public void willValidate() throws Exception {
+        final String html =
+                "<html><head>\n"
+                + "  <script>\n"
+                + LOG_TITLE_FUNCTION
+                + "    function test() {\n"
+                + "      log(document.getElementById('i1').willValidate);\n"
+                + "      log(document.getElementById('i2').willValidate);\n"
+                + "      log(document.getElementById('i3').willValidate);\n"
+                + "      log(document.getElementById('i4').willValidate);\n"
+                + "      log(document.getElementById('i5').willValidate);\n"
+                + "    }\n"
+                + "  </script>\n"
+                + "</head>\n"
+                + "<body onload='test()'>\n"
+                + "  <form>\n"
+                + "    <textarea id='i1'>button</textarea>"
+                + "    <textarea id='i2' disabled></textarea>"
+                + "    <textarea id='i3' hidden></textarea>"
+                + "    <textarea id='i4' readonly></textarea>"
+                + "    <textarea id='i5' style='display: none'></textarea>"
+                + "  </form>\n"
+                + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
 }

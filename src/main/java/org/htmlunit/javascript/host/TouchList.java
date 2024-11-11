@@ -30,15 +30,10 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 public class TouchList extends HtmlUnitScriptable {
 
     /**
-     * Default constructor.
-     */
-    public TouchList() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 }

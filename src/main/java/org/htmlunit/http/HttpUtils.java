@@ -101,7 +101,7 @@ public final class HttpUtils {
     /**
      * Standard date formatters: {@link #FORMATTER_RFC1123}, {@link #FORMATTER_RFC1036}, {@link #FORMATTER_ASCTIME}.
      */
-    private static final DateTimeFormatter[] STANDARD_PATTERNS = new DateTimeFormatter[] {
+    private static final DateTimeFormatter[] STANDARD_PATTERNS = {
         FORMATTER_RFC1123,
         FORMATTER_RFC1036,
         FORMATTER_ASCTIME
@@ -132,7 +132,7 @@ public final class HttpUtils {
             try {
                 return new Date(Instant.from(dateFormatter.parse(v)).toEpochMilli());
             }
-            catch (final DateTimeParseException ignore) {
+            catch (final DateTimeParseException ignored) {
                 // ignore
             }
         }
@@ -248,8 +248,7 @@ public final class HttpUtils {
             }
             result.append(encodedName);
             if (encodedValue != null) {
-                result.append('=');
-                result.append(encodedValue);
+                result.append('=').append(encodedValue);
             }
         }
         return result.toString();
@@ -274,17 +273,17 @@ public final class HttpUtils {
                 buf.append('+');
             }
             else {
-                buf.append("%");
+                buf.append('%');
                 final char hex1 = Character.toUpperCase(Character.forDigit((b >> 4) & 0xF, 16));
                 final char hex2 = Character.toUpperCase(Character.forDigit(b & 0xF, 16));
-                buf.append(hex1);
-                buf.append(hex2);
+                buf.append(hex1).append(hex2);
             }
         }
         return buf.toString();
     }
 
     private HttpUtils() {
+        // util class
     }
 
     /**
@@ -356,7 +355,7 @@ public final class HttpUtils {
 
         for (int i = pos; i < indexTo; i++) {
             final char current = buf.charAt(i);
-            if ((delimiters.get(current)) || isWhitespace(current)) {
+            if (delimiters.get(current) || isWhitespace(current)) {
                 break;
             }
             pos++;

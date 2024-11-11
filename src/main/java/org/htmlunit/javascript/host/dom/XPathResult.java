@@ -116,12 +116,6 @@ public class XPathResult extends HtmlUnitScriptable {
     /**
      * Creates an instance.
      */
-    public XPathResult() {
-    }
-
-    /**
-     * Creates an instance.
-     */
     @JsxConstructor
     public void jsConstructor() {
         throw JavaScriptEngine.reportRuntimeError("Illegal constructor.");
@@ -292,7 +286,7 @@ public class XPathResult extends HtmlUnitScriptable {
             }
         }
 
-        return result_.size() > 0;
+        return !result_.isEmpty();
     }
 
     /**
@@ -308,7 +302,7 @@ public class XPathResult extends HtmlUnitScriptable {
     }
 
     private String asString() {
-        if (result_.size() < 1) {
+        if (result_.isEmpty()) {
             return "";
         }
 

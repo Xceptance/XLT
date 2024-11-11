@@ -25,8 +25,6 @@ import static org.htmlunit.css.CssStyleSheet.RELATIVE;
 import static org.htmlunit.css.CssStyleSheet.STATIC;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -124,6 +122,7 @@ public class CSSStyleDeclaration extends HtmlUnitScriptable {
      * Creates an instance.
      */
     public CSSStyleDeclaration() {
+        super();
     }
 
     /**
@@ -143,6 +142,7 @@ public class CSSStyleDeclaration extends HtmlUnitScriptable {
      * @param styleDeclaration the style declaration to be based on
      */
     public CSSStyleDeclaration(final Element element, final AbstractCssStyleDeclaration styleDeclaration) {
+        super();
         setParentScope(element.getParentScope());
         setPrototype(getPrototype(getClass()));
 
@@ -160,6 +160,7 @@ public class CSSStyleDeclaration extends HtmlUnitScriptable {
      * @param styleDeclaration the style declaration to wrap
      */
     CSSStyleDeclaration(final CSSStyleSheet parentStyleSheet, final WrappedCssStyleDeclaration styleDeclaration) {
+        super();
         setParentScope(parentStyleSheet);
         setPrototype(getPrototype(getClass()));
 
@@ -900,15 +901,15 @@ public class CSSStyleDeclaration extends HtmlUnitScriptable {
     }
 
     /**
-     * Returns the item in the given index.
      * @param index the index
-     * @return the item in the given index
+     * @return a CSS property name from a CSSStyleDeclaration by index.
      */
     @JsxFunction
-    public Object item(final int index) {
+    public String item(final int index) {
         if (styleDeclaration_ == null) {
             return null; // prototype
         }
+
         return styleDeclaration_.item(index);
     }
 
@@ -1169,15 +1170,15 @@ public class CSSStyleDeclaration extends HtmlUnitScriptable {
     @Override
     public Object get(final int index, final Scriptable start) {
         if (index < 0) {
-            return JavaScriptEngine.Undefined;
+            return JavaScriptEngine.UNDEFINED;
         }
 
         final Map<String, StyleElement> style = getStyleMap();
         final int size = style.size();
         if (index >= size) {
-            return JavaScriptEngine.Undefined;
+            return JavaScriptEngine.UNDEFINED;
         }
-        return style.keySet().toArray(new String[size])[index];
+        return style.keySet().toArray(new String[0])[index];
     }
 
     /**
@@ -1489,6 +1490,7 @@ public class CSSStyleDeclaration extends HtmlUnitScriptable {
      */
     @JsxSetter
     public void setParentRule(final CSSRule parentRule) {
+        // nothing to do
     }
 
     /**
@@ -1516,7 +1518,7 @@ public class CSSStyleDeclaration extends HtmlUnitScriptable {
      * Gets the {@code rubyAlign} style attribute.
      * @return the style attribute
      */
-    @JsxGetter({FF, FF_ESR})
+    @JsxGetter
     public String getRubyAlign() {
         if (styleDeclaration_ == null) {
             return null; // prototype
@@ -1528,7 +1530,7 @@ public class CSSStyleDeclaration extends HtmlUnitScriptable {
      * Sets the {@code rubyAlign} style attribute.
      * @param rubyAlign the new attribute
      */
-    @JsxSetter({FF, FF_ESR})
+    @JsxSetter
     public void setRubyAlign(final String rubyAlign) {
         setStyleAttribute(Definition.RUBY_ALIGN.getAttributeName(), rubyAlign);
     }
@@ -1788,7 +1790,7 @@ public class CSSStyleDeclaration extends HtmlUnitScriptable {
             final int i = Integer.parseInt(zIndex.toString());
             setStyleAttribute(Definition.Z_INDEX_.getAttributeName(), Integer.toString(i));
         }
-        catch (final NumberFormatException e) {
+        catch (final NumberFormatException ignored) {
             // ignore
         }
     }
@@ -1892,8 +1894,8 @@ public class CSSStyleDeclaration extends HtmlUnitScriptable {
                 Double.parseDouble(token);
                 return true;
             }
-            catch (final NumberFormatException e) {
-                // Ignore.
+            catch (final NumberFormatException ignored) {
+                // ignore
             }
         }
         return false;
@@ -2009,8 +2011,8 @@ public class CSSStyleDeclaration extends HtmlUnitScriptable {
 
             setStyleAttribute(name, valueString, important);
         }
-        catch (final Exception e) {
-            //ignore
+        catch (final Exception ignored) {
+            // ignore
         }
     }
 }

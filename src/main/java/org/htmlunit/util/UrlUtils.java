@@ -377,7 +377,6 @@ public final class UrlUtils {
      * @return the given input string where every occurrence of <code>%</code> in
      * invalid escape sequences has been replace by <code>%25</code>
      */
-    @SuppressWarnings("PMD.UselessParentheses")
     private static String encodePercentSign(final byte[] input) {
         if (input == null) {
             return null;
@@ -645,15 +644,13 @@ public final class UrlUtils {
         final StringBuilder s = new StringBuilder(len);
         s.append(protocol).append(':');
         if (authority != null && !authority.isEmpty()) {
-            s.append("//");
-            s.append(authority);
+            s.append("//").append(authority);
         }
         if (path != null) {
             s.append(path);
         }
         if (query != null) {
-            s.append('?');
-            s.append(query);
+            s.append('?').append(query);
         }
         if (ref != null) {
             if (ref.isEmpty() || ref.charAt(0) != '#') {
@@ -720,7 +717,6 @@ public final class UrlUtils {
      * @param spec The specification to parse.
      * @return the parsed specification.
      */
-    @SuppressWarnings("PMD.UselessParentheses")
     private static Url parseUrl(String spec) {
         final Url url = new Url();
         int startIndex = 0;
@@ -927,7 +923,6 @@ public final class UrlUtils {
      * @param scheme the scheme string to check
      * @return true if valid
      */
-    @SuppressWarnings("PMD.UselessParentheses")
     public static boolean isValidScheme(final String scheme) {
         final int length = scheme.length();
         if (length < 1) {
@@ -1162,6 +1157,7 @@ public final class UrlUtils {
          * Creates a <code>Url</code> object.
          */
         Url() {
+            super();
         }
 
         /**
@@ -1189,27 +1185,22 @@ public final class UrlUtils {
             final StringBuilder sb = new StringBuilder();
 
             if (scheme_ != null) {
-                sb.append(scheme_);
-                sb.append(':');
+                sb.append(scheme_).append(':');
             }
             if (location_ != null) {
-                sb.append("//");
-                sb.append(location_);
+                sb.append("//").append(location_);
             }
             if (path_ != null) {
                 sb.append(path_);
             }
             if (parameters_ != null) {
-                sb.append(';');
-                sb.append(parameters_);
+                sb.append(';').append(parameters_);
             }
             if (query_ != null) {
-                sb.append('?');
-                sb.append(query_);
+                sb.append('?').append(query_);
             }
             if (fragment_ != null) {
-                sb.append('#');
-                sb.append(fragment_);
+                sb.append('#').append(fragment_);
             }
             return sb.toString();
         }
@@ -1228,7 +1219,6 @@ public final class UrlUtils {
      * @param u2 a URL object
      * @return true if u1 and u2 refer to the same file
      */
-    @SuppressWarnings("PMD.UselessParentheses")
     public static boolean sameFile(final URL u1, final URL u2) {
         if (u1 == u2) {
             return true;
@@ -1272,10 +1262,10 @@ public final class UrlUtils {
                 f1 = u1.toURI().normalize().toURL().getFile();
                 f2 = u2.toURI().normalize().toURL().getFile();
             }
-            catch (final RuntimeException re) {
-                throw re;
+            catch (final RuntimeException e) {
+                throw e;
             }
-            catch (final Exception e) {
+            catch (final Exception ignored) {
                 // ignore
             }
         }
@@ -1308,7 +1298,7 @@ public final class UrlUtils {
                 try {
                     f = url.toURI().normalize().toURL().getFile();
                 }
-                catch (final Exception e) {
+                catch (final Exception ignored) {
                     // ignore
                 }
             }
@@ -1340,13 +1330,11 @@ public final class UrlUtils {
         final StringBuilder buffer = new StringBuilder();
         if (host != null) {
             if (scheme != null) {
-                buffer.append(scheme);
-                buffer.append("://");
+                buffer.append(scheme).append("://");
             }
             buffer.append(host);
             if (port > 0) {
-                buffer.append(':');
-                buffer.append(port);
+                buffer.append(':').append(port);
             }
         }
         if (path == null || path.isEmpty() || path.charAt(0) != '/') {
@@ -1356,8 +1344,7 @@ public final class UrlUtils {
             buffer.append(path);
         }
         if (query != null) {
-            buffer.append('?');
-            buffer.append(query);
+            buffer.append('?').append(query);
         }
         return new URI(buffer.toString());
     }

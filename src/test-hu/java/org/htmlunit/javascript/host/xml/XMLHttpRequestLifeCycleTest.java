@@ -269,8 +269,8 @@ public final class XMLHttpRequestLifeCycleTest {
                     Thread.sleep(500);
                     writer.write(RETURN_XML);
                 }
-                catch (final Exception e) {
-                    // ignored.
+                catch (final Exception ignored) {
+                    // ignore
                 }
             }
         }
@@ -1322,12 +1322,9 @@ public final class XMLHttpRequestLifeCycleTest {
          * @throws Exception if the test fails
          */
         @Test
-        @Alerts(DEFAULT = {"readystatechange_1_0_true", "open-done: 1_0", "loadstart_1_0_false",
-                           "send-done: 1_0", "readystatechange_4_0_true", "error_4_0_false",
-                           "loadend_4_0_false"},
-                FF_ESR = {"readystatechange_1_0_true", "open-done: 1_0", "loadstart_1_0_false",
-                          "send-done: 1_0", "progress_1_0_false", "readystatechange_4_0_true",
-                          "error_4_0_false", "loadend_4_0_false"})
+        @Alerts({"readystatechange_1_0_true", "open-done: 1_0", "loadstart_1_0_false",
+                 "send-done: 1_0", "readystatechange_4_0_true", "error_4_0_false",
+                 "loadend_4_0_false"})
         public void addEventListener_async_NoHttpResponseException() throws Exception {
             final MockWebConnection mockWebConnection = getMockWebConnection();
             mockWebConnection.setResponse(WebTestCase.URL_FIRST, buildHtml(Mode.ASYNC, Execution.ONLY_SEND));
@@ -1535,12 +1532,9 @@ public final class XMLHttpRequestLifeCycleTest {
          * @throws Exception if the test fails
          */
         @Test
-        @Alerts(DEFAULT = {"readystatechange_1_0_true", "open-done: 1_0", "loadstart_1_0_false",
-                           "send-done: 1_0", "readystatechange_4_0_true", "error_4_0_false",
-                           "loadend_4_0_false"},
-                FF_ESR = {"readystatechange_1_0_true", "open-done: 1_0", "loadstart_1_0_false",
-                          "send-done: 1_0", "progress_1_0_false", "readystatechange_4_0_true",
-                          "error_4_0_false", "loadend_4_0_false"})
+        @Alerts({"readystatechange_1_0_true", "open-done: 1_0", "loadstart_1_0_false",
+                 "send-done: 1_0", "readystatechange_4_0_true", "error_4_0_false",
+                 "loadend_4_0_false"})
         public void onKeyWord_async_NoHttpResponseException() throws Exception {
             final MockWebConnection mockWebConnection = getMockWebConnection();
             mockWebConnection.setResponse(WebTestCase.URL_FIRST, buildHtml(Mode.ASYNC, Execution.ONLY_SEND));

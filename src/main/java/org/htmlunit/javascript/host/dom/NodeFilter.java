@@ -107,15 +107,10 @@ public class NodeFilter extends HtmlUnitScriptable {
     public static final int SHOW_NOTATION = org.w3c.dom.traversal.NodeFilter.SHOW_NOTATION;
 
     /**
-     * Creates an instance.
-     */
-    public NodeFilter() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 }

@@ -124,7 +124,8 @@ public final class XltJavaScriptEngine extends JavaScriptEngine
      * {@inheritDoc}
      */
     @Override
-    public Script compile(final HtmlPage htmlPage, final String sourceCode, final String sourceName, final int startLine)
+    public Script compile(final HtmlPage owningPage, final Scriptable scope, final String sourceCode, final String sourceName,
+                          final int startLine)
     {
         Script script;
 
@@ -138,7 +139,7 @@ public final class XltJavaScriptEngine extends JavaScriptEngine
             {
                 final String sourceFileName = getSourceFileName(sourceName, sourceCode);
 
-                script = compileScript(htmlPage, sourceCode, sourceName, startLine, sourceFileName);
+                script = compileScript(owningPage, scope, sourceCode, sourceName, startLine, sourceFileName);
 
                 // script can be null
                 if (script != null)
@@ -155,7 +156,7 @@ public final class XltJavaScriptEngine extends JavaScriptEngine
         {
             // someone messed around with our XltCache so we have to compile the script each time
             final String sourceFileName = getSourceFileName(sourceName, sourceCode);
-            script = compileScript(htmlPage, sourceCode, sourceName, startLine, sourceFileName);
+            script = compileScript(owningPage, scope, sourceCode, sourceName, startLine, sourceFileName);
         }
 
         return script;
@@ -165,7 +166,7 @@ public final class XltJavaScriptEngine extends JavaScriptEngine
      * {@inheritDoc}
      */
     @Override
-    public Object execute(final HtmlPage htmlPage, final Script script)
+    public Object execute(final HtmlPage htmlPage, final Scriptable scope, final Script script)
     {
         final Object result;
 
@@ -177,7 +178,7 @@ public final class XltJavaScriptEngine extends JavaScriptEngine
 
             try
             {
-                result = super.execute(htmlPage, script);
+                result = super.execute(htmlPage, scope, script);
             }
             finally
             {
@@ -194,7 +195,7 @@ public final class XltJavaScriptEngine extends JavaScriptEngine
         }
         else
         {
-            result = super.execute(htmlPage, script);
+            result = super.execute(htmlPage, scope, script);
         }
 
         return result;
@@ -221,11 +222,12 @@ public final class XltJavaScriptEngine extends JavaScriptEngine
      * @param startLine
      *            the line at which the script source starts
      * @param sourceFileName
+     * @param sourceFileName
      *            the source file name to use for logging
      * @return the generated script
      */
-    private Script compileScript(final HtmlPage htmlPage, final String sourceCode, final String sourceName, final int startLine,
-                                 final String sourceFileName)
+    private Script compileScript(final HtmlPage owningPage, final Scriptable scope, final String sourceCode, final String sourceName,
+                                 final int startLine, String sourceFileName)
     {
         final Script script;
 
@@ -236,7 +238,7 @@ public final class XltJavaScriptEngine extends JavaScriptEngine
 
             try
             {
-                script = super.compile(htmlPage, sourceCode, sourceName, startLine);
+                script = super.compile(owningPage, scope, sourceCode, sourceName, startLine);
             }
             catch (final RuntimeException e)
             {
@@ -259,7 +261,7 @@ public final class XltJavaScriptEngine extends JavaScriptEngine
         }
         else
         {
-            script = super.compile(htmlPage, sourceCode, sourceName, startLine);
+            script = super.compile(owningPage, scope, sourceCode, sourceName, startLine);
         }
 
         return script;

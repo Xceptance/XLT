@@ -31,15 +31,10 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 public class SyncManager extends HtmlUnitScriptable {
 
     /**
-     * Creates an instance.
-     */
-    public SyncManager() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 }

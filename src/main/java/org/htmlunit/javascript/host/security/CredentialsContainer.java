@@ -28,15 +28,10 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 public class CredentialsContainer extends HtmlUnitScriptable {
 
     /**
-     * Default constructor.
-     */
-    public CredentialsContainer() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 }

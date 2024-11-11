@@ -29,6 +29,7 @@ import java.util.List;
 import org.apache.commons.io.ByteOrderMark;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.BOMInputStream;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.htmlunit.http.HttpStatus;
@@ -164,9 +165,13 @@ public class WebResponse implements Serializable {
         }
 
         final int index = contentType.indexOf(';');
-        if (index == -1) {
+        if (index == -1 || index == 0) {
             return null;
         }
+        if (StringUtils.isBlank(contentType.substring(0, index))) {
+            return null;
+        }
+
         return EncodingSniffer.extractEncodingFromContentType(contentType);
     }
 

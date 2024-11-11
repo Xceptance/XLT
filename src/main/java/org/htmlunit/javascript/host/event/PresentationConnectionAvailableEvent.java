@@ -29,15 +29,10 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 public class PresentationConnectionAvailableEvent extends Event {
 
     /**
-     * Creates an instance.
-     */
-    public PresentationConnectionAvailableEvent() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 }

@@ -14,6 +14,7 @@
  */
 package org.htmlunit.javascript.host.media;
 
+import org.htmlunit.corejs.javascript.NativePromise;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
@@ -30,12 +31,6 @@ import org.htmlunit.javascript.host.event.EventTarget;
 public class MediaDevices extends EventTarget {
 
     /**
-     * Creates an instance.
-     */
-    public MediaDevices() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @Override
@@ -45,7 +40,7 @@ public class MediaDevices extends EventTarget {
     }
 
     @JsxFunction
-    public Object getUserMedia() {
+    public NativePromise getUserMedia() {
         return setupRejectedPromise(() ->
                 new DOMException("HtmlUnit does not support media streaming.", DOMException.NOT_FOUND_ERR));
     }

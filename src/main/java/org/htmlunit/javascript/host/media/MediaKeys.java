@@ -28,15 +28,10 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 public class MediaKeys extends HtmlUnitScriptable {
 
     /**
-     * Creates a new instance.
-     */
-    public MediaKeys() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 }

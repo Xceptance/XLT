@@ -28,15 +28,10 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 public class PushManager extends HtmlUnitScriptable {
 
     /**
-     * Creates a new instance.
-     */
-    public PushManager() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 }

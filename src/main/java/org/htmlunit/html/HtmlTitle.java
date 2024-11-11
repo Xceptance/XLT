@@ -79,4 +79,31 @@ public class HtmlTitle extends HtmlElement {
     public DisplayStyle getDefaultStyleDisplay() {
         return DisplayStyle.NONE;
     }
+
+    /**
+     * Returns the {@code text} attribute.
+     * @return the {@code text} attribute
+     */
+    public String getText() {
+        final DomNode firstChild = getFirstChild();
+        if (firstChild != null) {
+            return firstChild.getNodeValue();
+        }
+        return "";
+    }
+
+    /**
+     * Sets the {@code text} attribute.
+     * @param text the {@code text} attribute
+     */
+    public void setText(final String text) {
+        DomNode firstChild = getFirstChild();
+        if (firstChild == null) {
+            firstChild = new DomText(getPage(), text);
+            appendChild(firstChild);
+        }
+        else {
+            firstChild.setNodeValue(text);
+        }
+    }
 }

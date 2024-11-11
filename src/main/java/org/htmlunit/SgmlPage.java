@@ -30,6 +30,7 @@ import org.htmlunit.html.DomNode;
 import org.htmlunit.html.DomNodeIterator;
 import org.htmlunit.html.DomNodeList;
 import org.htmlunit.html.DomText;
+import org.htmlunit.util.StringUtils;
 import org.htmlunit.util.UrlUtils;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.Comment;
@@ -54,6 +55,8 @@ public abstract class SgmlPage extends DomNode implements Page, Document {
     private WebWindow enclosingWindow_;
     private final WebClient webClient_;
     private boolean printing_;
+    private boolean domChangeListenerInUse_;
+    private boolean characterDataChangeListenerInUse_;
 
     /**
      * Creates an instance of SgmlPage.
@@ -195,7 +198,7 @@ public abstract class SgmlPage extends DomNode implements Page, Document {
             return (SgmlPage) super.clone();
         }
         catch (final CloneNotSupportedException e) {
-            throw new IllegalStateException("Clone not supported");
+            throw new IllegalStateException("Clone not supported", e);
         }
     }
 
@@ -273,7 +276,7 @@ public abstract class SgmlPage extends DomNode implements Page, Document {
                 final boolean caseSensitive = hasCaseSensitiveTagNames();
                 for (final DomElement elem : getDomElementDescendants()) {
                     final String localName = elem.getLocalName();
-                    if ("*".equals(tagName) || localName.equals(tagName)
+                    if (StringUtils.equalsChar('*', tagName) || localName.equals(tagName)
                             || (!caseSensitive && localName.equalsIgnoreCase(tagName))) {
                         res.add(elem);
                     }
@@ -304,8 +307,10 @@ public abstract class SgmlPage extends DomNode implements Page, Document {
                 for (final DomElement elem : getDomElementDescendants()) {
                     final String locName = elem.getLocalName();
 
-                    if (("*".equals(namespaceURI) || comparator.compare(namespaceURI, elem.getNamespaceURI()) == 0)
-                            && ("*".equals(locName) || comparator.compare(locName, elem.getLocalName()) == 0)) {
+                    if ((StringUtils.equalsChar('*', namespaceURI)
+                                    || comparator.compare(namespaceURI, elem.getNamespaceURI()) == 0)
+                            && (StringUtils.equalsChar('*', locName)
+                                    || comparator.compare(locName, elem.getLocalName()) == 0)) {
                         res.add(elem);
                     }
                 }
@@ -415,5 +420,33 @@ public abstract class SgmlPage extends DomNode implements Page, Document {
     public void setPrinting(final boolean printing) {
         printing_ = printing;
         clearComputedStyles();
+    }
+
+    /**
+     * Informs about the use of a domChangeListener.
+     */
+    public void domChangeListenerAdded() {
+        domChangeListenerInUse_ = true;
+    }
+
+    /**
+     * @return true if at least one domChangeListener was registered.
+     */
+    public boolean isDomChangeListenerInUse() {
+        return domChangeListenerInUse_;
+    }
+
+    /**
+     * Informs about the use of a characterDataChangeListener.
+     */
+    public void characterDataChangeListenerAdded() {
+        characterDataChangeListenerInUse_ = true;
+    }
+
+    /**
+     * @return true if at least one characterDataChangeListener was registered.
+     */
+    public boolean isCharacterDataChangeListenerInUse() {
+        return characterDataChangeListenerInUse_;
     }
 }

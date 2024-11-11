@@ -939,9 +939,7 @@ public class ElementDefaultStyleDisplayTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"", "inline"},
-            FF = {"", "block"},
-            FF_ESR = {"", "block"})
+    @Alerts({"", "inline"})
     public void multicol() throws Exception {
         test("multicol");
     }

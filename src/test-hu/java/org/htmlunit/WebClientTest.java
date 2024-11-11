@@ -45,6 +45,7 @@ import org.htmlunit.html.HtmlButtonInput;
 import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.HtmlInlineFrame;
 import org.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.html.parser.HTMLParser;
 import org.htmlunit.html.parser.neko.HtmlUnitNekoHtmlParser;
 import org.htmlunit.http.HttpStatus;
@@ -279,11 +280,7 @@ public class WebClientTest extends SimpleWebTestCase {
      */
     @Test
     public void redirection301_MovedPermanently_GetMethod() throws Exception {
-        final int statusCode = 301;
-        final HttpMethod initialRequestMethod = HttpMethod.GET;
-        final HttpMethod expectedRedirectedRequestMethod = HttpMethod.GET;
-
-        doTestRedirection(statusCode, initialRequestMethod, expectedRedirectedRequestMethod);
+        doTestRedirection(301, HttpMethod.GET, HttpMethod.GET, URL_SECOND.toExternalForm());
     }
 
     /**
@@ -337,7 +334,7 @@ public class WebClientTest extends SimpleWebTestCase {
      */
     @Test
     public void redirection301_MovedPermanently_PostMethod() throws Exception {
-        doTestRedirection(301, HttpMethod.POST, HttpMethod.GET);
+        doTestRedirection(301, HttpMethod.POST, HttpMethod.GET, URL_SECOND.toExternalForm());
     }
 
     /**
@@ -360,7 +357,7 @@ public class WebClientTest extends SimpleWebTestCase {
      */
     @Test
     public void redirection302_MovedTemporarily_PostMethod() throws Exception {
-        doTestRedirection(302, HttpMethod.POST, HttpMethod.GET);
+        doTestRedirection(302, HttpMethod.POST, HttpMethod.GET, URL_SECOND.toExternalForm());
     }
 
     /**
@@ -377,11 +374,7 @@ public class WebClientTest extends SimpleWebTestCase {
      */
     @Test
     public void redirection302_MovedTemporarily_GetMethod() throws Exception {
-        final int statusCode = 302;
-        final HttpMethod initialRequestMethod = HttpMethod.GET;
-        final HttpMethod expectedRedirectedRequestMethod = HttpMethod.GET;
-
-        doTestRedirection(statusCode, initialRequestMethod, expectedRedirectedRequestMethod);
+        doTestRedirection(302, HttpMethod.GET, HttpMethod.GET, URL_SECOND.toExternalForm());
     }
 
     /**
@@ -399,11 +392,7 @@ public class WebClientTest extends SimpleWebTestCase {
      */
     @Test
     public void redirection303_SeeOther_GetMethod() throws Exception {
-        final int statusCode = 303;
-        final HttpMethod initialRequestMethod = HttpMethod.GET;
-        final HttpMethod expectedRedirectedRequestMethod = HttpMethod.GET;
-
-        doTestRedirection(statusCode, initialRequestMethod, expectedRedirectedRequestMethod);
+        doTestRedirection(303, HttpMethod.GET, HttpMethod.GET, URL_SECOND.toExternalForm());
     }
 
     /**
@@ -412,7 +401,7 @@ public class WebClientTest extends SimpleWebTestCase {
      */
     @Test
     public void redirection303_SeeOther_PostMethod() throws Exception {
-        doTestRedirection(303, HttpMethod.POST, HttpMethod.GET);
+        doTestRedirection(303, HttpMethod.POST, HttpMethod.GET, URL_SECOND.toExternalForm());
     }
 
     /**
@@ -429,11 +418,7 @@ public class WebClientTest extends SimpleWebTestCase {
      */
     @Test
     public void redirection307_TemporaryRedirect_GetMethod() throws Exception {
-        final int statusCode = 307;
-        final HttpMethod initialRequestMethod = HttpMethod.GET;
-        final HttpMethod expectedRedirectedRequestMethod = HttpMethod.GET;
-
-        doTestRedirection(statusCode, initialRequestMethod, expectedRedirectedRequestMethod);
+        doTestRedirection(307, HttpMethod.GET, HttpMethod.GET, URL_SECOND.toExternalForm());
     }
 
     /**
@@ -442,30 +427,7 @@ public class WebClientTest extends SimpleWebTestCase {
      */
     @Test
     public void redirection307_TemporaryRedirect_PostMethod() throws Exception {
-        final int statusCode = 307;
-        final HttpMethod initialRequestMethod = HttpMethod.POST;
-        final HttpMethod expectedRedirectedRequestMethod = HttpMethod.POST;
-
-        doTestRedirection(statusCode, initialRequestMethod, expectedRedirectedRequestMethod);
-    }
-
-    /**
-     * Basic logic for all the redirection tests.
-     *
-     * @param statusCode the code to return from the initial request
-     * @param initialRequestMethod the initial request
-     * @param expectedRedirectedRequestMethod the submit method of the second (redirected) request
-     * If a redirect is not expected to happen then this must be null
-     * @throws Exception if the test fails
-     */
-    private void doTestRedirection(
-            final int statusCode,
-            final HttpMethod initialRequestMethod,
-            final HttpMethod expectedRedirectedRequestMethod)
-        throws Exception {
-
-        doTestRedirection(statusCode, initialRequestMethod, expectedRedirectedRequestMethod,
-                URL_SECOND.toExternalForm());
+        doTestRedirection(307, HttpMethod.POST, HttpMethod.POST, URL_SECOND.toExternalForm());
     }
 
     /**
@@ -707,7 +669,7 @@ public class WebClientTest extends SimpleWebTestCase {
     private static class CollectingPageCreator implements PageCreator {
         private final List<Page> collectedPages_;
 
-        private static final HTMLParser htmlParser_ = new HtmlUnitNekoHtmlParser();
+        private static final HTMLParser HTML_PARSER = new HtmlUnitNekoHtmlParser();
 
         /**
          * Creates an instance.
@@ -734,7 +696,7 @@ public class WebClientTest extends SimpleWebTestCase {
 
         @Override
         public HTMLParser getHtmlParser() {
-            return htmlParser_;
+            return HTML_PARSER;
         }
     }
 
@@ -960,8 +922,7 @@ public class WebClientTest extends SimpleWebTestCase {
         final WebClient webClient = getWebClient();
 
         final MockWebConnection webConnection = new MockWebConnection();
-        final List<NameValuePair> emptyList = Collections.emptyList();
-        webConnection.setResponse(URL_FIRST, firstContent, 500, "BOOM", MimeType.TEXT_HTML, emptyList);
+        webConnection.setResponse(URL_FIRST, firstContent, 500, "BOOM", MimeType.TEXT_HTML, Collections.emptyList());
         webClient.setWebConnection(webConnection);
         webClient.getOptions().setThrowExceptionOnFailingStatusCode(true);
         webClient.getOptions().setPrintContentOnFailingStatusCode(false);
@@ -1581,7 +1542,7 @@ public class WebClientTest extends SimpleWebTestCase {
     @Test
     public void urlEncoding() throws Exception {
         final URL url = new URL("http://host/x+y\u00E9/a\u00E9 b?c \u00E9 d");
-        final HtmlPage page = loadPage(BrowserVersion.FIREFOX, "<html></html>", new ArrayList<String>(), url);
+        final HtmlPage page = loadPage(BrowserVersion.FIREFOX, "<html></html>", new ArrayList<>(), url);
         final WebRequest wrs = page.getWebResponse().getWebRequest();
         assertEquals("http://host/x+y%C3%A9/a%C3%A9%20b?c%20%C3%A9%20d", wrs.getUrl());
     }
@@ -1594,7 +1555,7 @@ public class WebClientTest extends SimpleWebTestCase {
     @Test
     public void urlEncoding2() throws Exception {
         final URL url = new URL("http://host/x+y\u00E9/a\u00E9 b?c \u00E9 d");
-        final HtmlPage page = loadPage(BrowserVersion.BEST_SUPPORTED, "<html></html>", new ArrayList<String>(), url);
+        final HtmlPage page = loadPage(BrowserVersion.BEST_SUPPORTED, "<html></html>", new ArrayList<>(), url);
         final WebRequest wrs = page.getWebResponse().getWebRequest();
         assertEquals("http://host/x+y%C3%A9/a%C3%A9%20b?c%20%C3%A9%20d", wrs.getUrl());
     }
@@ -1606,7 +1567,7 @@ public class WebClientTest extends SimpleWebTestCase {
     @Test
     public void plusNotEncodedInUrl() throws Exception {
         final URL url = new URL("http://host/search/my+category/");
-        final HtmlPage page = loadPage("<html></html>", new ArrayList<String>(), url);
+        final HtmlPage page = loadPage("<html></html>", new ArrayList<>(), url);
         final WebRequest wrs = page.getWebResponse().getWebRequest();
         assertEquals("http://host/search/my+category/", wrs.getUrl());
     }
@@ -1632,7 +1593,7 @@ public class WebClientTest extends SimpleWebTestCase {
         conn.setResponse(URL_FIRST, html);
 
         final String css = ".foo { color: green; }";
-        conn.setResponse(URL_SECOND, css, 200, "OK", MimeType.TEXT_CSS, new ArrayList<NameValuePair>());
+        conn.setResponse(URL_SECOND, css, 200, "OK", MimeType.TEXT_CSS, new ArrayList<>());
 
         final List<String> actual = new ArrayList<>();
         client.setAlertHandler(new CollectingAlertHandler(actual));
@@ -2513,6 +2474,67 @@ public class WebClientTest extends SimpleWebTestCase {
         assertEquals(1, webClient.getTopLevelWindows().size());
         assertNotNull(webClient.getCurrentWindow());
         assertEquals("js", ((HtmlPage) webClient.getCurrentWindow().getEnclosedPage()).getTitleText());
+    }
+
+    /**
+     * @exception Exception If the test fails
+     */
+    @Test
+    public void loginFlowClickSubmitRedirect() throws Exception {
+        final String startPage =
+                HtmlPageTest.STANDARDS_MODE_PREFIX_
+                + "<html><title>Start page</title>"
+                + "<form action='submit.html' method='post'>"
+                + "  <input type='submit' name='mysubmit' id='mySubmit'>"
+                + "</form>"
+                + "<a href='submit.html' id='myAnchor'>Tester</a>\n"
+                + "</body></html>";
+
+        int reqCount = getMockWebConnection().getRequestCount();
+
+        final String submitPage =
+                HtmlPageTest.STANDARDS_MODE_PREFIX_
+                + "<html><title>Submit page</title>"
+                + "<body onload='document.forms[0].submit()'>"
+                + "</body>"
+                + "<form action='redirect.html' method='post'>"
+                + "</form>"
+                + "</html>";
+        final URL urlSubmitPage = new URL(URL_FIRST, "submit.html");
+        getMockWebConnection().setResponse(urlSubmitPage, submitPage);
+
+        final List<NameValuePair> headers = new ArrayList<>();
+        headers.add(new NameValuePair("Location", "/landing.html"));
+        final URL urlRedirectPage = new URL(URL_FIRST, "redirect.html");
+        getMockWebConnection().setResponse(urlRedirectPage, "", 302, "Found", null, headers);
+
+        final String landingPage =
+                HtmlPageTest.STANDARDS_MODE_PREFIX_
+                + "<html><title>Landing page</title>"
+                + "<body></html>";
+        final URL urlLandingPage = new URL(URL_FIRST, "landing.html");
+        getMockWebConnection().setResponse(urlLandingPage, landingPage);
+
+        // test by clicking the submit button
+        HtmlPage page = loadPage(startPage);
+        assertEquals("Start page", page.getTitleText());
+
+        HtmlPage resultPage = page.getElementById("mySubmit").click();
+        assertEquals("Landing page", resultPage.getTitleText());
+
+        assertEquals(reqCount + 4, getMockWebConnection().getRequestCount());
+        assertEquals(urlLandingPage.toExternalForm(), getMockWebConnection().getLastWebRequest().getUrl().toString());
+
+        // test by clicking the anchor
+        reqCount = getMockWebConnection().getRequestCount();
+        page = loadPage(startPage);
+        assertEquals("Start page", page.getTitleText());
+
+        resultPage = page.getElementById("myAnchor").click();
+        assertEquals("Landing page", resultPage.getTitleText());
+
+        assertEquals(reqCount + 4, getMockWebConnection().getRequestCount());
+        assertEquals(urlLandingPage.toExternalForm(), getMockWebConnection().getLastWebRequest().getUrl().toString());
     }
 
     /**

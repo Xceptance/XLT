@@ -100,12 +100,6 @@ public class Element extends Node {
     private CSSStyleDeclaration style_;
 
     /**
-     * Default constructor.
-     */
-    public Element() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @Override
@@ -243,7 +237,7 @@ public class Element extends Node {
 
         final DomNode node = getDomNodeOrDie();
         collection = new HTMLCollection(node, false);
-        if ("*".equals(tagName)) {
+        if (StringUtils.equalsChar('*', tagName)) {
             collection.setIsMatchingPredicate((Predicate<DomNode> & Serializable) nodeToMatch -> true);
         }
         else {
@@ -285,7 +279,7 @@ public class Element extends Node {
      * @return a live NodeList of found elements in the order they appear in the tree
      */
     @JsxFunction
-    public Object getElementsByTagNameNS(final Object namespaceURI, final String localName) {
+    public HTMLCollection getElementsByTagNameNS(final Object namespaceURI, final String localName) {
         final HTMLCollection elements = new HTMLCollection(getDomNodeOrDie(), false);
         elements.setIsMatchingPredicate(
                 (Predicate<DomNode> & Serializable)
@@ -544,7 +538,7 @@ public class Element extends Node {
      * @return the class name
      */
     @JsxGetter(propertyName = "className")
-    public Object getClassName_js() {
+    public String getClassName_js() {
         return getDomNodeOrDie().getAttributeDirect("class");
     }
 
@@ -692,9 +686,10 @@ public class Element extends Node {
      * @see <a href="http://msdn.microsoft.com/en-us/library/ie/ms536451.aspx">MSDN</a>
      */
     @JsxFunction
-    public Object insertAdjacentElement(final String where, final Object insertedElement) {
+    public Node insertAdjacentElement(final String where, final Object insertedElement) {
         if (insertedElement instanceof Node) {
-            final DomNode childNode = ((Node) insertedElement).getDomNodeOrDie();
+            final Node insertedElementNode = (Node) insertedElement;
+            final DomNode childNode = insertedElementNode.getDomNodeOrDie();
             final Object[] values = getInsertAdjacentLocation(where);
             final DomNode node = (DomNode) values[0];
             final boolean append = ((Boolean) values[1]).booleanValue();
@@ -705,7 +700,7 @@ public class Element extends Node {
             else {
                 node.insertBefore(childNode);
             }
-            return insertedElement;
+            return insertedElementNode;
         }
         throw JavaScriptEngine.reportRuntimeError("Passed object is not an element: " + insertedElement);
     }
@@ -847,7 +842,7 @@ public class Element extends Node {
      * The {@code getHTML} function.
      * @return the contents of this node as HTML
      */
-    @JsxFunction({CHROME, EDGE})
+    @JsxFunction({CHROME, EDGE, FF})
     public String getHTML() {
         // ignore the params because we have no shadow dom support so far
         return getInnerHTML();
@@ -886,8 +881,11 @@ public class Element extends Node {
         }
 
         String html = null;
-        if (value != null && !"".equals(value)) {
+        if (value != null) {
             html = JavaScriptEngine.toString(value);
+            if (StringUtils.isEmptyString(html)) {
+                html = null;
+            }
         }
 
         try {
@@ -1029,9 +1027,7 @@ public class Element extends Node {
 
                 final String name = attr.getName();
                 final String value = PRINT_NODE_QUOTE_PATTERN.matcher(attr.getValue()).replaceAll("&quot;");
-                builder.append(' ').append(name).append("=\"");
-                builder.append(value);
-                builder.append('\"');
+                builder.append(' ').append(name).append("=\"").append(value).append('\"');
             }
             builder.append('>');
             // Add the children.
@@ -1045,7 +1041,7 @@ public class Element extends Node {
         else {
             if (node instanceof HtmlElement) {
                 final HtmlElement element = (HtmlElement) node;
-                if ("p".equals(element.getTagName())) {
+                if (StringUtils.equalsChar('p', element.getTagName())) {
                     int i = builder.length() - 1;
                     while (i >= 0 && Character.isWhitespace(builder.charAt(i))) {
                         i--;
@@ -1249,8 +1245,8 @@ public class Element extends Node {
      */
     @JsxFunction
     public void scrollTo(final Scriptable x, final Scriptable y) {
-        int xOff = 0;
-        int yOff = 0;
+        int xOff;
+        int yOff;
         if (y != null) {
             xOff = JavaScriptEngine.toInt32(x);
             yOff = JavaScriptEngine.toInt32(y);
@@ -1301,7 +1297,7 @@ public class Element extends Node {
      */
     @Override
     @JsxGetter
-    public Object getPrefix() {
+    public String getPrefix() {
         return super.getPrefix();
     }
 
@@ -1310,7 +1306,7 @@ public class Element extends Node {
      */
     @Override
     @JsxGetter
-    public Object getLocalName() {
+    public String getLocalName() {
         return super.getLocalName();
     }
 
@@ -1319,7 +1315,7 @@ public class Element extends Node {
      */
     @Override
     @JsxGetter
-    public Object getNamespaceURI() {
+    public String getNamespaceURI() {
         return super.getNamespaceURI();
     }
 
@@ -1471,6 +1467,7 @@ public class Element extends Node {
      */
     @JsxFunction({FF, FF_ESR})
     public void releaseCapture() {
+        // nothing to do
     }
 
     /**

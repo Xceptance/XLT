@@ -14,6 +14,7 @@
  */
 package org.htmlunit.javascript;
 
+import static org.htmlunit.BrowserVersionFeatures.JS_ARRAY_SORT_ACCEPTS_INCONSISTENT_COMPERATOR;
 import static org.htmlunit.BrowserVersionFeatures.JS_PROPERTY_DESCRIPTOR_NAME;
 
 import java.io.Serializable;
@@ -63,6 +64,7 @@ public class HtmlUnitContextFactory extends ContextFactory {
      * @param webClient the web client using this factory
      */
     public HtmlUnitContextFactory(final WebClient webClient) {
+        super();
         webClient_ = webClient;
         browserVersion_ = webClient.getBrowserVersion();
     }
@@ -244,11 +246,10 @@ public class HtmlUnitContextFactory extends ContextFactory {
         final TimeoutContext cx = new TimeoutContext(this);
         cx.setLanguageVersion(Context.VERSION_ES6);
         cx.setLocale(browserVersion_.getBrowserLocale());
+        cx.setTimeZone(browserVersion_.getSystemTimezone());
 
         // make sure no java classes are usable from js
-        cx.setClassShutter(fullClassName -> {
-            return false;
-        });
+        cx.setClassShutter(fullClassName -> false);
 
         // Use pure interpreter mode to get observeInstructionCount() callbacks.
         cx.setOptimizationLevel(-1);
@@ -344,8 +345,8 @@ public class HtmlUnitContextFactory extends ContextFactory {
                 return true;
             case Context.FEATURE_HTMLUNIT_MEMBERBOX_NAME:
                 return browserVersion_.hasFeature(JS_PROPERTY_DESCRIPTOR_NAME);
-            case Context.FEATURE_HTMLUNIT_MEMBERBOX_NEWLINE:
-                return false;
+            case Context.FEATURE_HTMLUNIT_ARRAY_SORT_COMPERATOR_ACCEPTS_BOOL:
+                return browserVersion_.hasFeature(JS_ARRAY_SORT_ACCEPTS_INCONSISTENT_COMPERATOR);
             default:
                 return super.hasFeature(cx, featureIndex);
         }

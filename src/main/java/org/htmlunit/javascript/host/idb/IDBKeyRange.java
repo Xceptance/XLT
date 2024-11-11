@@ -28,15 +28,10 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 public class IDBKeyRange extends HtmlUnitScriptable {
 
     /**
-     * Creates a new instance.
-     */
-    public IDBKeyRange() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 }

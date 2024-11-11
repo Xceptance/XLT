@@ -43,6 +43,7 @@ public final class ProxyAutoConfig extends HtmlUnitScriptable {
     private static final String TIMEZONE_GMT = "GMT";
 
     private ProxyAutoConfig() {
+        super();
     }
 
     /**
@@ -331,8 +332,8 @@ public final class ProxyAutoConfig extends HtmlUnitScriptable {
                 cal.setTime(new SimpleDateFormat("MMM", Locale.ROOT).parse(s));
                 return cal.get(Calendar.MONTH);
             }
-            catch (final Exception e) {
-                //empty
+            catch (final Exception ignored) {
+                // empty
             }
         }
         return -1;
@@ -450,11 +451,10 @@ public final class ProxyAutoConfig extends HtmlUnitScriptable {
     public static long convertAddr(final String ip) {
         final String[] parts = StringUtils.split(ip, '.');
 
-        final int result =
-                    ((Integer.parseInt(parts[0]) & 0xff) << 24)
-                        | ((Integer.parseInt(parts[1]) & 0xff) << 16)
-                        | ((Integer.parseInt(parts[2]) & 0xff) << 8)
-                        | (Integer.parseInt(parts[3]) & 0xff);
-        return result;
+        return
+            ((Integer.parseInt(parts[0]) & 0xff) << 24)
+                | ((Integer.parseInt(parts[1]) & 0xff) << 16)
+                | ((Integer.parseInt(parts[2]) & 0xff) << 8)
+                | (Integer.parseInt(parts[3]) & 0xff);
     }
 }

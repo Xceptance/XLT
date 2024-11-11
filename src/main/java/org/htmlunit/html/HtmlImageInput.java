@@ -220,7 +220,7 @@ public class HtmlImageInput extends HtmlInput implements LabelableElement {
     private void downloadImageIfNeeded() throws IOException {
         if (!downloaded_) {
             final String src = getSrc();
-            if (!"".equals(src)) {
+            if (!org.htmlunit.util.StringUtils.isEmptyString(src)) {
                 final HtmlPage page = (HtmlPage) getPage();
                 final WebClient webClient = page.getWebClient();
 
@@ -228,7 +228,7 @@ public class HtmlImageInput extends HtmlInput implements LabelableElement {
                 final WebRequest request = new WebRequest(new URL(src), browser.getImgAcceptHeader(),
                                                                 browser.getAcceptEncodingHeader());
                 request.setCharset(page.getCharset());
-                request.setRefererlHeader(page.getUrl());
+                request.setRefererHeader(page.getUrl());
                 imageWebResponse_ = webClient.loadWebResponse(request);
             }
 
@@ -249,13 +249,5 @@ public class HtmlImageInput extends HtmlInput implements LabelableElement {
                 IOUtils.copy(inputStream, fos);
             }
         }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected boolean propagateClickStateUpdateToParent() {
-        return true;
     }
 }

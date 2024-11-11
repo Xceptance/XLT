@@ -14,13 +14,10 @@
  */
 package org.htmlunit.javascript;
 
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.CHROME;
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.EDGE;
-
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -44,7 +41,8 @@ public class NativeArrayTest extends WebDriverTestCase {
     @Alerts(DEFAULT = {"1<>5", "5<>2", "1<>2", "5<>1", "2<>1", "1<>1", "5<>9"},
             CHROME = {"5<>1", "2<>5", "2<>5", "2<>1", "1<>2", "1<>1", "9<>2", "9<>5"},
             EDGE = {"5<>1", "2<>5", "2<>5", "2<>1", "1<>2", "1<>1", "9<>2", "9<>5"})
-    @NotYetImplemented({CHROME, EDGE})
+    @HtmlUnitNYI(FF = {"5<>1", "2<>5", "2<>5", "2<>1", "1<>2", "1<>1", "9<>2", "9<>5"},
+            FF_ESR = {"5<>1", "2<>5", "2<>5", "2<>1", "1<>2", "1<>1", "9<>2", "9<>5"})
     public void sortSteps() throws Exception {
         final String html
             = "<html><head><script>\n"
@@ -56,6 +54,132 @@ public class NativeArrayTest extends WebDriverTestCase {
             + "function doTest() {\n"
             + "  var t = [1, 5, 2, 1, 9];\n"
             + "  t.sort(compare);\n"
+            + "}\n"
+            + "</script></head><body onload='doTest()'>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * Test for sort callback returning bool instead of int.
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("1,1,2,5,9")
+    public void sortIntComperator() throws Exception {
+        final String html
+            = "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "function compare(x, y) {\n"
+            + "  return x - y;\n"
+            + "}\n"
+            + "function doTest() {\n"
+            + "  var t = [1, 5, 2, 1, 9];\n"
+            + "  t.sort(compare);\n"
+            + "  log(t);\n"
+            + "}\n"
+            + "</script></head><body onload='doTest()'>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * Test for sort callback returning bool instead of int.
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("1,1,2,5,9")
+    public void sortSmallDoublesComperator() throws Exception {
+        final String html
+            = "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "function compare(x, y) {\n"
+            + "  return (x - y) / 1001;\n"
+            + "}\n"
+            + "function doTest() {\n"
+            + "  var t = [1, 5, 2, 1, 9];\n"
+            + "  t.sort(compare);\n"
+            + "  log(t);\n"
+            + "}\n"
+            + "</script></head><body onload='doTest()'>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * Test for sort callback returning bool instead of int.
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = "1,5,2,1,9",
+            FF = "1,1,2,5,9",
+            FF_ESR = "1,1,2,5,9")
+    public void sortBoolComperator() throws Exception {
+        final String html
+            = "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "function compare(x, y) {\n"
+            + "  return x >= y;\n"
+            + "}\n"
+            + "function doTest() {\n"
+            + "  var t = ['1', '5', '2', '1', '9'];\n"
+            + "  t.sort(compare);\n"
+            + "  log(t);\n"
+            + "}\n"
+            + "</script></head><body onload='doTest()'>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * Test for sort callback..
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("1,1,2,5,9")
+    public void sortBool2IntComperator() throws Exception {
+        final String html
+            = "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "function compare(x, y) {\n"
+            + "  return (x >= y) === true ? 1 : -1;\n"
+            + "}\n"
+            + "function doTest() {\n"
+            + "  var t = ['1', '5', '2', '1', '9'];\n"
+            + "  t.sort(compare);\n"
+            + "  log(t);\n"
+            + "}\n"
+            + "</script></head><body onload='doTest()'>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * Test for sort callback..
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = "1,5,2,1,9",
+            FF = "9,1,2,5,1",
+            FF_ESR = "9,1,2,5,1")
+    @HtmlUnitNYI(FF = "1,5,2,1,9",
+            FF_ESR = "1,5,2,1,9")
+    public void sortInvalidComperator() throws Exception {
+        final String html
+            = "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "function compare(x, y) {\n"
+            + "  return 1;\n"
+            + "}\n"
+            + "function doTest() {\n"
+            + "  var t = ['1', '5', '2', '1', '9'];\n"
+            + "  t.sort(compare);\n"
+            + "  log(t);\n"
             + "}\n"
             + "</script></head><body onload='doTest()'>\n"
             + "</body></html>";

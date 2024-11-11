@@ -571,6 +571,85 @@ public class DocumentTest extends WebDriverTestCase {
     }
 
     /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"[object HTMLUnknownElement]", "exception", "exception",
+             "exception", "exception", "[object HTMLUnknownElement]",
+             "[object HTMLUnknownElement]", "exception"})
+    public void documentCreateElementUnknown() throws Exception {
+        final String html
+            = "<html>\n"
+            + "  <head>\n"
+            + "    <script>\n"
+            + LOG_TITLE_FUNCTION
+            + "      function doTest() {\n"
+            + "        try {"
+            + "          var elem = document.createElement('anchor');\n"
+            + "          log(elem);\n"
+            + "        } catch(ex) {\n"
+            + "          log('exception');\n"
+            + "        }\n"
+
+            + "        try {"
+            + "          var elem = document.createElement('not known');\n"
+            + "          log(elem);\n"
+            + "        } catch(ex) {\n"
+            + "          log('exception');\n"
+            + "        }\n"
+
+            + "        try {"
+            + "          var elem = document.createElement('<div');\n"
+            + "          log(elem);\n"
+            + "        } catch(ex) {\n"
+            + "          log('exception');\n"
+            + "        }\n"
+
+            + "        try {"
+            + "          var elem = document.createElement('div>');\n"
+            + "          log(elem);\n"
+            + "        } catch(ex) {\n"
+            + "          log('exception');\n"
+            + "        }\n"
+
+            + "        try {"
+            + "          var elem = document.createElement('<div>');\n"
+            + "          log(elem);\n"
+            + "        } catch(ex) {\n"
+            + "          log('exception');\n"
+            + "        }\n"
+
+            + "        try {"
+            + "          var elem = document.createElement(undefined);\n"
+            + "          log(elem);\n"
+            + "        } catch(ex) {\n"
+            + "          log('exception');\n"
+            + "        }\n"
+
+            + "        try {"
+            + "          var elem = document.createElement(null);\n"
+            + "          log(elem);\n"
+            + "        } catch(ex) {\n"
+            + "          log('exception');\n"
+            + "        }\n"
+
+            + "        try {"
+            + "          var elem = document.createElement(42);\n"
+            + "          log(elem);\n"
+            + "        } catch(ex) {\n"
+            + "          log('exception');\n"
+            + "        }\n"
+            + "      }\n"
+            + "    </script>\n"
+            + "  </head>\n"
+            + "  <body onload='doTest()'>\n"
+            + "  </body>\n"
+            + "</html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
      * Ensures that <tt>document.createElementNS()</tt> works correctly.
      * @throws Exception if the test fails
      */

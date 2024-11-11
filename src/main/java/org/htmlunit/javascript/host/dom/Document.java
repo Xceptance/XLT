@@ -17,8 +17,10 @@ package org.htmlunit.javascript.host.dom;
 import static org.htmlunit.BrowserVersionFeatures.EVENT_ONANIMATION_DOCUMENT_CREATE_NOT_SUPPORTED;
 import static org.htmlunit.BrowserVersionFeatures.EVENT_ONCLOSE_DOCUMENT_CREATE_NOT_SUPPORTED;
 import static org.htmlunit.BrowserVersionFeatures.EVENT_ONPOPSTATE_DOCUMENT_CREATE_NOT_SUPPORTED;
+import static org.htmlunit.BrowserVersionFeatures.EVENT_TYPE_MUTATIONEVENT;
 import static org.htmlunit.BrowserVersionFeatures.EVENT_TYPE_TEXTEVENT;
 import static org.htmlunit.BrowserVersionFeatures.EVENT_TYPE_WHEELEVENT;
+import static org.htmlunit.BrowserVersionFeatures.HTMLDOCUMENT_COOKIES_IGNORE_BLANK;
 import static org.htmlunit.BrowserVersionFeatures.JS_DOCUMENT_EVALUATE_RECREATES_RESULT;
 import static org.htmlunit.BrowserVersionFeatures.JS_DOCUMENT_SELECTION_RANGE_COUNT;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
@@ -28,8 +30,10 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
-import java.text.SimpleDateFormat;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -42,12 +46,13 @@ import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.htmlunit.ElementNotFoundException;
 import org.htmlunit.HttpHeader;
 import org.htmlunit.Page;
 import org.htmlunit.SgmlPage;
+import org.htmlunit.WebClient;
 import org.htmlunit.WebResponse;
 import org.htmlunit.WebWindow;
 import org.htmlunit.corejs.javascript.Callable;
@@ -70,6 +75,7 @@ import org.htmlunit.html.HtmlAttributeChangeEvent;
 import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.HtmlEmbed;
 import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlFrameSet;
 import org.htmlunit.html.HtmlImage;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlRb;
@@ -82,6 +88,7 @@ import org.htmlunit.html.HtmlUnknownElement;
 import org.htmlunit.html.UnknownElementFactory;
 import org.htmlunit.html.impl.SimpleRange;
 import org.htmlunit.http.HttpUtils;
+import org.htmlunit.httpclient.HtmlUnitBrowserCompatCookieSpec;
 import org.htmlunit.javascript.HtmlUnitScriptable;
 import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
@@ -121,6 +128,7 @@ import org.htmlunit.javascript.host.html.HTMLBodyElement;
 import org.htmlunit.javascript.host.html.HTMLCollection;
 import org.htmlunit.javascript.host.html.HTMLElement;
 import org.htmlunit.javascript.host.html.HTMLFrameSetElement;
+import org.htmlunit.util.Cookie;
 import org.htmlunit.util.UrlUtils;
 import org.htmlunit.xpath.xml.utils.PrefixResolver;
 import org.w3c.dom.CDATASection;
@@ -147,6 +155,7 @@ import org.w3c.dom.ProcessingInstruction;
  * @author Frank Danek
  * @author Madis Pärn
  * @author Lai Quang Duong
+ * @author Sven Strickroth
  *
  * @see <a href="http://msdn.microsoft.com/en-us/library/ms531073.aspx">MSDN documentation</a>
  * @see <a href="http://www.w3.org/TR/2000/WD-DOM-Level-1-20000929/level-one-html.html#ID-7068919">W3C Dom Level 1</a>
@@ -155,13 +164,14 @@ import org.w3c.dom.ProcessingInstruction;
 public class Document extends Node {
 
     private static final Log LOG = LogFactory.getLog(Document.class);
-    private static final Pattern TAG_NAME_PATTERN = Pattern.compile("\\w+");
+    private static final Pattern TAG_NAME_PATTERN = Pattern.compile("[a-zA-z][a-zA-z1-6:]*");
     // all as lowercase for performance
     /** https://developer.mozilla.org/en/Rich-Text_Editing_in_Mozilla#Executing_Commands */
     private static final Set<String> EXECUTE_CMDS_FF = new HashSet<>();
     private static final Set<String> EXECUTE_CMDS_CHROME = new HashSet<>();
-    /** The format to use for the <code>lastModified</code> attribute. */
-    private static final String LAST_MODIFIED_DATE_FORMAT = "MM/dd/yyyy HH:mm:ss";
+    /** The formatter to use for the <code>lastModified</code> attribute. */
+    private static final DateTimeFormatter LAST_MODIFIED_DATE_FORMATTER
+                                            = DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm:ss");
 
     /** Contains all supported DOM level 2 events. */
     private static final Map<String, Class<? extends Event>> SUPPORTED_DOM2_EVENT_TYPE_MAP;
@@ -229,7 +239,7 @@ public class Document extends Node {
 
     static {
         // commands
-        String[] cmds = new String[] {
+        String[] cmds = {
             "BackColor", "BackgroundImageCache" /* Undocumented */,
             "Bold",
             "CreateLink", "Delete",
@@ -265,12 +275,6 @@ public class Document extends Node {
                 EXECUTE_CMDS_CHROME.add(cmd.toLowerCase(Locale.ROOT));
             }
         }
-    }
-
-    /**
-     * Creates an instance.
-     */
-    public Document() {
     }
 
     /**
@@ -424,7 +428,7 @@ public class Document extends Node {
      * @return a newly created document fragment
      */
     @JsxFunction
-    public Object createDocumentFragment() {
+    public HtmlUnitScriptable createDocumentFragment() {
         final DomDocumentFragment fragment = getDomNodeOrDie().getPage().createDocumentFragment();
         final DocumentFragment node = new DocumentFragment();
         node.setParentScope(getParentScope());
@@ -474,7 +478,7 @@ public class Document extends Node {
      * @return the adopted node that can be used in the current document
      */
     @JsxFunction
-    public Object adoptNode(final Node externalNode) {
+    public HtmlUnitScriptable adoptNode(final Node externalNode) {
         externalNode.remove();
         return importNode(externalNode, true);
     }
@@ -516,25 +520,9 @@ public class Document extends Node {
      * @return the new text node or NOT_FOUND if there is an error
      */
     @JsxFunction
-    public Object createTextNode(final String newData) {
-        try {
-            final DomNode domNode = new DomText(getDomNodeOrDie().getPage(), newData);
-            final HtmlUnitScriptable jsElement = makeScriptableFor(domNode);
-
-            if (jsElement == NOT_FOUND) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("createTextNode(" + newData
-                            + ") cannot return a result as there isn't a JavaScript object for the DOM node "
-                            + domNode.getClass().getName());
-                }
-            }
-            return jsElement;
-        }
-        catch (final ElementNotFoundException e) {
-            // Just fall through - result is already set to NOT_FOUND
-        }
-
-        return NOT_FOUND;
+    public HtmlUnitScriptable createTextNode(final String newData) {
+        final DomNode domNode = new DomText(getDomNodeOrDie().getPage(), newData);
+        return makeScriptableFor(domNode);
     }
 
     /**
@@ -543,7 +531,7 @@ public class Document extends Node {
      * @return the new Comment
      */
     @JsxFunction
-    public Object createComment(final String comment) {
+    public HtmlUnitScriptable createComment(final String comment) {
         final DomNode domNode = new DomComment(getDomNodeOrDie().getPage(), comment);
         return getScriptableFor(domNode);
     }
@@ -606,67 +594,58 @@ public class Document extends Node {
      * @return the new HTML element, or NOT_FOUND if the tag is not supported
      */
     @JsxFunction
-    public Object createElement(String tagName) {
-        try {
-            if (tagName.contains("<") || tagName.contains(">")) {
+    public HtmlUnitScriptable createElement(final Object tagName) {
+        if (tagName == null || JavaScriptEngine.isUndefined(tagName)) {
+            final org.w3c.dom.Node element = getPage().createElement("unknown");
+            ((HtmlUnknownElement) element).markAsCreatedByJavascript();
+            return getScriptableFor(element);
+        }
+
+        final String tagNameString = JavaScriptEngine.toString(tagName);
+        if (tagNameString.length() > 0) {
+            final Matcher matcher = TAG_NAME_PATTERN.matcher(tagNameString);
+            if (!matcher.matches()) {
                 if (LOG.isInfoEnabled()) {
-                    LOG.info("createElement: Provided string '"
-                                + tagName + "' contains an invalid character; '<' and '>' are not allowed");
+                    LOG.info("createElement: Provided string '" + tagNameString + "' contains an invalid character");
                 }
                 throw JavaScriptEngine.reportRuntimeError("String contains an invalid character");
             }
-            else if (tagName.length() > 0 && tagName.charAt(0) == '<' && tagName.endsWith(">")) {
-                tagName = tagName.substring(1, tagName.length() - 1);
-
-                final Matcher matcher = TAG_NAME_PATTERN.matcher(tagName);
-                if (!matcher.matches()) {
-                    if (LOG.isInfoEnabled()) {
-                        LOG.info("createElement: Provided string '" + tagName + "' contains an invalid character");
-                    }
-                    throw JavaScriptEngine.reportRuntimeError("String contains an invalid character");
-                }
-            }
-
-            final SgmlPage page = getPage();
-            org.w3c.dom.Node element = page.createElement(tagName);
-
-            if (element instanceof HtmlImage) {
-                ((HtmlImage) element).markAsCreatedByJavascript();
-            }
-            else if (element instanceof HtmlRb) {
-                ((HtmlRb) element).markAsCreatedByJavascript();
-            }
-            else if (element instanceof HtmlRp) {
-                ((HtmlRp) element).markAsCreatedByJavascript();
-            }
-            else if (element instanceof HtmlRt) {
-                ((HtmlRt) element).markAsCreatedByJavascript();
-            }
-            else if (element instanceof HtmlRtc) {
-                ((HtmlRtc) element).markAsCreatedByJavascript();
-            }
-            else if (element instanceof HtmlUnknownElement) {
-                ((HtmlUnknownElement) element).markAsCreatedByJavascript();
-            }
-            else if (element instanceof HtmlSvg) {
-                element = UnknownElementFactory.instance.createElementNS(page, "", "svg", null);
-                ((HtmlUnknownElement) element).markAsCreatedByJavascript();
-            }
-            final Object jsElement = getScriptableFor(element);
-
-            if (jsElement == NOT_FOUND) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("createElement(" + tagName
-                        + ") cannot return a result as there isn't a JavaScript object for the element "
-                        + element.getClass().getName());
-                }
-            }
-            return jsElement;
         }
-        catch (final ElementNotFoundException e) {
-            // Just fall through - result is already set to NOT_FOUND
+
+        org.w3c.dom.Node element = getPage().createElement(tagNameString);
+
+        if (element instanceof HtmlImage) {
+            ((HtmlImage) element).markAsCreatedByJavascript();
         }
-        return NOT_FOUND;
+        else if (element instanceof HtmlRb) {
+            ((HtmlRb) element).markAsCreatedByJavascript();
+        }
+        else if (element instanceof HtmlRp) {
+            ((HtmlRp) element).markAsCreatedByJavascript();
+        }
+        else if (element instanceof HtmlRt) {
+            ((HtmlRt) element).markAsCreatedByJavascript();
+        }
+        else if (element instanceof HtmlRtc) {
+            ((HtmlRtc) element).markAsCreatedByJavascript();
+        }
+        else if (element instanceof HtmlUnknownElement) {
+            ((HtmlUnknownElement) element).markAsCreatedByJavascript();
+        }
+        else if (element instanceof HtmlSvg) {
+            element = UnknownElementFactory.INSTANCE.createElementNS(getPage(), "", "svg", null);
+            ((HtmlUnknownElement) element).markAsCreatedByJavascript();
+        }
+        final HtmlUnitScriptable jsElement = getScriptableFor(element);
+
+        if (jsElement == NOT_FOUND) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("createElement(" + tagName
+                    + ") cannot return a result as there isn't a JavaScript object for the element "
+                    + element.getClass().getName());
+            }
+        }
+        return jsElement;
     }
 
     /**
@@ -677,7 +656,7 @@ public class Document extends Node {
      * @return the new HTML element, or NOT_FOUND if the tag is not supported
      */
     @JsxFunction
-    public Object createElementNS(final String namespaceURI, final String qualifiedName) {
+    public HtmlUnitScriptable createElementNS(final String namespaceURI, final String qualifiedName) {
         if ("http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul".equals(namespaceURI)) {
             throw JavaScriptEngine.reportRuntimeError("XUL not available");
         }
@@ -702,7 +681,7 @@ public class Document extends Node {
     public HTMLCollection getElementsByTagName(final String tagName) {
         final HTMLCollection collection = new HTMLCollection(getDomNodeOrDie(), false);
 
-        if ("*".equals(tagName)) {
+        if (org.htmlunit.util.StringUtils.equalsChar('*', tagName)) {
             collection.setIsMatchingPredicate((Predicate<DomNode> & Serializable) node -> true);
         }
         else {
@@ -722,7 +701,7 @@ public class Document extends Node {
      * @return a live NodeList of found elements in the order they appear in the tree
      */
     @JsxFunction
-    public Object getElementsByTagNameNS(final Object namespaceURI, final String localName) {
+    public HTMLCollection getElementsByTagNameNS(final Object namespaceURI, final String localName) {
         final HTMLCollection elements = new HTMLCollection(getDomNodeOrDie(), false);
         elements.setIsMatchingPredicate(
                 (Predicate<DomNode> & Serializable)
@@ -774,7 +753,7 @@ public class Document extends Node {
      * @return the value of this property
      */
     @JsxGetter
-    public Object getAnchors() {
+    public HTMLCollection getAnchors() {
         final HTMLCollection anchors = new HTMLCollection(getDomNodeOrDie(), true);
 
         anchors.setIsMatchingPredicate(
@@ -809,7 +788,7 @@ public class Document extends Node {
      * @return the value of this property
      */
     @JsxGetter
-    public Object getApplets() {
+    public HTMLCollection getApplets() {
         return new HTMLCollection(getDomNodeOrDie(), false);
     }
 
@@ -821,9 +800,20 @@ public class Document extends Node {
     public HTMLElement getBody() {
         final Page page = getPage();
         if (page instanceof HtmlPage) {
-            final HtmlElement body = ((HtmlPage) page).getBody();
+            final HtmlPage htmlPage = (HtmlPage) page;
+            final HtmlElement body = htmlPage.getBody();
             if (body != null) {
                 return body.getScriptableObject();
+            }
+
+            // strange but this returns the frameset element
+            final DomElement doc = htmlPage.getDocumentElement();
+            if (doc != null) {
+                for (final DomNode node : doc.getChildren()) {
+                    if (node instanceof HtmlFrameSet) {
+                        return (HTMLElement) node.getScriptableObject();
+                    }
+                }
             }
         }
         return null;
@@ -860,6 +850,7 @@ public class Document extends Node {
      */
     @JsxFunction({CHROME, EDGE})
     public void close() throws IOException {
+        // nothing to do
     }
 
     /**
@@ -1046,9 +1037,43 @@ public class Document extends Node {
      * Returns the {@code cookie} property.
      * @return the {@code cookie} property
      */
-    @JsxGetter({CHROME, EDGE})
+    @JsxGetter
     public String getCookie() {
-        return "";
+        final SgmlPage sgmlPage = getPage();
+
+        final StringBuilder builder = new StringBuilder();
+        final Set<Cookie> cookies = sgmlPage.getWebClient().getCookies(sgmlPage.getUrl());
+        for (final Cookie cookie : cookies) {
+            if (cookie.isHttpOnly()) {
+                continue;
+            }
+            if (builder.length() != 0) {
+                builder.append("; ");
+            }
+            if (!HtmlUnitBrowserCompatCookieSpec.EMPTY_COOKIE_NAME.equals(cookie.getName())) {
+                builder.append(cookie.getName()).append('=');
+            }
+            builder.append(cookie.getValue());
+        }
+
+        return builder.toString();
+    }
+
+    /**
+     * Adds a cookie, as long as cookies are enabled.
+     * @see <a href="http://msdn.microsoft.com/en-us/library/ms533693.aspx">MSDN documentation</a>
+     * @param newCookie in the format "name=value[;expires=date][;domain=domainname][;path=path][;secure]
+     */
+    @JsxSetter
+    public void setCookie(final String newCookie) {
+        final SgmlPage sgmlPage = getPage();
+        final WebClient client = sgmlPage.getWebClient();
+
+        if (StringUtils.isBlank(newCookie)
+                && client.getBrowserVersion().hasFeature(HTMLDOCUMENT_COOKIES_IGNORE_BLANK)) {
+            return;
+        }
+        client.addCookie(newCookie, sgmlPage.getUrl(), this);
     }
 
     /**
@@ -1076,15 +1101,20 @@ public class Document extends Node {
                 clazz = CompositionEvent.class;
             }
         }
-        if (clazz == null
+
+        if (MutationEvent.class == clazz
+                && !getBrowserVersion().hasFeature(EVENT_TYPE_MUTATIONEVENT)) {
+            clazz = null;
+        }
+        else if (clazz == null
                 && ("Events".equals(eventType)
-                || "HashChangeEvent".equals(eventType)
-                || "BeforeUnloadEvent".equals(eventType)
-                || "PopStateEvent".equals(eventType)
-                || "FocusEvent".equals(eventType)
-                || "WheelEvent".equals(eventType)
-                        && getBrowserVersion().hasFeature(EVENT_TYPE_WHEELEVENT)
-                || "AnimationEvent".equals(eventType))) {
+                    || "HashChangeEvent".equals(eventType)
+                    || "BeforeUnloadEvent".equals(eventType)
+                    || "PopStateEvent".equals(eventType)
+                    || "FocusEvent".equals(eventType)
+                    || "WheelEvent".equals(eventType)
+                            && getBrowserVersion().hasFeature(EVENT_TYPE_WHEELEVENT)
+                    || "AnimationEvent".equals(eventType))) {
             clazz = SUPPORTED_VENDOR_EVENT_TYPE_MAP.get(eventType);
 
             if (PopStateEvent.class == clazz
@@ -1096,18 +1126,21 @@ public class Document extends Node {
                 clazz = null;
             }
         }
+
         if (clazz == null) {
             throw JavaScriptEngine.throwAsScriptRuntimeEx(new DOMException(DOMException.NOT_SUPPORTED_ERR,
                 "Event Type is not supported: " + eventType));
         }
+
         try {
-            final Event event = clazz.newInstance();
+            final Event event = clazz.getDeclaredConstructor().newInstance();
             event.setParentScope(getWindow());
             event.setPrototype(getPrototype(clazz));
             event.eventCreated();
             return event;
         }
-        catch (final InstantiationException | IllegalAccessException e) {
+        catch (final InstantiationException | IllegalAccessException
+                | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
             throw JavaScriptEngine.reportRuntimeError("Failed to instantiate event: class ='" + clazz.getName()
                             + "' for event type of '" + eventType + "': " + e.getMessage());
         }
@@ -1175,7 +1208,7 @@ public class Document extends Node {
      * @return a new TreeWalker
      */
     @JsxFunction
-    public Object createTreeWalker(final Node root, final double whatToShow, final Scriptable filter,
+    public TreeWalker createTreeWalker(final Node root, final double whatToShow, final Scriptable filter,
             boolean expandEntityReferences) throws DOMException {
 
         // seems that Rhino doesn't like long as parameter type
@@ -1305,7 +1338,7 @@ public class Document extends Node {
      * @return the {@code onclick} event handler for this element
      */
     @JsxGetter
-    public Object getOnclick() {
+    public Function getOnclick() {
         return getEventHandler(MouseEvent.TYPE_CLICK);
     }
 
@@ -1323,7 +1356,7 @@ public class Document extends Node {
      * @return the {@code ondblclick} event handler for this element
      */
     @JsxGetter
-    public Object getOndblclick() {
+    public Function getOndblclick() {
         return getEventHandler(MouseEvent.TYPE_DBL_CLICK);
     }
 
@@ -1341,7 +1374,7 @@ public class Document extends Node {
      * @return the {@code onblur} event handler for this element
      */
     @JsxGetter
-    public Object getOnblur() {
+    public Function getOnblur() {
         return getEventHandler(Event.TYPE_BLUR);
     }
 
@@ -1359,7 +1392,7 @@ public class Document extends Node {
      * @return the {@code onfocus} event handler for this element
      */
     @JsxGetter
-    public Object getOnfocus() {
+    public Function getOnfocus() {
         return getEventHandler(Event.TYPE_FOCUS);
     }
 
@@ -1377,7 +1410,7 @@ public class Document extends Node {
      * @return the {@code onkeydown} event handler for this element
      */
     @JsxGetter
-    public Object getOnkeydown() {
+    public Function getOnkeydown() {
         return getEventHandler(Event.TYPE_KEY_DOWN);
     }
 
@@ -1395,7 +1428,7 @@ public class Document extends Node {
      * @return the {@code onkeypress} event handler for this element
      */
     @JsxGetter
-    public Object getOnkeypress() {
+    public Function getOnkeypress() {
         return getEventHandler(Event.TYPE_KEY_PRESS);
     }
 
@@ -1413,7 +1446,7 @@ public class Document extends Node {
      * @return the {@code onkeyup} event handler for this element
      */
     @JsxGetter
-    public Object getOnkeyup() {
+    public Function getOnkeyup() {
         return getEventHandler(Event.TYPE_KEY_UP);
     }
 
@@ -1431,7 +1464,7 @@ public class Document extends Node {
      * @return the {@code onmousedown} event handler for this element
      */
     @JsxGetter
-    public Object getOnmousedown() {
+    public Function getOnmousedown() {
         return getEventHandler(MouseEvent.TYPE_MOUSE_DOWN);
     }
 
@@ -1449,7 +1482,7 @@ public class Document extends Node {
      * @return the {@code onmousemove} event handler for this element
      */
     @JsxGetter
-    public Object getOnmousemove() {
+    public Function getOnmousemove() {
         return getEventHandler(MouseEvent.TYPE_MOUSE_MOVE);
     }
 
@@ -1467,7 +1500,7 @@ public class Document extends Node {
      * @return the {@code onmouseout} event handler for this element
      */
     @JsxGetter
-    public Object getOnmouseout() {
+    public Function getOnmouseout() {
         return getEventHandler(MouseEvent.TYPE_MOUSE_OUT);
     }
 
@@ -1485,7 +1518,7 @@ public class Document extends Node {
      * @return the {@code onmouseover} event handler for this element
      */
     @JsxGetter
-    public Object getOnmouseover() {
+    public Function getOnmouseover() {
         return getEventHandler(MouseEvent.TYPE_MOUSE_OVER);
     }
 
@@ -1503,7 +1536,7 @@ public class Document extends Node {
      * @return the {@code onmouseup} event handler for this element
      */
     @JsxGetter
-    public Object getOnmouseup() {
+    public Function getOnmouseup() {
         return getEventHandler(MouseEvent.TYPE_MOUSE_UP);
     }
 
@@ -1521,7 +1554,7 @@ public class Document extends Node {
      * @return the {@code oncontextmenu} event handler for this element
      */
     @JsxGetter
-    public Object getOncontextmenu() {
+    public Function getOncontextmenu() {
         return getEventHandler(MouseEvent.TYPE_CONTEXT_MENU);
     }
 
@@ -1539,7 +1572,7 @@ public class Document extends Node {
      * @return the {@code onresize} event handler for this element
      */
     @JsxGetter
-    public Object getOnresize() {
+    public Function getOnresize() {
         return getEventHandler(Event.TYPE_RESIZE);
     }
 
@@ -1557,7 +1590,7 @@ public class Document extends Node {
      * @return the {@code onerror} event handler for this element
      */
     @JsxGetter
-    public Object getOnerror() {
+    public Function getOnerror() {
         return getEventHandler(Event.TYPE_ERROR);
     }
 
@@ -1603,14 +1636,14 @@ public class Document extends Node {
 
     /**
      * Returns the element for the specified x coordinate and the specified y coordinate.
-     * The current implementation always returns the &lt;body&gt; element.
+     * The current implementation always returns null element.
      *
      * @param x the x offset, in pixels
      * @param y the y offset, in pixels
      * @return the element for the specified x coordinate and the specified y coordinate
      */
     @JsxFunction
-    public Object elementFromPoint(final int x, final int y) {
+    public HtmlUnitScriptable elementFromPoint(final int x, final int y) {
         return null;
     }
 
@@ -1619,7 +1652,7 @@ public class Document extends Node {
      * @return the value of the {@code forms} property
      */
     @JsxGetter
-    public Object getForms() {
+    public HTMLCollection getForms() {
         final HTMLCollection forms = new HTMLCollection(getDomNodeOrDie(), false) {
             @Override
             public Object call(final Context cx, final Scriptable scope,
@@ -1639,7 +1672,7 @@ public class Document extends Node {
      * @return the value of the {@code embeds} property
      */
     @JsxGetter
-    public Object getEmbeds() {
+    public HTMLCollection getEmbeds() {
         final HTMLCollection embeds = new HTMLCollection(getDomNodeOrDie(), false) {
             @Override
             public Object call(final Context cx, final Scriptable scope,
@@ -1657,7 +1690,7 @@ public class Document extends Node {
      * @return the value of the {@code embeds} property
      */
     @JsxGetter
-    public Object getImages() {
+    public HTMLCollection getImages() {
         final HTMLCollection images = new HTMLCollection(getDomNodeOrDie(), false) {
             @Override
             public Object call(final Context cx, final Scriptable scope,
@@ -1675,7 +1708,7 @@ public class Document extends Node {
      * @return the value of the {@code scripts} property
      */
     @JsxGetter
-    public Object getScripts() {
+    public HTMLCollection getScripts() {
         final HTMLCollection scripts = new HTMLCollection(getDomNodeOrDie(), false) {
             @Override
             public Object call(final Context cx, final Scriptable scope,
@@ -1708,7 +1741,7 @@ public class Document extends Node {
      * @return the value of the {@code plugins} property
      */
     @JsxGetter
-    public Object getPlugins() {
+    public HTMLCollection getPlugins() {
         return getEmbeds();
     }
 
@@ -1718,7 +1751,7 @@ public class Document extends Node {
      * @return the value of this property
      */
     @JsxGetter
-    public Object getLinks() {
+    public HTMLCollection getLinks() {
         final HTMLCollection links = new HTMLCollection(getDomNodeOrDie(), true);
 
         links.setEffectOnCacheFunction(
@@ -1790,6 +1823,7 @@ public class Document extends Node {
      */
     @JsxSetter
     public void setTitle(final String title) {
+        // nothing to do
     }
 
     /**
@@ -1857,7 +1891,9 @@ public class Document extends Node {
             else {
                 lastModified = new Date();
             }
-            lastModified_ = new SimpleDateFormat(LAST_MODIFIED_DATE_FORMAT, Locale.ROOT).format(lastModified);
+
+            final ZoneId zoneid = Context.getCurrentContext().getTimeZone().toZoneId();
+            lastModified_ = LAST_MODIFIED_DATE_FORMATTER.format(lastModified.toInstant().atZone(zoneid));
         }
         return lastModified_;
     }
@@ -1875,6 +1911,7 @@ public class Document extends Node {
      */
     @JsxFunction({FF, FF_ESR})
     public void releaseCapture() {
+        // nothing to do
     }
 
     /**
@@ -3445,7 +3482,7 @@ public class Document extends Node {
      * @return the new ProcessingInstruction
      */
     @JsxFunction
-    public Object createProcessingInstruction(final String target, final String data) {
+    public HtmlUnitScriptable createProcessingInstruction(final String target, final String data) {
         final ProcessingInstruction node = getPage().createProcessingInstruction(target, data);
         return getScriptableFor(node);
     }
@@ -3456,7 +3493,7 @@ public class Document extends Node {
      * @return the new CDATASection
      */
     @JsxFunction
-    public Object createCDATASection(final String data) {
+    public HtmlUnitScriptable createCDATASection(final String data) {
         final CDATASection node = getPage().createCDATASection(data);
         return getScriptableFor(node);
     }

@@ -16,7 +16,6 @@ package org.htmlunit.javascript.host.html;
 
 import static org.htmlunit.BrowserVersionFeatures.HTMLBASEFONT_END_TAG_FORBIDDEN;
 
-import org.htmlunit.BrowserVersion;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.html.HtmlSpan;
 import org.htmlunit.javascript.configuration.JsxClass;
@@ -36,12 +35,6 @@ public class HTMLSpanElement extends HTMLElement {
     private boolean endTagForbidden_;
 
     /**
-     * Creates an instance.
-     */
-    public HTMLSpanElement() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @Override
@@ -57,16 +50,8 @@ public class HTMLSpanElement extends HTMLElement {
     @Override
     public void setDomNode(final DomNode domNode) {
         super.setDomNode(domNode);
-        final BrowserVersion browser = getBrowserVersion();
-        if (browser.hasFeature(HTMLBASEFONT_END_TAG_FORBIDDEN)) {
-            switch (StringUtils.toRootLowerCase(domNode.getLocalName())) {
-                case "basefont":
-                case "keygen":
-                    endTagForbidden_ = true;
-                    break;
-                default:
-            }
-        }
+        endTagForbidden_ = getBrowserVersion().hasFeature(HTMLBASEFONT_END_TAG_FORBIDDEN)
+                            && "basefont".equals(StringUtils.toRootLowerCase(domNode.getLocalName()));
     }
 
     /**

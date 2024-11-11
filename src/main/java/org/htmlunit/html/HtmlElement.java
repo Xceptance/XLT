@@ -143,6 +143,8 @@ public abstract class HtmlElement extends DomElement {
     protected static final String ATTRIBUTE_REQUIRED = "required";
     /** Constant 'checked'. */
     protected static final String ATTRIBUTE_CHECKED = "checked";
+    /** Constant 'hidden'. */
+    protected static final String ATTRIBUTE_HIDDEN = "hidden";
 
     /** The listeners which are to be notified of attribute changes. */
     private final List<HtmlAttributeChangeListener> attributeListeners_ = new ArrayList<>();
@@ -202,7 +204,7 @@ public abstract class HtmlElement extends DomElement {
                     && HtmlPage.isMappedElement(htmlPage, qualifiedName);
         if (mappedElement) {
             // cast is save here because isMappedElement checks for HtmlPage
-            htmlPage.removeMappedElement(this);
+            htmlPage.removeMappedElement(this, false, false);
         }
 
         final HtmlAttributeChangeEvent event;
@@ -232,7 +234,7 @@ public abstract class HtmlElement extends DomElement {
      */
     protected static void notifyAttributeChangeListeners(final HtmlAttributeChangeEvent event,
             final HtmlElement element, final String oldAttributeValue, final boolean notifyMutationObservers) {
-        final List<HtmlAttributeChangeListener> listeners = element.attributeListeners_;
+        final List<HtmlAttributeChangeListener> listeners = new ArrayList<>(element.attributeListeners_);
         if (ATTRIBUTE_NOT_DEFINED == oldAttributeValue) {
             synchronized (listeners) {
                 for (final HtmlAttributeChangeListener listener : listeners) {
@@ -260,7 +262,7 @@ public abstract class HtmlElement extends DomElement {
     private void fireAttributeChangeImpl(final HtmlAttributeChangeEvent event,
             final HtmlPage htmlPage, final boolean mappedElement, final String oldAttributeValue) {
         if (mappedElement) {
-            htmlPage.addMappedElement(this);
+            htmlPage.addMappedElement(this, false);
         }
 
         if (ATTRIBUTE_NOT_DEFINED == oldAttributeValue) {
@@ -290,8 +292,7 @@ public abstract class HtmlElement extends DomElement {
         final boolean mappedElement = isAttachedToPage()
                     && HtmlPage.isMappedElement(htmlPage, qualifiedName);
         if (mappedElement) {
-            // cast is save here because isMappedElement checks for HtmlPage
-            htmlPage.removeMappedElement(this);
+            htmlPage.removeMappedElement(this, false, false);
         }
 
         final HtmlAttributeChangeEvent event;
@@ -323,13 +324,13 @@ public abstract class HtmlElement extends DomElement {
 
         final HtmlPage htmlPage = getHtmlPageOrNull();
         if (htmlPage != null) {
-            htmlPage.removeMappedElement(this);
+            htmlPage.removeMappedElement(this, false, false);
         }
 
         super.removeAttribute(attributeName);
 
         if (htmlPage != null) {
-            htmlPage.addMappedElement(this);
+            htmlPage.addMappedElement(this, false);
 
             final HtmlAttributeChangeEvent event = new HtmlAttributeChangeEvent(this, attributeName, value);
             fireHtmlAttributeRemoved(event);
@@ -924,7 +925,7 @@ public abstract class HtmlElement extends DomElement {
      */
     public final HtmlElement appendChildIfNoneExists(final String tagName) {
         final HtmlElement child;
-        final List<HtmlElement> children = getElementsByTagName(tagName);
+        final List<HtmlElement> children = getStaticElementsByTagName(tagName);
         if (children.isEmpty()) {
             // Add a new child and return it.
             child = (HtmlElement) ((HtmlPage) getPage()).createElement(tagName);
@@ -944,7 +945,7 @@ public abstract class HtmlElement extends DomElement {
      * @param i the index of the child to remove
      */
     public final void removeChild(final String tagName, final int i) {
-        final List<HtmlElement> children = getElementsByTagName(tagName);
+        final List<HtmlElement> children = getStaticElementsByTagName(tagName);
         if (i >= 0 && i < children.size()) {
             children.get(i).remove();
         }
@@ -1211,7 +1212,34 @@ public abstract class HtmlElement extends DomElement {
      * @return true if the hidden attribute is set.
      */
     public boolean isHidden() {
-        return ATTRIBUTE_NOT_DEFINED != getAttributeDirect("hidden");
+        return ATTRIBUTE_NOT_DEFINED != getAttributeDirect(ATTRIBUTE_HIDDEN);
+    }
+
+    /**
+     * Sets the {@code hidden} property.
+     * @param hidden the {@code hidden} property
+     */
+    public void setHidden(final String hidden) {
+        if ("false".equalsIgnoreCase(hidden)) {
+            removeAttribute(ATTRIBUTE_HIDDEN);
+        }
+
+        if (StringUtils.isNotEmpty(hidden)) {
+            setAttribute(ATTRIBUTE_HIDDEN, "");
+        }
+    }
+
+    /**
+     * Sets the {@code hidden} property.
+     * @param hidden the {@code hidden} property
+     */
+    public void setHidden(final boolean hidden) {
+        if (hidden) {
+            setAttribute("hidden", "");
+            return;
+        }
+
+        removeAttribute("hidden");
     }
 
     /**

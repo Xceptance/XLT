@@ -14,11 +14,14 @@
  */
 package org.htmlunit.javascript.host.dom;
 
+import java.util.ArrayList;
+
 import org.htmlunit.corejs.javascript.ScriptableObject;
 import org.htmlunit.javascript.HtmlUnitScriptable;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxGetter;
+import org.htmlunit.javascript.host.html.HTMLElement;
 
 /**
  * A JavaScript object for {@code MutationRecord}.
@@ -38,17 +41,13 @@ public class MutationRecord extends HtmlUnitScriptable {
     private NodeList removedNodes_;
     private Node previousSibling_;
     private Node nextSibling_;
-    /**
-     * Creates an instance.
-     */
-    public MutationRecord() {
-    }
 
     /**
      * JavaScript constructor.
      */
     @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 
     /**
@@ -132,6 +131,13 @@ public class MutationRecord extends HtmlUnitScriptable {
      */
     @JsxGetter
     public NodeList getAddedNodes() {
+        if (addedNodes_ == null && target_ instanceof HTMLElement) {
+            final NodeList addedNodes = new NodeList(((HTMLElement) target_).getDomNodeOrDie(), new ArrayList<>());
+            addedNodes.setParentScope(getParentScope());
+            addedNodes.setPrototype(getPrototype(addedNodes.getClass()));
+
+            addedNodes_ = addedNodes;
+        }
         return addedNodes_;
     }
 
@@ -148,6 +154,13 @@ public class MutationRecord extends HtmlUnitScriptable {
      */
     @JsxGetter
     public NodeList getRemovedNodes() {
+        if (removedNodes_ == null && target_ instanceof HTMLElement) {
+            final NodeList removedNodes = new NodeList(((HTMLElement) target_).getDomNodeOrDie(), new ArrayList<>());
+            removedNodes.setParentScope(getParentScope());
+            removedNodes.setPrototype(getPrototype(removedNodes.getClass()));
+
+            removedNodes_ = removedNodes;
+        }
         return removedNodes_;
     }
 

@@ -24,6 +24,7 @@ import java.lang.reflect.Executable;
 import java.util.function.Supplier;
 
 import org.apache.commons.lang3.StringUtils;
+import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxClasses;
 import org.htmlunit.javascript.configuration.JsxConstant;
@@ -34,6 +35,7 @@ import org.htmlunit.javascript.configuration.JsxSetter;
 import org.junit.runner.RunWith;
 
 import com.tngtech.archunit.base.DescribedPredicate;
+import com.tngtech.archunit.core.domain.JavaClass;
 import com.tngtech.archunit.core.domain.JavaMethod;
 import com.tngtech.archunit.core.domain.JavaModifier;
 import com.tngtech.archunit.core.importer.ImportOption;
@@ -68,6 +70,7 @@ public class ArchitectureTest {
         .and().doNotHaveFullyQualifiedName("org.htmlunit.platform.font.NoOpFontUtil")
 
         .and().doNotHaveFullyQualifiedName("org.htmlunit.csp.Utils")
+        .and().doNotHaveFullyQualifiedName("org.htmlunit.cyberneko.util.StringUtils")
 
         .and().resideOutsideOfPackage("org.htmlunit.jetty.util..")
         .and().doNotHaveFullyQualifiedName("org.htmlunit.jetty.websocket.api.util.QuoteUtil")
@@ -120,6 +123,16 @@ public class ArchitectureTest {
             .andShould().haveModifier(JavaModifier.FINAL);
 
     /**
+     * Every JsxConstant should be a string, int, or long.
+     */
+    @ArchTest
+    public static final ArchRule jsxConstantType = fields()
+            .that().areAnnotatedWith(JsxConstant.class)
+            .should().haveRawType(String.class)
+            .orShould().haveRawType("int")
+            .orShould().haveRawType("long");
+
+    /**
      * JsxGetter/Setter/Functions are always in the javascript package.
      */
     @ArchTest
@@ -144,25 +157,145 @@ public class ArchitectureTest {
             .should().beDeclaredInClassesThat().areAnnotatedWith(JsxClass.class)
             .orShould().beDeclaredInClassesThat().areAnnotatedWith(JsxClasses.class);
 
-    /**
-     * JsxConstants should not defined as short.
-     */
-    @ArchTest
-    public static final ArchRule jsxConstantReturnType = fields()
-            .that().areAnnotatedWith(JsxConstant.class)
-            .should().notHaveRawType("short")
-            .andShould().notHaveRawType("float");
+    private static final DescribedPredicate<? super JavaClass> isAssignableToScriptable =
+            new DescribedPredicate<JavaClass>("@is not assignable to Scriptable") {
+                @Override
+                public boolean test(final JavaClass javaClass) {
+                    // we have to build a more complex implemenation because
+                    // javaClass.isAssignableTo(Scriptable.class);
+                    // checks also all superclasses
+                    // Therefore we have to switch back to the real java class.
+                    try {
+                        if (javaClass.isPrimitive()) {
+                            return false;
+                        }
+
+                        return Scriptable.class.isAssignableFrom(Class.forName(javaClass.getFullName()));
+                    }
+                    catch (final ClassNotFoundException e) {
+                        throw new RuntimeException(e.getMessage(), e);
+                    }
+                }
+            };
 
     /**
-     * JsxGetter/Setter/Functions should not return a short.
+     * JsxGetter should only return Scriptable's.
      */
     @ArchTest
-    public static final ArchRule jsxAnnotationReturnType = methods()
-            .that().areAnnotatedWith(JsxGetter.class)
-                    .or().areAnnotatedWith(JsxSetter.class)
-                    .or().areAnnotatedWith(JsxFunction.class)
-            .should().notHaveRawReturnType("short")
-            .andShould().notHaveRawReturnType("float");
+    public static final ArchRule jsxGetterReturnType = methods()
+            .that()
+                .areAnnotatedWith(JsxGetter.class)
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.History.getState()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.MimeType.getEnabledPlugin()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.Navigator.getDoNotTrack()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.Navigator.getMimeTypes()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.Navigator.getPlugins()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.URL.getOrigin()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.Window.getClientInformation()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.Window.getControllers()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.Window.getEvent()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.Window.getFrames_js()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.Window.getIsSecureContext()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.Window.getLength()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.Window.getOffscreenBuffering()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.Window.getOpener()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.Window.getParent()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.Window.getSelf()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.Window.getTop()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.canvas.CanvasRenderingContext2D.getFillStyle()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.canvas.CanvasRenderingContext2D.getGlobalAlpha()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.canvas.CanvasRenderingContext2D.getLineWidth()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.canvas.CanvasRenderingContext2D.getStrokeStyle()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.css.CSSStyleDeclaration.getZIndex()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.dom.AbstractRange.getEndContainer()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.dom.AbstractRange.getStartContainer()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.dom.CharacterData.getData()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.dom.DOMException.getCode()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.dom.DOMException.getFilename()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.dom.DOMException.getLineNumber()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.dom.DOMException.getMessage()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.dom.Document.getActiveElement()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.dom.Document.getDefaultView()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.dom.Document.getHead()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.dom.Node.getParentNode()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.dom.NodeIterator.getFilter()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.dom.Range.getCommonAncestorContainer()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.dom.TreeWalker.getFilter()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.dom.XPathResult.getNumberValue()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.draganddrop.DataTransferItem.getKind()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.draganddrop.DataTransferItem.getType()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.event.BeforeUnloadEvent.getReturnValue()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.event.CustomEvent.getDetail()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.event.Event.getComposed()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.event.Event.getReturnValue()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.event.Event.getSrcElement()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.event.Event.getTarget()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.event.HashChangeEvent.getNewURL()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.event.HashChangeEvent.getOldURL()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.event.InputEvent.getData()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.event.InputEvent.getInputType()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.event.MessageEvent.getData()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.event.MessageEvent.getPorts()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.event.PopStateEvent.getState()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.event.ProgressEvent.getLoaded()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.event.TextEvent.getData()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.event.UIEvent.getView()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.file.FileReader.getResult()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.html.HTMLButtonElement.getValue()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.worker.DedicatedWorkerGlobalScope.getSelf()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.xml.XMLHttpRequest.getResponse()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.xml.XMLHttpRequest.getResponseXML()")
+
+            .should().haveRawReturnType(String.class)
+            .orShould().haveRawReturnType("int")
+            .orShould().haveRawReturnType(Integer.class)
+            .orShould().haveRawReturnType("long")
+            .orShould().haveRawReturnType("double")
+            .orShould().haveRawReturnType(Double.class)
+            .orShould().haveRawReturnType("boolean")
+            .orShould().haveRawReturnType(isAssignableToScriptable);
+
+    /**
+     * JsxGetter should only return Scriptable's.
+     */
+    @ArchTest
+    public static final ArchRule jsxSetterReturnType = methods()
+            .that()
+                .areAnnotatedWith(JsxSetter.class)
+            .should().haveRawReturnType("void");
+
+    /**
+     * JsxFunctions should only return Scriptable's.
+     */
+    @ArchTest
+    public static final ArchRule jsxFunctionReturnType = methods()
+            .that()
+                .areAnnotatedWith(JsxFunction.class)
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.External.isSearchProviderInstalled()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.SimpleArray.item(int)")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.SimpleArray.namedItem(java.lang.String)")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.Storage.getItem(java.lang.String)")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.Window.setInterval(org.htmlunit.corejs.javascript.Context, org.htmlunit.corejs.javascript.Scriptable, org.htmlunit.corejs.javascript.Scriptable, [Ljava.lang.Object;, org.htmlunit.corejs.javascript.Function)")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.Window.setTimeout(org.htmlunit.corejs.javascript.Context, org.htmlunit.corejs.javascript.Scriptable, org.htmlunit.corejs.javascript.Scriptable, [Ljava.lang.Object;, org.htmlunit.corejs.javascript.Function)")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.css.CSSRuleList.item(int)")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.css.StyleSheetList.item(int)")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.dom.NodeList.item(java.lang.Object)")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.html.HTMLCollection.item(java.lang.Object)")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.html.HTMLOptionsCollection.item(int)")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.html.HTMLSelectElement.item(int)")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.intl.V8BreakIterator.resolvedOptions()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.performance.PerformanceNavigation.toJSON()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.worker.DedicatedWorkerGlobalScope.setInterval(org.htmlunit.corejs.javascript.Context, org.htmlunit.corejs.javascript.Scriptable, org.htmlunit.corejs.javascript.Scriptable, [Ljava.lang.Object;, org.htmlunit.corejs.javascript.Function)")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.worker.DedicatedWorkerGlobalScope.setTimeout(org.htmlunit.corejs.javascript.Context, org.htmlunit.corejs.javascript.Scriptable, org.htmlunit.corejs.javascript.Scriptable, [Ljava.lang.Object;, org.htmlunit.corejs.javascript.Function)")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.xml.XSLTProcessor.getParameter(java.lang.String, java.lang.String)")
+
+            .should().haveRawReturnType(String.class)
+            .orShould().haveRawReturnType("int")
+            .orShould().haveRawReturnType("long")
+            .orShould().haveRawReturnType("double")
+            .orShould().haveRawReturnType("boolean")
+            .orShould().haveRawReturnType("void")
+            .orShould().haveRawReturnType(isAssignableToScriptable);
 
     /**
      * JsxConstructor should not used for constructors.

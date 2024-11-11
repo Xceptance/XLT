@@ -17,8 +17,10 @@ package org.htmlunit.css;
 import static org.htmlunit.BrowserVersionFeatures.JS_CLIENTHEIGHT_INPUT_17;
 import static org.htmlunit.BrowserVersionFeatures.JS_CLIENTHEIGHT_INPUT_18;
 import static org.htmlunit.BrowserVersionFeatures.JS_CLIENTHEIGHT_RADIO_CHECKBOX_10;
+import static org.htmlunit.BrowserVersionFeatures.JS_CLIENTHEIGHT_RADIO_CHECKBOX_14;
 import static org.htmlunit.BrowserVersionFeatures.JS_CLIENTWIDTH_INPUT_TEXT_173;
 import static org.htmlunit.BrowserVersionFeatures.JS_CLIENTWIDTH_RADIO_CHECKBOX_10;
+import static org.htmlunit.BrowserVersionFeatures.JS_CLIENTWIDTH_RADIO_CHECKBOX_14;
 import static org.htmlunit.css.CssStyleSheet.ABSOLUTE;
 import static org.htmlunit.css.CssStyleSheet.AUTO;
 import static org.htmlunit.css.CssStyleSheet.BLOCK;
@@ -62,7 +64,6 @@ import org.htmlunit.html.HtmlBaseFont;
 import org.htmlunit.html.HtmlBidirectionalIsolation;
 import org.htmlunit.html.HtmlBidirectionalOverride;
 import org.htmlunit.html.HtmlBig;
-import org.htmlunit.html.HtmlBlink;
 import org.htmlunit.html.HtmlBody;
 import org.htmlunit.html.HtmlBold;
 import org.htmlunit.html.HtmlButton;
@@ -78,6 +79,7 @@ import org.htmlunit.html.HtmlDefinitionDescription;
 import org.htmlunit.html.HtmlDefinitionTerm;
 import org.htmlunit.html.HtmlDivision;
 import org.htmlunit.html.HtmlElement;
+import org.htmlunit.html.HtmlElement.DisplayStyle;
 import org.htmlunit.html.HtmlEmphasis;
 import org.htmlunit.html.HtmlFigure;
 import org.htmlunit.html.HtmlFigureCaption;
@@ -133,8 +135,6 @@ import org.htmlunit.html.HtmlUnderlined;
 import org.htmlunit.html.HtmlUnknownElement;
 import org.htmlunit.html.HtmlVariable;
 import org.htmlunit.html.HtmlWordBreak;
-import org.htmlunit.javascript.host.Element;
-import org.htmlunit.javascript.host.css.CSSStyleDeclaration;
 import org.htmlunit.javascript.host.html.HTMLElement;
 import org.htmlunit.platform.Platform;
 
@@ -150,6 +150,7 @@ import org.htmlunit.platform.Platform;
  * @author Alex Gorbatovsky
  * @author cd alexndr
  */
+@SuppressWarnings("PMD.AvoidDuplicateLiterals")
 public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
 
     /** The set of 'inheritable' definitions. */
@@ -224,9 +225,14 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
     private final SortedMap<String, StyleElement> localModifications_ = new TreeMap<>();
 
     /** The wrapped CSSStyleDeclaration */
-    private ElementCssStyleDeclaration elementStyleDeclaration_;
+    private final ElementCssStyleDeclaration elementStyleDeclaration_;
 
+    /**
+     * Ctor.
+     * @param styleDeclaration the {@link ElementCssStyleDeclaration} this is based on
+     */
     public ComputedCssStyleDeclaration(final ElementCssStyleDeclaration styleDeclaration) {
+        super();
         elementStyleDeclaration_ = styleDeclaration;
         getDomElement().setDefaults(this);
     }
@@ -273,7 +279,7 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
         final boolean isDefInheritable = INHERITABLE_DEFINITIONS.contains(definition);
 
         // to make the fuzzer happy the recursion was removed
-        final ComputedCssStyleDeclaration[] queue = new ComputedCssStyleDeclaration[] {this};
+        final ComputedCssStyleDeclaration[] queue = {this};
         String value = null;
         while (queue[0] != null) {
             value = getStyleAttributeWorker(definition, getDefaultValueIfEmpty,
@@ -321,14 +327,14 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
         final DomElement domElement = getDomElement();
 
         if (!domElement.isAttachedToPage()) {
-            return ComputedCssStyleDeclaration.EMPTY_FINAL;
+            return EMPTY_FINAL;
         }
 
         final boolean isDefInheritable = INHERITABLE_DEFINITIONS.contains(definition);
 
         // to make the fuzzer happy the recursion was removed
         final BrowserVersion browserVersion = domElement.getPage().getWebClient().getBrowserVersion();
-        final ComputedCssStyleDeclaration[] queue = new ComputedCssStyleDeclaration[] {this};
+        final ComputedCssStyleDeclaration[] queue = {this};
         String value = null;
         while (queue[0] != null) {
             value = getStyleAttributeWorker(definition, false,
@@ -428,7 +434,7 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
      * {@inheritDoc}
      */
     @Override
-    public Object item(final int index) {
+    public String item(final int index) {
         return elementStyleDeclaration_.item(index);
     }
 
@@ -491,6 +497,10 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
         return elementStyleDeclaration_.getStyleMap();
     }
 
+    /**
+     * @return the {@link DomElement} the backing {@link ElementCssStyleDeclaration}
+     * is associated with
+     */
     public DomElement getDomElement() {
         return elementStyleDeclaration_.getDomElement();
     }
@@ -669,6 +679,12 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
         final DomElement domElem = getDomElement();
         if (!domElem.isAttachedToPage()) {
             return "";
+        }
+
+        if (domElem instanceof HtmlElement) {
+            if (((HtmlElement) domElem).isHidden()) {
+                return DisplayStyle.NONE.value();
+            }
         }
 
         // don't use defaultIfEmpty for performance
@@ -1428,7 +1444,7 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
         final DomElement element = getDomElement();
 
         if (element instanceof HtmlImage) {
-            return setCachedHeight(((HtmlImage) element).getHeightOrDefault());
+            return updateCachedHeight(((HtmlImage) element).getHeightOrDefault());
         }
 
         final boolean isInline = INLINE.equals(getDisplay()) && !(element instanceof HtmlInlineFrame);
@@ -1436,11 +1452,11 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
         if (isInline || super.getHeight().isEmpty()) {
             final int contentHeight = getContentHeight();
             if (contentHeight > 0) {
-                return setCachedHeight(contentHeight);
+                return updateCachedHeight(contentHeight);
             }
         }
 
-        return setCachedHeight(getEmptyHeight());
+        return updateCachedHeight(getEmptyHeight());
     }
 
     /**
@@ -1479,12 +1495,12 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
 
         final DomElement element = getDomElement();
         if (!element.mayBeDisplayed()) {
-            return setCachedWidth(0);
+            return updateCachedWidth(0);
         }
 
         final String display = getDisplay();
         if (NONE.equals(display)) {
-            return setCachedWidth(0);
+            return updateCachedWidth(0);
         }
 
         final int width;
@@ -1546,6 +1562,9 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
                 if (browserVersion.hasFeature(JS_CLIENTWIDTH_RADIO_CHECKBOX_10)) {
                     width = 10;
                 }
+                else if (browserVersion.hasFeature(JS_CLIENTWIDTH_RADIO_CHECKBOX_14)) {
+                    width = 14;
+                }
                 else {
                     width = 13;
                 }
@@ -1574,7 +1593,7 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
                 });
         }
 
-        return setCachedWidth(width);
+        return updateCachedWidth(width);
     }
 
     /**
@@ -1631,19 +1650,19 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
 
         final DomElement element = getDomElement();
         if (!element.mayBeDisplayed()) {
-            return setCachedHeight2(0);
+            return updateCachedHeight2(0);
         }
 
         final String display = getDisplay();
         if (NONE.equals(display)) {
-            return setCachedHeight2(0);
+            return updateCachedHeight2(0);
         }
 
         final WebWindow webWindow = element.getPage().getEnclosingWindow();
         final int windowHeight = webWindow.getInnerHeight();
 
         if (element instanceof HtmlBody) {
-            return setCachedHeight2(windowHeight);
+            return updateCachedHeight2(windowHeight);
         }
 
         final boolean isInline = INLINE.equals(display) && !(element instanceof HtmlInlineFrame);
@@ -1660,7 +1679,6 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
                 || element instanceof HtmlBidirectionalIsolation
                 || element instanceof HtmlBidirectionalOverride
                 || element instanceof HtmlBig
-                || element instanceof HtmlBlink
                 || element instanceof HtmlBold
                 || element instanceof HtmlCenter
                 || element instanceof HtmlCitation
@@ -1706,7 +1724,6 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
                 || element instanceof HtmlVariable
 
                 || element instanceof HtmlDivision
-                || element instanceof HtmlUnknownElement
                 || element instanceof HtmlData
                 || element instanceof HtmlTime
                 || element instanceof HtmlOutput
@@ -1717,8 +1734,12 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
         }
         else if (element.getFirstChild() == null) {
             if (element instanceof HtmlRadioButtonInput || element instanceof HtmlCheckBoxInput) {
-                if (webWindow.getWebClient().getBrowserVersion().hasFeature(JS_CLIENTHEIGHT_RADIO_CHECKBOX_10)) {
+                final BrowserVersion browser = webWindow.getWebClient().getBrowserVersion();
+                if (browser.hasFeature(JS_CLIENTHEIGHT_RADIO_CHECKBOX_10)) {
                     defaultHeight = 10;
+                }
+                else if (browser.hasFeature(JS_CLIENTHEIGHT_RADIO_CHECKBOX_14)) {
+                    defaultHeight = 14;
                 }
                 else {
                     defaultHeight = 13;
@@ -1814,7 +1835,7 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
             height = defaultHeight;
         }
 
-        return setCachedHeight2(height);
+        return updateCachedHeight2(height);
     }
 
     /**
@@ -1930,7 +1951,7 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
         }
 
         final int border = NONE.equals(getDisplay()) ? 0 : getBorderLeftValue() + getBorderRightValue();
-        return setCachedBorderHorizontal(border);
+        return updateCachedBorderHorizontal(border);
     }
 
     private int getBorderVertical() {
@@ -1940,7 +1961,7 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
         }
 
         final int border = NONE.equals(getDisplay()) ? 0 : getBorderTopValue() + getBorderBottomValue();
-        return setCachedBorderVertical(border);
+        return updateCachedBorderVertical(border);
     }
 
     /**
@@ -1982,7 +2003,7 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
         }
 
         final int padding = NONE.equals(getDisplay()) ? 0 : getPaddingLeftValue() + getPaddingRightValue();
-        return setCachedPaddingHorizontal(padding);
+        return updateCachedPaddingHorizontal(padding);
     }
 
     private int getPaddingVertical() {
@@ -1992,7 +2013,7 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
         }
 
         final int padding = NONE.equals(getDisplay()) ? 0 : getPaddingTopValue() + getPaddingBottomValue();
-        return setCachedPaddingVertical(padding);
+        return updateCachedPaddingVertical(padding);
     }
 
     /**
@@ -2040,7 +2061,7 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
      * @param width the new value
      * @return the param width
      */
-    public int setCachedWidth(final int width) {
+    public int updateCachedWidth(final int width) {
         width_ = Integer.valueOf(width);
         return width;
     }
@@ -2058,7 +2079,7 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
      * @param height the new value
      * @return the param height
      */
-    public int setCachedHeight(final int height) {
+    public int updateCachedHeight(final int height) {
         height_ = Integer.valueOf(height);
         return height;
     }
@@ -2076,7 +2097,7 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
      * @param height the new value
      * @return the param height2
      */
-    public int setCachedHeight2(final int height) {
+    public int updateCachedHeight2(final int height) {
         height2_ = Integer.valueOf(height);
         return height;
     }
@@ -2110,7 +2131,7 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
      * @param paddingHorizontal the new value
      * @return the param paddingHorizontal
      */
-    public int setCachedPaddingHorizontal(final int paddingHorizontal) {
+    public int updateCachedPaddingHorizontal(final int paddingHorizontal) {
         paddingHorizontal_ = Integer.valueOf(paddingHorizontal);
         return paddingHorizontal;
     }
@@ -2128,7 +2149,7 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
      * @param paddingVertical the new value
      * @return the param paddingVertical
      */
-    public int setCachedPaddingVertical(final int paddingVertical) {
+    public int updateCachedPaddingVertical(final int paddingVertical) {
         paddingVertical_ = Integer.valueOf(paddingVertical);
         return paddingVertical;
     }
@@ -2146,7 +2167,7 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
      * @param borderHorizontal the new value
      * @return the param borderHorizontal
      */
-    public int setCachedBorderHorizontal(final int borderHorizontal) {
+    public int updateCachedBorderHorizontal(final int borderHorizontal) {
         borderHorizontal_ = Integer.valueOf(borderHorizontal);
         return borderHorizontal;
     }
@@ -2164,7 +2185,7 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
      * @param borderVertical the new value
      * @return the param borderVertical
      */
-    public int setCachedBorderVertical(final int borderVertical) {
+    public int updateCachedBorderVertical(final int borderVertical) {
         borderVertical_ = Integer.valueOf(borderVertical);
         return borderVertical;
     }
@@ -2254,7 +2275,7 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
     private String defaultIfEmpty(final String str, final StyleAttributes.Definition definition,
             final boolean isPixel) {
         if (!getDomElement().isAttachedToPage()) {
-            return ComputedCssStyleDeclaration.EMPTY_FINAL;
+            return EMPTY_FINAL;
         }
         if (str == null || str.isEmpty()) {
             return definition.getDefaultComputedValue(getBrowserVersion());
@@ -2272,7 +2293,7 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
      */
     private String defaultIfEmpty(final String str, final String toReturnIfEmptyOrDefault, final String defaultValue) {
         if (!getDomElement().isAttachedToPage()) {
-            return ComputedCssStyleDeclaration.EMPTY_FINAL;
+            return EMPTY_FINAL;
         }
         if (str == null || str.isEmpty() || str.equals(defaultValue)) {
             return toReturnIfEmptyOrDefault;
@@ -2282,11 +2303,11 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
 
     /**
      * Returns the specified length value as a pixel length value.
-     * This method does <b>NOT</b> handle percentages correctly; use {@link #pixelValue(Element, CssValue)}
-     * if you need percentage support).
+     * This method does <b>NOT</b> handle percentages correctly;
+     * use {@link CssPixelValueConverter#pixelValue(DomElement, CssValue)} if you need percentage support).
      * @param value the length value to convert to a pixel length value
      * @return the specified length value as a pixel length value
-     * @see #pixelString(Element, CSSStyleDeclaration.CssValue)
+     * @see CssPixelValueConverter#pixelString(DomElement, CssValue)
      */
     private static String pixelString(final String value) {
         if (EMPTY_FINAL == value || value.endsWith("px")) {

@@ -38,6 +38,7 @@ public class HTMLAllCollection extends HTMLCollection {
      * Creates an instance.
      */
     public HTMLAllCollection() {
+        super();
     }
 
     /**
@@ -101,7 +102,7 @@ public class HTMLAllCollection extends HTMLCollection {
      * {@inheritDoc}
      */
     @Override
-    public final Object namedItem(final String name) {
+    public final Scriptable namedItem(final String name) {
         final List<DomNode> elements = getElements();
 
         // See if there is an element in the element array with the specified id.
@@ -152,7 +153,7 @@ public class HTMLAllCollection extends HTMLCollection {
             try {
                 args[0] = Integer.parseInt(val);
             }
-            catch (final NumberFormatException e) {
+            catch (final NumberFormatException ignored) {
                 // ignore
             }
         }
@@ -170,5 +171,17 @@ public class HTMLAllCollection extends HTMLCollection {
     @Override
     protected boolean supportsParentheses() {
         return true;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected Object equivalentValues(final Object value) {
+        if (value == null || JavaScriptEngine.isUndefined(value)) {
+            return Boolean.TRUE;
+        }
+
+        return super.equivalentValues(value);
     }
 }

@@ -353,7 +353,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
         {
             final String password = props.getProperty("com.xceptance.xlt.auth.password", "");
 
-            ((DefaultCredentialsProvider) getCredentialsProvider()).addCredentials(userName, password);
+            ((DefaultCredentialsProvider) getCredentialsProvider()).addCredentials(userName, password.toCharArray());
 
             if (XltLogger.runTimeLogger.isInfoEnabled())
             {
@@ -384,12 +384,12 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
 
             // proxy authentication
             final String proxyUserName = props.getProperty("com.xceptance.xlt.proxy.userName");
-            final String proxyPassword = props.getProperty("com.xceptance.xlt.proxy.password");
+            final String proxyPassword = props.getProperty("com.xceptance.xlt.proxy.password", "");
 
             if (proxyUserName != null && proxyUserName.length() > 0)
             {
-                ((DefaultCredentialsProvider) getCredentialsProvider()).addCredentials(proxyUserName, proxyPassword, proxyHost, proxyPort,
-                                                                                       null);
+                ((DefaultCredentialsProvider) getCredentialsProvider()).addCredentials(proxyUserName, proxyPassword.toCharArray(),
+                                                                                       proxyHost, proxyPort, null);
 
                 if (XltLogger.runTimeLogger.isInfoEnabled())
                 {

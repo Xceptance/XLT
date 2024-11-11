@@ -18,6 +18,7 @@ import java.net.URL;
 
 import org.htmlunit.Page;
 import org.htmlunit.WebWindow;
+import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.javascript.AbstractJavaScriptEngine;
 import org.htmlunit.javascript.HtmlUnitContextFactory;
 import org.htmlunit.javascript.PostponedAction;
@@ -39,12 +40,13 @@ import org.htmlunit.javascript.host.event.MessageEvent;
 @JsxClass
 public class MessagePort extends EventTarget {
 
-    private MessagePort port1_;
+    private MessagePort port_;
 
     /**
      * Default constructor.
      */
     public MessagePort() {
+        super();
     }
 
     /**
@@ -57,11 +59,12 @@ public class MessagePort extends EventTarget {
     }
 
     /**
-     * Constructors {@code port2} with the specified {@code port1}.
-     * @param port1 the port1
+     * Ctor with the specified {@code port}.
+     * @param port the port
      */
-    public MessagePort(final MessagePort port1) {
-        port1_ = port1;
+    public MessagePort(final MessagePort port) {
+        super();
+        port_ = port;
     }
 
     /**
@@ -69,7 +72,7 @@ public class MessagePort extends EventTarget {
      * @return the value of the window's {@code onmessage} property
      */
     @JsxGetter
-    public Object getOnmessage() {
+    public Function getOnmessage() {
         return getHandlerForJavaScript(Event.TYPE_MESSAGE);
     }
 
@@ -82,7 +85,7 @@ public class MessagePort extends EventTarget {
         setHandlerForJavaScript(Event.TYPE_MESSAGE, onmessage);
     }
 
-    private Object getHandlerForJavaScript(final String eventName) {
+    private Function getHandlerForJavaScript(final String eventName) {
         return getEventListenersContainer().getEventHandler(eventName);
     }
 
@@ -98,7 +101,7 @@ public class MessagePort extends EventTarget {
      */
     @JsxFunction
     public void postMessage(final String message, final Object transfer) {
-        if (port1_ != null) {
+        if (port_ != null) {
             final Window w = getWindow();
             final WebWindow webWindow = w.getWebWindow();
             final Page page = webWindow.getEnclosedPage();
@@ -106,7 +109,7 @@ public class MessagePort extends EventTarget {
             final MessageEvent event = new MessageEvent();
             final String origin = currentURL.getProtocol() + "://" + currentURL.getHost() + ':' + currentURL.getPort();
             event.initMessageEvent(Event.TYPE_MESSAGE, false, false, message, origin, "", w, transfer);
-            event.setParentScope(port1_);
+            event.setParentScope(port_);
             event.setPrototype(getPrototype(event.getClass()));
 
             final AbstractJavaScriptEngine<?> jsEngine = webWindow.getWebClient().getJavaScriptEngine();
@@ -114,7 +117,7 @@ public class MessagePort extends EventTarget {
                 @Override
                 public void execute() {
                     final HtmlUnitContextFactory cf = jsEngine.getContextFactory();
-                    cf.call(cx -> port1_.dispatchEvent(event));
+                    cf.call(cx -> port_.dispatchEvent(event));
                 }
             };
             jsEngine.addPostponedAction(action);

@@ -74,10 +74,10 @@ public class AttributesTest extends TestCase {
             "HtmlArticle", "HtmlAside", "HtmlAudio",
             "HtmlBackgroundSound", "HtmlBase", "HtmlBaseFont",
             "HtmlBidirectionalIsolation",
-            "HtmlBidirectionalOverride", "HtmlBig", "HtmlBlink",
+            "HtmlBidirectionalOverride", "HtmlBig",
             "HtmlBlockQuote", "HtmlBody", "HtmlBold",
             "HtmlBreak", "HtmlButton", "HtmlCanvas", "HtmlCaption",
-            "HtmlCenter", "HtmlCitation", "HtmlCode", "HtmlCommand", "DomComment",
+            "HtmlCenter", "HtmlCitation", "HtmlCode", "DomComment",
             "HtmlData", "HtmlDataList",
             "HtmlDefinition", "HtmlDefinitionDescription",
             "HtmlDeletedText", "HtmlDetails", "HtmlDialog", "HtmlDirectory",
@@ -92,13 +92,13 @@ public class AttributesTest extends TestCase {
             "HtmlHeading4", "HtmlHeading5", "HtmlHeading6",
             "HtmlHorizontalRule", "HtmlHtml", "HtmlInlineFrame",
             "HtmlInlineQuotation",
-            "HtmlImage", "HtmlImage", "HtmlInsertedText", "HtmlIsIndex",
+            "HtmlImage", "HtmlImage", "HtmlInsertedText",
             "HtmlItalic", "HtmlKeyboard", "HtmlLabel", "HtmlLayer",
             "HtmlLegend", "HtmlListing", "HtmlListItem",
             "HtmlLink",
             "HtmlMap", "HtmlMain", "HtmlMark", "HtmlMarquee",
-            "HtmlMenu", "HtmlMenuItem", "HtmlMeta", "HtmlMeter", "HtmlMultiColumn",
-            "HtmlNav", "HtmlNextId",
+            "HtmlMenu", "HtmlMeta", "HtmlMeter",
+            "HtmlNav",
             "HtmlNoBreak", "HtmlNoEmbed", "HtmlNoFrames", "HtmlNoLayer",
             "HtmlNoScript", "HtmlObject", "HtmlOrderedList",
             "HtmlOptionGroup", "HtmlOption", "HtmlOutput",
@@ -140,12 +140,11 @@ public class AttributesTest extends TestCase {
                 tag = (String) clazz.getField("TAG_NAME2").get(null);
                 supportedTags.remove(tag);
             }
-            catch (final NoSuchFieldException e) {
+            catch (final NoSuchFieldException ignored) {
                 // ignore
             }
         }
 
-        supportedTags.remove("keygen");
         supportedTags.remove("input");
 
         if (!supportedTags.isEmpty()) {
