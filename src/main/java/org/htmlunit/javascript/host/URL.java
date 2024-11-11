@@ -15,7 +15,6 @@
 package org.htmlunit.javascript.host;
 
 import static org.htmlunit.BrowserVersionFeatures.JS_ANCHOR_HOSTNAME_IGNORE_BLANK;
-import static org.htmlunit.BrowserVersionFeatures.URL_IGNORE_SPECIAL;
 
 import java.net.MalformedURLException;
 import java.util.List;
@@ -49,12 +48,6 @@ import org.htmlunit.util.UrlUtils;
 public class URL extends HtmlUnitScriptable {
 
     private java.net.URL url_;
-
-    /**
-     * Creates an instance.
-     */
-    public URL() {
-    }
 
     /**
      * Creates an instance.
@@ -182,7 +175,7 @@ public class URL extends HtmlUnitScriptable {
 
             newHost = ipString.toString();
         }
-        catch (final Exception e) {
+        catch (final Exception expected) {
             // back to string
         }
 
@@ -193,7 +186,7 @@ public class URL extends HtmlUnitScriptable {
             try {
                 url_ = UrlUtils.getUrlWithNewHostAndPort(url_, newHost, Integer.parseInt(newPort));
             }
-            catch (final Exception e) {
+            catch (final Exception expected) {
                 // back to string
             }
         }
@@ -260,7 +253,11 @@ public class URL extends HtmlUnitScriptable {
             return null;
         }
 
-        return url_.getProtocol() + "://" + url_.getHost();
+        if (url_.getPort() < 0 || url_.getPort() == url_.getDefaultPort()) {
+            return url_.getProtocol() + "://" + url_.getHost();
+        }
+
+        return url_.getProtocol() + "://" + url_.getHost() + ':' + url_.getPort();
     }
 
     /**
@@ -365,24 +362,7 @@ public class URL extends HtmlUnitScriptable {
             return;
         }
 
-        String bareProtocol = StringUtils.substringBefore(protocol, ":");
-        if (getBrowserVersion().hasFeature(URL_IGNORE_SPECIAL)) {
-            if (!UrlUtils.isValidScheme(bareProtocol)) {
-                return;
-            }
-
-            try {
-                url_ = UrlUtils.getUrlWithNewProtocol(url_, bareProtocol);
-                url_ = UrlUtils.removeRedundantPort(url_);
-            }
-            catch (final MalformedURLException e) {
-                // ignore
-            }
-
-            return;
-        }
-
-        bareProtocol = bareProtocol.trim();
+        final String bareProtocol = StringUtils.substringBefore(protocol, ":").trim();
         if (!UrlUtils.isValidScheme(bareProtocol)) {
             return;
         }
@@ -394,7 +374,7 @@ public class URL extends HtmlUnitScriptable {
             url_ = UrlUtils.getUrlWithNewProtocol(url_, bareProtocol);
             url_ = UrlUtils.removeRedundantPort(url_);
         }
-        catch (final MalformedURLException e) {
+        catch (final MalformedURLException ignored) {
             // ignore
         }
     }
@@ -418,7 +398,9 @@ public class URL extends HtmlUnitScriptable {
         }
 
         String query;
-        if (search == null || "?".equals(search) || "".equals(search)) {
+        if (search == null
+                || org.htmlunit.util.StringUtils.equalsChar('?', search)
+                || org.htmlunit.util.StringUtils.isEmptyString(search)) {
             query = null;
         }
         else {

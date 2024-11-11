@@ -16,7 +16,6 @@ package org.htmlunit.html;
 
 import static org.htmlunit.BrowserVersionFeatures.EVENT_FOCUS_ON_LOAD;
 import static org.htmlunit.BrowserVersionFeatures.JS_EVENT_LOAD_SUPPRESSED_BY_CONTENT_SECURIRY_POLICY;
-import static org.htmlunit.html.DisabledElement.ATTRIBUTE_DISABLED;
 import static org.htmlunit.html.DomElement.ATTRIBUTE_NOT_DEFINED;
 
 import java.io.File;
@@ -142,12 +141,13 @@ import org.w3c.dom.ProcessingInstruction;
  * @author Rural Hunter
  * @author Ronny Shapiro
  * @author Lai Quang Duong
+ * @author Sven Strickroth
  */
 public class HtmlPage extends SgmlPage {
 
     private static final Log LOG = LogFactory.getLog(HtmlPage.class);
 
-    private static final Comparator<DomElement> documentPositionComparator = new DocumentPositionComparator();
+    private static final Comparator<DomElement> DOCUMENT_POSITION_COMPERATOR = new DocumentPositionComparator();
 
     private HTMLParserDOMBuilder domBuilder_;
     private transient Charset originalCharset_;
@@ -156,7 +156,7 @@ public class HtmlPage extends SgmlPage {
     private Map<String, SortedSet<DomElement>> idMap_ = new ConcurrentHashMap<>();
     private Map<String, SortedSet<DomElement>> nameMap_ = new ConcurrentHashMap<>();
 
-    private SortedSet<BaseFrameElement> frameElements_ = new TreeSet<>(documentPositionComparator);
+    private SortedSet<BaseFrameElement> frameElements_ = new TreeSet<>(DOCUMENT_POSITION_COMPERATOR);
     private int parserCount_;
     private int snippetParserCount_;
     private int inlineSnippetParserCount_;
@@ -383,17 +383,14 @@ public class HtmlPage extends SgmlPage {
     }
 
     /**
-     * Returns the <code>body</code> element (or <code>frameset</code> element),
-     * or {@code null} if it does not yet exist.
-     * @return the <code>body</code> element (or <code>frameset</code> element),
-     * or {@code null} if it does not yet exist
+     * @return the <code>body</code> element, or {@code null} if it does not yet exist
      */
-    public HtmlElement getBody() {
+    public HtmlBody getBody() {
         final DomElement doc = getDocumentElement();
         if (doc != null) {
             for (final DomNode node : doc.getChildren()) {
-                if (node instanceof HtmlBody || node instanceof HtmlFrameSet) {
-                    return (HtmlElement) node;
+                if (node instanceof HtmlBody) {
+                    return (HtmlBody) node;
                 }
             }
         }
@@ -586,7 +583,7 @@ public class HtmlPage extends SgmlPage {
             tagName = org.htmlunit.util.StringUtils.toRootLowerCase(tagName);
         }
         return getWebClient().getPageCreator().getHtmlParser().getFactory(tagName)
-                    .createElementNS(this, null, tagName, null, true);
+                    .createElementNS(this, null, tagName, null);
     }
 
     /**
@@ -596,7 +593,7 @@ public class HtmlPage extends SgmlPage {
     public DomElement createElementNS(final String namespaceURI, final String qualifiedName) {
         return getWebClient().getPageCreator().getHtmlParser()
                 .getElementFactory(this, namespaceURI, qualifiedName, false, true)
-                .createElementNS(this, namespaceURI, qualifiedName, null, true);
+                .createElementNS(this, namespaceURI, qualifiedName, null);
     }
 
     /**
@@ -800,7 +797,7 @@ public class HtmlPage extends SgmlPage {
         for (final HtmlElement element : getHtmlElementDescendants()) {
             final String tagName = element.getTagName();
             if (TABBABLE_TAGS.contains(tagName)) {
-                final boolean disabled = element.hasAttribute(ATTRIBUTE_DISABLED);
+                final boolean disabled = element.isDisabledElementAndDisabled();
                 if (!disabled && !HtmlElement.TAB_INDEX_OUT_OF_BOUNDS.equals(element.getTabIndex())) {
                     tabbableElements.add(element);
                 }
@@ -941,7 +938,7 @@ public class HtmlPage extends SgmlPage {
      */
     public ScriptResult executeJavaScript(String sourceCode, final String sourceName, final int startLine) {
         if (!getWebClient().isJavaScriptEnabled()) {
-            return new ScriptResult(JavaScriptEngine.Undefined);
+            return new ScriptResult(JavaScriptEngine.UNDEFINED);
         }
 
         if (StringUtils.startsWithIgnoreCase(sourceCode, JavaScriptURLConnection.JAVASCRIPT_PREFIX)) {
@@ -1064,7 +1061,7 @@ public class HtmlPage extends SgmlPage {
         request.setAdditionalHeader(HttpHeader.SEC_FETCH_MODE, "no-cors");
         request.setAdditionalHeader(HttpHeader.SEC_FETCH_DEST, "script");
 
-        request.setRefererlHeader(referringRequest.getUrl());
+        request.setRefererHeader(referringRequest.getUrl());
         request.setCharset(scriptCharset);
 
         // use info from script tag or fall back to utf-8
@@ -1156,9 +1153,7 @@ public class HtmlPage extends SgmlPage {
     public void setTitleText(final String message) {
         HtmlTitle titleElement = getTitleElement();
         if (titleElement == null) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("No title element, creating one");
-            }
+            LOG.debug("No title element, creating one");
             final HtmlHead head = (HtmlHead) getFirstChildElement(getDocumentElement(), HtmlHead.class);
             if (head == null) {
                 // perhaps should we create head too?
@@ -1243,7 +1238,7 @@ public class HtmlPage extends SgmlPage {
         final WebWindow window = getEnclosingWindow();
         if (window.getScriptableObject() instanceof Window) {
             final Event event;
-            if (eventType.equals(Event.TYPE_BEFORE_UNLOAD)) {
+            if (Event.TYPE_BEFORE_UNLOAD.equals(eventType)) {
                 event = new BeforeUnloadEvent(this, eventType);
             }
             else {
@@ -1334,10 +1329,8 @@ public class HtmlPage extends SgmlPage {
             if (beforeUnloadEvent.isBeforeUnloadMessageSet()) {
                 final OnbeforeunloadHandler handler = getWebClient().getOnbeforeunloadHandler();
                 if (handler == null) {
-                    if (LOG.isWarnEnabled()) {
-                        LOG.warn("document.onbeforeunload() returned a string in event.returnValue,"
-                                + " but no onbeforeunload handler installed.");
-                    }
+                    LOG.warn("document.onbeforeunload() returned a string in event.returnValue,"
+                            + " but no onbeforeunload handler installed.");
                 }
                 else {
                     final String message = JavaScriptEngine.toString(beforeUnloadEvent.getReturnValue());
@@ -1469,14 +1462,19 @@ public class HtmlPage extends SgmlPage {
             return;
         }
         final DomElement doc = getDocumentElement();
-        final List<HtmlElement> elements = new ArrayList<>(doc.getElementsByTagName("script"));
-        for (final HtmlElement e : elements) {
-            if (e instanceof HtmlScript) {
-                final HtmlScript script = (HtmlScript) e;
+        final List<HtmlScript> scripts = new ArrayList<>();
+
+        // don't call getElementsByTagName() here because it creates a live collection
+        for (final HtmlElement elem : doc.getHtmlElementDescendants()) {
+            if ("script".equals(elem.getLocalName()) && (elem instanceof HtmlScript)) {
+                final HtmlScript script = (HtmlScript) elem;
                 if (script.isDeferred() && ATTRIBUTE_NOT_DEFINED != script.getSrcAttribute()) {
-                    ScriptElementSupport.executeScriptIfNeeded(script, true, true);
+                    scripts.add(script);
                 }
             }
+        }
+        for (final HtmlScript script : scripts) {
+            ScriptElementSupport.executeScriptIfNeeded(script, true, true);
         }
     }
 
@@ -1746,7 +1744,11 @@ public class HtmlPage extends SgmlPage {
             if (node instanceof BaseFrameElement) {
                 frameElements_.add((BaseFrameElement) node);
             }
-            for (final HtmlElement child : node.getHtmlElementDescendants()) {
+
+            for (final Iterator<HtmlElement> iterator
+                          = node.new DescendantElementsIterator<>(HtmlElement.class);
+                            iterator.hasNext();) {
+                final HtmlElement child = iterator.next();
                 if (child instanceof BaseFrameElement) {
                     frameElements_.add((BaseFrameElement) child);
                 }
@@ -1786,14 +1788,6 @@ public class HtmlPage extends SgmlPage {
     /**
      * Adds an element to the ID and name maps, if necessary.
      * @param element the element to be added to the ID and name maps
-     */
-    void addMappedElement(final DomElement element) {
-        addMappedElement(element, false);
-    }
-
-    /**
-     * Adds an element to the ID and name maps, if necessary.
-     * @param element the element to be added to the ID and name maps
      * @param recurse indicates if children must be added too
      */
     void addMappedElement(final DomElement element, final boolean recurse) {
@@ -1810,7 +1804,7 @@ public class HtmlPage extends SgmlPage {
         if (ATTRIBUTE_NOT_DEFINED != value) {
             SortedSet<DomElement> elements = map.get(value);
             if (elements == null) {
-                elements = new TreeSet<>(documentPositionComparator);
+                elements = new TreeSet<>(DOCUMENT_POSITION_COMPERATOR);
                 elements.add(element);
                 map.put(value, elements);
             }
@@ -1819,18 +1813,16 @@ public class HtmlPage extends SgmlPage {
             }
         }
         if (recurse) {
-            for (final DomElement child : element.getChildElements()) {
-                addElement(map, child, attribute, true);
+            // poor man's approach - we don't use getChildElements()
+            // to avoid a bunch of object constructions
+            DomNode nextChild = element.getFirstChild();
+            while (nextChild != null) {
+                if (nextChild instanceof DomElement) {
+                    addElement(map, (DomElement) nextChild, attribute, true);
+                }
+                nextChild = nextChild.getNextSibling();
             }
         }
-    }
-
-    /**
-     * Removes an element from the ID and name maps, if necessary.
-     * @param element the element to be removed from the ID and name maps
-     */
-    void removeMappedElement(final HtmlElement element) {
-        removeMappedElement(element, false, false);
     }
 
     /**
@@ -1876,7 +1868,7 @@ public class HtmlPage extends SgmlPage {
     }
 
     private void calculateBase() {
-        final List<HtmlElement> baseElements = getDocumentElement().getElementsByTagName("base");
+        final List<HtmlElement> baseElements = getDocumentElement().getStaticElementsByTagName("base");
 
         base_ = null;
         for (final HtmlElement baseElement : baseElements) {
@@ -1934,7 +1926,7 @@ public class HtmlPage extends SgmlPage {
             return Collections.emptyList(); // weird case, for instance if document.documentElement has been removed
         }
         final String nameLC = httpEquiv.toLowerCase(Locale.ROOT);
-        final List<HtmlMeta> tags = getDocumentElement().getElementsByTagNameImpl("meta");
+        final List<HtmlMeta> tags = getDocumentElement().getStaticElementsByTagName("meta");
         final List<HtmlMeta> foundTags = new ArrayList<>();
         for (final HtmlMeta htmlMeta : tags) {
             if (nameLC.equals(htmlMeta.getHttpEquivAttribute().toLowerCase(Locale.ROOT))) {
@@ -1982,7 +1974,7 @@ public class HtmlPage extends SgmlPage {
             result.selectionRanges_ = new ArrayList<>(3);
             // the original one is synchronized so we should do that here too, shouldn't we?
             result.afterLoadActions_ = Collections.synchronizedList(new ArrayList<>());
-            result.frameElements_ = new TreeSet<>(documentPositionComparator);
+            result.frameElements_ = new TreeSet<>(DOCUMENT_POSITION_COMPERATOR);
             for (DomNode child = getFirstChild(); child != null; child = child.getNextSibling()) {
                 result.appendChild(child.cloneNode(true));
             }
@@ -2632,8 +2624,7 @@ public class HtmlPage extends SgmlPage {
      */
     public ComputedCssStyleDeclaration getStyleFromCache(final DomElement element,
             final String normalizedPseudo) {
-        final ComputedCssStyleDeclaration styleFromCache = getCssPropertiesCache().get(element, normalizedPseudo);
-        return styleFromCache;
+        return getCssPropertiesCache().get(element, normalizedPseudo);
     }
 
     /**
@@ -2726,7 +2717,11 @@ public class HtmlPage extends SgmlPage {
      */
     private class DomHtmlAttributeChangeListenerImpl implements DomChangeListener, HtmlAttributeChangeListener {
 
+        /**
+         * Ctor.
+         */
         DomHtmlAttributeChangeListenerImpl() {
+            super();
         }
 
         /**
@@ -2799,7 +2794,11 @@ public class HtmlPage extends SgmlPage {
         private transient WeakHashMap<DomElement, Map<String, ComputedCssStyleDeclaration>>
                     computedStyles_ = new WeakHashMap<>();
 
+        /**
+         * Ctor.
+         */
         ComputedStylesCache() {
+            super();
         }
 
         public synchronized ComputedCssStyleDeclaration get(final DomElement element,

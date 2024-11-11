@@ -47,7 +47,7 @@ public enum BrowserVersionFeatures {
     CSS_BACKGROUND_RGBA,
 
     /** {@code CSSFontFaceRule.cssText} uses one more blank. */
-    @BrowserFeature(FF)
+    @BrowserFeature(FF_ESR)
     CSS_CSSTEXT_FF_STYLE,
 
     /** Is display style 'block'. */
@@ -63,7 +63,7 @@ public enum BrowserVersionFeatures {
     CSS_RP_DISPLAY_NONE,
 
     /** The default value of the display property for the 'rt' tag is always 'ruby-text'. */
-    @BrowserFeature(FF_ESR)
+    @BrowserFeature({FF, FF_ESR})
     CSS_RT_DISPLAY_RUBY_TEXT_ALWAYS,
 
     /** The context menu MouseEvent has a detail of 1. */
@@ -79,23 +79,23 @@ public enum BrowserVersionFeatures {
     EVENT_ONANIMATION_DOCUMENT_CREATE_NOT_SUPPORTED,
 
     /** Triggers 'onclick' event handler using <code>PointerEvent</code>. */
-    @BrowserFeature({CHROME, EDGE})
+    @BrowserFeature({CHROME, EDGE, FF})
     EVENT_ONCLICK_USES_POINTEREVENT,
 
     /** <code>CloseEvent</code> can not be created by calling document.createEvent('CloseEvent'). */
     @BrowserFeature({FF, FF_ESR})
     EVENT_ONCLOSE_DOCUMENT_CREATE_NOT_SUPPORTED,
 
-    /** FF triggers a mouseover event even if the option is disabled. */
-    @BrowserFeature({FF, FF_ESR})
-    EVENT_ONMOUSEOVER_FOR_DISABLED_OPTION,
-
     /** <code>PopStateEvent</code> can not be created by calling document.createEvent('PopStateEvent'). */
     @BrowserFeature({FF, FF_ESR})
     EVENT_ONPOPSTATE_DOCUMENT_CREATE_NOT_SUPPORTED,
 
     /** Supports event type 'TextEvent'. */
-    @BrowserFeature({CHROME, EDGE})
+    @BrowserFeature({FF, FF_ESR})
+    EVENT_TYPE_MUTATIONEVENT,
+
+    /** Supports event type 'TextEvent'. */
+    @BrowserFeature({CHROME, EDGE, FF})
     EVENT_TYPE_TEXTEVENT,
 
     /** Supports event type 'WheelEvent'. */
@@ -110,17 +110,9 @@ public enum BrowserVersionFeatures {
     @BrowserFeature({CHROME, EDGE})
     FORM_SUBMISSION_HEADER_CACHE_CONTROL_MAX_AGE,
 
-    /** If the frame src has 'about:' scheme always use 'about:blank' as source. */
-    @BrowserFeature({FF, FF_ESR})
-    FRAME_LOCATION_ABOUT_BLANK_FOR_ABOUT_SCHEME,
-
     /** Should org.htmlunit.javascript.host.html.HTMLBaseFontElement#isEndTagForbidden(). */
     @BrowserFeature({FF, FF_ESR})
     HTMLBASEFONT_END_TAG_FORBIDDEN,
-
-    /** If type submit/reset the form update is triggered even if disabled. */
-    @BrowserFeature(FF_ESR)
-    HTMLBUTTON_SUBMIT_IGNORES_DISABLED_STATE,
 
     /** willValidate does not check the readonly property. */
     @BrowserFeature({FF, FF_ESR})
@@ -131,7 +123,7 @@ public enum BrowserVersionFeatures {
     HTMLCOLLECTION_NAMED_ITEM_ID_FIRST,
 
     /** Calling cookies setter with blank string does not reset the cookies. */
-    @BrowserFeature({CHROME, EDGE})
+    @BrowserFeature({CHROME, EDGE, FF})
     HTMLDOCUMENT_COOKIES_IGNORE_BLANK,
 
     /**
@@ -168,10 +160,6 @@ public enum BrowserVersionFeatures {
     @BrowserFeature({CHROME, EDGE})
     HTMLIMAGE_NAME_VALUE_PARAMS,
 
-    /** When clicking a {@code checkbox} or {@code radio} input the surrounding anchor is not clicked. */
-    @BrowserFeature({CHROME, EDGE, FF})
-    HTMLINPUT_CHECKBOX_DOES_NOT_CLICK_SURROUNDING_ANCHOR,
-
     /** HTMLInputElement image type is not supported. */
     @BrowserFeature({CHROME, EDGE})
     HTMLINPUT_TYPE_IMAGE_IGNORES_CUSTOM_VALIDITY,
@@ -200,6 +188,10 @@ public enum BrowserVersionFeatures {
     @BrowserFeature({CHROME, EDGE})
     HTML_COMMAND_TAG,
 
+    /** HTML parser supports the 'layer' tag. */
+    @BrowserFeature({CHROME, EDGE})
+    HTML_LAYER_TAG,
+
     /** Additionally support dates in format "d/M/yyyy". */
     @BrowserFeature({FF, FF_ESR})
     HTTP_COOKIE_EXTENDED_DATE_PATTERNS_1,
@@ -217,7 +209,7 @@ public enum BrowserVersionFeatures {
     HTTP_HEADER_CH_UA,
 
     /** Browser sends Priority headers. */
-    @BrowserFeature(FF)
+    @BrowserFeature({FF, FF_ESR})
     HTTP_HEADER_PRIORITY,
 
     /** The anchor hostname setter ignores blank url's. */
@@ -245,13 +237,13 @@ public enum BrowserVersionFeatures {
     @BrowserFeature({FF, FF_ESR})
     JS_AREA_WITHOUT_HREF_FOCUSABLE,
 
+    /** Sorting an array using a user defined comperator accepts inconsistent iterators. */
+    @BrowserFeature({FF, FF_ESR})
+    JS_ARRAY_SORT_ACCEPTS_INCONSISTENT_COMPERATOR,
+
     /** AudioProcessingEvent ctor is callable. */
     @BrowserFeature({CHROME, EDGE})
     JS_AUDIO_PROCESSING_EVENT_CTOR,
-
-    /** HTMLBGSoundElement reported as HTMLUnknownElement. */
-    @BrowserFeature({FF, FF_ESR})
-    JS_BGSOUND_AS_UNKNOWN,
 
     /** toDataURL for canvas returns the CHROME version of the PNG. */
     @BrowserFeature({CHROME, EDGE})
@@ -266,16 +258,24 @@ public enum BrowserVersionFeatures {
     JS_CLIENTHEIGHT_INPUT_18,
 
     /** ClientHeight for radio button and checkbox is 10. */
-    @BrowserFeature({FF, FF_ESR})
+    @BrowserFeature(FF_ESR)
     JS_CLIENTHEIGHT_RADIO_CHECKBOX_10,
+
+    /** ClientHeight for radio button and checkbox is 14. */
+    @BrowserFeature(FF)
+    JS_CLIENTHEIGHT_RADIO_CHECKBOX_14,
 
     /** ClientWidth for text/password input is 173. */
     @BrowserFeature({CHROME, EDGE})
     JS_CLIENTWIDTH_INPUT_TEXT_173,
 
     /** ClientWidth for radio button and checkbox is 10. */
-    @BrowserFeature({FF, FF_ESR})
+    @BrowserFeature(FF_ESR)
     JS_CLIENTWIDTH_RADIO_CHECKBOX_10,
+
+    /** ClientWidth for radio button and checkbox is 14. */
+    @BrowserFeature(FF)
+    JS_CLIENTWIDTH_RADIO_CHECKBOX_14,
 
     /** item is enumerated before length property of CSSRuleList. */
     @BrowserFeature({FF, FF_ESR})
@@ -357,8 +357,12 @@ public enum BrowserVersionFeatures {
     JS_INTL_V8_BREAK_ITERATOR,
 
     /** Indicates that window.Iterator is supported. */
-    @BrowserFeature({CHROME, EDGE})
+    @BrowserFeature({CHROME, EDGE, FF})
     JS_ITERATOR_VISIBLE_IN_WINDOW,
+
+    /** For the 'about' protocol the location always returns an empty query. */
+    @BrowserFeature({FF, FF_ESR})
+    JS_LOCATION_IGNORE_QUERY_FOR_ABOUT_PROTOCOL,
 
     /** Reload sends a referrer header. */
     @BrowserFeature({CHROME, EDGE})
@@ -416,10 +420,6 @@ public enum BrowserVersionFeatures {
     @BrowserFeature({CHROME, EDGE})
     JS_TABLE_SPAN_SET_ZERO_IF_INVALID,
 
-    /** WebSocket constructor accepts undefined/null. */
-    @BrowserFeature({CHROME, EDGE, FF})
-    JS_WEBSOCKET_CTOR_ACCEPTS_UNDEFINED,
-
     /** window.getComputedStyle works with pseudo selectors without colon in front. */
     @BrowserFeature({CHROME, EDGE})
     JS_WINDOW_COMPUTED_STYLE_PSEUDO_ACCEPT_WITHOUT_COLON,
@@ -458,16 +458,6 @@ public enum BrowserVersionFeatures {
     @BrowserFeature({FF, FF_ESR})
     KEYBOARD_EVENT_SPECIAL_KEYPRESS,
 
-    /**
-     * The default display style of multicol is 'block'.
-     */
-    @BrowserFeature({FF, FF_ESR})
-    MULTICOL_BLOCK,
-
-    /** The protocol setter does not check for special protocols. */
-    @BrowserFeature(FF_ESR)
-    URL_IGNORE_SPECIAL,
-
     /** XMLHttpRequest.getAllResponseHeaders() uses only Lf as separator. */
     @BrowserFeature({FF, FF_ESR})
     XHR_ALL_RESPONSE_HEADERS_SEPARATE_BY_LF,
@@ -481,11 +471,6 @@ public enum BrowserVersionFeatures {
     /** XMLHttpRequest triggers the load events also if the abort was signaled. */
     @BrowserFeature({FF, FF_ESR})
     XHR_LOAD_ALWAYS_AFTER_DONE,
-
-    /** XMLHttpRequest triggers an additional progress event if a network error
-     * was thrown in async mode. */
-    @BrowserFeature(FF_ESR)
-    XHR_PROGRESS_ON_NETWORK_ERROR_ASYNC,
 
     /** If state unsent the response text is empty even if the response type is wrong. */
     @BrowserFeature({FF, FF_ESR})

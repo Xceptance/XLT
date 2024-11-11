@@ -14,6 +14,7 @@
  */
 package org.htmlunit.javascript.host;
 
+import static org.htmlunit.BrowserVersionFeatures.JS_LOCATION_IGNORE_QUERY_FOR_ABOUT_PROTOCOL;
 import static org.htmlunit.BrowserVersionFeatures.JS_LOCATION_RELOAD_REFERRER;
 
 import java.io.IOException;
@@ -69,69 +70,69 @@ public class Location extends HtmlUnitScriptable {
      */
     private Window window_;
 
-    private static final Method methodAssign;
-    private static final Method methodReload;
-    private static final Method methodReplace;
-    private static final Method methodToString;
+    private static final Method METHOD_ASSIGN;
+    private static final Method METHOD_RELOAD;
+    private static final Method METHOD_REPLACE;
+    private static final Method METHOD_TO_STRING;
 
-    private static final Method getterHash;
-    private static final Method setterHash;
+    private static final Method GETTER_HASH;
+    private static final Method SETTER_HASH;
 
-    private static final Method getterHost;
-    private static final Method setterHost;
+    private static final Method GETTER_HOST;
+    private static final Method SETTER_HOST;
 
-    private static final Method getterHostname;
-    private static final Method setterHostname;
+    private static final Method GETTER_HOSTNAME;
+    private static final Method SETTER_HOSTNAME;
 
-    private static final Method getterHref;
-    private static final Method setterHref;
+    private static final Method GETTER_HREF;
+    private static final Method SETTER_HREF;
 
-    private static final Method getterOrigin;
+    private static final Method GETTER_ORIGIN;
 
-    private static final Method getterPathname;
-    private static final Method setterPathname;
+    private static final Method GETTER_PATHNAME;
+    private static final Method SETTER_PATHNAME;
 
-    private static final Method getterPort;
-    private static final Method setterPort;
+    private static final Method GETTER_PORT;
+    private static final Method SETTER_PORT;
 
-    private static final Method getterProtocol;
-    private static final Method setterProtocol;
+    private static final Method GETTER_PROTOCOL;
+    private static final Method SETTER_PROTOCOL;
 
-    private static final Method getterSearch;
-    private static final Method setterSearch;
+    private static final Method GETTER_SEARCH;
+    private static final Method SETTER_SEARCH;
 
     static {
         try {
-            methodAssign = Location.class.getDeclaredMethod("assign", String.class);
-            methodReload = Location.class.getDeclaredMethod("reload", boolean.class);
-            methodReplace = Location.class.getDeclaredMethod("replace", String.class);
-            methodToString = Location.class.getDeclaredMethod("jsToString");
+            METHOD_ASSIGN = Location.class.getDeclaredMethod("assign", String.class);
+            METHOD_RELOAD = Location.class.getDeclaredMethod("reload", boolean.class);
+            METHOD_REPLACE = Location.class.getDeclaredMethod("replace", String.class);
+            METHOD_TO_STRING = Location.class.getDeclaredMethod("jsToString");
 
-            getterHash = Location.class.getDeclaredMethod("getHash");
-            setterHash = Location.class.getDeclaredMethod("setHash", String.class);
+            GETTER_HASH = Location.class.getDeclaredMethod("getHash");
+            SETTER_HASH = Location.class.getDeclaredMethod("setHash", String.class);
 
-            getterHost = Location.class.getDeclaredMethod("getHost");
-            setterHost = Location.class.getDeclaredMethod("setHost", String.class);
+            GETTER_HOST = Location.class.getDeclaredMethod("getHost");
+            SETTER_HOST = Location.class.getDeclaredMethod("setHost", String.class);
 
-            getterHostname = Location.class.getDeclaredMethod("getHostname");
-            setterHostname = Location.class.getDeclaredMethod("setHostname", String.class);
+            GETTER_HOSTNAME = Location.class.getDeclaredMethod("getHostname");
+            SETTER_HOSTNAME = Location.class.getDeclaredMethod("setHostname", String.class);
 
-            getterHref = Location.class.getDeclaredMethod("getHref");
-            setterHref = Location.class.getDeclaredMethod("setHref", String.class);
+            GETTER_HREF = Location.class.getDeclaredMethod("getHref");
+            SETTER_HREF = Location.class.getDeclaredMethod("setHref", String.class);
 
-            getterOrigin = Location.class.getDeclaredMethod("getOrigin");
+            GETTER_ORIGIN = Location.class.getDeclaredMethod("getOrigin");
 
-            getterPathname = Location.class.getDeclaredMethod("getPathname");
-            setterPathname = Location.class.getDeclaredMethod("setPathname", String.class);
+            GETTER_PATHNAME = Location.class.getDeclaredMethod("getPathname");
+            SETTER_PATHNAME = Location.class.getDeclaredMethod("setPathname", String.class);
 
-            getterPort = Location.class.getDeclaredMethod("getPort");
-            setterPort = Location.class.getDeclaredMethod("setPort", String.class);
+            GETTER_PORT = Location.class.getDeclaredMethod("getPort");
+            SETTER_PORT = Location.class.getDeclaredMethod("setPort", String.class);
 
-            getterProtocol = Location.class.getDeclaredMethod("getProtocol");
-            setterProtocol = Location.class.getDeclaredMethod("setProtocol", String.class);
+            GETTER_PROTOCOL = Location.class.getDeclaredMethod("getProtocol");
+            SETTER_PROTOCOL = Location.class.getDeclaredMethod("setProtocol", String.class);
 
-            getterSearch = Location.class.getDeclaredMethod("getSearch");
-            setterSearch = Location.class.getDeclaredMethod("setSearch", String.class);
+            GETTER_SEARCH = Location.class.getDeclaredMethod("getSearch");
+            SETTER_SEARCH = Location.class.getDeclaredMethod("setSearch", String.class);
         }
         catch (NoSuchMethodException | SecurityException e) {
             throw new RuntimeException(e);
@@ -147,37 +148,31 @@ public class Location extends HtmlUnitScriptable {
     /**
      * Creates an instance.
      */
-    public Location() {
-    }
-
-    /**
-     * Creates an instance.
-     */
     @JsxConstructor
     public void jsConstructor() {
         final int attributes = ScriptableObject.PERMANENT | ScriptableObject.READONLY;
 
-        FunctionObject functionObject = new FunctionObject(methodAssign.getName(), methodAssign, this);
-        defineProperty(methodAssign.getName(), functionObject, attributes);
+        FunctionObject functionObject = new FunctionObject(METHOD_ASSIGN.getName(), METHOD_ASSIGN, this);
+        defineProperty(METHOD_ASSIGN.getName(), functionObject, attributes);
 
-        functionObject = new FunctionObject(methodReload.getName(), methodReload, this);
-        defineProperty(methodReload.getName(), functionObject, attributes);
+        functionObject = new FunctionObject(METHOD_RELOAD.getName(), METHOD_RELOAD, this);
+        defineProperty(METHOD_RELOAD.getName(), functionObject, attributes);
 
-        functionObject = new FunctionObject(methodReplace.getName(), methodReplace, this);
-        defineProperty(methodReplace.getName(), functionObject, attributes);
+        functionObject = new FunctionObject(METHOD_REPLACE.getName(), METHOD_REPLACE, this);
+        defineProperty(METHOD_REPLACE.getName(), functionObject, attributes);
 
-        functionObject = new FunctionObject(methodToString.getName(), methodToString, this);
+        functionObject = new FunctionObject(METHOD_TO_STRING.getName(), METHOD_TO_STRING, this);
         defineProperty("toString", functionObject, attributes);
 
-        defineProperty("hash", null, getterHash, setterHash, attributes);
-        defineProperty("host", null, getterHost, setterHost, attributes);
-        defineProperty("hostname", null, getterHostname, setterHostname, attributes);
-        defineProperty("href", null, getterHref, setterHref, attributes);
-        defineProperty("origin", null, getterOrigin, null, attributes);
-        defineProperty("pathname", null, getterPathname, setterPathname, attributes);
-        defineProperty("port", null, getterPort, setterPort, attributes);
-        defineProperty("protocol", null, getterProtocol, setterProtocol, attributes);
-        defineProperty("search", null, getterSearch, setterSearch, attributes);
+        defineProperty("hash", null, GETTER_HASH, SETTER_HASH, attributes);
+        defineProperty("host", null, GETTER_HOST, SETTER_HOST, attributes);
+        defineProperty("hostname", null, GETTER_HOSTNAME, SETTER_HOSTNAME, attributes);
+        defineProperty("href", null, GETTER_HREF, SETTER_HREF, attributes);
+        defineProperty("origin", null, GETTER_ORIGIN, null, attributes);
+        defineProperty("pathname", null, GETTER_PATHNAME, SETTER_PATHNAME, attributes);
+        defineProperty("port", null, GETTER_PORT, SETTER_PORT, attributes);
+        defineProperty("protocol", null, GETTER_PROTOCOL, SETTER_PROTOCOL, attributes);
+        defineProperty("search", null, GETTER_SEARCH, SETTER_SEARCH, attributes);
     }
 
     /**
@@ -231,7 +226,7 @@ public class Location extends HtmlUnitScriptable {
         // update request url with location.href in case hash was changed
         request.setUrl(new URL(getHref()));
         if (webWindow.getWebClient().getBrowserVersion().hasFeature(JS_LOCATION_RELOAD_REFERRER)) {
-            request.setRefererlHeader(htmlPage.getUrl());
+            request.setRefererHeader(htmlPage.getUrl());
         }
 
         webWindow.getWebClient().download(webWindow, "", request, false, false, null, "JS location.reload");
@@ -299,7 +294,7 @@ public class Location extends HtmlUnitScriptable {
      * @see <a href="http://msdn.microsoft.com/en-us/library/ms533867.aspx">MSDN Documentation</a>
      */
     public void setHref(final String newLocation) throws IOException {
-        WebWindow webWindow = getWindow(getStartingScope()).getWebWindow();
+        WebWindow webWindow = getWindowFromTopCallScope().getWebWindow();
         final HtmlPage page = (HtmlPage) webWindow.getEnclosedPage();
         if (newLocation.startsWith(JavaScriptURLConnection.JAVASCRIPT_PREFIX)) {
             final String script = newLocation.substring(11);
@@ -317,7 +312,7 @@ public class Location extends HtmlUnitScriptable {
 
             final WebRequest request = new WebRequest(url,
                         browserVersion.getHtmlAcceptHeader(), browserVersion.getAcceptEncodingHeader());
-            request.setRefererlHeader(page.getUrl());
+            request.setRefererHeader(page.getUrl());
 
             webWindow = window_.getWebWindow();
             webWindow.getWebClient().download(webWindow, "", request, true, false, null, "JS set location");
@@ -336,8 +331,15 @@ public class Location extends HtmlUnitScriptable {
      * @see <a href="http://msdn.microsoft.com/en-us/library/ms534620.aspx">MSDN Documentation</a>
      */
     public String getSearch() {
-        final String search = getUrl().getQuery();
-        if (search == null) {
+        final URL url = getUrl();
+        final String search = url.getQuery();
+        if (StringUtils.isEmpty(search)) {
+            return "";
+        }
+
+        if (StringUtils.startsWithIgnoreCase(url.getProtocol(), UrlUtils.ABOUT)
+                && window_.getWebWindow().getWebClient().getBrowserVersion()
+                                .hasFeature(JS_LOCATION_IGNORE_QUERY_FOR_ABOUT_PROTOCOL)) {
             return "";
         }
         return "?" + search;
@@ -580,7 +582,7 @@ public class Location extends HtmlUnitScriptable {
 
         final WebRequest webRequest = new WebRequest(url,
                 browserVersion.getHtmlAcceptHeader(), browserVersion.getAcceptEncodingHeader());
-        webRequest.setRefererlHeader(getUrl());
+        webRequest.setRefererHeader(getUrl());
 
         webWindow.getWebClient().getPage(webWindow, webRequest);
     }

@@ -14,8 +14,6 @@
  */
 package org.htmlunit.javascript.host.html;
 
-import org.htmlunit.html.DomNode;
-import org.htmlunit.html.DomText;
 import org.htmlunit.html.HtmlTitle;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
@@ -33,12 +31,6 @@ import org.htmlunit.javascript.configuration.JsxSetter;
 public class HTMLTitleElement extends HTMLElement {
 
     /**
-     * Creates an instance.
-     */
-    public HTMLTitleElement() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @Override
@@ -52,12 +44,9 @@ public class HTMLTitleElement extends HTMLElement {
      * @return the {@code text} attribute
      */
     @JsxGetter
-    public Object getText() {
-        final DomNode firstChild = getDomNodeOrDie().getFirstChild();
-        if (firstChild != null) {
-            return firstChild.getNodeValue();
-        }
-        return "";
+    public String getText() {
+        final HtmlTitle htmlTitle = (HtmlTitle) getDomNodeOrDie();
+        return htmlTitle.getText();
     }
 
     /**
@@ -66,14 +55,7 @@ public class HTMLTitleElement extends HTMLElement {
      */
     @JsxSetter
     public void setText(final String text) {
-        final DomNode htmlElement = getDomNodeOrDie();
-        DomNode firstChild = htmlElement.getFirstChild();
-        if (firstChild == null) {
-            firstChild = new DomText(htmlElement.getPage(), text);
-            htmlElement.appendChild(firstChild);
-        }
-        else {
-            firstChild.setNodeValue(text);
-        }
+        final HtmlTitle htmlTitle = (HtmlTitle) getDomNodeOrDie();
+        htmlTitle.setText(text);
     }
 }

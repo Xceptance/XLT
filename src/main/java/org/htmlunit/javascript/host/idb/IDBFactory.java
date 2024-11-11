@@ -28,15 +28,10 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 public class IDBFactory extends HtmlUnitScriptable {
 
     /**
-     * Creates a new instance.
-     */
-    public IDBFactory() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 }

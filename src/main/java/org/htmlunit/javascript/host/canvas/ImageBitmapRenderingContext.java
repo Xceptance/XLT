@@ -28,15 +28,10 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 public class ImageBitmapRenderingContext extends HtmlUnitScriptable {
 
     /**
-     * Default constructor.
-     */
-    public ImageBitmapRenderingContext() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 }

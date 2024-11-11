@@ -28,6 +28,7 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.host.html.HTMLDocument;
 import org.htmlunit.javascript.host.xml.XMLDocument;
+import org.htmlunit.util.StringUtils;
 import org.htmlunit.util.UrlUtils;
 import org.htmlunit.xml.XmlPage;
 
@@ -46,16 +47,11 @@ import org.htmlunit.xml.XmlPage;
 public class DOMImplementation extends HtmlUnitScriptable {
 
     /**
-     * Creates an instance.
-     */
-    public DOMImplementation() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 
     /**
@@ -223,7 +219,8 @@ public class DOMImplementation extends HtmlUnitScriptable {
         document.setPrototype(getPrototype(document.getClass()));
         if (qualifiedName != null && !qualifiedName.isEmpty()) {
             final XmlPage page = (XmlPage) document.getDomNodeOrDie();
-            page.appendChild(page.createElementNS("".equals(namespaceURI) ? null : namespaceURI, qualifiedName));
+            page.appendChild(page.createElementNS(
+                    StringUtils.isEmptyString(namespaceURI) ? null : namespaceURI, qualifiedName));
         }
         return document;
     }

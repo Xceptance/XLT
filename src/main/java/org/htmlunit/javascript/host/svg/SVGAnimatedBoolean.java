@@ -28,15 +28,10 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 public class SVGAnimatedBoolean extends HtmlUnitScriptable {
 
     /**
-     * Creates an instance.
-     */
-    public SVGAnimatedBoolean() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 }

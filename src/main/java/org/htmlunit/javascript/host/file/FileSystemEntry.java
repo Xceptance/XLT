@@ -30,15 +30,10 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 public class FileSystemEntry extends HtmlUnitScriptable {
 
     /**
-     * Creates a new instance.
-     */
-    public FileSystemEntry() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 }

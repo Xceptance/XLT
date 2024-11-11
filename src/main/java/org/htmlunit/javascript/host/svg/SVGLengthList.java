@@ -28,15 +28,10 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 public class SVGLengthList extends HtmlUnitScriptable {
 
     /**
-     * Creates an instance.
-     */
-    public SVGLengthList() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 }

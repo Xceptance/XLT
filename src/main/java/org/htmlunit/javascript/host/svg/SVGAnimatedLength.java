@@ -28,15 +28,10 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 public class SVGAnimatedLength extends HtmlUnitScriptable {
 
     /**
-     * Creates an instance.
-     */
-    public SVGAnimatedLength() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 }

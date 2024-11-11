@@ -127,7 +127,6 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
      * @return the value of one of the two named style attributes
      */
     public String getStyleAttribute(final Definition definition1, final Definition definition2) {
-        final String value;
         final StyleElement element1 = getStyleElement(definition1.getAttributeName());
         final StyleElement element2 = getStyleElement(definition2.getAttributeName());
 
@@ -142,9 +141,8 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
                 return element1.getValue();
             }
         }
-        value = element2.getValue();
 
-        final String[] values = StringUtils.splitAtJavaWhitespace(value);
+        final String[] values = StringUtils.splitAtJavaWhitespace(element2.getValue());
         if (definition1.name().contains("TOP")) {
             if (values.length > 0) {
                 return values[0];
@@ -216,11 +214,10 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
     public abstract int getLength();
 
     /**
-     * Returns the item in the given index.
      * @param index the index
-     * @return the item in the given index
+     * @return the name of the CSS property at the specified index
      */
-    public abstract Object item(int index);
+    public abstract String item(int index);
 
     /**
      * Returns the CSSRule that is the parent of this style block or <code>null</code> if this CSSStyleDeclaration is
@@ -260,51 +257,6 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
      */
     public boolean isComputed() {
         return false;
-    }
-
-    protected String getStyleAttribute(final Definition name, final String value) {
-        final String[] values = StringUtils.splitAtJavaWhitespace(value);
-        if (name.name().contains("TOP")) {
-            if (values.length > 0) {
-                return values[0];
-            }
-            return "";
-        }
-        else if (name.name().contains("RIGHT")) {
-            if (values.length > 1) {
-                return values[1];
-            }
-            else if (values.length > 0) {
-                return values[0];
-            }
-            return "";
-        }
-        else if (name.name().contains("BOTTOM")) {
-            if (values.length > 2) {
-                return values[2];
-            }
-            else if (values.length > 0) {
-                return values[0];
-            }
-            return "";
-        }
-        else if (name.name().contains("LEFT")) {
-            if (values.length > 3) {
-                return values[3];
-            }
-            else if (values.length > 1) {
-                return values[1];
-            }
-            else if (values.length > 0) {
-                return values[0];
-            }
-            else {
-                return "";
-            }
-        }
-        else {
-            throw new IllegalStateException("Unsupported definition: " + name);
-        }
     }
 
     /**
@@ -384,7 +336,7 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
                         return "url(\"" + domElement.getHtmlPageOrNull()
                             .getFullyQualifiedUrl(value) + "\")";
                     }
-                    catch (final Exception e) {
+                    catch (final Exception ignored) {
                         // ignore
                     }
                 }
@@ -420,7 +372,7 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
                     return "0% 0%";
                 }
                 if (isComputed()) {
-                    final String[] values = org.htmlunit.util.StringUtils.splitAtBlank(value);
+                    final String[] values = StringUtils.splitAtBlank(value);
                     switch (values[0]) {
                         case "left":
                             values[0] = "0%";
@@ -586,7 +538,7 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
             if (value == null) {
                 final String borderWidth = getStyleAttribute(Definition.BORDER_WIDTH, false);
                 if (!org.apache.commons.lang3.StringUtils.isEmpty(borderWidth)) {
-                    final String[] values = org.htmlunit.util.StringUtils.splitAtJavaWhitespace(borderWidth);
+                    final String[] values = StringUtils.splitAtJavaWhitespace(borderWidth);
                     int index = values.length;
                     if (borderSideWidth.name().contains("TOP")) {
                         index = 0;
@@ -881,8 +833,8 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
             }
             return Double.toString(value);
         }
-        catch (final NumberFormatException e) {
-            // ignore wrong value
+        catch (final NumberFormatException ignored) {
+            // ignore wrong values
         }
         return "";
     }
@@ -1049,20 +1001,20 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
      * @return the string of the color if found, null otherwise
      */
     private static String findColor(final String text) {
-        Color tmpColor = org.htmlunit.util.StringUtils.findColorRGB(text);
+        Color tmpColor = StringUtils.findColorRGB(text);
         if (tmpColor != null) {
-            return org.htmlunit.util.StringUtils.formatColor(tmpColor);
+            return StringUtils.formatColor(tmpColor);
         }
 
-        final String[] tokens = org.htmlunit.util.StringUtils.splitAtBlank(text);
+        final String[] tokens = StringUtils.splitAtBlank(text);
         for (final String token : tokens) {
             if (CssColors.isColorKeyword(token)) {
                 return token;
             }
 
-            tmpColor = org.htmlunit.util.StringUtils.asColorHexadecimal(token);
+            tmpColor = StringUtils.asColorHexadecimal(token);
             if (tmpColor != null) {
-                return org.htmlunit.util.StringUtils.formatColor(tmpColor);
+                return StringUtils.formatColor(tmpColor);
             }
         }
         return null;
@@ -1129,7 +1081,7 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
      * @return the border style if found, null otherwise
      */
     private static String findBorderStyle(final String text) {
-        for (final String token : org.htmlunit.util.StringUtils.splitAtBlank(text)) {
+        for (final String token : StringUtils.splitAtBlank(text)) {
             if (isBorderStyle(token)) {
                 return token;
             }
@@ -1156,7 +1108,7 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
      * @return the border width if found, null otherwise
      */
     private static String findBorderWidth(final String text) {
-        for (final String token : org.htmlunit.util.StringUtils.splitAtBlank(text)) {
+        for (final String token : StringUtils.splitAtBlank(text)) {
             if (isBorderWidth(token)) {
                 return token;
             }
@@ -1179,25 +1131,31 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
      * @param token the token to check
      * @return whether the token is a length or not
      */
-    static boolean isLength(String token) {
-        if (token.endsWith("em") || token.endsWith("ex") || token.endsWith("px") || token.endsWith("in")
-            || token.endsWith("cm") || token.endsWith("mm") || token.endsWith("pt") || token.endsWith("pc")
-            || token.endsWith("%")) {
-
-            if (token.endsWith("%")) {
-                token = token.substring(0, token.length() - 1);
-            }
-            else {
-                token = token.substring(0, token.length() - 2);
-            }
+    static boolean isLength(final String token) {
+        if (token.endsWith("%")) {
             try {
-                Double.parseDouble(token);
+                Double.parseDouble(token.substring(0, token.length() - 1));
                 return true;
             }
-            catch (final NumberFormatException e) {
-                // Ignore.
+            catch (final NumberFormatException ignored) {
+                // ignore wrong values
             }
+            return false;
         }
+
+        if (token.endsWith("em") || token.endsWith("ex") || token.endsWith("px") || token.endsWith("in")
+            || token.endsWith("cm") || token.endsWith("mm") || token.endsWith("pt") || token.endsWith("pc")) {
+
+            try {
+                Double.parseDouble(token.substring(0, token.length() - 2));
+                return true;
+            }
+            catch (final NumberFormatException ignored) {
+                // ignore wrong values
+            }
+            return false;
+        }
+
         return false;
     }
 }

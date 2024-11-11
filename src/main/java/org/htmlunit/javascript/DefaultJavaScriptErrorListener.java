@@ -28,6 +28,7 @@ import org.htmlunit.html.HtmlPage;
  * default logging.
  *
  * @author Ronald Brill
+ * @author Sven Strickroth
  */
 public class DefaultJavaScriptErrorListener implements JavaScriptErrorListener, Serializable {
 
@@ -38,9 +39,7 @@ public class DefaultJavaScriptErrorListener implements JavaScriptErrorListener, 
      */
     @Override
     public void scriptException(final HtmlPage page, final ScriptException scriptException) {
-        if (LOG.isErrorEnabled()) {
-            LOG.error("Error during JavaScript execution", scriptException);
-        }
+        LOG.error("Error during JavaScript execution", scriptException);
     }
 
     /**

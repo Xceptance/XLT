@@ -42,6 +42,7 @@ public class Crypto extends HtmlUnitScriptable {
      * Creates an instance.
      */
     public Crypto() {
+        super();
     }
 
     /**
@@ -57,6 +58,7 @@ public class Crypto extends HtmlUnitScriptable {
      * @param window the owning window
      */
     public Crypto(final Window window) {
+        this();
         setParentScope(window);
         setPrototype(window.getPrototype(Crypto.class));
     }

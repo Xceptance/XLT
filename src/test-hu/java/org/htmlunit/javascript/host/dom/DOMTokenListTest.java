@@ -15,8 +15,10 @@
 package org.htmlunit.javascript.host.dom;
 
 import org.htmlunit.WebDriverTestCase;
+import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -27,6 +29,7 @@ import org.junit.runner.RunWith;
  * @author Ronald Brill
  * @author Frank Danek
  * @author Marek Gawlicki
+ * @author Markus Winter
  */
 @RunWith(BrowserRunner.class)
 public class DOMTokenListTest extends WebDriverTestCase {
@@ -35,7 +38,7 @@ public class DOMTokenListTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"3", "b", "b", "true", "false", "c d"})
+    @Alerts({"3", "b", "b", "true", "false", "c d", "<body onload=\"test()\" class=\"c d\"> </body>"})
     public void various() throws Exception {
         final String html
             = "<html><head><script>\n"
@@ -46,12 +49,16 @@ public class DOMTokenListTest extends WebDriverTestCase {
             + "  log(list.item(1));\n"
             + "  log(list[1]);\n"
             + "  log(list.contains('c'));\n"
+
             + "  list.add('d');\n"
             + "  list.remove('a');\n"
             + "  log(list.toggle('b'));\n"
+
             + "  log(list);\n"
+            + "  log(document.body.outerHTML);\n"
             + "}\n"
-            + "</script></head><body onload='test()' class='a b c'>\n"
+            + "</script></head>\n"
+            + "<body onload='test()' class='a b c'>\n"
             + "</body></html>";
 
         loadPageVerifyTitle2(html);
@@ -61,7 +68,7 @@ public class DOMTokenListTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"0", "null", "false", "# removed", ""})
+    @Alerts({"0", "null", "false", "# removed", "", "<body onload=\"test()\"> </body>"})
     public void noAttribute() throws Exception {
         final String html
             = "<html><head><script>\n"
@@ -71,10 +78,13 @@ public class DOMTokenListTest extends WebDriverTestCase {
             + "  log(list.length);\n"
             + "  log(list.item(0));\n"
             + "  log(list.contains('#'));\n"
-            + "  list.remove('#'); log('# removed');\n"
+            + "  list.remove('#');"
+            + "  log('# removed');\n"
             + "  log(document.body.className);\n"
+            + "  log(document.body.outerHTML);\n"
             + "}\n"
-            + "</script></head><body onload='test()'>\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
             + "</body></html>";
 
         loadPageVerifyTitle2(html);
@@ -84,7 +94,7 @@ public class DOMTokenListTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"0", "undefined", "1", "#"})
+    @Alerts({"0", "undefined", "1", "#", "<body onload=\"test()\" class=\"#\"> </body>"})
     public void noAttributeAdd() throws Exception {
         final String html
             = "<html><head><script>\n"
@@ -95,6 +105,7 @@ public class DOMTokenListTest extends WebDriverTestCase {
             + "  log(list.add('#'));\n"
             + "  log(list.length);\n"
             + "  log(document.body.className);\n"
+            + "  log(document.body.outerHTML);\n"
             + "}\n"
             + "</script></head><body onload='test()'>\n"
             + "</body></html>";
@@ -174,6 +185,285 @@ public class DOMTokenListTest extends WebDriverTestCase {
             + "</script></head><body onload='test()'>\n"
             + "  <div id='d1' class=' a b \t c \n d \u000B e \u000C f \r g'></div>\n"
             + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"a", "b", "c", "d", "\u000B", "e", "f", "g"})
+    public void forEach() throws Exception {
+        final String html
+                = "<html><head><script>\n"
+                + LOG_TITLE_FUNCTION
+                + "function test() {\n"
+                + "  var list = document.getElementById('d1').classList;\n"
+                + "  list.forEach((i) => {\n"
+                + "    log(i);\n"
+                + "  });\n"
+                + "}\n"
+                + "</script></head><body onload='test()'>\n"
+                + "  <div id='d1' class=' a b \t c \n d \u000B e \u000C f \r g'></div>\n"
+                + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"a", "b", "c"})
+    public void forEachDuplicates() throws Exception {
+        final String html
+                = "<html><head><script>\n"
+                + LOG_TITLE_FUNCTION
+                + "function test() {\n"
+                + "  var list = document.getElementById('d1').classList;\n"
+                + "  list.forEach((i) => {\n"
+                + "    log(i);\n"
+                + "  });\n"
+                + "}\n"
+                + "</script></head><body onload='test()'>\n"
+                + "  <div id='d1' class=' a b a c'></div>\n"
+                + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"a#0#true", "b#1#true"})
+    public void forEachAllParams() throws Exception {
+        final String html
+                = "<html><head><script>\n"
+                + LOG_TITLE_FUNCTION
+                + "function test() {\n"
+                + "  var list = document.getElementById('d1').classList;\n"
+                + "  list.forEach((val, idx, listObj) => {\n"
+                + "    log(val + '#' + idx + '#' + (listObj === list));\n"
+                + "  });\n"
+                + "}\n"
+                + "</script></head><body onload='test()'>\n"
+                + "  <div id='d1' class=' a b  '></div>\n"
+                + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"exception", "exception"})
+    public void forEachWrongParam() throws Exception {
+        final String html
+                = "<html><head><script>\n"
+                + LOG_TITLE_FUNCTION
+                + "function test() {\n"
+                + "  var list = document.getElementById('d1').classList;\n"
+                + "  try {\n"
+                + "    list.forEach();\n"
+                + "  } catch(e) { log('exception'); }\n"
+                + "  try {\n"
+                + "    list.forEach('wrong');\n"
+                + "  } catch(e) { log('exception'); }\n"
+                + "}\n"
+                + "</script></head><body onload='test()'>\n"
+                + "  <div id='d1' class=' a b \t c \n d \u000B e \u000C f \r g'></div>\n"
+                + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts({"value", "done", "object", "0", "a"})
+    public void entries() throws Exception {
+        final String html = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var list = document.getElementById('d1').classList;\n"
+            + "    if (!list.entries) {\n"
+            + "      log('not defined');\n"
+            + "      return;\n"
+            + "    }\n"
+            + "    var i = list.entries().next();\n"
+            + "    for (var x in i) {\n"
+            + "      log(x);\n"
+            + "    }\n"
+            + "    var v = i.value;\n"
+            + "    log(typeof v);\n"
+            + "    log(v[0]);\n"
+            + "    log(v[1]);\n"
+            + "  }\n"
+            + "</script>\n"
+            + "</head><body onload='test()'>\n"
+            + "  <div id='d1' class=' a x'></div>\n"
+            + "</body></html>\n";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts({"true", "undefined", "function", "undefined", "undefined", "true", "true", "true"})
+    public void entriesPropertyDescriptor() throws Exception {
+        final String html = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var list = document.getElementById('d1').classList;\n"
+
+            + "    log('entries' in list);\n"
+            + "    log(Object.getOwnPropertyDescriptor(list, 'entries'));\n"
+
+            + "    var desc = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(list), 'entries');\n"
+            + "    if (desc === undefined) { log('no entries'); return; }\n"
+            + "    log(typeof desc.value);\n"
+            + "    log(desc.get);\n"
+            + "    log(desc.set);\n"
+            + "    log(desc.writable);\n"
+            + "    log(desc.enumerable);\n"
+            + "    log(desc.configurable);\n"
+            + "  }\n"
+            + "</script>\n"
+            + "</head><body onload='test()'>\n"
+            + "  <div id='d1' class=' a x'></div>\n"
+            + "</body></html>\n";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts({"0,a", "1,x"})
+    public void entriesForOf() throws Exception {
+        final String html = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var list = document.getElementById('d1').classList;\n"
+            + "    if (!list.entries) {\n"
+            + "      log('not defined');\n"
+            + "      return;\n"
+            + "    }\n"
+            + "    for (var i of list.entries()) {\n"
+            + "      log(i);\n"
+            + "    }\n"
+            + "  }\n"
+            + "</script>\n"
+            + "</head><body onload='test()'>\n"
+            + "  <div id='d1' class=' a x'></div>\n"
+            + "</body></html>\n";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception on test failure
+     */
+    @Test
+    @Alerts("0,1,2,add,contains,entries,forEach,item,keys,length,remove,replace,supports,toggle,toString,value,values")
+    @HtmlUnitNYI(CHROME = "0,1,2,add,contains,entries,forEach,item,keys,length,remove,replace,toggle,value,values",
+            EDGE = "0,1,2,add,contains,entries,forEach,item,keys,length,remove,replace,toggle,value,values",
+            FF = "0,1,2,add,contains,entries,forEach,item,keys,length,remove,replace,toggle,value,values",
+            FF_ESR = "0,1,2,add,contains,entries,forEach,item,keys,length,remove,replace,toggle,value,values")
+    public void forIn() throws Exception {
+        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_ + "<html><head>\n"
+                + "<script>\n"
+                + LOG_TITLE_FUNCTION
+                + "  function test() {\n"
+                + "    var all = [];\n"
+                + "    for (var i in document.getElementById('d1').classList) {\n"
+                + "      all.push(i);\n"
+                + "    }\n"
+                + "    all.sort(sortFunction);\n"
+                + "    log(all);\n"
+                + "  }\n"
+                + "  function sortFunction(s1, s2) {\n"
+                + "    return s1.toLowerCase() > s2.toLowerCase() ? 1 : -1;\n"
+                + "  }\n"
+                + "</script>\n"
+                + "</head><body onload='test()'>\n"
+                + "  <div id='d1' class=' a b g'></div>\n"
+                + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception on test failure
+     */
+    @Test
+    @Alerts("add,contains,entries,forEach,item,keys,length,remove,replace,supports,toggle,toString,value,values")
+    @HtmlUnitNYI(CHROME = "add,contains,entries,forEach,item,keys,length,remove,replace,toggle,value,values",
+            EDGE = "add,contains,entries,forEach,item,keys,length,remove,replace,toggle,value,values",
+            FF = "add,contains,entries,forEach,item,keys,length,remove,replace,toggle,value,values",
+            FF_ESR = "add,contains,entries,forEach,item,keys,length,remove,replace,toggle,value,values")
+    public void forInEmptyList() throws Exception {
+        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_ + "<html><head>\n"
+                + "<script>\n"
+                + LOG_TITLE_FUNCTION
+                + "  function test() {\n"
+                + "    var all = [];\n"
+                + "    for (var i in document.getElementById('d1').classList) {\n"
+                + "      all.push(i);\n"
+                + "    }\n"
+                + "    all.sort(sortFunction);\n"
+                + "    log(all);\n"
+                + "  }\n"
+                + "  function sortFunction(s1, s2) {\n"
+                + "    return s1.toLowerCase() > s2.toLowerCase() ? 1 : -1;\n"
+                + "  }\n"
+                + "</script>\n"
+                + "</head><body onload='test()'>\n"
+                + "  <div id='d1'></div>\n"
+                + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception on test failure
+     */
+    @Test
+    @Alerts({"true", "a", "b", "g"})
+    public void iterator() throws Exception {
+        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_ + "<html><head>\n"
+                + "<script>\n"
+                + LOG_TITLE_FUNCTION
+                + "  function test() {\n"
+                + "    var list = document.getElementById('d1').classList;\n"
+
+                + "    if (typeof Symbol != 'undefined') {\n"
+                + "      log(list[Symbol.iterator] === list.values);\n"
+                + "    }\n"
+
+                + "    if (!list.forEach) {\n"
+                + "      log('no for..of');\n"
+                + "      return;\n"
+                + "    }\n"
+
+                + "    for (var i of list) {\n"
+                + "      log(i);\n"
+                + "    }\n"
+                + "  }\n"
+                + "</script>\n"
+                + "</head><body onload='test()'>\n"
+                + "  <div id='d1' class=' a b g'></div>\n"
+                + "</body></html>";
 
         loadPageVerifyTitle2(html);
     }
@@ -544,6 +834,15 @@ public class DOMTokenListTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
+    @Alerts({"b\\sa\\sb", "2", "3", "b\\sa\\sc", "class\\schanged\\sold:\\sb\\sa\\sb"})
+    public void addNormalizes() throws Exception {
+        add("b a b", "c");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
     @Alerts({"a\\sb\\sa", "2", "exception", "2", "a\\sb\\sa"})
     public void addElementWithBlank() throws Exception {
         add("a b a", "a b");
@@ -667,7 +966,7 @@ public class DOMTokenListTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"a\\sb", "2", "exception", "2", "a\\sb"})
+    @Alerts({"a\\sb", "2", "exception", "2", "a\\sb", "<div\\sid=\"d1\"\\sclass=\"a\\sb\"></div>"})
     public void removeEmpty() throws Exception {
         remove("a b", "");
     }
@@ -676,7 +975,7 @@ public class DOMTokenListTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"a\\sb", "2", "exception", "2", "a\\sb"})
+    @Alerts({"a\\sb", "2", "exception", "2", "a\\sb", "<div\\sid=\"d1\"\\sclass=\"a\\sb\"></div>"})
     public void removeBlank() throws Exception {
         remove("a b", " ");
     }
@@ -685,7 +984,7 @@ public class DOMTokenListTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"a\\sb", "2", "exception", "2", "a\\sb"})
+    @Alerts({"a\\sb", "2", "exception", "2", "a\\sb", "<div\\sid=\"d1\"\\sclass=\"a\\sb\"></div>"})
     public void removeTab() throws Exception {
         remove("a b", "\t");
     }
@@ -694,7 +993,7 @@ public class DOMTokenListTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"a\\sb", "2", "exception", "2", "a\\sb"})
+    @Alerts({"a\\sb", "2", "exception", "2", "a\\sb", "<div\\sid=\"d1\"\\sclass=\"a\\sb\"></div>"})
     public void removeCr() throws Exception {
         remove("a b", "\\r");
     }
@@ -703,7 +1002,7 @@ public class DOMTokenListTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"a\\sb", "2", "exception", "2", "a\\sb"})
+    @Alerts({"a\\sb", "2", "exception", "2", "a\\sb", "<div\\sid=\"d1\"\\sclass=\"a\\sb\"></div>"})
     public void removeNl() throws Exception {
         remove("a b", "\\n");
     }
@@ -712,7 +1011,7 @@ public class DOMTokenListTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"a\\sb", "2", "2", "a\\sb", "class\\schanged\\sold:\\sa\\sb"})
+    @Alerts({"a\\sb", "2", "2", "a\\sb", "<div\\sid=\"d1\"\\sclass=\"a\\sb\"></div>", "class\\schanged\\sold:\\sa\\sb"})
     public void removeVt() throws Exception {
         remove("a b", "\u000B");
     }
@@ -721,7 +1020,7 @@ public class DOMTokenListTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"", "0", "0", "", "class\\schanged\\sold:\\s"})
+    @Alerts({"", "0", "0", "", "<div\\sid=\"d1\"\\sclass=\"\"></div>", "class\\schanged\\sold:\\s"})
     public void removeFromEmpty() throws Exception {
         remove("", "a");
     }
@@ -730,7 +1029,9 @@ public class DOMTokenListTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"\\s\\t\\s\\n\\s\\s", "0", "0", "", "class\\schanged\\sold:\\s\\s\\t\\s\\n\\s\\s"})
+    @Alerts({"\\s\\t\\s\\n\\s\\s", "0", "0", "",
+             "<div\\sid=\"d1\"\\sclass=\"\"></div>",
+             "class\\schanged\\sold:\\s\\s\\t\\s\\n\\s\\s"})
     public void removeFromWhitespace() throws Exception {
         remove(" \t \r  ", "a");
     }
@@ -739,7 +1040,7 @@ public class DOMTokenListTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"a\\sb", "2", "2", "a\\sb", "class\\schanged\\sold:\\sa\\sb"})
+    @Alerts({"a\\sb", "2", "2", "a\\sb", "<div\\sid=\"d1\"\\sclass=\"a\\sb\"></div>", "class\\schanged\\sold:\\sa\\sb"})
     public void removeNotExisting() throws Exception {
         remove("a b", "c");
     }
@@ -748,7 +1049,7 @@ public class DOMTokenListTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"a\\sb\\sa", "2", "1", "b", "class\\schanged\\sold:\\sa\\sb\\sa"})
+    @Alerts({"a\\sb\\sa", "2", "1", "b", "<div\\sid=\"d1\"\\sclass=\"b\"></div>", "class\\schanged\\sold:\\sa\\sb\\sa"})
     public void removeDuplicated() throws Exception {
         remove("a b a", "a");
     }
@@ -757,7 +1058,7 @@ public class DOMTokenListTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"a\\sb\\sa", "2", "exception", "2", "a\\sb\\sa"})
+    @Alerts({"a\\sb\\sa", "2", "exception", "2", "a\\sb\\sa", "<div\\sid=\"d1\"\\sclass=\"a\\sb\\sa\"></div>"})
     public void removeElementWithBlank() throws Exception {
         remove("a b a", "a b");
     }
@@ -766,7 +1067,8 @@ public class DOMTokenListTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"a\\sb\\sa\\tb", "2", "exception", "2", "a\\sb\\sa\\tb"})
+    @Alerts({"a\\sb\\sa\\tb", "2", "exception", "2", "a\\sb\\sa\\tb",
+             "<div\\sid=\"d1\"\\sclass=\"a\\sb\\sa\\tb\"></div>"})
     public void removeElementWithTab() throws Exception {
         remove("a b a\tb", "a\tb");
     }
@@ -775,7 +1077,7 @@ public class DOMTokenListTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"a", "1", "0", "", "class\\schanged\\sold:\\sa"})
+    @Alerts({"a", "1", "0", "", "<div\\sid=\"d1\"\\sclass=\"\"></div>", "class\\schanged\\sold:\\sa"})
     public void removeLast() throws Exception {
         remove("a", "a");
     }
@@ -785,13 +1087,57 @@ public class DOMTokenListTest extends WebDriverTestCase {
      */
     @Test
     @Alerts({"a\\s\\t\\sc\\s\\n\\sd\\s\\se", "4", "3", "a\\sd\\se",
+             "<div\\sid=\"d1\"\\sclass=\"a\\sd\\se\"></div>",
              "class\\schanged\\sold:\\sa\\s\\t\\sc\\s\\n\\sd\\s\\se"})
     public void removeWhitespace() throws Exception {
         remove("a \t c \n d  e", "c");
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"a\\sc\\sa\\sc", "2", "1", "a",
+             "<div\\sid=\"d1\"\\sclass=\"a\"></div>",
+             "class\\schanged\\sold:\\sa\\sc\\sa\\sc"})
+    public void removeNormalizes() throws Exception {
+        remove("a c a c", "c");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"c", "1", "0", "",
+             "<div\\sid=\"d1\"\\sclass=\"\"></div>",
+             "class\\schanged\\sold:\\sc"})
+    public void removeAll() throws Exception {
+        remove("c", "c");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"", "0", "0", "",
+             "<div\\sid=\"d1\"\\sclass=\"\"></div>",
+             "class\\schanged\\sold:\\s"})
+    public void removeAllFromEmpty() throws Exception {
+        remove("", "c");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"", "0", "0", "",
+             "<div\\sid=\"d1\"></div>"})
+    public void removeAllNotDefined() throws Exception {
+        remove(null, "c");
+    }
+
     private void remove(final String in, final String toRemove) throws Exception {
-        final String html
+        String html
             = "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION_NORMALIZE
@@ -816,11 +1162,157 @@ public class DOMTokenListTest extends WebDriverTestCase {
             + "    } catch(e) { log('exception');}\n"
             + "    log(list.length);\n"
             + "    log(elem.className);\n"
+            + "    log(elem.outerHTML);\n"
             + "  }\n"
             + "</script></head>\n"
-            + "<body onload='test()'>\n"
-            + "  <div id='d1' class='" + in + "'></div>\n"
-            + "</body></html>";
+            + "<body onload='test()'>\n";
+        if (in == null) {
+            html += "  <div id='d1'></div>\n";
+        }
+        else {
+            html += "  <div id='d1' class='" + in + "'></div>\n";
+        }
+
+        html += "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"a", "1", "exception", "1", "a", "<div\\sid=\"d1\"\\sclass=\"a\"></div>"})
+    public void replaceEmptyOldToken() throws Exception {
+        replace("a", "", "abc");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"a\\sb", "2", "exception", "2", "a\\sb", "<div\\sid=\"d1\"\\sclass=\"a\\sb\"></div>"})
+    public void replaceOldTokenContainingWhiteSpace() throws Exception {
+        replace("a b", " a x", "abc");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"a", "1", "exception", "1", "a", "<div\\sid=\"d1\"\\sclass=\"a\"></div>"})
+    public void replaceEmptyNewToken() throws Exception {
+        replace("a", "abc", "");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"a\\sb", "2", "exception", "2", "a\\sb", "<div\\sid=\"d1\"\\sclass=\"a\\sb\"></div>"})
+    public void replaceNewTokenContainingWhiteSpace() throws Exception {
+        replace("a b", "abc", " a x");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"a\\sb", "2", "true", "2", "a\\sax",
+             "<div\\sid=\"d1\"\\sclass=\"a\\sax\"></div>",
+             "class\\schanged\\sold:\\sa\\sb"})
+    public void replace() throws Exception {
+        replace("a b", "b", "ax");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"a\\sb\\sc\\sb\\su", "4", "true", "4", "a\\sax\\sc\\su",
+             "<div\\sid=\"d1\"\\sclass=\"a\\sax\\sc\\su\"></div>",
+             "class\\schanged\\sold:\\sa\\sb\\sc\\sb\\su"})
+    public void replaceOnce() throws Exception {
+        replace("a b c b u", "b", "ax");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"a\\sb", "2", "false", "2", "a\\sb", "<div\\sid=\"d1\"\\sclass=\"a\\sb\"></div>"})
+    public void replaceNotFound() throws Exception {
+        replace("a b", "ab", "ax");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"", "0", "false", "0", "", "<div\\sid=\"d1\"\\sclass=\"\"></div>"})
+    public void replaceInEmpty() throws Exception {
+        replace("", "ab", "ax");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"", "0", "false", "0", "",
+             "<div\\sid=\"d1\"\\sclass=\"\"></div>"})
+    public void replaceFromEmpty() throws Exception {
+        replace("", "a", "c");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"", "0", "false", "0", "",
+             "<div\\sid=\"d1\"></div>"})
+    public void replaceNotDefined() throws Exception {
+        replace(null, "a", "c");
+    }
+
+    private void replace(final String in, final String oldToken, final String newToken) throws Exception {
+        String html
+            = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION_NORMALIZE
+            + "  function test() {\n"
+            + "    var elem = document.getElementById('d1');\n"
+
+            + "    var config = { attributes: true, attributeOldValue: true };\n"
+            + "    var observer = new MutationObserver(function(mutations) {\n"
+            + "      mutations.forEach(function(mutation) {\n"
+            + "        log(mutation.attributeName + ' changed old: ' + mutation.oldValue);\n"
+            + "      });\n"
+            + "    });\n"
+            + "    observer.observe(elem, config);"
+
+            + "    var list = elem.classList;\n"
+            + "    if (!list) { log('no list'); return; }\n"
+
+            + "    log(elem.className);\n"
+            + "    log(list.length);\n"
+            + "    try {\n"
+            + "      var res = list.replace('" + oldToken + "', '" + newToken + "');\n"
+            + "      log(res);\n"
+            + "    } catch(e) { log('exception');}\n"
+            + "    log(list.length);\n"
+            + "    log(elem.className);\n"
+            + "    log(elem.outerHTML);\n"
+            + "  }\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n";
+        if (in == null) {
+            html += "  <div id='d1'></div>\n";
+        }
+        else {
+            html += "  <div id='d1' class='" + in + "'></div>\n";
+        }
+
+        html += "</body></html>";
 
         loadPageVerifyTitle2(html);
     }
@@ -850,6 +1342,30 @@ public class DOMTokenListTest extends WebDriverTestCase {
             + "</head>\n"
             + "<body onload='test()'>\n"
             + "  <div id='d1' class='hidden'></div>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"2", "false", "true", "false", "false"})
+    public void in() throws Exception {
+        final String html
+            = "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "function test() {\n"
+            + "  var list = document.getElementById('d1').classList;\n"
+            + "  log(list.length);\n"
+            + "  log(-1 in list);\n"
+            + "  log(0 in list);\n"
+            + "  log(2 in list);\n"
+            + "  log(42 in list);\n"
+            + "}\n"
+            + "</script></head><body onload='test()'>\n"
+            + "  <div id='d1' class='a e'></div>\n"
             + "</body></html>";
 
         loadPageVerifyTitle2(html);
@@ -903,30 +1419,6 @@ public class DOMTokenListTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"2", "false", "true", "false", "false"})
-    public void in() throws Exception {
-        final String html
-            = "<html><head><script>\n"
-            + LOG_TITLE_FUNCTION
-            + "function test() {\n"
-            + "  var list = document.getElementById('d1').classList;\n"
-            + "  log(list.length);\n"
-            + "  log(-1 in list);\n"
-            + "  log(0 in list);\n"
-            + "  log(2 in list);\n"
-            + "  log(42 in list);\n"
-            + "}\n"
-            + "</script></head><body onload='test()'>\n"
-            + "  <div id='d1' class='a e'></div>\n"
-            + "</body></html>";
-
-        loadPageVerifyTitle2(html);
-    }
-
-    /**
-     * @throws Exception if the test fails
-     */
-    @Test
     @Alerts({"none", "block", "none"})
     public void toggleStyleCheck() throws Exception {
         final String html
@@ -952,6 +1444,444 @@ public class DOMTokenListTest extends WebDriverTestCase {
             + "<body onload='test()'>\n"
             + "  <div id='d1' class='hidden'></div>\n"
             + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"a", "1", "exception", "1", "a", "<div\\sid=\"d1\"\\sclass=\"a\"></div>"})
+    public void toggleEmptyToken() throws Exception {
+        toggle("a", "");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"a\\sb", "2", "false", "1", "a",
+             "<div\\sid=\"d1\"\\sclass=\"a\"></div>",
+             "class\\schanged\\sold:\\sa\\sb"})
+    public void toggleStd() throws Exception {
+        toggle("a b", "b");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"a\\sb\\sc\\sb\\su", "4", "false", "3", "a\\sc\\su",
+             "<div\\sid=\"d1\"\\sclass=\"a\\sc\\su\"></div>",
+             "class\\schanged\\sold:\\sa\\sb\\sc\\sb\\su"})
+    public void toggleOnce() throws Exception {
+        toggle("a b c b u", "b");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"a\\sb", "2", "true", "3", "a\\sb\\sab",
+             "<div\\sid=\"d1\"\\sclass=\"a\\sb\\sab\"></div>",
+             "class\\schanged\\sold:\\sa\\sb"})
+    public void toggleNotFound() throws Exception {
+        toggle("a b", "ab");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"a", "1", "false", "0", "",
+             "<div\\sid=\"d1\"\\sclass=\"\"></div>",
+             "class\\schanged\\sold:\\sa"})
+    public void toggleTheOnly() throws Exception {
+        toggle("a", "a");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"", "0", "true", "1", "a",
+             "<div\\sid=\"d1\"\\sclass=\"a\"></div>",
+             "class\\schanged\\sold:\\s"})
+    public void toggleInEmpty() throws Exception {
+        toggle("", "a");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"", "0", "true", "1", "a",
+             "<div\\sid=\"d1\"\\sclass=\"a\"></div>",
+             "class\\schanged\\sold:\\s"})
+    public void toggleFromEmpty() throws Exception {
+        toggle("", "a");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"", "0", "true", "1", "a",
+             "<div\\sid=\"d1\"\\sclass=\"a\"></div>",
+             "class\\schanged\\sold:\\snull"})
+    public void toggleNotDefined() throws Exception {
+        toggle(null, "a");
+    }
+
+    private void toggle(final String in, final String token) throws Exception {
+        String html
+            = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION_NORMALIZE
+            + "  function test() {\n"
+            + "    var elem = document.getElementById('d1');\n"
+
+            + "    var config = { attributes: true, attributeOldValue: true };\n"
+            + "    var observer = new MutationObserver(function(mutations) {\n"
+            + "      mutations.forEach(function(mutation) {\n"
+            + "        log(mutation.attributeName + ' changed old: ' + mutation.oldValue);\n"
+            + "      });\n"
+            + "    });\n"
+            + "    observer.observe(elem, config);"
+
+            + "    var list = elem.classList;\n"
+            + "    if (!list) { log('no list'); return; }\n"
+
+            + "    log(elem.className);\n"
+            + "    log(list.length);\n"
+            + "    try {\n"
+            + "      var res = list.toggle('" + token + "');\n"
+            + "      log(res);\n"
+            + "    } catch(e) { log('exception');}\n"
+            + "    log(list.length);\n"
+            + "    log(elem.className);\n"
+            + "    log(elem.outerHTML);\n"
+            + "  }\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n";
+        if (in == null) {
+            html += "  <div id='d1'></div>\n";
+        }
+        else {
+            html += "  <div id='d1' class='" + in + "'></div>\n";
+        }
+
+        html += "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts({"value", "done", "number", "0"})
+    public void keys() throws Exception {
+        final String html = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var list = document.getElementById('d1').classList;\n"
+            + "    if (!list.keys) {\n"
+            + "      log('not defined');\n"
+            + "      return;\n"
+            + "    }\n"
+            + "    var i = list.keys().next();\n"
+            + "    for (var x in i) {\n"
+            + "      log(x);\n"
+            + "    }\n"
+            + "    var v = i.value;\n"
+            + "    log(typeof v);\n"
+            + "    log(v);\n"
+            + "  }\n"
+            + "</script>\n"
+            + "</head><body onload='test()'>\n"
+            + "  <div id='d1' class=' a b g'></div>\n"
+            + "</body></html>\n";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts({"true", "undefined", "function", "undefined", "undefined", "true", "true", "true"})
+    public void keysPropertyDescriptor() throws Exception {
+        final String html = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var list = document.getElementById('d1').classList;\n"
+
+            + "    log('keys' in list);\n"
+            + "    log(Object.getOwnPropertyDescriptor(list, 'keys'));\n"
+
+            + "    var desc = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(list), 'keys');\n"
+            + "    if (desc === undefined) { log('no keys'); return; }\n"
+            + "    log(typeof desc.value);\n"
+            + "    log(desc.get);\n"
+            + "    log(desc.set);\n"
+            + "    log(desc.writable);\n"
+            + "    log(desc.enumerable);\n"
+            + "    log(desc.configurable);\n"
+            + "  }\n"
+            + "</script>\n"
+            + "</head><body onload='test()'>\n"
+            + "  <div id='d1' class=' a b g'></div>\n"
+            + "</body></html>\n";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts({"0", "1", "2"})
+    public void keysForOf() throws Exception {
+        final String html = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var list = document.getElementById('d1').classList;\n"
+            + "    if (!list.keys) {\n"
+            + "      log('not defined');\n"
+            + "      return;\n"
+            + "    }\n"
+            + "    for (var i of list.keys()) {\n"
+            + "      log(i);\n"
+            + "    }\n"
+            + "  }\n"
+            + "</script>\n"
+            + "</head><body onload='test()'>\n"
+            + "  <div id='d1' class=' a b g'></div>\n"
+            + "</body></html>\n";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts({"0,1,2", ""})
+    public void objectKeys() throws Exception {
+        final String html = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var list = document.getElementById('d1').classList;\n"
+            + "    log(Object.keys(list));\n"
+
+            + "    var list = document.getElementById('b1').classList;\n"
+            + "    log(Object.keys(list));\n"
+            + "  }\n"
+            + "</script>\n"
+            + "</head><body onload='test()' id='b1'>\n"
+            + "  <div id='d1' class=' a b g'></div>\n"
+            + "</body></html>\n";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts({"value", "done", "string", "a"})
+    public void values() throws Exception {
+        final String html = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var list = document.getElementById('d1').classList;\n"
+            + "    if (!list.values) {\n"
+            + "      log('not defined');\n"
+            + "      return;\n"
+            + "    }\n"
+            + "    var i = list.values().next();\n"
+            + "    for (var x in i) {\n"
+            + "      log(x);\n"
+            + "    }\n"
+            + "    var v = i.value;\n"
+            + "    log(typeof v);\n"
+            + "    log(v);\n"
+            + "  }\n"
+            + "</script>\n"
+            + "</head><body onload='test()'>\n"
+            + "  <div id='d1' class=' a b g'></div>\n"
+            + "</body></html>\n";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts({"true", "undefined", "function", "undefined", "undefined", "true", "true", "true"})
+    public void valuesPropertyDescriptor() throws Exception {
+        final String html = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var list = document.getElementById('d1').classList;\n"
+
+            + "    log('values' in list);\n"
+            + "    log(Object.getOwnPropertyDescriptor(list, 'values'));\n"
+
+            + "    var desc = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(list), 'values');\n"
+            + "    if (desc === undefined) { log('no values'); return; }\n"
+            + "    log(typeof desc.value);\n"
+            + "    log(desc.get);\n"
+            + "    log(desc.set);\n"
+            + "    log(desc.writable);\n"
+            + "    log(desc.enumerable);\n"
+            + "    log(desc.configurable);\n"
+            + "  }\n"
+            + "</script>\n"
+            + "</head><body onload='test()'>\n"
+            + "  <div id='d1' class=' a b g'></div>\n"
+            + "</body></html>\n";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts({"a", "b", "g"})
+    public void valuesForOf() throws Exception {
+        final String html = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var list = document.getElementById('d1').classList;\n"
+            + "    if (!list.values) {\n"
+            + "      log('not defined');\n"
+            + "      return;\n"
+            + "    }\n"
+            + "    for (var i of list.values()) {\n"
+            + "      log(i);\n"
+            + "    }\n"
+            + "  }\n"
+            + "</script>\n"
+            + "</head><body onload='test()'>\n"
+            + "  <div id='d1' class=' a b g'></div>\n"
+            + "</body></html>\n";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts("\\sa\\sb\\sa\\s\\s\\s\\sa\\sg\\s\\s")
+    public void getValue() throws Exception {
+        final String html = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION_NORMALIZE
+            + "  function test() {\n"
+            + "    var list = document.getElementById('d1').classList;\n"
+            + "    if (!list.values) {\n"
+            + "      log('not defined');\n"
+            + "      return;\n"
+            + "    }\n"
+            + "    log(list.value);\n"
+            + "  }\n"
+            + "</script>\n"
+            + "</head><body onload='test()'>\n"
+            + "  <div id='d1' class=' a b a    a g  '></div>\n"
+            + "</body></html>\n";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts({"\\sa\\sb\\sa\\s\\s\\s\\sa\\sg\\s\\s", "x\\sy", "z\\sz\\s\\s\\s\\s\\sx\\sz\\s\\s"})
+    public void setValue() throws Exception {
+        final String html = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION_NORMALIZE
+            + "  function test() {\n"
+            + "    var list = document.getElementById('d1').classList;\n"
+            + "    if (!list.values) {\n"
+            + "      log('not defined');\n"
+            + "      return;\n"
+            + "    }\n"
+            + "    log(list.value);\n"
+
+            + "    list.value = 'x y';\n"
+            + "    log(list.value);\n"
+
+            + "    list.value = 'z z     x z  ';\n"
+            + "    log(list.value);\n"
+
+            + "  }\n"
+            + "</script>\n"
+            + "</head><body onload='test()'>\n"
+            + "  <div id='d1' class=' a b a    a g  '></div>\n"
+            + "</body></html>\n";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts({"a b", "<div id=\"d1\" class=\"a b\"></div>", "", "<div id=\"d1\" class=\"\"></div>",
+             "undefined", "<div id=\"d1\" class=\"undefined\"></div>",
+             "null", "<div id=\"d1\" class=\"null\"></div>",
+             "17", "<div id=\"d1\" class=\"17\"></div>"})
+    public void setValueEmpty() throws Exception {
+        final String html = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var div = document.getElementById('d1');\n"
+            + "    var list = div.classList;\n"
+            + "    if (!list.values) {\n"
+            + "      log('not defined');\n"
+            + "      return;\n"
+            + "    }\n"
+            + "    log(list.value);\n"
+            + "    log(div.outerHTML);\n"
+
+            + "    list.value = '';\n"
+            + "    log(list.value);\n"
+            + "    log(div.outerHTML);\n"
+
+            + "    list.value = undefined;\n"
+            + "    log(list.value);\n"
+            + "    log(div.outerHTML);\n"
+
+            + "    list.value = null;\n"
+            + "    log(list.value);\n"
+            + "    log(div.outerHTML);\n"
+
+
+            + "    list.value = 17;\n"
+            + "    log(list.value);\n"
+            + "    log(div.outerHTML);\n"
+
+            + "  }\n"
+            + "</script>\n"
+            + "</head><body onload='test()'>\n"
+            + "  <div id='d1' class='a b'></div>\n"
+            + "</body></html>\n";
 
         loadPageVerifyTitle2(html);
     }

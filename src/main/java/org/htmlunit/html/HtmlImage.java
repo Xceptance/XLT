@@ -187,7 +187,7 @@ public class HtmlImage extends HtmlElement {
                 oldUrl = htmlPage.getFullyQualifiedUrl(src);
             }
         }
-        catch (final MalformedURLException e) {
+        catch (final MalformedURLException ignored) {
             // ignore
         }
 
@@ -200,7 +200,7 @@ public class HtmlImage extends HtmlElement {
                 url = htmlPage.getFullyQualifiedUrl(src);
             }
         }
-        catch (final MalformedURLException e) {
+        catch (final MalformedURLException ignored) {
             // ignore
         }
 
@@ -283,7 +283,7 @@ public class HtmlImage extends HtmlElement {
                 }
                 catch (final IOException e) {
                     if (LOG.isDebugEnabled()) {
-                        LOG.debug("IOException while downloading image for '" + this + "' : " + e.getMessage());
+                        LOG.debug("IOException while downloading image for '" + this + "'", e);
                     }
                 }
             }
@@ -347,7 +347,7 @@ public class HtmlImage extends HtmlElement {
      */
     public String getSrc() {
         final String src = getSrcAttribute();
-        if ("".equals(src)) {
+        if (org.htmlunit.util.StringUtils.isEmptyString(src)) {
             return src;
         }
         try {
@@ -507,7 +507,7 @@ public class HtmlImage extends HtmlElement {
             try {
                 return Integer.parseInt(height);
             }
-            catch (final NumberFormatException e) {
+            catch (final NumberFormatException ignored) {
                 // ignore
             }
         }
@@ -568,7 +568,7 @@ public class HtmlImage extends HtmlElement {
             try {
                 return Integer.parseInt(widthAttrib);
             }
-            catch (final NumberFormatException e) {
+            catch (final NumberFormatException ignored) {
                 // ignore
             }
         }
@@ -603,6 +603,10 @@ public class HtmlImage extends HtmlElement {
         }
     }
 
+    /**
+     * @return the {@link ImageData} of this image
+     * @throws IOException in case of error
+     */
     public ImageData getImageData() throws IOException {
         readImageIfNeeded();
         return imageData_;
@@ -665,7 +669,7 @@ public class HtmlImage extends HtmlElement {
             // HTMLIMAGE_BLANK_SRC_AS_EMPTY
             final String src = getSrcAttribute();
 
-            if (!"".equals(src)) {
+            if (!org.htmlunit.util.StringUtils.isEmptyString(src)) {
                 final HtmlPage page = (HtmlPage) getPage();
                 final WebClient webClient = page.getWebClient();
                 final BrowserVersion browser = webClient.getBrowserVersion();
@@ -676,7 +680,7 @@ public class HtmlImage extends HtmlElement {
                     final WebRequest request = new WebRequest(url, browser.getImgAcceptHeader(),
                                                                     browser.getAcceptEncodingHeader());
                     request.setCharset(page.getCharset());
-                    request.setRefererlHeader(page.getUrl());
+                    request.setRefererHeader(page.getUrl());
                     imageWebResponse_ = webClient.loadWebResponse(request);
                 }
             }

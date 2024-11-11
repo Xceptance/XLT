@@ -28,15 +28,10 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 public class TextTrackCueList extends HtmlUnitScriptable {
 
     /**
-     * Creates an instance.
-     */
-    public TextTrackCueList() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 }

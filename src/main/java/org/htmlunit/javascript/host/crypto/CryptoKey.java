@@ -28,15 +28,10 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 public class CryptoKey extends HtmlUnitScriptable {
 
     /**
-     * Creates an instance.
-     */
-    public CryptoKey() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 }

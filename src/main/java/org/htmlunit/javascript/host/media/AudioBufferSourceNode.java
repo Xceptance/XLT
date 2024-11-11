@@ -31,12 +31,6 @@ public class AudioBufferSourceNode extends AudioScheduledSourceNode {
     /**
      * Creates an instance.
      */
-    public AudioBufferSourceNode() {
-    }
-
-    /**
-     * Creates an instance.
-     */
     @Override
     @JsxConstructor
     public void jsConstructor(final Object baCtx) {
@@ -49,5 +43,6 @@ public class AudioBufferSourceNode extends AudioScheduledSourceNode {
      */
     @JsxFunction
     public void start() {
+        // nothing to do
     }
 }

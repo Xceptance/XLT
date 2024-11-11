@@ -55,6 +55,7 @@ public class NodeList extends AbstractList implements Callable {
      * Creates an instance.
      */
     public NodeList() {
+        super();
     }
 
     /**
@@ -62,6 +63,7 @@ public class NodeList extends AbstractList implements Callable {
      */
     @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 
     /**
@@ -89,6 +91,7 @@ public class NodeList extends AbstractList implements Callable {
      * @param parentScope the parent scope
      */
     NodeList(final ScriptableObject parentScope) {
+        super();
         setParentScope(parentScope);
         setPrototype(getPrototype(getClass()));
         setExternalArrayData(this);
@@ -144,6 +147,11 @@ public class NodeList extends AbstractList implements Callable {
      */
     @JsxFunction
     public void forEach(final Object callback) {
+        if (!(callback instanceof Function)) {
+            throw JavaScriptEngine.typeError(
+                    "Foreach callback '" + JavaScriptEngine.toString(callback) + "' is not a function");
+        }
+
         final List<DomNode> nodes = getElements();
 
         final WebClient client = getWindow().getWebWindow().getWebClient();

@@ -39,6 +39,7 @@ public abstract class JettyWebSocketAdapter implements WebSocketAdapter {
     private Session outgoingSession_;
 
     public JettyWebSocketAdapter(final WebClient webClient) {
+        super();
         final WebClientOptions options = webClient.getOptions();
 
         if (webClient.getOptions().isUseInsecureSSL()) {
@@ -75,6 +76,9 @@ public abstract class JettyWebSocketAdapter implements WebSocketAdapter {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void start() throws Exception {
         synchronized (clientLock_) {
@@ -82,6 +86,9 @@ public abstract class JettyWebSocketAdapter implements WebSocketAdapter {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void connect(final URI url) throws Exception {
         synchronized (clientLock_) {
@@ -98,6 +105,9 @@ public abstract class JettyWebSocketAdapter implements WebSocketAdapter {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void send(final Object content) throws IOException {
         if (content instanceof String) {
@@ -112,6 +122,9 @@ public abstract class JettyWebSocketAdapter implements WebSocketAdapter {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void closeIncommingSession() {
         if (incomingSession_ != null) {
@@ -119,6 +132,9 @@ public abstract class JettyWebSocketAdapter implements WebSocketAdapter {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void closeOutgoingSession() {
         if (outgoingSession_ != null) {
@@ -126,6 +142,9 @@ public abstract class JettyWebSocketAdapter implements WebSocketAdapter {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void closeClient() throws Exception {
         synchronized (clientLock_) {
@@ -141,9 +160,16 @@ public abstract class JettyWebSocketAdapter implements WebSocketAdapter {
 
     private class JettyWebSocketAdapterImpl extends org.htmlunit.jetty.websocket.api.WebSocketAdapter {
 
+        /**
+         * Ctor.
+         */
         JettyWebSocketAdapterImpl() {
+            super();
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public void onWebSocketConnect(final Session session) {
             super.onWebSocketConnect(session);
@@ -152,6 +178,9 @@ public abstract class JettyWebSocketAdapter implements WebSocketAdapter {
             JettyWebSocketAdapter.this.onWebSocketConnect();
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public void onWebSocketClose(final int statusCode, final String reason) {
             super.onWebSocketClose(statusCode, reason);
@@ -160,6 +189,9 @@ public abstract class JettyWebSocketAdapter implements WebSocketAdapter {
             JettyWebSocketAdapter.this.onWebSocketClose(statusCode, reason);
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public void onWebSocketText(final String message) {
             super.onWebSocketText(message);
@@ -167,6 +199,9 @@ public abstract class JettyWebSocketAdapter implements WebSocketAdapter {
             JettyWebSocketAdapter.this.onWebSocketText(message);
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public void onWebSocketBinary(final byte[] data, final int offset, final int length) {
             super.onWebSocketBinary(data, offset, length);
@@ -174,6 +209,9 @@ public abstract class JettyWebSocketAdapter implements WebSocketAdapter {
             JettyWebSocketAdapter.this.onWebSocketBinary(data, offset, length);
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public void onWebSocketError(final Throwable cause) {
             super.onWebSocketError(cause);

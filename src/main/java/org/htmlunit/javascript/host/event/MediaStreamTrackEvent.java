@@ -27,15 +27,10 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 public class MediaStreamTrackEvent extends Event {
 
     /**
-     * Creates an instance.
-     */
-    public MediaStreamTrackEvent() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 }

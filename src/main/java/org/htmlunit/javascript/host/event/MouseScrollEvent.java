@@ -39,15 +39,10 @@ public class MouseScrollEvent extends MouseEvent {
     public static final int VERTICAL_AXIS = 2;
 
     /**
-     * Default constructor.
-     */
-    public MouseScrollEvent() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 }

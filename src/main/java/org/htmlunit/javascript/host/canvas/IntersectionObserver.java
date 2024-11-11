@@ -30,16 +30,11 @@ import org.htmlunit.javascript.host.Element;
 public class IntersectionObserver extends HtmlUnitScriptable {
 
     /**
-     * Default constructor.
-     */
-    public IntersectionObserver() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 
     /**
@@ -74,7 +69,7 @@ public class IntersectionObserver extends HtmlUnitScriptable {
      * @return the records
      */
     @JsxFunction
-    public Object takeRecords() {
+    public HtmlUnitScriptable takeRecords() {
         return null;
     }
 }

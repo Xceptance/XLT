@@ -58,6 +58,7 @@ public class CanvasRenderingContext2D extends HtmlUnitScriptable {
      * Default constructor.
      */
     public CanvasRenderingContext2D() {
+        super();
     }
 
     /**
@@ -65,6 +66,7 @@ public class CanvasRenderingContext2D extends HtmlUnitScriptable {
      */
     @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 
     /**
@@ -72,6 +74,7 @@ public class CanvasRenderingContext2D extends HtmlUnitScriptable {
      * @param canvas the {@link HTMLCanvasElement}
      */
     public CanvasRenderingContext2D(final HTMLCanvasElement canvas) {
+        super();
         canvas_ = canvas;
         renderingBackend_ = null;
     }
@@ -426,7 +429,7 @@ public class CanvasRenderingContext2D extends HtmlUnitScriptable {
                             sx, sy, sWidthI, sHeightI, dxI, dyI, dWidthI, dHeightI);
                 }
             }
-            catch (final IOException ioe) {
+            catch (final IOException ex) {
                 LOG.info("There is no ImageReader available for you imgage with src '" + imageElem.getSrc() + "'"
                         + "Please have a look at https://www.htmlunit.org/images-howto.html "
                         + "for a possible solution.");
@@ -447,8 +450,8 @@ public class CanvasRenderingContext2D extends HtmlUnitScriptable {
             }
             return DataURLConnection.DATA_PREFIX + type + ";base64," + getRenderingBackend().encodeToString(type);
         }
-        catch (final IOException ioe) {
-            throw JavaScriptEngine.throwAsScriptRuntimeEx(ioe);
+        catch (final IOException ex) {
+            throw JavaScriptEngine.throwAsScriptRuntimeEx(ex);
         }
     }
 
@@ -521,16 +524,16 @@ public class CanvasRenderingContext2D extends HtmlUnitScriptable {
     /**
      * Dummy placeholder.
      */
-    @JsxFunction
-    public void getLineDash() {
+    @JsxFunction(functionName = "getLineDash")
+    public void lineDash() {
         LOG.info("CanvasRenderingContext2D.getLineDash() not yet implemented");
     }
 
     /**
      * Dummy placeholder.
      */
-    @JsxFunction
-    public void getLineData() {
+    @JsxFunction(functionName = "getLineData")
+    public void lineData() {
         LOG.info("CanvasRenderingContext2D.getLineData() not yet implemented");
     }
 

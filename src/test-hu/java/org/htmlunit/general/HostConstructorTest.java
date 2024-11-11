@@ -41,7 +41,7 @@ import org.junit.runners.Parameterized.Parameters;
 @Ignore("Work in progress")
 public class HostConstructorTest extends WebDriverTestCase {
 
-    private static final HashSet<String> passing = new HashSet<>(Arrays.asList(
+    private static final HashSet<String> PASSING = new HashSet<>(Arrays.asList(
             "Animation",
             "Blob",
             "DOMParser",
@@ -61,7 +61,7 @@ public class HostConstructorTest extends WebDriverTestCase {
     @Parameters
     public static Collection<Object[]> data() throws Exception {
         final List<Object[]> list = new ArrayList<>();
-        final Set<String> strings = TestCaseTest.getAllClassNames();
+        final Set<String> strings = TestCaseTest.getAllConfiguredJsClassNames();
         for (final String className : strings) {
             list.add(new Object[] {className});
         }
@@ -102,7 +102,7 @@ public class HostConstructorTest extends WebDriverTestCase {
     }
 
     private String getExpectedString(final String className) throws Exception {
-        if (passing.contains(className)) {
+        if (PASSING.contains(className)) {
             return "[object " + className_ + "]";
         }
 
@@ -518,5 +518,27 @@ public class HostConstructorTest extends WebDriverTestCase {
     @Alerts("[object XSLTProcessor]")
     public void _XSLTProcessor() throws Exception {
         test("XSLTProcessor");
+    }
+
+    /**
+     * Test {@link org.htmlunit.javascript.host.abort.AbortController}.
+     *
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts("[object AbortController]")
+    public void abortController() throws Exception {
+        test("AbortController");
+    }
+
+    /**
+     * Test {@link org.htmlunit.javascript.host.abort.AbortSignal}.
+     *
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts("[object AbortSignal]")
+    public void abortSignal() throws Exception {
+        test("AbortSignal");
     }
 }

@@ -28,15 +28,10 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 public class ReadableStream extends HtmlUnitScriptable {
 
     /**
-     * Creates a new instance.
-     */
-    public ReadableStream() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 }

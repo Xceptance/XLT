@@ -61,7 +61,7 @@ public class CSSPageRuleTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "@page { margin: 1cm; }",
-            FF = "@page  { margin: 1cm; }")
+            FF_ESR = "@page  { margin: 1cm; }")
     public void cssText() throws Exception {
         final String html
             = "<html><body>\n"
@@ -89,7 +89,7 @@ public class CSSPageRuleTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "@page { }",
-            FF = "@page  { }")
+            FF_ESR = "@page  { }")
     public void cssTextEmpty() throws Exception {
         final String html
             = "<html><body>\n"
@@ -117,7 +117,7 @@ public class CSSPageRuleTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "@page { margin-left: 4cm; margin-right: 3cm; }",
-            FF = "@page  { margin-left: 4cm; margin-right: 3cm; }")
+            FF_ESR = "@page  { margin-left: 4cm; margin-right: 3cm; }")
     public void cssTextMultipleRules() throws Exception {
         final String html
             = "<html><body>\n"
@@ -145,7 +145,7 @@ public class CSSPageRuleTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "@page { margin: 1cm; }",
-            FF = "@page  { margin: 1cm; }")
+            FF_ESR = "@page  { margin: 1cm; }")
     public void cssTextSet() throws Exception {
         final String html
             = "<html><body>\n"
@@ -316,9 +316,7 @@ public class CSSPageRuleTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = ":first",
-            FF_ESR = "exception")
-    @HtmlUnitNYI(FF_ESR = ":first")
+    @Alerts(":first")
     public void selectorText() throws Exception {
         final String html
             = "<html><body>\n"
@@ -347,9 +345,7 @@ public class CSSPageRuleTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = ":first",
-            FF_ESR = "exception")
-    @HtmlUnitNYI(FF_ESR = ":first")
+    @Alerts(":first")
     public void selectorTextCaseInsensitive() throws Exception {
         final String html
             = "<html><body>\n"
@@ -378,9 +374,7 @@ public class CSSPageRuleTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {":first", ":left"},
-            FF_ESR = "exception")
-    @HtmlUnitNYI(FF_ESR = {":first", ":left"})
+    @Alerts({":first", ":left"})
     public void selectorTextSet() throws Exception {
         final String html
             = "<html><body>\n"
@@ -411,9 +405,7 @@ public class CSSPageRuleTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {":first", "null"},
-            FF_ESR = "exception")
-    @HtmlUnitNYI(FF_ESR = {":first", "null"})
+    @Alerts({":first", "null"})
     public void selectorTextSetNull() throws Exception {
         final String html
             = "<html><body>\n"
@@ -444,9 +436,7 @@ public class CSSPageRuleTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {":first", ""},
-            FF_ESR = "exception")
-    @HtmlUnitNYI(FF_ESR = {":first", ""})
+    @Alerts({":first", ""})
     public void selectorTextSetEmpty() throws Exception {
         final String html
             = "<html><body>\n"
@@ -477,9 +467,7 @@ public class CSSPageRuleTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {":first", ":first"},
-            FF_ESR = "exception")
-    @HtmlUnitNYI(FF_ESR = {":first", ":first"})
+    @Alerts({":first", ":first"})
     public void selectorTextSetInvalid() throws Exception {
         final String html
             = "<html><body>\n"
@@ -510,9 +498,7 @@ public class CSSPageRuleTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {":first", ":left"},
-            FF_ESR = "exception")
-    @HtmlUnitNYI(FF_ESR = {":first", ":left"})
+    @Alerts({":first", ":left"})
     public void selectorTextSetCaseInsensitive() throws Exception {
         final String html
             = "<html><body>\n"
@@ -544,19 +530,31 @@ public class CSSPageRuleTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = {"[object CSSStyleDeclaration]", "[object CSSStyleDeclaration]", "4", "[object CSSPageRule]",
-                       "margin: 1cm;", "margin-top", "margin-right", "margin-bottom", "margin-left"},
-            FF = {"[object CSS2Properties]", "[object CSS2Properties]", "4", "[object CSSPageRule]",
-                  "margin: 1cm;", "margin-top", "margin-right", "margin-bottom", "margin-left"},
+                       "margin: 1cm;",
+                       "string margin-top",
+                       "string margin-right",
+                       "string margin-bottom",
+                       "string margin-left"},
+            FF = {"[object CSSPageDescriptors]", "[object CSSPageDescriptors]", "4", "[object CSSPageRule]",
+                  "margin: 1cm;",
+                  "string margin-top",
+                  "string margin-right",
+                  "string margin-bottom",
+                  "string margin-left"},
             FF_ESR = {"[object CSS2Properties]", "[object CSS2Properties]", "4", "[object CSSPageRule]",
-                      "margin: 1cm;", "margin-top", "margin-right", "margin-bottom", "margin-left"})
+                      "margin: 1cm;",
+                      "string margin-top",
+                      "string margin-right",
+                      "string margin-bottom",
+                      "string margin-left"})
     @HtmlUnitNYI(CHROME = {"[object CSSStyleDeclaration]", "[object CSSStyleDeclaration]",
-                           "1", "[object CSSPageRule]", "margin: 1cm;", "margin: 1cm"},
+                           "1", "[object CSSPageRule]", "margin: 1cm;", "string margin: 1cm"},
             EDGE = {"[object CSSStyleDeclaration]", "[object CSSStyleDeclaration]",
-                    "1", "[object CSSPageRule]", "margin: 1cm;", "margin: 1cm"},
+                    "1", "[object CSSPageRule]", "margin: 1cm;", "string margin: 1cm"},
             FF = {"[object CSSStyleDeclaration]", "[object CSSStyleDeclaration]",
-                  "1", "[object CSSPageRule]", "margin: 1cm;", "margin: 1cm"},
+                  "1", "[object CSSPageRule]", "margin: 1cm;", "string margin: 1cm"},
             FF_ESR = {"[object CSSStyleDeclaration]", "[object CSSStyleDeclaration]",
-                      "1", "[object CSSPageRule]", "margin: 1cm;", "margin: 1cm"})
+                      "1", "[object CSSPageRule]", "margin: 1cm;", "string margin: 1cm"})
     // FIXME FF returns CSS2Properties vs. default returns CSSStyleDeclaration :(
     public void style() throws Exception {
         final String html
@@ -577,7 +575,7 @@ public class CSSPageRuleTest extends WebDriverTestCase {
             + "  log(style.parentRule);\n"
             + "  log(style.cssText);\n"
             + "  for (var i = 0; i < style.length; i++) {\n"
-            + "    log(style.item(i));\n"
+            + "    log(typeof style.item(i) + ' ' + style.item(i));\n"
             + "  }\n"
             + "</script>\n"
 
@@ -591,11 +589,10 @@ public class CSSPageRuleTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = {"[object CSSStyleDeclaration]", "[object CSSStyleDeclaration]", "0", "[object CSSPageRule]", ""},
-            FF = {"[object CSS2Properties]", "[object CSS2Properties]", "0", "[object CSSPageRule]", ""},
+            FF = {"[object CSSPageDescriptors]", "[object CSSPageDescriptors]", "0", "[object CSSPageRule]", ""},
             FF_ESR = {"[object CSS2Properties]", "[object CSS2Properties]", "0", "[object CSSPageRule]", ""})
     @HtmlUnitNYI(FF = {"[object CSSStyleDeclaration]", "[object CSSStyleDeclaration]", "0", "[object CSSPageRule]", ""},
             FF_ESR = {"[object CSSStyleDeclaration]", "[object CSSStyleDeclaration]", "0", "[object CSSPageRule]", ""})
-    // FIXME FF returns CSS2Properties vs. default returns CSSStyleDeclaration :(
     public void styleEmpty() throws Exception {
         final String html
             = "<html><body>\n"

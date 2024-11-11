@@ -128,6 +128,56 @@ public class URLTest extends WebDriverTestCase {
     }
 
     /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts("http://developer.mozilla.org")
+    public void originDefaultPort() throws Exception {
+        final String html =
+            "<html>\n"
+            + "<head>\n"
+            + "  <script>\n"
+            + LOG_TITLE_FUNCTION
+            + "    function test() {\n"
+            + "      if (typeof window.URL === 'function') {\n"
+            + "        var u = new URL('http://developer.mozilla.org:80/en-US/docs');\n"
+            + "        log(u.origin);\n"
+            + "      }\n"
+            + "    }\n"
+            + "  </script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "</body>\n"
+            + "</html>";
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts("http://developer.mozilla.org:1234")
+    public void originPort() throws Exception {
+        final String html =
+            "<html>\n"
+            + "<head>\n"
+            + "  <script>\n"
+            + LOG_TITLE_FUNCTION
+            + "    function test() {\n"
+            + "      if (typeof window.URL === 'function') {\n"
+            + "        var u = new URL('http://developer.mozilla.org:1234/en-US/docs');\n"
+            + "        log(u.origin);\n"
+            + "      }\n"
+            + "    }\n"
+            + "  </script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>\n"
+            + "</body>\n"
+            + "</html>";
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
      * @throws Exception if the test fails
      */
     @Test
@@ -569,26 +619,16 @@ public class URLTest extends WebDriverTestCase {
     }
 
     @Test
-    @Alerts(DEFAULT = {"https:",
-                       "http:", "http://mydomain.com/svn/Repos/",
-                       "http:", "http://mydomain.com/svn/Repos/",
-                       "http:", "http://mydomain.com/svn/Repos/",
-                       "http:", "http://mydomain.com/svn/Repos/",
-                       "http:", "http://mydomain.com/svn/Repos/",
-                       "http:", "http://mydomain.com/svn/Repos/",
-                       "http:", "http://mydomain.com/svn/Repos/",
-                       "http:", "http://mydomain.com/svn/Repos/",
-                       "ex-unknown"},
-            FF_ESR = {"https:",
-                      "http:", "http://mydomain.com/svn/Repos/",
-                      "http:", "http://mydomain.com/svn/Repos/",
-                      "axdeg:", "axdeg://mydomain.com/svn/Repos/",
-                      "http:", "http://mydomain.com/svn/Repos/",
-                      "http:", "http://mydomain.com/svn/Repos/",
-                      "http:", "http://mydomain.com/svn/Repos/",
-                      "http:", "http://mydomain.com/svn/Repos/",
-                      "null:", "null://mydomain.com/svn/Repos/",
-                      "ex-unknown"})
+    @Alerts({"https:",
+             "http:", "http://mydomain.com/svn/Repos/",
+             "http:", "http://mydomain.com/svn/Repos/",
+             "http:", "http://mydomain.com/svn/Repos/",
+             "http:", "http://mydomain.com/svn/Repos/",
+             "http:", "http://mydomain.com/svn/Repos/",
+             "http:", "http://mydomain.com/svn/Repos/",
+             "http:", "http://mydomain.com/svn/Repos/",
+             "http:", "http://mydomain.com/svn/Repos/",
+             "ex-unknown"})
     public void protocol() throws Exception {
         final String html =
                 "<html>\n"
@@ -650,24 +690,15 @@ public class URLTest extends WebDriverTestCase {
     }
 
     @Test
-    @Alerts(DEFAULT = {"https:",
-                       "http:", "http://mydomain.com/svn/Repos/",
-                       "http:", "http://mydomain.com/svn/Repos/",
-                       "http:", "http://mydomain.com/svn/Repos/",
-                       "http:", "http://mydomain.com/svn/Repos/",
-                       "http:", "http://mydomain.com/svn/Repos/",
-                       "http:", "http://mydomain.com/svn/Repos/",
-                       "http:", "http://mydomain.com/svn/Repos/",
-                       "ex-unknown"},
-            FF_ESR = {"https:",
-                      "http:", "http://mydomain.com/svn/Repos/",
-                      "http:", "http://mydomain.com/svn/Repos/",
-                      "axdeg:", "axdeg://mydomain.com/svn/Repos/",
-                      "http:", "http://mydomain.com/svn/Repos/",
-                      "axdeg:", "axdeg://mydomain.com/svn/Repos/",
-                      "axdeg:", "axdeg://mydomain.com/svn/Repos/",
-                      "null:", "null://mydomain.com/svn/Repos/",
-                      "ex-unknown"})
+    @Alerts({"https:",
+             "http:", "http://mydomain.com/svn/Repos/",
+             "http:", "http://mydomain.com/svn/Repos/",
+             "http:", "http://mydomain.com/svn/Repos/",
+             "http:", "http://mydomain.com/svn/Repos/",
+             "http:", "http://mydomain.com/svn/Repos/",
+             "http:", "http://mydomain.com/svn/Repos/",
+             "http:", "http://mydomain.com/svn/Repos/",
+             "ex-unknown"})
     public void protocol2() throws Exception {
         final String html =
                 "<html>\n"
@@ -725,24 +756,15 @@ public class URLTest extends WebDriverTestCase {
     }
 
     @Test
-    @Alerts(DEFAULT = {"https:",
-                       "http:", "http://mydomain.com/svn/Repos/",
-                       "http:", "http://mydomain.com/svn/Repos/",
-                       "http:", "http://mydomain.com/svn/Repos/",
-                       "http:", "http://mydomain.com/svn/Repos/",
-                       "http:", "http://mydomain.com/svn/Repos/",
-                       "http:", "http://mydomain.com/svn/Repos/",
-                       "http:", "http://mydomain.com/svn/Repos/",
-                       "ex-unknown"},
-            FF_ESR = {"https:",
-                      "http:", "http://mydomain.com/svn/Repos/",
-                      "http:", "http://mydomain.com/svn/Repos/",
-                      "axdeg:", "axdeg://mydomain.com/svn/Repos/",
-                      "http:", "http://mydomain.com/svn/Repos/",
-                      "axdeg:", "axdeg://mydomain.com/svn/Repos/",
-                      "axdeg:", "axdeg://mydomain.com/svn/Repos/",
-                      "null:", "null://mydomain.com/svn/Repos/",
-                      "ex-unknown"})
+    @Alerts({"https:",
+             "http:", "http://mydomain.com/svn/Repos/",
+             "http:", "http://mydomain.com/svn/Repos/",
+             "http:", "http://mydomain.com/svn/Repos/",
+             "http:", "http://mydomain.com/svn/Repos/",
+             "http:", "http://mydomain.com/svn/Repos/",
+             "http:", "http://mydomain.com/svn/Repos/",
+             "http:", "http://mydomain.com/svn/Repos/",
+             "ex-unknown"})
     public void protocol3() throws Exception {
         final String html =
                 "<html>\n"
@@ -820,7 +842,7 @@ public class URLTest extends WebDriverTestCase {
                       "http:", "http://mydomain.com/svn/Repos/",
                       "https:", "https://mydomain.com/svn/Repos/",
                       "ftp:", "ftp://mydomain.com/svn/Repos/",
-                      "ftps:", "ftps://mydomain.com/svn/Repos/",
+                      "ftp:", "ftp://mydomain.com/svn/Repos/",
                       "ws:", "ws://mydomain.com/svn/Repos/",
                       "wss:", "wss://mydomain.com/svn/Repos/",
                       "file:", "file:///svn/Repos/"})
@@ -837,7 +859,7 @@ public class URLTest extends WebDriverTestCase {
                       "http:", "http://mydomain.com/svn/Repos/",
                       "https:", "https://mydomain.com/svn/Repos/",
                       "ftp:", "ftp://mydomain.com/svn/Repos/",
-                      "ftps:", "ftps://mydomain.com/svn/Repos/",
+                      "ftp:", "ftp://mydomain.com/svn/Repos/",
                       "ws:", "ws://mydomain.com/svn/Repos/",
                       "wss:", "wss://mydomain.com/svn/Repos/",
                       "file:", "file://mydomain.com/svn/Repos/"})

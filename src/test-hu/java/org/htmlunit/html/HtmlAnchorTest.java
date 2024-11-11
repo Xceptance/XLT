@@ -152,8 +152,7 @@ public class HtmlAnchorTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "",
-            FF_ESR = "page2.html")
+    @Alerts("")
     public void clickNestedCheckboxElement() throws Exception {
         final String html =
               "<html>\n"
@@ -180,8 +179,7 @@ public class HtmlAnchorTest extends WebDriverTestCase {
         try (InputStream is = getClass().getClassLoader().
                 getResourceAsStream("testfiles/not_supported_type.jpg")) {
             final byte[] directBytes = IOUtils.toByteArray(is);
-            final List<NameValuePair> emptyList = Collections.emptyList();
-            getMockWebConnection().setResponse(urlImage, directBytes, 200, "ok", "image/jpg", emptyList);
+            getMockWebConnection().setResponse(urlImage, directBytes, 200, "ok", "image/jpg", Collections.emptyList());
         }
 
         final String html =
@@ -298,8 +296,7 @@ public class HtmlAnchorTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "",
-            FF_ESR = "page2.html")
+    @Alerts("")
     public void clickNestedRadioElement() throws Exception {
         final String html =
               "<html>\n"

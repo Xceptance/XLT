@@ -28,15 +28,10 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 public class CacheStorage extends HtmlUnitScriptable {
 
     /**
-     * Creates a new instance.
-     */
-    public CacheStorage() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 }

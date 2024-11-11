@@ -49,6 +49,7 @@ import org.w3c.dom.Document;
  * @author David K. Taylor
  * @author Ahmed Ashour
  * @author Ronald Brill
+ * @author Sven Strickroth
  */
 public abstract class WebWindowImpl implements WebWindow {
 
@@ -89,7 +90,7 @@ public abstract class WebWindowImpl implements WebWindow {
         }
         else if (webClient.getBrowserVersion().hasFeature(JS_WINDOW_OUTER_INNER_HEIGHT_DIFF_136)) {
             outerHeight_ = innerHeight_ + 136;
-            outerWidth_ = innerWidth_ + 64;
+            outerWidth_ = innerWidth_ + 24;
         }
         else if (webClient.getBrowserVersion().hasFeature(JS_WINDOW_OUTER_INNER_HEIGHT_DIFF_147)) {
             outerHeight_ = innerHeight_ + 147;
@@ -219,9 +220,7 @@ public abstract class WebWindowImpl implements WebWindow {
      * Destroy our children.
      */
     protected void destroyChildren() {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("destroyChildren");
-        }
+        LOG.debug("destroyChildren");
         getJobManager().removeAllJobs();
 
         // try to deal with js thread adding a new window in between

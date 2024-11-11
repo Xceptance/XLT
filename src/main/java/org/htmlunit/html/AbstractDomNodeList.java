@@ -17,7 +17,7 @@ package org.htmlunit.html;
 import java.io.Serializable;
 import java.lang.ref.WeakReference;
 import java.util.AbstractList;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.w3c.dom.Node;
@@ -35,7 +35,7 @@ public abstract class AbstractDomNodeList<E extends DomNode> extends AbstractLis
     implements DomNodeList<E>, Serializable {
 
     /** This node list's root node. */
-    private DomNode node_;
+    private final DomNode node_;
 
     /** Element cache, used to avoid XPath expression evaluation as much as possible. */
     private List<E> cachedElements_;
@@ -46,15 +46,16 @@ public abstract class AbstractDomNodeList<E extends DomNode> extends AbstractLis
      * @param node the node to serve as root for the XPath expression
      */
     public AbstractDomNodeList(final DomNode node) {
-        if (node != null) {
-            node_ = node;
-            final DomHtmlAttributeChangeListenerImpl listener = new DomHtmlAttributeChangeListenerImpl(this);
-            node_.addDomChangeListener(listener);
-            if (node_ instanceof HtmlElement) {
-                ((HtmlElement) node_).addHtmlAttributeChangeListener(listener);
-                cachedElements_ = null;
-            }
+        super();
+        node_ = node;
+
+        if (node == null) {
+            cachedElements_ = Collections.EMPTY_LIST;
+            return;
         }
+
+        final DomHtmlAttributeChangeListenerImpl listener = new DomHtmlAttributeChangeListenerImpl(this);
+        node_.addDomChangeListener(listener);
     }
 
     /**
@@ -76,15 +77,19 @@ public abstract class AbstractDomNodeList<E extends DomNode> extends AbstractLis
      * @return the nodes in this node list
      */
     private List<E> getNodes() {
+        // a bit of a hack but i like to avoid synchronization
+        // see https://github.com/HtmlUnit/htmlunit/issues/882
+        //
+        // there is a small chance that the cachedElements_ are
+        // set to null after the assignment and before the return
+        // but this is a race condition at all and depending on the
+        // thread state the same overall result might happen also with sync
+        List<E> shortLivedCache = cachedElements_;
         if (cachedElements_ == null) {
-            if (node_ == null) {
-                cachedElements_ = new ArrayList<>();
-            }
-            else {
-                cachedElements_ = provideElements();
-            }
+            shortLivedCache = provideElements();
+            cachedElements_ = shortLivedCache;
         }
-        return cachedElements_;
+        return shortLivedCache;
     }
 
     /**
@@ -122,8 +127,7 @@ public abstract class AbstractDomNodeList<E extends DomNode> extends AbstractLis
     /**
      * DOM change listener which clears the node cache when necessary.
      */
-    private static final class DomHtmlAttributeChangeListenerImpl
-                                    implements DomChangeListener, HtmlAttributeChangeListener {
+    private static final class DomHtmlAttributeChangeListenerImpl implements DomChangeListener {
 
         private final transient WeakReference<AbstractDomNodeList<?>> nodeList_;
 
@@ -149,34 +153,10 @@ public abstract class AbstractDomNodeList<E extends DomNode> extends AbstractLis
             clearCache();
         }
 
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public void attributeAdded(final HtmlAttributeChangeEvent event) {
-            clearCache();
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public void attributeRemoved(final HtmlAttributeChangeEvent event) {
-            clearCache();
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public void attributeReplaced(final HtmlAttributeChangeEvent event) {
-            clearCache();
-        }
-
         private void clearCache() {
             if (nodeList_ != null) {
                 final AbstractDomNodeList<?> nodes = nodeList_.get();
-                if (nodes != null) {
+                if (nodes != null && nodes.node_ != null) {
                     nodes.cachedElements_ = null;
                 }
             }

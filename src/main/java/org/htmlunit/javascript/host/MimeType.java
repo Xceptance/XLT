@@ -40,6 +40,7 @@ public class MimeType extends HtmlUnitScriptable {
      * Creates an instance.
      */
     public MimeType() {
+        super();
     }
 
     /**
@@ -47,6 +48,7 @@ public class MimeType extends HtmlUnitScriptable {
      */
     @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 
     /**
@@ -57,6 +59,7 @@ public class MimeType extends HtmlUnitScriptable {
      * @param plugin the associated plugin
      */
     public MimeType(final String type, final String description, final String suffixes, final Plugin plugin) {
+        super();
         type_ = type;
         description_ = description;
         suffixes_ = suffixes;

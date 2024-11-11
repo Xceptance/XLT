@@ -14,7 +14,6 @@
  */
 package org.htmlunit.javascript.host.html;
 
-import static org.htmlunit.BrowserVersionFeatures.HTMLDOCUMENT_COOKIES_IGNORE_BLANK;
 import static org.htmlunit.BrowserVersionFeatures.HTMLDOCUMENT_ELEMENTS_BY_NAME_EMPTY;
 import static org.htmlunit.BrowserVersionFeatures.HTMLDOCUMENT_GET_ALSO_FRAMES;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
@@ -25,7 +24,6 @@ import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Supplier;
 
 import org.apache.commons.lang3.StringUtils;
@@ -48,7 +46,6 @@ import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlImage;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlScript;
-import org.htmlunit.httpclient.HtmlUnitBrowserCompatCookieSpec;
 import org.htmlunit.javascript.HtmlUnitScriptable;
 import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.PostponedAction;
@@ -56,15 +53,14 @@ import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
-import org.htmlunit.javascript.configuration.JsxSetter;
 import org.htmlunit.javascript.host.Element;
 import org.htmlunit.javascript.host.dom.AbstractList.EffectOnCache;
 import org.htmlunit.javascript.host.dom.Attr;
 import org.htmlunit.javascript.host.dom.Document;
+import org.htmlunit.javascript.host.dom.Node;
 import org.htmlunit.javascript.host.dom.NodeList;
 import org.htmlunit.javascript.host.dom.Selection;
 import org.htmlunit.javascript.host.event.Event;
-import org.htmlunit.util.Cookie;
 import org.htmlunit.util.UrlUtils;
 
 /**
@@ -85,6 +81,8 @@ import org.htmlunit.util.UrlUtils;
  * @author <a href="mailto:mike@10gen.com">Mike Dirolf</a>
  * @author Ronald Brill
  * @author Frank Danek
+ * @author Sven Strickroth
+ *
  * @see <a href="http://msdn.microsoft.com/en-us/library/ms535862.aspx">MSDN documentation</a>
  * @see <a href="http://www.w3.org/TR/2000/WD-DOM-Level-1-20000929/level-one-html.html#ID-7068919">
  * W3C DOM Level 1</a>
@@ -102,12 +100,6 @@ public class HTMLDocument extends Document {
 
     private boolean closePostponedAction_;
     private boolean executionExternalPostponed_;
-
-    /**
-     * The constructor.
-     */
-    public HTMLDocument() {
-    }
 
     /**
      * JavaScript constructor.
@@ -246,17 +238,13 @@ public class HTMLDocument extends Document {
 
         // If open() was called; don't write to doc yet -- wait for call to close().
         if (!writeInCurrentDocument_) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("wrote content to buffer");
-            }
+            LOG.debug("wrote content to buffer");
             scheduleImplicitClose();
             return;
         }
         final String bufferedContent = writeBuilder_.toString();
         if (!canAlreadyBeParsed(bufferedContent)) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("write: not enough content to parse it now");
-            }
+            LOG.debug("write: not enough content to parse it now");
             return;
         }
 
@@ -415,52 +403,6 @@ public class HTMLDocument extends Document {
     }
 
     /**
-     * {@inheritDoc}
-     */
-    @Override
-    @JsxGetter
-    public String getCookie() {
-        final HtmlPage page = getPage();
-
-        final URL url = page.getUrl();
-
-        final StringBuilder builder = new StringBuilder();
-        final Set<Cookie> cookies = page.getWebClient().getCookies(url);
-        for (final Cookie cookie : cookies) {
-            if (cookie.isHttpOnly()) {
-                continue;
-            }
-            if (builder.length() != 0) {
-                builder.append("; ");
-            }
-            if (!HtmlUnitBrowserCompatCookieSpec.EMPTY_COOKIE_NAME.equals(cookie.getName())) {
-                builder.append(cookie.getName());
-                builder.append('=');
-            }
-            builder.append(cookie.getValue());
-        }
-
-        return builder.toString();
-    }
-
-    /**
-     * Adds a cookie, as long as cookies are enabled.
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms533693.aspx">MSDN documentation</a>
-     * @param newCookie in the format "name=value[;expires=date][;domain=domainname][;path=path][;secure]
-     */
-    @JsxSetter
-    public void setCookie(final String newCookie) {
-        final HtmlPage page = getPage();
-        final WebClient client = page.getWebClient();
-
-        if (StringUtils.isBlank(newCookie)
-                && client.getBrowserVersion().hasFeature(HTMLDOCUMENT_COOKIES_IGNORE_BLANK)) {
-            return;
-        }
-        client.addCookie(newCookie, getPage().getUrl(), this);
-    }
-
-    /**
      * JavaScript function "open".
      * <p>
      * See http://www.whatwg.org/specs/web-apps/current-work/multipage/section-dynamic.html for
@@ -475,7 +417,7 @@ public class HTMLDocument extends Document {
      * @see <a href="http://msdn.microsoft.com/en-us/library/ms536652.aspx">MSDN documentation</a>
      */
     @JsxFunction
-    public Object open(final Object url, final Object name, final Object features,
+    public HTMLDocument open(final Object url, final Object name, final Object features,
             final Object replace) {
         // Any open() invocations are ignored during the parsing stage, because write() and
         // writeln() invocations will directly append content to the current insertion point.
@@ -558,7 +500,7 @@ public class HTMLDocument extends Document {
      * {@inheritDoc}
      */
     @Override
-    public Object appendChild(final Object childObject) {
+    public Node appendChild(final Object childObject) {
         throw JavaScriptEngine.reportRuntimeError("Node cannot be inserted at the specified point in the hierarchy.");
     }
 
@@ -610,7 +552,7 @@ public class HTMLDocument extends Document {
         if ("null".equals(elementName)
                 || (elementName.isEmpty()
                     && getBrowserVersion().hasFeature(HTMLDOCUMENT_ELEMENTS_BY_NAME_EMPTY))) {
-            return NodeList.staticNodeList(getWindow(), new ArrayList<DomNode>());
+            return NodeList.staticNodeList(getWindow(), new ArrayList<>());
         }
 
         final HtmlPage page = getPage();

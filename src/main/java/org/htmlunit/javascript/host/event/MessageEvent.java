@@ -52,10 +52,11 @@ public class MessageEvent extends Event {
      * Default constructor used to build the prototype.
      */
     public MessageEvent() {
+        super();
         setType(TYPE_MESSAGE);
         origin_ = "";
         lastEventId_ = "";
-        data_ = JavaScriptEngine.Undefined;
+        data_ = JavaScriptEngine.UNDEFINED;
     }
 
     /**

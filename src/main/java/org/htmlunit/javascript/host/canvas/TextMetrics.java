@@ -34,6 +34,8 @@ public class TextMetrics extends HtmlUnitScriptable {
      * Default constructor.
      */
     public TextMetrics() {
+        // nothing to do
+        super();
         width_ = 0;
     }
 
@@ -42,9 +44,11 @@ public class TextMetrics extends HtmlUnitScriptable {
      */
     @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 
     TextMetrics(final int width) {
+        super();
         width_ = width;
     }
 

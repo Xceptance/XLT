@@ -91,24 +91,26 @@ public class NumberFormat extends HtmlUnitScriptable {
         commonFormats.put("ar-SY", "\u066c\u066b\u0660");
         commonFormats.put("ar-YE", "\u066c\u066b\u0660");
         commonFormats.put("be", ",.");
+        commonFormats.put("en-ZA", ",.");
         commonFormats.put("mk", ",.");
         commonFormats.put("is", ",.");
 
         CHROME_FORMATS_.putAll(commonFormats);
-        CHROME_FORMATS_.put("en-ZA", ",.");
+        CHROME_FORMATS_.put("sq", ",.");
 
         EDGE_FORMATS_.putAll(commonFormats);
-
-        CHROME_FORMATS_.put("sq", ",.");
     }
 
     /**
      * Default constructor.
      */
     public NumberFormat() {
+        super();
     }
 
     private NumberFormat(final String[] locales, final BrowserVersion browserVersion) {
+        super();
+
         final Map<String, String> formats;
         if (browserVersion.isChrome()) {
             formats = CHROME_FORMATS_;

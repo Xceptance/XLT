@@ -65,6 +65,7 @@ public class StyleSheetList extends HtmlUnitScriptable {
      * Creates an instance.
      */
     public StyleSheetList() {
+        super();
     }
 
     /**
@@ -72,6 +73,7 @@ public class StyleSheetList extends HtmlUnitScriptable {
      */
     @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 
     /**
@@ -80,6 +82,7 @@ public class StyleSheetList extends HtmlUnitScriptable {
      * @param document the owning document
      */
     public StyleSheetList(final Document document) {
+        super();
         setParentScope(document);
         setPrototype(getPrototype(getClass()));
 
@@ -133,18 +136,11 @@ public class StyleSheetList extends HtmlUnitScriptable {
      */
     @JsxFunction
     public Object item(final int index) {
-        if (nodes_ == null || index < 0 || index >= nodes_.getLength()) {
-            return JavaScriptEngine.Undefined;
+        final Object item = get(index, this);
+        if (JavaScriptEngine.UNDEFINED == item) {
+            return null;
         }
-
-        final HTMLElement element = (HTMLElement) nodes_.item(Integer.valueOf(index));
-
-        // <style type="text/css"> ... </style>
-        if (element instanceof HTMLStyleElement) {
-            return ((HTMLStyleElement) element).getSheet();
-        }
-        // <link rel="stylesheet" type="text/css" href="..." />
-        return ((HTMLLinkElement) element).getSheet();
+        return item;
     }
 
     /**
@@ -153,7 +149,18 @@ public class StyleSheetList extends HtmlUnitScriptable {
     @Override
     public Object get(final int index, final Scriptable start) {
         if (this == start) {
-            return item(index);
+            if (nodes_ == null || index < 0 || index >= nodes_.getLength()) {
+                return JavaScriptEngine.UNDEFINED;
+            }
+
+            final HTMLElement element = (HTMLElement) nodes_.item(Integer.valueOf(index));
+
+            // <style type="text/css"> ... </style>
+            if (element instanceof HTMLStyleElement) {
+                return ((HTMLStyleElement) element).getSheet();
+            }
+            // <link rel="stylesheet" type="text/css" href="..." />
+            return ((HTMLLinkElement) element).getSheet();
         }
         return super.get(index, start);
     }

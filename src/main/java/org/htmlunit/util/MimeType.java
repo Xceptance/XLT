@@ -14,6 +14,8 @@
  */
 package org.htmlunit.util;
 
+import java.util.Locale;
+
 import org.htmlunit.cyberneko.util.FastHashMap;
 
 /**
@@ -50,35 +52,35 @@ public final class MimeType {
     /** "image/png". */
     public static final String IMAGE_PNG = "image/png";
 
-    private static final FastHashMap<String, String> type2extension = buildMap();
+    private static final FastHashMap<String, String> TYPE2EXTENSION = buildMap();
 
     /**
      * A map to avoid lowercase conversion and a check check if this is one of
      * our mimetype we know. The value is not used.
      */
-    private static final FastHashMap<String, Boolean> lookupMap = new FastHashMap<>(2 * 16 + 1, 0.7f);
+    private static final FastHashMap<String, Boolean> LOOKUP_MAP = new FastHashMap<>(2 * 16 + 1, 0.7f);
 
     static {
-        lookupMap.put("application/javascript", true);
-        lookupMap.put("application/x-ecmascript", true);
-        lookupMap.put("application/x-javascript", true);
-        lookupMap.put("text/ecmascript", true);
-        lookupMap.put("application/ecmascript", true);
-        lookupMap.put("text/javascript1.0", true);
-        lookupMap.put("text/javascript1.1", true);
-        lookupMap.put("text/javascript1.2", true);
-        lookupMap.put("text/javascript1.3", true);
-        lookupMap.put("text/javascript1.4", true);
-        lookupMap.put("text/javascript1.5", true);
-        lookupMap.put("text/jscript", true);
-        lookupMap.put("text/livescript", true);
-        lookupMap.put("text/x-ecmascript", true);
-        lookupMap.put("text/x-javascript", true);
+        LOOKUP_MAP.put("application/javascript", true);
+        LOOKUP_MAP.put("application/x-ecmascript", true);
+        LOOKUP_MAP.put("application/x-javascript", true);
+        LOOKUP_MAP.put("text/ecmascript", true);
+        LOOKUP_MAP.put("application/ecmascript", true);
+        LOOKUP_MAP.put("text/javascript1.0", true);
+        LOOKUP_MAP.put("text/javascript1.1", true);
+        LOOKUP_MAP.put("text/javascript1.2", true);
+        LOOKUP_MAP.put("text/javascript1.3", true);
+        LOOKUP_MAP.put("text/javascript1.4", true);
+        LOOKUP_MAP.put("text/javascript1.5", true);
+        LOOKUP_MAP.put("text/jscript", true);
+        LOOKUP_MAP.put("text/livescript", true);
+        LOOKUP_MAP.put("text/x-ecmascript", true);
+        LOOKUP_MAP.put("text/x-javascript", true);
 
         // have uppercase ready too, keys() is safe for
         // concurrent modification
-        for (final String k : lookupMap.keys()) {
-            lookupMap.put(k.toUpperCase(), true);
+        for (final String k : LOOKUP_MAP.keys()) {
+            LOOKUP_MAP.put(k.toUpperCase(Locale.ROOT), true);
         }
     }
 
@@ -126,14 +128,14 @@ public final class MimeType {
         }
 
         // go a cheap route first
-        if (lookupMap.get(mimeType) != null) {
+        if (LOOKUP_MAP.get(mimeType) != null) {
             return true;
         }
 
         // this is our fallback in case we have not found the usual casing
         // our target is ASCII, we can lowercase the normal way because
         // matching some languages with strange rules does not matter, cheaper!
-        final String mimeTypeLC = mimeType.toLowerCase();
+        final String mimeTypeLC = mimeType.toLowerCase(Locale.ROOT);
 
         return "application/javascript".equals(mimeTypeLC)
                 || "application/ecmascript".equals(mimeTypeLC)
@@ -169,7 +171,7 @@ public final class MimeType {
         // have uppercase ready too, keys() is safe for
         // concurrent modification
         for (final String k : map.keys()) {
-            map.put(k.toUpperCase(), map.get(k));
+            map.put(k.toUpperCase(Locale.ROOT), map.get(k));
         }
         return map;
     }
@@ -191,11 +193,11 @@ public final class MimeType {
             return "unknown";
         }
 
-        String value = type2extension.get(contentType);
+        String value = TYPE2EXTENSION.get(contentType);
         if (value == null) {
             // fallback
-            final String uppercased = contentType.toLowerCase();
-            value = type2extension.get(uppercased);
+            final String uppercased = contentType.toLowerCase(Locale.ROOT);
+            value = TYPE2EXTENSION.get(uppercased);
         }
 
         return value == null ? "unknown" : value;

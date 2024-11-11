@@ -809,41 +809,41 @@ public class KeyboardEvent extends UIEvent {
      * the character (if they are not the same).
      * You can verify this <a href="http://www.asquare.net/javascript/tests/KeyCode.html">here</a>
      */
-    private static final Map<Character, Integer> keyCodeMap = new HashMap<>();
+    private static final Map<Character, Integer> KEX_CODE_MAP = new HashMap<>();
     static {
-        keyCodeMap.put('`', DOM_VK_BACK_QUOTE);
-        keyCodeMap.put('~', DOM_VK_BACK_QUOTE);
-        keyCodeMap.put('!', DOM_VK_1);
-        keyCodeMap.put('@', DOM_VK_2);
-        keyCodeMap.put('#', DOM_VK_3);
-        keyCodeMap.put('$', DOM_VK_4);
-        keyCodeMap.put('%', DOM_VK_5);
-        keyCodeMap.put('^', DOM_VK_6);
-        keyCodeMap.put('&', DOM_VK_7);
-        keyCodeMap.put('*', DOM_VK_8);
-        keyCodeMap.put('(', DOM_VK_9);
-        keyCodeMap.put(')', DOM_VK_0);
+        KEX_CODE_MAP.put('`', DOM_VK_BACK_QUOTE);
+        KEX_CODE_MAP.put('~', DOM_VK_BACK_QUOTE);
+        KEX_CODE_MAP.put('!', DOM_VK_1);
+        KEX_CODE_MAP.put('@', DOM_VK_2);
+        KEX_CODE_MAP.put('#', DOM_VK_3);
+        KEX_CODE_MAP.put('$', DOM_VK_4);
+        KEX_CODE_MAP.put('%', DOM_VK_5);
+        KEX_CODE_MAP.put('^', DOM_VK_6);
+        KEX_CODE_MAP.put('&', DOM_VK_7);
+        KEX_CODE_MAP.put('*', DOM_VK_8);
+        KEX_CODE_MAP.put('(', DOM_VK_9);
+        KEX_CODE_MAP.put(')', DOM_VK_0);
         //Chrome/IE 189
-        keyCodeMap.put('-', DOM_VK_HYPHEN_MINUS);
-        keyCodeMap.put('_', DOM_VK_HYPHEN_MINUS);
+        KEX_CODE_MAP.put('-', DOM_VK_HYPHEN_MINUS);
+        KEX_CODE_MAP.put('_', DOM_VK_HYPHEN_MINUS);
         //Chrome/IE 187
-        keyCodeMap.put('+', DOM_VK_EQUALS);
-        keyCodeMap.put('[', DOM_VK_OPEN_BRACKET);
-        keyCodeMap.put('{', DOM_VK_OPEN_BRACKET);
-        keyCodeMap.put(']', DOM_VK_CLOSE_BRACKET);
-        keyCodeMap.put('}', DOM_VK_CLOSE_BRACKET);
+        KEX_CODE_MAP.put('+', DOM_VK_EQUALS);
+        KEX_CODE_MAP.put('[', DOM_VK_OPEN_BRACKET);
+        KEX_CODE_MAP.put('{', DOM_VK_OPEN_BRACKET);
+        KEX_CODE_MAP.put(']', DOM_VK_CLOSE_BRACKET);
+        KEX_CODE_MAP.put('}', DOM_VK_CLOSE_BRACKET);
         //Chrome/IE 186
-        keyCodeMap.put(':', DOM_VK_SEMICOLON);
-        keyCodeMap.put('\'', DOM_VK_QUOTE);
-        keyCodeMap.put('"', DOM_VK_QUOTE);
-        keyCodeMap.put(',', DOM_VK_COMMA);
-        keyCodeMap.put('<', DOM_VK_COMMA);
-        keyCodeMap.put('.', DOM_VK_PERIOD);
-        keyCodeMap.put('>', DOM_VK_PERIOD);
-        keyCodeMap.put('/', DOM_VK_SLASH);
-        keyCodeMap.put('?', DOM_VK_SLASH);
-        keyCodeMap.put('\\', DOM_VK_BACK_SLASH);
-        keyCodeMap.put('|', DOM_VK_BACK_SLASH);
+        KEX_CODE_MAP.put(':', DOM_VK_SEMICOLON);
+        KEX_CODE_MAP.put('\'', DOM_VK_QUOTE);
+        KEX_CODE_MAP.put('"', DOM_VK_QUOTE);
+        KEX_CODE_MAP.put(',', DOM_VK_COMMA);
+        KEX_CODE_MAP.put('<', DOM_VK_COMMA);
+        KEX_CODE_MAP.put('.', DOM_VK_PERIOD);
+        KEX_CODE_MAP.put('>', DOM_VK_PERIOD);
+        KEX_CODE_MAP.put('/', DOM_VK_SLASH);
+        KEX_CODE_MAP.put('?', DOM_VK_SLASH);
+        KEX_CODE_MAP.put('\\', DOM_VK_BACK_SLASH);
+        KEX_CODE_MAP.put('|', DOM_VK_BACK_SLASH);
     }
 
     /*
@@ -882,6 +882,7 @@ public class KeyboardEvent extends UIEvent {
      * Creates a new keyboard event instance.
      */
     public KeyboardEvent() {
+        super();
     }
 
     /**
@@ -910,14 +911,14 @@ public class KeyboardEvent extends UIEvent {
         }
 
         final int keyCode;
-        if (getType().equals(Event.TYPE_KEY_PRESS)) {
+        if (Event.TYPE_KEY_PRESS.equals(getType())) {
             keyCode = Integer.valueOf(character);
         }
         else {
             keyCode = Integer.valueOf(charToKeyCode(character));
         }
         setKeyCode(keyCode);
-        if (getType().equals(Event.TYPE_KEY_PRESS)) {
+        if (Event.TYPE_KEY_PRESS.equals(getType())) {
             charCode_ = character;
         }
         which_ = charCode_ == 0 ? keyCode : Integer.valueOf(charCode_);
@@ -944,7 +945,7 @@ public class KeyboardEvent extends UIEvent {
             throw new IllegalArgumentException("Please use the 'char' constructor instead of int");
         }
         setKeyCode(keyCode);
-        if (getType().equals(Event.TYPE_KEY_PRESS)) {
+        if (Event.TYPE_KEY_PRESS.equals(getType())) {
             which_ = 0;
         }
         else {
@@ -985,7 +986,7 @@ public class KeyboardEvent extends UIEvent {
             return 'A' + c - 'a';
         }
 
-        final Integer i = keyCodeMap.get(c);
+        final Integer i = KEX_CODE_MAP.get(c);
         if (i != null) {
             return i;
         }

@@ -37,6 +37,7 @@ public class NodeIterator extends HtmlUnitScriptable {
      * Creates an instance.
      */
     public NodeIterator() {
+        super();
     }
 
     /**
@@ -44,6 +45,7 @@ public class NodeIterator extends HtmlUnitScriptable {
      */
     @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 
     /**
@@ -56,6 +58,7 @@ public class NodeIterator extends HtmlUnitScriptable {
      */
     public NodeIterator(final Node root, final int whatToShow,
             final org.w3c.dom.traversal.NodeFilter filter) {
+        super();
         iterator_ = new DomNodeIterator(root.getDomNodeOrDie(), whatToShow, filter, true);
     }
 

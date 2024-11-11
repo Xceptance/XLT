@@ -83,13 +83,6 @@ public final class HtmlUnitNekoHtmlParser implements HTMLParser {
     }
 
     /**
-     * Ctor.
-     */
-    public HtmlUnitNekoHtmlParser() {
-        // Empty.
-    }
-
-    /**
      * Parses the HTML content from the given string into an object tree representation.
      *
      * @param parent the parent for the new nodes
@@ -134,10 +127,13 @@ public final class HtmlUnitNekoHtmlParser implements HTMLParser {
             node = node.getParentNode();
         }
         if (ancestors.isEmpty() || !"html".equals(ancestors.get(0).getLocalpart())) {
-            ancestors.add(0, new QName(null, "html", null, null));
+            ancestors.add(new QName(null, "html", null, null));
+            ancestors.add(new QName(null, "body", null, null));
         }
-        if (ancestors.size() == 1 || !"body".equals(ancestors.get(1).getLocalpart())) {
-            ancestors.add(1, new QName(null, "body", null, null));
+        else if (ancestors.size() == 1
+                || (!"body".equals(ancestors.get(1).getLocalpart())
+                        && !"head".equals(ancestors.get(1).getLocalpart()))) {
+            ancestors.add(new QName(null, "body", null, null));
         }
 
         domBuilder.setFeature(HTMLScanner.ALLOW_SELFCLOSING_TAGS, true);
@@ -184,6 +180,7 @@ public final class HtmlUnitNekoHtmlParser implements HTMLParser {
                 domBuilder.setFeature(HTMLScanner.ALLOW_SELFCLOSING_TAGS, true);
                 domBuilder.setFeature(HTMLScanner.SCRIPT_STRIP_CDATA_DELIMS, true);
                 domBuilder.setFeature(HTMLScanner.STYLE_STRIP_CDATA_DELIMS, true);
+                domBuilder.setFeature(HTMLScanner.CDATA_EARLY_CLOSING, false);
             }
         }
         catch (final Exception e) {
@@ -252,7 +249,7 @@ public final class HtmlUnitNekoHtmlParser implements HTMLParser {
         if (result != null) {
             return result;
         }
-        return UnknownElementFactory.instance;
+        return UnknownElementFactory.INSTANCE;
     }
 
     /**
@@ -298,7 +295,7 @@ public final class HtmlUnitNekoHtmlParser implements HTMLParser {
                 return factory;
             }
         }
-        return UnknownElementFactory.instance;
+        return UnknownElementFactory.INSTANCE;
     }
 }
 

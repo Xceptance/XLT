@@ -67,7 +67,8 @@ import org.htmlunit.javascript.host.URL;
 import org.htmlunit.javascript.host.URLSearchParams;
 import org.htmlunit.javascript.host.WebSocket;
 import org.htmlunit.javascript.host.Window;
-import org.htmlunit.javascript.host.XPathExpression;
+import org.htmlunit.javascript.host.abort.AbortController;
+import org.htmlunit.javascript.host.abort.AbortSignal;
 import org.htmlunit.javascript.host.animations.Animation;
 import org.htmlunit.javascript.host.animations.AnimationEvent;
 import org.htmlunit.javascript.host.animations.KeyframeEffect;
@@ -142,7 +143,6 @@ import org.htmlunit.javascript.host.dom.DOMParser;
 import org.htmlunit.javascript.host.dom.DOMPoint;
 import org.htmlunit.javascript.host.dom.DOMPointReadOnly;
 import org.htmlunit.javascript.host.dom.DOMRectReadOnly;
-import org.htmlunit.javascript.host.dom.DOMRequest;
 import org.htmlunit.javascript.host.dom.DOMStringList;
 import org.htmlunit.javascript.host.dom.DOMStringMap;
 import org.htmlunit.javascript.host.dom.DOMTokenList;
@@ -164,8 +164,12 @@ import org.htmlunit.javascript.host.dom.ShadowRoot;
 import org.htmlunit.javascript.host.dom.Text;
 import org.htmlunit.javascript.host.dom.TreeWalker;
 import org.htmlunit.javascript.host.dom.XPathEvaluator;
+import org.htmlunit.javascript.host.dom.XPathExpression;
 import org.htmlunit.javascript.host.dom.XPathNSResolver;
 import org.htmlunit.javascript.host.dom.XPathResult;
+import org.htmlunit.javascript.host.draganddrop.DataTransfer;
+import org.htmlunit.javascript.host.draganddrop.DataTransferItem;
+import org.htmlunit.javascript.host.draganddrop.DataTransferItemList;
 import org.htmlunit.javascript.host.event.AudioProcessingEvent;
 import org.htmlunit.javascript.host.event.BeforeInstallPromptEvent;
 import org.htmlunit.javascript.host.event.BeforeUnloadEvent;
@@ -226,8 +230,6 @@ import org.htmlunit.javascript.host.fetch.Headers;
 import org.htmlunit.javascript.host.fetch.Request;
 import org.htmlunit.javascript.host.fetch.Response;
 import org.htmlunit.javascript.host.file.Blob;
-import org.htmlunit.javascript.host.file.DataTransferItem;
-import org.htmlunit.javascript.host.file.DataTransferItemList;
 import org.htmlunit.javascript.host.file.File;
 import org.htmlunit.javascript.host.file.FileList;
 import org.htmlunit.javascript.host.file.FileReader;
@@ -241,12 +243,10 @@ import org.htmlunit.javascript.host.geo.GeolocationCoordinates;
 import org.htmlunit.javascript.host.geo.GeolocationPosition;
 import org.htmlunit.javascript.host.geo.GeolocationPositionError;
 import org.htmlunit.javascript.host.html.Audio;
-import org.htmlunit.javascript.host.html.DataTransfer;
 import org.htmlunit.javascript.host.html.HTMLAllCollection;
 import org.htmlunit.javascript.host.html.HTMLAnchorElement;
 import org.htmlunit.javascript.host.html.HTMLAreaElement;
 import org.htmlunit.javascript.host.html.HTMLAudioElement;
-import org.htmlunit.javascript.host.html.HTMLBGSoundElement;
 import org.htmlunit.javascript.host.html.HTMLBRElement;
 import org.htmlunit.javascript.host.html.HTMLBaseElement;
 import org.htmlunit.javascript.host.html.HTMLBodyElement;
@@ -547,6 +547,7 @@ public final class JavaScriptConfiguration extends AbstractJavaScriptConfigurati
 
     @SuppressWarnings("unchecked")
     static final Class<? extends HtmlUnitScriptable>[] CLASSES_ = new Class[] {
+        AbortController.class, AbortSignal.class,
         AbstractList.class, AbstractRange.class, AnalyserNode.class,
         Animation.class, AnimationEvent.class, Atomics.class,
         Attr.class, Audio.class, AudioBuffer.class,
@@ -574,7 +575,7 @@ public final class JavaScriptConfiguration extends AbstractJavaScriptConfigurati
         DeviceMotionEvent.class, DeviceOrientationEvent.class,
         Document.class, DocumentFragment.class, DocumentType.class, DOMError.class, DOMException.class,
         DOMImplementation.class, DOMMatrix.class, DOMMatrixReadOnly.class, DOMParser.class, DOMPoint.class,
-        DOMPointReadOnly.class, DOMRectReadOnly.class, DOMRequest.class,
+        DOMPointReadOnly.class, DOMRectReadOnly.class,
         DOMStringList.class, DOMStringMap.class, DOMTokenList.class,
         DragEvent.class, DynamicsCompressorNode.class,
         Element.class, ErrorEvent.class, Event.class, EventSource.class,
@@ -588,7 +589,7 @@ public final class JavaScriptConfiguration extends AbstractJavaScriptConfigurati
         Geolocation.class, GeolocationCoordinates.class, GeolocationPosition.class, GeolocationPositionError.class,
         HashChangeEvent.class, Headers.class, History.class,
         HTMLAllCollection.class, HTMLAnchorElement.class, HTMLAreaElement.class, HTMLAudioElement.class,
-        HTMLBaseElement.class, HTMLBGSoundElement.class,
+        HTMLBaseElement.class,
         HTMLBodyElement.class, HTMLBRElement.class, HTMLButtonElement.class,
         HTMLCanvasElement.class, HTMLCollection.class,
         HTMLDataElement.class, HTMLDataListElement.class,
@@ -715,7 +716,7 @@ public final class JavaScriptConfiguration extends AbstractJavaScriptConfigurati
         WebkitSpeechRecognitionEvent.class,
         WebSocket.class, WheelEvent.class, Window.class, Worker.class, XMLDocument.class,
         XMLHttpRequest.class, XMLHttpRequestEventTarget.class, XMLHttpRequestUpload.class, XMLSerializer.class,
-        XPathEvaluator.class, XPathExpression.class,
+        XPathEvaluator.class, XPathEvaluator.class, XPathExpression.class,
         XPathNSResolver.class, XPathResult.class, XSLTProcessor.class
     };
 
@@ -736,6 +737,7 @@ public final class JavaScriptConfiguration extends AbstractJavaScriptConfigurati
      * @param browserVersion the {@link BrowserVersion}
      * @return the instance for the specified {@link BrowserVersion}
      */
+    @SuppressWarnings("PMD.SingletonClassReturningNewInstance")
     public static synchronized JavaScriptConfiguration getInstance(final BrowserVersion browserVersion) {
         if (browserVersion == null) {
             throw new IllegalArgumentException("BrowserVersion must be provided");

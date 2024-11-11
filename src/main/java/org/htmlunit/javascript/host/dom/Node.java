@@ -141,13 +141,6 @@ public class Node extends EventTarget {
     private NodeList childNodes_;
 
     /**
-     * Creates an instance.
-     */
-    public Node() {
-        // Empty.
-    }
-
-    /**
      * JavaScript constructor.
      */
     @Override
@@ -198,8 +191,7 @@ public class Node extends EventTarget {
      * @return the newly added child node
      */
     @JsxFunction
-    public Object appendChild(final Object childObject) {
-        Object appendedChild = null;
+    public Node appendChild(final Object childObject) {
         if (childObject instanceof Node) {
             final Node childNode = (Node) childObject;
 
@@ -219,14 +211,14 @@ public class Node extends EventTarget {
 
             // Append the child to the parent node
             parentNode.appendChild(childDomNode);
-            appendedChild = childObject;
 
             initInlineFrameIfNeeded(childDomNode);
             for (final HtmlElement htmlElement : childDomNode.getHtmlElementDescendants()) {
                 initInlineFrameIfNeeded(htmlElement);
             }
+            return childNode;
         }
-        return appendedChild;
+        return null;
     }
 
     /**
@@ -254,7 +246,7 @@ public class Node extends EventTarget {
      * @return the newly added child node
      */
     @JsxFunction
-    public static Object insertBefore(final Context context, final Scriptable scope,
+    public static Node insertBefore(final Context context, final Scriptable scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         return ((Node) thisObj).insertBeforeImpl(args);
     }
@@ -265,7 +257,7 @@ public class Node extends EventTarget {
      * @param args the arguments
      * @return the newly added child node
      */
-    protected Object insertBeforeImpl(final Object[] args) {
+    protected Node insertBeforeImpl(final Object[] args) {
         if (args.length < 1) {
             throw JavaScriptEngine.typeError(
                     "Failed to execute 'insertBefore' on 'Node': 2 arguments required, but only 0 present.");
@@ -277,9 +269,8 @@ public class Node extends EventTarget {
             refChildObject = args[1];
         }
         else {
-            refChildObject = JavaScriptEngine.Undefined;
+            refChildObject = JavaScriptEngine.UNDEFINED;
         }
-        Object insertedChild = null;
 
         if (newChildObject instanceof Node) {
             final Node newChild = (Node) newChildObject;
@@ -329,9 +320,9 @@ public class Node extends EventTarget {
             catch (final org.w3c.dom.DOMException e) {
                 throw JavaScriptEngine.constructError("ReferenceError", e.getMessage());
             }
-            insertedChild = newChild;
+            return newChild;
         }
-        return insertedChild;
+        return null;
     }
 
     /**
@@ -361,22 +352,23 @@ public class Node extends EventTarget {
      * @return the removed child node
      */
     @JsxFunction
-    public Object removeChild(final Object childObject) {
+    public Node removeChild(final Object childObject) {
         if (!(childObject instanceof Node)) {
             return null;
         }
 
         // Get XML node for the DOM node passed in
-        final DomNode childNode = ((Node) childObject).getDomNodeOrDie();
+        final Node childObjectNode = (Node) childObject;
+        final DomNode childDomNode = childObjectNode.getDomNodeOrDie();
 
-        if (!getDomNodeOrDie().isAncestorOf(childNode)) {
+        if (!getDomNodeOrDie().isAncestorOf(childDomNode)) {
             throw JavaScriptEngine.throwAsScriptRuntimeEx(
                     new Exception("NotFoundError: Failed to execute 'removeChild' on '"
                         + this + "': The node to be removed is not a child of this node."));
         }
         // Remove the child from the parent node
-        childNode.remove();
-        return childObject;
+        childDomNode.remove();
+        return childObjectNode;
     }
 
     /**
@@ -386,13 +378,13 @@ public class Node extends EventTarget {
      * @return the removed child node
      */
     @JsxFunction
-    public Object replaceChild(final Object newChildObject, final Object oldChildObject) {
-        Object removedChild = null;
-
+    public Node replaceChild(final Object newChildObject, final Object oldChildObject) {
         if (newChildObject instanceof DocumentFragment) {
             final DocumentFragment fragment = (DocumentFragment) newChildObject;
             Node firstNode = null;
-            final Node refChildObject = ((Node) oldChildObject).getNextSibling();
+
+            final Node oldChildNode = (Node) oldChildObject;
+            final Node refChildObject = oldChildNode.getNextSibling();
             for (final DomNode node : fragment.getDomNodeOrDie().getChildren()) {
                 if (firstNode == null) {
                     replaceChild(node.getScriptableObject(), oldChildObject);
@@ -405,9 +397,11 @@ public class Node extends EventTarget {
             if (firstNode == null) {
                 removeChild(oldChildObject);
             }
-            removedChild = oldChildObject;
+
+            return oldChildNode;
         }
-        else if (newChildObject instanceof Node && oldChildObject instanceof Node) {
+
+        if (newChildObject instanceof Node && oldChildObject instanceof Node) {
             final Node newChild = (Node) newChildObject;
 
             // is the node allowed here?
@@ -417,15 +411,17 @@ public class Node extends EventTarget {
             }
 
             // Get XML nodes for the DOM nodes passed in
-            final DomNode newChildNode = newChild.getDomNodeOrDie();
-            final DomNode oldChildNode = ((Node) oldChildObject).getDomNodeOrDie();
+            final DomNode newChildDomNode = newChild.getDomNodeOrDie();
+            final Node oldChildNode = (Node) oldChildObject;
+            final DomNode oldChildDomNode = oldChildNode.getDomNodeOrDie();
 
             // Replace the old child with the new child.
-            oldChildNode.replace(newChildNode);
-            removedChild = oldChildObject;
+            oldChildDomNode.replace(newChildDomNode);
+
+            return oldChildNode;
         }
 
-        return removedChild;
+        return null;
     }
 
     /**
@@ -434,7 +430,7 @@ public class Node extends EventTarget {
      * @return the newly cloned node
      */
     @JsxFunction
-    public Object cloneNode(final boolean deep) {
+    public Node cloneNode(final boolean deep) {
         final DomNode domNode = getDomNodeOrDie();
         final DomNode clonedNode = domNode.cloneNode(deep);
 
@@ -586,6 +582,17 @@ public class Node extends EventTarget {
     }
 
     /**
+     * @param namespace string containing the namespace to look the prefix up
+     * @return a string containing the prefix for a given namespace URI,
+     * if present, and null if not. When multiple prefixes are possible,
+     * the first prefix is returned.
+     */
+    @JsxFunction
+    public String lookupPrefix(final String namespace) {
+        return null;
+    }
+
+    /**
      * Returns the child nodes of the current element.
      * @return the child nodes of the current element
      */
@@ -700,7 +707,7 @@ public class Node extends EventTarget {
      * @return the document
      */
     @JsxFunction
-    public Object getRootNode() {
+    public Node getRootNode() {
         Node parent = this;
         while (parent != null) {
             if (parent instanceof Document || parent instanceof DocumentFragment) {
@@ -819,7 +826,7 @@ public class Node extends EventTarget {
      * Returns the namespace prefix.
      * @return the namespace prefix
      */
-    public Object getPrefix() {
+    public String getPrefix() {
         return getDomNodeOrDie().getPrefix();
     }
 
@@ -827,7 +834,7 @@ public class Node extends EventTarget {
      * Returns the local name of this attribute.
      * @return the local name of this attribute
      */
-    public Object getLocalName() {
+    public String getLocalName() {
         return getDomNodeOrDie().getLocalName();
     }
 
@@ -835,7 +842,7 @@ public class Node extends EventTarget {
      * Returns the URI that identifies an XML namespace.
      * @return the URI that identifies an XML namespace
      */
-    public Object getNamespaceURI() {
+    public String getNamespaceURI() {
         return getDomNodeOrDie().getNamespaceURI();
     }
 
@@ -967,16 +974,16 @@ public class Node extends EventTarget {
      */
     protected static void append(final Context context, final Scriptable thisObj, final Object[] args,
             final Function function) {
-        if (!(thisObj instanceof Element)) {
+        if (!(thisObj instanceof Node)) {
             throw JavaScriptEngine.typeError("Illegal invocation");
         }
 
-        final DomNode thisDomNode = ((Node) thisObj).getDomNodeOrDie();
+        final Node thisNode = (Node) thisObj;
+        final DomNode thisDomNode = thisNode.getDomNodeOrDie();
 
         for (final Object arg : args) {
-            final Node node = toNodeOrTextNode((Node) thisObj, arg);
-            final DomNode newNode = node.getDomNodeOrDie();
-            thisDomNode.appendChild(newNode);
+            final Node node = toNodeOrTextNode(thisNode, arg);
+            thisDomNode.appendChild(node.getDomNodeOrDie());
         }
     }
 
@@ -990,14 +997,16 @@ public class Node extends EventTarget {
      */
     protected static void prepend(final Context context, final Scriptable thisObj, final Object[] args,
             final Function function) {
-        if (!(thisObj instanceof Element)) {
+        if (!(thisObj instanceof Node)) {
             throw JavaScriptEngine.typeError("Illegal invocation");
         }
 
-        final DomNode thisDomNode = ((Node) thisObj).getDomNodeOrDie();
+        final Node thisNode = (Node) thisObj;
+        final DomNode thisDomNode = thisNode.getDomNodeOrDie();
         final DomNode firstChild = thisDomNode.getFirstChild();
+
         for (final Object arg : args) {
-            final Node node = toNodeOrTextNode((Node) thisObj, arg);
+            final Node node = toNodeOrTextNode(thisNode, arg);
             final DomNode newNode = node.getDomNodeOrDie();
             if (firstChild == null) {
                 thisDomNode.appendChild(newNode);
@@ -1018,15 +1027,16 @@ public class Node extends EventTarget {
      */
     protected static void replaceChildren(final Context context, final Scriptable thisObj, final Object[] args,
             final Function function) {
-        if (!(thisObj instanceof Element)) {
+        if (!(thisObj instanceof Node)) {
             throw JavaScriptEngine.typeError("Illegal invocation");
         }
 
-        final DomNode thisDomNode = ((Node) thisObj).getDomNodeOrDie();
+        final Node thisNode = (Node) thisObj;
+        final DomNode thisDomNode = thisNode.getDomNodeOrDie();
         thisDomNode.removeAllChildren();
 
         for (final Object arg : args) {
-            final Node node = toNodeOrTextNode((Node) thisObj, arg);
+            final Node node = toNodeOrTextNode(thisNode, arg);
             thisDomNode.appendChild(node.getDomNodeOrDie());
         }
     }

@@ -48,6 +48,7 @@ public class ComputedCSSStyleDeclaration extends CSSStyleDeclaration {
      * Creates an instance.
      */
     public ComputedCSSStyleDeclaration() {
+        super();
     }
 
     /**
@@ -55,6 +56,7 @@ public class ComputedCSSStyleDeclaration extends CSSStyleDeclaration {
      */
     @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 
     /**

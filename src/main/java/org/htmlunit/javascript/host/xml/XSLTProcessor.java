@@ -66,16 +66,11 @@ public class XSLTProcessor extends HtmlUnitScriptable {
     private final Map<String, Object> parameters_ = new HashMap<>();
 
     /**
-     * Default constructor.
-     */
-    public XSLTProcessor() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 
     /**
@@ -146,7 +141,7 @@ public class XSLTProcessor extends HtmlUnitScriptable {
                         try {
                             transformerFactory.setAttribute("indent-number", Integer.valueOf(2));
                         }
-                        catch (final IllegalArgumentException e) {
+                        catch (final IllegalArgumentException ignored) {
                             // ignore
                         }
                         final Transformer transformer = transformerFactory.newTransformer(xsltSource);
@@ -154,7 +149,7 @@ public class XSLTProcessor extends HtmlUnitScriptable {
                         try {
                             transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
                         }
-                        catch (final IllegalArgumentException e) {
+                        catch (final IllegalArgumentException ignored) {
                             // ignore
                         }
 
@@ -222,8 +217,8 @@ public class XSLTProcessor extends HtmlUnitScriptable {
                 return new String(out.toByteArray(), cs);
             }
         }
-        catch (final RuntimeException re) {
-            throw re;
+        catch (final RuntimeException e) {
+            throw e;
         }
         catch (final Exception e) {
             throw JavaScriptEngine.reportRuntimeError("Exception: " + e);

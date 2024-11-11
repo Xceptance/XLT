@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TimeZone;
 
@@ -61,6 +62,7 @@ import org.htmlunit.util.MimeType;
  * @author Frank Danek
  * @author Ronald Brill
  */
+@SuppressWarnings("PMD.AvoidDuplicateLiterals")
 public final class BrowserVersion implements Serializable {
 
     /**
@@ -84,18 +86,18 @@ public final class BrowserVersion implements Serializable {
     private static final String PLATFORM_WIN32 = "Win32";
 
     /** Latest Firefox. */
-    public static final BrowserVersion FIREFOX = new BrowserVersion(126, "FF");
+    public static final BrowserVersion FIREFOX = new BrowserVersion(132, "FF");
 
-    private static final int FIREFOX_ESR_NUMERIC = 115;
+    private static final int FIREFOX_ESR_NUMERIC = 128;
 
     /** Firefox ESR. */
     public static final BrowserVersion FIREFOX_ESR = new BrowserVersion(FIREFOX_ESR_NUMERIC, "FF-ESR");
 
     /** Latest Edge. */
-    public static final BrowserVersion EDGE = new BrowserVersion(125, "Edge");
+    public static final BrowserVersion EDGE = new BrowserVersion(130, "Edge");
 
     /** Latest Chrome. */
-    public static final BrowserVersion CHROME = new BrowserVersion(125, "Chrome");
+    public static final BrowserVersion CHROME = new BrowserVersion(130, "Chrome");
 
     /**
      * Array with all supported browsers.
@@ -113,7 +115,8 @@ public final class BrowserVersion implements Serializable {
     /* Register plugins for the browser versions. */
     static {
         FIREFOX_ESR.applicationVersion_ = "5.0 (Windows)";
-        FIREFOX_ESR.userAgent_ = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/"
+        FIREFOX_ESR.userAgent_ = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:"
+                                    + FIREFOX_ESR.getBrowserVersionNumeric() + ".0) Gecko/20100101 Firefox/"
                                     + FIREFOX_ESR.getBrowserVersionNumeric() + ".0";
         FIREFOX_ESR.buildId_ = "20181001000000";
         FIREFOX_ESR.productSub_ = "20100101";
@@ -123,18 +126,19 @@ public final class BrowserVersion implements Serializable {
             HttpHeader.ACCEPT,
             HttpHeader.ACCEPT_LANGUAGE,
             HttpHeader.ACCEPT_ENCODING,
-            HttpHeader.REFERER,
             HttpHeader.CONNECTION,
+            HttpHeader.REFERER,
             HttpHeader.COOKIE,
             HttpHeader.UPGRADE_INSECURE_REQUESTS,
             HttpHeader.SEC_FETCH_DEST,
             HttpHeader.SEC_FETCH_MODE,
             HttpHeader.SEC_FETCH_SITE,
-            HttpHeader.SEC_FETCH_USER};
-        FIREFOX_ESR.htmlAcceptHeader_ = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8";
+            HttpHeader.SEC_FETCH_USER,
+            HttpHeader.PRIORITY};
+        FIREFOX_ESR.htmlAcceptHeader_ = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/png,image/svg+xml,*/*;q=0.8";
         FIREFOX_ESR.acceptLanguageHeader_ = "en-US,en;q=0.5";
         FIREFOX_ESR.xmlHttpRequestAcceptHeader_ = "*/*";
-        FIREFOX_ESR.imgAcceptHeader_ = "image/avif,image/webp,*/*";
+        FIREFOX_ESR.imgAcceptHeader_ = "image/avif,image/webp,image/png,image/svg+xml,image/*;q=0.8,*/*;q=0.5";
         FIREFOX_ESR.cssAcceptHeader_ = "text/css,*/*;q=0.1";
         FIREFOX_ESR.fontHeights_ = new int[] {
             0, 2, 3, 5, 6, 6, 7, 9, 10, 11, 12, 13, 15, 16, 16, 17, 18, 20, 21, 22, 23, 25, 26, 26, 28, 29,
@@ -166,10 +170,10 @@ public final class BrowserVersion implements Serializable {
             HttpHeader.SEC_FETCH_SITE,
             HttpHeader.SEC_FETCH_USER,
             HttpHeader.PRIORITY};
-        FIREFOX.htmlAcceptHeader_ = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8";
+        FIREFOX.htmlAcceptHeader_ = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
         FIREFOX.acceptLanguageHeader_ = "en-US,en;q=0.5";
         FIREFOX.xmlHttpRequestAcceptHeader_ = "*/*";
-        FIREFOX.imgAcceptHeader_ = "image/avif,image/webp,*/*";
+        FIREFOX.imgAcceptHeader_ = "image/avif,image/webp,image/png,image/svg+xml,image/*;q=0.8,*/*;q=0.5";
         FIREFOX.cssAcceptHeader_ = "text/css,*/*;q=0.1";
         FIREFOX.fontHeights_ = new int[] {
             0, 2, 3, 5, 6, 6, 7, 9, 10, 11, 12, 13, 15, 16, 16, 17, 18, 20, 21, 22, 23, 25, 26, 26, 28, 29,
@@ -213,9 +217,9 @@ public final class BrowserVersion implements Serializable {
         CHROME.imgAcceptHeader_ = "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8";
         CHROME.cssAcceptHeader_ = "text/css,*/*;q=0.1";
         CHROME.scriptAcceptHeader_ = "*/*";
-        CHROME.secClientHintUserAgentHeader_ = "\"Google Chrome\";v=\""
-                        + CHROME.getBrowserVersionNumeric() + "\", \"Chromium\";v=\""
-                        + CHROME.getBrowserVersionNumeric() + "\", \"Not.A/Brand\";v=\"24\"";
+        CHROME.secClientHintUserAgentHeader_ = "\"Chromium\";v=\""
+                        + CHROME.getBrowserVersionNumeric() + "\", \"Google Chrome\";v=\""
+                        + CHROME.getBrowserVersionNumeric() + "\", \"Not?A_Brand\";v=\"99\"";
         CHROME.fontHeights_ = new int[] {
             0, 1, 2, 4, 5, 5, 6, 8, 9, 10, 11, 12, 15, 16, 16, 17, 18, 20, 21, 22, 23, 25, 26, 26,
             27, 28, 30, 31, 32, 33, 34, 36, 37, 37, 38, 40, 42, 43, 44, 45, 47, 48, 48, 49, 51, 52, 53, 54, 55, 57,
@@ -259,9 +263,9 @@ public final class BrowserVersion implements Serializable {
         EDGE.imgAcceptHeader_ = "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8";
         EDGE.cssAcceptHeader_ = "text/css,*/*;q=0.1";
         EDGE.scriptAcceptHeader_ = "*/*";
-        EDGE.secClientHintUserAgentHeader_ = "\"Microsoft Edge\";v=\""
-                            + EDGE.getBrowserVersionNumeric() + "\", \"Chromium\";v=\""
-                            + EDGE.getBrowserVersionNumeric() + "\", \"Not.A/Brand\";v=\"24\"";
+        EDGE.secClientHintUserAgentHeader_ = "\"Chromium\";v=\""
+                            + EDGE.getBrowserVersionNumeric() + "\", \"Microsoft Edge\";v=\""
+                            + EDGE.getBrowserVersionNumeric() + "\", \"Not?A_Brand\";v=\"99\"";
         EDGE.fontHeights_ = new int[] {
             0, 1, 2, 4, 5, 5, 6, 8, 9, 10, 11, 12, 15, 16, 16, 17, 18, 20, 21, 22, 23, 25, 26, 26,
             27, 28, 30, 31, 32, 33, 34, 36, 37, 37, 38, 40, 42, 43, 44, 45, 47, 48, 48, 49, 51, 52, 53, 54, 55, 57,
@@ -437,6 +441,14 @@ public final class BrowserVersion implements Serializable {
         uploadMimeTypes_ = new HashMap<>();
 
         initFeatures();
+    }
+
+    /**
+     * @param other the {@link BrowserVersion} to compare with
+     * @return true if the nickname and the numeric version are the same
+     */
+    public boolean isSameBrowser(final BrowserVersion other) {
+        return Objects.equals(nickname_, other.nickname_) && browserVersionNumeric_ == other.browserVersionNumeric_;
     }
 
     private void initFeatures() {
@@ -824,6 +836,7 @@ public final class BrowserVersion implements Serializable {
      * Because BrowserVersion is immutable we need a builder
      * for this complex object setup.
      */
+    @SuppressWarnings("PMD.LinguisticNaming")
     public static class BrowserVersionBuilder {
         private final BrowserVersion workPiece_;
 

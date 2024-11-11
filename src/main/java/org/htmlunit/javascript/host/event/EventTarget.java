@@ -47,16 +47,11 @@ public class EventTarget extends HtmlUnitScriptable {
     private EventListenersContainer eventListenersContainer_;
 
     /**
-     * Default constructor.
-     */
-    public EventTarget() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 
     /**
@@ -209,7 +204,7 @@ public class EventTarget extends HtmlUnitScriptable {
                     try {
                         element.click(event.isShiftKey(), event.isCtrlKey(), event.isAltKey(), false, true, true, true);
                     }
-                    catch (final IOException e) {
+                    catch (final IOException ignored) {
                         // ignore for now
                     }
                 }
@@ -263,7 +258,7 @@ public class EventTarget extends HtmlUnitScriptable {
 
         ScriptResult result = null;
         final DomNode domNode = getDomNodeOrNull();
-        if (event.getType().equals(MouseEvent.TYPE_CLICK) && (domNode instanceof DomElement)) {
+        if (MouseEvent.TYPE_CLICK.equals(event.getType()) && (domNode instanceof DomElement)) {
             try {
                 ((DomElement) domNode).click(event, event.isShiftKey(), event.isCtrlKey(), event.isAltKey(), true);
             }

@@ -16,6 +16,7 @@ package org.htmlunit.html.impl;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -276,6 +277,7 @@ public class SimpleRange implements Serializable {
      * Moves the contents of a Range from the containing document or document
      * fragment to a new DocumentFragment.
      * @return DocumentFragment containing the extracted contents
+     * @throws DOMException in case of error
      */
     public DomDocumentFragment extractContents() throws DOMException {
         final DomDocumentFragment fragment = cloneContents();
@@ -290,6 +292,7 @@ public class SimpleRange implements Serializable {
     /**
      * @return true if startContainer equals endContainer and
      * startOffset equals endOffset
+     * @throws DOMException in case of error
      */
     public boolean isCollapsed() throws DOMException {
         return startContainer_ == endContainer_ && startOffset_ == endOffset_;
@@ -298,6 +301,7 @@ public class SimpleRange implements Serializable {
     /**
      * @return the deepest common ancestor container of this range's two
      * boundary-points.
+     * @throws DOMException in case of error
      */
     public DomNode getCommonAncestorContainer() throws DOMException {
         if (startContainer_ != null && endContainer_ != null) {
@@ -552,10 +556,9 @@ public class SimpleRange implements Serializable {
      * @return a list with all nodes contained in this range
      */
     public List<DomNode> containedNodes() {
-        final List<DomNode> nodes = new ArrayList<>();
         final DomNode ancestor = getCommonAncestorContainer();
         if (ancestor == null) {
-            return nodes;
+            return Collections.EMPTY_LIST;
         }
 
         final DomNode start;
@@ -591,6 +594,7 @@ public class SimpleRange implements Serializable {
 
         boolean foundStart = false;
         boolean started = false;
+        final List<DomNode> nodes = new ArrayList<>();
         for (final DomNode n : ancestor.getDescendants()) {
             if (n == end) {
                 break;

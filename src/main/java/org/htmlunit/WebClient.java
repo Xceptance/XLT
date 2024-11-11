@@ -145,6 +145,7 @@ import org.htmlunit.webstart.WebStartHandler;
  * @author Sergio Moreno
  * @author Lai Quang Duong
  * @author René Schwietzke
+ * @author Sven Strickroth
  */
 public class WebClient implements Serializable, AutoCloseable {
 
@@ -155,6 +156,37 @@ public class WebClient implements Serializable, AutoCloseable {
     private static final int ALLOWED_REDIRECTIONS_SAME_URL = 20;
     private static final WebResponseData RESPONSE_DATA_NO_HTTP_RESPONSE = new WebResponseData(
             0, "No HTTP Response", Collections.emptyList());
+
+    /**
+     * These response headers are not copied from a 304 response to the cached
+     * response headers. This list is based on Chromium http_response_headers.cc
+     */
+    private static final String[] DISCARDING_304_RESPONSE_HEADER_NAMES = {
+        "connection",
+        "proxy-connection",
+        "keep-alive",
+        "www-authenticate",
+        "proxy-authenticate",
+        "proxy-authorization",
+        "te",
+        "trailer",
+        "transfer-encoding",
+        "upgrade",
+        "content-location",
+        "content-md5",
+        "etag",
+        "content-encoding",
+        "content-range",
+        "content-type",
+        "content-length",
+        "x-frame-options",
+        "x-xss-protection",
+    };
+
+    private static final String[] DISCARDING_304_HEADER_PREFIXES = {
+        "x-content-",
+        "x-webkit-"
+    };
 
     private transient WebConnection webConnection_;
     private CredentialsProvider credentialsProvider_ = new DefaultCredentialsProvider();
@@ -429,9 +461,7 @@ public class WebClient implements Serializable, AutoCloseable {
             if (page.isHtmlPage()) {
                 final HtmlPage htmlPage = (HtmlPage) page;
                 if (!htmlPage.isOnbeforeunloadAccepted()) {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("The registered OnbeforeunloadHandler rejected to load a new page.");
-                    }
+                    LOG.debug("The registered OnbeforeunloadHandler rejected to load a new page.");
                     return (P) page;
                 }
             }
@@ -658,7 +688,7 @@ public class WebClient implements Serializable, AutoCloseable {
 
                     ((FrameWindow) webWindow).setPageDenied(pageDenied);
                 }
-                catch (final IOException e) {
+                catch (final IOException ignored) {
                     // ignore
                 }
             }
@@ -1064,7 +1094,7 @@ public class WebClient implements Serializable, AutoCloseable {
 
                 final Page openerPage = opener.getEnclosedPage();
                 if (openerPage != null && openerPage.getUrl() != null) {
-                    request.setRefererlHeader(openerPage.getUrl());
+                    request.setRefererHeader(openerPage.getUrl());
                 }
                 getPage(window, request);
             }
@@ -1145,7 +1175,7 @@ public class WebClient implements Serializable, AutoCloseable {
                     }
                     return frame;
                 }
-                catch (final ElementNotFoundException e) {
+                catch (final ElementNotFoundException expected) {
                     // Fall through
                 }
             }
@@ -1160,7 +1190,7 @@ public class WebClient implements Serializable, AutoCloseable {
         try {
             return getWebWindowByName(name);
         }
-        catch (final WebWindowNotFoundException e) {
+        catch (final WebWindowNotFoundException expected) {
             // Fall through - a new window will be created below
         }
         return null;
@@ -1190,7 +1220,7 @@ public class WebClient implements Serializable, AutoCloseable {
         request.setCharset(UTF_8);
 
         if (openerPage != null) {
-            request.setRefererlHeader(openerPage.getUrl());
+            request.setRefererHeader(openerPage.getUrl());
         }
 
         getPage(window, request);
@@ -1462,7 +1492,7 @@ public class WebClient implements Serializable, AutoCloseable {
             try (InputStream inputStream = new BufferedInputStream(Files.newInputStream(file.toPath()))) {
                 contentType = URLConnection.guessContentTypeFromStream(inputStream);
             }
-            catch (final IOException e) {
+            catch (final IOException ignored) {
                 // Ignore silently.
             }
         }
@@ -1739,37 +1769,6 @@ public class WebClient implements Serializable, AutoCloseable {
     }
 
     /**
-     * These response headers are not copied from a 304 response to the cached
-     * response headers. This list is based on Chromium http_response_headers.cc
-     */
-    private static final String[] DISCARDING_304_RESPONSE_HEADER_NAMES = {
-        "connection",
-        "proxy-connection",
-        "keep-alive",
-        "www-authenticate",
-        "proxy-authenticate",
-        "proxy-authorization",
-        "te",
-        "trailer",
-        "transfer-encoding",
-        "upgrade",
-        "content-location",
-        "content-md5",
-        "etag",
-        "content-encoding",
-        "content-range",
-        "content-type",
-        "content-length",
-        "x-frame-options",
-        "x-xss-protection",
-    };
-
-    private static final String[] DISCARDING_304_HEADER_PREFIXES = {
-        "x-content-",
-        "x-webkit-"
-    };
-
-    /**
      * Returns true if the value of the specified header in a 304 Not Modified response should be
      * adopted over any previously cached value.
      */
@@ -1819,7 +1818,7 @@ public class WebClient implements Serializable, AutoCloseable {
         }
         if (getBrowserVersion().hasFeature(HTTP_HEADER_PRIORITY)
                 && !wrs.isAdditionalHeader(HttpHeader.PRIORITY)) {
-            wrs.setAdditionalHeader(HttpHeader.PRIORITY, "u=1");
+            wrs.setAdditionalHeader(HttpHeader.PRIORITY, "u=0, i");
         }
 
         if (getBrowserVersion().hasFeature(HTTP_HEADER_CH_UA)
@@ -2322,12 +2321,12 @@ public class WebClient implements Serializable, AutoCloseable {
         }
 
         // now both lists have to be empty
-        if (topLevelWindows_.size() > 0) {
+        if (!topLevelWindows_.isEmpty()) {
             LOG.error("Sill " + topLevelWindows_.size() + " top level windows are open. Please report this error!");
             topLevelWindows_.clear();
         }
 
-        if (windows_.size() > 0) {
+        if (!windows_.isEmpty()) {
             LOG.error("Sill " + windows_.size() + " windows are open. Please report this error!");
             windows_.clear();
         }
@@ -2338,9 +2337,9 @@ public class WebClient implements Serializable, AutoCloseable {
             try {
                 scriptEngine_.shutdown();
             }
-            catch (final ThreadDeath td) {
+            catch (final ThreadDeath ex) {
                 // make sure the following cleanup is performed to avoid resource leaks
-                toThrow = td;
+                toThrow = ex;
             }
             catch (final Exception e) {
                 LOG.error("Exception while shutdown the scriptEngine", e);
@@ -2818,7 +2817,7 @@ public class WebClient implements Serializable, AutoCloseable {
         }
         catch (final MalformedCookieException e) {
             if (LOG.isDebugEnabled()) {
-                LOG.warn("Adding cookie '" + cookieString + "' failed; reason: '" + e.getMessage() + "'.");
+                LOG.warn("Adding cookie '" + cookieString + "' failed.", e);
             }
             getIncorrectnessListener().notify("Adding cookie '" + cookieString
                         + "' failed; reason: '" + e.getMessage() + "'.", origin);

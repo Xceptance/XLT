@@ -841,9 +841,7 @@ public class HostTypeOfTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "undefined",
-            FF = "function",
-            FF_ESR = "function")
+    @Alerts("function")
     public void caretPosition() throws Exception {
         test("CaretPosition");
     }
@@ -1163,6 +1161,19 @@ public class HostTypeOfTest extends WebDriverTestCase {
             FF_ESR = "function")
     public void css2Properties() throws Exception {
         test("CSS2Properties");
+    }
+
+    /**
+     * Test {@link CSSPageDescriptors}.
+     *
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = "undefined",
+            FF = "function")
+    @HtmlUnitNYI(FF = "undefined")
+    public void cssPageDescriptors() throws Exception {
+        test("CSSPageDescriptors");
     }
 
     /**
@@ -1921,8 +1932,7 @@ public class HostTypeOfTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "undefined",
-            FF_ESR = "function")
+    @Alerts("undefined")
     public void domRequest() throws Exception {
         test("DOMRequest");
     }
@@ -4346,9 +4356,8 @@ public class HostTypeOfTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "undefined",
-            CHROME = "function",
-            EDGE = "function")
+    @Alerts(DEFAULT = "function",
+            FF_ESR = "undefined")
     public void iterator() throws Exception {
         test("Iterator");
     }
@@ -5422,7 +5431,9 @@ public class HostTypeOfTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("function")
+    @Alerts(DEFAULT = "undefined",
+            FF = "function",
+            FF_ESR = "function")
     public void mutationEvent() throws Exception {
         test("MutationEvent");
     }
@@ -8887,9 +8898,8 @@ public class HostTypeOfTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "undefined",
-            CHROME = "function",
-            EDGE = "function")
+    @Alerts(DEFAULT = "function",
+            FF_ESR = "undefined")
     public void textEvent() throws Exception {
         test("TextEvent");
     }
@@ -10203,5 +10213,27 @@ public class HostTypeOfTest extends WebDriverTestCase {
     @Alerts("function")
     public void xsltProcessor() throws Exception {
         test("XSLTProcessor");
+    }
+
+    /**
+     * Test {@link org.htmlunit.javascript.host.abort.AbortController}.
+     *
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts("function")
+    public void abortController() throws Exception {
+        test("AbortController");
+    }
+
+    /**
+     * Test {@link org.htmlunit.javascript.host.abort.AbortSignal}.
+     *
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts("function")
+    public void abortSignal() throws Exception {
+        test("AbortSignal");
     }
 }

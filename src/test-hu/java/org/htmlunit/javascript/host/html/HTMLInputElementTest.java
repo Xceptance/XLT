@@ -17,7 +17,6 @@ package org.htmlunit.javascript.host.html;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Collections;
-import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 import org.htmlunit.WebDriverTestCase;
@@ -26,7 +25,6 @@ import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import org.htmlunit.util.MimeType;
-import org.htmlunit.util.NameValuePair;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
@@ -1377,8 +1375,7 @@ public class HTMLInputElementTest extends WebDriverTestCase {
         try (InputStream is = getClass().getClassLoader().getResourceAsStream("testfiles/tiny-jpg.img")) {
             final byte[] directBytes = IOUtils.toByteArray(is);
 
-            final List<NameValuePair> emptyList = Collections.emptyList();
-            getMockWebConnection().setResponse(urlImage, directBytes, 200, "ok", "image/jpg", emptyList);
+            getMockWebConnection().setResponse(urlImage, directBytes, 200, "ok", "image/jpg", Collections.emptyList());
         }
 
         final String html
@@ -2140,7 +2137,7 @@ public class HTMLInputElementTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = {"173", "17", "173", "17", "13", "13", "13", "13"},
-            FF = {"154", "18", "154", "18", "10", "10", "10", "10"},
+            FF = {"154", "18", "154", "18", "14", "14", "14", "14"},
             FF_ESR = {"154", "18", "154", "18", "10", "10", "10", "10"})
     public void defaultClientWidthHeight() throws Exception {
         final String html = "<html><head>\n"
@@ -2535,7 +2532,7 @@ public class HTMLInputElementTest extends WebDriverTestCase {
                 + "<body onload='test()'>\n"
                 + "  <form>\n"
                 + "    <input id='i1'>\n"
-                + "    <input id='i2' disabled>>\n"
+                + "    <input id='i2' disabled>\n"
                 + "    <input id='i3' hidden>\n"
                 + "    <input id='i4' readonly>\n"
                 + "    <input id='i5' style='display: none'>\n"

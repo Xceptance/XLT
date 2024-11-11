@@ -14,6 +14,7 @@
  */
 package org.htmlunit.javascript.host.crypto;
 
+import org.htmlunit.corejs.javascript.NativePromise;
 import org.htmlunit.javascript.HtmlUnitScriptable;
 import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
@@ -34,79 +35,133 @@ public class SubtleCrypto extends HtmlUnitScriptable {
     /**
      * Creates an instance.
      */
-    public SubtleCrypto() {
-    }
-
-    /**
-     * Creates an instance.
-     */
     @JsxConstructor
     public void jsConstructor() {
         throw JavaScriptEngine.reportRuntimeError("Illegal constructor.");
     }
 
-    private Object notImplemented() {
+    private NativePromise notImplemented() {
         return setupRejectedPromise(() ->
                 new DOMException("Operation is not supported", DOMException.NOT_SUPPORTED_ERR));
     }
 
+    /**
+     * Not yet implemented.
+     *
+     * @return a Promise which will be fulfilled with the encrypted data (also known as "ciphertext")
+     */
     @JsxFunction
-    public Object encrypt() {
+    public NativePromise encrypt() {
         return notImplemented();
     }
 
+    /**
+     * Not yet implemented.
+     *
+     * @return a Promise which will be fulfilled with the decrypted data (also known as "plaintext")
+     */
     @JsxFunction
-    public Object decrypt() {
+    public NativePromise decrypt() {
         return notImplemented();
     }
 
+    /**
+     * Not yet implemented.
+     *
+     * @return a Promise which will be fulfilled with the signature
+     */
     @JsxFunction
-    public Object sign() {
+    public NativePromise sign() {
         return notImplemented();
     }
 
+    /**
+     * Not yet implemented.
+     *
+     * @return a Promise which will be fulfilled with a boolean value indicating whether the signature is valid
+     */
     @JsxFunction
-    public Object verify() {
+    public NativePromise verify() {
         return notImplemented();
     }
 
+    /**
+     * Not yet implemented.
+     *
+     * @return a Promise which will be fulfilled with the digest
+     */
     @JsxFunction
-    public Object digest() {
+    public NativePromise digest() {
         return notImplemented();
     }
 
+    /**
+     * Not yet implemented.
+     *
+     * @return a new key (for symmetric algorithms) or key pair (for public-key algorithms)
+     */
     @JsxFunction
-    public Object generateKey() {
+    public NativePromise generateKey() {
         return notImplemented();
     }
 
+    /**
+     * Not yet implemented.
+     *
+     * @return a Promise which will be fulfilled with a CryptoKey object representing the new key
+     */
     @JsxFunction
-    public Object deriveKey() {
+    public NativePromise deriveKey() {
         return notImplemented();
     }
 
+    /**
+     * Not yet implemented.
+     *
+     * @return a Promise which will be fulfilled with an ArrayBuffer containing the derived bits
+     */
     @JsxFunction
-    public Object deriveBits() {
+    public NativePromise deriveBits() {
         return notImplemented();
     }
 
+    /**
+     * Not yet implemented.
+     *
+     * @return a CryptoKey object that you can use in the Web Crypto API
+     */
     @JsxFunction
-    public Object importKey() {
+    public NativePromise importKey() {
         return notImplemented();
     }
 
+    /**
+     * Not yet implemented.
+     *
+     * @return the key in an external, portable format
+     */
     @JsxFunction
-    public Object exportKey() {
+    public NativePromise exportKey() {
         return notImplemented();
     }
 
+    /**
+     * Not yet implemented.
+     *
+     * @return a Promise that fulfills with an ArrayBuffer containing the encrypted exported key
+     */
     @JsxFunction
-    public Object wrapKey() {
+    public NativePromise wrapKey() {
         return notImplemented();
     }
 
+    /**
+     * Not yet implemented.
+     *
+     * @return a Promise that fulfills with the unwrapped key as a CryptoKey object
+     */
     @JsxFunction
-    public Object unwrapKey() {
+    public NativePromise unwrapKey() {
         return notImplemented();
     }
 }

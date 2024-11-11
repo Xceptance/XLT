@@ -25,6 +25,8 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 
+import javax.net.ssl.SSLContext;
+
 import org.apache.commons.io.FileUtils;
 
 /**
@@ -57,14 +59,18 @@ public class WebClientOptions implements Serializable {
     private String[] sslClientProtocols_;
     private String[] sslClientCipherSuites_;
 
+    private transient SSLContext sslContext_;
+    private boolean useInsecureSSL_; // default is secure SSL
+    private String sslInsecureProtocol_;
+
     private boolean doNotTrackEnabled_;
     private String homePage_ = "https://www.htmlunit.org/";
     private ProxyConfig proxyConfig_;
     private int timeout_ = 90_000; // like Firefox 16 default's value for network.http.connection-timeout
     private long connectionTimeToLive_ = -1; // HttpClient default
 
-    private boolean useInsecureSSL_; // default is secure SSL
-    private String sslInsecureProtocol_;
+    private boolean fileProtocolForXMLHttpRequestsAllowed_;
+
     private int maxInMemory_ = 500 * 1024;
     private int historySizeLimit_ = 50;
     private int historyPageCacheLimit_ = Integer.MAX_VALUE;
@@ -83,6 +89,26 @@ public class WebClientOptions implements Serializable {
     private int webSocketMaxBinaryMessageBufferSize_ = -1;
 
     private boolean isFetchPolyfillEnabled_;
+
+    /**
+     * Sets the SSLContext; if this is set it is used and some other settings are ignored
+     * (protocol, keyStore, keyStorePassword, trustStore, sslClientCertificateStore, sslClientCertificatePassword).
+     * <p>This property is transient (because SSLContext is not serializable)
+     * @param sslContext the SSLContext, {@code null} to use for default value
+     */
+    public void setSSLContext(final SSLContext sslContext) {
+        sslContext_ = sslContext;
+    }
+
+    /**
+     * Gets the SSLContext; if this is set this is used and some other settings are ignored
+     * (protocol, keyStore, keyStorePassword, trustStore, sslClientCertificateStore, sslClientCertificatePassword).
+     * <p>This property is transient (because SSLContext is not serializable)
+     * @return the SSLContext
+     */
+    public SSLContext getSSLContext() {
+        return sslContext_;
+    }
 
     /**
      * If set to {@code true}, the client will accept connections to any host, regardless of
@@ -168,28 +194,7 @@ public class WebClientOptions implements Serializable {
      */
     public void setSSLClientCertificateKeyStore(final KeyStore keyStore, final char[] keyStorePassword) {
         sslClientCertificateStore_ = keyStore;
-        sslClientCertificatePassword_ = keyStorePassword == null ? null : keyStorePassword;
-    }
-
-    /**
-     * Sets the SSL client certificate to use.
-     * The needed parameters are used to construct a {@link java.security.KeyStore}.
-     * <p>
-     * If the web server requires Renegotiation, you have to set system property
-     * "sun.security.ssl.allowUnsafeRenegotiation" to true, as hinted in
-     * <a href="http://www.oracle.com/technetwork/java/javase/documentation/tlsreadme2-176330.html">
-     * TLS Renegotiation Issue</a>.
-     *
-     * @param certificateUrl the URL which locates the certificate
-     * @param certificatePassword the certificate password
-     * @param certificateType the type of certificate, usually {@code jks} or {@code pkcs12}
-     *
-     * @deprecated as of version 3.10.0; use {@link #setSSLClientCertificateKeyStore(URL, String, String)} instead
-     */
-    @Deprecated
-    public void setSSLClientCertificate(final URL certificateUrl, final String certificatePassword,
-            final String certificateType) {
-        setSSLClientCertificateKeyStore(certificateUrl, certificatePassword, certificateType);
+        sslClientCertificatePassword_ = keyStorePassword;
     }
 
     /**
@@ -211,37 +216,6 @@ public class WebClientOptions implements Serializable {
         try (InputStream is = keyStoreUrl.openStream()) {
             sslClientCertificateStore_ = getKeyStore(is, keyStorePassword, keyStoreType);
             sslClientCertificatePassword_ = keyStorePassword == null ? null : keyStorePassword.toCharArray();
-        }
-        catch (final Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    /**
-     * Sets the SSL client certificate to use. The needed parameters are used to
-     * construct a {@link java.security.KeyStore}.
-     * <p>
-     * If the web server requires Renegotiation, you have to set system property
-     * "sun.security.ssl.allowUnsafeRenegotiation" to true, as hinted in
-     * <a href="http://www.oracle.com/technetwork/java/javase/documentation/tlsreadme2-176330.html">
-     * TLS Renegotiation Issue</a>.
-     * <p>
-     * In some cases the impl seems to pick old certificats from the KeyStore. To avoid
-     * that, wrap your keystore inside your own KeyStore impl and filter out outdated
-     * certificates. Provide the Keystore to the options instead of the input stream.
-     *
-     * @param certificateInputStream the input stream which represents the certificate
-     * @param certificatePassword the certificate password
-     * @param certificateType the type of certificate, usually {@code jks} or {@code pkcs12}
-     *
-     * @deprecated as of version 3.10.0;
-     * use {@link #setSSLClientCertificateKeyStore(InputStream, String, String)} instead
-     */
-    @Deprecated
-    public void setSSLClientCertificate(final InputStream certificateInputStream, final String certificatePassword,
-            final String certificateType) {
-        try {
-            setSSLClientCertificateKeyStore(certificateInputStream, certificatePassword, certificateType);
         }
         catch (final Exception e) {
             throw new RuntimeException(e);
@@ -959,5 +933,25 @@ public class WebClientOptions implements Serializable {
         public Double getSpeed() {
             return speed_;
         }
+    }
+
+    /**
+     * If set to {@code true}, the client will accept XMLHttpRequests to URL's
+     * using the 'file' protocol. Allowing this introduces security problems and is
+     * therefore not allowed by current browsers. But some browsers have special settings
+     * to open this door; therefore we have this option.
+     * @param fileProtocolForXMLHttpRequestsAllowed whether or not allow (local) file access
+     */
+    public void setFileProtocolForXMLHttpRequestsAllowed(final boolean fileProtocolForXMLHttpRequestsAllowed) {
+        fileProtocolForXMLHttpRequestsAllowed_ = fileProtocolForXMLHttpRequestsAllowed;
+    }
+
+    /**
+     * Indicates if the client will accept XMLHttpRequests to URL's
+     * using the 'file' protocol.
+     * @return {@code true} if access to local files is allowed.
+     */
+    public boolean isFileProtocolForXMLHttpRequestsAllowed() {
+        return fileProtocolForXMLHttpRequestsAllowed_;
     }
 }

@@ -19,7 +19,6 @@ import static org.htmlunit.BrowserVersionFeatures.JS_ANCHOR_PATHNAME_DETECT_WIN_
 import static org.htmlunit.BrowserVersionFeatures.JS_ANCHOR_PATHNAME_DETECT_WIN_DRIVES_URL_REPLACE;
 import static org.htmlunit.BrowserVersionFeatures.JS_ANCHOR_PATHNAME_PREFIX_WIN_DRIVES_URL;
 import static org.htmlunit.BrowserVersionFeatures.JS_ANCHOR_PROTOCOL_COLON_UPPER_CASE_DRIVE_LETTERS;
-import static org.htmlunit.BrowserVersionFeatures.URL_IGNORE_SPECIAL;
 import static org.htmlunit.html.DomElement.ATTRIBUTE_NOT_DEFINED;
 
 import java.net.MalformedURLException;
@@ -62,12 +61,6 @@ import org.htmlunit.util.UrlUtils;
 public class HTMLAnchorElement extends HTMLElement {
     private static final List<String> REFERRER_POLICIES = Arrays.asList(
                                         "no-referrer", HttpHeader.ORIGIN_LC, "unsafe-url");
-
-    /**
-     * The constructor.
-     */
-    public HTMLAnchorElement() {
-    }
 
     /**
      * JavaScript constructor.
@@ -269,7 +262,9 @@ public class HTMLAnchorElement extends HTMLElement {
     @JsxSetter
     public void setSearch(final String search) throws Exception {
         final String query;
-        if (search == null || "?".equals(search) || "".equals(search)) {
+        if (search == null
+                || org.htmlunit.util.StringUtils.isEmptyString(search)
+                || org.htmlunit.util.StringUtils.equalsChar('?', search)) {
             query = null;
         }
         else if (search.charAt(0) == '?') {
@@ -399,7 +394,6 @@ public class HTMLAnchorElement extends HTMLElement {
     public String getPathname() {
         final BrowserVersion browser = getBrowserVersion();
         try {
-            final URL url = getUrl();
             if (browser.hasFeature(JS_ANCHOR_PATHNAME_DETECT_WIN_DRIVES_URL_REPLACE)) {
                 final HtmlAnchor anchor = (HtmlAnchor) getDomNodeOrDie();
                 String href = anchor.getHrefAttribute();
@@ -420,7 +414,7 @@ public class HTMLAnchorElement extends HTMLElement {
                     return href.substring(2);
                 }
             }
-            return url.getPath();
+            return getUrl().getPath();
         }
         catch (final MalformedURLException e) {
             final HtmlAnchor anchor = (HtmlAnchor) getDomNodeOrDie();
@@ -512,25 +506,7 @@ public class HTMLAnchorElement extends HTMLElement {
             return;
         }
 
-        String bareProtocol = StringUtils.substringBefore(protocol, ":");
-        if (getBrowserVersion().hasFeature(URL_IGNORE_SPECIAL)) {
-            if (!UrlUtils.isValidScheme(bareProtocol)) {
-                return;
-            }
-
-            try {
-                URL url = UrlUtils.getUrlWithNewProtocol(getUrl(), bareProtocol);
-                url = UrlUtils.removeRedundantPort(url);
-                setUrl(url);
-            }
-            catch (final MalformedURLException e) {
-                // ignore
-            }
-
-            return;
-        }
-
-        bareProtocol = bareProtocol.trim();
+        final String bareProtocol = StringUtils.substringBefore(protocol, ":").trim();
         if (!UrlUtils.isValidScheme(bareProtocol)) {
             return;
         }
@@ -543,7 +519,7 @@ public class HTMLAnchorElement extends HTMLElement {
             url = UrlUtils.removeRedundantPort(url);
             setUrl(url);
         }
-        catch (final MalformedURLException e) {
+        catch (final MalformedURLException ignored) {
             // ignore
         }
     }
@@ -711,7 +687,7 @@ public class HTMLAnchorElement extends HTMLElement {
             final URL url = ((HtmlPage) anchor.getPage()).getFullyQualifiedUrl(href);
             setUrl(UrlUtils.getUrlWithNewUserName(url, username));
         }
-        catch (final MalformedURLException e) {
+        catch (final MalformedURLException ignored) {
             // ignore
         }
     }
@@ -750,7 +726,7 @@ public class HTMLAnchorElement extends HTMLElement {
             final URL url = ((HtmlPage) anchor.getPage()).getFullyQualifiedUrl(href);
             setUrl(UrlUtils.getUrlWithNewUserPassword(url, password));
         }
-        catch (final MalformedURLException e) {
+        catch (final MalformedURLException ignored) {
             // ignore
         }
     }

@@ -99,6 +99,8 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
     /** The name of the "element" property. Used when watching property change events. */
     public static final String PROPERTY_ELEMENT = "element";
 
+    private static final NamedNodeMap EMPTY_NAMED_NODE_MAP = new ReadOnlyEmptyNamedNodeMapImpl();
+
     /** The owning page of this node. */
     private SgmlPage page_;
 
@@ -458,6 +460,24 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
         final List<Node> myAncestors = getAncestors();
         final List<Node> otherAncestors = ((DomNode) other).getAncestors();
 
+        if (!myAncestors.get(0).equals(otherAncestors.get(0))) {
+            // spec likes to have a consistent order
+            //
+            // If ... node1’s root is not node2’s root, then return the result of adding
+            // DOCUMENT_POSITION_DISCONNECTED, DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC,
+            // and either DOCUMENT_POSITION_PRECEDING or DOCUMENT_POSITION_FOLLOWING,
+            // with the constraint that this is to be consistent...
+            if (this.hashCode() < other.hashCode()) {
+                return DOCUMENT_POSITION_DISCONNECTED
+                        | DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC
+                        | DOCUMENT_POSITION_PRECEDING;
+            }
+
+            return DOCUMENT_POSITION_DISCONNECTED
+                    | DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC
+                    | DOCUMENT_POSITION_FOLLOWING;
+        }
+
         final int max = Math.min(myAncestors.size(), otherAncestors.size());
 
         int i = 1;
@@ -644,7 +664,7 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
      */
     @Override
     public NamedNodeMap getAttributes() {
-        return NamedAttrNodeMapImpl.EMPTY_MAP;
+        return EMPTY_NAMED_NODE_MAP;
     }
 
     /**
@@ -754,8 +774,11 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
     }
 
     /**
-     * Returns a string representation of the XML document from this element and all it's children (recursively).
-     * The charset used is the current page encoding.
+     * Returns a string representation as XML document from this element and all it's children (recursively).<br>
+     * The charset used in the xml header is the current page encoding; but the result is still a string.
+     * You have to make sure to use the correct (in fact the same) encoding if you write this to a file.<br>
+     * This serializes the current state of the DomTree - this implies that the content of noscript tags
+     * usually serialized as string because the content is converted during parsing (if js was enabled at that time).
      * @return the XML string
      */
     public String asXml() {
@@ -1015,16 +1038,19 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
         final boolean wasAlreadyAttached = domNode.isAttachedToPage();
         domNode.attachedToPage_ = isAttachedToPage();
 
+        final SgmlPage page = getPage();
         if (domNode.attachedToPage_) {
             // trigger events
-            final Page page = getPage();
             if (null != page && page.isHtmlPage()) {
                 ((HtmlPage) page).notifyNodeAdded(domNode);
             }
 
             // a node that is already "complete" (ie not being parsed) and not yet attached
             if (!domNode.isBodyParsed() && !wasAlreadyAttached) {
-                for (final DomNode child : domNode.getDescendants()) {
+                for (final Iterator<DomNode> iterator
+                        = domNode.new DescendantElementsIterator<>(DomNode.class);
+                        iterator.hasNext();) {
+                    final DomNode child = iterator.next();
                     child.attachedToPage_ = true;
                     child.onAllChildrenAddedToPage(true);
                 }
@@ -1036,7 +1062,9 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
             onAddedToDocumentFragment();
         }
 
-        fireNodeAdded(new DomChangeEvent(this, domNode));
+        if (page == null || page.isDomChangeListenerInUse()) {
+            fireNodeAdded(this, domNode);
+        }
     }
 
     /**
@@ -1144,20 +1172,19 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
     }
 
     private void fireRemoval(final DomNode exParent) {
-        final HtmlPage htmlPage = getHtmlPageOrNull();
-        if (htmlPage != null) {
+        final SgmlPage page = getPage();
+        if (page != null && page instanceof HtmlPage) {
             // some actions executed on removal need an intact parent relationship (e.g. for the
             // DocumentPositionComparator) so we have to restore it temporarily
             parent_ = exParent;
-            htmlPage.notifyNodeRemoved(this);
+            ((HtmlPage) page).notifyNodeRemoved(this);
             parent_ = null;
         }
 
-        if (exParent != null) {
-            final DomChangeEvent event = new DomChangeEvent(exParent, this);
-            fireNodeDeleted(event);
+        if (exParent != null && (page == null || page.isDomChangeListenerInUse())) {
+            fireNodeDeleted(exParent, this);
             // ask ex-parent to fire event (because we don't have parent now)
-            exParent.fireNodeDeleted(event);
+            exParent.fireNodeDeleted(exParent, this);
         }
     }
 
@@ -1203,8 +1230,10 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
             throw new RuntimeException("Cannot perform quiet move on nodes from different pages.");
         }
         for (final DomNode child : getChildren()) {
-            child.basicRemove();
-            destination.basicAppend(child);
+            if (child != destination) {
+                child.basicRemove();
+                destination.basicAppend(child);
+            }
         }
         basicRemove();
     }
@@ -1586,6 +1615,11 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
                 domListeners_ = new ArrayList<>();
             }
             domListeners_.add(listener);
+
+            final SgmlPage page = getPage();
+            if (page != null) {
+                page.domChangeListenerAdded();
+            }
         }
     }
 
@@ -1610,20 +1644,30 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
      * Support for reporting DOM changes. This method can be called when a node has been added, and it
      * will send the appropriate {@link DomChangeEvent} to any registered {@link DomChangeListener}s.
      *
-     * <p>Note that this method recursively calls this node's parent's {@link #fireNodeAdded(DomChangeEvent)}.</p>
+     * <p>Note that this method recursively calls this node's parent's {@link #fireNodeAdded(DomNode, DomNode)}.</p>
      *
-     * @param event the DomChangeEvent to be propagated
+     * @param parentNode the parent of the node that was changed
+     * @param addedNode the node that has been added
      */
-    protected void fireNodeAdded(final DomChangeEvent event) {
+    protected void fireNodeAdded(final DomNode parentNode, final DomNode addedNode) {
+        DomChangeEvent event = null;
+
         DomNode toInform = this;
         while (toInform != null) {
-            final List<DomChangeListener> listeners = toInform.safeGetDomListeners();
-            if (listeners != null) {
-                // iterate by index and safe on an iterator copy
-                for (int i = 0; i < listeners.size(); i++) {
-                    listeners.get(i).nodeAdded(event);
+            if (toInform.domListeners_ != null) {
+                final List<DomChangeListener> listeners;
+                synchronized (toInform) {
+                    listeners = new ArrayList<>(toInform.domListeners_);
+                }
+
+                if (event == null) {
+                    event = new DomChangeEvent(parentNode, addedNode);
+                }
+                for (final DomChangeListener domChangeListener : listeners) {
+                    domChangeListener.nodeAdded(event);
                 }
             }
+
             toInform = toInform.getParentNode();
         }
     }
@@ -1643,6 +1687,11 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
                 characterDataListeners_ = new ArrayList<>();
             }
             characterDataListeners_.add(listener);
+
+            final SgmlPage page = getPage();
+            if (page != null) {
+                page.characterDataChangeListenerAdded();
+            }
         }
     }
 
@@ -1668,19 +1717,28 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
      *
      * <p>Note that this method recursively calls this node's parent's {@link #fireCharacterDataChanged}.</p>
      *
-     * @param event the CharacterDataChangeEvent to be propagated
+     * @param characterData the character data which is changed
+     * @param oldValue the old value
      */
-    protected void fireCharacterDataChanged(final CharacterDataChangeEvent event) {
+    protected void fireCharacterDataChanged(final DomCharacterData characterData, final String oldValue) {
+        CharacterDataChangeEvent event = null;
+
         DomNode toInform = this;
         while (toInform != null) {
+            if (toInform.characterDataListeners_ != null) {
+                final List<CharacterDataChangeListener> listeners;
+                synchronized (toInform) {
+                    listeners = new ArrayList<>(toInform.characterDataListeners_);
+                }
 
-            final List<CharacterDataChangeListener> listeners = toInform.safeGetCharacterDataListeners();
-            if (listeners != null) {
-                // iterate by index and safe on an iterator copy
-                for (int i = 0; i < listeners.size(); i++) {
-                    listeners.get(i).characterDataChanged(event);
+                if (event == null) {
+                    event = new CharacterDataChangeEvent(characterData, oldValue);
+                }
+                for (final CharacterDataChangeListener domChangeListener : listeners) {
+                    domChangeListener.characterDataChanged(event);
                 }
             }
+
             toInform = toInform.getParentNode();
         }
     }
@@ -1689,33 +1747,31 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
      * Support for reporting DOM changes. This method can be called when a node has been deleted, and it
      * will send the appropriate {@link DomChangeEvent} to any registered {@link DomChangeListener}s.
      *
-     * <p>Note that this method recursively calls this node's parent's {@link #fireNodeDeleted(DomChangeEvent)}.</p>
+     * <p>Note that this method recursively calls this node's parent's {@link #fireNodeDeleted(DomNode, DomNode)}.</p>
      *
-     * @param event the DomChangeEvent to be propagated
+     * @param parentNode the parent of the node that was changed
+     * @param deletedNode the node that has been deleted
      */
-    protected void fireNodeDeleted(final DomChangeEvent event) {
+    protected void fireNodeDeleted(final DomNode parentNode, final DomNode deletedNode) {
+        DomChangeEvent event = null;
+
         DomNode toInform = this;
         while (toInform != null) {
-            final List<DomChangeListener> listeners = toInform.safeGetDomListeners();
-            if (listeners != null) {
-                // iterate by index and safe on an iterator copy
-                for (int i = 0; i < listeners.size(); i++) {
-                    listeners.get(i).nodeDeleted(event);
+            if (toInform.domListeners_ != null) {
+                final List<DomChangeListener> listeners;
+                synchronized (toInform) {
+                    listeners = new ArrayList<>(toInform.domListeners_);
+                }
+
+                if (event == null) {
+                    event = new DomChangeEvent(parentNode, deletedNode);
+                }
+                for (final DomChangeListener domChangeListener : listeners) {
+                    domChangeListener.nodeDeleted(event);
                 }
             }
+
             toInform = toInform.getParentNode();
-        }
-    }
-
-    private List<DomChangeListener> safeGetDomListeners() {
-        synchronized (this) {
-            return domListeners_ == null ? null : new ArrayList<>(domListeners_);
-        }
-    }
-
-    private List<CharacterDataChangeListener> safeGetCharacterDataListeners() {
-        synchronized (this) {
-            return characterDataListeners_ == null ? null : new ArrayList<>(characterDataListeners_);
         }
     }
 
@@ -1744,7 +1800,7 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
             return new StaticDomNodeList(elements);
         }
         catch (final IOException e) {
-            throw new CSSException("Error parsing CSS selectors from '" + selectors + "': " + e.getMessage());
+            throw new CSSException("Error parsing CSS selectors from '" + selectors + "': " + e.getMessage(), e);
         }
     }
 
@@ -1766,12 +1822,12 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
 
             final SelectorList selectorList = parser.parseSelectors(selectors);
             // in case of error parseSelectors returns null
-            if (errorHandler.errorDetected()) {
-                throw new CSSException("Invalid selectors: '" + selectors + "'");
+            if (errorHandler.error() != null) {
+                throw new CSSException("Invalid selectors: '" + selectors + "'", errorHandler.error());
             }
 
             if (selectorList != null) {
-                CssStyleSheet.validateSelectors(selectorList, 9, this);
+                CssStyleSheet.validateSelectors(selectorList, this);
 
             }
             return selectorList;
@@ -1828,14 +1884,10 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
     }
 
     private static final class CheckErrorHandler implements CSSErrorHandler {
-        private boolean errorDetected_;
+        private CSSParseException error_;
 
-        private CheckErrorHandler() {
-            errorDetected_ = false;
-        }
-
-        boolean errorDetected() {
-            return errorDetected_;
+        CSSParseException error() {
+            return error_;
         }
 
         @Override
@@ -1845,12 +1897,12 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
 
         @Override
         public void fatalError(final CSSParseException exception) throws CSSException {
-            errorDetected_ = true;
+            error_ = exception;
         }
 
         @Override
         public void error(final CSSParseException exception) throws CSSException {
-            errorDetected_ = true;
+            error_ = exception;
         }
     }
 
@@ -1921,7 +1973,80 @@ public abstract class DomNode implements Cloneable, Serializable, Node {
             return null;
         }
         catch (final IOException e) {
-            throw new CSSException("Error parsing CSS selectors from '" + selectorString + "': " + e.getMessage());
+            throw new CSSException("Error parsing CSS selectors from '" + selectorString + "': " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * An unmodifiable empty {@link NamedNodeMap} implementation.
+     */
+    private static final class ReadOnlyEmptyNamedNodeMapImpl implements NamedNodeMap, Serializable {
+        private ReadOnlyEmptyNamedNodeMapImpl() {
+            super();
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public int getLength() {
+            return 0;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public DomAttr getNamedItem(final String name) {
+            return null;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public Node getNamedItemNS(final String namespaceURI, final String localName) {
+            return null;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public Node item(final int index) {
+            return null;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public Node removeNamedItem(final String name) throws DOMException {
+            return null;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public Node removeNamedItemNS(final String namespaceURI, final String localName) {
+            return null;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public DomAttr setNamedItem(final Node node) {
+            throw new UnsupportedOperationException("ReadOnlyEmptyNamedAttrNodeMapImpl.setNamedItem");
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public Node setNamedItemNS(final Node node) throws DOMException {
+            throw new UnsupportedOperationException("ReadOnlyEmptyNamedAttrNodeMapImpl.setNamedItemNS");
         }
     }
 }

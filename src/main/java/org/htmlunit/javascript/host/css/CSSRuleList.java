@@ -44,6 +44,7 @@ public class CSSRuleList extends HtmlUnitScriptable {
      * Creates a new instance.
      */
     public CSSRuleList() {
+        super();
     }
 
     /**
@@ -59,6 +60,7 @@ public class CSSRuleList extends HtmlUnitScriptable {
      * @param stylesheet the stylesheet
      */
     public CSSRuleList(final CSSStyleSheet stylesheet) {
+        super();
         setParentScope(stylesheet.getParentScope());
         setPrototype(getPrototype(getClass()));
     }
@@ -68,6 +70,7 @@ public class CSSRuleList extends HtmlUnitScriptable {
      * @param groupingRule the grouping rule
      */
     public CSSRuleList(final CSSGroupingRule groupingRule) {
+        super();
         setParentScope(groupingRule.getParentScope());
         setPrototype(getPrototype(getClass()));
     }
@@ -103,7 +106,11 @@ public class CSSRuleList extends HtmlUnitScriptable {
      */
     @JsxFunction
     public Object item(final int index) {
-        return get(index, this);
+        final Object item = get(index, this);
+        if (NOT_FOUND == item) {
+            return null;
+        }
+        return item;
     }
 
     /**
@@ -148,8 +155,8 @@ public class CSSRuleList extends HtmlUnitScriptable {
         try {
             return has(Integer.parseInt(name), start);
         }
-        catch (final Exception e) {
-            //ignore
+        catch (final Exception ignored) {
+            // ignore
         }
         return false;
     }

@@ -27,15 +27,10 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 public class MIDIConnectionEvent extends Event {
 
     /**
-     * Creates an instance.
-     */
-    public MIDIConnectionEvent() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 }

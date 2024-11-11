@@ -31,15 +31,10 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 public class Presentation extends HtmlUnitScriptable {
 
     /**
-     * Creates an instance.
-     */
-    public Presentation() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 }

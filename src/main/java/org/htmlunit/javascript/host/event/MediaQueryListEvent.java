@@ -27,15 +27,10 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 public class MediaQueryListEvent extends Event {
 
     /**
-     * Creates an instance.
-     */
-    public MediaQueryListEvent() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 }

@@ -28,15 +28,10 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 public class MediaKeyStatusMap extends HtmlUnitScriptable {
 
     /**
-     * Creates a new instance.
-     */
-    public MediaKeyStatusMap() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 }

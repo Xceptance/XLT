@@ -89,6 +89,8 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeDriverService;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.devtools.DevTools;
+import org.openqa.selenium.devtools.v85.emulation.Emulation;
 import org.openqa.selenium.edge.EdgeDriver;
 import org.openqa.selenium.edge.EdgeDriverService;
 import org.openqa.selenium.edge.EdgeOptions;
@@ -99,8 +101,8 @@ import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.firefox.GeckoDriverService;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitWebElement;
-import org.openqa.selenium.remote.Browser;
-import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.htmlunit.options.HtmlUnitDriverOptions;
+import org.openqa.selenium.htmlunit.options.HtmlUnitOption;
 import org.openqa.selenium.remote.UnreachableBrowserException;
 
 /**
@@ -490,7 +492,7 @@ public abstract class WebDriverTestCase extends WebTestCase {
      */
     protected WebDriver buildWebDriver() throws IOException {
         if (useRealBrowser()) {
-            if (BrowserVersion.EDGE == getBrowserVersion()) {
+            if (BrowserVersion.EDGE.isSameBrowser(getBrowserVersion())) {
                 final EdgeDriverService service = new EdgeDriverService.Builder()
                         .withLogOutput(System.out)
                         .usingDriverExecutable(new File(EDGE_BIN_))
@@ -500,14 +502,30 @@ public abstract class WebDriverTestCase extends WebTestCase {
 
                         .build();
 
-                final EdgeOptions options = new EdgeOptions();
-                // options.addArguments("--lang=en-US");
-                // options.addArguments("--remote-allow-origins=*");
+                final String locale = getBrowserVersion().getBrowserLocale().toLanguageTag();
 
-                return new EdgeDriver(service, options);
+                final EdgeOptions options = new EdgeOptions();
+                options.addArguments("--lang=" + locale);
+                options.addArguments("--remote-allow-origins=*");
+
+                // seems to be not required for edge
+                // options.addArguments("--disable-search-engine-choice-screen");
+                // see https://www.selenium.dev/blog/2024/chrome-browser-woes/
+                // options.addArguments("--disable-features=OptimizationGuideModelDownloading,"
+                //         + "OptimizationHintsFetching,OptimizationTargetPrediction,OptimizationHints");
+
+                final EdgeDriver edge = new EdgeDriver(service, options);
+
+                final DevTools devTools = edge.getDevTools();
+                devTools.createSession();
+
+                final String tz = getBrowserVersion().getSystemTimezone().getID();
+                devTools.send(Emulation.setTimezoneOverride(tz));
+
+                return edge;
             }
 
-            if (BrowserVersion.CHROME == getBrowserVersion()) {
+            if (BrowserVersion.CHROME.isSameBrowser(getBrowserVersion())) {
                 final ChromeDriverService service = new ChromeDriverService.Builder()
                         .withLogOutput(System.out)
                         .usingDriverExecutable(new File(CHROME_BIN_))
@@ -517,18 +535,32 @@ public abstract class WebDriverTestCase extends WebTestCase {
 
                         .build();
 
-                final ChromeOptions options = new ChromeOptions();
-                options.addArguments("--lang=en-US");
-                options.addArguments("--remote-allow-origins=*");
+                final String locale = getBrowserVersion().getBrowserLocale().toLanguageTag();
 
-                return new ChromeDriver(service, options);
+                final ChromeOptions options = new ChromeOptions();
+                options.addArguments("--lang=" + locale);
+                options.addArguments("--remote-allow-origins=*");
+                options.addArguments("--disable-search-engine-choice-screen");
+                // see https://www.selenium.dev/blog/2024/chrome-browser-woes/
+                options.addArguments("--disable-features=OptimizationGuideModelDownloading,"
+                        + "OptimizationHintsFetching,OptimizationTargetPrediction,OptimizationHints");
+
+                final ChromeDriver chrome = new ChromeDriver(service, options);
+
+                final DevTools devTools = chrome.getDevTools();
+                devTools.createSession();
+
+                final String tz = getBrowserVersion().getSystemTimezone().getID();
+                devTools.send(Emulation.setTimezoneOverride(tz));
+
+                return chrome;
             }
 
-            if (BrowserVersion.FIREFOX == getBrowserVersion()) {
+            if (BrowserVersion.FIREFOX.isSameBrowser(getBrowserVersion())) {
                 return createFirefoxDriver(GECKO_BIN_, FF_BIN_);
             }
 
-            if (BrowserVersion.FIREFOX_ESR == getBrowserVersion()) {
+            if (BrowserVersion.FIREFOX_ESR.isSameBrowser(getBrowserVersion())) {
                 return createFirefoxDriver(GECKO_BIN_, FF_ESR_BIN_);
             }
 
@@ -536,30 +568,22 @@ public abstract class WebDriverTestCase extends WebTestCase {
         }
 
         if (webDriver_ == null) {
-            final DesiredCapabilities capabilities = new DesiredCapabilities();
-            capabilities.setBrowserName(Browser.HTMLUNIT.browserName());
-            capabilities.setVersion(getBrowserName(getBrowserVersion()));
-            webDriver_ = new HtmlUnitDriver(capabilities) {
-                @Override
-                protected WebClient newWebClient(final BrowserVersion version) {
-                    final WebClient webClient = super.newWebClient(version);
-                    if (isWebClientCached()) {
-                        webClient.getOptions().setHistorySizeLimit(0);
-                    }
+            final HtmlUnitDriverOptions driverOptions = new HtmlUnitDriverOptions(getBrowserVersion());
 
-                    final Integer timeout = getWebClientTimeout();
-                    if (timeout != null) {
-                        webClient.getOptions().setTimeout(timeout.intValue());
-                    }
-                    return webClient;
-                }
-            };
+            if (isWebClientCached()) {
+                driverOptions.setCapability(HtmlUnitOption.optHistorySizeLimit, 0);
+            }
+
+            if (getWebClientTimeout() != null) {
+                driverOptions.setCapability(HtmlUnitOption.optTimeout, getWebClientTimeout());
+            }
+            webDriver_ = new HtmlUnitDriver(driverOptions);
             webDriver_.setExecutor(EXECUTOR_POOL);
         }
         return webDriver_;
     }
 
-    private static FirefoxDriver createFirefoxDriver(final String geckodriverBinary, final String binary) {
+    private FirefoxDriver createFirefoxDriver(final String geckodriverBinary, final String binary) {
         final FirefoxDriverService service = new GeckoDriverService.Builder()
                 .withLogOutput(System.out)
                 .usingDriverExecutable(new File(geckodriverBinary))
@@ -568,9 +592,16 @@ public abstract class WebDriverTestCase extends WebTestCase {
         final FirefoxOptions options = new FirefoxOptions();
         options.setBinary(binary);
 
+        String locale = getBrowserVersion().getBrowserLocale().toLanguageTag();
+        locale = locale + "," + getBrowserVersion().getBrowserLocale().getLanguage();
+
         final FirefoxProfile profile = new FirefoxProfile();
-        profile.setPreference("intl.accept_languages", "en-US,en");
+        profile.setPreference("intl.accept_languages", locale);
+        // no idea so far how to set this
+        // final String tz = getBrowserVersion().getSystemTimezone().getID();
+        // profile.setPreference("intl.tz", tz);
         options.setProfile(profile);
+
         return new FirefoxDriver(service, options);
     }
 
@@ -598,7 +629,7 @@ public abstract class WebDriverTestCase extends WebTestCase {
 
         LAST_TEST_UsesMockWebConnection_ = Boolean.TRUE;
         if (STATIC_SERVER_ == null) {
-            final Server server = buildServer(PORT);
+            final Server server = new Server(PORT);
 
             final WebAppContext context = new WebAppContext();
             context.setContextPath("/");
@@ -634,7 +665,7 @@ public abstract class WebDriverTestCase extends WebTestCase {
         MockWebConnectionServlet.MockConnection_ = mockConnection;
 
         if (STATIC_SERVER2_ == null && needThreeConnections()) {
-            final Server server2 = buildServer(PORT2);
+            final Server server2 = new Server(PORT2);
             final WebAppContext context2 = new WebAppContext();
             context2.setContextPath("/");
             context2.setResourceBase("./");
@@ -645,7 +676,7 @@ public abstract class WebDriverTestCase extends WebTestCase {
             STATIC_SERVER2_STARTER_ = ExceptionUtils.getStackTrace(new Throwable("StaticServer2Starter"));
             STATIC_SERVER2_ = server2;
 
-            final Server server3 = buildServer(PORT3);
+            final Server server3 = new Server(PORT3);
             final WebAppContext context3 = new WebAppContext();
             context3.setContextPath("/");
             context3.setResourceBase("./");
@@ -926,7 +957,6 @@ public abstract class WebDriverTestCase extends WebTestCase {
         return loadPage2(url, serverCharset);
     }
 
-
     /**
      * Load the page from the url.
      * @param url the url to use to load the page
@@ -1022,7 +1052,7 @@ public abstract class WebDriverTestCase extends WebTestCase {
     protected void resizeIfNeeded(final WebDriver driver) {
         final Dimension size = driver.manage().window().getSize();
         if (size.getWidth() != 1272 || size.getHeight() != 768) {
-            // only resize if needed because it may be quite expensive (e.g. IE)
+            // only resize if needed because it may be quite expensive
             driver.manage().window().setSize(new Dimension(1272, 768));
         }
     }
@@ -1538,26 +1568,6 @@ public abstract class WebDriverTestCase extends WebTestCase {
         }
     }
 
-    // limit resource usage
-    private static Server buildServer(final int port) {
-        return new Server(port);
-
-        //    https://github.com/HtmlUnit/htmlunit/issues/462
-        //    https://github.com/eclipse/jetty.project/issues/2503
-        //    the value for the QueuedThreadPool are validated,
-        //    let's make another try with the defaults
-        //
-        //    final QueuedThreadPool threadPool = new QueuedThreadPool(5, 2);
-        //
-        //    final Server server = new Server(threadPool);
-        //
-        //    final ServerConnector connector = new ServerConnector(server);
-        //    connector.setPort(port);
-        //    server.setConnectors(new Connector[] {connector});
-        //
-        //    return server;
-    }
-
     /**
      * Release resources but DON'T close the browser if we are running with a real browser.
      * Note that HtmlUnitDriver is not cached by default, but that can be configured by {@link #isWebClientCached()}.
@@ -1640,6 +1650,12 @@ public abstract class WebDriverTestCase extends WebTestCase {
 
                         // in the remaining window, load a blank page
                         driver.get("about:blank");
+                    }
+                    catch (final NoSuchSessionException e) {
+                        LOG.error("Error browser session no longer available.", e);
+                        WEB_DRIVERS_REAL_BROWSERS.remove(getBrowserVersion());
+                        WEB_DRIVERS_REAL_BROWSERS_USAGE_COUNT.remove(getBrowserVersion());
+                        return;
                     }
                     catch (final WebDriverException e) {
                         shutDownRealBrowsers();

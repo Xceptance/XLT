@@ -38,12 +38,6 @@ import org.htmlunit.javascript.configuration.JsxSetter;
 public class Attr extends Node {
 
     /**
-     * Creates an instance.
-     */
-    public Attr() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @Override
@@ -160,7 +154,7 @@ public class Attr extends Node {
      */
     @Override
     @JsxGetter
-    public Object getPrefix() {
+    public String getPrefix() {
         return super.getPrefix();
     }
 
@@ -169,7 +163,7 @@ public class Attr extends Node {
      */
     @Override
     @JsxGetter
-    public Object getLocalName() {
+    public String getLocalName() {
         return super.getLocalName();
     }
 
@@ -178,7 +172,7 @@ public class Attr extends Node {
      */
     @Override
     @JsxGetter
-    public Object getNamespaceURI() {
+    public String getNamespaceURI() {
         return super.getNamespaceURI();
     }
 
@@ -187,7 +181,7 @@ public class Attr extends Node {
      * @return the document
      */
     @Override
-    public Object getRootNode() {
+    public Node getRootNode() {
         return this;
     }
 }

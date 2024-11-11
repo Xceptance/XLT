@@ -35,8 +35,6 @@ import org.htmlunit.html.HtmlAttributeChangeEvent;
 import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlImage;
-import org.htmlunit.html.HtmlImageInput;
-import org.htmlunit.html.HtmlInput;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.SubmittableElement;
 import org.htmlunit.javascript.JavaScriptEngine;
@@ -48,6 +46,7 @@ import org.htmlunit.javascript.configuration.JsxSetter;
 import org.htmlunit.javascript.configuration.JsxSymbol;
 import org.htmlunit.javascript.host.dom.AbstractList.EffectOnCache;
 import org.htmlunit.javascript.host.dom.DOMTokenList;
+import org.htmlunit.javascript.host.dom.RadioNodeList;
 import org.htmlunit.javascript.host.event.Event;
 import org.htmlunit.util.MimeType;
 
@@ -63,17 +62,12 @@ import org.htmlunit.util.MimeType;
  * @author Sudhan Moghe
  * @author Ronald Brill
  * @author Frank Danek
+ * @author Lai Quang Duong
  *
  * @see <a href="http://msdn.microsoft.com/en-us/library/ms535249.aspx">MSDN documentation</a>
  */
 @JsxClass(domClass = HtmlForm.class)
 public class HTMLFormElement extends HTMLElement implements Function {
-
-    /**
-     * Creates an instance.
-     */
-    public HTMLFormElement() {
-    }
 
     /**
      * JavaScript constructor.
@@ -109,10 +103,11 @@ public class HTMLFormElement extends HTMLElement implements Function {
      * @return the value of this property
      */
     @JsxGetter
-    public HTMLCollection getElements() {
+    public HTMLFormControlsCollection getElements() {
         final HtmlForm htmlForm = getHtmlForm();
 
-        final HTMLCollection elements = new HTMLCollection(htmlForm, false) {
+        final HTMLFormControlsCollection elements = new HTMLFormControlsCollection(htmlForm,
+                false) {
             @Override
             protected Object getWithPreemption(final String name) {
                 return HTMLFormElement.this.getWithPreemption(name);
@@ -122,13 +117,11 @@ public class HTMLFormElement extends HTMLElement implements Function {
         elements.setElementsSupplier(
                 (Supplier<List<DomNode>> & Serializable)
                 () -> {
-                    final List<DomNode> response = new ArrayList<>();
                     final DomNode domNode = getDomNodeOrNull();
                     if (domNode == null) {
                         return new ArrayList<>();
                     }
-                    response.addAll(((HtmlForm) domNode).getElements());
-                    return response;
+                    return new ArrayList<>(((HtmlForm) domNode).getElementsJS());
                 });
 
         elements.setEffectOnCacheFunction(
@@ -151,10 +144,7 @@ public class HTMLFormElement extends HTMLElement implements Function {
      */
     @JsxGetter
     public int getLength() {
-        final int all = getElements().getLength();
-        final int images = getHtmlForm().getElementsByAttribute(
-                            HtmlInput.TAG_NAME, DomElement.TYPE_ATTRIBUTE, "image").size();
-        return all - images;
+        return getElements().getLength();
     }
 
     /**
@@ -168,7 +158,7 @@ public class HTMLFormElement extends HTMLElement implements Function {
         try {
             return ((HtmlPage) getHtmlForm().getPage()).getFullyQualifiedUrl(action).toExternalForm();
         }
-        catch (final MalformedURLException e) {
+        catch (final MalformedURLException ignored) {
             // nothing, return action attribute
         }
         return action;
@@ -393,9 +383,11 @@ public class HTMLFormElement extends HTMLElement implements Function {
         }
         final List<DomNode> nodes = new ArrayList<>(elements);
 
-        final HTMLCollection coll = new HTMLCollection(getHtmlForm(), nodes);
-        coll.setElementsSupplier((Supplier<List<DomNode>> & Serializable) () -> new ArrayList<>(findElements(name)));
-        return coll;
+        final RadioNodeList nodeList = new RadioNodeList(getHtmlForm(), nodes);
+        nodeList.setElementsSupplier(
+                (Supplier<List<DomNode>> & Serializable)
+                () -> new ArrayList<>(findElements(name)));
+        return nodeList;
     }
 
     /**
@@ -446,7 +438,7 @@ public class HTMLFormElement extends HTMLElement implements Function {
             return elements;
         }
 
-        for (final HtmlElement element : form.getElements()) {
+        for (final HtmlElement element : form.getElementsJS()) {
             if (isAccessibleByIdOrName(element, name)) {
                 elements.add(element);
             }
@@ -473,7 +465,7 @@ public class HTMLFormElement extends HTMLElement implements Function {
             return null;
         }
 
-        for (final HtmlElement node : form.getElements()) {
+        for (final HtmlElement node : form.getElementsJS()) {
             if (isAccessibleByIdOrName(node, name)) {
                 return node;
             }
@@ -498,19 +490,19 @@ public class HTMLFormElement extends HTMLElement implements Function {
      * @param name the name used to address the element
      * @return {@code true} if this element matches the conditions
      */
-    private boolean isAccessibleByIdOrName(final HtmlElement element, final String name) {
-        if (element instanceof FormFieldWithNameHistory && !(element instanceof HtmlImageInput)) {
-            if (element.getEnclosingForm() != getHtmlForm()) {
-                return false; // nested forms
-            }
-            if (name.equals(element.getId())) {
-                return true;
-            }
+    private static boolean isAccessibleByIdOrName(final HtmlElement element, final String name) {
+        if (name.equals(element.getId())) {
+            return true;
+        }
+
+        if (name.equals(element.getAttributeDirect(DomElement.NAME_ATTRIBUTE))) {
+            return true;
+        }
+
+        if (element instanceof FormFieldWithNameHistory) {
             final FormFieldWithNameHistory elementWithNames = (FormFieldWithNameHistory) element;
+
             if (name.equals(elementWithNames.getOriginalName())) {
-                return true;
-            }
-            else if (name.equals(element.getAttributeDirect(DomElement.NAME_ATTRIBUTE))) {
                 return true;
             }
 
@@ -518,6 +510,7 @@ public class HTMLFormElement extends HTMLElement implements Function {
                 return true;
             }
         }
+
         return false;
     }
 

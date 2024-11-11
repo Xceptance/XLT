@@ -43,6 +43,7 @@ public class CSSPageRule extends CSSRule {
      * Creates a new instance.
      */
     public CSSPageRule() {
+        super();
     }
 
     /**
@@ -85,7 +86,7 @@ public class CSSPageRule extends CSSRule {
         try {
             getPageRule().setSelectorText(selectorText);
         }
-        catch (final DOMException e) {
+        catch (final DOMException ignored) {
             // ignore
         }
     }

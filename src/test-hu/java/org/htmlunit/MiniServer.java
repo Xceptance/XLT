@@ -43,6 +43,7 @@ import org.htmlunit.util.NameValuePair;
  * @author Marc Guillemot
  * @author Frank Danek
  * @author Ronald Brill
+ * @author Sven Strickroth
  */
 public class MiniServer extends Thread implements Closeable {
     private static final Log LOG = LogFactory.getLog(MiniServer.class);
@@ -52,6 +53,7 @@ public class MiniServer extends Thread implements Closeable {
     private final AtomicBoolean started_ = new AtomicBoolean(false);
     private final MockWebConnection mockWebConnection_;
     private volatile ServerSocket serverSocket_;
+    private String lastRequest_;
 
     private static final Set<URL> DROP_REQUESTS = new HashSet<>();
     private static final Set<URL> DROP_GET_REQUESTS = new HashSet<>();
@@ -91,8 +93,8 @@ public class MiniServer extends Thread implements Closeable {
                     try {
                         Thread.sleep(200);
                     }
-                    catch (final InterruptedException ie) {
-                        LOG.error(ie.getMessage(), ie);
+                    catch (final InterruptedException ex) {
+                        LOG.error(ex.getMessage(), ex);
                     }
                 }
             }
@@ -195,19 +197,22 @@ public class MiniServer extends Thread implements Closeable {
 
         final String requestedPath = request.substring(firstSpace + 1, secondSpace);
         if ("/favicon.ico".equals(requestedPath)) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Skipping /favicon.ico");
-            }
+            LOG.debug("Skipping /favicon.ico");
             return null;
         }
         try {
             final URL url = new URL("http://localhost:" + port_ + requestedPath);
+            lastRequest_ = request;
             return new WebRequest(url, submitMethod);
         }
         catch (final MalformedURLException e) {
             LOG.error(e);
             return null;
         }
+    }
+
+    public String getLastRequest() {
+        return lastRequest_;
     }
 
     /**

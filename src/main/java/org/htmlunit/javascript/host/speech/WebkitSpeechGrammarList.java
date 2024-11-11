@@ -31,15 +31,10 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 public class WebkitSpeechGrammarList extends HtmlUnitScriptable {
 
     /**
-     * Creates a new instance.
-     */
-    public WebkitSpeechGrammarList() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @JsxConstructor(functionName = "SpeechGrammarList")
     public void jsConstructor() {
+        // nothing to do
     }
 }

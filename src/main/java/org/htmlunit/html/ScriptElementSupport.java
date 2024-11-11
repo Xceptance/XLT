@@ -45,6 +45,7 @@ import org.htmlunit.xml.XmlPage;
  * @author Ahmed Ashour
  * @author Ronald Brill
  * @author Ronny Shapiro
+ * @author Sven Strickroth
  */
 public final class ScriptElementSupport {
 
@@ -54,6 +55,7 @@ public final class ScriptElementSupport {
     private static final String SLASH_SLASH_COLON = "//:";
 
     private ScriptElementSupport() {
+        // util class
     }
 
     /**
@@ -74,16 +76,14 @@ public final class ScriptElementSupport {
         }
 
         if (!element.getPage().getWebClient().isJavaScriptEngineEnabled()) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Script found but not executed because javascript engine is disabled");
-            }
+            LOG.debug("Script found but not executed because javascript engine is disabled");
             return;
         }
 
         final ScriptElement script = (ScriptElement) element;
         final String srcAttrib = script.getSrcAttribute();
-        final boolean hasSrcAttrib = ATTRIBUTE_NOT_DEFINED == srcAttrib;
-        if (!hasSrcAttrib && script.isDeferred()) {
+        final boolean hasNoSrcAttrib = ATTRIBUTE_NOT_DEFINED == srcAttrib;
+        if (!hasNoSrcAttrib && script.isDeferred()) {
             return;
         }
 
@@ -91,11 +91,12 @@ public final class ScriptElementSupport {
         if (webWindow != null) {
             final StringBuilder description = new StringBuilder()
                     .append("Execution of ")
-                    .append(hasSrcAttrib ? "inline " : "external ")
+                    .append(hasNoSrcAttrib ? "inline " : "external ")
                     .append(element.getClass().getSimpleName());
-            if (!hasSrcAttrib) {
+            if (!hasNoSrcAttrib) {
                 description.append(" (").append(srcAttrib).append(')');
             }
+
             final PostponedAction action = new PostponedAction(element.getPage(), description.toString()) {
                 @Override
                 public void execute() {
@@ -132,6 +133,9 @@ public final class ScriptElementSupport {
             else {
                 try {
                     action.execute();
+                    if (engine != null) {
+                        engine.processPostponedActions();
+                    }
                 }
                 catch (final RuntimeException e) {
                     throw e;
@@ -160,7 +164,7 @@ public final class ScriptElementSupport {
         final ScriptElement scriptElement = (ScriptElement) element;
 
         final String src = scriptElement.getSrcAttribute();
-        if (src.equals(SLASH_SLASH_COLON)) {
+        if (SLASH_SLASH_COLON.equals(src)) {
             executeEvent(element, Event.TYPE_ERROR);
             return;
         }

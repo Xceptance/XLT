@@ -54,15 +54,15 @@ public class ExternalTest {
     static String MAVEN_REPO_URL_ = "https://repo1.maven.org/maven2/";
 
     /** Chrome driver. */
-    static String CHROME_DRIVER_ = "125.0.6422";
+    static String CHROME_DRIVER_ = "130.0.6723";
     static String CHROME_DRIVER_URL_ =
             "https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions-with-downloads.json";
 
-    static String EDGE_DRIVER_ = "125.0.2535";
+    static String EDGE_DRIVER_ = "130.0.2849";
     static String EDGE_DRIVER_URL_ = "https://developer.microsoft.com/en-us/microsoft-edge/tools/webdriver/";
 
     /** Gecko driver. */
-    static String GECKO_DRIVER_ = "0.34.0";
+    static String GECKO_DRIVER_ = "0.35.0";
     static String GECKO_DRIVER_URL_ = "https://github.com/mozilla/geckodriver/releases/latest";
 
     /** IE driver. */
@@ -95,7 +95,9 @@ public class ExternalTest {
             if (line.trim().equals("<properties>")) {
                 processProperties(lines, i + 1, properties);
             }
-            if (line.contains("artifactId") && !line.contains(">htmlunit<")) {
+            if (line.contains("artifactId")
+                    && !line.contains(">htmlunit<")
+                    && !line.contains(">selenium-devtools-v130<")) {
                 final String artifactId = getValue(line);
                 final String groupId = getValue(lines.get(i - 1));
                 if (!lines.get(i + 1).contains("</exclusion>")) {
@@ -332,22 +334,15 @@ public class ExternalTest {
             return true;
         }
 
-        // version 3.11.x seem to requires JDK11
+        // version > 3.12.0 does not work with out site.xml and also not with a refactored one
         if ("maven-site-plugin".equals(artifactId)
-                && (version.startsWith("3.11.") || version.startsWith("3.12."))) {
+                && (version.startsWith("3.12.1") || version.startsWith("3.20.") || version.startsWith("3.21."))) {
             return true;
         }
 
-        // pmd 7 has problems parsing our code
-        if ("maven-pmd-plugin".equals(artifactId)
-                && ("3.22.0".equals(version))) {
-            return true;
-        }
-        System.out.println(artifactId + " " + version);
-        if (artifactId.startsWith("pmd-")
-                && (version.startsWith("7.0.")
-                        || version.startsWith("7.1.")
-                        || version.startsWith("7.2."))) {
+        // 11.x requires java11
+        if ("org.owasp".equals(groupId)
+                && version.startsWith("11.")) {
             return true;
         }
 

@@ -51,6 +51,7 @@ public class PerformanceTiming extends HtmlUnitScriptable {
      * Creates an instance.
      */
     public PerformanceTiming() {
+        super();
         final long now = System.currentTimeMillis();
 
         // simulate the fastest browser on earth
@@ -80,6 +81,7 @@ public class PerformanceTiming extends HtmlUnitScriptable {
      */
     @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 
     /**

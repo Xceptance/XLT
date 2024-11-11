@@ -19,6 +19,7 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
+import org.htmlunit.corejs.javascript.NativePromise;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
@@ -33,12 +34,6 @@ import org.htmlunit.javascript.host.event.EventTarget;
 @JsxClass(isJSObject = false, value = {CHROME, EDGE})
 @JsxClass({FF, FF_ESR})
 public class FontFaceSet extends EventTarget {
-
-    /**
-     * Creates an instance.
-     */
-    public FontFaceSet() {
-    }
 
     /**
      * JavaScript constructor.
@@ -57,7 +52,7 @@ public class FontFaceSet extends EventTarget {
      *          when all the fonts are loaded; it is rejected if one of the fonts failed to load.
      */
     @JsxFunction
-    public Object load(final String font, final String text) {
+    public NativePromise load(final String font, final String text) {
         return setupPromise(() -> "");
     }
 }

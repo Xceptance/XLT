@@ -14,6 +14,7 @@
  */
 package org.htmlunit.javascript.host.html;
 
+import org.htmlunit.corejs.javascript.NativePromise;
 import org.htmlunit.html.HtmlMedia;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstant;
@@ -83,12 +84,6 @@ public class HTMLMediaElement extends HTMLElement {
     public static final int NETWORK_NO_SOURCE = 3;
 
     /**
-     * Creates an instance.
-     */
-    public HTMLMediaElement() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @Override
@@ -118,7 +113,7 @@ public class HTMLMediaElement extends HTMLElement {
      *         or is rejected if for any reason playback cannot be started
      */
     @JsxFunction
-    public Object play() {
+    public NativePromise play() {
         return setupRejectedPromise(() ->
                     new DOMException("HtmlUnit does not support media play().", DOMException.NOT_FOUND_ERR));
     }
@@ -128,6 +123,7 @@ public class HTMLMediaElement extends HTMLElement {
      */
     @JsxFunction
     public void pause() {
+        // nothing to do
     }
 
     /**
@@ -137,6 +133,7 @@ public class HTMLMediaElement extends HTMLElement {
      */
     @JsxFunction
     public void load() {
+        // nothing to do
     }
 
     /**
@@ -162,6 +159,11 @@ public class HTMLMediaElement extends HTMLElement {
         return getNodeNameCustomize();
     }
 
+    /**
+     * Separate method to be able to override this in subclasses.
+     *
+     * @return the node name
+     */
     protected String getNodeNameCustomize() {
         final HtmlMedia element = (HtmlMedia) getDomNodeOrNull();
         if (element == null) {

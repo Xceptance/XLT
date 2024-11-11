@@ -14,8 +14,6 @@
  */
 package org.htmlunit.html;
 
-import static org.htmlunit.BrowserVersionFeatures.EVENT_ONMOUSEOVER_FOR_DISABLED_OPTION;
-
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Map;
@@ -25,6 +23,7 @@ import org.htmlunit.SgmlPage;
 import org.htmlunit.html.serializer.HtmlSerializerNormalizedText;
 import org.htmlunit.javascript.host.event.Event;
 import org.htmlunit.javascript.host.event.MouseEvent;
+import org.w3c.dom.Node;
 
 /**
  * Wrapper for the HTML element "option".
@@ -174,7 +173,20 @@ public class HtmlOption extends HtmlElement implements DisabledElement {
      */
     @Override
     public final boolean isDisabled() {
-        return hasAttribute(ATTRIBUTE_DISABLED);
+        if (hasAttribute(ATTRIBUTE_DISABLED)) {
+            return true;
+        }
+
+        Node node = getParentNode();
+        while (node != null) {
+            if (node instanceof DisabledElement
+                    && ((DisabledElement) node).isDisabled()) {
+                return true;
+            }
+            node = node.getParentNode();
+        }
+
+        return false;
     }
 
     /**
@@ -320,9 +332,10 @@ public class HtmlOption extends HtmlElement implements DisabledElement {
      */
     @Override
     public Page mouseOver(final boolean shiftKey, final boolean ctrlKey, final boolean altKey, final int button) {
-        if (hasFeature(EVENT_ONMOUSEOVER_FOR_DISABLED_OPTION) && isDisabled()) {
-            getEnclosingSelect().mouseOver(shiftKey, ctrlKey, altKey, button);
-        }
+        // to move the mouse over the oution we will touch the select (border)
+        // depending on your mous speed and the browser this event is triggered or not
+        getEnclosingSelect().mouseOver(shiftKey, ctrlKey, altKey, button);
+
         return super.mouseOver(shiftKey, ctrlKey, altKey, button);
     }
 
@@ -358,5 +371,4 @@ public class HtmlOption extends HtmlElement implements DisabledElement {
             parent.onAllChildrenAddedToPage(false);
         }
     }
-
 }

@@ -28,15 +28,10 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 public class VideoPlaybackQuality extends HtmlUnitScriptable {
 
     /**
-     * Creates an instance.
-     */
-    public VideoPlaybackQuality() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 }

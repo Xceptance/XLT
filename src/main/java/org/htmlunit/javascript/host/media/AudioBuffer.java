@@ -28,15 +28,10 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 public class AudioBuffer extends HtmlUnitScriptable {
 
     /**
-     * Creates an instance.
-     */
-    public AudioBuffer() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 }

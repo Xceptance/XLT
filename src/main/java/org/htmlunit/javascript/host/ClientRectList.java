@@ -33,12 +33,13 @@ import org.htmlunit.javascript.configuration.JsxGetter;
 @JsxClass(className = "DOMRectList")
 public class ClientRectList extends HtmlUnitScriptable {
 
-    private List<ClientRect> clientRects_;
+    private final List<ClientRect> clientRects_;
 
     /**
      * Creates an instance.
      */
     public ClientRectList() {
+        super();
         clientRects_ = new ArrayList<>();
     }
 
@@ -47,6 +48,7 @@ public class ClientRectList extends HtmlUnitScriptable {
      */
     @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 
     /**

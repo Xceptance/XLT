@@ -24,6 +24,7 @@ import org.htmlunit.html.DomNode;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlTable;
 import org.htmlunit.html.HtmlTableRow;
+import org.htmlunit.javascript.HtmlUnitScriptable;
 import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
@@ -42,12 +43,6 @@ import org.htmlunit.javascript.configuration.JsxSetter;
  */
 @JsxClass(domClass = HtmlTableRow.class)
 public class HTMLTableRowElement extends HTMLTableComponent {
-
-    /**
-     * Creates an instance.
-     */
-    public HTMLTableRowElement() {
-    }
 
     /**
      * JavaScript constructor.
@@ -102,7 +97,7 @@ public class HTMLTableRowElement extends HTMLTableComponent {
      * @return the cells in the row
      */
     @JsxGetter
-    public Object getCells() {
+    public HTMLCollection getCells() {
         final HtmlTableRow row = (HtmlTableRow) getDomNodeOrDie();
 
         final HTMLCollection cells = new HTMLCollection(row, false);
@@ -140,7 +135,7 @@ public class HTMLTableRowElement extends HTMLTableComponent {
      * @return the newly-created cell
      */
     @JsxFunction
-    public Object insertCell(final Object index) {
+    public HtmlUnitScriptable insertCell(final Object index) {
         int position = -1;
         if (!JavaScriptEngine.isUndefined(index)) {
             position = (int) JavaScriptEngine.toNumber(index);
@@ -170,13 +165,11 @@ public class HTMLTableRowElement extends HTMLTableComponent {
      */
     @JsxFunction
     public void deleteCell(final Object index) {
-        int position = -1;
-        if (!JavaScriptEngine.isUndefined(index)) {
-            position = (int) JavaScriptEngine.toNumber(index);
-        }
-        else {
+        if (JavaScriptEngine.isUndefined(index)) {
             throw JavaScriptEngine.reportRuntimeError("No enough arguments");
         }
+
+        int position = (int) JavaScriptEngine.toNumber(index);
 
         final HtmlTableRow htmlRow = (HtmlTableRow) getDomNodeOrDie();
 

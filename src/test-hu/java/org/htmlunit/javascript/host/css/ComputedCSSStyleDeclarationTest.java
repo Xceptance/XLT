@@ -20,7 +20,6 @@ import static org.htmlunit.junit.BrowserRunner.TestedBrowser.FF_ESR;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Collections;
-import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 import org.htmlunit.WebDriverTestCase;
@@ -29,7 +28,6 @@ import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
-import org.htmlunit.util.NameValuePair;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
@@ -1412,8 +1410,7 @@ public class ComputedCSSStyleDeclarationTest extends WebDriverTestCase {
         try (InputStream is = getClass().getClassLoader().getResourceAsStream("testfiles/4x7.jpg")) {
             final byte[] directBytes = IOUtils.toByteArray(is);
             final URL urlImage = new URL(URL_FIRST, "4x7.jpg");
-            final List<NameValuePair> emptyList = Collections.emptyList();
-            getMockWebConnection().setResponse(urlImage, directBytes, 200, "ok", "image/jpg", emptyList);
+            getMockWebConnection().setResponse(urlImage, directBytes, 200, "ok", "image/jpg", Collections.emptyList());
         }
 
         final String content = "<html><head><script>\n"
@@ -2953,6 +2950,50 @@ public class ComputedCSSStyleDeclarationTest extends WebDriverTestCase {
                 + "</head><body onload='test()' style='display: inline'>\n"
                 + "  <div></div>\n"
                 + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts("none")
+    public void hidden() throws Exception {
+        final String html
+            = "<html><body>\n"
+            + "<p id='p1' hidden>p1</p>\n"
+
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "var p1 = document.getElementById('p1');\n"
+            + "var style = document.defaultView.getComputedStyle(p1, null);\n"
+            + "log(style.display);\n"
+            + "</script>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts("none")
+    public void insideHidden() throws Exception {
+        final String html
+            = "<html><body>\n"
+            + "<p hidden>\n"
+            + "  <p id='p1' hidden>p1</p>\n"
+            + "</p>\n"
+
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "var p1 = document.getElementById('p1');\n"
+            + "var style = document.defaultView.getComputedStyle(p1, null);\n"
+            + "log(style.display);\n"
+            + "</script>\n"
+            + "</body></html>";
 
         loadPageVerifyTitle2(html);
     }

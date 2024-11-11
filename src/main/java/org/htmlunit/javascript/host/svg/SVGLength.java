@@ -63,15 +63,10 @@ public class SVGLength extends HtmlUnitScriptable {
     public static final int SVG_LENGTHTYPE_PC = 10;
 
     /**
-     * Creates an instance.
-     */
-    public SVGLength() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 }

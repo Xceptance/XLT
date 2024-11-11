@@ -208,12 +208,6 @@ public class HTMLElement extends Element {
     private boolean endTagForbidden_;
 
     /**
-     * Creates an instance.
-     */
-    public HTMLElement() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @Override
@@ -233,7 +227,6 @@ public class HTMLElement extends Element {
         final String name = domNode.getLocalName();
         if ("wbr".equalsIgnoreCase(name)
                 || "basefont".equalsIgnoreCase(name)
-                || "keygen".equalsIgnoreCase(name)
                 || "track".equalsIgnoreCase(name)) {
             endTagForbidden_ = true;
         }
@@ -368,8 +361,8 @@ public class HTMLElement extends Element {
                     final Method method = getClass().getMethod("set" + name, METHOD_PARAMS_OBJECT);
                     method.invoke(this, new EventHandler(getDomNodeOrDie(), name.substring(2), value));
                 }
-                catch (final NoSuchMethodException | IllegalAccessException e) {
-                    //silently ignore
+                catch (final NoSuchMethodException | IllegalAccessException ignored) {
+                    // silently ignore
                 }
                 catch (final InvocationTargetException e) {
                     throw new RuntimeException(e.getCause());
@@ -902,8 +895,8 @@ public class HTMLElement extends Element {
                 chOff = Float.toString(f);
             }
         }
-        catch (final NumberFormatException e) {
-            // Ignore.
+        catch (final NumberFormatException ignored) {
+            // ignore
         }
         getDomNodeOrDie().setAttribute("charOff", chOff);
     }
@@ -1082,11 +1075,11 @@ public class HTMLElement extends Element {
      * @see <a href="http://dump.testsuite.org/2006/dom/style/offset/spec">Reverse Engineering by Anne van Kesteren</a>
      */
     @JsxGetter(propertyName = "offsetParent")
-    public Object getOffsetParent_js() {
+    public HtmlUnitScriptable getOffsetParent_js() {
         return getOffsetParentInternal(getBrowserVersion().hasFeature(JS_OFFSET_PARENT_NULL_IF_FIXED));
     }
 
-    private Object getOffsetParentInternal(final boolean returnNullIfFixed) {
+    private HtmlUnitScriptable getOffsetParentInternal(final boolean returnNullIfFixed) {
         DomNode currentElement = getDomNodeOrDie();
 
         if (currentElement.getParentNode() == null) {
@@ -1206,7 +1199,7 @@ public class HTMLElement extends Element {
      * @return the {@code onsubmit} event handler for this element
      */
     @JsxGetter
-    public Object getOnsubmit() {
+    public Function getOnsubmit() {
         return getEventHandler(Event.TYPE_SUBMIT);
     }
 
@@ -1319,7 +1312,7 @@ public class HTMLElement extends Element {
      * @return the {@code onclick} event handler for this element
      */
     @JsxGetter
-    public Object getOnclick() {
+    public Function getOnclick() {
         return getEventHandler(MouseEvent.TYPE_CLICK);
     }
 
@@ -1337,7 +1330,7 @@ public class HTMLElement extends Element {
      * @return the {@code ondblclick} event handler for this element
      */
     @JsxGetter
-    public Object getOndblclick() {
+    public Function getOndblclick() {
         return getEventHandler(MouseEvent.TYPE_DBL_CLICK);
     }
 
@@ -1355,7 +1348,7 @@ public class HTMLElement extends Element {
      * @return the {@code onblur} event handler for this element
      */
     @JsxGetter
-    public Object getOnblur() {
+    public Function getOnblur() {
         return getEventHandler(Event.TYPE_BLUR);
     }
 
@@ -1373,7 +1366,7 @@ public class HTMLElement extends Element {
      * @return the {@code onfocus} event handler for this element
      */
     @JsxGetter
-    public Object getOnfocus() {
+    public Function getOnfocus() {
         return getEventHandler(Event.TYPE_FOCUS);
     }
 
@@ -1391,7 +1384,7 @@ public class HTMLElement extends Element {
      * @return the {@code onkeydown} event handler for this element
      */
     @JsxGetter
-    public Object getOnkeydown() {
+    public Function getOnkeydown() {
         return getEventHandler(Event.TYPE_KEY_DOWN);
     }
 
@@ -1409,7 +1402,7 @@ public class HTMLElement extends Element {
      * @return the {@code onkeypress} event handler for this element
      */
     @JsxGetter
-    public Object getOnkeypress() {
+    public Function getOnkeypress() {
         return getEventHandler(Event.TYPE_KEY_PRESS);
     }
 
@@ -1427,7 +1420,7 @@ public class HTMLElement extends Element {
      * @return the {@code onkeyup} event handler for this element
      */
     @JsxGetter
-    public Object getOnkeyup() {
+    public Function getOnkeyup() {
         return getEventHandler(Event.TYPE_KEY_UP);
     }
 
@@ -1445,7 +1438,7 @@ public class HTMLElement extends Element {
      * @return the {@code onmousedown} event handler for this element
      */
     @JsxGetter
-    public Object getOnmousedown() {
+    public Function getOnmousedown() {
         return getEventHandler(MouseEvent.TYPE_MOUSE_DOWN);
     }
 
@@ -1463,7 +1456,7 @@ public class HTMLElement extends Element {
      * @return the {@code onmousemove} event handler for this element
      */
     @JsxGetter
-    public Object getOnmousemove() {
+    public Function getOnmousemove() {
         return getEventHandler(MouseEvent.TYPE_MOUSE_MOVE);
     }
 
@@ -1481,7 +1474,7 @@ public class HTMLElement extends Element {
      * @return the {@code onmouseout} event handler for this element
      */
     @JsxGetter
-    public Object getOnmouseout() {
+    public Function getOnmouseout() {
         return getEventHandler(MouseEvent.TYPE_MOUSE_OUT);
     }
 
@@ -1499,7 +1492,7 @@ public class HTMLElement extends Element {
      * @return the {@code onmouseover} event handler for this element
      */
     @JsxGetter
-    public Object getOnmouseover() {
+    public Function getOnmouseover() {
         return getEventHandler(MouseEvent.TYPE_MOUSE_OVER);
     }
 
@@ -1517,7 +1510,7 @@ public class HTMLElement extends Element {
      * @return the {@code onmouseup} event handler for this element
      */
     @JsxGetter
-    public Object getOnmouseup() {
+    public Function getOnmouseup() {
         return getEventHandler(MouseEvent.TYPE_MOUSE_UP);
     }
 
@@ -1535,7 +1528,7 @@ public class HTMLElement extends Element {
      * @return the {@code oncontextmenu} event handler for this element
      */
     @JsxGetter
-    public Object getOncontextmenu() {
+    public Function getOncontextmenu() {
         return getEventHandler(MouseEvent.TYPE_CONTEXT_MENU);
     }
 
@@ -1571,7 +1564,7 @@ public class HTMLElement extends Element {
      * @return the {@code onerror} event handler for this element
      */
     @JsxGetter
-    public Object getOnerror() {
+    public Function getOnerror() {
         return getEventHandler(Event.TYPE_ERROR);
     }
 
@@ -1607,13 +1600,12 @@ public class HTMLElement extends Element {
      * @param hidden the {@code hidden} value
      */
     @JsxSetter
-    public void setHidden(final boolean hidden) {
-        if (hidden) {
-            getDomNodeOrDie().setAttribute("hidden", "hidden");
+    public void setHidden(final Object hidden) {
+        if (hidden instanceof Boolean) {
+            getDomNodeOrDie().setHidden((Boolean) hidden);
+            return;
         }
-        else {
-            getDomNodeOrDie().removeAttribute("hidden");
-        }
+        getDomNodeOrDie().setHidden(JavaScriptEngine.toString(hidden));
     }
 
     /**
@@ -1963,7 +1955,7 @@ public class HTMLElement extends Element {
      * @return the {@code onload} event handler for this element
      */
     @JsxGetter
-    public Object getOnload() {
+    public Function getOnload() {
         if (this instanceof HTMLBodyElement) {
             return getWindow().getEventHandler(Event.TYPE_LOAD);
         }

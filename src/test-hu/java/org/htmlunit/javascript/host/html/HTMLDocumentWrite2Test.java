@@ -17,15 +17,22 @@ package org.htmlunit.javascript.host.html;
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+
+import org.htmlunit.MockWebConnection;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
 import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
 import org.htmlunit.util.MimeType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 
 /**
  * Tests for {@link HTMLDocument}'s write(ln) function.
@@ -55,12 +62,12 @@ public class HTMLDocumentWrite2Test extends WebDriverTestCase {
             + "}\n"
             + "</script>\n"
             + "</head>\n"
-            + "<body onload='test()'>\n"
+            + "<body onload='setTimeout(test, 4);'>\n"
             + "</body>\n"
             + "</html>";
 
         loadPage2(html);
-        verifyWindowName2(getWebDriver(), getExpectedAlerts());
+        verifyWindowName2(DEFAULT_WAIT_TIME, getWebDriver(), getExpectedAlerts());
     }
 
     /**
@@ -79,12 +86,33 @@ public class HTMLDocumentWrite2Test extends WebDriverTestCase {
             + "}\n"
             + "</script>\n"
             + "</head>\n"
-            + "<body onload='test()'>\n"
+            + "<body onload='setTimeout(test, 4);'>\n"
             + "</body>\n"
             + "</html>";
 
         loadPage2(html);
-        verifyWindowName2(getWebDriver(), getExpectedAlerts());
+        verifyWindowName2(DEFAULT_WAIT_TIME, getWebDriver(), getExpectedAlerts());
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void writeSomeTags() throws Exception {
+        final String html = "<html><head></head>\n"
+            + "<body>\n"
+            + "<script>\n"
+            + "document.write(\"<div id='div1'></div>\");\n"
+            + "document.write('<div', \" id='div2'>\", '</div>');\n"
+            + "document.writeln('<p', \" id='p3'>\", '</p>');\n"
+            + "</script>\n"
+            + "</form></body></html>";
+
+        final WebDriver driver = loadPage2(html);
+
+        assertEquals("div", driver.findElement(By.id("div1")).getTagName());
+        assertEquals("div", driver.findElement(By.id("div2")).getTagName());
+        assertEquals("p", driver.findElement(By.id("p3")).getTagName());
     }
 
     /**
@@ -202,7 +230,7 @@ public class HTMLDocumentWrite2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("HelloHello")
+    @Alerts({"Hello", "HelloHello"})
     public void writeExternalScriptAfterClick() throws Exception {
         shutDownAll();
 
@@ -216,16 +244,15 @@ public class HTMLDocumentWrite2Test extends WebDriverTestCase {
             + "</head>\n"
             + "<body>\n"
             + "<a href='?again'>a link</a>\n"
-            + "<div id='clickMe' onclick='alert(window.name)'>click me</div>\n"
             + "</body>\n"
             + "</html>";
 
         getMockWebConnection().setDefaultResponse("window.foo = 'Hello'", MimeType.TEXT_JAVASCRIPT);
         final WebDriver driver = loadPage2(html);
-        driver.findElement(By.linkText("a link")).click();
-        driver.findElement(By.id("clickMe")).click();
+        verifyJsVariable(driver, "window.top.name", getExpectedAlerts()[0]);
 
-        verifyAlerts(driver, getExpectedAlerts());
+        driver.findElement(By.linkText("a link")).click();
+        verifyJsVariable(driver, "window.top.name", getExpectedAlerts()[1]);
     }
 
     /**
@@ -641,7 +668,7 @@ public class HTMLDocumentWrite2Test extends WebDriverTestCase {
             + "}\n"
             + "</script>\n"
             + "</head>\n"
-            + "<body onload='test()'>\n"
+            + "<body onload='setTimeout(test, 4);'>\n"
             + " Before\n"
             + "</body>\n"
             + "</html>";
@@ -649,5 +676,350 @@ public class HTMLDocumentWrite2Test extends WebDriverTestCase {
         final WebDriver driver = loadPageWithAlerts2(html);
         assertTitle(driver, "parsed script executed");
         assertEquals("After", driver.findElement(By.tagName("body")).getText());
+    }
+
+    /**
+     * Verifies that scripts added to the document via document.write(...) don't execute until the current script
+     * finishes executing; bug found at <a href="http://code.google.com/apis/maps/">the Google Maps API site</a>.
+     * @throws Exception if an error occurs
+     */
+    @Test
+    public void write_scriptExecutionPostponed() throws Exception {
+        final String html = "<html><body>\n"
+            + "<div id='d'></div>\n"
+            + "<script>function log(s) { document.getElementById('d').innerHTML += s + ' '; }</script>\n"
+            + "<script src='a.js'></script>\n"
+            + "<script>log(2);document.write('<scr'+'ipt src=\"b.js\"></scr'+'ipt>');log(3);</script>\n"
+            + "<script src='c.js'></script>\n"
+            + "<script>\n"
+            + "  log(6);document.write('<scr'+'ipt src=\"d.js\"></scr'+'ipt>');log(7);\n"
+            + "  log(8);document.write('<scr'+'ipt src=\"e.js\"></scr'+'ipt>');log(9);\n"
+            + "</script>\n"
+            + "<script src='f.js'></script>\n"
+            + "</body></html>";
+        final MockWebConnection conn = getMockWebConnection();
+        conn.setResponse(URL_FIRST, html);
+        conn.setResponse(new URL(URL_FIRST, "a.js"), "log(1)", MimeType.TEXT_JAVASCRIPT);
+        conn.setResponse(new URL(URL_FIRST, "b.js"), "log(4)", MimeType.TEXT_JAVASCRIPT);
+        conn.setResponse(new URL(URL_FIRST, "c.js"), "log(5)", MimeType.TEXT_JAVASCRIPT);
+        conn.setResponse(new URL(URL_FIRST, "d.js"), "log(10)", MimeType.TEXT_JAVASCRIPT);
+        conn.setResponse(new URL(URL_FIRST, "e.js"), "log(11)", MimeType.TEXT_JAVASCRIPT);
+        conn.setResponse(new URL(URL_FIRST, "f.js"), "log(12)", MimeType.TEXT_JAVASCRIPT);
+
+        final WebDriver driver = loadPage2(html);
+        assertEquals("1 2 3 4 5 6 7 8 9 10 11 12", driver.findElement(By.tagName("body")).getText());
+    }
+
+    /**
+     * Regression test for Bug #71.
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void write_script() throws Exception {
+        final URL mainUrl = new URL(URL_FIRST, "main.html");
+        final URL firstUrl = new URL(URL_FIRST, "first.html");
+        final URL secondUrl = new URL(URL_FIRST, "second.html");
+        final URL scriptUrl = new URL(URL_FIRST, "script.js");
+
+        final String mainHtml = "<html>\n"
+            + "<head><title>Main</title></head>\n"
+            + "<body>\n"
+            + "  <iframe name='iframe' id='iframe' src='" + firstUrl + "'></iframe>\n"
+            + "  <script type='text/javascript'>\n"
+            + "    document.write('<script type=\"text/javascript\" src=\"" + scriptUrl + "\"></' + 'script>');\n"
+            + "  </script>"
+            + "</body></html>";
+
+        getMockWebConnection().setResponse(mainUrl, mainHtml);
+
+        final String firstHtml = "<html><body><h1 id='first'>First</h1></body></html>";
+        getMockWebConnection().setResponse(firstUrl, firstHtml);
+
+        final String secondHtml = "<html><body><h1 id='second'>Second</h1></body></html>";
+        getMockWebConnection().setResponse(secondUrl, secondHtml);
+
+        final String script = "document.getElementById('iframe').src = '" + secondUrl + "';\n";
+        getMockWebConnection().setResponse(new URL(URL_FIRST, "script.js"), script, MimeType.TEXT_JAVASCRIPT);
+
+        final WebDriver driver = loadPage2(mainUrl, StandardCharsets.UTF_8);
+        assertEquals("Main", driver.getTitle());
+
+        final WebElement iframe = driver.findElement(By.id("iframe"));
+        assertEquals(secondUrl.toExternalForm(), iframe.getAttribute("src"));
+
+        driver.switchTo().frame(iframe);
+        assertEquals("Second", driver.findElement(By.id("second")).getText());
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"A", "A"})
+    public void write_InDOM() throws Exception {
+        final String html = "<html>\n"
+            + "<head></head>\n"
+            + "<body>\n"
+            + "  <script type='text/javascript'>\n"
+            + LOG_TITLE_FUNCTION
+            + "    document.write('<a id=\"blah\">Hello World</a>');\n"
+            + "    document.write('<a id=\"blah2\">Hello World 2</a>');\n"
+            + "    log(document.getElementById('blah').tagName);\n"
+            + "    log(document.getElementById('blah2').tagName);\n"
+            + "  </script>\n"
+            + "  <a id='blah3'>Hello World 3</a>\n"
+            + "</body></html>";
+
+        final WebDriver driver = loadPage2(html);
+        verifyTitle2(driver, getExpectedAlerts());
+
+        final List<WebElement> anchors = driver.findElements(By.tagName("a"));
+        assertEquals(3, anchors.size());
+        assertEquals("Hello World", anchors.get(0).getText());
+        assertEquals("Hello World 2", anchors.get(1).getText());
+        assertEquals("Hello World 3", anchors.get(2).getText());
+    }
+
+    /**
+     * Test for bug 1950462: calling document.write inside a function (after assigning
+     * document.write to a local variable) tries to invoke document.write on the prototype
+     * document instance, rather than the actual document host object. This leads to an
+     * {@link IllegalStateException} (DomNode has not been set for this SimpleScriptable).
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts({"foo called", "exception occurred"})
+    public void write_AssignedToVar2() throws Exception {
+        final String html = "<html>\n"
+            + "<head></head>\n"
+            + "<body>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function foo() { log('foo called'); var d = document.write; d(4); }\n"
+            + "  try {\n"
+            + "    foo();\n"
+            + "  } catch (e) { log('exception occurred'); document.write(7); }\n"
+            + "</script>\n"
+            + "</body></html>";
+
+        final WebDriver driver = loadPage2(html);
+        verifyTitle2(driver, getExpectedAlerts());
+
+        assertEquals("7", driver.findElement(By.tagName("body")).getText());
+    }
+
+    /**
+     * Verifies that calling document.write() after document parsing has finished results in a whole
+     * new page being loaded.
+     * @throws Exception if an error occurs
+     */
+    @Test
+    public void write_WhenParsingFinished() throws Exception {
+        final String html = "<html>\n"
+            + "<head>\n"
+            + "<script>\n"
+            + "  function test() { document.write(1); document.write(2); document.close(); }\n"
+            + "</script></head>\n"
+            + "<body>\n"
+            + "  <span id='s' onclick='test()'>click</span>\n"
+            + "</body></html>";
+
+        final WebDriver driver = loadPage2(html);
+        assertEquals("click", driver.findElement(By.tagName("body")).getText());
+
+        driver.findElement(By.id("s")).click();
+        assertEquals("12", driver.findElement(By.tagName("body")).getText());
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void writeWithSplitAnchorTag() throws Exception {
+        final String html = "<html>\n"
+            + "<body><script>\n"
+            + "document.write(\"<a href=\'start.html\");\n"
+            + "document.write(\"\'>\");\n"
+            + "document.write('click here</a>');\n"
+            + "</script>\n"
+            + "</body></html>";
+
+        final WebDriver driver = loadPage2(html);
+
+        final List<WebElement> anchors = driver.findElements(By.tagName("a"));
+        assertEquals(1, anchors.size());
+        assertEquals("http://localhost:22222/start.html", anchors.get(0).getAttribute("href"));
+        assertEquals("click here", anchors.get(0).getText());
+    }
+
+    /**
+     * Verifies that calls to document.open() are ignored while the page's HTML is being parsed.
+     * @throws Exception if an error occurs
+     */
+    @Test
+    public void open_IgnoredDuringParsing() throws Exception {
+        final String html = "<html><body>1<script>document.open();document.write('2');</script>3</body></html>";
+
+        final WebDriver driver = loadPage2(html);
+        assertEquals("123", driver.findElement(By.tagName("body")).getText());
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void writeWithSpace() throws Exception {
+        final String html = "<html>\n"
+            + "<body>\n"
+            + "  <script>\n"
+            + "    document.write('Hello ');\n"
+            + "    document.write('World');\n"
+            + "  </script>\n"
+            + "</body></html>";
+
+        final WebDriver driver = loadPage2(html);
+        assertEquals("Hello World", driver.findElement(By.tagName("body")).getText());
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"foo", "foo2"})
+    public void writeScriptInManyTimes() throws Exception {
+        final String html = "<html>\n"
+            + "<head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "document.write('<script src=\"script.js\">');\n"
+            + "document.write('<' + '/script>');\n"
+            + "document.write('<script>log(\"foo2\");</' + 'script>');\n"
+            + "</script>\n"
+            + "</head>\n"
+            + "<body>\n"
+            + "</body></html>";
+
+        final URL scriptUrl = new URL(URL_FIRST, "script.js");
+
+        getMockWebConnection().setDefaultResponse(html);
+        getMockWebConnection().setResponse(scriptUrl, "log('foo');\n", MimeType.TEXT_JAVASCRIPT);
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * Test for bug 1613119.
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"scr1", "scr2", "null", "null", "[object HTMLScriptElement]", "[object HTMLScriptElement]"})
+    public void writeAddNodesInCorrectPositions() throws Exception {
+        final String html = "<html>\n"
+            + "<head></head>\n"
+            + "<body id=\"theBody\">\n"
+            + "<div id='target1'></div>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "document.write(\""
+            + "<div>"
+            + "  <sc\"+\"ript id='scr1'>document.write('<div id=\\\"div1\\\" />');</s\"+\"cript>"
+            + "  <sc\"+\"ript id='scr2'>document.write('<div id=\\\"div2\\\" />');</s\"+\"cript>"
+            + "</div>"
+            + "\");\n"
+            + "let html = \""
+            + "<div>"
+            + "  <sc\"+\"ript id='scr3'>document.write('<div id=\\\"div3\\\" />');</s\"+\"cript>"
+            + "  <sc\"+\"ript id='scr4'>document.write('<div id=\\\"div4\\\" />');</s\"+\"cript>"
+            + "</div>"
+            + "\";"
+            + "document.getElementById('target1').innerHTML = html;\n"
+            + "</script>\n"
+            + "<script>\n"
+            + "function logId(obj) { log(obj != null ? obj.id : 'null'); }\n"
+            + "logId(document.getElementById('div1').previousSibling);\n"
+            + "logId(document.getElementById('div2').previousSibling);\n"
+            + "log(document.getElementById('div3'));\n"
+            + "log(document.getElementById('div4'));\n"
+            + "log(document.getElementById('scr3'));\n"
+            + "log(document.getElementById('scr4'));\n"
+
+            + "</script>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void aboutURL() throws Exception {
+        final String html =
+            "<html><body><script language='JavaScript'>\n"
+            + "w2 = window.open('about:blank', 'AboutBlank');\n"
+            + "w2.document.open();\n"
+            + "w2.document.write('<html><head><title>hello</title></head><body></body></html>');\n"
+            + "w2.document.close();\n"
+            + "</script></body></html>";
+
+        final WebDriver driver = loadPage2(html);
+        driver.switchTo().window("AboutBlank");
+        assertEquals("hello", driver.getTitle());
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts("§§URL§§")
+    public void locationAfterWrite() throws Exception {
+        final String html = "<html>\n"
+            + "<head><script>\n"
+            + "function test() {\n"
+            + "  window.document.title += 'abcd';\n"
+            + "  document.open();\n"
+            + "  document.write("
+                    + "'<html><body onload=\"window.document.title += document.location + \\'§\\'\"></body></html>');\n"
+            + "  document.close();\n"
+            + "}\n"
+            + "</script></head>\n"
+            + "<body onload='setTimeout(test, 4);'></body></html>";
+
+        loadPage2(html);
+        expandExpectedAlertsVariables(URL_FIRST);
+        verifyTitle2(DEFAULT_WAIT_TIME, getWebDriver(), getExpectedAlerts());
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"", "First", "First", "FORM", "true", "true"},
+            FF = {"", "First", "FORM", "true", "true", "First"},
+            FF_ESR = {"", "First", "FORM", "true", "true", "First"})
+    @HtmlUnitNYI(FF = {"", "First", "First", "FORM", "true", "true"},
+            FF_ESR = {"", "First", "First", "FORM", "true", "true"})
+    public void newElementsAfterWrite() throws Exception {
+        final String html = "<html>"
+            + "<head><script>\n"
+            + LOG_WINDOW_NAME_FUNCTION
+            + "function test() {\n"
+            + "  log(document.title);\n"
+            + "  document.open();\n"
+            + "  document.write('<html><head><title>First</title></head>');\n"
+            + "  document.write('<body onload=\"log(document.title)\">');\n"
+            + "  document.write('<form name=\"submitForm\" method=\"post\">');\n"
+            + "  document.write('</form></body></html>');\n"
+            + "  document.close();\n"
+            + "  log(document.title);\n"
+            + "  log(document.submitForm.tagName);\n"
+            + "  log(window.document == document);\n"
+            + "  log(document.submitForm == document.getElementsByTagName('form')[0]);\n"
+            + "}\n"
+            + "</script></head>\n"
+            + "<body onload='setTimeout(test, 4);'></body></html>";
+
+        loadPage2(html);
+        verifyWindowName2(DEFAULT_WAIT_TIME, getWebDriver(), getExpectedAlerts());
     }
 }

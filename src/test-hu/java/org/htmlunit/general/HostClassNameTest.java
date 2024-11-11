@@ -56,9 +56,8 @@ public class HostClassNameTest extends WebDriverTestCase {
             + "  function test() {\n"
             + "    try {\n"
             + "      var clsName = '' + " + className + ";\n"
-            + "      clsName = clsName.replace('\\n    ', ' ');\n"
-            + "      clsName = clsName.replace(']\\n}', '] }');\n"
-            + "      clsName = clsName.replace('] }\\n', '] }');\n"
+            // normalize FF output
+            + "      clsName = clsName.replace('{\\n    [native code]\\n}', '{ [native code] }');\n"
             + "      log(clsName);\n"
             + "    } catch(e) {log('exception')}\n"
             + "  }\n"
@@ -863,9 +862,7 @@ public class HostClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "exception",
-            FF = "function CaretPosition() { [native code] }",
-            FF_ESR = "function CaretPosition() { [native code] }")
+    @Alerts("function CaretPosition() { [native code] }")
     public void caretPosition() throws Exception {
         test("CaretPosition");
     }
@@ -1189,6 +1186,19 @@ public class HostClassNameTest extends WebDriverTestCase {
             FF_ESR = "function CSS2Properties() { [native code] }")
     public void css2Properties() throws Exception {
         test("CSS2Properties");
+    }
+
+    /**
+     * Test {@link CSSPageDescriptors}.
+     *
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = "exception",
+            FF = "function CSSPageDescriptors() { [native code] }")
+    @HtmlUnitNYI(FF = "exception")
+    public void cssPageDescriptors() throws Exception {
+        test("CSSPageDescriptors");
     }
 
     /**
@@ -1950,8 +1960,7 @@ public class HostClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "exception",
-            FF_ESR = "function DOMRequest() { [native code] }")
+    @Alerts("exception")
     public void domRequest() throws Exception {
         test("DOMRequest");
     }
@@ -4379,9 +4388,8 @@ public class HostClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "exception",
-            CHROME = "function Iterator() { [native code] }",
-            EDGE = "function Iterator() { [native code] }")
+    @Alerts(DEFAULT = "function Iterator() { [native code] }",
+            FF_ESR = "exception")
     public void iterator() throws Exception {
         test("Iterator");
     }
@@ -5452,7 +5460,9 @@ public class HostClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("function MutationEvent() { [native code] }")
+    @Alerts(DEFAULT = "exception",
+            FF = "function MutationEvent() { [native code] }",
+            FF_ESR = "function MutationEvent() { [native code] }")
     public void mutationEvent() throws Exception {
         test("MutationEvent");
     }
@@ -8914,7 +8924,6 @@ public class HostClassNameTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "function TextEvent() { [native code] }",
-            FF = "exception",
             FF_ESR = "exception")
     public void textEvent() throws Exception {
         test("TextEvent");
@@ -10231,5 +10240,27 @@ public class HostClassNameTest extends WebDriverTestCase {
     @Alerts("function XSLTProcessor() { [native code] }")
     public void xsltProcessor() throws Exception {
         test("XSLTProcessor");
+    }
+
+    /**
+     * Test {@link org.htmlunit.javascript.host.abort.AbortController}.
+     *
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts("function AbortController() { [native code] }")
+    public void abortController() throws Exception {
+        test("AbortController");
+    }
+
+    /**
+     * Test {@link org.htmlunit.javascript.host.abort.AbortSignal}.
+     *
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts("function AbortSignal() { [native code] }")
+    public void abortSignal() throws Exception {
+        test("AbortSignal");
     }
 }

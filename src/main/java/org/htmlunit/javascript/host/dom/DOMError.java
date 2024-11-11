@@ -31,15 +31,10 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 public class DOMError extends HtmlUnitScriptable {
 
     /**
-     * Creates an instance.
-     */
-    public DOMError() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @JsxConstructor({CHROME, EDGE})
     public void jsConstructor() {
+        // nothing to do
     }
 }

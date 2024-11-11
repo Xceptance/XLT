@@ -28,15 +28,10 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 public class StorageManager extends HtmlUnitScriptable {
 
     /**
-     * Creates a new instance.
-     */
-    public StorageManager() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 }

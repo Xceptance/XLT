@@ -160,11 +160,140 @@ public class Location2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
+    @Alerts(DEFAULT = {"", "about:blank?query", "blank", "", "about:", "?query"},
+            FF = {"", "about:blank?query", "blank", "", "about:", ""},
+            FF_ESR = {"", "about:blank?query", "blank", "", "about:", ""})
+    public void about_blank_query_attributes() throws Exception {
+        final String html = "<html>\n"
+            + "<head>\n"
+            + "  <script>\n"
+            + LOG_TITLE_FUNCTION
+            + "    function doTest() {\n"
+            + "      try {\n"
+            + "        var doc = frames[0].document;\n"
+            + "        var location = doc.location;\n"
+            + "        log(location.hash);\n"
+            + "        log(location.href);\n"
+            + "        log(location.pathname);\n"
+            + "        log(location.port);\n"
+            + "        log(location.protocol);\n"
+            + "        log(location.search);\n"
+            + "      } catch(e) { log('exception'); }\n"
+            + "    }\n"
+            + "  </script>\n"
+            + "</head>\n"
+            + "<body onload='doTest()'>\n"
+            + "  <iframe src='about:blank?query'></iframe>\n"
+            + "</body>\n"
+            + "</html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"", "about:blank?", "blank", "", "about:", ""})
+    public void about_blank_emptyquery_attributes() throws Exception {
+        final String html = "<html>\n"
+            + "<head>\n"
+            + "  <script>\n"
+            + LOG_TITLE_FUNCTION
+            + "    function doTest() {\n"
+            + "      try {\n"
+            + "        var doc = frames[0].document;\n"
+            + "        var location = doc.location;\n"
+            + "        log(location.hash);\n"
+            + "        log(location.href);\n"
+            + "        log(location.pathname);\n"
+            + "        log(location.port);\n"
+            + "        log(location.protocol);\n"
+            + "        log(location.search);\n"
+            + "      } catch(e) { log('exception'); }\n"
+            + "    }\n"
+            + "  </script>\n"
+            + "</head>\n"
+            + "<body onload='doTest()'>\n"
+            + "  <iframe src='about:blank?'></iframe>\n"
+            + "</body>\n"
+            + "</html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"#hash", "about:blank#hash", "blank", "", "about:", ""})
+    public void about_blank_hash_attributes() throws Exception {
+        final String html = "<html>\n"
+            + "<head>\n"
+            + "  <script>\n"
+            + LOG_TITLE_FUNCTION
+            + "    function doTest() {\n"
+            + "      try {\n"
+            + "        var doc = frames[0].document;\n"
+            + "        var location = doc.location;\n"
+            + "        log(location.hash);\n"
+            + "        log(location.href);\n"
+            + "        log(location.pathname);\n"
+            + "        log(location.port);\n"
+            + "        log(location.protocol);\n"
+            + "        log(location.search);\n"
+            + "      } catch(e) { log('exception'); }\n"
+            + "    }\n"
+            + "  </script>\n"
+            + "</head>\n"
+            + "<body onload='doTest()'>\n"
+            + "  <iframe src='about:blank#hash'></iframe>\n"
+            + "</body>\n"
+            + "</html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"#hash", "about:blank?#hash", "blank", "", "about:", ""})
+    public void about_blank_emptyquery_hash_attributes() throws Exception {
+        final String html = "<html>\n"
+            + "<head>\n"
+            + "  <script>\n"
+            + LOG_TITLE_FUNCTION
+            + "    function doTest() {\n"
+            + "      try {\n"
+            + "        var doc = frames[0].document;\n"
+            + "        var location = doc.location;\n"
+            + "        log(location.hash);\n"
+            + "        log(location.href);\n"
+            + "        log(location.pathname);\n"
+            + "        log(location.port);\n"
+            + "        log(location.protocol);\n"
+            + "        log(location.search);\n"
+            + "      } catch(e) { log('exception'); }\n"
+            + "    }\n"
+            + "  </script>\n"
+            + "</head>\n"
+            + "<body onload='doTest()'>\n"
+            + "  <iframe src='about:blank?#hash'></iframe>\n"
+            + "</body>\n"
+            + "</html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
     @Alerts(DEFAULT = {"#hash", "about:blank?query#hash", "blank", "", "about:", "?query"},
-            FF = "exception",
-            FF_ESR = "exception")
-    @HtmlUnitNYI(FF = {"", "about:blank", "blank", "", "about:", ""},
-            FF_ESR = {"", "about:blank", "blank", "", "about:", ""})
+            FF = {"#hash", "about:blank?query#hash", "blank", "", "about:", ""},
+            FF_ESR = {"#hash", "about:blank?query#hash", "blank", "", "about:", ""})
     public void about_blank_query_hash_attributes() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -222,6 +351,48 @@ public class Location2Test extends WebDriverTestCase {
             + "</html>";
 
         loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts("?foobar")
+    public void search() throws Exception {
+        checkSearch(URL_FIRST + "?foobar");
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts("")
+    public void emptySearch() throws Exception {
+        checkSearch(URL_FIRST + "?");
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts("")
+    public void noSearch() throws Exception {
+        checkSearch(URL_FIRST.toExternalForm());
+    }
+
+    private void checkSearch(final String url) throws Exception {
+        final String html = "<html><body onload='test()'>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "function test() {\n"
+            + "  log(document.location.search);\n"
+            + "}\n"
+            + "</script>\n"
+            + "</body></html>";
+
+        getMockWebConnection().setDefaultResponse(html);
+        loadPage2(html, new URL(url));
+        verifyTitle2(getWebDriver(), getExpectedAlerts());
     }
 
     /**
@@ -438,7 +609,9 @@ public class Location2Test extends WebDriverTestCase {
     @Alerts("on-load")
     public void replaceOnload() throws Exception {
         final String html
-            = "<html><head><title>First</title><script>\n"
+            = "<html><head><title>First</title>\n"
+            + "<script>\n"
+            + LOG_WINDOW_NAME_FUNCTION
             + "function doTest() {\n"
             + "  location.replace('" + URL_SECOND + "');\n"
             + "}\n"
@@ -447,11 +620,13 @@ public class Location2Test extends WebDriverTestCase {
             + "</body></html>";
 
         final String secondContent = "<html><head><title>Second</title></head>\n"
-                + "<body onload='alert(\"on-load\")'></body></html>";
+                + "<body onload='window.top.name += \"on-load\" + \"\\u00a7\";'></body></html>";
 
         getMockWebConnection().setResponse(URL_SECOND, secondContent);
-        final WebDriver driver = loadPageWithAlerts2(html);
 
+        final WebDriver driver = loadPage2(html);
+
+        verifyWindowName2(DEFAULT_WAIT_TIME, driver, getExpectedAlerts());
         assertTitle(driver, "Second");
         assertEquals(2, getMockWebConnection().getRequestCount());
     }
@@ -507,6 +682,7 @@ public class Location2Test extends WebDriverTestCase {
     public void assignOnload() throws Exception {
         final String firstContent
             = "<html><head><title>First</title><script>\n"
+            + LOG_WINDOW_NAME_FUNCTION
             + "  function test() {\n"
             + "    location.assign('" + URL_SECOND + "');\n"
             + "  }\n"
@@ -515,11 +691,13 @@ public class Location2Test extends WebDriverTestCase {
             + "</body></html>";
 
         final String secondContent = "<html><head><title>Second</title></head>\n"
-                + "<body onload='alert(\"on-load\");'></body></html>";
+                + "<body onload='window.top.name += \"on-load\" + \"\\u00a7\";'></body></html>";
 
         getMockWebConnection().setResponse(URL_SECOND, secondContent);
-        final WebDriver driver = loadPageWithAlerts2(firstContent);
 
+        final WebDriver driver = loadPage2(firstContent);
+
+        verifyWindowName2(DEFAULT_WAIT_TIME, driver, getExpectedAlerts());
         assertTitle(driver, "Second");
         assertEquals(2, getMockWebConnection().getRequestCount());
     }
@@ -553,6 +731,7 @@ public class Location2Test extends WebDriverTestCase {
     public void assingByEqualsOnload() throws Exception {
         final String firstContent
             = "<html><head><title>First</title><script>\n"
+            + LOG_WINDOW_NAME_FUNCTION
             + "  function test() {\n"
             + "    location  = '" + URL_SECOND + "';\n"
             + "  }\n"
@@ -561,11 +740,13 @@ public class Location2Test extends WebDriverTestCase {
             + "</body></html>";
 
         final String secondContent = "<html><head><title>Second</title></head>\n"
-                + "<body onload='alert(\"on-load\");'></body></html>";
+                + "<body onload='window.top.name += \"on-load\" + \"\\u00a7\";'></body></html>";
 
         getMockWebConnection().setResponse(URL_SECOND, secondContent);
-        final WebDriver driver = loadPageWithAlerts2(firstContent);
 
+        final WebDriver driver = loadPage2(firstContent);
+
+        verifyWindowName2(DEFAULT_WAIT_TIME, driver, getExpectedAlerts());
         assertTitle(driver, "Second");
         assertEquals(2, getMockWebConnection().getRequestCount());
     }
@@ -930,22 +1111,38 @@ public class Location2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("§§ORIGIN§§")
+    @Alerts("§§URL§§")
     public void origin() throws Exception {
         final String html =
                 "<html><body><script>\n"
-                + "  alert(window.location.origin);\n"
+                + LOG_TITLE_FUNCTION
+                + "  log(window.location.origin);\n"
                 + "</script></body></html>";
 
-        final String[] expectedAlerts = getExpectedAlerts();
         final URL url = URL_FIRST;
         final String origin = url.getProtocol() + "://" + url.getHost() + ':' + url.getPort();
-        for (int i = 0; i < expectedAlerts.length; i++) {
-            expectedAlerts[i] = expectedAlerts[i].replaceAll("§§ORIGIN§§", origin);
-        }
+        expandExpectedAlertsVariables(origin);
 
-        final WebDriver driver = loadPage2(html);
-        verifyAlerts(driver, expectedAlerts);
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("§§URL§§")
+    public void documentOrigin() throws Exception {
+        final String html =
+                "<html><body><script>\n"
+                + LOG_TITLE_FUNCTION
+                + "  log(document.location.origin);\n"
+                + "</script></body></html>";
+
+        final URL url = URL_FIRST;
+        final String origin = url.getProtocol() + "://" + url.getHost() + ':' + url.getPort();
+        expandExpectedAlertsVariables(origin);
+
+        loadPageVerifyTitle2(html);
     }
 
     /**

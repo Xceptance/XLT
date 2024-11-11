@@ -26,12 +26,14 @@ import org.htmlunit.html.HtmlTableBody;
 import org.htmlunit.html.HtmlTableFooter;
 import org.htmlunit.html.HtmlTableHeader;
 import org.htmlunit.html.HtmlTableRow;
+import org.htmlunit.javascript.HtmlUnitScriptable;
 import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.configuration.JsxSetter;
+import org.htmlunit.javascript.host.dom.Node;
 
 /**
  * The JavaScript object {@code HTMLTableElement}.
@@ -49,12 +51,6 @@ import org.htmlunit.javascript.configuration.JsxSetter;
 public class HTMLTableElement extends RowContainer {
 
     /**
-     * Creates an instance.
-     */
-    public HTMLTableElement() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @Override
@@ -69,8 +65,8 @@ public class HTMLTableElement extends RowContainer {
      * @return the table's caption element
      */
     @JsxGetter
-    public Object getCaption() {
-        final List<HtmlElement> captions = getDomNodeOrDie().getElementsByTagName("caption");
+    public HtmlUnitScriptable getCaption() {
+        final List<HtmlElement> captions = getDomNodeOrDie().getStaticElementsByTagName("caption");
         if (captions.isEmpty()) {
             return null;
         }
@@ -100,8 +96,8 @@ public class HTMLTableElement extends RowContainer {
      * @return the table's tfoot element
      */
     @JsxGetter
-    public Object getTFoot() {
-        final List<HtmlElement> tfoots = getDomNodeOrDie().getElementsByTagName("tfoot");
+    public HtmlUnitScriptable getTFoot() {
+        final List<HtmlElement> tfoots = getDomNodeOrDie().getStaticElementsByTagName("tfoot");
         if (tfoots.isEmpty()) {
             return null;
         }
@@ -132,8 +128,8 @@ public class HTMLTableElement extends RowContainer {
      * @return the table's thead element
      */
     @JsxGetter
-    public Object getTHead() {
-        final List<HtmlElement> theads = getDomNodeOrDie().getElementsByTagName("thead");
+    public HtmlUnitScriptable getTHead() {
+        final List<HtmlElement> theads = getDomNodeOrDie().getStaticElementsByTagName("thead");
         if (theads.isEmpty()) {
             return null;
         }
@@ -163,7 +159,7 @@ public class HTMLTableElement extends RowContainer {
      * @return the tbody's in the table
      */
     @JsxGetter
-    public Object getTBodies() {
+    public HtmlUnitScriptable getTBodies() {
         final HtmlTable table = (HtmlTable) getDomNodeOrDie();
         final HTMLCollection bodies = new HTMLCollection(table, false);
         bodies.setElementsSupplier((Supplier<List<DomNode>> & Serializable) () -> new ArrayList<>(table.getBodies()));
@@ -178,7 +174,7 @@ public class HTMLTableElement extends RowContainer {
      * @return a newly added caption if no caption exists, or the first existing caption
      */
     @JsxFunction
-    public Object createCaption() {
+    public HtmlUnitScriptable createCaption() {
         return getScriptableFor(getDomNodeOrDie().appendChildIfNoneExists("caption"));
     }
 
@@ -190,7 +186,7 @@ public class HTMLTableElement extends RowContainer {
      * @return a newly added caption if no caption exists, or the first existing caption
      */
     @JsxFunction
-    public Object createTFoot() {
+    public HtmlUnitScriptable createTFoot() {
         return getScriptableFor(getDomNodeOrDie().appendChildIfNoneExists("tfoot"));
     }
 
@@ -202,7 +198,7 @@ public class HTMLTableElement extends RowContainer {
      * @return a newly added caption if no caption exists, or the first existing caption
      */
     @JsxFunction
-    public Object createTBody() {
+    public HtmlUnitScriptable createTBody() {
         return getScriptableFor(getDomNodeOrDie().appendChildIfNoneExists("tbody"));
     }
 
@@ -214,7 +210,7 @@ public class HTMLTableElement extends RowContainer {
      * @return a newly added caption if no caption exists, or the first existing caption
      */
     @JsxFunction
-    public Object createTHead() {
+    public HtmlUnitScriptable createTHead() {
         return getScriptableFor(getDomNodeOrDie().appendChildIfNoneExists("thead"));
     }
 
@@ -268,7 +264,7 @@ public class HTMLTableElement extends RowContainer {
      * {@inheritDoc}
      */
     @Override
-    public Object insertRow(final int index) {
+    public HtmlUnitScriptable insertRow(final int index) {
         // check if a tbody should be created
         if (index != 0) {
             for (final HtmlElement htmlElement : getDomNodeOrDie().getHtmlElementDescendants()) {
@@ -380,8 +376,8 @@ public class HTMLTableElement extends RowContainer {
      * {@inheritDoc}
      */
     @Override
-    public Object appendChild(final Object childObject) {
-        final Object appendedChild = super.appendChild(childObject);
+    public Node appendChild(final Object childObject) {
+        final Node appendedChild = super.appendChild(childObject);
         getDomNodeOrDie().getPage().clearComputedStyles(getDomNodeOrDie());
         return appendedChild;
     }
@@ -390,8 +386,8 @@ public class HTMLTableElement extends RowContainer {
      * {@inheritDoc}
      */
     @Override
-    public Object removeChild(final Object childObject) {
-        final Object removedChild = super.removeChild(childObject);
+    public Node removeChild(final Object childObject) {
+        final Node removedChild = super.removeChild(childObject);
         getDomNodeOrDie().getPage().clearComputedStyles(getDomNodeOrDie());
         return removedChild;
     }

@@ -32,7 +32,6 @@ import org.htmlunit.WebClient;
 import org.htmlunit.WebResponse;
 import org.htmlunit.cyberneko.HTMLConfiguration;
 import org.htmlunit.cyberneko.HTMLElements;
-import org.htmlunit.cyberneko.HTMLEventInfo;
 import org.htmlunit.cyberneko.HTMLScanner;
 import org.htmlunit.cyberneko.HTMLTagBalancingListener;
 import org.htmlunit.cyberneko.xerces.parsers.AbstractSAXParser;
@@ -236,7 +235,7 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
     public void startElement(final QName element, final XMLAttributes attributes, final Augmentations augs)
         throws XNIException {
         // augs might change so we store only the interesting part
-        lastTagWasSynthesized_ = isSynthesized(augs);
+        lastTagWasSynthesized_ = augs.isSynthesized();
         super.startElement(element, attributes, augs);
     }
 
@@ -253,7 +252,7 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
         }
         handleCharacters();
 
-        final String tagLower = org.htmlunit.util.StringUtils.toRootLowerCase(localName);
+        final String tagLower = StringUtils.toRootLowerCase(localName);
         if (page_.isParsingHtmlSnippet() && ("html".equals(tagLower) || "body".equals(tagLower))) {
             // we have to push the current node on the stack to make sure
             // the endElement call is able to remove a node from the stack
@@ -279,8 +278,12 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
         // If we're adding a body element, keep track of any temporary synthetic ones
         // that we may have had to create earlier (for document.write(), for example).
         HtmlBody oldBody = null;
-        if ("body".equals(qName) && page_.getBody() instanceof HtmlBody) {
-            oldBody = (HtmlBody) page_.getBody();
+        final boolean isBodyTag = "body".equals(tagLower);
+        if (isBodyTag) {
+            final HtmlBody body = page_.getBody();
+            if (body != null) {
+                oldBody = body;
+            }
         }
 
         // Add the new node.
@@ -293,7 +296,7 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
         if (factory == HtmlUnitNekoHtmlParser.SVG_FACTORY) {
             namespaceURI = Html.SVG_NAMESPACE;
         }
-        final DomElement newElement = factory.createElementNS(page_, namespaceURI, qName, atts, true);
+        final DomElement newElement = factory.createElementNS(page_, namespaceURI, qName, atts);
         newElement.setStartLocation(locator_.getLineNumber(), locator_.getColumnNumber());
 
         // parse can't replace everything as it does not buffer elements while parsing
@@ -328,7 +331,7 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
             oldBody.quietlyRemoveAndMoveChildrenTo(newElement);
         }
 
-        if (!insideSvg_ && "body".equals(tagLower)) {
+        if (!insideSvg_ && isBodyTag) {
             body_ = (HtmlElement) newElement;
         }
         else if (createdByJavascript_
@@ -450,7 +453,7 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
     public void endElement(final QName element, final Augmentations augs)
         throws XNIException {
         // augs might change so we store only the interesting part
-        lastTagWasSynthesized_ = isSynthesized(augs);
+        lastTagWasSynthesized_ = augs.isSynthesized();
         super.endElement(element, augs);
     }
 
@@ -461,7 +464,7 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
     public void endElement(final String namespaceURI, final String localName, final String qName)
         throws SAXException {
 
-        final String tagLower = org.htmlunit.util.StringUtils.toRootLowerCase(localName);
+        final String tagLower = StringUtils.toRootLowerCase(localName);
 
         handleCharacters();
 
@@ -472,7 +475,7 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
             if (stack_.size() == initialSize_) {
                 // a <p> inside a <p> is valid for innerHTML processing
                 // see HTMLParser2Test for more cases
-                snippetStartNodeOverwritten_ = !"p".equals(tagLower);
+                snippetStartNodeOverwritten_ = !StringUtils.equalsChar('p', tagLower);
                 return;
             }
         }
@@ -531,10 +534,12 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
 
         // Use the normal behavior: append a text node for the accumulated text.
         final String textValue = characters_.toString();
-        final DomText textNode = new DomText(page_, textValue);
         characters_.clear();
 
-        if (org.apache.commons.lang3.StringUtils.isNotBlank(textValue)) {
+        if (org.apache.commons.lang3.StringUtils.isBlank(textValue)) {
+            appendChild(currentNode_, new DomText(page_, textValue));
+        }
+        else {
             // malformed HTML: </td>some text</tr> => text comes before the table
             if (currentNode_ instanceof HtmlTableRow) {
                 final HtmlTableRow row = (HtmlTableRow) currentNode_;
@@ -545,7 +550,7 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
                         domText.setTextContent(domText.getWholeText() + textValue);
                     }
                     else {
-                        enclosingTable.insertBefore(textNode);
+                        enclosingTable.insertBefore(new DomText(page_, textValue));
                     }
                 }
             }
@@ -556,18 +561,15 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
                     domText.setTextContent(domText.getWholeText() + textValue);
                 }
                 else {
-                    enclosingTable.insertBefore(textNode);
+                    enclosingTable.insertBefore(new DomText(page_, textValue));
                 }
             }
             else if (currentNode_ instanceof HtmlImage) {
-                currentNode_.getParentNode().appendChild(textNode);
+                currentNode_.getParentNode().appendChild(new DomText(page_, textValue));
             }
             else {
-                appendChild(currentNode_, textNode);
+                appendChild(currentNode_, new DomText(page_, textValue));
             }
-        }
-        else {
-            appendChild(currentNode_, textNode);
         }
     }
 
@@ -575,7 +577,9 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
     @Override
     public void endDocument() throws SAXException {
         handleCharacters();
-        page_.setEndLocation(locator_.getLineNumber(), locator_.getColumnNumber());
+        if (locator_ != null) {
+            page_.setEndLocation(locator_.getLineNumber(), locator_.getColumnNumber());
+        }
     }
 
     /** {@inheritDoc} */
@@ -651,6 +655,7 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
     /** {@inheritDoc} */
     @Override
     public void startEntity(final String name) {
+        // nothing to do
     }
 
     /**
@@ -752,14 +757,6 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
         finally {
             page_.setDOMBuilder(oldBuilder);
         }
-    }
-
-    HtmlElement getBody() {
-        return body_;
-    }
-
-    private static boolean isSynthesized(final Augmentations augs) {
-        return augs instanceof HTMLEventInfo && ((HTMLEventInfo) augs).isSynthesized();
     }
 
     private static void appendChild(final DomNode parent, final DomNode child) {

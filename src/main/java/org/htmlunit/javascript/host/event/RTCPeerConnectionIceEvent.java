@@ -27,15 +27,10 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 public class RTCPeerConnectionIceEvent extends Event {
 
     /**
-     * Creates a new instance.
-     */
-    public RTCPeerConnectionIceEvent() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 }

@@ -28,15 +28,10 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 public class RTCStatsReport extends HtmlUnitScriptable {
 
     /**
-     * Default constructor.
-     */
-    public RTCStatsReport() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 }
