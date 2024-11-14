@@ -26,8 +26,11 @@ import org.apache.http.impl.EnglishReasonPhraseCatalog;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.LegendItem;
 import org.jfree.chart.LegendItemCollection;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.plot.CombinedDomainXYPlot;
 import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.ui.RectangleInsets;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
 
@@ -160,20 +163,9 @@ public class ResponseCodesReportProvider extends AbstractReportProvider
      * that shows how the occurrences of that code are distributed over time. The chart is generated to the charts
      * directory.
      */
-    private void saveResponseCodesChart(String chartTitle, String chartFileName, Map<Integer, ValueSet> responseCodeValueSets)
+    private void saveResponseCodesChart(final String chartTitle, final String chartFileName,
+                                        final Map<Integer, ValueSet> responseCodeValueSets)
     {
-        // TODO: test data -> remove
-        // ValueSet vs = responseCodeValueSets.get(303);
-        // responseCodeValueSets.put(0, vs);
-        // responseCodeValueSets.put(27, vs);
-        // responseCodeValueSets.put(150, vs);
-        // responseCodeValueSets.put(201, vs);
-        // responseCodeValueSets.put(304, vs);
-        // responseCodeValueSets.put(400, vs);
-        // responseCodeValueSets.put(404, vs);
-        // responseCodeValueSets.put(500, vs);
-        // responseCodeValueSets.put(503, vs);
-
         final JFreeChart chart = createResponseCodesChart(chartTitle, responseCodeValueSets);
 
         // size the response codes chart according to the number of response codes encountered
@@ -186,7 +178,7 @@ public class ResponseCodesReportProvider extends AbstractReportProvider
      * Creates a chart from the encountered response codes. The chart contains a separate plot for each response code
      * that shows how the occurrences of that code are distributed over time.
      */
-    private JFreeChart createResponseCodesChart(final String chartTitle, Map<Integer, ValueSet> responseCodeValueSets)
+    private JFreeChart createResponseCodesChart(final String chartTitle, final Map<Integer, ValueSet> responseCodeValueSets)
     {
         final Map<String, Color> responseCodeGroups = new TreeMap<>();
 
@@ -207,11 +199,28 @@ public class ResponseCodesReportProvider extends AbstractReportProvider
             // remember group/color for creating the legend later on
             responseCodeGroups.put(responseCodeGroup, responseCodeColor);
 
-            // create a bar sub plot and add it to the combined plot
+            // create a standard bar sub plot
             final TimeSeries responseCodeTimeSeries = JFreeChartUtils.toStandardTimeSeries(responseCodeValueSet.toMinMaxValueSet(getConfiguration().getChartWidth()),
                                                                                            responseCodeGroup);
-            final XYPlot responseCodePlot = JFreeChartUtils.createBarPlot(new TimeSeriesCollection(responseCodeTimeSeries), null,
-                                                                          String.valueOf(responseCode), responseCodeColor);
+            final XYPlot responseCodePlot = JFreeChartUtils.createBarPlot(new TimeSeriesCollection(responseCodeTimeSeries), null, "",
+                                                                          responseCodeColor);
+
+            // extend the standard bar plot with a 2nd y-axis to the right that only serves to display the response
+            // code, which this plot represents, prominently
+            final NumberAxis fakeAxis = new NumberAxis(String.valueOf(responseCode));
+            fakeAxis.setTickMarksVisible(false);
+            fakeAxis.setTickLabelsVisible(false);
+            fakeAxis.setLabelAngle(4.71); // 270°
+            fakeAxis.setLabelInsets(new RectangleInsets(0.0, 8.0, 0.0, 0.0));
+
+            final ValueAxis defaultAxis = responseCodePlot.getRangeAxis();
+
+            responseCodePlot.setRangeAxes(new ValueAxis[]
+                {
+                    defaultAxis, fakeAxis
+                });
+
+            // add the sub plot to the combined plot
             combinedPlot.add(responseCodePlot, 1);
         }
 

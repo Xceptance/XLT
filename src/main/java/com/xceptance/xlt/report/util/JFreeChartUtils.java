@@ -955,7 +955,7 @@ public final class JFreeChartUtils
      */
     public static NumberAxis createNumberAxis(String axisTitle)
     {
-        if (StringUtils.isBlank(axisTitle))
+        if (axisTitle == null)
         {
             axisTitle = DEFAULT_VALUE_AXIS_TITLE;
         }
