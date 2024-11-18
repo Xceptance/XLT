@@ -73,6 +73,14 @@
                         </xsl:choose>
                     </table>
                 </div>
+                <div class="charts">
+                    <div class="chart">
+                        <img>
+                            <xsl:attribute name="src">charts/ResponseCodesPerSecond.webp</xsl:attribute>
+                            <xsl:attribute name="alt">Response Codes Per Second</xsl:attribute>
+                        </img>
+                    </div>
+                </div>
             </div>
         </div>
 
