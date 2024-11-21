@@ -316,7 +316,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
         // JavaScript
         getOptions().setJavaScriptEnabled(props.getProperty("com.xceptance.xlt.javaScriptEnabled", false));
         getOptions().setThrowExceptionOnScriptError(props.getProperty("com.xceptance.xlt.stopTestOnJavaScriptErrors", false));
-        setUpJavaScriptEngine(props);
+        configureJavaScriptEngine(props);
 
         // default user authentication
         final String userName = props.getProperty("com.xceptance.xlt.auth.userName");
@@ -419,11 +419,11 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
         getOptions().setHistorySizeLimit(historySizeLimit);
 
         // set web connection
-        setUpWebConnection(props);
+        configureWebConnection(props);
 
         // load key/trust material for client/server authentication
-        setUpKeyStore(props);
-        setUpTrustStore(props);
+        configureKeyStore(props);
+        configureTrustStore(props);
     }
 
     /**
@@ -437,10 +437,10 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
         final XltProperties props = XltProperties.getInstance();
 
         // create a new instance of "our" JavaScript engine if needed
-        setUpJavaScriptEngine(props);
+        configureJavaScriptEngine(props);
 
         // create a new instance of "our" web connection
-        setUpWebConnection(props);
+        configureWebConnection(props);
 
         pageLocalCache.clear();
     }
@@ -2030,7 +2030,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
      * @param props
      *            the configuration
      */
-    private void setUpJavaScriptEngine(final XltProperties props)
+    private void configureJavaScriptEngine(final XltProperties props)
     {
         if (isJavaScriptEngineEnabled())
         {
@@ -2066,7 +2066,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
      * @param props
      *            the configuration
      */
-    private void setUpWebConnection(final XltProperties props)
+    private void configureWebConnection(final XltProperties props)
     {
         final WebConnection underlyingWebConnection;
         if (props.getProperty("com.xceptance.xlt.http.offline", false))
@@ -2103,7 +2103,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
      * @param props
      *            the configuration
      */
-    private void setUpKeyStore(final XltProperties props)
+    private void configureKeyStore(final XltProperties props)
     {
         final String storeFilePath = props.getProperty("com.xceptance.xlt.tls.keyStore.file");
         if (StringUtils.isNotBlank(storeFilePath))
@@ -2123,7 +2123,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
      * @param props
      *            the configuration
      */
-    private void setUpTrustStore(final XltProperties props)
+    private void configureTrustStore(final XltProperties props)
     {
         final String storeFilePath = props.getProperty("com.xceptance.xlt.tls.trustStore.file");
         if (StringUtils.isNotBlank(storeFilePath))
