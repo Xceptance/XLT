@@ -6,7 +6,7 @@
 
     <groupId>com.xceptance</groupId>
     <artifactId>xlt</artifactId>
-    <version>8.4.1</version>
+    <version>8.5.0</version>
     <packaging>jar</packaging>
 
     <name>XLT</name>
@@ -71,9 +71,9 @@
         <jetty.version>9.4.53.v20231009</jetty.version>
         <log4j.version>2.22.1</log4j.version>
         <powermock.version>2.0.9</powermock.version>
-        <selenium.version>4.17.0</selenium.version>
+        <selenium.version>4.26.0</selenium.version>
         <htmlunitdriver.version>4.17.0</htmlunitdriver.version>
-        <otel.version>1.40.0</otel.version>
+        <otel.version>1.43.0</otel.version>
         <copyright>Copyright (c) ${project.inceptionYear}-2024 ${project.organization.name}</copyright>
     </properties>
 
@@ -402,13 +402,13 @@
         <dependency>
             <groupId>net.bytebuddy</groupId>
             <artifactId>byte-buddy</artifactId>
-            <version>1.14.11</version>
+            <version>1.15.7</version>
         </dependency>
         <!-- guava is used by Selenium, Google Compute and Checkstyle. Ensure that the highest version wins. -->
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>33.0.0-jre</version>
+            <version>33.3.1-jre</version>
         </dependency>
         <!-- slf4j is used by many libs. Ensure that the version used by log4j-slf4j2-impl wins. -->
         <dependency>
