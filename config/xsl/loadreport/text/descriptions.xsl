@@ -627,6 +627,18 @@
             <xsl:call-template name="numbers-projected"/>
         </div>
     </xsl:template>
+    
+    <!--- ## Description: Custom Data Logs Summary ## -->
+    <xsl:template name="headline-custom-data-logs-summary">
+        <h2>Custom Data Logs</h2>
+    </xsl:template>
+    <xsl:template name="description-custom-data-logs-summary">
+        <div class="description">
+            <p>
+                The custom data logs contain custom data collected by test scripts.
+            </p>
+        </div>
+    </xsl:template>
 
     <!--- ## Description: External ## -->
     <xsl:template name="headline-external">
