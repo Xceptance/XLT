@@ -25,7 +25,6 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -188,10 +187,10 @@ public class CustomLogsReportProvider extends AbstractReportProvider
 
     private void writeDataToZip(FileObject file, ZipOutputStream scopeStream) throws IOException
     {
-        final boolean isCompressed = "gz".equalsIgnoreCase(file.getName().getExtension());
+        //final boolean isCompressed = "gz".equalsIgnoreCase(file.getName().getExtension());
         
-        InputStream in = isCompressed ? 
-            new GZIPInputStream(file.getContent().getInputStream(), 1024 * 16) : //TODO is my data EVER zipped? it should be, but how does it happen?
+        InputStream in = /*isCompressed ? 
+            new GZIPInputStream(file.getContent().getInputStream(), 1024 * 16) :*/ //is my data EVER zipped? not right now, but maybe in the future?
             file.getContent().getInputStream();
         byte[] buffer = new byte[1024];
 
