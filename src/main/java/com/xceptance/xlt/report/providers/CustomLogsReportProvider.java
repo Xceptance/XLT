@@ -34,6 +34,7 @@ import org.apache.commons.vfs2.FileType;
 
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.report.AbstractReportProvider;
+import com.xceptance.xlt.api.util.XltLogger;
 import com.xceptance.xlt.common.XltConstants;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration;
 
@@ -53,6 +54,9 @@ public class CustomLogsReportProvider extends AbstractReportProvider
     /**
      * {@inheritDoc}
      */
+    /**
+     *
+     */
     @Override
     public Object createReportFragment()
     {
@@ -69,7 +73,7 @@ public class CustomLogsReportProvider extends AbstractReportProvider
         }
         catch (IOException e)
         {
-            System.err.println("Failed to walk file tree searching for custom data logs. Cause: " + e.getMessage());
+            XltLogger.runTimeLogger.error("Failed to walk file tree searching for custom data logs. Cause: " + e.getMessage());
         }
         finally 
         {
@@ -93,7 +97,7 @@ public class CustomLogsReportProvider extends AbstractReportProvider
             }
             catch (IOException e)
             {
-                System.err.println("Unable to collect information for custom data logs for " + scope + ". Cause: " + e.getMessage());
+                XltLogger.runTimeLogger.error("Unable to collect information for custom data logs for " + scope + ". Cause: " + e.getMessage());
             }
             
             report.customLogs.add(clr);
@@ -129,11 +133,14 @@ public class CustomLogsReportProvider extends AbstractReportProvider
      */
     private void findLogs (FileObject file) throws IOException
     {
-        if (file.getType() == FileType.FOLDER && !XltConstants.CONFIG_DIR_NAME.equals(file.getName().getBaseName().toString()))
+        if (file.getType() == FileType.FOLDER)
         {
-            for (final FileObject fo : file.getChildren())
+            if (!XltConstants.CONFIG_DIR_NAME.equals(file.getName().getBaseName().toString()))
             {
-                findLogs(fo);
+                for (final FileObject fo : file.getChildren())
+                {
+                    findLogs(fo);
+                }
             }
         }
         else if (file.getType() == FileType.FILE)
@@ -198,7 +205,7 @@ public class CustomLogsReportProvider extends AbstractReportProvider
                 zos.close();
             } 
             catch (IOException e) {
-                System.err.println("Unable to zip custom data logs to report. Cause: " + e.getMessage());
+                XltLogger.runTimeLogger.error("Unable to zip custom data logs to report. Cause: " + e.getMessage());
             }
         }
     }
