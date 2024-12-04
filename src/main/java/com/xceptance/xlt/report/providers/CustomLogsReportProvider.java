@@ -48,7 +48,7 @@ public class CustomLogsReportProvider extends AbstractReportProvider
     
     private Map<String, ZipOutputStream> foundScopes = new HashMap<String, ZipOutputStream>();
     
-    private Path baseDir = null;
+    private String baseDir;
     private Path targetDir = null;
 
     /**
@@ -63,13 +63,12 @@ public class CustomLogsReportProvider extends AbstractReportProvider
         final CustomLogsReport report = new CustomLogsReport();
 
         FileObject results = ((ReportGeneratorConfiguration) getConfiguration()).getResultsDirectory();
-        
-        baseDir = results.getPath();
+        baseDir = results.getName().getBaseName().toString();
         targetDir = Paths.get(getConfiguration().getReportDirectory() + File.separator + CUSTOM_DATA);       
         
         try
         {
-            findLogs(results);
+            findLogs(results, null);
         }
         catch (IOException e)
         {
@@ -131,7 +130,7 @@ public class CustomLogsReportProvider extends AbstractReportProvider
      * @param file the directory or file to start from
      * @throws IOException
      */
-    private void findLogs (FileObject file) throws IOException
+    private void findLogs (FileObject file, String currentPath) throws IOException
     {
         if (file.getType() == FileType.FOLDER)
         {
@@ -139,7 +138,7 @@ public class CustomLogsReportProvider extends AbstractReportProvider
             {
                 for (final FileObject fo : file.getChildren())
                 {
-                    findLogs(fo);
+                    findLogs(fo, makePath(currentPath, file.getName().getBaseName().toString()));
                 }
             }
         }
@@ -165,13 +164,26 @@ public class CustomLogsReportProvider extends AbstractReportProvider
                     foundScopes.put(scopeName, scopeStream);
                 }
                 
-                // add zip entry, copy current log file for scope    
-                scopeStream.putNextEntry(new ZipEntry(baseDir.relativize(file.getPath()).toString().replaceAll("\\\\", "/")));
+                // add zip entry, copy current log file for scope   
+                scopeStream.putNextEntry(new ZipEntry(makePath(currentPath, file.getName().getBaseName().toString())));
                 writeDataToZip(file, scopeStream);
                 scopeStream.closeEntry();
             }
         }
         return;
+    }
+
+    private String makePath(String currentPath, String currentFileName)
+    {
+        if (currentPath != null)
+        {
+            return currentPath + "/" + currentFileName;
+        }
+        else if (baseDir.equals(currentFileName))
+        {
+            return null; //we're not using base dir name in zip, start on agent level
+        }
+        return currentFileName;
     }
 
     private void writeDataToZip(FileObject file, ZipOutputStream scopeStream) throws IOException
@@ -217,7 +229,7 @@ public class CustomLogsReportProvider extends AbstractReportProvider
     {
         if (!foundScopes.isEmpty())
         {
-            System.out.format("Found custom data logs for scopes: %s \n", foundScopes.keySet());
+            XltLogger.runTimeLogger.info("Found custom data logs for scopes: " + foundScopes.keySet());
         }
         return foundScopes.keySet();
     }
