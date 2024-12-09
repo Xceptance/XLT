@@ -18,7 +18,7 @@ package com.xceptance.xlt.report.providers;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
 /**
- * Represents the total number of requests that were using a certain HTTP request method.
+ * Represents the collected custom log files written during the test run for one specific scope.
  */
 @XStreamAlias("customLog")
 public class CustomLogReport

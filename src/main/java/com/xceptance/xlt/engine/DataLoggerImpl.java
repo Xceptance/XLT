@@ -45,47 +45,38 @@ public class DataLoggerImpl implements DataLogger
     @Override
     public void setHeader(String header)
     {
-        if ("csv".equals(this.extension))
-        {        
-            Path file = getLoggerFile();
-            try
-            {
-                if (!Files.exists(file) || Files.size(file) == 0)
-                {
-                    // if there is nothing logged yet we can add a header, otherwise it would be a line of content?
-              
-                    final BufferedWriter writer = logger != null ? logger : getTimerLogger();
-       
-                    // no logger configured -> exit here
-                    if (writer == null)
-                    {
-                        return;
-                    }
-       
-                    // write the header line - TODO csv validation might be useful here? in case we have csv... whatever
-                    // this safes us from synchronization, the writer is already synchronized
-                    StringBuilder s = new StringBuilder(header);
-                    s = removeLineSeparators(s, ' ');
-                    s.append(System.lineSeparator());
-                    
-                    writer.write(s.toString());
-                    writer.flush();
-                }
-                else
-                {
-                    XltLogger.runTimeLogger.warn("Did not write custom data header because logfile already contains data: " + file);
-                }
-            }
-            catch (final IOException ex)
-            {
-                XltLogger.runTimeLogger.error("Failed to write custom data header:", ex);
-            }
-        }
-        else
+        Path file = getLoggerFile();
+        try
         {
-            XltLogger.runTimeLogger.warn("Did not write custom data header because logfile is not csv format but " + this.extension);
+            if (!Files.exists(file) || Files.size(file) == 0)
+            {
+                // if there is nothing logged yet we can add a header, otherwise it would be a line of content?
+          
+                final BufferedWriter writer = logger != null ? logger : getTimerLogger();
+   
+                // no logger configured -> exit here
+                if (writer == null)
+                {
+                    return;
+                }
+   
+                // write the header line
+                StringBuilder s = new StringBuilder(header);
+                s = removeLineSeparators(s, ' ');
+                s.append(System.lineSeparator());
+                
+                writer.write(s.toString());
+                writer.flush();
+            }
+            else
+            {
+                XltLogger.runTimeLogger.warn("Did not write custom data header because logfile already contains data: " + file);
+            }
         }
-        
+        catch (final IOException ex)
+        {
+            XltLogger.runTimeLogger.error("Failed to write custom data header:", ex);
+        }      
     }
 
     /**
@@ -111,10 +102,9 @@ public class DataLoggerImpl implements DataLogger
             return;
         }
 
-        // write the log line - TODO csv validation might be useful here? in case we have csv... whatever
+        // write the log line
         try
         {
-            // this safes us from synchronization, the writer is already synchronized
             StringBuilder s = new StringBuilder(lineOfData);
             s = removeLineSeparators(s, ' ');
             s.append(System.lineSeparator());
@@ -189,7 +179,7 @@ public class DataLoggerImpl implements DataLogger
             throw new RuntimeException("Missing result dir, see previous exceptions.");
         }
 
-        final Path file = dir.resolve(filename + '.' + extension);
+        final Path file = dir.resolve(extension == null ? filename : filename + '.' + extension);
 
         return file;
     }

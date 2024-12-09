@@ -53,16 +53,13 @@ public class CustomLogsReportProvider extends AbstractReportProvider
     /**
      * {@inheritDoc}
      */
-    /**
-     *
-     */
     @Override
     public Object createReportFragment()
     {
         final CustomLogsReport report = new CustomLogsReport();
 
         FileObject results = ((ReportGeneratorConfiguration) getConfiguration()).getResultsDirectory();
-        baseDir = results.getName().getBaseName().toString();
+        baseDir = results.getName().getBaseName();
         targetDir = Paths.get(getConfiguration().getReportDirectory() + File.separator + CUSTOM_DATA);       
         
         try
@@ -131,13 +128,14 @@ public class CustomLogsReportProvider extends AbstractReportProvider
      */
     private void findLogs (FileObject file, String currentPath) throws IOException
     {
+        final String filename = file.getName().getBaseName();
         if (file.getType() == FileType.FOLDER)
         {
-            if (!XltConstants.CONFIG_DIR_NAME.equals(file.getName().getBaseName().toString()))
+            if (!XltConstants.CONFIG_DIR_NAME.equals(filename))
             {
                 for (final FileObject fo : file.getChildren())
                 {
-                    findLogs(fo, makePath(currentPath, file.getName().getBaseName().toString()));
+                    findLogs(fo, makePath(currentPath, filename));
                 }
             }
         }
@@ -145,7 +143,7 @@ public class CustomLogsReportProvider extends AbstractReportProvider
         {
             if (file.getName().getBaseName().toString().startsWith(XltConstants.CUSTOM_LOG_PREFIX)) 
             {
-                final String scopeName = file.getName().getBaseName().toString().substring(XltConstants.CUSTOM_LOG_PREFIX.length(), file.getName().getBaseName().toString().lastIndexOf('.'));
+                final String scopeName = filename.substring(XltConstants.CUSTOM_LOG_PREFIX.length(), filename.lastIndexOf('.'));
                 
                 if (foundScopes.isEmpty())
                 {
@@ -164,7 +162,7 @@ public class CustomLogsReportProvider extends AbstractReportProvider
                 }
                 
                 // add zip entry, copy current log file for scope   
-                scopeStream.putNextEntry(new ZipEntry(makePath(currentPath, file.getName().getBaseName().toString())));
+                scopeStream.putNextEntry(new ZipEntry(makePath(currentPath, filename)));
                 writeDataToZip(file, scopeStream);
                 scopeStream.closeEntry();
             }

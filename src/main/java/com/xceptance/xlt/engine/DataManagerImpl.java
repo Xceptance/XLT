@@ -21,8 +21,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
 import com.xceptance.common.util.CsvUtils;
@@ -73,7 +74,10 @@ public class DataManagerImpl implements DataManager
      */
     private volatile BufferedWriter logger;
     
-    private HashMap<String, DataLogger> dataLoggers = new HashMap<String, DataLogger>();
+    /**
+     * Collection of custom data loggers for user defined scopes (key = scope, value = logger for this scope).
+     */
+    private Map<String, DataLogger> dataLoggers = new ConcurrentHashMap<String, DataLogger>();
 
     /**
      * Our metrics provider.
@@ -400,16 +404,6 @@ public class DataManagerImpl implements DataManager
      */
     public DataLogger dataLogger(String scope)
     {
-        DataLogger dataLogger = dataLoggers.get(scope);
-        
-        // check if dataLogger has already been initialized
-        // otherwise create one, add it to the list and return it
-        if (dataLogger == null)
-        {            
-            dataLogger = new DataLoggerImpl(session, scope);
-            dataLoggers.put(scope, dataLogger);
-        }
-        
-        return dataLogger;
+        return dataLoggers.computeIfAbsent(scope, sc -> new DataLoggerImpl(session, sc));
     }
 }

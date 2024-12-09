@@ -22,7 +22,7 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamImplicit;
 
 /**
- * Represents the custom log files written during the test run.
+ * Represents all custom log files for all scopes written during the test run.
  */
 @XStreamAlias("customLogs")
 public class CustomLogsReport
