@@ -181,6 +181,11 @@ public final class XltConstants
                                                                           .map(Pattern::compile).collect(Collectors.toList());
 
     /**
+     * The prefix of custom log files.
+     */
+    public static final String CUSTOM_LOG_PREFIX = "custom_log_";
+    
+    /**
      * The option name of the <em>from</em> option on the command line.
      */
     public static final String COMMANDLINE_OPTION_FROM = "from";
