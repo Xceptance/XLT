@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
+import com.xceptance.common.io.FileUtils;
 import com.xceptance.xlt.api.engine.DataLogger;
 import com.xceptance.xlt.api.engine.Session;
 import com.xceptance.xlt.api.util.XltLogger;
@@ -179,7 +180,7 @@ public class DataLoggerImpl implements DataLogger
             throw new RuntimeException("Missing result dir, see previous exceptions.");
         }
 
-        final Path file = dir.resolve(extension == null ? filename : filename + '.' + extension);
+        final Path file = dir.resolve(FileUtils.convertIllegalCharsInFileName(extension == null ? filename : filename + '.' + extension));
 
         return file;
     }
