@@ -30,7 +30,7 @@ public class DataLoggerImpl implements DataLogger
     {
         this.session = session;
         this.filename = XltConstants.CUSTOM_LOG_PREFIX + scope; 
-        this.extension = "csv";
+        this.extension = "log";
     }
     
     protected DataLoggerImpl(final Session session, String scope, String extension)
