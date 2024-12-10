@@ -22,8 +22,8 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.google.api.services.compute.model.InstanceTemplate;
-import com.google.api.services.compute.model.Region;
+import com.google.cloud.compute.v1.InstanceTemplate;
+import com.google.cloud.compute.v1.Region;
 import com.xceptance.common.util.ConsoleUiUtils;
 
 /**
@@ -82,7 +82,7 @@ class OpCreateInstanceGroup
         sb.append("  Instance template     ").append("\n");
         sb.append("     - Name           : ").append(instanceTemplate.getName()).append("\n");
         sb.append("     - Image          : ")
-          .append(instanceTemplate.getProperties().getDisks().get(0).getInitializeParams().getSourceImage()).append("\n");
+          .append(instanceTemplate.getProperties().getDisks(0).getInitializeParams().getSourceImage()).append("\n");
         sb.append("     - Machine type  : ").append(instanceTemplate.getProperties().getMachineType()).append("\n");
         sb.append("\n");
         sb.append("Do you want to create a managed instance group with the above configuration?");

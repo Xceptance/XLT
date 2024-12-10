@@ -16,7 +16,6 @@
 package com.xceptance.xlt.gce;
 
 import java.io.IOException;
-import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -28,33 +27,31 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
-import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
-import com.google.api.client.googleapis.services.AbstractGoogleClientRequest;
 import com.google.api.client.http.HttpResponseException;
-import com.google.api.client.json.gson.GsonFactory;
-import com.google.api.services.compute.Compute;
-import com.google.api.services.compute.ComputeScopes;
-import com.google.api.services.compute.model.Instance;
-import com.google.api.services.compute.model.InstanceGroup;
-import com.google.api.services.compute.model.InstanceGroupList;
-import com.google.api.services.compute.model.InstanceGroupManager;
-import com.google.api.services.compute.model.InstanceGroupsListInstances;
-import com.google.api.services.compute.model.InstanceGroupsListInstancesRequest;
-import com.google.api.services.compute.model.InstanceList;
-import com.google.api.services.compute.model.InstanceTemplate;
-import com.google.api.services.compute.model.InstanceTemplateList;
-import com.google.api.services.compute.model.InstanceWithNamedPorts;
-import com.google.api.services.compute.model.ManagedInstance;
-import com.google.api.services.compute.model.Region;
-import com.google.api.services.compute.model.RegionInstanceGroupList;
-import com.google.api.services.compute.model.RegionInstanceGroupsListInstances;
-import com.google.api.services.compute.model.RegionInstanceGroupsListInstancesRequest;
-import com.google.api.services.compute.model.RegionList;
+import com.google.api.gax.rpc.ApiException;
+import com.google.api.gax.rpc.StatusCode;
+import com.google.cloud.compute.v1.Instance;
+import com.google.cloud.compute.v1.InstanceGroup;
+import com.google.cloud.compute.v1.InstanceGroupManager;
+import com.google.cloud.compute.v1.InstanceGroupManagersClient;
+import com.google.cloud.compute.v1.InstanceGroupsClient;
+import com.google.cloud.compute.v1.InstanceGroupsListInstancesRequest;
+import com.google.cloud.compute.v1.InstanceTemplate;
+import com.google.cloud.compute.v1.InstanceTemplatesClient;
+import com.google.cloud.compute.v1.InstanceWithNamedPorts;
+import com.google.cloud.compute.v1.InstancesClient;
+import com.google.cloud.compute.v1.ManagedInstance;
+import com.google.cloud.compute.v1.Region;
+import com.google.cloud.compute.v1.RegionInstanceGroupManagersClient;
+import com.google.cloud.compute.v1.RegionInstanceGroupsClient;
+import com.google.cloud.compute.v1.RegionInstanceGroupsListInstancesRequest;
+import com.google.cloud.compute.v1.RegionsClient;
+import com.google.cloud.compute.v1.RegionsClient.ListPagedResponse;
+import com.google.common.collect.Lists;
 import com.xceptance.common.lang.ThreadUtils;
 
 /**
- * Wrapper around {@link Compute} to provide higher-level functionality when dealing with GCE machine instances.
+ * Wrapper around the Google Compute API to provide higher-level functionality when dealing with GCE machine instances.
  */
 class GceClient
 {
@@ -69,9 +66,39 @@ class GceClient
     private static final long INSTANCE_STATE_POLLING_INTERVAL = 1000;
 
     /**
-     * The underlying {@link Compute} object.
+     * The client responsible for regions.
      */
-    private final Compute compute;
+    private final RegionsClient regionsClient;
+
+    /**
+     * The client responsible for instances.
+     */
+    private final InstancesClient instancesClient;
+
+    /**
+     * The client responsible for instance templates.
+     */
+    private final InstanceTemplatesClient instanceTemplatesClient;
+
+    /**
+     * The client responsible for instance group managers.
+     */
+    private final InstanceGroupManagersClient instanceGroupManagersClient;
+
+    /**
+     * The client responsible for region instance group managers.
+     */
+    private final RegionInstanceGroupManagersClient regionInstanceGroupManagersClient;
+
+    /**
+     * The client responsible for instance groups.
+     */
+    private final InstanceGroupsClient instanceGroupsClient;
+
+    /**
+     * The client responsible for region instance groups.
+     */
+    private final RegionInstanceGroupsClient regionInstanceGroupsClient;
 
     /**
      * The Google Cloud Platform project ID.
@@ -95,41 +122,31 @@ class GceClient
 
     /**
      * Constructor.
-     * 
+     *
      * @param applicationName
      *            the application name
      * @param projectId
      *            the project ID
      * @param instanceConnectTimeout
      *            the timeout
-     * @throws GeneralSecurityException
+     * @throws ApiException
+     *             in case of a communication error
      * @throws IOException
      *             in case of a communication error
      */
-    GceClient(final String applicationName, final String projectId, final long instanceConnectTimeout)
-        throws GeneralSecurityException, IOException
+    GceClient(final String applicationName, final String projectId, final long instanceConnectTimeout) throws ApiException, IOException
     {
         this.projectId = projectId;
         this.instanceConnectTimeout = Math.max(instanceConnectTimeout, 0);
 
-        // Authenticate using Google Application Default Credentials.
-        GoogleCredential credential = GoogleCredential.getApplicationDefault();
-
-        if (credential.createScopedRequired())
-        {
-            final List<String> scopes = new ArrayList<>();
-
-            // Set Google Cloud Storage scope to Full Control.
-            scopes.add(ComputeScopes.DEVSTORAGE_FULL_CONTROL);
-
-            // Set Google Compute Engine scope to Read-write.
-            scopes.add(ComputeScopes.COMPUTE);
-            credential = credential.createScoped(scopes);
-        }
-
-        // Create Compute Engine object
-        compute = new Compute.Builder(GoogleNetHttpTransport.newTrustedTransport(), GsonFactory.getDefaultInstance(),
-                                      credential).setApplicationName(applicationName).build();
+        //
+        instancesClient = InstancesClient.create();
+        regionsClient = RegionsClient.create();
+        regionInstanceGroupManagersClient = RegionInstanceGroupManagersClient.create();
+        regionInstanceGroupsClient = RegionInstanceGroupsClient.create();
+        instanceGroupManagersClient = InstanceGroupManagersClient.create();
+        instanceGroupsClient = InstanceGroupsClient.create();
+        instanceTemplatesClient = InstanceTemplatesClient.create();
 
         // preload the available regions
         regionsByName = loadRegions();
@@ -138,44 +155,30 @@ class GceClient
 
     /**
      * Preloads the regions that are currently available.
-     * 
+     *
      * @return the regions
-     * @throws IOException
+     * @throws ApiException
      *             in case of a communication error
      */
-    private Map<String, Region> loadRegions() throws IOException
+    private Map<String, Region> loadRegions() throws ApiException
     {
         final Map<String, Region> regions = new TreeMap<>();
 
-        final Compute.Regions.List request = compute.regions().list(projectId);
-        RegionList response;
-
-        do
+        final ListPagedResponse response = regionsClient.list(projectId);
+        for (final Region region : response.iterateAll())
         {
-            response = request.execute();
-
-            final List<Region> items = response.getItems();
-            if (items != null)
-            {
-                for (Region region : items)
-                {
-                    regions.put(region.getName(), region);
-                }
-            }
-
-            request.setPageToken(response.getNextPageToken());
+            regions.put(region.getName(), region);
         }
-        while (response.getNextPageToken() != null);
 
         return regions;
     }
 
     /**
      * Returns the available regions.
-     * 
+     *
      * @return the regions
      */
-    List<Region> getRegions() throws IOException
+    List<Region> getRegions()
     {
         return regions;
     }
@@ -212,20 +215,20 @@ class GceClient
      *            the name of the instance template to use
      * @param instanceCount
      *            the number of instances in the group
-     * @throws IOException
+     * @throws ApiException
      *             in case of a communication error
      */
     void createInstanceGroup(final String regionName, final String instanceGroupName, final String instanceTemplateName,
                              final int instanceCount)
-        throws IOException
+        throws ApiException
     {
-        final InstanceGroupManager instanceGroupManager = new InstanceGroupManager();
-        instanceGroupManager.setBaseInstanceName(instanceGroupName);
-        instanceGroupManager.setName(instanceGroupName);
-        instanceGroupManager.setInstanceTemplate("global/instanceTemplates/" + instanceTemplateName);
-        instanceGroupManager.setTargetSize(instanceCount);
+        final InstanceGroupManager.Builder instanceGroupManagerBuilder = InstanceGroupManager.newBuilder();
+        instanceGroupManagerBuilder.setBaseInstanceName(instanceGroupName);
+        instanceGroupManagerBuilder.setName(instanceGroupName);
+        instanceGroupManagerBuilder.setInstanceTemplate("global/instanceTemplates/" + instanceTemplateName);
+        instanceGroupManagerBuilder.setTargetSize(instanceCount);
 
-        compute.regionInstanceGroupManagers().insert(projectId, regionName, instanceGroupManager).execute();
+        regionInstanceGroupManagersClient.insertAsync(projectId, regionName, instanceGroupManagerBuilder.build());
     }
 
     /**
@@ -240,11 +243,11 @@ class GceClient
      * @return the instances in the group
      * @throws TimeoutException
      *             if any of the instances did not reach the running state in time
-     * @throws IOException
+     * @throws ApiException
      *             in case of a communication error
      */
     List<Instance> waitForInstancesAreRunning(final String regionName, final String instanceGroupName, final int instanceCount)
-        throws IOException, TimeoutException
+        throws ApiException, TimeoutException
     {
         final long timeout = instanceConnectTimeout;
         final long deadline = System.currentTimeMillis() + timeout;
@@ -271,14 +274,14 @@ class GceClient
      * @param timeout
      *            the time to wait
      * @return the instances in the group
-     * @throws IOException
+     * @throws ApiException
      *             in case of a communication error
      * @throws TimeoutException
      *             if any of the instances did not exist in time
      */
     List<Instance> waitForInstancesToExist(final String regionName, final String instanceGroupName, final int instanceCount,
                                            final long timeout)
-        throws IOException, TimeoutException
+        throws ApiException, TimeoutException
     {
         final long deadline = System.currentTimeMillis() + timeout;
 
@@ -311,31 +314,31 @@ class GceClient
 
     /**
      * Returns the managed instances in the given instance group.
-     * 
+     *
      * @param regionName
      *            the region
      * @param instanceGroupName
      *            the name of the instance group
      * @return the managed instances
-     * @throws IOException
+     * @throws ApiException
      *             in case of a communication error
      */
-    private List<ManagedInstance> getManagedInstances(final String regionName, final String instanceGroupName) throws IOException
+    private List<ManagedInstance> getManagedInstances(final String regionName, final String instanceGroupName) throws ApiException
     {
-        return compute.regionInstanceGroupManagers().listManagedInstances(projectId, regionName, instanceGroupName).execute()
-                      .getManagedInstances();
+        return Lists.newArrayList(regionInstanceGroupManagersClient.listManagedInstances(projectId, regionName, instanceGroupName)
+                                                                   .iterateAll());
     }
 
     /**
      * Returns the real instances behind the given managed instances.
-     * 
+     *
      * @param managedInstances
      *            the managed instances
      * @return the real instances
-     * @throws IOException
+     * @throws ApiException
      *             in case of a communication error
      */
-    private List<Instance> getInstances(final List<ManagedInstance> managedInstances) throws IOException
+    private List<Instance> getInstances(final List<ManagedInstance> managedInstances) throws ApiException
     {
         final List<Instance> instances = new ArrayList<>();
 
@@ -349,19 +352,19 @@ class GceClient
 
     /**
      * Returns the real instance behind the given managed instance.
-     * 
+     *
      * @param managedInstance
      *            the managed instance
      * @return the real instance
-     * @throws IOException
+     * @throws ApiException
      *             in case of a communication error
      */
-    private Instance getInstance(final ManagedInstance managedInstance) throws IOException
+    private Instance getInstance(final ManagedInstance managedInstance) throws ApiException
     {
         final String zoneName = GceAdminUtils.getZoneName(managedInstance.getInstance());
         final String instanceName = GceAdminUtils.getInstanceName(managedInstance.getInstance());
 
-        return compute.instances().get(projectId, zoneName, instanceName).execute();
+        return instancesClient.get(projectId, zoneName, instanceName);
     }
 
     /**
@@ -376,11 +379,11 @@ class GceClient
      * @return the updated instances
      * @throws TimeoutException
      *             if any of the instances did not reach the wanted state in time
-     * @throws IOException
+     * @throws ApiException
      *             in case of a communication error
      */
     List<Instance> waitForInstanceState(final List<Instance> instances, final String state, final long timeout)
-        throws IOException, TimeoutException
+        throws ApiException, TimeoutException
     {
         final List<Instance> updatedInstances = new ArrayList<>();
 
@@ -410,12 +413,12 @@ class GceClient
      * @param timeout
      *            the maximum waiting time
      * @return the updated instance
-     * @throws IOException
+     * @throws ApiException
      *             in case of a communication error
      * @throws TimeoutException
      *             if the instance did not reach the wanted state in time
      */
-    Instance waitForInstanceState(Instance instance, final String state, final long timeout) throws IOException, TimeoutException
+    Instance waitForInstanceState(Instance instance, final String state, final long timeout) throws ApiException, TimeoutException
     {
         final long deadline = System.currentTimeMillis() + timeout;
 
@@ -437,47 +440,31 @@ class GceClient
 
     /**
      * Returns the instance for the given instance URL.
-     * 
+     *
      * @param instanceUrl
      *            the instance URL
      * @return the instance
-     * @throws IOException
+     * @throws ApiException
      *             in case of a communication error
      */
-    Instance getInstance(final String instanceUrl) throws IOException
+    Instance getInstance(final String instanceUrl) throws ApiException
     {
         final String zoneName = GceAdminUtils.getZoneName(instanceUrl);
         final String instanceName = GceAdminUtils.getInstanceName(instanceUrl);
 
-        return compute.instances().get(projectId, zoneName, instanceName).execute();
+        return instancesClient.get(projectId, zoneName, instanceName);
     }
 
     /**
      * Returns the list of available instance templates.
-     * 
+     *
      * @return the available instance templates
-     * @throws IOException
+     * @throws ApiException
      *             in case of a communication error
      */
-    List<InstanceTemplate> getInstanceTemplates() throws IOException
+    List<InstanceTemplate> getInstanceTemplates() throws ApiException
     {
-        final List<InstanceTemplate> instanceTemplates = new ArrayList<>();
-
-        final Compute.InstanceTemplates.List request = compute.instanceTemplates().list(projectId);
-
-        InstanceTemplateList response;
-        do
-        {
-            response = request.execute();
-
-            if (response.getItems() != null)
-            {
-                instanceTemplates.addAll(response.getItems());
-            }
-
-            request.setPageToken(response.getNextPageToken());
-        }
-        while (response.getNextPageToken() != null);
+        final List<InstanceTemplate> instanceTemplates = Lists.newArrayList(instanceTemplatesClient.list(projectId).iterateAll());
 
         // sort the instance templates by name
         Collections.sort(instanceTemplates, new Comparator<InstanceTemplate>()
@@ -502,10 +489,10 @@ class GceClient
      * @param instanceGroupName
      *            the name of the instance group
      * @return the instance group
-     * @throws IOException
+     * @throws ApiException
      *             in case of a communication error
      */
-    InstanceGroup getInstanceGroup(final String regionOrZoneName, final String instanceGroupName) throws IOException
+    InstanceGroup getInstanceGroup(final String regionOrZoneName, final String instanceGroupName) throws ApiException
     {
         /*
          * N.B.: Instance groups can be defined as zonal or regional (multi-zone)
@@ -516,9 +503,9 @@ class GceClient
         {
             try
             {
-                return compute.regionInstanceGroups().get(projectId, regionOrZoneName, instanceGroupName).execute();
+                return regionInstanceGroupsClient.get(projectId, regionOrZoneName, instanceGroupName);
             }
-            catch (final IOException ex)
+            catch (final ApiException ex)
             {
                 // requesting a zonal instance group from a region causes a 404 Not Found
                 // -> loop through the zones of that region as fallback
@@ -526,7 +513,7 @@ class GceClient
                 {
                     for (final String zone : getZoneNamesFromRegion(getRegion(regionOrZoneName)))
                     {
-                        final InstanceGroup group = getOrNull(compute.instanceGroups().get(projectId, zone, instanceGroupName));
+                        final InstanceGroup group = instanceGroupsClient.get(projectId, zone, instanceGroupName);
                         if (group != null)
                         {
                             return group;
@@ -541,7 +528,7 @@ class GceClient
         // look for a single-zone instance group
         else
         {
-            return compute.instanceGroups().get(projectId, regionOrZoneName, instanceGroupName).execute();
+            return instanceGroupsClient.get(projectId, regionOrZoneName, instanceGroupName);
         }
     }
 
@@ -552,10 +539,10 @@ class GceClient
      * @param region
      *            the region
      * @return the instance groups
-     * @throws IOException
+     * @throws ApiException
      *             in case of a communication error
      */
-    List<InstanceGroup> getAllInstanceGroups(final Region region) throws IOException
+    List<InstanceGroup> getAllInstanceGroups(final Region region) throws ApiException
     {
         final List<InstanceGroup> groupList = new ArrayList<>();
 
@@ -581,30 +568,12 @@ class GceClient
      * @param regionName
      *            the region
      * @return the instance groups
-     * @throws IOException
+     * @throws ApiException
      *             in case of a communication error
      */
-    List<InstanceGroup> getMultiZoneInstanceGroups(final String regionName) throws IOException
+    List<InstanceGroup> getMultiZoneInstanceGroups(final String regionName) throws ApiException
     {
-        final List<InstanceGroup> instanceGroups = new ArrayList<>();
-
-        final Compute.RegionInstanceGroups.List request = compute.regionInstanceGroups().list(projectId, regionName);
-        RegionInstanceGroupList response;
-
-        do
-        {
-            response = request.execute();
-
-            if (response.getItems() != null)
-            {
-                instanceGroups.addAll(response.getItems());
-            }
-
-            request.setPageToken(response.getNextPageToken());
-        }
-        while (response.getNextPageToken() != null);
-
-        return instanceGroups;
+        return Lists.newArrayList(regionInstanceGroupsClient.list(projectId, regionName).iterateAll());
     }
 
     /**
@@ -613,30 +582,12 @@ class GceClient
      * @param zoneName
      *            the zone
      * @return the instance groups
-     * @throws IOException
+     * @throws ApiException
      *             in case of a communication error
      */
-    List<InstanceGroup> getSingleZoneInstanceGroups(final String zoneName) throws IOException
+    List<InstanceGroup> getSingleZoneInstanceGroups(final String zoneName) throws ApiException
     {
-        final List<InstanceGroup> instanceGroups = new ArrayList<>();
-
-        final Compute.InstanceGroups.List request = compute.instanceGroups().list(projectId, zoneName);
-        InstanceGroupList response;
-
-        do
-        {
-            response = request.execute();
-
-            if (response.getItems() != null)
-            {
-                instanceGroups.addAll(response.getItems());
-            }
-
-            request.setPageToken(response.getNextPageToken());
-        }
-        while (response.getNextPageToken() != null);
-
-        return instanceGroups;
+        return Lists.newArrayList(instanceGroupsClient.list(projectId, zoneName).iterateAll());
     }
 
     /**
@@ -645,10 +596,10 @@ class GceClient
      * @param region
      *            the region
      * @return the instances
-     * @throws IOException
+     * @throws ApiException
      *             in case of a communication error
      */
-    List<Instance> getInstancesInRegion(final Region region) throws IOException
+    List<Instance> getInstancesInRegion(final Region region) throws ApiException
     {
         final List<Instance> instances = new ArrayList<>();
 
@@ -670,7 +621,7 @@ class GceClient
      */
     private List<String> getZoneNamesFromRegion(final Region region)
     {
-        List<String> zones = region.getZones();
+        List<String> zones = region.getZonesList();
         if (zones != null)
         {
             zones = zones.stream().map(GceAdminUtils::getZoneName).collect(Collectors.toList());
@@ -684,21 +635,12 @@ class GceClient
      * @param zoneName
      *            the zone
      * @return the instances
-     * @throws IOException
+     * @throws ApiException
      *             in case of a communication error
      */
-    List<Instance> getInstancesInZone(final String zoneName) throws IOException
+    List<Instance> getInstancesInZone(final String zoneName) throws ApiException
     {
-        final List<Instance> instanceList = new ArrayList<>();
-
-        // Request a list of instances in the specified zone
-        final InstanceList instances = compute.instances().list(projectId, zoneName).execute();
-        if (instances.getItems() != null)
-        {
-            instanceList.addAll(instances.getItems());
-        }
-
-        return instanceList;
+        return Lists.newArrayList(instancesClient.list(projectId, zoneName).iterateAll());
     }
 
     /**
@@ -707,10 +649,10 @@ class GceClient
      * @param instanceGroup
      *            the instance group
      * @return the instances
-     * @throws IOException
+     * @throws ApiException
      *             in case of a communication error
      */
-    List<Instance> getInstancesInGroup(final InstanceGroup instanceGroup) throws IOException
+    List<Instance> getInstancesInGroup(final InstanceGroup instanceGroup) throws ApiException
     {
         final List<Instance> instances = new ArrayList<>();
 
@@ -721,34 +663,21 @@ class GceClient
         {
             final String regionName = GceAdminUtils.getRegionName(instanceGroup.getRegion());
 
-            final RegionInstanceGroupsListInstancesRequest requestBody = new RegionInstanceGroupsListInstancesRequest();
+            final RegionInstanceGroupsListInstancesRequest request = RegionInstanceGroupsListInstancesRequest.newBuilder().build();
 
-            final Compute.RegionInstanceGroups.ListInstances request = compute.regionInstanceGroups().listInstances(projectId, regionName,
-                                                                                                                    groupName, requestBody);
-            RegionInstanceGroupsListInstances response;
-            do
+            final Iterable<InstanceWithNamedPorts> instancesWithNamedPorts = regionInstanceGroupsClient.listInstances(projectId, regionName,
+                                                                                                                      groupName, request)
+                                                                                                       .iterateAll();
+            for (final InstanceWithNamedPorts instanceWithNamedPorts : instancesWithNamedPorts)
             {
-                response = request.execute();
+                final String instanceUrl = instanceWithNamedPorts.getInstance();
+                final String zoneName = GceAdminUtils.getZoneName(instanceUrl);
+                final String instanceName = GceAdminUtils.getInstanceName(instanceUrl);
 
-                if (response.getItems() == null)
-                {
-                    continue;
-                }
+                final Instance instance = instancesClient.get(projectId, zoneName, instanceName);
 
-                for (final InstanceWithNamedPorts instanceWithNamedPorts : response.getItems())
-                {
-                    final String instanceUrl = instanceWithNamedPorts.getInstance();
-                    final String zoneName = GceAdminUtils.getZoneName(instanceUrl);
-                    final String instanceName = GceAdminUtils.getInstanceName(instanceUrl);
-
-                    final Instance instance = compute.instances().get(projectId, zoneName, instanceName).execute();
-
-                    instances.add(instance);
-                }
-
-                request.setPageToken(response.getNextPageToken());
+                instances.add(instance);
             }
-            while (response.getNextPageToken() != null);
         }
 
         // Check for zonal managed group
@@ -756,32 +685,20 @@ class GceClient
         {
             final String zoneName = GceAdminUtils.getZoneName(instanceGroup.getZone());
 
-            final InstanceGroupsListInstancesRequest requestBody = new InstanceGroupsListInstancesRequest();
+            final InstanceGroupsListInstancesRequest request = InstanceGroupsListInstancesRequest.newBuilder().build();
 
-            final Compute.InstanceGroups.ListInstances request = compute.instanceGroups().listInstances(projectId, zoneName, groupName,
-                                                                                                        requestBody);
-            InstanceGroupsListInstances response;
-            do
+            final Iterable<InstanceWithNamedPorts> instancesWithNamedPorts = instanceGroupsClient.listInstances(projectId, zoneName,
+                                                                                                                groupName, request)
+                                                                                                 .iterateAll();
+            for (final InstanceWithNamedPorts instanceWithNamedPorts : instancesWithNamedPorts)
             {
-                response = request.execute();
-                if (response.getItems() == null)
-                {
-                    continue;
-                }
+                final String instanceUrl = instanceWithNamedPorts.getInstance();
+                final String instanceName = GceAdminUtils.getInstanceName(instanceUrl);
 
-                for (final InstanceWithNamedPorts instanceWithNamedPorts : response.getItems())
-                {
-                    final String instanceUrl = instanceWithNamedPorts.getInstance();
-                    final String instanceName = GceAdminUtils.getInstanceName(instanceUrl);
+                final Instance instance = instancesClient.get(projectId, zoneName, instanceName);
 
-                    final Instance instance = compute.instances().get(projectId, zoneName, instanceName).execute();
-
-                    instances.add(instance);
-                }
-
-                request.setPageToken(response.getNextPageToken());
+                instances.add(instance);
             }
-            while (response.getNextPageToken() != null);
         }
 
         return instances;
@@ -789,65 +706,38 @@ class GceClient
 
     /**
      * Deletes the given managed instance group.
-     * 
+     *
      * @param instanceGroup
      *            the instance group to delete
-     * @throws IOException
+     * @throws ApiException
      *             in case of a communication error
      */
-    void deleteInstanceGroup(final InstanceGroup instanceGroup) throws IOException
+    void deleteInstanceGroup(final InstanceGroup instanceGroup) throws ApiException
     {
         // check whether instance group is regional
         final String regionUrl = instanceGroup.getRegion();
         if (regionUrl != null)
         {
             final String regionName = GceAdminUtils.getRegionName(regionUrl);
-            compute.regionInstanceGroupManagers().delete(projectId, regionName, instanceGroup.getName()).execute();
+            regionInstanceGroupManagersClient.deleteAsync(projectId, regionName, instanceGroup.getName());
         }
         else // instance group must be zonal
         {
             final String zoneName = GceAdminUtils.getZoneName(instanceGroup.getZone());
-            compute.instanceGroupManagers().delete(projectId, zoneName, instanceGroup.getName()).execute();
-        }
-    }
-
-    /**
-     * Executes the given request and return its result if there is any, and {@code null} if the requested resource does
-     * not exist.
-     * 
-     * @param request
-     *            the request to execute
-     * @return result (response) of the given request or {@code null} if the requested resource does not exist
-     * @throws IOException
-     *             any exception thrown while executing the request and that does not denote a non-existing resource
-     */
-    static <T> T getOrNull(final AbstractGoogleClientRequest<T> request) throws IOException
-    {
-        try
-        {
-            return request.execute();
-        }
-        catch (final IOException ioe)
-        {
-            if (isNotFound(ioe))
-            {
-                return null;
-            }
-
-            throw ioe;
+            instanceGroupManagersClient.deleteAsync(projectId, zoneName, instanceGroup.getName());
         }
     }
 
     /**
      * Determines if the given exception denotes a NotFound status.
-     * 
-     * @param ioe
+     *
+     * @param ex
      *            the exception to check
      * @return {@code true} iff the given exception is an instance of {@link HttpResponseException} and its status code
      *         is 404, {@code false} otherwise
      */
-    private static boolean isNotFound(final IOException ioe)
+    private static boolean isNotFound(final ApiException ex)
     {
-        return ioe instanceof HttpResponseException && ((HttpResponseException) ioe).getStatusCode() == 404;
+        return ex.getStatusCode().getCode() == StatusCode.Code.NOT_FOUND;
     }
 }

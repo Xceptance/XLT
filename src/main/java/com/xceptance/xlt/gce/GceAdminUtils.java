@@ -30,11 +30,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.api.services.compute.model.AccessConfig;
-import com.google.api.services.compute.model.Instance;
-import com.google.api.services.compute.model.InstanceGroup;
-import com.google.api.services.compute.model.NetworkInterface;
-import com.google.api.services.compute.model.Region;
+import com.google.cloud.compute.v1.AccessConfig;
+import com.google.cloud.compute.v1.Instance;
+import com.google.cloud.compute.v1.InstanceGroup;
+import com.google.cloud.compute.v1.NetworkInterface;
+import com.google.cloud.compute.v1.Region;
 import com.xceptance.common.util.ConsoleUiUtils;
 import com.xceptance.common.util.ProcessExitCodes;
 
@@ -324,14 +324,14 @@ class GceAdminUtils
     static String getIpAddress(final Instance instance)
     {
         // check if the instance has network interface at all
-        final List<NetworkInterface> networkInterfaces = instance.getNetworkInterfaces();
+        final List<NetworkInterface> networkInterfaces = instance.getNetworkInterfacesList();
         if (networkInterfaces != null && networkInterfaces.size() > 0)
         {
             // first try to find a public IP
             for (final NetworkInterface networkInterface : networkInterfaces)
             {
                 // check if the network interface has access configs at all
-                final List<AccessConfig> accessConfigs = networkInterface.getAccessConfigs();
+                final List<AccessConfig> accessConfigs = networkInterface.getAccessConfigsList();
                 if (accessConfigs != null && accessConfigs.size() > 0)
                 {
                     for (final AccessConfig accessConfig : accessConfigs)
