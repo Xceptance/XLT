@@ -57,6 +57,20 @@ public abstract class Session
     {
         getCurrent().getDataManager().logEvent(eventName, eventMessage);
     }
+    
+    /**
+     * Logs a line of custom data in the datalogger of the given scope.
+     * (Shortcut method for getDataManager().dataLogger(scope).log(lineOfData))
+     * 
+     * @param scope
+     *            scope of the data logger to be used
+     * @param lineOfData
+     *            line of data to be logged
+     */
+    public static final void logData(String scope, String lineOfData)
+    {
+        getCurrent().getDataManager().dataLogger(scope).log(lineOfData);
+    }
 
     /**
      * Registers the passed shutdown listener to be called on session termination.

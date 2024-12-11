@@ -32,7 +32,12 @@
             <li><a href="page-load-timings.html">Page Load Timings</a></li>
             <li><a href="web-vitals.html">Web Vitals</a></li>
             <li><a href="custom-timers.html">Custom Timers</a></li>
-            <li><a href="custom-values.html">Custom Values</a></li>
+            <li><a href="custom-values.html">Custom Data</a>
+            	<ul>
+                    <li><a href="custom-values.html#custom-values-summary">Custom Values</a></li>
+                    <li><a href="custom-values.html#custom-data-logs-summary">Custom Data Logs</a></li>
+                </ul>
+            </li>
             <li><a href="external.html">External Data</a></li>
             <li><a href="errors.html">Errors</a>
                 <ul>
