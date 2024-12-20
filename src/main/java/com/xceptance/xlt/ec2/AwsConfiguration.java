@@ -20,7 +20,7 @@ import java.io.IOException;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.amazonaws.Protocol;
+import software.amazon.awssdk.core.Protocol;
 import com.xceptance.common.util.AbstractConfiguration;
 import com.xceptance.xlt.engine.XltExecutionContext;
 
