@@ -204,6 +204,50 @@
             </div>
         </div>
 
+        <div class="section" id="custom-data-logs-summary">
+            <xsl:call-template name="headline-custom-data-logs-summary"/>
+
+            <div class="content">
+                <xsl:call-template name="description-custom-data-logs-summary"/>
+                
+                <table class="c-tab-content table-autosort:0">
+                    <thead>
+                        <tr>
+                            <th>Scope</th>
+                            <th>Size</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    <xsl:choose>
+                    <xsl:when test="count(customLogs/customLog) &gt; 0">
+                    <xsl:for-each select="customLogs/customLog">
+	                    <xsl:sort select="scope"/>
+	                    <tr>
+	                    	<td class="key">
+	                    		<a>
+                            		<xsl:attribute name="href"><xsl:value-of select="path"/></xsl:attribute>
+                            		<xsl:value-of select="scope"/>
+                            	</a>
+                            </td>
+	                    	<td class="value">
+	                    		<xsl:call-template name="format-bytes">
+		                            <xsl:with-param name="bytes" select="size"/>
+		                        </xsl:call-template>
+	                    	</td>
+	                    </tr>
+                    </xsl:for-each>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <tr>
+                        	<td colspan="2" class="no-data">No data available</td>
+                        </tr>
+                    </xsl:otherwise>
+                    </xsl:choose>	
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
     </xsl:template>
 
 </xsl:stylesheet>

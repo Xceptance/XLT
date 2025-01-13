@@ -98,4 +98,11 @@ public interface DataManager
      *            the start time
      */
     public void setStartOfLoggingPeriod(long time);
+    
+    /**
+     * Creates or returns an already created custom data logger for the given scope.
+     * @param scope the scope of the data logger
+     * @return the custom data logger for the given scope
+     */
+    public DataLogger dataLogger(String scope);
 }
