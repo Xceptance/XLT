@@ -17,12 +17,13 @@ package com.xceptance.xlt.engine;
 
 import java.io.IOException;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Locale;
+import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.FastDateFormat;
 import org.htmlunit.HttpMethod;
 import org.htmlunit.WebConnection;
 import org.htmlunit.WebRequest;
@@ -49,7 +50,8 @@ public class CachingHttpWebConnection extends WebConnectionWrapper
     /**
      * The date format used in HTTP header values, for example: "Tue, 11 Sep 2007 08:01:38 GMT".
      */
-    private static final String HEADER_DATE_FORMAT = "EEE, d MMM yyyy HH:mm:ss z";
+    static final FastDateFormat HEADER_DATE_FORMAT = FastDateFormat.getInstance("EEE, d MMM yyyy HH:mm:ss z", TimeZone.getTimeZone("GMT"),
+                                                                                Locale.ENGLISH);
 
     private static final Pattern MAX_AGE_PATTERN = Pattern.compile(Pattern.quote(HttpHeaderConstants.MAX_AGE) + "=(\\d+)");
 
@@ -138,11 +140,9 @@ public class CachingHttpWebConnection extends WebConnectionWrapper
         final String dateValue = webResponse.getResponseHeaderValue(HttpHeaderConstants.DATE);
         if (dateValue != null && dateValue.length() > 0)
         {
-            final SimpleDateFormat dateParser = new SimpleDateFormat(HEADER_DATE_FORMAT, Locale.ENGLISH);
-
             try
             {
-                date = dateParser.parse(dateValue).getTime();
+                date = HEADER_DATE_FORMAT.parse(dateValue).getTime();
             }
             catch (final ParseException ex)
             {
@@ -191,11 +191,9 @@ public class CachingHttpWebConnection extends WebConnectionWrapper
             }
             else
             {
-                final SimpleDateFormat dateParser = new SimpleDateFormat(HEADER_DATE_FORMAT, Locale.ENGLISH);
-
                 try
                 {
-                    return dateParser.parse(expires).getTime();
+                    return HEADER_DATE_FORMAT.parse(expires).getTime();
                 }
                 catch (final ParseException ex)
                 {
@@ -217,11 +215,9 @@ public class CachingHttpWebConnection extends WebConnectionWrapper
         final String lastModified = webResponse.getResponseHeaderValue(HttpHeaderConstants.LAST_MODIFIED);
         if (lastModified != null && lastModified.length() > 0)
         {
-            final SimpleDateFormat dateParser = new SimpleDateFormat(HEADER_DATE_FORMAT, Locale.ENGLISH);
-
             try
             {
-                final long lastModifiedTime = dateParser.parse(lastModified).getTime();
+                final long lastModifiedTime = HEADER_DATE_FORMAT.parse(lastModified).getTime();
                 final long age = Math.max(date - lastModifiedTime, 0);
 
                 // use 10% of the current age as a heuristic expiration value

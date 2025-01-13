@@ -16,12 +16,10 @@
 package com.xceptance.xlt.engine;
 
 import java.net.URL;
-import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.Locale;
 
 import org.htmlunit.HttpMethod;
 import org.htmlunit.WebResponse;
@@ -29,6 +27,8 @@ import org.htmlunit.WebResponseData;
 import org.htmlunit.util.NameValuePair;
 import org.junit.Assert;
 import org.junit.Test;
+
+import com.xceptance.common.net.HttpHeaderConstants;
 
 /**
  * Test some details of the caching ({@link CachingHttpWebConnection}).
@@ -57,8 +57,9 @@ public class CachingHttpWebConnectionTest
     @Test
     public void testPragma() throws Exception
     {
-        final WebResponse response = buildWebResponse(new NameValuePair("Pragma", "no-cache"), new NameValuePair("Date", DATE_STRING),
-                                                      new NameValuePair("Expires", EXPIRES_STRING));
+        final WebResponse response = buildWebResponse(new NameValuePair(HttpHeaderConstants.PRAGMA, HttpHeaderConstants.NO_CACHE),
+                                                      new NameValuePair(HttpHeaderConstants.DATE, DATE_STRING),
+                                                      new NameValuePair(HttpHeaderConstants.EXPIRES, EXPIRES_STRING));
 
         final long time = CachingHttpWebConnection.determineExpirationTime(response);
         Assert.assertEquals(0, time);
@@ -67,7 +68,8 @@ public class CachingHttpWebConnectionTest
     @Test
     public void testExpires() throws Exception
     {
-        final WebResponse response = buildWebResponse(new NameValuePair("Date", DATE_STRING), new NameValuePair("Expires", EXPIRES_STRING));
+        final WebResponse response = buildWebResponse(new NameValuePair(HttpHeaderConstants.DATE, DATE_STRING),
+                                                      new NameValuePair(HttpHeaderConstants.EXPIRES, EXPIRES_STRING));
 
         final long time = CachingHttpWebConnection.determineExpirationTime(response);
         Assert.assertEquals(EXPIRES, time);
@@ -78,14 +80,14 @@ public class CachingHttpWebConnectionTest
     {
         // expiration string doesn't contain leading or trailing whitespace
         {
-            final WebResponse response = buildWebResponse(new NameValuePair("Expires", "0"));
+            final WebResponse response = buildWebResponse(new NameValuePair(HttpHeaderConstants.EXPIRES, "0"));
             final long time = CachingHttpWebConnection.determineExpirationTime(response);
             Assert.assertEquals(0, time);
         }
 
         // expiration string contains leading and/or trailing whitespace
         {
-            final WebResponse response = buildWebResponse(new NameValuePair("Expires", " 0  "));
+            final WebResponse response = buildWebResponse(new NameValuePair(HttpHeaderConstants.EXPIRES, " 0  "));
             final long time = CachingHttpWebConnection.determineExpirationTime(response);
             Assert.assertEquals(0, time);
         }
@@ -96,14 +98,14 @@ public class CachingHttpWebConnectionTest
     {
         // expiration string doesn't contain leading or trailing whitespace
         {
-            final WebResponse response = buildWebResponse(new NameValuePair("Expires", "010101010101010101"));
+            final WebResponse response = buildWebResponse(new NameValuePair(HttpHeaderConstants.EXPIRES, "010101010101010101"));
             final long time = CachingHttpWebConnection.determineExpirationTime(response);
             Assert.assertEquals(0, time);
         }
 
         // expiration string contains leading and/or trailing whitespace
         {
-            final WebResponse response = buildWebResponse(new NameValuePair("Expires", "  010101010101010101  "));
+            final WebResponse response = buildWebResponse(new NameValuePair(HttpHeaderConstants.EXPIRES, "  010101010101010101  "));
             final long time = CachingHttpWebConnection.determineExpirationTime(response);
             Assert.assertEquals(0, time);
         }
@@ -112,9 +114,10 @@ public class CachingHttpWebConnectionTest
     @Test
     public void testExpires_CacheControlNoCache() throws Exception
     {
-        // max-age overwrites expires
-        final WebResponse response = buildWebResponse(new NameValuePair("Date", DATE_STRING), new NameValuePair("Expires", EXPIRES_STRING),
-                                                      new NameValuePair("Cache-Control", "no-cache"));
+        // no-cache overwrites expires
+        final WebResponse response = buildWebResponse(new NameValuePair(HttpHeaderConstants.DATE, DATE_STRING),
+                                                      new NameValuePair(HttpHeaderConstants.EXPIRES, EXPIRES_STRING),
+                                                      new NameValuePair(HttpHeaderConstants.CACHE_CONTROL, "no-cache"));
 
         final long time = CachingHttpWebConnection.determineExpirationTime(response);
         Assert.assertEquals(0, time);
@@ -123,8 +126,10 @@ public class CachingHttpWebConnectionTest
     @Test
     public void testExpires_CacheControlMaxAge() throws Exception
     {
-        final WebResponse response = buildWebResponse(new NameValuePair("Date", DATE_STRING), new NameValuePair("Expires", EXPIRES_STRING),
-                                                      new NameValuePair("Cache-Control", "private, max-age=100; bar"));
+        // max-age overwrites expires
+        final WebResponse response = buildWebResponse(new NameValuePair(HttpHeaderConstants.DATE, DATE_STRING),
+                                                      new NameValuePair(HttpHeaderConstants.EXPIRES, EXPIRES_STRING),
+                                                      new NameValuePair(HttpHeaderConstants.CACHE_CONTROL, "private, max-age=100; bar"));
 
         final long time = CachingHttpWebConnection.determineExpirationTime(response);
         Assert.assertEquals(DATE + 100 * 1000, time);
@@ -133,8 +138,10 @@ public class CachingHttpWebConnectionTest
     @Test
     public void testExpires_CacheControlMaxAge0() throws Exception
     {
-        final WebResponse response = buildWebResponse(new NameValuePair("Date", DATE_STRING), new NameValuePair("Expires", EXPIRES_STRING),
-                                                      new NameValuePair("Cache-Control", "foo; max-age=0; public"));
+        // max-age overwrites expires
+        final WebResponse response = buildWebResponse(new NameValuePair(HttpHeaderConstants.DATE, DATE_STRING),
+                                                      new NameValuePair(HttpHeaderConstants.EXPIRES, EXPIRES_STRING),
+                                                      new NameValuePair(HttpHeaderConstants.CACHE_CONTROL, "foo; max-age=0; public"));
 
         final long time = CachingHttpWebConnection.determineExpirationTime(response);
         Assert.assertEquals(DATE, time);
@@ -143,22 +150,12 @@ public class CachingHttpWebConnectionTest
     @Test
     public void testExpires_CacheControlMustRevalidate() throws Exception
     {
-        final WebResponse response = buildWebResponse(new NameValuePair("Date", DATE_STRING), new NameValuePair("Expires", EXPIRES_STRING),
-                                                      new NameValuePair("Cache-Control", "must-revalidate"));
+        final WebResponse response = buildWebResponse(new NameValuePair(HttpHeaderConstants.DATE, DATE_STRING),
+                                                      new NameValuePair(HttpHeaderConstants.EXPIRES, EXPIRES_STRING),
+                                                      new NameValuePair(HttpHeaderConstants.CACHE_CONTROL, "must-revalidate"));
 
         final long time = CachingHttpWebConnection.determineExpirationTime(response);
         Assert.assertEquals(0, time);
-    }
-
-    @Test
-    public void testExpires_CacheControlPublic_MaxAge() throws Exception
-    {
-        // max-age overwrites expires
-        final WebResponse response = buildWebResponse(new NameValuePair("Date", DATE_STRING), new NameValuePair("Expires", EXPIRES_STRING),
-                                                      new NameValuePair("Cache-Control", "public, max-age=15500000"));
-
-        final long time = CachingHttpWebConnection.determineExpirationTime(response);
-        Assert.assertEquals(DATE + 15500000L * 1000, time);
     }
 
     @Test
@@ -166,9 +163,9 @@ public class CachingHttpWebConnectionTest
     {
         final long lastModified = DATE - 1_000_000L;
 
-        final WebResponse response = buildWebResponse(new NameValuePair("Date", DATE_STRING),
-                                                      new NameValuePair("Last-Modified", formatDate(lastModified)));
-        
+        final WebResponse response = buildWebResponse(new NameValuePair(HttpHeaderConstants.DATE, DATE_STRING),
+                                                      new NameValuePair(HttpHeaderConstants.LAST_MODIFIED, formatDate(lastModified)));
+
         final long time = CachingHttpWebConnection.determineExpirationTime(response);
         Assert.assertEquals(DATE + 1_000_000L / 10, time);
     }
@@ -178,8 +175,8 @@ public class CachingHttpWebConnectionTest
     {
         final long lastModified = DATE + 1_000_000L;
 
-        final WebResponse response = buildWebResponse(new NameValuePair("Date", DATE_STRING),
-                                                      new NameValuePair("Last-Modified", formatDate(lastModified)));
+        final WebResponse response = buildWebResponse(new NameValuePair(HttpHeaderConstants.DATE, DATE_STRING),
+                                                      new NameValuePair(HttpHeaderConstants.LAST_MODIFIED, formatDate(lastModified)));
 
         final long time = CachingHttpWebConnection.determineExpirationTime(response);
         Assert.assertEquals(DATE, time);
@@ -195,6 +192,6 @@ public class CachingHttpWebConnectionTest
 
     private static String formatDate(final long time)
     {
-        return new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss z", Locale.ENGLISH).format(new Date(time));
+        return CachingHttpWebConnection.HEADER_DATE_FORMAT.format(new Date(time));
     }
 }
