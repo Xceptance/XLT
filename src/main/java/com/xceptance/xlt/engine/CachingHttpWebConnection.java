@@ -112,11 +112,13 @@ public class CachingHttpWebConnection extends WebConnectionWrapper
                 return 0;
             }
 
-            // is there a "must-revalidate" value?
-            if (cacheControl.contains(HttpHeaderConstants.MUST_REVALIDATE))
-            {
-                return 0;
-            }
+            // Don't handle "must-revalidate" for now. It makes only sense together with "max-age" and if a resource has
+            // reached its max age, it will be re-validated anyway.
+            // // is there a "must-revalidate" value?
+            // if (cacheControl.contains(HttpHeaderConstants.MUST_REVALIDATE))
+            // {
+            // return 0;
+            // }
         }
 
         // check the deprecated "Pragma" header

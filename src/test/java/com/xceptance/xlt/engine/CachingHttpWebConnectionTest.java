@@ -147,16 +147,20 @@ public class CachingHttpWebConnectionTest
         Assert.assertEquals(DATE, time);
     }
 
-    @Test
-    public void testExpires_CacheControlMustRevalidate() throws Exception
-    {
-        final WebResponse response = buildWebResponse(new NameValuePair(HttpHeaderConstants.DATE, DATE_STRING),
-                                                      new NameValuePair(HttpHeaderConstants.EXPIRES, EXPIRES_STRING),
-                                                      new NameValuePair(HttpHeaderConstants.CACHE_CONTROL, "must-revalidate"));
-
-        final long time = CachingHttpWebConnection.determineExpirationTime(response);
-        Assert.assertEquals(0, time);
-    }
+    /*
+     * Don't handle "must-revalidate" for now. It makes only sense together with "max-age", and if a resource has
+     * reached its max age, it will be re-validated anyway.
+     */
+    // @Test
+    // public void testExpires_CacheControlMustRevalidate() throws Exception
+    // {
+    // final WebResponse response = buildWebResponse(new NameValuePair(HttpHeaderConstants.DATE, DATE_STRING),
+    // new NameValuePair(HttpHeaderConstants.EXPIRES, EXPIRES_STRING),
+    // new NameValuePair(HttpHeaderConstants.CACHE_CONTROL, "must-revalidate"));
+    //
+    // final long time = CachingHttpWebConnection.determineExpirationTime(response);
+    // Assert.assertEquals(0, time);
+    // }
 
     @Test
     public void testExpires_LastModifiedInThePast() throws Exception
