@@ -20,7 +20,6 @@ import java.io.IOException;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.amazonaws.Protocol;
 import com.xceptance.common.util.AbstractConfiguration;
 import com.xceptance.xlt.engine.XltExecutionContext;
 
@@ -91,7 +90,7 @@ public class AwsConfiguration extends AbstractConfiguration
     /**
      * The protocol.
      */
-    private final Protocol protocol;
+    private final String protocol;
 
     /**
      * The HTTP proxy host.
@@ -152,7 +151,7 @@ public class AwsConfiguration extends AbstractConfiguration
             this.accessKey = StringUtils.isNotBlank(accessKey) ? accessKey : getStringProperty(PROP_ACCESS_KEY);
             this.secretKey = StringUtils.isNotBlank(secretKey) ? secretKey : getStringProperty(PROP_SECRET_KEY);
 
-            protocol = Protocol.valueOf(getStringProperty(PROP_PROTOCOL, "https").toUpperCase());
+            protocol = getStringProperty(PROP_PROTOCOL, "https");
             proxyHost = getStringProperty(PROP_PROXY_HOST, null);
             proxyPort = getIntProperty(PROP_PROXY_PORT, 8888);
             proxyUserName = getStringProperty(PROP_PROXY_USER_NAME, null);
@@ -178,9 +177,9 @@ public class AwsConfiguration extends AbstractConfiguration
     /**
      * Returns the value of the 'protocol' attribute.
      *
-     * @return the value of protocolxyHost
+     * @return the value of protocol
      */
-    public Protocol getProtocol()
+    public String getProtocol()
     {
         return protocol;
     }
