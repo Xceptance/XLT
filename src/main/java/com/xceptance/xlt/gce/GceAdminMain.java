@@ -44,6 +44,7 @@ public class GceAdminMain
         if (commandLine.hasOption("help"))
         {
             printUsageInfo(options);
+            System.exit(ProcessExitCodes.SUCCESS);
         }
         else
         {
@@ -61,6 +62,8 @@ public class GceAdminMain
                     // Enter the command loop
                     gceAdmin.startInteractiveMode();
                 }
+
+                System.exit(ProcessExitCodes.SUCCESS);
             }
             catch (final Exception e)
             {
