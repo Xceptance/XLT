@@ -68,12 +68,10 @@
             </div>
 
             <div id="Averages-{$gid}" class="c-tab">
-                <div class="c-tab-content chart">
-                    <img>
-                        <xsl:attribute name="src">charts/placeholder.webp</xsl:attribute>
-                        <xsl:attribute name="alt">charts/<xsl:value-of select="$directory"/>/<xsl:value-of
-                            select="$encodedName"/>_Average.webp</xsl:attribute>
-                    </img>
+                <div class="c-tab-content echart" style="width:900px;height:300px">
+					<xsl:attribute name="src">charts/<xsl:value-of
+							select="$directory"/>/<xsl:value-of
+							select="$encodedName"/>.json</xsl:attribute>
                 </div>
             </div>
 

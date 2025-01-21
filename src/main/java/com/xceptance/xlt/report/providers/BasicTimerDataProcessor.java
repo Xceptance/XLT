@@ -15,6 +15,14 @@
  */
 package com.xceptance.xlt.report.providers;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
+import java.util.zip.GZIPOutputStream;
+
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.CombinedDomainXYPlot;
 import org.jfree.chart.plot.CombinedRangeXYPlot;
@@ -30,11 +38,12 @@ import com.xceptance.xlt.api.report.AbstractReportProvider;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration.ChartScale;
 import com.xceptance.xlt.report.util.FixedSizeHistogramValueSet;
-import com.xceptance.xlt.report.util.JFreeChartUtils;
+import com.xceptance.xlt.report.util.IntMinMaxTimeSeriesDataItem;
 import com.xceptance.xlt.report.util.IntMinMaxValueSet;
+import com.xceptance.xlt.report.util.IntSummaryStatistics;
+import com.xceptance.xlt.report.util.JFreeChartUtils;
 import com.xceptance.xlt.report.util.ReportUtils;
 import com.xceptance.xlt.report.util.RuntimeHistogram;
-import com.xceptance.xlt.report.util.IntSummaryStatistics;
 import com.xceptance.xlt.report.util.TaskManager;
 import com.xceptance.xlt.report.util.ValueSet;
 
@@ -121,7 +130,7 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
         // set the counts
         final double count = runTimeStatistics.getCount();
         final long duration = Math.max((getEndTime() - getStartTime()) / 1000, 1);
-        
+
         timerReport.errorPercentage = ReportUtils.calculatePercentage(totalErrors, (int) count);
         timerReport.count = (int) count;
         timerReport.countPerSecond = ReportUtils.convertToBigDecimal(count / duration);
@@ -133,6 +142,57 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
         {
             // post-process the run time series now as they will be needed for multiple charts
             final TimeSeries runTimeTimeSeries = JFreeChartUtils.toMinMaxTimeSeries(runTimeValueSet, "Runtime");
+
+            StringBuilder sb = new StringBuilder();
+            sb.append('[');
+
+            int size = runTimeTimeSeries.getItems().size();
+
+            for (int i = 0; i < size; i++)
+            {
+                IntMinMaxTimeSeriesDataItem dataItem = (IntMinMaxTimeSeriesDataItem) runTimeTimeSeries.getDataItem(i);
+
+                sb.append('[');
+                sb.append(dataItem.getPeriod().getFirstMillisecond());
+                sb.append(',');
+                sb.append(dataItem.getMinMaxValue().getAverageValue());
+                sb.append(',');
+                sb.append(dataItem.getMinMaxValue().getMinimumValue());
+                sb.append(',');
+                sb.append(dataItem.getMinMaxValue().getMaximumValue());
+                sb.append(']');
+
+                if (i < size - 1)
+                {
+                    sb.append(',');
+                }
+            }
+            sb.append(']');
+
+            try
+            {
+                File file = new File(getChartDir(), name + ".json");
+
+                try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.US_ASCII)))
+                {
+                    writer.append(sb);
+                }
+
+                File gzFile = new File(getChartDir(), name + ".json.gz");
+
+                try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new GZIPOutputStream(new FileOutputStream(gzFile)), StandardCharsets.US_ASCII)))
+                {
+                    writer.append(sb);
+                }
+
+                // FileUtils.write(new File(getChartDir(), name + ".json"), sb, StandardCharsets.US_ASCII);
+            }
+            catch (IOException e)
+            {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+
             final TimeSeries runTimeAverageTimeSeries = JFreeChartUtils.createMovingAverageTimeSeries(runTimeTimeSeries,
                                                                                                       getMovingAveragePercentage());
 
@@ -250,8 +310,8 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
      */
     protected JFreeChart createResponseTimeAndErrorsChart(final String chartTitle, final TimeSeries responseTimeSeries,
                                                           final TimeSeries responseTimeAverageSeries,
-                                                          final XYIntervalSeries responseTimeHistogramSeries,
-                                                          final TimeSeries errorsSeries, final int chartCappingValue)
+                                                          final XYIntervalSeries responseTimeHistogramSeries, final TimeSeries errorsSeries,
+                                                          final int chartCappingValue)
     {
         final ChartScale chartScale = ((ReportGeneratorConfiguration) getConfiguration()).getChartScale();
         Range responseTimeRange = null;

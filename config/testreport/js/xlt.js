@@ -548,6 +548,131 @@
                     $.scrollTo(target, 250, {easing:'swing', offset: {top: -120}});
                 });
             });
+			$('div.charts div.echart').each( function() {
+				var ROOT_PATH = 'https://echarts.apache.org/examples';
+			    var $this = $(this);
+				var myChart = echarts.init(this);
+				myChart.showLoading();
+                $.ajax({
+                  dataType: "json",
+                  url: this.getAttribute('src'),
+                  data: null,
+                  success: function (data) {
+				  myChart.hideLoading();
+                  console.log(data);
+                  var dataValue = data.map(function (item) {
+					          return [item[0],item[1]];
+					        });
+                  var dataLower = data.map(function (item) {
+					          return [item[0],item[2]];
+					        });
+                  var dataUpper = data.map(function (item) {
+					          return [item[0],item[3]-item[2]];
+					        });
+                  console.log(dataValue);
+					myChart.setOption(
+					  (option = {
+					    title: {
+//					      text: 'Confidence Band',
+//					      subtext: 'Example in MetricsGraphics.js',
+//					      left: 'center'
+					    },
+					    tooltip: {
+					      trigger: 'axis'/*,
+					      axisPointer: {
+					        type: 'cross',
+					        animation: false,
+					        label: {
+					          backgroundColor: '#ccc',
+					          borderColor: '#aaa',
+					          borderWidth: 1,
+					          shadowBlur: 0,
+					          shadowOffsetX: 0,
+					          shadowOffsetY: 0,
+					          color: '#222'
+					        }
+					      },
+					      formatter: function (params) {
+					        return (
+					          params[2].name +
+					          '<br />' +
+					          ((params[2].value - base) * 100).toFixed(1) +
+					          '%'
+					        );
+					      }*/
+					    },
+					    grid: {
+					      left: '3%',
+					      right: '4%',
+					      bottom: '3%',
+					      containLabel: true
+					    },
+					    xAxis: {
+					      type: 'time',
+					      // data: dataTime,
+					      /*axisLabel: {
+					        formatter: function (value, idx) {
+					          var date = new Date(value);
+					          return idx === 0
+					            ? value
+					            : [date.getMonth() + 1, date.getDate()].join('-');
+					        }
+					      },
+					      boundaryGap: false*/
+					    },
+					    yAxis: {/*
+					      axisLabel: {
+					        formatter: function (val) {
+					          return (val - base) * 100 + '%';
+					        }
+					      },
+					      axisPointer: {
+					        label: {
+					          formatter: function (params) {
+					            return ((params.value - base) * 100).toFixed(1) + '%';
+					          }
+					        }
+					      },*/
+					      splitNumber: 3
+					    },
+					    series: [
+					      {
+					        name: 'L',
+					        type: 'line',
+					        data: dataLower,
+					        lineStyle: {
+					          opacity: 0
+					        },
+					        stack: 'confidence-band',
+					        symbol: 'none'
+					      },
+					      {
+					        name: 'U',
+					        type: 'line',
+					        data: dataUpper,
+					        lineStyle: {
+					          opacity: 0
+					        },
+					        areaStyle: {
+					          color: '#ccc'
+					        },
+					        stack: 'confidence-band',
+					        symbol: 'none'
+					      },
+					      {
+					        type: 'line',
+					        data: dataValue,
+					        itemStyle: {
+					          color: '#00c'
+					        },
+					        showSymbol: false
+					      }
+					    ]
+					  })
+				  );
+				  }
+			    });
+			});
         })();
 
         //lazy load the print images to speed up the site
