@@ -677,11 +677,14 @@
         scrollTo();
     });
 
+    // Variable that prevents triggering the hash update twice because of hash modifications inside updateHash
+    var ignoreNextHashChange = false;
+
     // method that is called when the hash is updated. This happens if the user clicks on local anchors (table, charts), sorts tables by sortable table rows, updates the hash
     // directly in the URL or if the hash is updated via code
     function hashChanged(event){
-        if(window.ignoreNextHashChange){
-            window.ignoreNextHashChange = false;
+        if(ignoreNextHashChange){
+            ignoreNextHashChange = false;
         }
         else{
             // in some cases we have create a new hash out of a combination (old + new hash). For example, clicking on a request to get to the request charts totally wipes the hash.
@@ -699,6 +702,22 @@
                 newHashObj.filter = oldHashObj.filter;
             }
 
+            // sometimes sorting must be triggered from the update hash function. For example, when a user directly changes the sorting option (navbar) in the url
+            if(newHashObj.sort != undefined){
+                var sortParam = newHashObj.sort.split('=');
+                var sortingElem = document.getElementById(sortParam[0]);
+                var sortingRule = sortParam[1];
+
+                if(sortingElem != null){
+                    // this checks if a sorting is required (URL manually edited and not by clicking on a table row)
+                    if(sortingElem.classList.contains("table-sorted-" + sortingRule) == false){
+                        sort(sortingElem, sortingRule);
+                    }
+                }
+                else{
+                    alert('No sorting element with given ID found: ' + sortParam[0])
+                }
+            }
             updateHash(newHashObj);
         }
     }
@@ -781,7 +800,7 @@
             hashObj.sort = sortingEvent.target.id + '=' + sortingRule;
 
             // After sorting we update the hash manually, so we disable executing the next event
-            window.ignoreNextHashChange = true;
+            ignoreNextHashChange = true;
 
             // trigger the hash change
             updateHash(hashObj);
@@ -885,9 +904,6 @@
             // filterInputFields[i].addEventListener('input', updateHashAfterFilter);
             filterInputFields[i].addEventListener('focusout', updateHashAfterFilter);
         }
-
-        // Variable that prevents triggering the hash update twice because of hash modifications inside updateHash
-        window.ignoreNextHashChange = false;
 
         // Listeners applied, hook on the hashchange event
         window.addEventListener('hashchange', hashChanged);
