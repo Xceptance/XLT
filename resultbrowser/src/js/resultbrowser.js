@@ -547,7 +547,7 @@
 
     function isJsonContent(contentType) {
         //  e.g. "application/json" or "application/<...>+json"
-        return /^application\/(.+\+)?json$/.test(contentType);
+        return /^application\/(.+\+)?json/.test(contentType);
     }
 
     function showRequest(element) {
