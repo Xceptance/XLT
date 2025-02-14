@@ -123,8 +123,6 @@ class GceClient
     /**
      * Constructor.
      *
-     * @param applicationName
-     *            the application name
      * @param projectId
      *            the project ID
      * @param instanceConnectTimeout
@@ -134,19 +132,19 @@ class GceClient
      * @throws IOException
      *             in case of a communication error
      */
-    GceClient(final String applicationName, final String projectId, final long instanceConnectTimeout) throws ApiException, IOException
+    GceClient(final String projectId, final long instanceConnectTimeout) throws ApiException, IOException
     {
         this.projectId = projectId;
         this.instanceConnectTimeout = Math.max(instanceConnectTimeout, 0);
 
-        //
-        instancesClient = InstancesClient.create();
+        // pre-create the clients we need
         regionsClient = RegionsClient.create();
-        regionInstanceGroupManagersClient = RegionInstanceGroupManagersClient.create();
-        regionInstanceGroupsClient = RegionInstanceGroupsClient.create();
-        instanceGroupManagersClient = InstanceGroupManagersClient.create();
-        instanceGroupsClient = InstanceGroupsClient.create();
         instanceTemplatesClient = InstanceTemplatesClient.create();
+        instancesClient = InstancesClient.create();
+        instanceGroupsClient = InstanceGroupsClient.create();
+        instanceGroupManagersClient = InstanceGroupManagersClient.create();
+        regionInstanceGroupsClient = RegionInstanceGroupsClient.create();
+        regionInstanceGroupManagersClient = RegionInstanceGroupManagersClient.create();
 
         // preload the available regions
         regionsByName = loadRegions();
@@ -389,13 +387,12 @@ class GceClient
 
         final long deadline = System.currentTimeMillis() + timeout;
 
-        // wait for the instances to achieve state RUNNING
+        // wait for the instances to achieve the wanted state
         for (final Instance instance : instances)
         {
             final long remainingTimeout = deadline - System.currentTimeMillis();
 
-            // Waiting for the instance state 'RUNNING'
-            final Instance updatedInstance = waitForInstanceState(instance, STATE_RUNNING, remainingTimeout);
+            final Instance updatedInstance = waitForInstanceState(instance, state, remainingTimeout);
 
             updatedInstances.add(updatedInstance);
         }

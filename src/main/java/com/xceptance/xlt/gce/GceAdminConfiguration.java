@@ -35,11 +35,6 @@ class GceAdminConfiguration extends AbstractConfiguration
     private static final String PROP_PREFIX = "xlt.gce.";
 
     /**
-     * GCE property name for the application name.
-     */
-    private static final String PROP_APPLICATION_NAME = PROP_PREFIX + "applicationName";
-
-    /**
      * GCE property name for the instance connect timeout.
      */
     private static final String PROP_INSTANCE_CONNECT_TIMEOUT = PROP_PREFIX + "instanceConnectTimeout";
@@ -58,11 +53,6 @@ class GceAdminConfiguration extends AbstractConfiguration
      * The ID of the Google Cloud Platform project to use.
      */
     private final String projectId;
-
-    /**
-     * The application name.
-     */
-    private String applicationName;
 
     /**
      * Creates a {@link GceAdminConfiguration} object and initializes it with the configuration from the properties
@@ -89,22 +79,6 @@ class GceAdminConfiguration extends AbstractConfiguration
         {
             throw new XltException(String.format("Property '%s' is not set", PROP_PROJECT_ID));
         }
-
-        applicationName = getStringProperty(PROP_APPLICATION_NAME, "").trim();
-        if (StringUtils.isEmpty(applicationName))
-        {
-            applicationName = "xlt-gce-admin";
-        }
-    }
-
-    /**
-     * Returns the application name.
-     *
-     * @return the application name
-     */
-    String getApplicationName()
-    {
-        return applicationName;
     }
 
     /**

@@ -60,6 +60,7 @@ class GceAdminUtils
 
     static
     {
+        FRIENDLY_REGION_NAMES.put("africa-south1", "Africa        - Johannesburg  ");
         FRIENDLY_REGION_NAMES.put("asia-east1", "Asia Pacific  - Taiwan        ");
         FRIENDLY_REGION_NAMES.put("asia-east2", "Asia Pacific  - Hong Kong     ");
         FRIENDLY_REGION_NAMES.put("asia-northeast1", "Asia Pacific  - Tokyo         ");
@@ -88,6 +89,7 @@ class GceAdminUtils
         FRIENDLY_REGION_NAMES.put("me-west1", "Middle East   - Tel Aviv      ");
         FRIENDLY_REGION_NAMES.put("northamerica-northeast1", "Canada        - Montréal      ");
         FRIENDLY_REGION_NAMES.put("northamerica-northeast2", "Canada        - Toronto       ");
+        FRIENDLY_REGION_NAMES.put("northamerica-south1", "Mexico        - Queretaro     ");
         FRIENDLY_REGION_NAMES.put("southamerica-east1", "South America - Sao Paulo     ");
         FRIENDLY_REGION_NAMES.put("southamerica-west1", "South America - Chile         ");
         FRIENDLY_REGION_NAMES.put("us-central1", "US            - Iowa          ");

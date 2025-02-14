@@ -81,9 +81,9 @@ class OpCreateInstanceGroup
         sb.append("  Instance count      : ").append(instanceCount).append("\n");
         sb.append("  Instance template     ").append("\n");
         sb.append("     - Name           : ").append(instanceTemplate.getName()).append("\n");
-        sb.append("     - Image          : ")
-          .append(instanceTemplate.getProperties().getDisks(0).getInitializeParams().getSourceImage()).append("\n");
-        sb.append("     - Machine type  : ").append(instanceTemplate.getProperties().getMachineType()).append("\n");
+        sb.append("     - Image          : ").append(instanceTemplate.getProperties().getDisks(0).getInitializeParams().getSourceImage())
+          .append("\n");
+        sb.append("     - Machine type   : ").append(instanceTemplate.getProperties().getMachineType()).append("\n");
         sb.append("\n");
         sb.append("Do you want to create a managed instance group with the above configuration?");
 
