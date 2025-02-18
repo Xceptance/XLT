@@ -74,7 +74,7 @@
         <selenium.version>4.26.0</selenium.version>
         <htmlunitdriver.version>4.17.0</htmlunitdriver.version>
         <otel.version>1.43.0</otel.version>
-        <copyright>Copyright (c) ${project.inceptionYear}-2024 ${project.organization.name}</copyright>
+        <copyright>Copyright (c) ${project.inceptionYear}-2025 ${project.organization.name}</copyright>
     </properties>
 
     <dependencyManagement>
