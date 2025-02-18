@@ -18,6 +18,9 @@ package com.xceptance.common.lang;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.List;
+import java.util.Set;
+
 public class StringUtilsTest
 {
     /**
@@ -132,6 +135,14 @@ public class StringUtilsTest
             {
                 "foo bar"
             }, StringUtils.split("foo bar", ","));
+    }
+
+    @Test
+    public final void testJoin()
+    {
+        Assert.assertEquals("a, b", StringUtils.join(", ", List.of("a", "b"), 3, " and more"));
+        Assert.assertEquals("a, b, c", StringUtils.join(", ", List.of("a", "b", "c"), 3, " and more"));
+        Assert.assertEquals("a, b, c and more", StringUtils.join(", ", List.of("a", "b", "c", "d"), 3, " and more"));
     }
 
 }
