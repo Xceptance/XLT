@@ -96,14 +96,7 @@ abstract public class AbstractEC2Client
      */
     protected final AwsConfiguration awsConfiguration;
 
-    /**
-     * The "available" state constant. (Image state)
-     */
-    public static final String STATE_AVAILABLE = "available";
-
     private static final long INSTANCE_STATE_POLLING_INTERVAL = 1000;
-
-    private static final long IMAGE_STATE_POLLING_INTERVAL = 1000;
 
     /**
      * The log facility.
@@ -220,61 +213,6 @@ abstract public class AbstractEC2Client
 
         throw new Exception("Instance didn't achieve state '" + state + "' within " + (timeout / 1000) + "s. Current state is '" +
                             instance.state().name().toString() + "'");
-    }
-
-    /**
-     * Looks up the specified image in given region and waits until it has the specified state.
-     *
-     * @param region
-     *            region to lookup the image in
-     * @param imageID
-     *            the image to lookup
-     * @param state
-     *            the state to wait for
-     * @param timeout
-     *            time within the image must get the specified state
-     * @return the current image object with wanted state
-     * @throws Exception
-     *             if the image didn't achieve the state within given time OR image wasn't found
-     */
-    protected Image waitForImageState(final Region region, final String imageID, final ImageState state, final long timeout)
-        throws Exception
-    {
-        Image image = null;
-
-        final long deadline = System.currentTimeMillis() + timeout;
-        while (System.currentTimeMillis() < deadline)
-        {
-            image = getImage(region, imageID);
-
-            // check state
-            if (image != null && image.state() == state)
-            {
-                return image;
-            }
-            else
-            {
-                // wait some time
-                try
-                {
-                    Thread.sleep(IMAGE_STATE_POLLING_INTERVAL);
-                }
-                catch (final Exception e)
-                {
-                    // ignore
-                }
-            }
-        }
-
-        if (image == null)
-        {
-            throw new Exception("Image '" + imageID + "' not found in region '" + region.regionName() + "'.");
-        }
-        else
-        {
-            throw new Exception("Image didn't achieve state '" + state + "' within " + (timeout / 1000) + "s. Current state is '" +
-                                image.state().toString() + "'");
-        }
     }
 
     /**

@@ -55,7 +55,7 @@ public class AwsConfiguration extends AbstractConfiguration
     /**
      * AWS property name for the protocol.
      */
-    private static final String PROP_PROTOCOL = PROP_PREFIX + "protocol";
+    private static final String PROP_PROXY_PROTOCOL = PROP_PROXY_PREFIX + "protocol";
 
     /**
      * AWS property name for the HTTP proxy host.
@@ -151,7 +151,7 @@ public class AwsConfiguration extends AbstractConfiguration
             this.accessKey = StringUtils.isNotBlank(accessKey) ? accessKey : getStringProperty(PROP_ACCESS_KEY);
             this.secretKey = StringUtils.isNotBlank(secretKey) ? secretKey : getStringProperty(PROP_SECRET_KEY);
 
-            protocol = getStringProperty(PROP_PROTOCOL, "https");
+            protocol = getStringProperty(PROP_PROXY_PROTOCOL, "http");
             proxyHost = getStringProperty(PROP_PROXY_HOST, null);
             proxyPort = getIntProperty(PROP_PROXY_PORT, 8888);
             proxyUserName = getStringProperty(PROP_PROXY_USER_NAME, null);
