@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -53,39 +54,41 @@ public class TestCaseMapperTest
     /**
      * Class names from the test project zip file that match test case "TBrowse"
      */
-    private static final Set<String> TEST_PROJECT_MATCHES_TBROWSE = Set.of(
-                                                                           // test classes in directory
-                                                                           // "/target/classes/"
-                                                                           "TBrowse", "com.xceptance.TBrowse",
-                                                                           "com.xceptance.packagedoesnotmatchdirectory.TBrowse",
-                                                                           "com.xceptance.inheritance.TBrowse",
-                                                                           "com.xceptance.interfaces.testclassisimplementation.TBrowse",
-                                                                           "com.xceptance.interfaces.testclassisinterface.TBrowse",
-                                                                           "com.xceptance.nestedclasses.TBrowse",
-                                                                           "com.xceptance.nestedclasses.ParentClass$TBrowse",
-                                                                           // test classes in directory
-                                                                           // "/build/classes/java/main/"
-                                                                           "com.xceptance.otherclassdirectory.TBrowse",
-                                                                           // test classes in a JAR in directory "/lib/"
-                                                                           "com.xceptance.jarcontent.TBrowse",
-                                                                           "com.xceptance.jarcontent.packagedoesnotmatchdirectory.TBrowse",
-                                                                           "com.xceptance.jarcontent.inheritance.TBrowse",
-                                                                           "com.xceptance.jarcontent.interfaces.testclassisimplementation.TBrowse",
-                                                                           "com.xceptance.jarcontent.interfaces.testclassisinterface.TBrowse",
-                                                                           "com.xceptance.jarcontent.nestedclasses.TBrowse",
-                                                                           "com.xceptance.jarcontent.nestedclasses.ParentClass$TBrowse");
+    private static final String[] TEST_PROJECT_MATCHES_TBROWSE =
+        {
+            /* test classes in subdirectory "/target/classes" */
+            "TBrowse",                                                              // name without package path
+            "com.xceptance.TBrowse",                                                // name with package path
+            "com.xceptance.packagedoesnotmatchdirectory.TBrowse",                   // package different from directory
+            "com.xceptance.inheritance.TBrowse",                                    // class is superclass and subclass
+            "com.xceptance.interfaces.testclassisimplementation.TBrowse",           // class implements an interface
+            "com.xceptance.interfaces.testclassisinterface.TBrowse",                // class is an interface
+            "com.xceptance.nestedclasses.TBrowse",                                  // class contains nested class
+            "com.xceptance.nestedclasses.ParentClass$TBrowse",                      // class is nested class
+            /* test classes in subdirectory "/build/classes/java/main" */
+            "com.xceptance.otherclassdirectory.TBrowse",                            // class in other scanned directory
+            /* test classes in a JAR in subdirectory "/lib" */
+            "com.xceptance.jarcontent.TBrowse",                                     // class with package path
+            "com.xceptance.jarcontent.packagedoesnotmatchdirectory.TBrowse",        // package different from directory
+            "com.xceptance.jarcontent.inheritance.TBrowse",                         // class is superclass and subclass
+            "com.xceptance.jarcontent.interfaces.testclassisimplementation.TBrowse",// class implements an interface
+            "com.xceptance.jarcontent.interfaces.testclassisinterface.TBrowse",     // class is an interface
+            "com.xceptance.jarcontent.nestedclasses.TBrowse",                       // class contains nested class
+            "com.xceptance.jarcontent.nestedclasses.ParentClass$TBrowse"            // class is nested class
+        };
 
     /**
      * Class names from the test project zip file that match test case "TVisit"
      */
-    private static final Set<String> TEST_PROJECT_MATCHES_TVISIT = Set.of(
-                                                                          // test classes in directory
-                                                                          // "/target/classes/"
-                                                                          "com.xceptance.TVisit",
-                                                                          "com.xceptance.nestedclasses.ParentClass$TVisit",
-                                                                          // test classes in a JAR in directory "/lib/"
-                                                                          "TVisit",
-                                                                          "com.xceptance.jarcontent.nestedclasses.ParentClass$TVisit");
+    private static final String[] TEST_PROJECT_MATCHES_TVISIT =
+        {
+            /* test classes in subdirectory "/target/classes" */
+            "com.xceptance.TVisit",                                     // class with package path
+            "com.xceptance.nestedclasses.ParentClass$TVisit",           // class is nested class
+            /* test classes in a JAR in subdirectory "/lib" */
+            "TVisit",                                                   // class without package path
+            "com.xceptance.jarcontent.nestedclasses.ParentClass$TVisit" // class is nested class
+        };
 
     @Rule
     public final TemporaryFolder tempFolder = new TemporaryFolder();
@@ -256,8 +259,8 @@ public class TestCaseMapperTest
 
         final Set<String> matches = new TestCaseMapper(loadProfile).scanForTestClasses(workDir);
 
-        Assert.assertEquals(TEST_PROJECT_MATCHES_TBROWSE.size(), matches.size());
-        Assert.assertTrue(matches.containsAll(TEST_PROJECT_MATCHES_TBROWSE));
+        Assert.assertEquals(TEST_PROJECT_MATCHES_TBROWSE.length, matches.size());
+        Assert.assertTrue(matches.containsAll(Arrays.asList(TEST_PROJECT_MATCHES_TBROWSE)));
     }
 
     @Test
@@ -271,9 +274,9 @@ public class TestCaseMapperTest
 
         final Set<String> matches = new TestCaseMapper(loadProfile).scanForTestClasses(workDir);
 
-        Assert.assertEquals(TEST_PROJECT_MATCHES_TBROWSE.size() + TEST_PROJECT_MATCHES_TVISIT.size(), matches.size());
-        Assert.assertTrue(matches.containsAll(TEST_PROJECT_MATCHES_TBROWSE));
-        Assert.assertTrue(matches.containsAll(TEST_PROJECT_MATCHES_TVISIT));
+        Assert.assertEquals(TEST_PROJECT_MATCHES_TBROWSE.length + TEST_PROJECT_MATCHES_TVISIT.length, matches.size());
+        Assert.assertTrue(matches.containsAll(Arrays.asList(TEST_PROJECT_MATCHES_TBROWSE)));
+        Assert.assertTrue(matches.containsAll(Arrays.asList(TEST_PROJECT_MATCHES_TVISIT)));
     }
 
     @Test
