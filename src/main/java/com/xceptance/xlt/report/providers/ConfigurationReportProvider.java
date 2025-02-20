@@ -20,7 +20,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -159,7 +158,7 @@ public class ConfigurationReportProvider extends AbstractReportProvider
         for (TestCaseLoadProfileConfiguration loadProfileConfig : loadProfile)
         {
             int[][] arrivalRateFunction = loadProfileConfig.getArrivalRate();
-            loadProfileConfig.setArrivalRatePercentage(ReportUtils.calculatePercentage(getMaxFromLoadFunction(arrivalRateFunction), arrivalRateTotal));
+            loadProfileConfig.setArrivalRatePercentage(arrivalRateFunction == null ? null : ReportUtils.calculatePercentage(getMaxFromLoadFunction(arrivalRateFunction), arrivalRateTotal));
             int[][] userCountFunction = loadProfileConfig.getNumberOfUsers();
             loadProfileConfig.setNumberOfUsersPercentage(ReportUtils.calculatePercentage(getMaxFromLoadFunction(userCountFunction), userCountTotal));
             
@@ -169,6 +168,10 @@ public class ConfigurationReportProvider extends AbstractReportProvider
     
     private int getMaxFromLoadFunction(int[][] loadFunction)
     {
+        if (loadFunction == null)
+        {
+            return 0;
+        }
         //see LoadFunctionXStreamConverter
         int maximum = 0;
         for (final int[] array : loadFunction)
