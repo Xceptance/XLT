@@ -166,16 +166,22 @@
         <table class="">
             <thead>
                 <tr>
-                    <th>Transaction Name</th>
+                    <th rowspan="2">Transaction Name</th>
                     <th colspan="2" >Users</th>
-                    <th>Iterations</th>
-                    <th colspan="2">Arrival Rate [1/h]</th>
-                    <th>Initial Delay</th>
-                    <th>Ramp-Up Period</th>
-                    <th>Warm-Up Period</th>
-                    <th>Measurement Period</th>
-                    <th>Shutdown Period</th>
-                    <th title="Thinking time between actions">Think Time [ms]</th>
+                    <th rowspan="2">Iterations</th>
+                    <th colspan="2">Arrival Rate</th>
+                    <th rowspan="2">Initial Delay</th>
+                    <th rowspan="2">Ramp-Up Period</th>
+                    <th rowspan="2">Warm-Up Period</th>
+                    <th rowspan="2">Measurement Period</th>
+                    <th rowspan="2">Shutdown Period</th>
+                    <th rowspan="2" title="Thinking time between actions">Think Time [ms]</th>
+                </tr>
+	                <th>Total</th>
+	                <th>Share</th>
+	                <th>1/h</th>
+	                <th>Share</th>
+                <tr>
                 </tr>
             </thead>
             <xsl:variable name="count" select="count($rootNode/testCase)"/>
@@ -192,7 +198,12 @@
                                     <xsl:with-param name="seq" select="$rootNode/testCase/numberOfUsers"/>
                                 </xsl:call-template>
                             </td>
-                            <td />
+                            <td class="value number">
+                                <xsl:call-template name="sum-of-ranges">
+                                    <xsl:with-param name="seq" select="$rootNode/testCase/numberOfUsersPercentage"/>
+                                </xsl:call-template>
+                                <xsl:text>%</xsl:text>
+                            </td>
                             <td class="value number">
                                 <xsl:call-template name="sum-of-ranges">
                                     <xsl:with-param name="seq" select="$rootNode/testCase/numberOfIterations"/>
@@ -203,7 +214,12 @@
                                     <xsl:with-param name="seq" select="$rootNode/testCase/arrivalRate"/>
                                 </xsl:call-template>
                             </td>
-                            <td />
+                            <td class="value number">
+                                <xsl:call-template name="sum-of-ranges">
+                                    <xsl:with-param name="seq" select="$rootNode/testCase/arrivalRatePercentage"/>
+                                </xsl:call-template>
+                                <xsl:text>%</xsl:text>
+                            </td>
                             <td class="value number">
                                 <xsl:call-template name="time-range">
                                     <xsl:with-param name="seq" select="$rootNode/testCase/initialDelay"/>
@@ -265,9 +281,8 @@
                                     <xsl:value-of select="numberOfUsers"/>
                                 </td>
                                 <td class="value number">
-                                    <xsl:text>(</xsl:text>
                                     <xsl:value-of select="format-number(numberOfUsersPercentage, '#,##0.00')" />
-                                    <xsl:text>%)</xsl:text>
+                                    <xsl:text>%</xsl:text>
                                 </td>
                                 <td class="value number">
                                     <xsl:choose>
@@ -300,9 +315,8 @@
                                     </xsl:choose>
                                 </td>
                                 <td class="value number">
-                                	<xsl:text>(</xsl:text>
                                     <xsl:value-of select="format-number(arrivalRatePercentage, '#,##0.00')" />
-                                    <xsl:text>%)</xsl:text>
+                                    <xsl:text>%</xsl:text>
                                 </td>
                                 <td class="value number">
                                     <xsl:choose>
