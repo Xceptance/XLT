@@ -26,30 +26,21 @@ import com.thoughtworks.xstream.annotations.XStreamOmitField;
 /**
  * The {@link TestCaseLoadProfileConfiguration} represents the load profile as configured for a certain test case.
  */
-@XStreamAlias("testCase")
 public class TestCaseLoadProfileConfiguration
 {
-    @XStreamConverter(LoadFunctionXStreamConverter.class)
     private int[][] arrivalRate;
-    
-    private BigDecimal arrivalRatePercentage = new BigDecimal(0);
 
-    @XStreamConverter(ComplexLoadFunctionXStreamConverter.class)
     private int[][] complexLoadFunction;
 
     private int initialDelay;
 
-    @XStreamOmitField
     private int[][] loadFactor;
 
     private int measurementPeriod;
 
     private int numberOfIterations;
 
-    @XStreamConverter(LoadFunctionXStreamConverter.class)
     private int[][] numberOfUsers;
-    
-    private BigDecimal numberOfUsersPercentage = new BigDecimal(0);
 
     private int rampUpPeriod;
 
@@ -64,11 +55,6 @@ public class TestCaseLoadProfileConfiguration
     public int[][] getArrivalRate()
     {
         return arrivalRate;
-    }
-    
-    public BigDecimal getArrivalRatePercentage()
-    {
-        return arrivalRatePercentage;
     }
 
     public int[][] getComplexLoadFunction()
@@ -107,11 +93,6 @@ public class TestCaseLoadProfileConfiguration
     {
         return numberOfUsers;
     }
-    
-    public BigDecimal getNumberOfUsersPercentage()
-    {
-        return numberOfUsersPercentage;
-    }
 
     public int getRampUpPeriod()
     {
@@ -142,11 +123,6 @@ public class TestCaseLoadProfileConfiguration
     {
         this.arrivalRate = arrivalRate;
     }
-    
-    public void setArrivalRatePercentage(BigDecimal arrivalRatePercentage)
-    {
-        this.arrivalRatePercentage = arrivalRatePercentage;
-    }
 
     public void setComplexLoadFunction(final int[][] complexLoadFunction)
     {
@@ -176,11 +152,6 @@ public class TestCaseLoadProfileConfiguration
     public void setNumberOfUsers(final int[][] numberOfUsers)
     {
         this.numberOfUsers = numberOfUsers;
-    }
-    
-    public void setNumberOfUsersPercentage(BigDecimal numberOfUsersPercentage)
-    {
-        this.numberOfUsersPercentage = numberOfUsersPercentage;
     }
 
     public void setRampUpPeriod(final int rampUpPeriod)

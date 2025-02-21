@@ -117,7 +117,10 @@ public class ConfigurationReportProvider extends AbstractReportProvider
         // add the load profile
         try
         {
-            report.loadProfile = new TestLoadProfileConfiguration(props).getLoadTestConfiguration();
+            for (TestCaseLoadProfileConfiguration tclpc : new TestLoadProfileConfiguration(props).getLoadTestConfiguration())
+            {    
+                report.loadProfile.add(new LoadProfileConfigurationReport(tclpc));
+            }
             calculatePercentages(report.loadProfile);
         }
         catch (final Exception e)
@@ -141,27 +144,22 @@ public class ConfigurationReportProvider extends AbstractReportProvider
         return report;
     }
 
-    private void calculatePercentages(List<TestCaseLoadProfileConfiguration> loadProfile)
+    private void calculatePercentages(List<LoadProfileConfigurationReport> loadProfile)
     {
         // iterate through report.loadProfile --> calculate totals of (max) users and (max) arrivalrate
         int arrivalRateTotal = 0;
         int userCountTotal = 0;
-        for (TestCaseLoadProfileConfiguration loadProfileConfig : loadProfile)
+        for (LoadProfileConfigurationReport loadProfileConfig : loadProfile)
         {
-            int[][] arrivalRateFunction = loadProfileConfig.getArrivalRate();
-            arrivalRateTotal += getMaxFromLoadFunction(arrivalRateFunction);
-            int[][] userCountFunction = loadProfileConfig.getNumberOfUsers();
-            userCountTotal += getMaxFromLoadFunction(userCountFunction);
+            arrivalRateTotal += getMaxFromLoadFunction(loadProfileConfig.arrivalRate);
+            userCountTotal += getMaxFromLoadFunction(loadProfileConfig.numberOfUsers);
             
         }
         // iterate through report.loadProfile again and add percentages calculated from totals
-        for (TestCaseLoadProfileConfiguration loadProfileConfig : loadProfile)
+        for (LoadProfileConfigurationReport loadProfileConfig : loadProfile)
         {
-            int[][] arrivalRateFunction = loadProfileConfig.getArrivalRate();
-            loadProfileConfig.setArrivalRatePercentage(arrivalRateFunction == null ? null : ReportUtils.calculatePercentage(getMaxFromLoadFunction(arrivalRateFunction), arrivalRateTotal));
-            int[][] userCountFunction = loadProfileConfig.getNumberOfUsers();
-            loadProfileConfig.setNumberOfUsersPercentage(ReportUtils.calculatePercentage(getMaxFromLoadFunction(userCountFunction), userCountTotal));
-            
+            loadProfileConfig.arrivalRatePercentage = (loadProfileConfig.arrivalRate == null ? null : ReportUtils.calculatePercentage(getMaxFromLoadFunction(loadProfileConfig.arrivalRate), arrivalRateTotal));
+            loadProfileConfig.numberOfUsersPercentage = (ReportUtils.calculatePercentage(getMaxFromLoadFunction(loadProfileConfig.numberOfUsers), userCountTotal));
         }        
         return;
     }
