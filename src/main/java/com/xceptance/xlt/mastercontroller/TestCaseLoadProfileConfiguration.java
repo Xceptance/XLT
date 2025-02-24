@@ -15,13 +15,7 @@
  */
 package com.xceptance.xlt.mastercontroller;
 
-import java.math.BigDecimal;
-
 import org.apache.commons.lang3.ArrayUtils;
-
-import com.thoughtworks.xstream.annotations.XStreamAlias;
-import com.thoughtworks.xstream.annotations.XStreamConverter;
-import com.thoughtworks.xstream.annotations.XStreamOmitField;
 
 /**
  * The {@link TestCaseLoadProfileConfiguration} represents the load profile as configured for a certain test case.
@@ -196,7 +190,6 @@ public class TestCaseLoadProfileConfiguration
         return buf.toString();
     }
 
-    @XStreamOmitField
     private boolean isCPTest;
 
     public boolean isCPTest()
