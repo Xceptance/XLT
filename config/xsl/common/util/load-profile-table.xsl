@@ -181,11 +181,11 @@
                     <th rowspan="2">Shutdown Period</th>
                     <th rowspan="2" title="Thinking time between actions">Think Time [ms]</th>
                 </tr>
-	                <th>Total</th>
-	                <th>Share</th>
-	                <th>1/h</th>
-	                <th>Share</th>
                 <tr>
+                    <th>Total</th>
+                    <th>Share</th>
+                    <th>1/h</th>
+                    <th>Share</th>
                 </tr>
             </thead>
             <xsl:variable name="count" select="count($rootNode/testCase)"/>
@@ -203,10 +203,7 @@
                                 </xsl:call-template>
                             </td>
                             <td class="value number">
-                                <xsl:call-template name="sum-of-ranges">
-                                    <xsl:with-param name="seq" select="$rootNode/testCase/numberOfUsersPercentage"/>
-                                    <xsl:with-param name="unit" select="'%'"/>
-                                </xsl:call-template>
+                                <xsl:text>100.00%</xsl:text>
                             </td>
                             <td class="value number">
                                 <xsl:call-template name="sum-of-ranges">
@@ -219,10 +216,7 @@
                                 </xsl:call-template>
                             </td>
                             <td class="value number">
-                                <xsl:call-template name="sum-of-ranges">
-                                    <xsl:with-param name="seq" select="$rootNode/testCase/arrivalRatePercentage"/>
-                                    <xsl:with-param name="unit" select="'%'"/>
-                                </xsl:call-template>
+                                <xsl:text>100.00%</xsl:text>
                             </td>
                             <td class="value number">
                                 <xsl:call-template name="time-range">
@@ -404,11 +398,13 @@
                             <td></td>
                             <td></td>
                             <td></td>
+                            <td></td>
+                            <td></td>
                         </tr>
                     </tfoot>
                     <tbody>
                         <tr>
-                            <td class="no-data" colspan="10">No data available</td>
+                            <td class="no-data" colspan="12">No data available</td>
                         </tr>
                     </tbody>
                 </xsl:otherwise>
