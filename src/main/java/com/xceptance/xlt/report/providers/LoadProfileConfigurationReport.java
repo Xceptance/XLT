@@ -24,15 +24,15 @@ import com.xceptance.xlt.mastercontroller.LoadFunctionXStreamConverter;
 import com.xceptance.xlt.mastercontroller.TestCaseLoadProfileConfiguration;
 
 /**
- * The {@link LoadProfileConfigurationReport} represents the load profile as configured for a certain test case.
- * (see TestCaseLoadProfileConfiguration)
+ * The {@link LoadProfileConfigurationReport} represents the load profile as configured for a certain test case. (see
+ * TestCaseLoadProfileConfiguration)
  */
 @XStreamAlias("testCase")
 public class LoadProfileConfigurationReport
 {
     @XStreamConverter(LoadFunctionXStreamConverter.class)
     public int[][] arrivalRate;
-    
+
     public BigDecimal arrivalRatePercentage = null;
 
     @XStreamConverter(ComplexLoadFunctionXStreamConverter.class)
@@ -46,7 +46,7 @@ public class LoadProfileConfigurationReport
 
     @XStreamConverter(LoadFunctionXStreamConverter.class)
     public int[][] numberOfUsers;
-    
+
     public BigDecimal numberOfUsersPercentage = null;
 
     public int rampUpPeriod;
@@ -58,7 +58,11 @@ public class LoadProfileConfigurationReport
     public String userName;
 
     public int warmUpPeriod;
-    
+
+    public int actionThinkTime;
+
+    public int actionThinkTimeDeviation;
+
     public LoadProfileConfigurationReport(TestCaseLoadProfileConfiguration tcConfig)
     {
         this.arrivalRate = tcConfig.getArrivalRate();
@@ -72,5 +76,7 @@ public class LoadProfileConfigurationReport
         this.testCaseClassName = tcConfig.getTestCaseClassName();
         this.userName = tcConfig.getUserName();
         this.warmUpPeriod = tcConfig.getWarmUpPeriod();
+        this.actionThinkTime = tcConfig.getActionThinkTime();
+        this.actionThinkTimeDeviation = tcConfig.getActionThinkTimeDeviation();
     }
 }
