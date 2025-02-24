@@ -22,6 +22,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
@@ -215,10 +216,14 @@ class GceClient
      *            the number of instances in the group
      * @throws ApiException
      *             in case of a communication error
+     * @throws ExecutionException 
+     *             in case an asynchronous operation failed with an exception
+     * @throws InterruptedException 
+     *             in case waiting for an asynchronous operation to complete was interrupted
      */
     void createInstanceGroup(final String regionName, final String instanceGroupName, final String instanceTemplateName,
                              final int instanceCount)
-        throws ApiException
+        throws ApiException, InterruptedException, ExecutionException
     {
         final InstanceGroupManager.Builder instanceGroupManagerBuilder = InstanceGroupManager.newBuilder();
         instanceGroupManagerBuilder.setBaseInstanceName(instanceGroupName);
@@ -226,7 +231,7 @@ class GceClient
         instanceGroupManagerBuilder.setInstanceTemplate("global/instanceTemplates/" + instanceTemplateName);
         instanceGroupManagerBuilder.setTargetSize(instanceCount);
 
-        regionInstanceGroupManagersClient.insertAsync(projectId, regionName, instanceGroupManagerBuilder.build());
+        regionInstanceGroupManagersClient.insertAsync(projectId, regionName, instanceGroupManagerBuilder.build()).get();
     }
 
     /**
@@ -708,20 +713,24 @@ class GceClient
      *            the instance group to delete
      * @throws ApiException
      *             in case of a communication error
+     * @throws ExecutionException 
+     *             in case an asynchronous operation failed with an exception
+     * @throws InterruptedException 
+     *             in case waiting for an asynchronous operation to complete was interrupted
      */
-    void deleteInstanceGroup(final InstanceGroup instanceGroup) throws ApiException
+    void deleteInstanceGroup(final InstanceGroup instanceGroup) throws ApiException, InterruptedException, ExecutionException
     {
         // check whether instance group is regional
         final String regionUrl = instanceGroup.getRegion();
         if (regionUrl != null)
         {
             final String regionName = GceAdminUtils.getRegionName(regionUrl);
-            regionInstanceGroupManagersClient.deleteAsync(projectId, regionName, instanceGroup.getName());
+            regionInstanceGroupManagersClient.deleteAsync(projectId, regionName, instanceGroup.getName()).get();
         }
         else // instance group must be zonal
         {
             final String zoneName = GceAdminUtils.getZoneName(instanceGroup.getZone());
-            instanceGroupManagersClient.deleteAsync(projectId, zoneName, instanceGroup.getName());
+            instanceGroupManagersClient.deleteAsync(projectId, zoneName, instanceGroup.getName()).get();
         }
     }
 
