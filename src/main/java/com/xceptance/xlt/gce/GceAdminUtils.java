@@ -74,6 +74,7 @@ class GceAdminUtils
         FRIENDLY_REGION_NAMES.put("australia-southeast2", "Asia Pacific  - Melbourne     ");
         FRIENDLY_REGION_NAMES.put("europe-central2", "Europe        - Warsaw        ");
         FRIENDLY_REGION_NAMES.put("europe-north1", "Europe        - Finland       ");
+        FRIENDLY_REGION_NAMES.put("europe-north2", "Europe        - Stockholm     ");
         FRIENDLY_REGION_NAMES.put("europe-southwest1", "Europe        - Madrid        ");
         FRIENDLY_REGION_NAMES.put("europe-west1", "Europe        - Belgium       ");
         FRIENDLY_REGION_NAMES.put("europe-west2", "Europe        - London        ");
