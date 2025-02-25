@@ -216,9 +216,9 @@ class GceClient
      *            the number of instances in the group
      * @throws ApiException
      *             in case of a communication error
-     * @throws ExecutionException 
+     * @throws ExecutionException
      *             in case an asynchronous operation failed with an exception
-     * @throws InterruptedException 
+     * @throws InterruptedException
      *             in case waiting for an asynchronous operation to complete was interrupted
      */
     void createInstanceGroup(final String regionName, final String instanceGroupName, final String instanceTemplateName,
@@ -298,7 +298,12 @@ class GceClient
                 // check each managed instance if its corresponding instance exists
                 for (final ManagedInstance managedInstance : managedInstances)
                 {
-                    ok = ok && managedInstance.getInstanceStatus() != null;
+                    final String status = managedInstance.getInstanceStatus();
+                    if (status == null || status.isEmpty())
+                    {
+                        ok = false;
+                        break;
+                    }
                 }
 
                 if (ok)
@@ -713,9 +718,9 @@ class GceClient
      *            the instance group to delete
      * @throws ApiException
      *             in case of a communication error
-     * @throws ExecutionException 
+     * @throws ExecutionException
      *             in case an asynchronous operation failed with an exception
-     * @throws InterruptedException 
+     * @throws InterruptedException
      *             in case waiting for an asynchronous operation to complete was interrupted
      */
     void deleteInstanceGroup(final InstanceGroup instanceGroup) throws ApiException, InterruptedException, ExecutionException
