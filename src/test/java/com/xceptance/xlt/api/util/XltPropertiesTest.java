@@ -27,6 +27,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import com.xceptance.xlt.common.XltConstants;
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileSystemException;
 import org.apache.commons.vfs2.VFS;
@@ -56,17 +57,23 @@ public class XltPropertiesTest
      */
     public void setup(String home, String config) throws FileSystemException
     {
-        var homePath = getClass().getResource(home).getFile();
-        homeDir = VFS.getManager().toFileObject(new File(homePath));
-
-        var configPath = getClass().getResource(config).getFile();
-        configDir = VFS.getManager().toFileObject(new File(configPath));
+        homeDir = getResourceFile(home);
+        configDir = getResourceFile(config);
 
         XltExecutionContext.getCurrent().setTestSuiteConfigDir(configDir);
         XltExecutionContext.getCurrent().setTestSuiteHomeDir(homeDir);
 
         // just make something known, so we can check that we loaded it
         setSystemProperty("systemkey", "systemkeyvalue");
+    }
+
+    /**
+     * Get a FileObject for the resource with the given name
+     */
+    private FileObject getResourceFile(String resourceName) throws FileSystemException
+    {
+        var path = getClass().getResource(resourceName).getFile();
+        return VFS.getManager().toFileObject(new File(path));
     }
 
     /*
@@ -695,5 +702,50 @@ public class XltPropertiesTest
         {
             assertEquals("File include.properties has been seen multiple times when resolving properties, this can indicate a cyclic include pattern but also just be a repeated reference.", e.getMessage());
         }
+    }
+
+    /**
+     * Get config and data dir from XltPropertiesImpl object that falls back on execution context
+     */
+    @Test
+    public void getConfigAndDataDirs_FallbackToExecutionContext() throws FileSystemException
+    {
+        setup("propertytest_hp", "propertytest_hp/config");
+
+        var p = new XltPropertiesImpl(null, null, true, false);
+
+        assertEquals(configDir.getPath(), p.getConfigDirectory());
+        assertEquals(configDir.getPath().resolve(XltConstants.DATA_DIR_NAME), p.getDataDirectory());
+    }
+
+    /**
+     * Get config and data dir set in the constructor
+     */
+    @Test
+    public void getConfigAndDataDirs_SetDirsInConstructor() throws FileSystemException
+    {
+        setup("propertytest_hp", "propertytest_hp/config");
+
+        FileObject home = getResourceFile("propertytest_notestfallback");
+        FileObject config = getResourceFile("propertytest_notestfallback/config");
+
+        var p = new XltPropertiesImpl(home, config, true, false);
+
+        assertEquals(config.getPath(), p.getConfigDirectory());
+        assertEquals(config.getPath().resolve(XltConstants.DATA_DIR_NAME), p.getDataDirectory());
+    }
+
+    /**
+     * Get default config and data dir from XltPropertiesImpl object created with empty properties
+     */
+    @Test
+    public void getConfigAndDataDirs_EmptyProperties() throws FileSystemException
+    {
+        setup("propertytest_hp", "propertytest_hp/config");
+
+        var p = new XltPropertiesImpl();
+
+        assertEquals(configDir.getPath(), p.getConfigDirectory());
+        assertEquals(configDir.getPath().resolve(XltConstants.DATA_DIR_NAME), p.getDataDirectory());
     }
 }

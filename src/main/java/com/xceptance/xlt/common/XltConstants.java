@@ -241,6 +241,11 @@ public final class XltConstants
     public static final String CONFIG_DIR_NAME = "config";
 
     /**
+     * The name of the data directory
+     */
+    public static final String DATA_DIR_NAME = "data";
+
+    /**
      * The directory name of the common resources (CSS, JS, Images) for all test reports.
      */
     public static final String REPORT_RESOURCES_PATH = "testreport";

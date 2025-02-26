@@ -15,6 +15,7 @@
  */
 package com.xceptance.xlt.api.util;
 
+import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -232,6 +233,20 @@ public abstract class XltProperties
      * @return the version string, e.g. "1.1.0"
      */
     public abstract String getVersion();
+
+    /**
+     * Returns the test suite's config directory.
+     *
+     * @return the config directory path
+     */
+    public abstract Path getConfigDirectory();
+
+    /**
+     * Returns the test suite's data directory.
+     *
+     * @return the data directory path
+     */
+    public abstract Path getDataDirectory();
 
     /**
      * Removes the property with the given key from the internal properties store.

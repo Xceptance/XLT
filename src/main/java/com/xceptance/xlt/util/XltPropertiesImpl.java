@@ -16,6 +16,7 @@
 package com.xceptance.xlt.util;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -88,6 +89,16 @@ public class XltPropertiesImpl extends XltProperties
      */
     private String version;
 
+    /**
+     * The config directory.
+     */
+    private Path configDirectory;
+
+    /**
+     * The data directory.
+     */
+    private Path dataDirectory;
+
     // ********************************************************************
     /**
      * Global flag that controls whether or not additional request information should be collected and dumped to CSV.
@@ -114,7 +125,7 @@ public class XltPropertiesImpl extends XltProperties
      * set at XltExecutionContext. This method uses a thread-local gate to detect and avoid recursive attempts to create
      * an instance.
      *
-     * @param ignoreMissingIncludes
+     * @param ignoreMissing
      *            whether or not missing include property files should be ignored
      * @param staySilent
      *            shall we complain about missing things or stay silent, useful for startup
@@ -221,6 +232,9 @@ public class XltPropertiesImpl extends XltProperties
      */
     public XltPropertiesImpl(final Optional<Properties> properties)
     {
+        this.configDirectory = XltExecutionContext.getCurrent().getTestSuiteConfigDir().getPath();
+        this.dataDirectory = this.configDirectory.resolve(XltConstants.DATA_DIR_NAME);
+
         // get version and start time
         this.devMode = (System.getenv("XLT_HOME") == null && System.getProperty(XltConstants.XLT_PACKAGE_PATH + ".home") == null);
         this.version = ProductInformation.getProductInformation().getVersion();
@@ -246,6 +260,9 @@ public class XltPropertiesImpl extends XltProperties
         var hd = homeDirectory == null ? XltExecutionContext.getCurrent().getTestSuiteHomeDir() : homeDirectory;
         var cd = configDirectory == null ? XltExecutionContext.getCurrent().getTestSuiteConfigDir() : configDirectory;
         loadProperties(hd, cd, ignoreMissingIncludes, staySilent);
+
+        this.configDirectory = cd.getPath();
+        this.dataDirectory = this.configDirectory.resolve(XltConstants.DATA_DIR_NAME);
 
         // get version and start time
         version = ProductInformation.getProductInformation().getVersion();
@@ -472,9 +489,8 @@ public class XltPropertiesImpl extends XltProperties
      * @param ignoreMissingIncludes
      *            shall we ignore missing includes?
      * @return an updated list
-     * @exception will
-     *                raise {@link PropertiesConfigurationException} if something is wrong, will also write an error log
-     *                entry
+     *
+     * @exception PropertiesConfigurationException if something is wrong, will also write an error log entry
      */
     private List<PropertyIncludeResult> verifyFiles(final List<PropertyIncludeResult> files, final boolean ignoreMissing,
                                                     final boolean ignoreMissingIncludes)
@@ -697,10 +713,10 @@ public class XltPropertiesImpl extends XltProperties
     }
 
     /**
-     * Convenience method. Calls {@link #getPropertiesForKey(String, Properties)} with the member properties of this
-     * instance.
+     * Convenience method. Calls {@link PropertiesUtils#getPropertiesForKey(String, Properties)} with the member
+     * properties of this instance.
      *
-     * @see #getPropertiesForKey(String, Properties)
+     * @see PropertiesUtils#getPropertiesForKey(String, Properties)
      */
     @Override
     public Map<String, String> getPropertiesForKey(final String domainKey)
@@ -802,7 +818,7 @@ public class XltPropertiesImpl extends XltProperties
 
     /**
      * Part of the previous code, put here to make it reusable
-     * 
+     *
      * @param nonPrefixedKey
      * @param bareKey
      * @return
@@ -1037,6 +1053,28 @@ public class XltPropertiesImpl extends XltProperties
     public String getVersion()
     {
         return version;
+    }
+
+    /**
+     * Returns the test suite's config directory.
+     *
+     * @return the config directory path
+     */
+    @Override
+    public Path getConfigDirectory()
+    {
+        return configDirectory;
+    }
+
+    /**
+     * Returns the test suite's data directory.
+     *
+     * @return the data directory path
+     */
+    @Override
+    public Path getDataDirectory()
+    {
+        return dataDirectory;
     }
 
     /**
