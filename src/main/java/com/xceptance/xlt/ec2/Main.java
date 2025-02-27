@@ -726,8 +726,7 @@ public class Main extends AbstractEC2Client
      */
     private String queryHostData()
     {
-        final String hostDataRaw = ConsoleUiUtils.readLine("\nEnter host data (mark line break with '\\n')");
-        return hostDataRaw.replaceAll("\\\\n", "\n");
+        return ConsoleUiUtils.readLine("\nEnter host data (mark line break with '\\n')");
     }
 
     private String getUserData(final CommandLine commandLine)
@@ -787,8 +786,7 @@ public class Main extends AbstractEC2Client
      */
     private String queryUserData()
     {
-        final String userDataRaw = ConsoleUiUtils.readLine("\nEnter user data (mark line break with '\\n')");
-        return userDataRaw.replaceAll("\\\\n", "\n");
+        return ConsoleUiUtils.readLine("\nEnter user data (mark line break with '\\n')");
     }
 
     /**
@@ -856,7 +854,7 @@ public class Main extends AbstractEC2Client
         else
         {
             boolean firstHostDataLine = true;
-            for (final String hostDataLine : hostData.split("\\n"))
+            for (final String hostDataLine : hostData.split("\\\\n"))
             {
                 if (firstHostDataLine)
                 {
@@ -879,7 +877,7 @@ public class Main extends AbstractEC2Client
             else
             {
                 boolean firstUserDataLine = true;
-                for (final String userDataLine : userData.split("\\n"))
+                for (final String userDataLine : userData.split("\\\\n"))
                 {
                     if (firstUserDataLine)
                     {
@@ -1806,7 +1804,7 @@ public class Main extends AbstractEC2Client
             JSONObject userDataObj = new JSONObject();
 
             userDataObj.put("acPassword", password);
-            userDataObj.put("hostData", hostData);
+            userDataObj.put("hostData", hostData.replaceAll("\\\\n", "\n"));
 
             return userDataObj.toString();
         }
