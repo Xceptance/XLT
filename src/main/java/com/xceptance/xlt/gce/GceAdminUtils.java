@@ -30,11 +30,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.api.services.compute.model.AccessConfig;
-import com.google.api.services.compute.model.Instance;
-import com.google.api.services.compute.model.InstanceGroup;
-import com.google.api.services.compute.model.NetworkInterface;
-import com.google.api.services.compute.model.Region;
+import com.google.cloud.compute.v1.AccessConfig;
+import com.google.cloud.compute.v1.Instance;
+import com.google.cloud.compute.v1.InstanceGroup;
+import com.google.cloud.compute.v1.NetworkInterface;
+import com.google.cloud.compute.v1.Region;
 import com.xceptance.common.util.ConsoleUiUtils;
 import com.xceptance.common.util.ProcessExitCodes;
 
@@ -60,6 +60,7 @@ class GceAdminUtils
 
     static
     {
+        FRIENDLY_REGION_NAMES.put("africa-south1", "Africa        - Johannesburg  ");
         FRIENDLY_REGION_NAMES.put("asia-east1", "Asia Pacific  - Taiwan        ");
         FRIENDLY_REGION_NAMES.put("asia-east2", "Asia Pacific  - Hong Kong     ");
         FRIENDLY_REGION_NAMES.put("asia-northeast1", "Asia Pacific  - Tokyo         ");
@@ -73,6 +74,7 @@ class GceAdminUtils
         FRIENDLY_REGION_NAMES.put("australia-southeast2", "Asia Pacific  - Melbourne     ");
         FRIENDLY_REGION_NAMES.put("europe-central2", "Europe        - Warsaw        ");
         FRIENDLY_REGION_NAMES.put("europe-north1", "Europe        - Finland       ");
+        FRIENDLY_REGION_NAMES.put("europe-north2", "Europe        - Stockholm     ");
         FRIENDLY_REGION_NAMES.put("europe-southwest1", "Europe        - Madrid        ");
         FRIENDLY_REGION_NAMES.put("europe-west1", "Europe        - Belgium       ");
         FRIENDLY_REGION_NAMES.put("europe-west2", "Europe        - London        ");
@@ -88,6 +90,7 @@ class GceAdminUtils
         FRIENDLY_REGION_NAMES.put("me-west1", "Middle East   - Tel Aviv      ");
         FRIENDLY_REGION_NAMES.put("northamerica-northeast1", "Canada        - Montréal      ");
         FRIENDLY_REGION_NAMES.put("northamerica-northeast2", "Canada        - Toronto       ");
+        FRIENDLY_REGION_NAMES.put("northamerica-south1", "Mexico        - Queretaro     ");
         FRIENDLY_REGION_NAMES.put("southamerica-east1", "South America - Sao Paulo     ");
         FRIENDLY_REGION_NAMES.put("southamerica-west1", "South America - Chile         ");
         FRIENDLY_REGION_NAMES.put("us-central1", "US            - Iowa          ");
@@ -324,14 +327,14 @@ class GceAdminUtils
     static String getIpAddress(final Instance instance)
     {
         // check if the instance has network interface at all
-        final List<NetworkInterface> networkInterfaces = instance.getNetworkInterfaces();
+        final List<NetworkInterface> networkInterfaces = instance.getNetworkInterfacesList();
         if (networkInterfaces != null && networkInterfaces.size() > 0)
         {
             // first try to find a public IP
             for (final NetworkInterface networkInterface : networkInterfaces)
             {
                 // check if the network interface has access configs at all
-                final List<AccessConfig> accessConfigs = networkInterface.getAccessConfigs();
+                final List<AccessConfig> accessConfigs = networkInterface.getAccessConfigsList();
                 if (accessConfigs != null && accessConfigs.size() > 0)
                 {
                     for (final AccessConfig accessConfig : accessConfigs)

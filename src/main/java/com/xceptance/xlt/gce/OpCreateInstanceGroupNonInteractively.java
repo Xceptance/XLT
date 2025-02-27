@@ -18,7 +18,7 @@ package com.xceptance.xlt.gce;
 import java.io.File;
 import java.util.List;
 
-import com.google.api.services.compute.model.Instance;
+import com.google.cloud.compute.v1.Instance;
 
 /**
  * Creates a new managed instance group non-interactively and prints for each instance in the group the corresponding

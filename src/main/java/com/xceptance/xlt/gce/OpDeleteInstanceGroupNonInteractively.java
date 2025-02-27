@@ -15,7 +15,7 @@
  */
 package com.xceptance.xlt.gce;
 
-import com.google.api.services.compute.model.InstanceGroup;
+import com.google.cloud.compute.v1.InstanceGroup;
 
 /**
  * Deletes a managed instance group non-interactively.

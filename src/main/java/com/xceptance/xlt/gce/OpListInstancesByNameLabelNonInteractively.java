@@ -21,8 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import com.google.api.services.compute.model.Instance;
-import com.google.api.services.compute.model.Region;
+import com.google.cloud.compute.v1.Instance;
+import com.google.cloud.compute.v1.Region;
 
 /**
  * Retrieves all machine instances with a certain name label and prints their corresponding agent controller URLs to a
@@ -93,7 +93,7 @@ class OpListInstancesByNameLabelNonInteractively
 
         for (final Instance instance : instances)
         {
-            final Map<String, String> instanceLabels = instance.getLabels();
+            final Map<String, String> instanceLabels = instance.getLabelsMap();
 
             if (instanceLabels != null)
             {

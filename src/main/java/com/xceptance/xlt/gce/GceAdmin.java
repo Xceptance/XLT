@@ -79,8 +79,7 @@ class GceAdmin
     {
         final GceAdminConfiguration gceConfiguration = new GceAdminConfiguration();
 
-        gceClient = new GceClient(gceConfiguration.getApplicationName(), gceConfiguration.getProjectId(),
-                                  gceConfiguration.getInstanceConnectTimeout());
+        gceClient = new GceClient(gceConfiguration.getProjectId(), gceConfiguration.getInstanceConnectTimeout());
     }
 
     /**
