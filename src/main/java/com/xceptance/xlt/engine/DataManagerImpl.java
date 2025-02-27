@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,11 +21,14 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
 import com.xceptance.common.util.CsvUtils;
 import com.xceptance.xlt.api.engine.Data;
+import com.xceptance.xlt.api.engine.DataLogger;
 import com.xceptance.xlt.api.engine.DataManager;
 import com.xceptance.xlt.api.engine.EventData;
 import com.xceptance.xlt.api.engine.GlobalClock;
@@ -70,6 +73,11 @@ public class DataManagerImpl implements DataManager
      * Logger responsible for logging the statistics to the timer file(s).
      */
     private volatile BufferedWriter logger;
+    
+    /**
+     * Collection of custom data loggers for user defined scopes (key = scope, value = logger for this scope).
+     */
+    private Map<String, DataLogger> dataLoggers = new ConcurrentHashMap<String, DataLogger>();
 
     /**
      * Our metrics provider.
@@ -389,5 +397,13 @@ public class DataManagerImpl implements DataManager
         }
 
         return src;
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public DataLogger dataLogger(String scope)
+    {
+        return dataLoggers.computeIfAbsent(scope, sc -> new DataLoggerImpl(session, sc));
     }
 }

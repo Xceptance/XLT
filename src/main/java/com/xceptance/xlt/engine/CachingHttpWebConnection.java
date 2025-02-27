@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,13 @@ package com.xceptance.xlt.engine;
 
 import java.io.IOException;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Locale;
+import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.FastDateFormat;
 import org.htmlunit.HttpMethod;
 import org.htmlunit.WebConnection;
 import org.htmlunit.WebRequest;
@@ -41,6 +42,7 @@ import com.xceptance.xlt.common.XltConstants;
  * is expired, the server is asked to revalidate the content using a conditional GET request with the
  * "If-Modified-Since" header set. Only if there is new data, the cache is updated.
  * 
+ * @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching
  * @author Jörg Werner (Xceptance Software Technologies GmbH)
  */
 public class CachingHttpWebConnection extends WebConnectionWrapper
@@ -48,7 +50,8 @@ public class CachingHttpWebConnection extends WebConnectionWrapper
     /**
      * The date format used in HTTP header values, for example: "Tue, 11 Sep 2007 08:01:38 GMT".
      */
-    private static final String HEADER_DATE_FORMAT = "EEE, d MMM yyyy HH:mm:ss z";
+    static final FastDateFormat HEADER_DATE_FORMAT = FastDateFormat.getInstance("EEE, d MMM yyyy HH:mm:ss z", TimeZone.getTimeZone("GMT"),
+                                                                                Locale.ENGLISH);
 
     private static final Pattern MAX_AGE_PATTERN = Pattern.compile(Pattern.quote(HttpHeaderConstants.MAX_AGE) + "=(\\d+)");
 
@@ -80,7 +83,8 @@ public class CachingHttpWebConnection extends WebConnectionWrapper
 
     /**
      * Tries to determine the time when the given web response expires. This is done by examining the response headers.
-     * A return value which is less than the current time denote a web response that expired immediately.
+     * A return value which is less than the current time denotes a web response that has expired (is stale) and needs
+     * to be revalidated. A value of -1 indicates that the response is not cacheable at all.
      * 
      * @param webResponse
      *            the web response to check
@@ -88,7 +92,36 @@ public class CachingHttpWebConnection extends WebConnectionWrapper
      */
     public static long determineExpirationTime(final WebResponse webResponse)
     {
-        // check the "Pragma" header
+        /*
+         * Quick checks first.
+         */
+
+        // check the "Cache-Control" header (part 1)
+        final String cacheControl = webResponse.getResponseHeaderValue(HttpHeaderConstants.CACHE_CONTROL);
+        if (cacheControl != null && cacheControl.length() > 0)
+        {
+            // is there a "no-store" value?
+            if (cacheControl.contains(HttpHeaderConstants.NO_STORE))
+            {
+                return -1;
+            }
+
+            // is there a "no-cache" value?
+            if (cacheControl.contains(HttpHeaderConstants.NO_CACHE))
+            {
+                return 0;
+            }
+
+            // Don't handle "must-revalidate" for now. It makes only sense together with "max-age" and if a resource has
+            // reached its max age, it will be re-validated anyway.
+            // // is there a "must-revalidate" value?
+            // if (cacheControl.contains(HttpHeaderConstants.MUST_REVALIDATE))
+            // {
+            // return 0;
+            // }
+        }
+
+        // check the deprecated "Pragma" header
         final String pragma = webResponse.getResponseHeaderValue(HttpHeaderConstants.PRAGMA);
         if (pragma != null && pragma.length() > 0)
         {
@@ -99,34 +132,48 @@ public class CachingHttpWebConnection extends WebConnectionWrapper
             }
         }
 
-        // check the "Cache-Control" header
-        final String cacheControl = webResponse.getResponseHeaderValue(HttpHeaderConstants.CACHE_CONTROL);
+        /*
+         * Determine the date when the resource was generated at the server.
+         */
+
+        long date = System.currentTimeMillis();
+
+        // check the "Date" header
+        final String dateValue = webResponse.getResponseHeaderValue(HttpHeaderConstants.DATE);
+        if (dateValue != null && dateValue.length() > 0)
+        {
+            try
+            {
+                date = HEADER_DATE_FORMAT.parse(dateValue).getTime();
+            }
+            catch (final ParseException ex)
+            {
+                if (XltLogger.runTimeLogger.isWarnEnabled())
+                {
+                    XltLogger.runTimeLogger.warn("Header " + HttpHeaderConstants.DATE +
+                                                 " does not match a valid date format. Check RFC 2616. Should be " +
+                                                 "a valid RFC 1123 format, such as 'Thu, 01 Dec 1994 16:00:00 GMT', but was '" + dateValue +
+                                                 "'.");
+                }
+            }
+        }
+
+        /*
+         * Determine the expiration time.
+         */
+
+        // check the "Cache-Control" header (part 2)
         if (cacheControl != null && cacheControl.length() > 0)
         {
-            // is there a "no-cache" value?
-            if (cacheControl.contains(HttpHeaderConstants.NO_CACHE))
-            {
-                return 0;
-            }
-
-            // we are a volatile cache in memory, so we do not need to obey the
-            // no-store
-
-            // is there a "must-revalidate" value?
-            if (cacheControl.contains(HttpHeaderConstants.MUST_REVALIDATE))
-            {
-                return 0;
-            }
-
             // is there a "max-age=" value? (Format: "max-age=65289")
             final Matcher m = MAX_AGE_PATTERN.matcher(cacheControl);
             if (m.find() && m.groupCount() > 0)
             {
                 try
                 {
-                    final long maxAge = Long.parseLong(m.group(1));
+                    final long maxAge = Long.parseLong(m.group(1)) * 1000;
 
-                    return System.currentTimeMillis() + maxAge * 1000;
+                    return date + maxAge;
                 }
                 catch (final NumberFormatException ex)
                 {
@@ -141,16 +188,14 @@ public class CachingHttpWebConnection extends WebConnectionWrapper
         {
             if (expires.trim().equals("0"))
             {
-                // '0' is commonly used to indicate that a response expires immediately, i.e. is not cacheable
+                // '0' is commonly used to indicate that a response expires immediately
                 return 0;
             }
             else
             {
-                final SimpleDateFormat dateParser = new SimpleDateFormat(HEADER_DATE_FORMAT, Locale.ENGLISH);
-
                 try
                 {
-                    return dateParser.parse(expires).getTime();
+                    return HEADER_DATE_FORMAT.parse(expires).getTime();
                 }
                 catch (final ParseException ex)
                 {
@@ -172,23 +217,13 @@ public class CachingHttpWebConnection extends WebConnectionWrapper
         final String lastModified = webResponse.getResponseHeaderValue(HttpHeaderConstants.LAST_MODIFIED);
         if (lastModified != null && lastModified.length() > 0)
         {
-            final SimpleDateFormat dateParser = new SimpleDateFormat(HEADER_DATE_FORMAT, Locale.ENGLISH);
-
             try
             {
-                final long lastModifiedTime = dateParser.parse(lastModified).getTime();
-                final long now = System.currentTimeMillis();
-                final long age = Math.max(now - lastModifiedTime, 0);
+                final long lastModifiedTime = HEADER_DATE_FORMAT.parse(lastModified).getTime();
+                final long age = Math.max(date - lastModifiedTime, 0);
 
-                if (age == 0)
-                {
-                    return 0;
-                }
-                else
-                {
-                    // use 10% of the current age as a heuristic expiration value
-                    return now + age / 10;
-                }
+                // use 10% of the current age as a heuristic expiration value
+                return date + age / 10;
             }
             catch (final ParseException ex)
             {
@@ -276,9 +311,9 @@ public class CachingHttpWebConnection extends WebConnectionWrapper
 
             // check whether the response is cacheable
             final long expires = determineExpirationTime(webResponse);
-            if (webResponse.getStatusCode() == 200 && expires > System.currentTimeMillis())
+            if (webResponse.getStatusCode() == 200 && expires > -1)
             {
-                // yes, put it in the cache
+                // yes, put it in the cache, even if the response is already expired
                 cacheEntry = new CacheEntry();
 
                 cacheEntry.webResponse = webResponse;
@@ -303,7 +338,7 @@ public class CachingHttpWebConnection extends WebConnectionWrapper
 
             // check whether the response is cacheable
             final long expires = determineExpirationTime(webResponse);
-            if (expires > System.currentTimeMillis())
+            if (expires > -1)
             {
                 cacheEntry.expires = expires;
 
@@ -325,7 +360,7 @@ public class CachingHttpWebConnection extends WebConnectionWrapper
                 return cacheEntry.webResponse;
             }
 
-            // either expired or wrong response code
+            // either non-cacheable or wrong response code
             cache.remove(url);
 
             // return the response just read

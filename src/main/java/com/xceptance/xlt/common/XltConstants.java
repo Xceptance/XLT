@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -180,6 +180,11 @@ public final class XltConstants
     public static final List<Pattern> CPT_TIMER_FILENAME_PATTERNS = Stream.of("^timer-wd-.+\\.csv$", "^timer-wd-.+\\.csv\\.gz$")
                                                                           .map(Pattern::compile).collect(Collectors.toList());
 
+    /**
+     * The prefix of custom log files.
+     */
+    public static final String CUSTOM_LOG_PREFIX = "custom_log_";
+    
     /**
      * The option name of the <em>from</em> option on the command line.
      */
