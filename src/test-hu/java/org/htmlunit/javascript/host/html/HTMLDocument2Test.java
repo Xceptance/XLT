@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import org.htmlunit.SimpleWebTestCase;
 import org.htmlunit.WebClient;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.util.Cookie;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -203,7 +203,7 @@ public class HTMLDocument2Test extends SimpleWebTestCase {
             + "  alert(frameDoc.domain);\n"
             + "  try {\n"
             + "    frameDoc.domain = domain;\n"
-            + "  } catch (e) { alert('exception'); }\n"
+            + "  } catch(e) { alert('exception'); }\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='doTest()'>\n"

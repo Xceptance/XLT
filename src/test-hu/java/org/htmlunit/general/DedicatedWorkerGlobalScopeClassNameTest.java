@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,8 @@ import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.javascript.host.css.CSSStyleRule;
 import org.htmlunit.javascript.host.css.CSSStyleSheet;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
 import org.htmlunit.util.MimeType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -45,7 +45,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
                 + "    log('' + e.data);\n"
                 + "  };\n"
                 + "  setTimeout(function() { myWorker.postMessage('test');}, 10);\n"
-                + "} catch(e) { log('exception'); }\n"
+                + "} catch(e) { logEx(e); }\n"
                 + "</script></body></html>\n";
 
         final String workerJs = "onmessage = function(e) {\n"
@@ -55,7 +55,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
                 // normalize FF output
                 + "    clsName = clsName.replace('{\\n    [native code]\\n}', '{ [native code] }');\n"
                 + "    workerResult += clsName;\n"
-                + "  } catch(e) {workerResult = 'exception'}\n"
+                + "  } catch(e) {workerResult = e.name}\n"
                 + "  postMessage(workerResult);\n"
                 + "}\n";
 
@@ -69,7 +69,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void abstractList() throws Exception {
         test("AbstractList");
     }
@@ -78,7 +78,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void abstractRange() throws Exception {
         test("AbstractRange");
     }
@@ -87,7 +87,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void abstractWorker() throws Exception {
         test("AbstractWorker");
     }
@@ -98,7 +98,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void activeXObject() throws Exception {
         test("ActiveXObject");
     }
@@ -107,7 +107,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void ambientLightSensor() throws Exception {
         test("AmbientLightSensor");
     }
@@ -116,7 +116,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void ambientLightSensorReading() throws Exception {
         test("AmbientLightSensorReading");
     }
@@ -127,7 +127,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void analyserNode() throws Exception {
         test("AnalyserNode");
     }
@@ -136,7 +136,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void angle_instanced_arrays() throws Exception {
         test("ANGLE_instanced_arrays");
     }
@@ -145,7 +145,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void animation() throws Exception {
         test("Animation");
     }
@@ -154,7 +154,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void animationEffectReadOnly() throws Exception {
         test("AnimationEffectReadOnly");
     }
@@ -163,7 +163,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void animationEffectTiming() throws Exception {
         test("AnimationEffectTiming");
     }
@@ -172,7 +172,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void animationEffectTimingProperties() throws Exception {
         test("AnimationEffectTimingProperties");
     }
@@ -181,7 +181,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void animationEffectTimingReadOnly() throws Exception {
         test("AnimationEffectTimingReadOnly");
     }
@@ -190,7 +190,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void animationEvent() throws Exception {
         test("AnimationEvent");
     }
@@ -199,7 +199,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void animationPlaybackEvent() throws Exception {
         test("AnimationPlaybackEvent");
     }
@@ -208,7 +208,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void animationPlayer() throws Exception {
         test("AnimationPlayer");
     }
@@ -217,7 +217,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void animationTimeline() throws Exception {
         test("AnimationTimeline");
     }
@@ -226,7 +226,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void appBannerPromptResult() throws Exception {
         test("AppBannerPromptResult");
     }
@@ -237,7 +237,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void applicationCache() throws Exception {
         test("ApplicationCache");
     }
@@ -246,7 +246,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void applicationCacheErrorEvent() throws Exception {
         test("ApplicationCacheErrorEvent");
     }
@@ -255,7 +255,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void apps_mgmt() throws Exception {
         test("Apps.mgmt");
     }
@@ -297,7 +297,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void arrayBufferView() throws Exception {
         test("ArrayBufferView");
     }
@@ -308,7 +308,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void arrayBufferViewBase() throws Exception {
         test("ArrayBufferViewBase");
     }
@@ -317,7 +317,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void asyncFunction() throws Exception {
         test("AsyncFunction");
     }
@@ -337,7 +337,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void attr() throws Exception {
         test("Attr");
     }
@@ -346,7 +346,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void audio() throws Exception {
         test("Audio");
     }
@@ -355,7 +355,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void audioBuffer() throws Exception {
         test("AudioBuffer");
     }
@@ -364,7 +364,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void audioBufferSourceNode() throws Exception {
         test("AudioBufferSourceNode");
     }
@@ -373,7 +373,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void audioChannelManager() throws Exception {
         test("AudioChannelManager");
     }
@@ -382,7 +382,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void audioContext() throws Exception {
         test("AudioContext");
     }
@@ -391,7 +391,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void audioDestinationNode() throws Exception {
         test("AudioDestinationNode");
     }
@@ -400,7 +400,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void audioListener() throws Exception {
         test("AudioListener");
     }
@@ -409,7 +409,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void audioNode() throws Exception {
         test("AudioNode");
     }
@@ -420,7 +420,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void audioParam() throws Exception {
         test("AudioParam");
     }
@@ -429,7 +429,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void audioProcessingEvent() throws Exception {
         test("AudioProcessingEvent");
     }
@@ -438,7 +438,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void audioScheduledSourceNode() throws Exception {
         test("AudioScheduledSourceNode");
     }
@@ -447,7 +447,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void autocompleteErrorEvent() throws Exception {
         test("AutocompleteErrorEvent");
     }
@@ -456,7 +456,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void barProp() throws Exception {
         test("BarProp");
     }
@@ -465,7 +465,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void baseAudioContext() throws Exception {
         test("BaseAudioContext");
     }
@@ -474,7 +474,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void batteryManager() throws Exception {
         test("BatteryManager");
     }
@@ -483,7 +483,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void beforeInstallPrompt() throws Exception {
         test("BeforeInstallPrompt");
     }
@@ -492,7 +492,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void beforeInstallPromptEvent() throws Exception {
         test("BeforeInstallPromptEvent");
     }
@@ -503,7 +503,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void beforeUnloadEvent() throws Exception {
         test("BeforeUnloadEvent");
     }
@@ -512,7 +512,16 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("function BigInt() { [native code] }")
+    public void bigInt() throws Exception {
+        test("BigInt");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("ReferenceError")
     public void biquadFilterNode() throws Exception {
         test("BiquadFilterNode");
     }
@@ -530,7 +539,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void blobBuilder() throws Exception {
         test("BlobBuilder");
     }
@@ -539,7 +548,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void blobEvent() throws Exception {
         test("BlobEvent");
     }
@@ -548,7 +557,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void bluetooth() throws Exception {
         test("Bluetooth");
     }
@@ -557,7 +566,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void bluetoothAdapter() throws Exception {
         test("BluetoothAdapter");
     }
@@ -566,7 +575,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void bluetoothAdvertisingData() throws Exception {
         test("BluetoothAdvertisingData");
     }
@@ -575,7 +584,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void bluetoothCharacteristicProperties() throws Exception {
         test("BluetoothCharacteristicProperties");
     }
@@ -584,7 +593,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void bluetoothDevice() throws Exception {
         test("BluetoothDevice");
     }
@@ -593,7 +602,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void bluetoothDeviceEvent() throws Exception {
         test("BluetoothDeviceEvent");
     }
@@ -602,7 +611,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void bluetoothGATTRemoteServer() throws Exception {
         test("BluetoothGATTRemoteServer");
     }
@@ -611,7 +620,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void bluetoothGATTService() throws Exception {
         test("BluetoothGATTService");
     }
@@ -620,7 +629,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void bluetoothManager() throws Exception {
         test("BluetoothManager");
     }
@@ -629,7 +638,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void bluetoothRemoteGATTCharacteristic() throws Exception {
         test("BluetoothRemoteGATTCharacteristic");
     }
@@ -638,7 +647,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void bluetoothRemoteGATTServer() throws Exception {
         test("BluetoothRemoteGATTServer");
     }
@@ -647,7 +656,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void bluetoothStatusChangedEvent() throws Exception {
         test("BluetoothStatusChangedEvent");
     }
@@ -656,7 +665,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void body() throws Exception {
         test("Body");
     }
@@ -665,7 +674,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void boxObject() throws Exception {
         test("BoxObject");
     }
@@ -683,7 +692,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void budgetService() throws Exception {
         test("BudgetService");
     }
@@ -692,7 +701,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void budgetState() throws Exception {
         test("BudgetState");
     }
@@ -701,7 +710,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void bufferSource() throws Exception {
         test("BufferSource");
     }
@@ -710,7 +719,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void byteString() throws Exception {
         test("ByteString");
     }
@@ -737,7 +746,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void callEvent() throws Exception {
         test("CallEvent");
     }
@@ -746,7 +755,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void cameraCapabilities() throws Exception {
         test("CameraCapabilities");
     }
@@ -755,7 +764,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void cameraControl() throws Exception {
         test("CameraControl");
     }
@@ -764,7 +773,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void cameraManager() throws Exception {
         test("CameraManager");
     }
@@ -773,7 +782,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void canvasCaptureMediaStream() throws Exception {
         test("CanvasCaptureMediaStream");
     }
@@ -782,7 +791,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void canvasCaptureMediaStreamTrack() throws Exception {
         test("CanvasCaptureMediaStreamTrack");
     }
@@ -800,7 +809,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void canvasImageSource() throws Exception {
         test("CanvasImageSource");
     }
@@ -820,7 +829,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void canvasRenderingContext2D() throws Exception {
         test("CanvasRenderingContext2D");
     }
@@ -829,7 +838,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void caretPosition() throws Exception {
         test("CaretPosition");
     }
@@ -840,7 +849,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void cdataSection() throws Exception {
         test("CDATASection");
     }
@@ -851,7 +860,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void channelMergerNode() throws Exception {
         test("ChannelMergerNode");
     }
@@ -860,7 +869,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void channelSplitterNode() throws Exception {
         test("ChannelSplitterNode");
     }
@@ -869,7 +878,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void characterData() throws Exception {
         test("CharacterData");
     }
@@ -880,7 +889,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void characterDataImpl() throws Exception {
         test("CharacterDataImpl");
     }
@@ -889,7 +898,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void childNode() throws Exception {
         test("ChildNode");
     }
@@ -898,7 +907,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void chromeWorker() throws Exception {
         test("ChromeWorker");
     }
@@ -907,7 +916,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void client() throws Exception {
         test("Client");
     }
@@ -918,7 +927,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void clientRect() throws Exception {
         test("ClientRect");
     }
@@ -927,7 +936,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void clientRectList() throws Exception {
         test("ClientRectList");
     }
@@ -936,7 +945,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void clients() throws Exception {
         test("Clients");
     }
@@ -945,7 +954,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void clipboardData() throws Exception {
         test("ClipboardData");
     }
@@ -954,7 +963,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void clipboardEvent() throws Exception {
         test("ClipboardEvent");
     }
@@ -974,7 +983,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void comment() throws Exception {
         test("Comment");
     }
@@ -983,7 +992,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void compositionEvent() throws Exception {
         test("CompositionEvent");
     }
@@ -994,7 +1003,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void computedCSSStyleDeclaration() throws Exception {
         test("ComputedCSSStyleDeclaration");
     }
@@ -1003,7 +1012,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void connection() throws Exception {
         test(HttpHeader.CONNECTION);
     }
@@ -1014,7 +1023,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void console() throws Exception {
         test("Console");
     }
@@ -1023,7 +1032,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void constantSourceNode() throws Exception {
         test("ConstantSourceNode");
     }
@@ -1032,7 +1041,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void constrainBoolean() throws Exception {
         test("ConstrainBoolean");
     }
@@ -1041,7 +1050,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void constrainDOMString() throws Exception {
         test("ConstrainDOMString");
     }
@@ -1050,7 +1059,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void constrainDouble() throws Exception {
         test("ConstrainDouble");
     }
@@ -1059,7 +1068,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void constrainLong() throws Exception {
         test("ConstrainLong");
     }
@@ -1068,7 +1077,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void contactManager() throws Exception {
         test("ContactManager");
     }
@@ -1077,7 +1086,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void convolverNode() throws Exception {
         test("ConvolverNode");
     }
@@ -1088,7 +1097,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void coordinates() throws Exception {
         test("Coordinates");
     }
@@ -1097,7 +1106,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void credential() throws Exception {
         test("Credential");
     }
@@ -1106,7 +1115,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void credentialsContainer() throws Exception {
         test("CredentialsContainer");
     }
@@ -1133,7 +1142,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void css() throws Exception {
         test("CSS");
     }
@@ -1144,7 +1153,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void css2Properties() throws Exception {
         test("CSS2Properties");
     }
@@ -1155,7 +1164,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void cssPageDescriptors() throws Exception {
         test("CSSPageDescriptors");
     }
@@ -1164,7 +1173,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void cssCharsetRule() throws Exception {
         test("CSSCharsetRule");
     }
@@ -1173,7 +1182,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void cssConditionRule() throws Exception {
         test("CSSConditionRule");
     }
@@ -1182,7 +1191,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void cssCounterStyleRule() throws Exception {
         test("CSSCounterStyleRule");
     }
@@ -1193,7 +1202,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void cssFontFaceRule() throws Exception {
         test("CSSFontFaceRule");
     }
@@ -1202,7 +1211,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void cssGroupingRule() throws Exception {
         test("CSSGroupingRule");
     }
@@ -1213,7 +1222,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void cssImportRule() throws Exception {
         test("CSSImportRule");
     }
@@ -1222,7 +1231,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void cssKeyframeRule() throws Exception {
         test("CSSKeyframeRule");
     }
@@ -1231,7 +1240,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void cssKeyframesRule() throws Exception {
         test("CSSKeyframesRule");
     }
@@ -1240,7 +1249,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void cssMatrix() throws Exception {
         test("CSSMatrix");
     }
@@ -1251,7 +1260,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void cssMediaRule() throws Exception {
         test("CSSMediaRule");
     }
@@ -1260,7 +1269,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void cssNamespaceRule() throws Exception {
         test("CSSNamespaceRule");
     }
@@ -1269,7 +1278,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void cssPageRule() throws Exception {
         test("CSSPageRule");
     }
@@ -1280,7 +1289,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void cssPrimitiveValue() throws Exception {
         test("CSSPrimitiveValue");
     }
@@ -1291,7 +1300,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void cssRule() throws Exception {
         test("CSSRule");
     }
@@ -1302,7 +1311,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void cssRuleList() throws Exception {
         test("CSSRuleList");
     }
@@ -1313,7 +1322,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void cssStyleDeclaration() throws Exception {
         test("CSSStyleDeclaration");
     }
@@ -1324,7 +1333,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void cssStyleRule() throws Exception {
         test("CSSStyleRule");
     }
@@ -1335,7 +1344,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void cssStyleSheet() throws Exception {
         test("CSSStyleSheet");
     }
@@ -1344,7 +1353,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void cssSupportsRule() throws Exception {
         test("CSSSupportsRule");
     }
@@ -1353,7 +1362,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void cssUnknownRule() throws Exception {
         test("CSSUnknownRule");
     }
@@ -1364,7 +1373,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void cssValue() throws Exception {
         test("CSSValue");
     }
@@ -1373,7 +1382,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void cssValueList() throws Exception {
         test("CSSValueList");
     }
@@ -1382,7 +1391,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void cssViewportRule() throws Exception {
         test("CSSViewportRule");
     }
@@ -1391,7 +1400,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void customElementRegistry() throws Exception {
         test("CustomElementRegistry");
     }
@@ -1409,7 +1418,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void dataStore() throws Exception {
         test("DataStore");
     }
@@ -1418,7 +1427,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void dataStoreChangeEvent() throws Exception {
         test("DataStoreChangeEvent");
     }
@@ -1427,7 +1436,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void dataStoreCursor() throws Exception {
         test("DataStoreCursor");
     }
@@ -1436,7 +1445,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void dataStoreTask() throws Exception {
         test("DataStoreTask");
     }
@@ -1445,7 +1454,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void dataTransfer() throws Exception {
         test("DataTransfer");
     }
@@ -1454,7 +1463,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void dataTransferItem() throws Exception {
         test("DataTransferItem");
     }
@@ -1463,7 +1472,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void dataTransferItemList() throws Exception {
         test("DataTransferItemList");
     }
@@ -1519,7 +1528,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void delayNode() throws Exception {
         test("DelayNode");
     }
@@ -1528,7 +1537,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void deviceAcceleration() throws Exception {
         test("DeviceAcceleration");
     }
@@ -1537,7 +1546,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void deviceLightEvent() throws Exception {
         test("DeviceLightEvent");
     }
@@ -1546,7 +1555,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void deviceMotionEvent() throws Exception {
         test("DeviceMotionEvent");
     }
@@ -1555,7 +1564,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void deviceOrientationEvent() throws Exception {
         test("DeviceOrientationEvent");
     }
@@ -1564,7 +1573,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void deviceProximityEvent() throws Exception {
         test("DeviceProximityEvent");
     }
@@ -1573,7 +1582,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void deviceRotationRate() throws Exception {
         test("DeviceRotationRate");
     }
@@ -1582,7 +1591,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void deviceStorage() throws Exception {
         test("DeviceStorage");
     }
@@ -1591,7 +1600,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void deviceStorageChangeEvent() throws Exception {
         test("DeviceStorageChangeEvent");
     }
@@ -1600,7 +1609,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void directoryEntry() throws Exception {
         test("DirectoryEntry");
     }
@@ -1609,7 +1618,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void directoryEntrySync() throws Exception {
         test("DirectoryEntrySync");
     }
@@ -1618,7 +1627,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void directoryReader() throws Exception {
         test("DirectoryReader");
     }
@@ -1627,7 +1636,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void directoryReaderSync() throws Exception {
         test("DirectoryReaderSync");
     }
@@ -1638,7 +1647,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void document() throws Exception {
         test("Document");
     }
@@ -1649,7 +1658,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void documentFragment() throws Exception {
         test("DocumentFragment");
     }
@@ -1658,7 +1667,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void documentOrShadowRoot() throws Exception {
         test("DocumentOrShadowRoot");
     }
@@ -1667,7 +1676,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void documentTimeline() throws Exception {
         test("DocumentTimeline");
     }
@@ -1676,7 +1685,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void documentTouch() throws Exception {
         test("DocumentTouch");
     }
@@ -1687,7 +1696,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void documentType() throws Exception {
         test("DocumentType");
     }
@@ -1696,7 +1705,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void domApplication() throws Exception {
         test("DOMApplication");
     }
@@ -1705,7 +1714,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void domApplicationsManager() throws Exception {
         test("DOMApplicationsManager");
     }
@@ -1714,7 +1723,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void domApplicationsRegistry() throws Exception {
         test("DOMApplicationsRegistry");
     }
@@ -1723,7 +1732,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void domConfiguration() throws Exception {
         test("DOMConfiguration");
     }
@@ -1734,7 +1743,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void domCursor() throws Exception {
         test("DOMCursor");
     }
@@ -1743,7 +1752,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void domError() throws Exception {
         test("DOMError");
     }
@@ -1752,7 +1761,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void domErrorHandler() throws Exception {
         test("DOMErrorHandler");
     }
@@ -1772,7 +1781,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void domHighResTimeStamp() throws Exception {
         test("DOMHighResTimeStamp");
     }
@@ -1783,7 +1792,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void domImplementation() throws Exception {
         test("DOMImplementation");
     }
@@ -1792,7 +1801,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void domImplementationList() throws Exception {
         test("DOMImplementationList");
     }
@@ -1801,7 +1810,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void domImplementationRegistry() throws Exception {
         test("DOMImplementationRegistry");
     }
@@ -1810,7 +1819,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void domImplementationSource() throws Exception {
         test("DOMImplementationSource");
     }
@@ -1819,7 +1828,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void domLocator() throws Exception {
         test("DOMLocator");
     }
@@ -1846,7 +1855,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void domObject() throws Exception {
         test("DOMObject");
     }
@@ -1857,7 +1866,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void domParser() throws Exception {
         test("DOMParser");
     }
@@ -1895,7 +1904,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void domRectList() throws Exception {
         test("DOMRectList");
     }
@@ -1913,7 +1922,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void domRequest() throws Exception {
         test("DOMRequest");
     }
@@ -1922,7 +1931,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void domSettableTokenList() throws Exception {
         test("DOMSettableTokenList");
     }
@@ -1931,7 +1940,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void domString() throws Exception {
         test("DOMString");
     }
@@ -1951,7 +1960,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void domStringMap() throws Exception {
         test("DOMStringMap");
     }
@@ -1960,7 +1969,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void domTimeStamp() throws Exception {
         test("DOMTimeStamp");
     }
@@ -1971,7 +1980,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void domTokenList() throws Exception {
         test("DOMTokenList");
     }
@@ -1980,7 +1989,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void domUserData() throws Exception {
         test("DOMUserData");
     }
@@ -1989,7 +1998,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void doubleRange() throws Exception {
         test("DoubleRange");
     }
@@ -1998,7 +2007,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void dragEvent() throws Exception {
         test("DragEvent");
     }
@@ -2007,7 +2016,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void dynamicsCompressorNode() throws Exception {
         test("DynamicsCompressorNode");
     }
@@ -2018,7 +2027,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void element() throws Exception {
         test("Element");
     }
@@ -2027,7 +2036,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void elementTraversal() throws Exception {
         test("ElementTraversal");
     }
@@ -2054,7 +2063,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void entity() throws Exception {
         test("Entity");
     }
@@ -2063,7 +2072,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void entityReference() throws Exception {
         test("EntityReference");
     }
@@ -2072,7 +2081,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void entry() throws Exception {
         test("Entry");
     }
@@ -2081,7 +2090,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void entrySync() throws Exception {
         test("EntrySync");
     }
@@ -2092,7 +2101,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void enumerator() throws Exception {
         test("Enumerator");
     }
@@ -2157,7 +2166,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void eventListener() throws Exception {
         test("EventListener");
     }
@@ -2166,7 +2175,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void eventNode() throws Exception {
         test("EventNode");
     }
@@ -2193,7 +2202,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void ext_blend_minmax() throws Exception {
         test("EXT_blend_minmax");
     }
@@ -2202,7 +2211,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void ext_color_buffer_float() throws Exception {
         test("EXT_color_buffer_float");
     }
@@ -2211,7 +2220,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void ext_color_buffer_half_float() throws Exception {
         test("EXT_color_buffer_half_float");
     }
@@ -2220,7 +2229,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void ext_disjoint_timer_query() throws Exception {
         test("EXT_disjoint_timer_query");
     }
@@ -2229,7 +2238,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void ext_frag_depth() throws Exception {
         test("EXT_frag_depth");
     }
@@ -2238,7 +2247,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void ext_shader_texture_lod() throws Exception {
         test("EXT_shader_texture_lod");
     }
@@ -2247,7 +2256,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void ext_sRGB() throws Exception {
         test("EXT_sRGB");
     }
@@ -2256,7 +2265,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void ext_texture_filter_anisotropic() throws Exception {
         test("EXT_texture_filter_anisotropic");
     }
@@ -2265,7 +2274,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void extendableEvent() throws Exception {
         test("ExtendableEvent");
     }
@@ -2274,7 +2283,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void extendableMessageEvent() throws Exception {
         test("ExtendableMessageEvent");
     }
@@ -2285,7 +2294,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void external() throws Exception {
         test("External");
     }
@@ -2294,7 +2303,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void federatedCredential() throws Exception {
         test("FederatedCredential");
     }
@@ -2303,7 +2312,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void fetchEvent() throws Exception {
         test("FetchEvent");
     }
@@ -2321,7 +2330,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void fileEntry() throws Exception {
         test("FileEntry");
     }
@@ -2330,7 +2339,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void fileEntrySync() throws Exception {
         test("FileEntrySync");
     }
@@ -2339,7 +2348,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void fileError() throws Exception {
         test("FileError");
     }
@@ -2348,7 +2357,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void fileException() throws Exception {
         test("FileException");
     }
@@ -2357,7 +2366,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void fileHandle() throws Exception {
         test("FileHandle");
     }
@@ -2385,7 +2394,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      */
     @Test
     @Alerts("function FileReaderSync() { [native code] }")
-    @HtmlUnitNYI(CHROME = "exception", EDGE = "exception", FF = "exception", FF_ESR = "exception")
+    @HtmlUnitNYI(CHROME = "ReferenceError", EDGE = "ReferenceError", FF = "ReferenceError", FF_ESR = "ReferenceError")
     public void fileReaderSync() throws Exception {
         test("FileReaderSync");
     }
@@ -2394,7 +2403,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void fileRequest() throws Exception {
         test("FileRequest");
     }
@@ -2403,7 +2412,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void fileSystem() throws Exception {
         test("FileSystem");
     }
@@ -2412,7 +2421,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void fileSystemDirectoryEntry() throws Exception {
         test("FileSystemDirectoryEntry");
     }
@@ -2421,7 +2430,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void fileSystemDirectoryReader() throws Exception {
         test("FileSystemDirectoryReader");
     }
@@ -2430,7 +2439,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void fileSystemEntry() throws Exception {
         test("FileSystemEntry");
     }
@@ -2439,7 +2448,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void fileSystemFileEntry() throws Exception {
         test("FileSystemFileEntry");
     }
@@ -2448,7 +2457,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void fileSystemFlags() throws Exception {
         test("FileSystemFlags");
     }
@@ -2457,7 +2466,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void fileSystemSync() throws Exception {
         test("FileSystemSync");
     }
@@ -2488,7 +2497,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void fMRadio() throws Exception {
         test("FMRadio");
     }
@@ -2497,7 +2506,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void focusEvent() throws Exception {
         test("FocusEvent");
     }
@@ -2515,7 +2524,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "exception",
+    @Alerts(DEFAULT = "ReferenceError",
             FF = "function FontFaceSet() { [native code] }",
             FF_ESR = "function FontFaceSet() { [native code] }")
     public void fontFaceSet() throws Exception {
@@ -2526,7 +2535,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void formChild() throws Exception {
         test("FormChild");
     }
@@ -2546,7 +2555,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void formField() throws Exception {
         test("FormField");
     }
@@ -2564,7 +2573,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void gainNode() throws Exception {
         test("GainNode");
     }
@@ -2573,7 +2582,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void gamepad() throws Exception {
         test("Gamepad");
     }
@@ -2582,7 +2591,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void gamepadButton() throws Exception {
         test("GamepadButton");
     }
@@ -2591,7 +2600,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void gamepadEvent() throws Exception {
         test("GamepadEvent");
     }
@@ -2600,7 +2609,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void generator() throws Exception {
         test("Generator");
     }
@@ -2609,7 +2618,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void generatorFunction() throws Exception {
         test("GeneratorFunction");
     }
@@ -2620,7 +2629,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void geolocation() throws Exception {
         test("Geolocation");
     }
@@ -2631,7 +2640,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void geolocationCoordinates() throws Exception {
         test("GeolocationCoordinates");
     }
@@ -2642,7 +2651,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void geolocationPosition() throws Exception {
         test("GeolocationPosition");
     }
@@ -2653,7 +2662,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void geolocationPositionError() throws Exception {
         test("GeolocationPositionError");
     }
@@ -2662,7 +2671,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void gestureEvent() throws Exception {
         test("GestureEvent");
     }
@@ -2671,7 +2680,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void globalEventHandlers() throws Exception {
         test("GlobalEventHandlers");
     }
@@ -2680,7 +2689,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void globalFetch() throws Exception {
         test("GlobalFetch");
     }
@@ -2691,7 +2700,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void hashChangeEvent() throws Exception {
         test("HashChangeEvent");
     }
@@ -2711,7 +2720,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void history() throws Exception {
         test("History");
     }
@@ -2720,7 +2729,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void hMDVRDevice() throws Exception {
         test("HMDVRDevice");
     }
@@ -2731,7 +2740,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlAllCollection() throws Exception {
         test("HTMLAllCollection");
     }
@@ -2742,7 +2751,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlAnchorElement() throws Exception {
         test("HTMLAnchorElement");
     }
@@ -2753,7 +2762,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlAppletElement() throws Exception {
         test("HTMLAppletElement");
     }
@@ -2764,7 +2773,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlAreaElement() throws Exception {
         test("HTMLAreaElement");
     }
@@ -2775,7 +2784,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlAudioElement() throws Exception {
         test("HTMLAudioElement");
     }
@@ -2786,7 +2795,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlBaseElement() throws Exception {
         test("HTMLBaseElement");
     }
@@ -2797,7 +2806,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlBaseFontElement() throws Exception {
         test("HTMLBaseFontElement");
     }
@@ -2808,7 +2817,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlBGSoundElement() throws Exception {
         test("HTMLBGSoundElement");
     }
@@ -2819,7 +2828,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlBlockElement() throws Exception {
         test("HTMLBlockElement");
     }
@@ -2830,7 +2839,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlBlockQuoteElement() throws Exception {
         test("HTMLBlockQuoteElement");
     }
@@ -2841,7 +2850,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlBodyElement() throws Exception {
         test("HTMLBodyElement");
     }
@@ -2852,7 +2861,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlBRElement() throws Exception {
         test("HTMLBRElement");
     }
@@ -2863,7 +2872,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlButtonElement() throws Exception {
         test("HTMLButtonElement");
     }
@@ -2874,7 +2883,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlCanvasElement() throws Exception {
         test("HTMLCanvasElement");
     }
@@ -2885,7 +2894,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlCollection() throws Exception {
         test("HTMLCollection");
     }
@@ -2896,7 +2905,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlCommentElement() throws Exception {
         test("HTMLCommentElement");
     }
@@ -2905,7 +2914,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlContentElement() throws Exception {
         test("HTMLContentElement");
     }
@@ -2914,7 +2923,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlDataElement() throws Exception {
         test("HTMLDataElement");
     }
@@ -2925,7 +2934,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlDataListElement() throws Exception {
         test("HTMLDataListElement");
     }
@@ -2936,7 +2945,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlDDElement() throws Exception {
         test("HTMLDDElement");
     }
@@ -2947,7 +2956,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlDefinitionDescriptionElement() throws Exception {
         test("HTMLDefinitionDescriptionElement");
     }
@@ -2958,7 +2967,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlDefinitionTermElement() throws Exception {
         test("HTMLDefinitionTermElement");
     }
@@ -2969,7 +2978,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlDetailsElement() throws Exception {
         test("HTMLDetailsElement");
     }
@@ -2980,7 +2989,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlDialogElement() throws Exception {
         test("HTMLDialogElement");
     }
@@ -2991,7 +3000,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlDirectoryElement() throws Exception {
         test("HTMLDirectoryElement");
     }
@@ -3002,7 +3011,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlDivElement() throws Exception {
         test("HTMLDivElement");
     }
@@ -3013,7 +3022,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlDListElement() throws Exception {
         test("HTMLDListElement");
     }
@@ -3024,7 +3033,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlDocument() throws Exception {
         test("HTMLDocument");
     }
@@ -3035,7 +3044,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlDTElement() throws Exception {
         test("HTMLDTElement");
     }
@@ -3046,7 +3055,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlElement() throws Exception {
         test("HTMLElement");
     }
@@ -3057,7 +3066,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlEmbedElement() throws Exception {
         test("HTMLEmbedElement");
     }
@@ -3068,7 +3077,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlFieldSetElement() throws Exception {
         test("HTMLFieldSetElement");
     }
@@ -3079,7 +3088,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlFontElement() throws Exception {
         test("HTMLFontElement");
     }
@@ -3088,7 +3097,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlFormControlsCollection() throws Exception {
         test("HTMLFormControlsCollection");
     }
@@ -3099,7 +3108,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlFormElement() throws Exception {
         test("HTMLFormElement");
     }
@@ -3110,7 +3119,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlFrameElement() throws Exception {
         test("HTMLFrameElement");
     }
@@ -3121,7 +3130,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlFrameSetElement() throws Exception {
         test("HTMLFrameSetElement");
     }
@@ -3132,7 +3141,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlGenericElement() throws Exception {
         test("HTMLGenericElement");
     }
@@ -3143,7 +3152,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlHeadElement() throws Exception {
         test("HTMLHeadElement");
     }
@@ -3154,7 +3163,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlHeadingElement() throws Exception {
         test("HTMLHeadingElement");
     }
@@ -3165,7 +3174,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlHRElement() throws Exception {
         test("HTMLHRElement");
     }
@@ -3176,7 +3185,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlHtmlElement() throws Exception {
         test("HTMLHtmlElement");
     }
@@ -3185,7 +3194,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlHyperlinkElementUtils() throws Exception {
         test("HTMLHyperlinkElementUtils");
     }
@@ -3196,7 +3205,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlIFrameElement() throws Exception {
         test("HTMLIFrameElement");
     }
@@ -3207,7 +3216,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlImageElement() throws Exception {
         test("HTMLImageElement");
     }
@@ -3218,7 +3227,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlInlineQuotationElement() throws Exception {
         test("HTMLInlineQuotationElement");
     }
@@ -3229,7 +3238,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlInputElement() throws Exception {
         test("HTMLInputElement");
     }
@@ -3240,7 +3249,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlIsIndexElement() throws Exception {
         test("HTMLIsIndexElement");
     }
@@ -3249,7 +3258,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlKeygenElement() throws Exception {
         test("HTMLKeygenElement");
     }
@@ -3260,7 +3269,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlLabelElement() throws Exception {
         test("HTMLLabelElement");
     }
@@ -3271,7 +3280,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlLegendElement() throws Exception {
         test("HTMLLegendElement");
     }
@@ -3282,7 +3291,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlLIElement() throws Exception {
         test("HTMLLIElement");
     }
@@ -3293,7 +3302,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlLinkElement() throws Exception {
         test("HTMLLinkElement");
     }
@@ -3304,7 +3313,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlListElement() throws Exception {
         test("HTMLListElement");
     }
@@ -3315,7 +3324,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlMapElement() throws Exception {
         test("HTMLMapElement");
     }
@@ -3326,7 +3335,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlMarqueeElement() throws Exception {
         test("HTMLMarqueeElement");
     }
@@ -3337,7 +3346,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlMediaElement() throws Exception {
         test("HTMLMediaElement");
     }
@@ -3348,7 +3357,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlMenuElement() throws Exception {
         test("HTMLMenuElement");
     }
@@ -3357,7 +3366,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlMenuItemElement() throws Exception {
         test("HTMLMenuItemElement");
     }
@@ -3368,7 +3377,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlMetaElement() throws Exception {
         test("HTMLMetaElement");
     }
@@ -3379,7 +3388,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlMeterElement() throws Exception {
         test("HTMLMeterElement");
     }
@@ -3390,7 +3399,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlModElement() throws Exception {
         test("HTMLModElement");
     }
@@ -3401,7 +3410,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlNextIdElement() throws Exception {
         test("HTMLNextIdElement");
     }
@@ -3410,7 +3419,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlNoShowElement() throws Exception {
         test("HTMLNoShowElement");
     }
@@ -3421,7 +3430,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlObjectElement() throws Exception {
         test("HTMLObjectElement");
     }
@@ -3432,7 +3441,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlOListElement() throws Exception {
         test("HTMLOListElement");
     }
@@ -3443,7 +3452,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlOptGroupElement() throws Exception {
         test("HTMLOptGroupElement");
     }
@@ -3454,7 +3463,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlOptionElement() throws Exception {
         test("HTMLOptionElement");
     }
@@ -3465,7 +3474,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlOptionsCollection() throws Exception {
         test("HTMLOptionsCollection");
     }
@@ -3476,7 +3485,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlOutputElement() throws Exception {
         test("HTMLOutputElement");
     }
@@ -3487,7 +3496,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlParagraphElement() throws Exception {
         test("HTMLParagraphElement");
     }
@@ -3498,7 +3507,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlParamElement() throws Exception {
         test("HTMLParamElement");
     }
@@ -3509,7 +3518,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlPhraseElement() throws Exception {
         test("HTMLPhraseElement");
     }
@@ -3518,7 +3527,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlPictureElement() throws Exception {
         test("HTMLPictureElement");
     }
@@ -3529,7 +3538,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlPreElement() throws Exception {
         test("HTMLPreElement");
     }
@@ -3540,7 +3549,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlProgressElement() throws Exception {
         test("HTMLProgressElement");
     }
@@ -3551,7 +3560,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlQuoteElement() throws Exception {
         test("HTMLQuoteElement");
     }
@@ -3562,7 +3571,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlScriptElement() throws Exception {
         test("HTMLScriptElement");
     }
@@ -3573,7 +3582,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlSelectElement() throws Exception {
         test("HTMLSelectElement");
     }
@@ -3584,7 +3593,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlShadowElement() throws Exception {
         test("HTMLShadowElement");
     }
@@ -3593,7 +3602,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlSlotElement() throws Exception {
         test("HTMLSlotElement");
     }
@@ -3604,7 +3613,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlSourceElement() throws Exception {
         test("HTMLSourceElement");
     }
@@ -3615,7 +3624,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlSpanElement() throws Exception {
         test("HTMLSpanElement");
     }
@@ -3626,7 +3635,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlStyleElement() throws Exception {
         test("HTMLStyleElement");
     }
@@ -3637,7 +3646,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlTableCaptionElement() throws Exception {
         test("HTMLTableCaptionElement");
     }
@@ -3648,7 +3657,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlTableCellElement() throws Exception {
         test("HTMLTableCellElement");
     }
@@ -3659,7 +3668,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlTableColElement() throws Exception {
         test("HTMLTableColElement");
     }
@@ -3670,7 +3679,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlTableComponent() throws Exception {
         test("HTMLTableComponent");
     }
@@ -3681,7 +3690,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlTableDataCellElement() throws Exception {
         test("HTMLTableDataCellElement");
     }
@@ -3692,7 +3701,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlTableElement() throws Exception {
         test("HTMLTableElement");
     }
@@ -3703,7 +3712,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlTableHeaderCellElement() throws Exception {
         test("HTMLTableHeaderCellElement");
     }
@@ -3714,7 +3723,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlTableRowElement() throws Exception {
         test("HTMLTableRowElement");
     }
@@ -3725,7 +3734,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlTableSectionElement() throws Exception {
         test("HTMLTableSectionElement");
     }
@@ -3734,7 +3743,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlTemplateElement() throws Exception {
         test("HTMLTemplateElement");
     }
@@ -3745,7 +3754,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlTextAreaElement() throws Exception {
         test("HTMLTextAreaElement");
     }
@@ -3754,7 +3763,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlTextElement() throws Exception {
         test("HTMLTextElement");
     }
@@ -3765,7 +3774,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlTimeElement() throws Exception {
         test("HTMLTimeElement");
     }
@@ -3776,7 +3785,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlTitleElement() throws Exception {
         test("HTMLTitleElement");
     }
@@ -3787,7 +3796,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlTrackElement() throws Exception {
         test("HTMLTrackElement");
     }
@@ -3798,7 +3807,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlUListElement() throws Exception {
         test("HTMLUListElement");
     }
@@ -3809,7 +3818,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlUnknownElement() throws Exception {
         test("HTMLUnknownElement");
     }
@@ -3820,7 +3829,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlVideoElement() throws Exception {
         test("HTMLVideoElement");
     }
@@ -3829,7 +3838,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void htmlWBRElement() throws Exception {
         test("HTMLWBRElement");
     }
@@ -3847,7 +3856,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void idbCursorSync() throws Exception {
         test("IDBCursorSync");
     }
@@ -3874,7 +3883,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void idbDatabaseException() throws Exception {
         test("IDBDatabaseException");
     }
@@ -3883,7 +3892,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void idbDatabaseSync() throws Exception {
         test("IDBDatabaseSync");
     }
@@ -3892,7 +3901,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void idbEnvironment() throws Exception {
         test("IDBEnvironment");
     }
@@ -3901,7 +3910,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void idbEnvironmentSync() throws Exception {
         test("IDBEnvironmentSync");
     }
@@ -3919,7 +3928,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void idbFactorySync() throws Exception {
         test("IDBFactorySync");
     }
@@ -3937,7 +3946,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void idbIndexSync() throws Exception {
         test("IDBIndexSync");
     }
@@ -3955,7 +3964,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void idbLocaleAwareKeyRange() throws Exception {
         test("IDBLocaleAwareKeyRange");
     }
@@ -3964,7 +3973,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void idbMutableFile() throws Exception {
         test("IDBMutableFile");
     }
@@ -3982,7 +3991,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void idbObjectStoreSync() throws Exception {
         test("IDBObjectStoreSync");
     }
@@ -4018,7 +4027,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void idbTransactionSync() throws Exception {
         test("IDBTransactionSync");
     }
@@ -4036,7 +4045,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void idbVersionChangeRequest() throws Exception {
         test("IDBVersionChangeRequest");
     }
@@ -4045,7 +4054,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void identityManager() throws Exception {
         test("IdentityManager");
     }
@@ -4054,7 +4063,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void idleDeadline() throws Exception {
         test("IdleDeadline");
     }
@@ -4063,7 +4072,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void iirFilterNode() throws Exception {
         test("IIRFilterNode");
     }
@@ -4074,7 +4083,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void image() throws Exception {
         test("Image");
     }
@@ -4092,7 +4101,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void imageBitmapFactories() throws Exception {
         test("ImageBitmapFactories");
     }
@@ -4119,7 +4128,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void index() throws Exception {
         test("Index");
     }
@@ -4128,7 +4137,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void indexedDB() throws Exception {
         test("IndexedDB");
     }
@@ -4146,7 +4155,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void inputDeviceCapabilities() throws Exception {
         test("InputDeviceCapabilities");
     }
@@ -4155,7 +4164,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void inputEvent() throws Exception {
         test("InputEvent");
     }
@@ -4164,7 +4173,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void inputMethodContext() throws Exception {
         test("InputMethodContext");
     }
@@ -4173,7 +4182,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void installEvent() throws Exception {
         test("InstallEvent");
     }
@@ -4182,7 +4191,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void installTrigger() throws Exception {
         test("InstallTrigger");
     }
@@ -4191,7 +4200,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void installTriggerImpl() throws Exception {
         test("InstallTriggerImpl");
     }
@@ -4233,7 +4242,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "exception",
+    @Alerts(DEFAULT = "ReferenceError",
             FF = "function InternalError() { [native code] }",
             FF_ESR = "function InternalError() { [native code] }")
     @HtmlUnitNYI(CHROME = "function InternalError() { [native code] }",
@@ -4246,7 +4255,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void intersectionObserver() throws Exception {
         test("IntersectionObserver");
     }
@@ -4255,7 +4264,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void intersectionObserverEntry() throws Exception {
         test("IntersectionObserverEntry");
     }
@@ -4321,7 +4330,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "function Iterator() { [native code] }",
-            FF_ESR = "exception")
+            FF_ESR = "ReferenceError")
     public void iterator() throws Exception {
         test("Iterator");
     }
@@ -4341,7 +4350,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void keyboardEvent() throws Exception {
         test("KeyboardEvent");
     }
@@ -4350,7 +4359,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void keyframeEffect() throws Exception {
         test("KeyframeEffect");
     }
@@ -4359,7 +4368,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void keyframeEffectReadOnly() throws Exception {
         test("KeyframeEffectReadOnly");
     }
@@ -4368,7 +4377,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void l10n() throws Exception {
         test("L10n");
     }
@@ -4377,7 +4386,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void l10n_formatValue() throws Exception {
         test("L10n.formatValue");
     }
@@ -4386,7 +4395,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void l10n_get() throws Exception {
         test("L10n.get");
     }
@@ -4395,7 +4404,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void l10n_language_code() throws Exception {
         test("L10n.language.code");
     }
@@ -4404,7 +4413,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void l10n_language_direction() throws Exception {
         test("L10n.language.direction");
     }
@@ -4413,7 +4422,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void l10n_once() throws Exception {
         test("L10n.once");
     }
@@ -4422,7 +4431,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void l10n_ready() throws Exception {
         test("L10n.ready");
     }
@@ -4431,7 +4440,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void l10n_readyState() throws Exception {
         test("L10n.readyState");
     }
@@ -4440,7 +4449,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void l10n_setAttributes() throws Exception {
         test("L10n.setAttributes");
     }
@@ -4449,7 +4458,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void linkStyle() throws Exception {
         test("LinkStyle");
     }
@@ -4458,7 +4467,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void localFileSystem() throws Exception {
         test("LocalFileSystem");
     }
@@ -4467,7 +4476,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void localFileSystemSync() throws Exception {
         test("LocalFileSystemSync");
     }
@@ -4478,7 +4487,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void localMediaStream() throws Exception {
         test("LocalMediaStream");
     }
@@ -4489,7 +4498,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void location() throws Exception {
         test("Location");
     }
@@ -4498,7 +4507,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void lockedFile() throws Exception {
         test("LockedFile");
     }
@@ -4507,7 +4516,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void longRange() throws Exception {
         test("LongRange");
     }
@@ -4534,7 +4543,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mediaDeviceInfo() throws Exception {
         test("MediaDeviceInfo");
     }
@@ -4543,7 +4552,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mediaDevices() throws Exception {
         test("MediaDevices");
     }
@@ -4552,7 +4561,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mediaElementAudioSourceNode() throws Exception {
         test("MediaElementAudioSourceNode");
     }
@@ -4561,7 +4570,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mediaEncryptedEvent() throws Exception {
         test("MediaEncryptedEvent");
     }
@@ -4570,7 +4579,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mediaError() throws Exception {
         test("MediaError");
     }
@@ -4579,7 +4588,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mediaKeyError() throws Exception {
         test("MediaKeyError");
     }
@@ -4588,7 +4597,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mediaKeyEvent() throws Exception {
         test("MediaKeyEvent");
     }
@@ -4597,7 +4606,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mediaKeyMessageEvent() throws Exception {
         test("MediaKeyMessageEvent");
     }
@@ -4606,7 +4615,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mediaKeys() throws Exception {
         test("MediaKeys");
     }
@@ -4615,7 +4624,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mediaKeySession() throws Exception {
         test("MediaKeySession");
     }
@@ -4624,7 +4633,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mediaKeyStatusMap() throws Exception {
         test("MediaKeyStatusMap");
     }
@@ -4633,7 +4642,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mediaKeySystemAccess() throws Exception {
         test("MediaKeySystemAccess");
     }
@@ -4642,7 +4651,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mediaKeySystemConfiguration() throws Exception {
         test("MediaKeySystemConfiguration");
     }
@@ -4653,7 +4662,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mediaList() throws Exception {
         test("MediaList");
     }
@@ -4662,7 +4671,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mediaQueryList() throws Exception {
         test("MediaQueryList");
     }
@@ -4671,7 +4680,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mediaQueryListEvent() throws Exception {
         test("MediaQueryListEvent");
     }
@@ -4680,7 +4689,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mediaQueryListListener() throws Exception {
         test("MediaQueryListListener");
     }
@@ -4689,7 +4698,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mediaRecorder() throws Exception {
         test("MediaRecorder");
     }
@@ -4699,8 +4708,8 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "function MediaSource() { [native code] }",
-            FF = "exception",
-            FF_ESR = "exception")
+            FF = "ReferenceError",
+            FF_ESR = "ReferenceError")
     public void mediaSource() throws Exception {
         test("MediaSource");
     }
@@ -4709,7 +4718,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mediaStream() throws Exception {
         test("MediaStream");
     }
@@ -4718,7 +4727,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mediaStreamAudioDestinationNode() throws Exception {
         test("MediaStreamAudioDestinationNode");
     }
@@ -4727,7 +4736,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mediaStreamAudioSourceNode() throws Exception {
         test("MediaStreamAudioSourceNode");
     }
@@ -4736,7 +4745,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mediaStreamConstraints() throws Exception {
         test("MediaStreamConstraints");
     }
@@ -4745,7 +4754,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mediaStreamEvent() throws Exception {
         test("MediaStreamEvent");
     }
@@ -4754,7 +4763,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mediaStreamTrack() throws Exception {
         test("MediaStreamTrack");
     }
@@ -4763,7 +4772,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mediaStreamTrackEvent() throws Exception {
         test("MediaStreamTrackEvent");
     }
@@ -4772,7 +4781,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mediaTrackConstraints() throws Exception {
         test("MediaTrackConstraints");
     }
@@ -4781,7 +4790,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mediaTrackSettings() throws Exception {
         test("MediaTrackSettings");
     }
@@ -4790,7 +4799,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mediaTrackSupportedConstraints() throws Exception {
         test("MediaTrackSupportedConstraints");
     }
@@ -4832,7 +4841,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void metadata() throws Exception {
         test("Metadata");
     }
@@ -4841,7 +4850,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void midiAccess() throws Exception {
         test("MIDIAccess");
     }
@@ -4850,7 +4859,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void midiConnectionEvent() throws Exception {
         test("MIDIConnectionEvent");
     }
@@ -4859,7 +4868,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void midiInput() throws Exception {
         test("MIDIInput");
     }
@@ -4868,7 +4877,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void midiInputMap() throws Exception {
         test("MIDIInputMap");
     }
@@ -4877,7 +4886,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void midiMessageEvent() throws Exception {
         test("MIDIMessageEvent");
     }
@@ -4886,7 +4895,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void midiOutput() throws Exception {
         test("MIDIOutput");
     }
@@ -4895,7 +4904,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void midiOutputMap() throws Exception {
         test("MIDIOutputMap");
     }
@@ -4904,7 +4913,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void midiPort() throws Exception {
         test("MIDIPort");
     }
@@ -4915,7 +4924,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mimeType() throws Exception {
         test("MimeType");
     }
@@ -4926,7 +4935,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mimeTypeArray() throws Exception {
         test("MimeTypeArray");
     }
@@ -4937,7 +4946,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mouseEvent() throws Exception {
         test("MouseEvent");
     }
@@ -4946,7 +4955,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mouseScrollEvent() throws Exception {
         test("MouseScrollEvent");
     }
@@ -4955,7 +4964,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mouseWheelEvent() throws Exception {
         test("MouseWheelEvent");
     }
@@ -4964,7 +4973,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mozActivity() throws Exception {
         test("MozActivity");
     }
@@ -4973,7 +4982,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mozActivityOptions() throws Exception {
         test("MozActivityOptions");
     }
@@ -4982,7 +4991,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mozActivityRequestHandler() throws Exception {
         test("MozActivityRequestHandler");
     }
@@ -4991,7 +5000,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mozAlarmsManager() throws Exception {
         test("MozAlarmsManager");
     }
@@ -5000,7 +5009,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mozContact() throws Exception {
         test("MozContact");
     }
@@ -5009,7 +5018,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mozContactChangeEvent() throws Exception {
         test("MozContactChangeEvent");
     }
@@ -5018,7 +5027,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mozCSSKeyframesRule() throws Exception {
         test("MozCSSKeyframesRule");
     }
@@ -5027,7 +5036,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mozIccManager() throws Exception {
         test("MozIccManager");
     }
@@ -5036,7 +5045,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mozMmsEvent() throws Exception {
         test("MozMmsEvent");
     }
@@ -5045,7 +5054,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mozMmsMessage() throws Exception {
         test("MozMmsMessage");
     }
@@ -5054,7 +5063,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mozMobileCellInfo() throws Exception {
         test("MozMobileCellInfo");
     }
@@ -5063,7 +5072,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mozMobileCFInfo() throws Exception {
         test("MozMobileCFInfo");
     }
@@ -5072,7 +5081,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mozMobileConnection() throws Exception {
         test("MozMobileConnection");
     }
@@ -5081,7 +5090,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mozMobileConnectionInfo() throws Exception {
         test("MozMobileConnectionInfo");
     }
@@ -5090,7 +5099,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mozMobileICCInfo() throws Exception {
         test("MozMobileICCInfo");
     }
@@ -5099,7 +5108,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mozMobileMessageManager() throws Exception {
         test("MozMobileMessageManager");
     }
@@ -5108,7 +5117,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mozMobileMessageThread() throws Exception {
         test("MozMobileMessageThread");
     }
@@ -5117,7 +5126,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mozMobileNetworkInfo() throws Exception {
         test("MozMobileNetworkInfo");
     }
@@ -5126,7 +5135,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mozNDEFRecord() throws Exception {
         test("MozNDEFRecord");
     }
@@ -5135,7 +5144,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mozNetworkStats() throws Exception {
         test("MozNetworkStats");
     }
@@ -5144,7 +5153,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mozNetworkStatsData() throws Exception {
         test("MozNetworkStatsData");
     }
@@ -5153,7 +5162,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mozNetworkStatsManager() throws Exception {
         test("MozNetworkStatsManager");
     }
@@ -5162,7 +5171,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mozNFC() throws Exception {
         test("MozNFC");
     }
@@ -5171,7 +5180,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mozNFCPeer() throws Exception {
         test("MozNFCPeer");
     }
@@ -5180,7 +5189,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mozNFCTag() throws Exception {
         test("MozNFCTag");
     }
@@ -5189,7 +5198,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mozPowerManager() throws Exception {
         test("MozPowerManager");
     }
@@ -5198,7 +5207,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mozRTCIceCandidate() throws Exception {
         test("mozRTCIceCandidate");
     }
@@ -5207,7 +5216,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mozRTCPeerConnection() throws Exception {
         test("mozRTCPeerConnection");
     }
@@ -5216,7 +5225,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mozRTCSessionDescription() throws Exception {
         test("mozRTCSessionDescription");
     }
@@ -5225,7 +5234,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mozSettingsEvent() throws Exception {
         test("MozSettingsEvent");
     }
@@ -5234,7 +5243,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mozSmsEvent() throws Exception {
         test("MozSmsEvent");
     }
@@ -5243,7 +5252,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mozSmsFilter() throws Exception {
         test("MozSmsFilter");
     }
@@ -5252,7 +5261,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mozSmsManager() throws Exception {
         test("MozSmsManager");
     }
@@ -5261,7 +5270,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mozSmsMessage() throws Exception {
         test("MozSmsMessage");
     }
@@ -5270,7 +5279,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mozSmsSegmentInfo() throws Exception {
         test("MozSmsSegmentInfo");
     }
@@ -5279,7 +5288,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mozSocial() throws Exception {
         test("MozSocial");
     }
@@ -5288,7 +5297,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mozTimeManager() throws Exception {
         test("MozTimeManager");
     }
@@ -5297,7 +5306,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mozVoicemail() throws Exception {
         test("MozVoicemail");
     }
@@ -5306,7 +5315,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mozVoicemailEvent() throws Exception {
         test("MozVoicemailEvent");
     }
@@ -5315,7 +5324,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mozVoicemailStatus() throws Exception {
         test("MozVoicemailStatus");
     }
@@ -5324,7 +5333,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mozWifiConnectionInfoEvent() throws Exception {
         test("MozWifiConnectionInfoEvent");
     }
@@ -5333,7 +5342,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mozWifiP2pGroupOwner() throws Exception {
         test("MozWifiP2pGroupOwner");
     }
@@ -5342,7 +5351,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mozWifiP2pManager() throws Exception {
         test("MozWifiP2pManager");
     }
@@ -5351,7 +5360,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mozWifiStatusChangeEvent() throws Exception {
         test("MozWifiStatusChangeEvent");
     }
@@ -5362,7 +5371,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void msCurrentStyleCSSProperties() throws Exception {
         test("MSCurrentStyleCSSProperties");
     }
@@ -5371,7 +5380,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void msGestureEvent() throws Exception {
         test("MSGestureEvent");
     }
@@ -5382,7 +5391,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void msStyleCSSProperties() throws Exception {
         test("MSStyleCSSProperties");
     }
@@ -5393,7 +5402,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mutationEvent() throws Exception {
         test("MutationEvent");
     }
@@ -5402,7 +5411,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mutationObserver() throws Exception {
         test("MutationObserver");
     }
@@ -5411,7 +5420,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void mutationRecord() throws Exception {
         test("MutationRecord");
     }
@@ -5422,7 +5431,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void namedNodeMap() throws Exception {
         test("NamedNodeMap");
     }
@@ -5431,7 +5440,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void nameList() throws Exception {
         test("NameList");
     }
@@ -5442,7 +5451,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void namespace() throws Exception {
         test("Namespace");
     }
@@ -5453,7 +5462,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void namespaceCollection() throws Exception {
         test("NamespaceCollection");
     }
@@ -5473,7 +5482,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void nativeXPathNSResolver() throws Exception {
         test("NativeXPathNSResolver");
     }
@@ -5484,7 +5493,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void navigator() throws Exception {
         test("Navigator");
     }
@@ -5493,7 +5502,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void navigatorConcurrentHardware() throws Exception {
         test("NavigatorConcurrentHardware");
     }
@@ -5502,7 +5511,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void navigatorGeolocation() throws Exception {
         test("NavigatorGeolocation");
     }
@@ -5511,7 +5520,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void navigatorID() throws Exception {
         test("NavigatorID");
     }
@@ -5520,7 +5529,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void navigatorLanguage() throws Exception {
         test("NavigatorLanguage");
     }
@@ -5529,7 +5538,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void navigatorOnLine() throws Exception {
         test("NavigatorOnLine");
     }
@@ -5538,7 +5547,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void navigatorPlugins() throws Exception {
         test("NavigatorPlugins");
     }
@@ -5547,7 +5556,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void navigatorStorage() throws Exception {
         test("NavigatorStorage");
     }
@@ -5559,8 +5568,8 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "function NetworkInformation() { [native code] }",
-            FF = "exception",
-            FF_ESR = "exception")
+            FF = "ReferenceError",
+            FF_ESR = "ReferenceError")
     public void networkInformation() throws Exception {
         test("NetworkInformation");
     }
@@ -5571,7 +5580,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void node() throws Exception {
         test("Node");
     }
@@ -5582,7 +5591,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void nodeFilter() throws Exception {
         test("NodeFilter");
     }
@@ -5591,7 +5600,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void nodeIterator() throws Exception {
         test("NodeIterator");
     }
@@ -5602,7 +5611,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void nodeList() throws Exception {
         test("NodeList");
     }
@@ -5611,7 +5620,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void nonDocumentTypeChildNode() throws Exception {
         test("NonDocumentTypeChildNode");
     }
@@ -5620,7 +5629,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void notation() throws Exception {
         test("Notation");
     }
@@ -5640,7 +5649,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void notificationEvent() throws Exception {
         test("NotificationEvent");
     }
@@ -5649,7 +5658,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void notifyAudioAvailableEvent() throws Exception {
         test("NotifyAudioAvailableEvent");
     }
@@ -5676,7 +5685,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void oes_element_index_uint() throws Exception {
         test("OES_element_index_uint");
     }
@@ -5685,7 +5694,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void oes_standard_derivatives() throws Exception {
         test("OES_standard_derivatives");
     }
@@ -5694,7 +5703,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void oes_texture_float() throws Exception {
         test("OES_texture_float");
     }
@@ -5703,7 +5712,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void oes_texture_float_linear() throws Exception {
         test("OES_texture_float_linear");
     }
@@ -5712,7 +5721,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void oes_texture_half_float() throws Exception {
         test("OES_texture_half_float");
     }
@@ -5721,7 +5730,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void oes_texture_half_float_linear() throws Exception {
         test("OES_texture_half_float_linear");
     }
@@ -5730,7 +5739,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void oes_vertex_array_object() throws Exception {
         test("OES_vertex_array_object");
     }
@@ -5739,7 +5748,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void offlineAudioCompletionEvent() throws Exception {
         test("OfflineAudioCompletionEvent");
     }
@@ -5748,7 +5757,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void offlineAudioContext() throws Exception {
         test("OfflineAudioContext");
     }
@@ -5759,7 +5768,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void offlineResourceList() throws Exception {
         test("OfflineResourceList");
     }
@@ -5769,7 +5778,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      */
     @Test
     @Alerts("function OffscreenCanvas() { [native code] }")
-    @HtmlUnitNYI(CHROME = "exception", EDGE = "exception", FF = "exception", FF_ESR = "exception")
+    @HtmlUnitNYI(CHROME = "ReferenceError", EDGE = "ReferenceError", FF = "ReferenceError", FF_ESR = "ReferenceError")
     public void offscreenCanvas() throws Exception {
         test("OffscreenCanvas");
     }
@@ -5780,7 +5789,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void option() throws Exception {
         test("Option");
     }
@@ -5789,7 +5798,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void oscillatorNode() throws Exception {
         test("OscillatorNode");
     }
@@ -5798,7 +5807,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void overflowEvent() throws Exception {
         test("OverflowEvent");
     }
@@ -5807,7 +5816,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void pageTransitionEvent() throws Exception {
         test("PageTransitionEvent");
     }
@@ -5816,7 +5825,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void pannerNode() throws Exception {
         test("PannerNode");
     }
@@ -5825,7 +5834,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void parallelArray() throws Exception {
         test("ParallelArray");
     }
@@ -5834,7 +5843,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void parentNode() throws Exception {
         test("ParentNode");
     }
@@ -5861,7 +5870,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void passwordCredential() throws Exception {
         test("PasswordCredential");
     }
@@ -5881,7 +5890,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void paymentAddress() throws Exception {
         test("PaymentAddress");
     }
@@ -5890,7 +5899,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void paymentRequest() throws Exception {
         test("PaymentRequest");
     }
@@ -5899,7 +5908,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void paymentResponse() throws Exception {
         test("PaymentResponse");
     }
@@ -5926,7 +5935,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void performanceFrameTiming() throws Exception {
         test("PerformanceFrameTiming");
     }
@@ -5953,7 +5962,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void performanceNavigation() throws Exception {
         test("PerformanceNavigation");
     }
@@ -5962,7 +5971,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void performanceNavigationTiming() throws Exception {
         test("PerformanceNavigationTiming");
     }
@@ -5998,7 +6007,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void performanceTiming() throws Exception {
         test("PerformanceTiming");
     }
@@ -6007,7 +6016,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void periodicSyncEvent() throws Exception {
         test("PeriodicSyncEvent");
     }
@@ -6017,8 +6026,8 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "function PeriodicSyncManager() { [native code] }",
-            FF = "exception",
-            FF_ESR = "exception")
+            FF = "ReferenceError",
+            FF_ESR = "ReferenceError")
     public void periodicSyncManager() throws Exception {
         test("PeriodicSyncManager");
     }
@@ -6027,7 +6036,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void periodicSyncRegistration() throws Exception {
         test("PeriodicSyncRegistration");
     }
@@ -6036,7 +6045,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void periodicWave() throws Exception {
         test("PeriodicWave");
     }
@@ -6046,8 +6055,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "function Permissions() { [native code] }",
-            FF = "exception",
-            FF_ESR = "exception")
+            FF_ESR = "ReferenceError")
     public void permissions() throws Exception {
         test("Permissions");
     }
@@ -6056,7 +6064,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void permissionSettings() throws Exception {
         test("PermissionSettings");
     }
@@ -6066,8 +6074,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "function PermissionStatus() { [native code] }",
-            FF = "exception",
-            FF_ESR = "exception")
+            FF_ESR = "ReferenceError")
     public void permissionStatus() throws Exception {
         test("PermissionStatus");
     }
@@ -6078,7 +6085,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void plugin() throws Exception {
         test("Plugin");
     }
@@ -6089,7 +6096,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void pluginArray() throws Exception {
         test("PluginArray");
     }
@@ -6098,7 +6105,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void point() throws Exception {
         test("Point");
     }
@@ -6109,7 +6116,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void pointerEvent() throws Exception {
         test("PointerEvent");
     }
@@ -6118,7 +6125,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void popStateEvent() throws Exception {
         test("PopStateEvent");
     }
@@ -6127,7 +6134,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void popup() throws Exception {
         test("Popup");
     }
@@ -6136,7 +6143,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void portCollection() throws Exception {
         test("PortCollection");
     }
@@ -6147,7 +6154,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void position() throws Exception {
         test("Position");
     }
@@ -6156,7 +6163,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void positionError() throws Exception {
         test("PositionError");
     }
@@ -6165,7 +6172,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void positionOptions() throws Exception {
         test("PositionOptions");
     }
@@ -6174,7 +6181,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void positionSensorVRDevice() throws Exception {
         test("PositionSensorVRDevice");
     }
@@ -6183,7 +6190,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void powerManager() throws Exception {
         test("PowerManager");
     }
@@ -6192,7 +6199,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void presentation() throws Exception {
         test("Presentation");
     }
@@ -6201,7 +6208,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void presentationAvailability() throws Exception {
         test("PresentationAvailability");
     }
@@ -6210,7 +6217,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void presentationConnection() throws Exception {
         test("PresentationConnection");
     }
@@ -6219,7 +6226,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void presentationConnectionAvailableEvent() throws Exception {
         test("PresentationConnectionAvailableEvent");
     }
@@ -6228,7 +6235,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void presentationConnectionClosedEvent() throws Exception {
         test("PresentationConnectionClosedEvent");
     }
@@ -6237,7 +6244,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void presentationConnectionCloseEvent() throws Exception {
         test("PresentationConnectionCloseEvent");
     }
@@ -6246,7 +6253,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void presentationConnectionList() throws Exception {
         test("PresentationConnectionList");
     }
@@ -6255,7 +6262,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void presentationReceiver() throws Exception {
         test("PresentationReceiver");
     }
@@ -6264,7 +6271,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void presentationRequest() throws Exception {
         test("PresentationRequest");
     }
@@ -6275,7 +6282,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void processingInstruction() throws Exception {
         test("ProcessingInstruction");
     }
@@ -6302,7 +6309,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void promiseRejection() throws Exception {
         test("PromiseRejection");
     }
@@ -6320,7 +6327,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void promiseResolver() throws Exception {
         test("PromiseResolver");
     }
@@ -6338,7 +6345,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void pushEvent() throws Exception {
         test("PushEvent");
     }
@@ -6348,8 +6355,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "function PushManager() { [native code] }",
-            FF = "exception",
-            FF_ESR = "exception")
+            FF_ESR = "ReferenceError")
     public void pushManager() throws Exception {
         test("PushManager");
     }
@@ -6358,7 +6364,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void pushMessageData() throws Exception {
         test("PushMessageData");
     }
@@ -6367,7 +6373,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void pushRegistrationManager() throws Exception {
         test("PushRegistrationManager");
     }
@@ -6377,8 +6383,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "function PushSubscription() { [native code] }",
-            FF = "exception",
-            FF_ESR = "exception")
+            FF_ESR = "ReferenceError")
     public void pushSubscription() throws Exception {
         test("PushSubscription");
     }
@@ -6388,8 +6393,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "function PushSubscriptionOptions() { [native code] }",
-            FF = "exception",
-            FF_ESR = "exception")
+            FF_ESR = "ReferenceError")
     public void pushSubscriptionOptions() throws Exception {
         test("PushSubscriptionOptions");
     }
@@ -6398,7 +6402,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void radioNodeList() throws Exception {
         test("RadioNodeList");
     }
@@ -6407,7 +6411,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void randomSource() throws Exception {
         test("RandomSource");
     }
@@ -6418,7 +6422,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void range() throws Exception {
         test("Range");
     }
@@ -6436,7 +6440,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void readableByteStream() throws Exception {
         test("ReadableByteStream");
     }
@@ -6481,7 +6485,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void remotePlayback() throws Exception {
         test("RemotePlayback");
     }
@@ -6490,7 +6494,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void renderingContext() throws Exception {
         test("RenderingContext");
     }
@@ -6519,7 +6523,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void rowContainer() throws Exception {
         test("RowContainer");
     }
@@ -6528,7 +6532,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void rtcCertificate() throws Exception {
         test("RTCCertificate");
     }
@@ -6537,7 +6541,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void rtcConfiguration() throws Exception {
         test("RTCConfiguration");
     }
@@ -6547,9 +6551,9 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "function RTCDataChannel() { [native code] }",
-            FF = "exception",
-            FF_ESR = "exception")
-    @HtmlUnitNYI(CHROME = "exception", EDGE = "exception")
+            FF = "ReferenceError",
+            FF_ESR = "ReferenceError")
+    @HtmlUnitNYI(CHROME = "ReferenceError", EDGE = "ReferenceError")
     public void rtcDataChannel() throws Exception {
         test("RTCDataChannel");
     }
@@ -6558,7 +6562,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void rtcDataChannelEvent() throws Exception {
         test("RTCDataChannelEvent");
     }
@@ -6567,7 +6571,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void rtcIceCandidate() throws Exception {
         test("RTCIceCandidate");
     }
@@ -6576,7 +6580,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void rtcIceServer() throws Exception {
         test("RTCIceServer");
     }
@@ -6585,7 +6589,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void rtcIdentityAssertion() throws Exception {
         test("RTCIdentityAssertion");
     }
@@ -6594,7 +6598,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void rtcIdentityErrorEvent() throws Exception {
         test("RTCIdentityErrorEvent");
     }
@@ -6603,7 +6607,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void rtcIdentityEvent() throws Exception {
         test("RTCIdentityEvent");
     }
@@ -6612,7 +6616,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void rtcPeerConnection() throws Exception {
         test("RTCPeerConnection");
     }
@@ -6621,7 +6625,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void rtcPeerConnectionIceEvent() throws Exception {
         test("RTCPeerConnectionIceEvent");
     }
@@ -6630,7 +6634,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void rtcSctpTransport() throws Exception {
         test("RTCSctpTransport");
     }
@@ -6639,7 +6643,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void rtcSessionDescription() throws Exception {
         test("RTCSessionDescription");
     }
@@ -6648,7 +6652,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void rtcSessionDescriptionCallback() throws Exception {
         test("RTCSessionDescriptionCallback");
     }
@@ -6657,7 +6661,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void rtcStatsReport() throws Exception {
         test("RTCStatsReport");
     }
@@ -6668,7 +6672,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void screen() throws Exception {
         test("Screen");
     }
@@ -6677,7 +6681,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void screenOrientation() throws Exception {
         test("ScreenOrientation");
     }
@@ -6686,7 +6690,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void scriptProcessorNode() throws Exception {
         test("ScriptProcessorNode");
     }
@@ -6696,8 +6700,8 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "function SecurityPolicyViolationEvent() { [native code] }",
-            FF = "exception",
-            FF_ESR = "exception")
+            FF = "ReferenceError",
+            FF_ESR = "ReferenceError")
     public void securityPolicyViolationEvent() throws Exception {
         test("SecurityPolicyViolationEvent");
     }
@@ -6708,7 +6712,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void selection() throws Exception {
         test("Selection");
     }
@@ -6717,7 +6721,9 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts(DEFAULT = "ReferenceError",
+            FF = "function ServiceWorker() { [native code] }")
+    @HtmlUnitNYI(FF = "ReferenceError")
     public void serviceWorker() throws Exception {
         test("ServiceWorker");
     }
@@ -6726,7 +6732,9 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts(DEFAULT = "ReferenceError",
+            FF = "function ServiceWorkerContainer() { [native code] }")
+    @HtmlUnitNYI(FF = "ReferenceError")
     public void serviceWorkerContainer() throws Exception {
         test("ServiceWorkerContainer");
     }
@@ -6735,7 +6743,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void serviceWorkerGlobalScope() throws Exception {
         test("ServiceWorkerGlobalScope");
     }
@@ -6744,7 +6752,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void serviceWorkerMessageEvent() throws Exception {
         test("ServiceWorkerMessageEvent");
     }
@@ -6754,8 +6762,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "function ServiceWorkerRegistration() { [native code] }",
-            FF = "exception",
-            FF_ESR = "exception")
+            FF_ESR = "ReferenceError")
     public void serviceWorkerRegistration() throws Exception {
         test("ServiceWorkerRegistration");
     }
@@ -6764,7 +6771,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void serviceWorkerState() throws Exception {
         test("ServiceWorkerState");
     }
@@ -6782,7 +6789,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void settingsLock() throws Exception {
         test("SettingsLock");
     }
@@ -6791,7 +6798,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void settingsManager() throws Exception {
         test("SettingsManager");
     }
@@ -6802,7 +6809,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void shadowRoot() throws Exception {
         test("ShadowRoot");
     }
@@ -6811,7 +6818,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void sharedArrayBuffer() throws Exception {
         test("SharedArrayBuffer");
     }
@@ -6820,7 +6827,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void sharedKeyframeList() throws Exception {
         test("SharedKeyframeList");
     }
@@ -6831,7 +6838,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void sharedWorker() throws Exception {
         test("SharedWorker");
     }
@@ -6840,7 +6847,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void sharedWorkerGlobalScope() throws Exception {
         test("SharedWorkerGlobalScope");
     }
@@ -6849,7 +6856,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void simd() throws Exception {
         test("SIMD");
     }
@@ -6858,7 +6865,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void simd_Bool16x8() throws Exception {
         test("SIMD.Bool16x8");
     }
@@ -6867,7 +6874,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void simd_Bool32x4() throws Exception {
         test("SIMD.Bool32x4");
     }
@@ -6876,7 +6883,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void simd_Bool64x2() throws Exception {
         test("SIMD.Bool64x2");
     }
@@ -6885,7 +6892,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void simd_Bool8x16() throws Exception {
         test("SIMD.Bool8x16");
     }
@@ -6894,7 +6901,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void simd_float32x4() throws Exception {
         test("SIMD.float32x4");
     }
@@ -6903,7 +6910,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void simd_Float32x4() throws Exception {
         test("SIMD.Float32x4");
     }
@@ -6912,7 +6919,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void simd_float64x2() throws Exception {
         test("SIMD.float64x2");
     }
@@ -6921,7 +6928,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void simd_Float64x2() throws Exception {
         test("SIMD.Float64x2");
     }
@@ -6930,7 +6937,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void simd_int16x8() throws Exception {
         test("SIMD.int16x8");
     }
@@ -6939,7 +6946,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void simd_Int16x8() throws Exception {
         test("SIMD.Int16x8");
     }
@@ -6948,7 +6955,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void simd_int32x4() throws Exception {
         test("SIMD.int32x4");
     }
@@ -6957,7 +6964,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void simd_Int32x4() throws Exception {
         test("SIMD.Int32x4");
     }
@@ -6966,7 +6973,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void simd_int8x16() throws Exception {
         test("SIMD.int8x16");
     }
@@ -6975,7 +6982,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void simd_Int8x16() throws Exception {
         test("SIMD.Int8x16");
     }
@@ -6984,7 +6991,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void simd_Uint16x8() throws Exception {
         test("SIMD.Uint16x8");
     }
@@ -6993,7 +7000,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void simd_Uint32x4() throws Exception {
         test("SIMD.Uint32x4");
     }
@@ -7002,7 +7009,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void simd_Uint8x16() throws Exception {
         test("SIMD.Uint8x16");
     }
@@ -7013,7 +7020,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void simpleArray() throws Exception {
         test("SimpleArray");
     }
@@ -7022,7 +7029,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void siteBoundCredential() throws Exception {
         test("SiteBoundCredential");
     }
@@ -7032,8 +7039,8 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "function SourceBuffer() { [native code] }",
-            FF = "exception",
-            FF_ESR = "exception")
+            FF = "ReferenceError",
+            FF_ESR = "ReferenceError")
     public void sourceBuffer() throws Exception {
         test("SourceBuffer");
     }
@@ -7043,8 +7050,8 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "function SourceBufferList() { [native code] }",
-            FF = "exception",
-            FF_ESR = "exception")
+            FF = "ReferenceError",
+            FF_ESR = "ReferenceError")
     public void sourceBufferList() throws Exception {
         test("SourceBufferList");
     }
@@ -7053,7 +7060,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void speechGrammar() throws Exception {
         test("SpeechGrammar");
     }
@@ -7062,7 +7069,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void speechGrammarList() throws Exception {
         test("SpeechGrammarList");
     }
@@ -7071,7 +7078,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void speechRecognition() throws Exception {
         test("SpeechRecognition");
     }
@@ -7080,7 +7087,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void speechRecognitionAlternative() throws Exception {
         test("SpeechRecognitionAlternative");
     }
@@ -7089,7 +7096,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void speechRecognitionError() throws Exception {
         test("SpeechRecognitionError");
     }
@@ -7098,7 +7105,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void speechRecognitionErrorEvent() throws Exception {
         test("SpeechRecognitionErrorEvent");
     }
@@ -7107,7 +7114,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void speechRecognitionEvent() throws Exception {
         test("SpeechRecognitionEvent");
     }
@@ -7116,7 +7123,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void speechRecognitionResult() throws Exception {
         test("SpeechRecognitionResult");
     }
@@ -7125,7 +7132,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void speechRecognitionResultList() throws Exception {
         test("SpeechRecognitionResultList");
     }
@@ -7134,7 +7141,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void speechSynthesis() throws Exception {
         test("SpeechSynthesis");
     }
@@ -7143,7 +7150,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void speechSynthesisErrorEvent() throws Exception {
         test("SpeechSynthesisErrorEvent");
     }
@@ -7152,7 +7159,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void speechSynthesisEvent() throws Exception {
         test("SpeechSynthesisEvent");
     }
@@ -7161,7 +7168,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void speechSynthesisUtterance() throws Exception {
         test("SpeechSynthesisUtterance");
     }
@@ -7170,7 +7177,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void speechSynthesisVoice() throws Exception {
         test("SpeechSynthesisVoice");
     }
@@ -7179,7 +7186,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void staticNodeList() throws Exception {
         test("StaticNodeList");
     }
@@ -7188,7 +7195,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void stereoPannerNode() throws Exception {
         test("StereoPannerNode");
     }
@@ -7199,7 +7206,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void stopIteration() throws Exception {
         test("StopIteration");
     }
@@ -7210,7 +7217,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void storage() throws Exception {
         test("Storage");
     }
@@ -7219,7 +7226,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void storageEstimate() throws Exception {
         test("StorageEstimate");
     }
@@ -7228,7 +7235,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void storageEvent() throws Exception {
         test("StorageEvent");
     }
@@ -7246,7 +7253,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void storageQuota() throws Exception {
         test("StorageQuota");
     }
@@ -7264,7 +7271,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void styleMedia() throws Exception {
         test("StyleMedia");
     }
@@ -7273,7 +7280,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void styleSheet() throws Exception {
         test("StyleSheet");
     }
@@ -7284,7 +7291,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void styleSheetList() throws Exception {
         test("StyleSheetList");
     }
@@ -7293,7 +7300,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void submitEvent() throws Exception {
         test("SubmitEvent");
     }
@@ -7313,7 +7320,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgAElement() throws Exception {
         test("SVGAElement");
     }
@@ -7322,7 +7329,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgAltGlyphElement() throws Exception {
         test("SVGAltGlyphElement");
     }
@@ -7333,7 +7340,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgAngle() throws Exception {
         test("SVGAngle");
     }
@@ -7342,7 +7349,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgAnimateColorElement() throws Exception {
         test("SVGAnimateColorElement");
     }
@@ -7351,7 +7358,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgAnimatedAngle() throws Exception {
         test("SVGAnimatedAngle");
     }
@@ -7360,7 +7367,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgAnimatedBoolean() throws Exception {
         test("SVGAnimatedBoolean");
     }
@@ -7369,7 +7376,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgAnimatedEnumeration() throws Exception {
         test("SVGAnimatedEnumeration");
     }
@@ -7378,7 +7385,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgAnimatedInteger() throws Exception {
         test("SVGAnimatedInteger");
     }
@@ -7387,7 +7394,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgAnimatedLength() throws Exception {
         test("SVGAnimatedLength");
     }
@@ -7396,7 +7403,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgAnimatedLengthList() throws Exception {
         test("SVGAnimatedLengthList");
     }
@@ -7405,7 +7412,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgAnimatedNumber() throws Exception {
         test("SVGAnimatedNumber");
     }
@@ -7414,7 +7421,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgAnimatedNumberList() throws Exception {
         test("SVGAnimatedNumberList");
     }
@@ -7423,7 +7430,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgAnimatedPoints() throws Exception {
         test("SVGAnimatedPoints");
     }
@@ -7432,7 +7439,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgAnimatedPreserveAspectRatio() throws Exception {
         test("SVGAnimatedPreserveAspectRatio");
     }
@@ -7441,7 +7448,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgAnimatedRect() throws Exception {
         test("SVGAnimatedRect");
     }
@@ -7450,7 +7457,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgAnimatedString() throws Exception {
         test("SVGAnimatedString");
     }
@@ -7459,7 +7466,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgAnimatedTransformList() throws Exception {
         test("SVGAnimatedTransformList");
     }
@@ -7470,7 +7477,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgAnimateElement() throws Exception {
         test("SVGAnimateElement");
     }
@@ -7481,7 +7488,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgAnimateMotionElement() throws Exception {
         test("SVGAnimateMotionElement");
     }
@@ -7492,7 +7499,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgAnimateTransformElement() throws Exception {
         test("SVGAnimateTransformElement");
     }
@@ -7501,7 +7508,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgAnimationElement() throws Exception {
         test("SVGAnimationElement");
     }
@@ -7512,7 +7519,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgCircleElement() throws Exception {
         test("SVGCircleElement");
     }
@@ -7523,7 +7530,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgClipPathElement() throws Exception {
         test("SVGClipPathElement");
     }
@@ -7532,7 +7539,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgComponentTransferFunctionElement() throws Exception {
         test("SVGComponentTransferFunctionElement");
     }
@@ -7541,7 +7548,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgCursorElement() throws Exception {
         test("SVGCursorElement");
     }
@@ -7552,7 +7559,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgDefsElement() throws Exception {
         test("SVGDefsElement");
     }
@@ -7563,7 +7570,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgDescElement() throws Exception {
         test("SVGDescElement");
     }
@@ -7572,7 +7579,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgDiscardElement() throws Exception {
         test("SVGDiscardElement");
     }
@@ -7581,7 +7588,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgDocument() throws Exception {
         test("SVGDocument");
     }
@@ -7592,7 +7599,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgElement() throws Exception {
         test("SVGElement");
     }
@@ -7603,7 +7610,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgEllipseElement() throws Exception {
         test("SVGEllipseElement");
     }
@@ -7612,7 +7619,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgEvent() throws Exception {
         test("SVGEvent");
     }
@@ -7623,7 +7630,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgFEBlendElement() throws Exception {
         test("SVGFEBlendElement");
     }
@@ -7634,7 +7641,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgFEColorMatrixElement() throws Exception {
         test("SVGFEColorMatrixElement");
     }
@@ -7645,7 +7652,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgFEComponentTransferElement() throws Exception {
         test("SVGFEComponentTransferElement");
     }
@@ -7656,7 +7663,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgFECompositeElement() throws Exception {
         test("SVGFECompositeElement");
     }
@@ -7667,7 +7674,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgFEConvolveMatrixElement() throws Exception {
         test("SVGFEConvolveMatrixElement");
     }
@@ -7678,7 +7685,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgFEDiffuseLightingElement() throws Exception {
         test("SVGFEDiffuseLightingElement");
     }
@@ -7689,7 +7696,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgFEDisplacementMapElement() throws Exception {
         test("SVGFEDisplacementMapElement");
     }
@@ -7700,7 +7707,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgFEDistantLightElement() throws Exception {
         test("SVGFEDistantLightElement");
     }
@@ -7709,7 +7716,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgFEDropShadowElement() throws Exception {
         test("SVGFEDropShadowElement");
     }
@@ -7720,7 +7727,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgFEFloodElement() throws Exception {
         test("SVGFEFloodElement");
     }
@@ -7731,7 +7738,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgFEFuncAElement() throws Exception {
         test("SVGFEFuncAElement");
     }
@@ -7742,7 +7749,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgFEFuncBElement() throws Exception {
         test("SVGFEFuncBElement");
     }
@@ -7753,7 +7760,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgFEFuncGElement() throws Exception {
         test("SVGFEFuncGElement");
     }
@@ -7764,7 +7771,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgFEFuncRElement() throws Exception {
         test("SVGFEFuncRElement");
     }
@@ -7775,7 +7782,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgFEGaussianBlurElement() throws Exception {
         test("SVGFEGaussianBlurElement");
     }
@@ -7786,7 +7793,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgFEImageElement() throws Exception {
         test("SVGFEImageElement");
     }
@@ -7797,7 +7804,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgFEMergeElement() throws Exception {
         test("SVGFEMergeElement");
     }
@@ -7808,7 +7815,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgFEMergeNodeElement() throws Exception {
         test("SVGFEMergeNodeElement");
     }
@@ -7819,7 +7826,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgFEMorphologyElement() throws Exception {
         test("SVGFEMorphologyElement");
     }
@@ -7830,7 +7837,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgFEOffsetElement() throws Exception {
         test("SVGFEOffsetElement");
     }
@@ -7841,7 +7848,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgFEPointLightElement() throws Exception {
         test("SVGFEPointLightElement");
     }
@@ -7852,7 +7859,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgFESpecularLightingElement() throws Exception {
         test("SVGFESpecularLightingElement");
     }
@@ -7863,7 +7870,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgFESpotLightElement() throws Exception {
         test("SVGFESpotLightElement");
     }
@@ -7874,7 +7881,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgFETileElement() throws Exception {
         test("SVGFETileElement");
     }
@@ -7885,7 +7892,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgFETurbulenceElement() throws Exception {
         test("SVGFETurbulenceElement");
     }
@@ -7896,7 +7903,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgFilterElement() throws Exception {
         test("SVGFilterElement");
     }
@@ -7905,7 +7912,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgFontElement() throws Exception {
         test("SVGFontElement");
     }
@@ -7914,7 +7921,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgFontFaceElement() throws Exception {
         test("SVGFontFaceElement");
     }
@@ -7923,7 +7930,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgFontFaceFormatElement() throws Exception {
         test("SVGFontFaceFormatElement");
     }
@@ -7932,7 +7939,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgFontFaceNameElement() throws Exception {
         test("SVGFontFaceNameElement");
     }
@@ -7941,7 +7948,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgFontFaceSrcElement() throws Exception {
         test("SVGFontFaceSrcElement");
     }
@@ -7950,7 +7957,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgFontFaceUriElement() throws Exception {
         test("SVGFontFaceUriElement");
     }
@@ -7961,7 +7968,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgForeignObjectElement() throws Exception {
         test("SVGForeignObjectElement");
     }
@@ -7972,7 +7979,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgGElement() throws Exception {
         test("SVGGElement");
     }
@@ -7981,7 +7988,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgGeometryElement() throws Exception {
         test("SVGGeometryElement");
     }
@@ -7990,7 +7997,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgGlyphElement() throws Exception {
         test("SVGGlyphElement");
     }
@@ -7999,7 +8006,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgGradientElement() throws Exception {
         test("SVGGradientElement");
     }
@@ -8008,7 +8015,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgGraphicsElement() throws Exception {
         test("SVGGraphicsElement");
     }
@@ -8017,7 +8024,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgHKernElement() throws Exception {
         test("SVGHKernElement");
     }
@@ -8028,7 +8035,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgImageElement() throws Exception {
         test("SVGImageElement");
     }
@@ -8037,7 +8044,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgLength() throws Exception {
         test("SVGLength");
     }
@@ -8046,7 +8053,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgLengthList() throws Exception {
         test("SVGLengthList");
     }
@@ -8057,7 +8064,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgLinearGradientElement() throws Exception {
         test("SVGLinearGradientElement");
     }
@@ -8068,7 +8075,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgLineElement() throws Exception {
         test("SVGLineElement");
     }
@@ -8079,7 +8086,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgMarkerElement() throws Exception {
         test("SVGMarkerElement");
     }
@@ -8090,7 +8097,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgMaskElement() throws Exception {
         test("SVGMaskElement");
     }
@@ -8101,7 +8108,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgMatrix() throws Exception {
         test("SVGMatrix");
     }
@@ -8112,7 +8119,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgMetadataElement() throws Exception {
         test("SVGMetadataElement");
     }
@@ -8121,7 +8128,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgMissingGlyphElement() throws Exception {
         test("SVGMissingGlyphElement");
     }
@@ -8132,7 +8139,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgMPathElement() throws Exception {
         test("SVGMPathElement");
     }
@@ -8141,7 +8148,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgNumber() throws Exception {
         test("SVGNumber");
     }
@@ -8150,7 +8157,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgNumberList() throws Exception {
         test("SVGNumberList");
     }
@@ -8161,7 +8168,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgPathElement() throws Exception {
         test("SVGPathElement");
     }
@@ -8170,7 +8177,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgPathSeg() throws Exception {
         test("SVGPathSeg");
     }
@@ -8179,7 +8186,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgPathSegArcAbs() throws Exception {
         test("SVGPathSegArcAbs");
     }
@@ -8188,7 +8195,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgPathSegArcRel() throws Exception {
         test("SVGPathSegArcRel");
     }
@@ -8197,7 +8204,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgPathSegClosePath() throws Exception {
         test("SVGPathSegClosePath");
     }
@@ -8206,7 +8213,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgPathSegCurvetoCubicAbs() throws Exception {
         test("SVGPathSegCurvetoCubicAbs");
     }
@@ -8215,7 +8222,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgPathSegCurvetoCubicRel() throws Exception {
         test("SVGPathSegCurvetoCubicRel");
     }
@@ -8224,7 +8231,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgPathSegCurvetoCubicSmoothAbs() throws Exception {
         test("SVGPathSegCurvetoCubicSmoothAbs");
     }
@@ -8233,7 +8240,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgPathSegCurvetoCubicSmoothRel() throws Exception {
         test("SVGPathSegCurvetoCubicSmoothRel");
     }
@@ -8242,7 +8249,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgPathSegCurvetoQuadraticAbs() throws Exception {
         test("SVGPathSegCurvetoQuadraticAbs");
     }
@@ -8251,7 +8258,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgPathSegCurvetoQuadraticRel() throws Exception {
         test("SVGPathSegCurvetoQuadraticRel");
     }
@@ -8260,7 +8267,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgPathSegCurvetoQuadraticSmoothAbs() throws Exception {
         test("SVGPathSegCurvetoQuadraticSmoothAbs");
     }
@@ -8269,7 +8276,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgPathSegCurvetoQuadraticSmoothRel() throws Exception {
         test("SVGPathSegCurvetoQuadraticSmoothRel");
     }
@@ -8278,7 +8285,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgPathSegLinetoAbs() throws Exception {
         test("SVGPathSegLinetoAbs");
     }
@@ -8287,7 +8294,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgPathSegLinetoHorizontalAbs() throws Exception {
         test("SVGPathSegLinetoHorizontalAbs");
     }
@@ -8296,7 +8303,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgPathSegLinetoHorizontalRel() throws Exception {
         test("SVGPathSegLinetoHorizontalRel");
     }
@@ -8305,7 +8312,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgPathSegLinetoRel() throws Exception {
         test("SVGPathSegLinetoRel");
     }
@@ -8314,7 +8321,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgPathSegLinetoVerticalAbs() throws Exception {
         test("SVGPathSegLinetoVerticalAbs");
     }
@@ -8323,7 +8330,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgPathSegLinetoVerticalRel() throws Exception {
         test("SVGPathSegLinetoVerticalRel");
     }
@@ -8332,7 +8339,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgPathSegList() throws Exception {
         test("SVGPathSegList");
     }
@@ -8341,7 +8348,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgPathSegMovetoAbs() throws Exception {
         test("SVGPathSegMovetoAbs");
     }
@@ -8350,7 +8357,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgPathSegMovetoRel() throws Exception {
         test("SVGPathSegMovetoRel");
     }
@@ -8361,7 +8368,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgPatternElement() throws Exception {
         test("SVGPatternElement");
     }
@@ -8370,7 +8377,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgPoint() throws Exception {
         test("SVGPoint");
     }
@@ -8379,7 +8386,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgPointList() throws Exception {
         test("SVGPointList");
     }
@@ -8390,7 +8397,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgPolygonElement() throws Exception {
         test("SVGPolygonElement");
     }
@@ -8401,7 +8408,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgPolylineElement() throws Exception {
         test("SVGPolylineElement");
     }
@@ -8410,7 +8417,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgPreserveAspectRatio() throws Exception {
         test("SVGPreserveAspectRatio");
     }
@@ -8421,7 +8428,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgRadialGradientElement() throws Exception {
         test("SVGRadialGradientElement");
     }
@@ -8432,7 +8439,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgRect() throws Exception {
         test("SVGRect");
     }
@@ -8443,7 +8450,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgRectElement() throws Exception {
         test("SVGRectElement");
     }
@@ -8452,7 +8459,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgRenderingIntent() throws Exception {
         test("SVGRenderingIntent");
     }
@@ -8463,7 +8470,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgScriptElement() throws Exception {
         test("SVGScriptElement");
     }
@@ -8474,7 +8481,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgSetElement() throws Exception {
         test("SVGSetElement");
     }
@@ -8485,7 +8492,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgStopElement() throws Exception {
         test("SVGStopElement");
     }
@@ -8494,7 +8501,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgStringList() throws Exception {
         test("SVGStringList");
     }
@@ -8503,7 +8510,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgStylable() throws Exception {
         test("SVGStylable");
     }
@@ -8514,7 +8521,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgStyleElement() throws Exception {
         test("SVGStyleElement");
     }
@@ -8525,7 +8532,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgSVGElement() throws Exception {
         test("SVGSVGElement");
     }
@@ -8536,7 +8543,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgSwitchElement() throws Exception {
         test("SVGSwitchElement");
     }
@@ -8547,7 +8554,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgSymbolElement() throws Exception {
         test("SVGSymbolElement");
     }
@@ -8556,7 +8563,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgTests() throws Exception {
         test("SVGTests");
     }
@@ -8565,7 +8572,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgTextContentElement() throws Exception {
         test("SVGTextContentElement");
     }
@@ -8576,7 +8583,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgTextElement() throws Exception {
         test("SVGTextElement");
     }
@@ -8587,7 +8594,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgTextPathElement() throws Exception {
         test("SVGTextPathElement");
     }
@@ -8596,7 +8603,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgTextPositioningElement() throws Exception {
         test("SVGTextPositioningElement");
     }
@@ -8607,7 +8614,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgTitleElement() throws Exception {
         test("SVGTitleElement");
     }
@@ -8616,7 +8623,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgTransform() throws Exception {
         test("SVGTransform");
     }
@@ -8625,7 +8632,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgTransformable() throws Exception {
         test("SVGTransformable");
     }
@@ -8634,7 +8641,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgTransformList() throws Exception {
         test("SVGTransformList");
     }
@@ -8643,7 +8650,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgTRefElement() throws Exception {
         test("SVGTRefElement");
     }
@@ -8654,7 +8661,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgTSpanElement() throws Exception {
         test("SVGTSpanElement");
     }
@@ -8663,7 +8670,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgUnitTypes() throws Exception {
         test("SVGUnitTypes");
     }
@@ -8674,7 +8681,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgUseElement() throws Exception {
         test("SVGUseElement");
     }
@@ -8685,7 +8692,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgViewElement() throws Exception {
         test("SVGViewElement");
     }
@@ -8694,7 +8701,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgViewSpec() throws Exception {
         test("SVGViewSpec");
     }
@@ -8703,7 +8710,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgVKernElement() throws Exception {
         test("SVGVKernElement");
     }
@@ -8712,7 +8719,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void svgZoomEvent() throws Exception {
         test("SVGZoomEvent");
     }
@@ -8730,7 +8737,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void syncEvent() throws Exception {
         test("SyncEvent");
     }
@@ -8740,8 +8747,8 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "function SyncManager() { [native code] }",
-            FF = "exception",
-            FF_ESR = "exception")
+            FF = "ReferenceError",
+            FF_ESR = "ReferenceError")
     public void syncManager() throws Exception {
         test("SyncManager");
     }
@@ -8750,7 +8757,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void syncRegistration() throws Exception {
         test("SyncRegistration");
     }
@@ -8768,7 +8775,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void tcpServerSocket() throws Exception {
         test("TCPServerSocket");
     }
@@ -8777,7 +8784,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void tcpSocket() throws Exception {
         test("TCPSocket");
     }
@@ -8786,7 +8793,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void telephony() throws Exception {
         test("Telephony");
     }
@@ -8795,7 +8802,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void telephonyCall() throws Exception {
         test("TelephonyCall");
     }
@@ -8804,7 +8811,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void telephonyCallGroup() throws Exception {
         test("TelephonyCallGroup");
     }
@@ -8815,7 +8822,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void text() throws Exception {
         test("Text");
     }
@@ -8842,7 +8849,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void textEvent() throws Exception {
         test("TextEvent");
     }
@@ -8862,7 +8869,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void textRange() throws Exception {
         test("TextRange");
     }
@@ -8871,7 +8878,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void textTrack() throws Exception {
         test("TextTrack");
     }
@@ -8880,7 +8887,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void textTrackCue() throws Exception {
         test("TextTrackCue");
     }
@@ -8889,7 +8896,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void textTrackCueList() throws Exception {
         test("TextTrackCueList");
     }
@@ -8898,7 +8905,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void textTrackList() throws Exception {
         test("TextTrackList");
     }
@@ -8907,7 +8914,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void timeEvent() throws Exception {
         test("TimeEvent");
     }
@@ -8916,7 +8923,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void timeRanges() throws Exception {
         test("TimeRanges");
     }
@@ -8925,7 +8932,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void touch() throws Exception {
         test("Touch");
     }
@@ -8934,7 +8941,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void touchEvent() throws Exception {
         test("TouchEvent");
     }
@@ -8943,7 +8950,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void touchList() throws Exception {
         test("TouchList");
     }
@@ -8952,7 +8959,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void trackDefault() throws Exception {
         test("TrackDefault");
     }
@@ -8961,7 +8968,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void trackDefaultList() throws Exception {
         test("TrackDefaultList");
     }
@@ -8970,7 +8977,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void trackEvent() throws Exception {
         test("TrackEvent");
     }
@@ -8979,7 +8986,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void transferable() throws Exception {
         test("Transferable");
     }
@@ -8988,7 +8995,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void transitionEvent() throws Exception {
         test("TransitionEvent");
     }
@@ -8999,7 +9006,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void treeWalker() throws Exception {
         test("TreeWalker");
     }
@@ -9008,7 +9015,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void typedArray() throws Exception {
         test("TypedArray");
     }
@@ -9026,7 +9033,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void typeInfo() throws Exception {
         test("TypeInfo");
     }
@@ -9035,7 +9042,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void uDPSocket() throws Exception {
         test("UDPSocket");
     }
@@ -9046,7 +9053,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void uiEvent() throws Exception {
         test("UIEvent");
     }
@@ -9117,7 +9124,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void uneval() throws Exception {
         test("uneval");
     }
@@ -9155,7 +9162,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void urlUtils() throws Exception {
         test("URLUtils");
     }
@@ -9164,7 +9171,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void urlUtilsReadOnly() throws Exception {
         test("URLUtilsReadOnly");
     }
@@ -9173,7 +9180,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void userDataHandler() throws Exception {
         test("UserDataHandler");
     }
@@ -9182,7 +9189,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void userProximityEvent() throws Exception {
         test("UserProximityEvent");
     }
@@ -9191,7 +9198,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void uSVString() throws Exception {
         test("USVString");
     }
@@ -9200,7 +9207,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void validityState() throws Exception {
         test("ValidityState");
     }
@@ -9209,7 +9216,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void videoPlaybackQuality() throws Exception {
         test("VideoPlaybackQuality");
     }
@@ -9218,7 +9225,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void vrDevice() throws Exception {
         test("VRDevice");
     }
@@ -9227,7 +9234,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void vrDisplay() throws Exception {
         test("VRDisplay");
     }
@@ -9236,7 +9243,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void vrDisplayCapabilities() throws Exception {
         test("VRDisplayCapabilities");
     }
@@ -9245,7 +9252,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void vrEyeParameters() throws Exception {
         test("VREyeParameters");
     }
@@ -9254,7 +9261,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void vrFieldOfView() throws Exception {
         test("VRFieldOfView");
     }
@@ -9263,7 +9270,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void vrFieldOfViewReadOnly() throws Exception {
         test("VRFieldOfViewReadOnly");
     }
@@ -9272,7 +9279,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void vrLayer() throws Exception {
         test("VRLayer");
     }
@@ -9281,7 +9288,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void vrPose() throws Exception {
         test("VRPose");
     }
@@ -9290,7 +9297,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void vrPositionState() throws Exception {
         test("VRPositionState");
     }
@@ -9299,7 +9306,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void vrStageParameters() throws Exception {
         test("VRStageParameters");
     }
@@ -9308,7 +9315,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void vTTCue() throws Exception {
         test("VTTCue");
     }
@@ -9317,7 +9324,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void waveShaperNode() throws Exception {
         test("WaveShaperNode");
     }
@@ -9344,7 +9351,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void webGL() throws Exception {
         test("WebGL");
     }
@@ -9353,7 +9360,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void webGL_color_buffer_float() throws Exception {
         test("WEBGL_color_buffer_float");
     }
@@ -9362,7 +9369,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void webGL_compressed_texture_atc() throws Exception {
         test("WEBGL_compressed_texture_atc");
     }
@@ -9371,7 +9378,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void webGL_compressed_texture_es3() throws Exception {
         test("WEBGL_compressed_texture_es3");
     }
@@ -9380,7 +9387,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void wEBGL_compressed_texture_etc() throws Exception {
         test("WEBGL_compressed_texture_etc");
     }
@@ -9389,7 +9396,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void webGL_compressed_texture_etc1() throws Exception {
         test("WEBGL_compressed_texture_etc1");
     }
@@ -9398,7 +9405,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void webGL_compressed_texture_pvrtc() throws Exception {
         test("WEBGL_compressed_texture_pvrtc");
     }
@@ -9407,7 +9414,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void webGL_compressed_texture_s3tc() throws Exception {
         test("WEBGL_compressed_texture_s3tc");
     }
@@ -9416,7 +9423,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void webGL_debug_renderer_info() throws Exception {
         test("WEBGL_debug_renderer_info");
     }
@@ -9425,7 +9432,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void webGL_debug_shaders() throws Exception {
         test("WEBGL_debug_shaders");
     }
@@ -9434,7 +9441,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void webGL_depth_texture() throws Exception {
         test("WEBGL_depth_texture");
     }
@@ -9443,7 +9450,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void webGL_draw_buffers() throws Exception {
         test("WEBGL_draw_buffers");
     }
@@ -9452,7 +9459,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void webGL_lose_context() throws Exception {
         test("WEBGL_lose_context");
     }
@@ -9587,7 +9594,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void webGLTimerQueryEXT() throws Exception {
         test("WebGLTimerQueryEXT");
     }
@@ -9623,7 +9630,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void webGLVertexArrayObjectOES() throws Exception {
         test("WebGLVertexArrayObjectOES");
     }
@@ -9632,7 +9639,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void webKitAnimationEvent() throws Exception {
         test("WebKitAnimationEvent");
     }
@@ -9641,7 +9648,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void webkitAudioContext() throws Exception {
         test("webkitAudioContext");
     }
@@ -9650,7 +9657,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void webKitCSSMatrix() throws Exception {
         test("WebKitCSSMatrix");
     }
@@ -9659,7 +9666,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void webkitIDBCursor() throws Exception {
         test("webkitIDBCursor");
     }
@@ -9668,7 +9675,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void webkitIDBDatabase() throws Exception {
         test("webkitIDBDatabase");
     }
@@ -9677,7 +9684,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void webkitIDBFactory() throws Exception {
         test("webkitIDBFactory");
     }
@@ -9686,7 +9693,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void webkitIDBIndex() throws Exception {
         test("webkitIDBIndex");
     }
@@ -9695,7 +9702,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void webkitIDBKeyRange() throws Exception {
         test("webkitIDBKeyRange");
     }
@@ -9704,7 +9711,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void webkitIDBObjectStore() throws Exception {
         test("webkitIDBObjectStore");
     }
@@ -9713,7 +9720,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void webkitIDBRequest() throws Exception {
         test("webkitIDBRequest");
     }
@@ -9722,7 +9729,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void webkitIDBTransaction() throws Exception {
         test("webkitIDBTransaction");
     }
@@ -9731,7 +9738,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void webkitMediaStream() throws Exception {
         test("webkitMediaStream");
     }
@@ -9740,7 +9747,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void webKitMutationObserver() throws Exception {
         test("WebKitMutationObserver");
     }
@@ -9749,7 +9756,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void webkitOfflineAudioContext() throws Exception {
         test("webkitOfflineAudioContext");
     }
@@ -9758,7 +9765,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void webkitRTCPeerConnection() throws Exception {
         test("webkitRTCPeerConnection");
     }
@@ -9767,7 +9774,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void webkitRTCSessionDescription() throws Exception {
         test("webkitRTCSessionDescription");
     }
@@ -9776,7 +9783,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void webkitSpeechGrammar() throws Exception {
         test("webkitSpeechGrammar");
     }
@@ -9785,7 +9792,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void webkitSpeechGrammarList() throws Exception {
         test("webkitSpeechGrammarList");
     }
@@ -9794,7 +9801,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void webkitSpeechRecognition() throws Exception {
         test("webkitSpeechRecognition");
     }
@@ -9803,7 +9810,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void webkitSpeechRecognitionError() throws Exception {
         test("webkitSpeechRecognitionError");
     }
@@ -9812,7 +9819,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void webkitSpeechRecognitionEvent() throws Exception {
         test("webkitSpeechRecognitionEvent");
     }
@@ -9821,7 +9828,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void webKitTransitionEvent() throws Exception {
         test("WebKitTransitionEvent");
     }
@@ -9830,7 +9837,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void webkitURL() throws Exception {
         test("webkitURL");
     }
@@ -9839,7 +9846,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void webSMS() throws Exception {
         test("WebSMS");
     }
@@ -9859,7 +9866,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void webSockets() throws Exception {
         test("WebSockets");
     }
@@ -9868,7 +9875,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void webVTT() throws Exception {
         test("WebVTT");
     }
@@ -9877,7 +9884,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void wheelEvent() throws Exception {
         test("WheelEvent");
     }
@@ -9886,7 +9893,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void wifiManager() throws Exception {
         test("WifiManager");
     }
@@ -9897,7 +9904,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void window() throws Exception {
         test("Window");
     }
@@ -9906,7 +9913,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void windowBase64() throws Exception {
         test("WindowBase64");
     }
@@ -9915,7 +9922,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void windowClient() throws Exception {
         test("WindowClient");
     }
@@ -9924,7 +9931,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void windowEventHandlers() throws Exception {
         test("WindowEventHandlers");
     }
@@ -9933,7 +9940,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void windowEventHandlers_onbeforeprint() throws Exception {
         test("WindowEventHandlers.onbeforeprint");
     }
@@ -9942,7 +9949,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void windowOrWorkerGlobalScope() throws Exception {
         test("WindowOrWorkerGlobalScope");
     }
@@ -9951,7 +9958,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void windowProperties() throws Exception {
         test("WindowProperties");
     }
@@ -9960,7 +9967,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void windowTimers() throws Exception {
         test("WindowTimers");
     }
@@ -10007,7 +10014,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void xDomainRequest() throws Exception {
         test("XDomainRequest");
     }
@@ -10018,7 +10025,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void xmlDocument() throws Exception {
         test("XMLDocument");
     }
@@ -10047,7 +10054,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void xmlHttpRequestProgressEvent() throws Exception {
         test("XMLHttpRequestProgressEvent");
     }
@@ -10067,7 +10074,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void xmlSerializer() throws Exception {
         test("XMLSerializer");
     }
@@ -10078,7 +10085,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void xPathEvaluator() throws Exception {
         test("XPathEvaluator");
     }
@@ -10087,7 +10094,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void xPathExpression() throws Exception {
         test("XPathExpression");
     }
@@ -10098,7 +10105,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void xPathNSResolver() throws Exception {
         test("XPathNSResolver");
     }
@@ -10109,7 +10116,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void xPathResult() throws Exception {
         test("XPathResult");
     }
@@ -10118,7 +10125,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void xsltemplate() throws Exception {
         test("XSLTemplate");
     }
@@ -10129,7 +10136,7 @@ public class DedicatedWorkerGlobalScopeClassNameTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void xsltProcessor() throws Exception {
         test("XSLTProcessor");
     }

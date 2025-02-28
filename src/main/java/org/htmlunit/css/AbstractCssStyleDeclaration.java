@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -137,7 +137,7 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
             return element1.getValue();
         }
         if (element1 != null) {
-            if (element1.compareTo(element2) > 0) {
+            if (StyleElement.compareToByImportanceAndSpecificity(element1, element2) > 0) {
                 return element1.getValue();
             }
         }
@@ -969,7 +969,7 @@ public abstract class AbstractCssStyleDeclaration implements Serializable {
      * Gets the {@code zIndex} style attribute.
      * @return the style attribute
      */
-    public Object getZIndex() {
+    public String getZIndex() {
         final String value = getStyleAttribute(Definition.Z_INDEX_, true);
         try {
             Integer.parseInt(value);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package org.htmlunit.javascript.host.dom;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.util.MimeType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -384,7 +384,7 @@ public class DOMImplementationTest extends WebDriverTestCase {
                 + "      var doc = document.implementation.createHTMLDocument();\n"
                 + "      log(doc);\n"
                 + "      log(doc.window);\n"
-                + "    } catch(e) { log('exception'); }\n"
+                + "    } catch(e) { logEx(e); }\n"
                 + "  }\n"
                 + "</script>\n"
                 + "</head>\n"
@@ -410,7 +410,7 @@ public class DOMImplementationTest extends WebDriverTestCase {
                 + "      var doc = document.implementation.createHTMLDocument('newdoctitle');\n"
                 + "      log(doc);\n"
                 + "      log(doc.title);\n"
-                + "    } catch(e) { log('exception'); }\n"
+                + "    } catch(e) { logEx(e); }\n"
                 + "  }\n"
                 + "</script>\n"
                 + "</head>\n"
@@ -436,7 +436,7 @@ public class DOMImplementationTest extends WebDriverTestCase {
                 + "      var doc = document.implementation.createHTMLDocument('');\n"
                 + "      log(doc);\n"
                 + "      log(doc.title);\n"
-                + "    } catch(e) { log('exception'); }\n"
+                + "    } catch(e) { logEx(e); }\n"
                 + "  }\n"
                 + "</script>\n"
                 + "</head>\n"
@@ -462,7 +462,7 @@ public class DOMImplementationTest extends WebDriverTestCase {
                 + "      var doc = document.implementation.createHTMLDocument('');\n"
                 + "      doc.body.innerHTML = '<form></form><form></form>';\n"
                 + "      log(doc.body.childNodes.length);\n"
-                + "    } catch(e) { log('exception'); }\n"
+                + "    } catch(e) { logEx(e); }\n"
                 + "  }\n"
                 + "</script>\n"
                 + "</head>\n"
@@ -489,7 +489,7 @@ public class DOMImplementationTest extends WebDriverTestCase {
                 + "      var p = doc.createElement('p');\n"
                 + "      p.innertHTML = 'createdElement';\n"
                 + "      log(p.innertHTML);\n"
-                + "    } catch(e) { log('exception'); }\n"
+                + "    } catch(e) { logEx(e); }\n"
                 + "  }\n"
                 + "</script>\n"
                 + "</head>\n"
@@ -516,17 +516,17 @@ public class DOMImplementationTest extends WebDriverTestCase {
                 + "    try {\n"
                 + "      var doc = document.implementation.createHTMLDocument();\n"
                 + "      log(doc.documentElement.outerHTML);\n"
-                + "    } catch(e) { log('exception'); }\n"
+                + "    } catch(e) { logEx(e); }\n"
 
                 + "    try {\n"
                 + "      var doc = document.implementation.createHTMLDocument('');\n"
                 + "      log(doc.documentElement.outerHTML);\n"
-                + "    } catch(e) { log('exception'); }\n"
+                + "    } catch(e) { logEx(e); }\n"
 
                 + "    try {\n"
                 + "      var doc = document.implementation.createHTMLDocument('abc');\n"
                 + "      log(doc.documentElement.outerHTML);\n"
-                + "    } catch(e) { log('exception'); }\n"
+                + "    } catch(e) { logEx(e); }\n"
                 + "  }\n"
                 + "</script>\n"
                 + "</head>\n"
@@ -555,7 +555,7 @@ public class DOMImplementationTest extends WebDriverTestCase {
                 + "      p.innerHTML = 'This is a new paragraph.';\n"
                 + "      doc.body.appendChild(p);"
                 + "      log(doc.documentElement.outerHTML);\n"
-                + "    } catch(e) { log('exception'); }\n"
+                + "    } catch(e) { logEx(e); }\n"
                 + "  }\n"
                 + "</script>\n"
                 + "</head>\n"
@@ -581,7 +581,7 @@ public class DOMImplementationTest extends WebDriverTestCase {
                 + "      var doc = document.implementation.createHTMLDocument('test');\n"
                 + "      doc.body.innerHTML = '<p>Hello</p>';\n"
                 + "      log(doc.documentElement.outerHTML);\n"
-                + "    } catch(e) { log('exception'); }\n"
+                + "    } catch(e) { logEx(e); }\n"
                 + "  }\n"
                 + "</script>\n"
                 + "</head>\n"
@@ -607,7 +607,7 @@ public class DOMImplementationTest extends WebDriverTestCase {
                 + "      var doc = document.implementation.createHTMLDocument('test');\n"
                 + "      doc.body.innerHTML = '<img src=\"x\" onerror=\"log(1)\">';\n"
                 + "      log(doc.documentElement.outerHTML);\n"
-                + "    } catch(e) { log('exception'); }\n"
+                + "    } catch(e) { logEx(e); }\n"
                 + "  }\n"
                 + "</script>\n"
                 + "</head>\n"

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,14 @@
  */
 package org.htmlunit.javascript.host.event;
 
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.CHROME;
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.EDGE;
+import static org.htmlunit.junit.annotation.TestedBrowser.CHROME;
+import static org.htmlunit.junit.annotation.TestedBrowser.EDGE;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.NotYetImplemented;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -62,7 +62,7 @@ public class PopStateEventTest extends WebDriverTestCase {
             + "    try {\n"
             + "      var event = new PopStateEvent('popstate');\n"
             + "      dump(event);\n"
-            + "    } catch (e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + DUMP_EVENT_FUNCTION
             + "</script></head><body onload='test()'>\n"
@@ -87,7 +87,7 @@ public class PopStateEventTest extends WebDriverTestCase {
             + "        'state': 2,\n"
             + "      });\n"
             + "      dump(event);\n"
-            + "    } catch (e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + DUMP_EVENT_FUNCTION
             + "</script></head><body onload='test()'>\n"
@@ -101,8 +101,8 @@ public class PopStateEventTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = {"[object PopStateEvent]", "null", "", "false", "false", "false", "null"},
-            FF = "exception",
-            FF_ESR = "exception")
+            FF = "NotSupportedError/DOMException",
+            FF_ESR = "NotSupportedError/DOMException")
     public void create_createEvent() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"
@@ -111,7 +111,7 @@ public class PopStateEventTest extends WebDriverTestCase {
             + "    try {\n"
             + "      var event = document.createEvent('PopStateEvent');\n"
             + "      dump(event);\n"
-            + "    } catch (e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + DUMP_EVENT_FUNCTION
             + "</script></head><body onload='test()'>\n"
@@ -125,8 +125,8 @@ public class PopStateEventTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = {"[object PopStateEvent]", "null", "", "false", "false", "false", "null"},
-            FF = "exception",
-            FF_ESR = "exception")
+            FF = "NotSupportedError/DOMException",
+            FF_ESR = "NotSupportedError/DOMException")
     public void setState() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"
@@ -136,7 +136,7 @@ public class PopStateEventTest extends WebDriverTestCase {
             + "      var event = document.createEvent('PopStateEvent');\n"
             + "      event.state = 'test';\n"
             + "      dump(event);\n"
-            + "    } catch (e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + DUMP_EVENT_FUNCTION
             + "</script></head><body onload='test()'>\n"
@@ -160,17 +160,17 @@ public class PopStateEventTest extends WebDriverTestCase {
             + "    try {\n"
             + "      var event = document.createEvent('PopStateEvent');\n"
             + "      event.initEvent('', true, true);\n"
-            + "    } catch (e) { log('exception ctor'); return; }\n"
+            + "    } catch(e) { log('exception ctor'); return; }\n"
 
             + "    try {\n"
             + "      dispatchEvent(event);\n"
             + "      log('dispatched');\n"
-            + "    } catch (e) { log('exception' + e) }\n"
+            + "    } catch(e) { log('exception' + e) }\n"
             + "  }\n"
             + DUMP_EVENT_FUNCTION
             + "  try {\n"
             + "    window.addEventListener('popstate',dump);\n"
-            + "  } catch (e) { }\n"
+            + "  } catch(e) { }\n"
             + "</script></head><body onload='test()'>\n"
             + "</body></html>";
 
@@ -181,9 +181,9 @@ public class PopStateEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "exception",
-            FF = "exception ctor",
-            FF_ESR = "exception ctor")
+    @Alerts(DEFAULT = "InvalidStateError/DOMException",
+            FF = "ctor NotSupportedError",
+            FF_ESR = "ctor NotSupportedError")
     @NotYetImplemented({CHROME, EDGE})
     public void dispatchEventWithoutInit() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -192,17 +192,17 @@ public class PopStateEventTest extends WebDriverTestCase {
             + "  function test() {\n"
             + "    try {\n"
             + "      var event = document.createEvent('PopStateEvent');\n"
-            + "    } catch (e) { log('exception ctor'); return; }\n"
+            + "    } catch(e) { log('ctor ' + e.name); return; }\n"
 
             + "    try {\n"
             + "      dispatchEvent(event);\n"
             + "      log('dispatched');\n"
-            + "    } catch (e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + DUMP_EVENT_FUNCTION
             + "  try {\n"
             + "    window.addEventListener('popstate',dump);\n"
-            + "  } catch (e) { }\n"
+            + "  } catch(e) { }\n"
             + "</script></head><body onload='test()'>\n"
             + "</body></html>";
 
@@ -223,7 +223,7 @@ public class PopStateEventTest extends WebDriverTestCase {
             + "  function test() {\n"
             + "    try {\n"
             + "      var event = document.createEvent('PopStateEvent');\n"
-            + "    } catch (e) { log('exception ctor'); return }\n"
+            + "    } catch(e) { log('exception ctor'); return }\n"
 
             + "    if (event.initPopStateEvent) {\n"
             + "      event.initPopStateEvent('PopState', true, false, 'html');\n"

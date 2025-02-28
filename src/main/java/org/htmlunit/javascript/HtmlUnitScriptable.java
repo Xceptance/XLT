@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -109,7 +109,7 @@ public class HtmlUnitScriptable extends ScriptableObject implements Cloneable {
         }
         catch (final IllegalArgumentException e) {
             // is it the right place or should Rhino throw a RuntimeError instead of an IllegalArgumentException?
-            throw JavaScriptEngine.reportRuntimeError("'set "
+            throw JavaScriptEngine.typeError("'set "
                 + name + "' called on an object that does not implement interface " + getClassName());
         }
     }

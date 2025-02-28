@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ package org.htmlunit.html.xpath;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -29,6 +29,68 @@ import org.junit.runner.RunWith;
  */
 @RunWith(BrowserRunner.class)
 public class HtmlUnitXPath2Test extends WebDriverTestCase {
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected boolean isWebClientCached() {
+        return true;
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"4", "null"})
+    public void xPathNull() throws Exception {
+        final String content = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "function test() {\n"
+            + "  try {\n"
+            + "    var node = '';"
+            + "    var expr = null;\n"
+            + "    var result = document.evaluate(expr, document.documentElement, null, XPathResult.ANY_TYPE, null);\n"
+            + "    node = result.iterateNext();\n"
+            + "    log(result.resultType);\n"
+            + "    log(node);\n"
+            + "  } catch(e) {logEx(e)}\n"
+            + "}\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <select name='test'><option value='1'>foo&nbsp;and&nbsp;foo</option></select>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(content);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"4", "null"})
+    public void xPathUndefined() throws Exception {
+        final String content = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "function test() {\n"
+            + "  try {\n"
+            + "    var node = '';"
+            + "    var expr = undefined;\n"
+            + "    var result = document.evaluate(expr, document.documentElement, null, XPathResult.ANY_TYPE, null);\n"
+            + "    node = result.iterateNext();\n"
+            + "    log(result.resultType);\n"
+            + "    log(node);\n"
+            + "  } catch(e) {logEx(e)}\n"
+            + "}\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "  <select name='test'><option value='1'>foo&nbsp;and&nbsp;foo</option></select>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(content);
+    }
 
     /**
      * @throws Exception if the test fails
@@ -47,7 +109,7 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
             + "    for (var i = 0; i < value.length; i++) {\n"
             + "      log(value.charCodeAt(i));\n"
             + "    }\n"
-            + "  } catch (e) {log('error')}\n"
+            + "  } catch(e) {logEx(e)}\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -76,7 +138,7 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
             + "      res += node;\n"
             + "    }\n"
             + "    log(res);\n"
-            + "  } catch (e) {log('error')}\n"
+            + "  } catch(e) {logEx(e)}\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -106,7 +168,7 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
             + "      res += node.id;\n"
             + "    }\n"
             + "    log(res);\n"
-            + "  } catch (e) {log('error')}\n"
+            + "  } catch(e) {logEx(e)}\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -258,6 +320,51 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
+    @Alerts("false")
+    public void startsWith() throws Exception {
+        compareBooleanValue("starts-with(\"haystack\", \"needle\")");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("true")
+    public void startsWithFound() throws Exception {
+        compareBooleanValue("starts-with(\"haystack\", \"hay\")");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("true")
+    public void startsWithWhole() throws Exception {
+        compareBooleanValue("starts-with(\"haystack\", \"haystack\")");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("true")
+    public void startsWithEmpty() throws Exception {
+        compareBooleanValue("starts-with(\"haystack\", \"\")");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("true")
+    public void startsWithEmptyEmpty() throws Exception {
+        compareBooleanValue("starts-with(\"\", \"\")");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
     @Alerts("'tml'")
     public void substring() throws Exception {
         compareStringValue("substring(\"HtmlUnit\", 2, 3)");
@@ -319,9 +426,27 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("error")
+    @Alerts("SyntaxError/DOMException")
     public void lowerCaseNotSupported() throws Exception {
-        compare("//*[lower-case(@id) = \"a\"]");
+        compareError("//*[lower-case(@id) = \"a\"]");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("SyntaxError/DOMException")
+    public void upperCaseNotSupported() throws Exception {
+        compareError("//*[upper-case(@id) = \"A\"]");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("SyntaxError/DOMException")
+    public void endsWithNotSupported() throws Exception {
+        compareError("ends-with(\"haystack\", \"haystack\")");
     }
 
     private void compare(final String xpath) throws Exception {
@@ -338,7 +463,7 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
             + "      res += node.id;\n"
             + "    }\n"
             + "    log(res);\n"
-            + "  } catch (e) {log('error')}\n"
+            + "  } catch(e) {logEx(e)}\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -362,7 +487,7 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
             + "    var expr = '" + xpath + "';\n"
             + "    var result = document.evaluate(expr, document.documentElement, null, XPathResult.ANY_TYPE, null);\n"
             + "    log(\"'\" + result.stringValue + \"'\");\n"
-            + "  } catch (e) {log('error')}\n"
+            + "  } catch(e) {logEx(e)}\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -386,7 +511,7 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
             + "    var expr = '" + xpath + "';\n"
             + "    var result = document.evaluate(expr, document.documentElement, null, XPathResult.ANY_TYPE, null);\n"
             + "    log(result.booleanValue);\n"
-            + "  } catch (e) {log('error')}\n"
+            + "  } catch(e) {logEx(e)}\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -394,6 +519,25 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
             + "    <p id='a' x='1' y='7'></p>\n"
             + "    <p id='b' y='13'></p>\n"
             + "  </div>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(content);
+    }
+
+    private void compareError(final String xpath) throws Exception {
+        final String content = "<html>\n"
+            + "<head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "function test() {\n"
+            + "  try {\n"
+            + "    var expr = '" + xpath + "';\n"
+            + "    var result = document.evaluate(expr, document.documentElement, null, XPathResult.ANY_TYPE, null);\n"
+            + "    log('error expected');\n"
+            + "  } catch(e) {logEx(e)}\n"
+            + "}\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
             + "</body></html>";
 
         loadPageVerifyTitle2(content);
@@ -417,7 +561,7 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
             + "      res += node.id;\n"
             + "    }\n"
             + "    log(res);\n"
-            + "  } catch (e) {log('error')}\n"
+            + "  } catch(e) {logEx(e)}\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -447,7 +591,7 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
             + "      res += node.id;\n"
             + "    }\n"
             + "    log(res);\n"
-            + "  } catch (e) {log('error')}\n"
+            + "  } catch(e) {logEx(e)}\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -462,7 +606,7 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("error")
+    @Alerts("TypeError")
     public void stringResult() throws Exception {
         final String content = "<html>\n"
             + "<head>\n"
@@ -477,7 +621,7 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
             + "      res += node.id;\n"
             + "    }\n"
             + "    log(res);\n"
-            + "  } catch (e) {log('error')}\n"
+            + "  } catch(e) {logEx(e)}\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -507,7 +651,7 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
             + "      res += node.id;\n"
             + "    }\n"
             + "    log(res);\n"
-            + "  } catch (e) {log('error')}\n"
+            + "  } catch(e) {logEx(e)}\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -552,7 +696,7 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
             + "    }\n"
 
             + "    log(res);\n"
-            + "  } catch (e) {log('error')}\n"
+            + "  } catch(e) {logEx(e)}\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -578,7 +722,7 @@ public class HtmlUnitXPath2Test extends WebDriverTestCase {
             + "    var res = '';\n"
             + "    var result = document.evaluate('//div', document, null, XPathResult.FIRST_ORDERED_NODE_TYPE);\n"
             + "    log(result.singleNodeValue.id);\n"
-            + "  } catch (e) {log('error')}\n"
+            + "  } catch(e) {logEx(e)}\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,9 +32,9 @@ import org.htmlunit.javascript.configuration.AbstractJavaScriptConfiguration;
 import org.htmlunit.javascript.configuration.ClassConfiguration;
 import org.htmlunit.javascript.configuration.ClassConfiguration.PropertyInfo;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.NotYetImplemented;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
@@ -240,7 +240,7 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
             + "    decl.cssText = 'color:#000000;';\n"
             + "    log(decl.cssText);\n"
             + "  } catch(e) {\n"
-            + "    log('exception');\n"
+            + "    logEx(e);\n"
             + "  }\n"
 
             + "  decl = document.getElementById('myDiv').style;\n"
@@ -248,7 +248,7 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
             + "    decl.cssText = 'color:#000000;';\n"
             + "    log(decl.cssText);\n"
             + "  } catch(e) {\n"
-            + "    log('exception');\n"
+            + "    logEx(e);\n"
             + "  }\n"
             + "</script>\n"
 
@@ -282,7 +282,7 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
             + "    decl.cssText = null;\n"
             + "    log(decl.cssText);\n"
             + "  } catch(e) {\n"
-            + "    log('exception');\n"
+            + "    logEx(e);\n"
             + "  }\n"
 
             + "  decl = document.getElementById('myDiv').style;\n"
@@ -290,7 +290,7 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
             + "    decl.cssText = null;\n"
             + "    log(decl.cssText);\n"
             + "  } catch(e) {\n"
-            + "    log('exception');\n"
+            + "    logEx(e);\n"
             + "  }\n"
             + "</script>\n"
 
@@ -324,7 +324,7 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
             + "    decl.cssText = '';\n"
             + "    log(decl.cssText);\n"
             + "  } catch(e) {\n"
-            + "    log('exception');\n"
+            + "    logEx(e);\n"
             + "  }\n"
 
             + "  decl = document.getElementById('myDiv').style;\n"
@@ -332,7 +332,7 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
             + "    decl.cssText = '';\n"
             + "    log(decl.cssText);\n"
             + "  } catch(e) {\n"
-            + "    log('exception');\n"
+            + "    logEx(e);\n"
             + "  }\n"
             + "</script>\n"
 
@@ -372,7 +372,7 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
             + "    decl.cssText = 'abc';\n"
             + "    log(decl.cssText);\n"
             + "  } catch(e) {\n"
-            + "    log('exception');\n"
+            + "    logEx(e);\n"
             + "  }\n"
 
             + "  decl = document.getElementById('myDiv').style;\n"
@@ -380,7 +380,7 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
             + "    decl.cssText = 'abc';\n"
             + "    log(decl.cssText);\n"
             + "  } catch(e) {\n"
-            + "    log('exception');\n"
+            + "    logEx(e);\n"
             + "  }\n"
             + "</script>\n"
 
@@ -510,7 +510,7 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
             + "    decl.length = 2;\n"
             + "    log(decl.length);\n"
             + "  } catch(e) {\n"
-            + "    log('exception');\n"
+            + "    logEx(e);\n"
             + "  }\n"
 
             + "  decl = document.getElementById('myDiv').style;\n"
@@ -518,7 +518,7 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
             + "    decl.length = 2;\n"
             + "    log(decl.length);\n"
             + "  } catch(e) {\n"
-            + "    log('exception');\n"
+            + "    logEx(e);\n"
             + "  }\n"
             + "</script>\n"
 
@@ -582,7 +582,7 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
             + "    log(decl.parentRule);\n"
             + "    log(decl.parentRule.selectorText);\n"
             + "  } catch(e) {\n"
-            + "    log('exception');\n"
+            + "    logEx(e);\n"
             + "  }\n"
 
             + "  decl = document.getElementById('myDiv').style;\n"
@@ -590,7 +590,7 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
             + "    decl.parentRule = styleSheet.cssRules[1];\n"
             + "    log(decl.parentRule);\n"
             + "  } catch(e) {\n"
-            + "    log('exception');\n"
+            + "    logEx(e);\n"
             + "  }\n"
             + "</script>\n"
 
@@ -797,7 +797,7 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
             + "  try {\n"
             + "    var oDiv1 = document.getElementById('div1');\n"
             + "    log(oDiv1.style.getPropertyValue('background'));\n"
-            + "  } catch(e) { log('exception'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='doTest()'>\n"
@@ -888,7 +888,7 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
             + "      try{\n"
             + "        var p = span.style.getPropertyValue(prop);\n"
             + "        log(p);\n"
-            + "      } catch (e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
             + "    }\n"
 
             + "    function test() {\n"
@@ -1012,7 +1012,7 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts({"undefined", "exception"})
+    @Alerts({"undefined", "TypeError"})
     public void setExpression() throws Exception {
         final String html = "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
@@ -1021,7 +1021,7 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
             + "    var div1 = document.getElementById('div1');\n"
             + "    log(typeof div1.style.setExpression);\n"
             + "    div1.style.setExpression('title','id');\n"
-            + "  } catch(e) { log('exception'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script></head><body onload='test()'>\n"
             + "  <div id='div1'/>\n"
@@ -1033,7 +1033,7 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts({"undefined", "exception"})
+    @Alerts({"undefined", "TypeError"})
     public void removeExpression() throws Exception {
         final String html = "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
@@ -1043,7 +1043,7 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
             + "    log(typeof div1.style.removeExpression);\n"
             + "    div1.style.setExpression('title','id');\n"
             + "    div1.style.removeExpression('title');\n"
-            + "  } catch(e) { log('exception'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script></head><body onload='test()'>\n"
             + "  <div id='div1'/>\n"
@@ -1276,7 +1276,7 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
 
             + "  try {\n"
             + "    style.zIndex = un_defined;\n"
-            + "  } catch (e) { log('error'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "  log(style.zIndex);\n"
 
             + "  style.zIndex = 1;\n"
@@ -1284,7 +1284,7 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
 
             + "  try {\n"
             + "    style.zIndex = un_defined;\n"
-            + "  } catch (e) { log('error'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "  log(style.zIndex);\n"
 
             + "}\n"
@@ -1311,7 +1311,7 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
 
             + "  try {\n"
             + "    style.zIndex = null;\n"
-            + "  } catch (e) { log('error'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "  log(style.zIndex);\n"
 
             + "  style.zIndex = 1;\n"
@@ -1319,7 +1319,7 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
 
             + "  try {\n"
             + "    style.zIndex = null;\n"
-            + "  } catch (e) { log('error'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "  log(style.zIndex);\n"
 
             + "}\n"
@@ -1357,13 +1357,13 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
             + "  style.zIndex = '4';\n"
             + "  try {\n"
             + "    style.zIndex = '   ';\n"
-            + "  } catch (e) { log('error'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "  log(style.zIndex);\n"
 
             + "  style.zIndex = '1';\n"
             + "  try {\n"
             + "    style.zIndex = 'NAN';\n"
-            + "  } catch (e) { log('error'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "  log(style.zIndex);\n"
 
             + "}\n"
@@ -1389,14 +1389,14 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
             + "  log(style.zIndex);\n"
             + "  try {\n"
             + "    style.zIndex = 'hallo';\n"
-            + "  } catch (e) { log('error'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "  log(style.zIndex);\n"
 
             + "  style.zIndex = 1;\n"
             + "  log(style.zIndex);\n"
             + "  try {\n"
             + "    style.zIndex = 'hallo';\n"
-            + "  } catch (e) { log('error'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "  log(style.zIndex);\n"
             + "}\n"
 
@@ -1824,7 +1824,7 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
         final WebDriver driver = loadPage2(html);
 
         final WebElement textArea = driver.findElement(By.id("myTextArea"));
-        assertEquals(expectedValue + "; ", textArea.getAttribute("value"));
+        assertEquals(expectedValue + "; ", textArea.getDomProperty("value"));
     }
 
     /**
@@ -2699,8 +2699,12 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts({"4px", "5px", "6em", "17px", "17px", "initial", "inherit",
-             "17px", "17px", "17px", "", "17px", "", "17px", "17px", "17px"})
+    @Alerts(DEFAULT = {"4px", "5px", "6em", "17px", "17px", "initial", "inherit",
+                       "17px", "17px", "17px", "", "17px", "", "17px", "17px", "17px"},
+            FF = {"4px", "5px", "6em", "17px", "7%", "initial", "inherit",
+                  "17px", "17px", "17px", "", "17px", "", "17px", "17px", "17px"})
+    @HtmlUnitNYI(FF = {"4px", "5px", "6em", "17px", "17px", "initial", "inherit",
+                       "17px", "17px", "17px", "", "17px", "", "17px", "17px", "17px"})
     public void setLetterSpacingProperty() throws Exception {
         setLengthProperty("letter-spacing", "letterSpacing");
     }
@@ -2709,8 +2713,12 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts({"4px", "5px", "6em", "17px", "17px", "initial", "inherit",
-             "17px", "17px", "17px", "", "17px", "", "17px", "17px", "17px"})
+    @Alerts(DEFAULT = {"4px", "5px", "6em", "17px", "17px", "initial", "inherit",
+                       "17px", "17px", "17px", "", "17px", "", "17px", "17px", "17px"},
+            FF = {"4px", "5px", "6em", "17px", "70%", "initial", "inherit",
+                  "17px", "17px", "17px", "", "17px", "", "17px", "17px", "17px"})
+    @HtmlUnitNYI(FF = {"4px", "5px", "6em", "17px", "17px", "initial", "inherit",
+                       "17px", "17px", "17px", "", "17px", "", "17px", "17px", "17px"})
     public void setLetterSpacing() throws Exception {
         setLength("letter-spacing", "letterSpacing");
     }
@@ -3058,8 +3066,8 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = {"undefined", "none"},
-            CHROME = {"undefined", "before", "none", "exception"},
-            EDGE = {"undefined", "before", "none", "exception"})
+            CHROME = {"undefined", "before", "none", "TypeError"},
+            EDGE = {"undefined", "before", "none", "TypeError"})
     @HtmlUnitNYI(CHROME = {"function", "before", "none", "after", "none"},
             EDGE = {"function", "before", "none", "after", "none"},
             FF = {"function", "before", "none", "after", "none"},
@@ -3086,7 +3094,7 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
             + "    var div = document.getElementById('d');\n"
             + "    div.style.display = 'none';\n"
             + "    log(div.style.display);\n"
-            + "  } catch(e) { log('exception'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "</script>\n"
             + "</body></html>";
         loadPageVerifyTitle2(html);
@@ -3106,16 +3114,12 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
             + "  log(div1.style.border);\n"
             + "  try {\n"
             + "    div1.style.border = null;\n"
-            + "  } catch (e) {\n"
-            + "    log('error');\n"
-            + "  }\n"
+            + "  } catch(e) {logEx(e);}\n"
             + "  log(div1.style.border);\n"
             + "  log(div1.style.display);\n"
             + "  try {\n"
             + "    div1.style.display = null;\n"
-            + "  } catch (e) {\n"
-            + "    log('error');\n"
-            + "  }\n"
+            + "  } catch(e) {logEx(e);}\n"
             + "  log(div1.style.display);\n"
             + "}\n"
             + "</script></head>\n"
@@ -3518,7 +3522,7 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception true")
+    @Alerts("TypeError")
     public void ctor() throws Exception {
         final String html =
                 "<html>\n"
@@ -3532,9 +3536,7 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
                 + "    try {"
                 + "      var c = new CSSStyleDeclaration();\n"
                 + "      log(c);\n"
-                + "    } catch(e) {\n"
-                + "      log('exception ' + (e instanceof TypeError));\n"
-                + "    }\n"
+                + "    } catch(e) { logEx(e); }\n"
                 + "  </script>\n"
                 + "</body></html>";
 
@@ -3569,9 +3571,7 @@ public class CSSStyleDeclarationTest extends WebDriverTestCase {
             + "  try {\n"
             + "    log(decl.item(-1));\n"
             + "    log(typeof decl.item(-1));\n"
-            + "  } catch(e) {\n"
-            + "    log('exception ');\n"
-            + "  }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "</script>\n"
 
             + "</body></html>";

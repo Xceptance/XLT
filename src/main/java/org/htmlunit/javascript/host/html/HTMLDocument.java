@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -119,7 +119,7 @@ public class HTMLDocument extends Document {
             return super.getDomNodeOrDie();
         }
         catch (final IllegalStateException e) {
-            throw JavaScriptEngine.reportRuntimeError("No node attached to this object");
+            throw JavaScriptEngine.typeError("No node attached to this object");
         }
     }
 
@@ -501,7 +501,10 @@ public class HTMLDocument extends Document {
      */
     @Override
     public Node appendChild(final Object childObject) {
-        throw JavaScriptEngine.reportRuntimeError("Node cannot be inserted at the specified point in the hierarchy.");
+        throw JavaScriptEngine.asJavaScriptException(
+                getWindow(),
+                "Node cannot be inserted at the specified point in the hierarchy.",
+                org.htmlunit.javascript.host.dom.DOMException.HIERARCHY_REQUEST_ERR);
     }
 
     /**

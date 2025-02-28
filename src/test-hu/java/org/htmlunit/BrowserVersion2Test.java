@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import java.util.Map.Entry;
 
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.util.MimeType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -45,8 +45,7 @@ public class BrowserVersion2Test extends WebDriverTestCase {
     @Alerts(DEFAULT = "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,"
                     + "image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
             FF = "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-            FF_ESR = "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,"
-                    + "image/avif,image/webp,image/png,image/svg+xml,*/*;q=0.8")
+            FF_ESR = "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
     public void acceptHeaderGetUrl() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
                 + "<html><body>Response</body></html>";
@@ -63,8 +62,7 @@ public class BrowserVersion2Test extends WebDriverTestCase {
                     + "application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;"
                     + "q=0.8,application/signed-exchange;v=b3;q=0.7"},
             FF = {"2", "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"},
-            FF_ESR = {"2", "Accept: text/html,application/xhtml+xml,"
-                    + "application/xml;q=0.9,image/avif,image/webp,image/png,image/svg+xml,*/*;q=0.8"})
+            FF_ESR = {"2", "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"})
     public void acceptHeaderWindowOpen() throws Exception {
         String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
                 + "<html><body>Response</body></html>";
@@ -92,8 +90,7 @@ public class BrowserVersion2Test extends WebDriverTestCase {
                     + "application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;"
                     + "q=0.8,application/signed-exchange;v=b3;q=0.7"},
             FF = {"2", "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"},
-            FF_ESR = {"2", "Accept: text/html,application/xhtml+xml,"
-                    + "application/xml;q=0.9,image/avif,image/webp,image/png,image/svg+xml,*/*;q=0.8"})
+            FF_ESR = {"2", "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"})
     public void acceptHeaderAnchorClick() throws Exception {
         String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
                 + "<html><body>Response</body></html>";
@@ -119,8 +116,7 @@ public class BrowserVersion2Test extends WebDriverTestCase {
                     + "q=0.9,image/avif,image/webp,image/apng,*/*;"
                     + "q=0.8,application/signed-exchange;v=b3;q=0.7",
             FF = "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-            FF_ESR = "Accept: text/html,application/xhtml+xml,application/xml;"
-                    + "q=0.9,image/avif,image/webp,image/png,image/svg+xml,*/*;q=0.8")
+            FF_ESR = "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
     public void acceptHeaderAnchorClickWithType() throws Exception {
         String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
                 + "<html><body>Response</body></html>";

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -201,7 +201,8 @@ public abstract class HtmlElement extends DomElement {
         final String oldAttributeValue = getAttribute(qualifiedName);
         final HtmlPage htmlPage = (HtmlPage) getPage();
         final boolean mappedElement = isAttachedToPage()
-                    && HtmlPage.isMappedElement(htmlPage, qualifiedName);
+                && htmlPage != null
+                && (DomElement.NAME_ATTRIBUTE.equals(qualifiedName) || DomElement.ID_ATTRIBUTE.equals(qualifiedName));
         if (mappedElement) {
             // cast is save here because isMappedElement checks for HtmlPage
             htmlPage.removeMappedElement(this, false, false);
@@ -290,7 +291,8 @@ public abstract class HtmlElement extends DomElement {
         final String oldAttributeValue = getAttribute(qualifiedName);
         final HtmlPage htmlPage = (HtmlPage) getPage();
         final boolean mappedElement = isAttachedToPage()
-                    && HtmlPage.isMappedElement(htmlPage, qualifiedName);
+                && htmlPage != null
+                && (DomElement.NAME_ATTRIBUTE.equals(qualifiedName) || DomElement.ID_ATTRIBUTE.equals(qualifiedName));
         if (mappedElement) {
             htmlPage.removeMappedElement(this, false, false);
         }
@@ -323,14 +325,18 @@ public abstract class HtmlElement extends DomElement {
         }
 
         final HtmlPage htmlPage = getHtmlPageOrNull();
-        if (htmlPage != null) {
+        final boolean mapped = htmlPage != null
+                && (DomElement.NAME_ATTRIBUTE.equals(attributeName) || DomElement.ID_ATTRIBUTE.equals(attributeName));
+        if (mapped) {
             htmlPage.removeMappedElement(this, false, false);
         }
 
         super.removeAttribute(attributeName);
 
         if (htmlPage != null) {
-            htmlPage.addMappedElement(this, false);
+            if (mapped) {
+                htmlPage.addMappedElement(this, false);
+            }
 
             final HtmlAttributeChangeEvent event = new HtmlAttributeChangeEvent(this, attributeName, value);
             fireHtmlAttributeRemoved(event);
@@ -599,10 +605,12 @@ public abstract class HtmlElement extends DomElement {
 
         final HtmlForm form = getEnclosingForm();
         if (form != null && c == '\n' && isSubmittableByEnter()) {
-            final HtmlSubmitInput submit = form.getFirstByXPath(".//input[@type='submit']");
-            if (submit != null) {
-                return submit.click();
+            for (final DomElement descendant : form.getDomElementDescendants()) {
+                if (descendant instanceof HtmlSubmitInput) {
+                    return descendant.click();
+                }
             }
+
             form.submit((SubmittableElement) this);
             webClient.getJavaScriptEngine().processPostponedActions();
         }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ public class CharacterData extends Node {
      * @return the String of data
      */
     @JsxGetter
-    public Object getData() {
+    public String getData() {
         return getDomCharacterDataOrDie().getData();
     }
 
@@ -91,12 +91,18 @@ public class CharacterData extends Node {
     @JsxFunction
     public void deleteData(final int offset, final int count) {
         if (offset < 0) {
-            throw JavaScriptEngine.reportRuntimeError("Provided offset: " + offset + " is less than zero.");
+            throw JavaScriptEngine.asJavaScriptException(
+                    getWindow(),
+                    "Provided offset: " + offset + " is less than zero.",
+                    DOMException.INDEX_SIZE_ERR);
         }
 
         final DomCharacterData domCharacterData = getDomCharacterDataOrDie();
         if (offset > domCharacterData.getLength()) {
-            throw JavaScriptEngine.reportRuntimeError("Provided offset: " + offset + " is greater than length.");
+            throw JavaScriptEngine.asJavaScriptException(
+                    getWindow(),
+                    "Provided offset: " + offset + " is greater than length.",
+                    DOMException.INDEX_SIZE_ERR);
         }
 
         domCharacterData.deleteData(offset, count);

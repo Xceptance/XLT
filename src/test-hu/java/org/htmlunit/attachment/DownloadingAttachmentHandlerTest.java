@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
@@ -87,9 +86,11 @@ public class DownloadingAttachmentHandlerTest extends SimpleWebTestCase {
             anchor.click();
             files = FileUtils.listFiles(downloadFolder, null, false);
             assertEquals(2, files.size());
-            final Iterator<File> filesIter = files.iterator();
-            assertEquals("download", filesIter.next().getName());
-            assertEquals("download(1)", filesIter.next().getName());
+
+            // be order agnostic
+            assertTrue(files.removeIf(f -> f.getName().equals("download")));
+            assertTrue(files.removeIf(f -> f.getName().equals("download(1)")));
+            assertEquals(0, files.size());
         }
         finally {
             FileUtils.deleteDirectory(downloadFolder);
@@ -140,9 +141,11 @@ public class DownloadingAttachmentHandlerTest extends SimpleWebTestCase {
             anchor.click();
             files = FileUtils.listFiles(downloadFolder, null, false);
             assertEquals(2, files.size());
-            final Iterator<File> filesIter = files.iterator();
-            assertEquals("test(1).txt", filesIter.next().getName());
-            assertEquals("test.txt", filesIter.next().getName());
+
+            // be order agnostic
+            assertTrue(files.removeIf(f -> f.getName().equals("test.txt")));
+            assertTrue(files.removeIf(f -> f.getName().equals("test(1).txt")));
+            assertEquals(0, files.size());
         }
         finally {
             FileUtils.deleteDirectory(downloadFolder);
@@ -164,6 +167,7 @@ public class DownloadingAttachmentHandlerTest extends SimpleWebTestCase {
 
         final File tmpFolder = new File(System.getProperty("java.io.tmpdir"));
         final File downloadFolder = new File(tmpFolder, "downloading-attachment-test");
+        FileUtils.deleteDirectory(downloadFolder);
 
         try {
             FileUtils.forceMkdir(downloadFolder);
@@ -193,9 +197,11 @@ public class DownloadingAttachmentHandlerTest extends SimpleWebTestCase {
             anchor.click();
             files = FileUtils.listFiles(downloadFolder, null, false);
             assertEquals(2, files.size());
-            final Iterator<File> filesIter = files.iterator();
-            assertEquals("sample(1).pdf", filesIter.next().getName());
-            assertEquals("sample.pdf", filesIter.next().getName());
+
+            // be order agnostic
+            assertTrue(files.removeIf(f -> f.getName().equals("sample.pdf")));
+            assertTrue(files.removeIf(f -> f.getName().equals("sample(1).pdf")));
+            assertEquals(0, files.size());
         }
         finally {
             FileUtils.deleteDirectory(downloadFolder);

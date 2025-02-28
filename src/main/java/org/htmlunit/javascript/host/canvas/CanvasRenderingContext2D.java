@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -113,7 +113,7 @@ public class CanvasRenderingContext2D extends HtmlUnitScriptable {
      * @return the {@code fillStyle} property
      */
     @JsxGetter
-    public Object getFillStyle() {
+    public HtmlUnitScriptable getFillStyle() {
         LOG.info("CanvasRenderingContext2D.getFillStyle() not yet implemented");
         return null;
     }
@@ -132,7 +132,7 @@ public class CanvasRenderingContext2D extends HtmlUnitScriptable {
      * @return the {@code strokeStyle} property
      */
     @JsxGetter
-    public Object getStrokeStyle() {
+    public HtmlUnitScriptable getStrokeStyle() {
         LOG.info("CanvasRenderingContext2D.getStrokeStyle() not yet implemented");
         return null;
     }
@@ -563,8 +563,7 @@ public class CanvasRenderingContext2D extends HtmlUnitScriptable {
     @JsxFunction
     public TextMetrics measureText(final Object text) {
         if (text == null || JavaScriptEngine.isUndefined(text)) {
-            throw JavaScriptEngine.throwAsScriptRuntimeEx(
-                    new RuntimeException("Missing argument for CanvasRenderingContext2D.measureText()."));
+            throw JavaScriptEngine.typeError("Missing argument for CanvasRenderingContext2D.measureText().");
         }
 
         final String textValue = JavaScriptEngine.toString(text);

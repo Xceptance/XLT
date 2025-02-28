@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,8 @@
 package org.htmlunit.javascript.host;
 
 import static java.nio.charset.StandardCharsets.UTF_16LE;
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.FF;
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.FF_ESR;
+import static org.htmlunit.junit.annotation.TestedBrowser.FF;
+import static org.htmlunit.junit.annotation.TestedBrowser.FF_ESR;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -33,9 +33,9 @@ import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
 import org.htmlunit.HttpHeader;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.NotYetImplemented;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -183,22 +183,22 @@ public class WebSocketTest extends WebDriverTestCase {
             + "    try {\n"
             + "      ws.binaryType = 'abc';\n"
             + "      log(ws.binaryType);\n"
-            + "    } catch(e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
 
             + "    try {\n"
             + "      ws.binaryType = 'arraybuffer';\n"
             + "      log(ws.binaryType);\n"
-            + "    } catch(e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
 
             + "    try {\n"
             + "      ws.binaryType = 'blob';\n"
             + "      log(ws.binaryType);\n"
-            + "    } catch(e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
 
             + "    try {\n"
             + "      ws.binaryType = '';\n"
             + "      log(ws.binaryType);\n"
-            + "    } catch(e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + "</script></head><body onload='test()'>\n"
             + "</body></html>";
@@ -469,7 +469,7 @@ public class WebSocketTest extends WebDriverTestCase {
             do {
                 Thread.sleep(100);
 
-                text = logElement.getAttribute("value").trim().replaceAll("\r", "");
+                text = logElement.getDomProperty("value").trim().replaceAll("\r", "");
             }
             while (text.length() <= expected.length() && System.currentTimeMillis() < maxWait);
 
@@ -541,7 +541,7 @@ public class WebSocketTest extends WebDriverTestCase {
             do {
                 Thread.sleep(100);
 
-                text = logElement.getAttribute("value").trim().replaceAll("\r", "");
+                text = logElement.getDomProperty("value").trim().replaceAll("\r", "");
             }
             while (text.length() <= expected.length() && System.currentTimeMillis() < maxWait);
 
@@ -571,7 +571,7 @@ public class WebSocketTest extends WebDriverTestCase {
             do {
                 Thread.sleep(DEFAULT_WAIT_TIME);
 
-                text = logElement.getAttribute("value").trim().replaceAll("\r", "");
+                text = logElement.getDomProperty("value").trim().replaceAll("\r", "");
             }
             while (text.length() > 0 && counter++ < 10);
 

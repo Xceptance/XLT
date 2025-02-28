@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@ package org.htmlunit.javascript.host.css.property;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -1601,7 +1601,7 @@ public class ElementOffsetWidthTest extends WebDriverTestCase {
     @Test
     @Alerts(CHROME = "170",
             EDGE = "168",
-            FF = "165",
+            FF = "168",
             FF_ESR = "165")
     @HtmlUnitNYI(CHROME = "100",
             EDGE = "100",
@@ -1756,11 +1756,11 @@ public class ElementOffsetWidthTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "177",
-            FF = "158",
+            FF = "165",
             FF_ESR = "158")
     @HtmlUnitNYI(CHROME = "173",
             EDGE = "173",
-            FF = "154",
+            FF = "161",
             FF_ESR = "154")
     public void input() throws Exception {
         test("input");
@@ -1805,7 +1805,7 @@ public class ElementOffsetWidthTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "253",
-            FF = "230",
+            FF = "231",
             FF_ESR = "230")
     @HtmlUnitNYI(CHROME = "10",
             EDGE = "10",
@@ -1833,11 +1833,11 @@ public class ElementOffsetWidthTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "177",
-            FF = "158",
+            FF = "165",
             FF_ESR = "158")
     @HtmlUnitNYI(CHROME = "173",
             EDGE = "173",
-            FF = "154",
+            FF = "161",
             FF_ESR = "154")
     public void inputPassword() throws Exception {
         loadPageVerifyTitle2(testInput("password"));
@@ -1881,11 +1881,11 @@ public class ElementOffsetWidthTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "177",
-            FF = "158",
+            FF = "165",
             FF_ESR = "158")
     @HtmlUnitNYI(CHROME = "173",
             EDGE = "173",
-            FF = "154",
+            FF = "161",
             FF_ESR = "154")
     public void inputSelect() throws Exception {
         loadPageVerifyTitle2(testInput("select"));
@@ -1898,7 +1898,7 @@ public class ElementOffsetWidthTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "58",
-            FF = "90",
+            FF = "92",
             FF_ESR = "90")
     @HtmlUnitNYI(CHROME = "118",
             EDGE = "118",
@@ -1915,11 +1915,11 @@ public class ElementOffsetWidthTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "177",
-            FF = "158",
+            FF = "165",
             FF_ESR = "158")
     @HtmlUnitNYI(CHROME = "173",
             EDGE = "173",
-            FF = "154",
+            FF = "161",
             FF_ESR = "154")
     public void inputText() throws Exception {
         loadPageVerifyTitle2(testInput("text"));

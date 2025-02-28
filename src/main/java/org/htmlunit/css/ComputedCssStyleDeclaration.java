@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ import static org.htmlunit.BrowserVersionFeatures.JS_CLIENTHEIGHT_INPUT_17;
 import static org.htmlunit.BrowserVersionFeatures.JS_CLIENTHEIGHT_INPUT_18;
 import static org.htmlunit.BrowserVersionFeatures.JS_CLIENTHEIGHT_RADIO_CHECKBOX_10;
 import static org.htmlunit.BrowserVersionFeatures.JS_CLIENTHEIGHT_RADIO_CHECKBOX_14;
+import static org.htmlunit.BrowserVersionFeatures.JS_CLIENTWIDTH_INPUT_TEXT_154;
 import static org.htmlunit.BrowserVersionFeatures.JS_CLIENTWIDTH_INPUT_TEXT_173;
 import static org.htmlunit.BrowserVersionFeatures.JS_CLIENTWIDTH_RADIO_CHECKBOX_10;
 import static org.htmlunit.BrowserVersionFeatures.JS_CLIENTWIDTH_RADIO_CHECKBOX_14;
@@ -1155,9 +1156,9 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
      * {@inheritDoc}
      */
     @Override
-    public Object getZIndex() {
-        final Object response = super.getZIndex();
-        if (response.toString().isEmpty()) {
+    public String getZIndex() {
+        final String response = super.getZIndex();
+        if (response.isEmpty()) {
             return AUTO;
         }
         return response;
@@ -1220,7 +1221,7 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
                 parentWidth = getDomElement().getPage().getEnclosingWindow().getInnerWidth();
             }
             else if (parent instanceof Page) {
-                parentWidth = (((Page) parent).getEnclosingWindow()).getInnerWidth();
+                parentWidth = ((Page) parent).getEnclosingWindow().getInnerWidth();
             }
             else {
                 final ComputedCssStyleDeclaration parentStyle =
@@ -1555,7 +1556,10 @@ public class ComputedCssStyleDeclaration extends AbstractCssStyleDeclaration {
                 if (browserVersion.hasFeature(JS_CLIENTWIDTH_INPUT_TEXT_173)) {
                     return 173;
                 }
-                width = 154; // FF
+                if (browserVersion.hasFeature(JS_CLIENTWIDTH_INPUT_TEXT_154)) {
+                    return 154;
+                }
+                width = 161; // FF
             }
             else if (element instanceof HtmlRadioButtonInput || element instanceof HtmlCheckBoxInput) {
                 final BrowserVersion browserVersion = getDomElement().getPage().getWebClient().getBrowserVersion();

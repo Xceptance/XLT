@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ import java.nio.charset.StandardCharsets;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
 import org.htmlunit.util.UrlUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -67,7 +67,7 @@ public class CSSSelectorTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts({"exception", "exception"})
+    @Alerts({"SyntaxError/DOMException", "SyntaxError/DOMException"})
     public void querySelectorAll_emptyString() throws Exception {
         final String html = "<html><head>\n"
             + "<meta http-equiv='X-UA-Compatible' content='IE=edge'>\n"
@@ -76,10 +76,10 @@ public class CSSSelectorTest extends WebDriverTestCase {
             + "function test() {\n"
             + "  try {\n"
             + "    log(document.querySelectorAll(''));\n"
-            + "  } catch(e) {log('exception')}\n"
+            + "  } catch(e) {logEx(e)}\n"
             + "  try {\n"
             + "    log(document.querySelectorAll('  '));\n"
-            + "  } catch(e) {log('exception')}\n"
+            + "  } catch(e) {logEx(e)}\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -189,7 +189,7 @@ public class CSSSelectorTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("SyntaxError/DOMException")
     public void nth_child_no_argument() throws Exception {
         final String html
             = HtmlPageTest.STANDARDS_MODE_PREFIX_ + "<html><head><script>\n"
@@ -197,7 +197,7 @@ public class CSSSelectorTest extends WebDriverTestCase {
             + "function test() {\n"
             + "  try {\n"
             + "    log(document.querySelectorAll('li:nth-child()'));\n"
-            + "  } catch (e) {log('exception')}\n"
+            + "  } catch(e) {logEx(e)}\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -251,7 +251,7 @@ public class CSSSelectorTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("SyntaxError/DOMException")
     public void invalid() throws Exception {
         final String html
             = "<html><head><script>\n"
@@ -259,7 +259,7 @@ public class CSSSelectorTest extends WebDriverTestCase {
             + "function test() {\n"
             + "  try {\n"
             + "    log(document.querySelectorAll('td:gt(4)').length);\n"
-            + "  } catch(e) {log('exception')}\n"
+            + "  } catch(e) {logEx(e)}\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -1204,7 +1204,7 @@ public class CSSSelectorTest extends WebDriverTestCase {
             + "    log(found.length);\n"
             + "    log(found[0].id);\n"
             + "    log(found[1].id);\n"
-            + "  } catch(e) {log('exception')}\n"
+            + "  } catch(e) {logEx(e)}\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -1361,7 +1361,7 @@ public class CSSSelectorTest extends WebDriverTestCase {
             + "function test() {\n"
             + "  try {\n"
             + "    log(document.querySelectorAll('div:not(div:first-of-type)')[0].id);\n"
-            + "  } catch(e) {log('exception')}\n"
+            + "  } catch(e) {logEx(e)}\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -1406,7 +1406,7 @@ public class CSSSelectorTest extends WebDriverTestCase {
             + "    log(res[0].id);\n"
             + "    log(res[1].id);\n"
             + "    log(res[2].id);\n"
-            + "  } catch(e) {log('exception')}\n"
+            + "  } catch(e) {logEx(e)}\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -1431,7 +1431,7 @@ public class CSSSelectorTest extends WebDriverTestCase {
             + "function test() {\n"
             + "  try {\n"
             + "    log(document.querySelectorAll('div:not(div:last-of-type)')[1].id);\n"
-            + "  } catch(e) {log('exception')}\n"
+            + "  } catch(e) {logEx(e)}\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -1476,7 +1476,7 @@ public class CSSSelectorTest extends WebDriverTestCase {
             + "    log(res[0].id);\n"
             + "    log(res[1].id);\n"
             + "    log(res[2].id);\n"
-            + "  } catch(e) {log('exception')}\n"
+            + "  } catch(e) {logEx(e)}\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -2000,10 +2000,10 @@ public class CSSSelectorTest extends WebDriverTestCase {
      */
     @Test
     @Alerts({"1", "[object HTMLHeadingElement]"})
-    @HtmlUnitNYI(CHROME = "exception",
-            EDGE = "exception",
-            FF = "exception",
-            FF_ESR = "exception")
+    @HtmlUnitNYI(CHROME = "SyntaxError/DOMException",
+            EDGE = "SyntaxError/DOMException",
+            FF = "SyntaxError/DOMException",
+            FF_ESR = "SyntaxError/DOMException")
     public void has() throws Exception {
         final String html = "<html><head>\n"
             + "<meta http-equiv='X-UA-Compatible' content='IE=edge'>\n"
@@ -2014,7 +2014,7 @@ public class CSSSelectorTest extends WebDriverTestCase {
             + "    var list = document.querySelectorAll('h1:has(p)');\n"
             + "    log(list.length);\n"
             + "    log(list[0]);\n"
-            + "  } catch(e) {log('exception')}\n"
+            + "  } catch(e) {logEx(e)}\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -2075,7 +2075,7 @@ public class CSSSelectorTest extends WebDriverTestCase {
             + "try {\n"
             + "  log(document.querySelectorAll('.foo').length);\n"
             + "  log(document.querySelectorAll('.bar').length);\n"
-            + "} catch(e) {log('exception')}\n"
+            + "} catch(e) {logEx(e)}\n"
             + "</script></body></html>";
 
         loadPageVerifyTitle2(html);
@@ -2099,7 +2099,7 @@ public class CSSSelectorTest extends WebDriverTestCase {
             + "  log(document.querySelectorAll('.foo\\\\[bar\\\\]')[0].id);\n"
             + "  log(document.querySelectorAll('.foo\\\\.bar')[0].id);\n"
             + "  log(document.querySelectorAll('.foo\\\\:bar')[0].id);\n"
-            + "} catch(e) {log('exception')}\n"
+            + "} catch(e) {logEx(e)}\n"
             + "</script></body></html>";
 
         loadPageVerifyTitle2(html);
@@ -2124,7 +2124,7 @@ public class CSSSelectorTest extends WebDriverTestCase {
 
             + "  log(document.querySelectorAll('#silly\\\\~id')[0].id);\n"
             + "  log(document.querySelectorAll(\"#silly\\\\~id\")[0].id);\n"
-            + "} catch(e) {log('exception ' + e)}\n"
+            + "} catch(e) { logEx(e); }\n"
             + "</script></body></html>";
 
         loadPageVerifyTitle2(html);
@@ -2134,7 +2134,7 @@ public class CSSSelectorTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("SyntaxError/DOMException")
     public void invalidSelectors() throws Exception {
         final String html
             = HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -2145,7 +2145,7 @@ public class CSSSelectorTest extends WebDriverTestCase {
             + "  try {\n"
             + "    var list = document.querySelectorAll('li:foo() ~ li');\n"
             + "    log(list.length);\n"
-            + "  } catch(e) {log('exception')}\n"
+            + "  } catch(e) {logEx(e)}\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -2390,20 +2390,20 @@ public class CSSSelectorTest extends WebDriverTestCase {
             + "  try {\n"
             + "    found = div.querySelector('" + selector + "');\n"
             + "    log(found);\n"
-            + "  } catch(e) {log('exception')}\n"
+            + "  } catch(e) {logEx(e)}\n"
 
             + "  div = document.createElement('div');\n"
             + "  try {\n"
             + "    found = div.querySelector('" + selector + "');\n"
             + "    log(found);\n"
-            + "  } catch(e) {log('exception')}\n"
+            + "  } catch(e) {logEx(e)}\n"
 
             + "  var input = document.createElement('span');\n"
             + "  div.appendChild(input);\n"
             + "  try {\n"
             + "    found = div.querySelector('" + selector + "');\n"
             + "    log(found);\n"
-            + "  } catch(e) {log('exception')}\n"
+            + "  } catch(e) {logEx(e)}\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -2453,7 +2453,7 @@ public class CSSSelectorTest extends WebDriverTestCase {
 
             + "    res = de.querySelectorAll('rEsulT');\n"
             + "    log(res.length);\n"
-            + "  } catch(e) {log('exception ' + e)}\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "</script></body></html>";
 
         loadPageVerifyTitle2(html);
@@ -2507,7 +2507,7 @@ public class CSSSelectorTest extends WebDriverTestCase {
             + "    log(res.length);\n"
             + "    log(res[0].innerHTML);\n"
 
-            + "  } catch(e) {log('exception ' + e)}\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "</script></body></html>";
 
         loadPageVerifyTitle2(html);
@@ -2517,7 +2517,7 @@ public class CSSSelectorTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts({"exception", "exception"})
+    @Alerts({"SyntaxError/DOMException", "SyntaxError/DOMException"})
     public void querySelector_invalid() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -2525,10 +2525,10 @@ public class CSSSelectorTest extends WebDriverTestCase {
             + "function test() {\n"
             + "  try {\n"
             + "    log(document.querySelectorAll('#foo > :not(:first)'));\n"
-            + "  } catch(e) {log('exception')}\n"
+            + "  } catch(e) {logEx(e)}\n"
             + "  try {\n"
             + "    log(document.querySelector('#foo > :not(:first)'));\n"
-            + "  } catch(e) {log('exception')}\n"
+            + "  } catch(e) {logEx(e)}\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"

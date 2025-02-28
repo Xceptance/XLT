@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package org.htmlunit.javascript.host.dom;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -278,7 +278,7 @@ public class NodeListTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"exception", "exception"})
+    @Alerts({"TypeError", "TypeError"})
     public void forEachWrongParam() throws Exception {
         final String html
                 = "<html><head><script>\n"
@@ -287,10 +287,10 @@ public class NodeListTest extends WebDriverTestCase {
                 + "  var nodeList = document.querySelectorAll('*');\n"
                 + "  try {\n"
                 + "    nodeList.forEach();\n"
-                + "  } catch(e) { log('exception'); }\n"
+                + "  } catch(e) { logEx(e); }\n"
                 + "  try {\n"
                 + "    nodeList.forEach('wrong');\n"
-                + "  } catch(e) { log('exception'); }\n"
+                + "  } catch(e) { logEx(e); }\n"
                 + "}\n"
                 + "</script></head><body onload='test()'>\n"
                 + "  <div id='d1' class=' a b \t c \n d \u000B e \u000C f \r g'></div>\n"

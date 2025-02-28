@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -84,7 +84,7 @@ public class HashChangeEvent extends Event {
      * @return the old URL
      */
     @JsxGetter
-    public Object getOldURL() {
+    public String getOldURL() {
         return oldURL_;
     }
 
@@ -93,7 +93,7 @@ public class HashChangeEvent extends Event {
      * @return the new URL
      */
     @JsxGetter
-    public Object getNewURL() {
+    public String getNewURL() {
         return newURL_;
     }
 }

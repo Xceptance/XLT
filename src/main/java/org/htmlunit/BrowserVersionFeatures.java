@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -265,6 +265,10 @@ public enum BrowserVersionFeatures {
     @BrowserFeature(FF)
     JS_CLIENTHEIGHT_RADIO_CHECKBOX_14,
 
+    /** ClientWidth for text/password input is 154. */
+    @BrowserFeature(FF_ESR)
+    JS_CLIENTWIDTH_INPUT_TEXT_154,
+
     /** ClientWidth for text/password input is 173. */
     @BrowserFeature({CHROME, EDGE})
     JS_CLIENTWIDTH_INPUT_TEXT_173,
@@ -313,10 +317,6 @@ public enum BrowserVersionFeatures {
     /** form.dispatchEvent(e) submits the form if the event is of type 'submit'. */
     @BrowserFeature({FF, FF_ESR})
     JS_FORM_DISPATCHEVENT_SUBMITS,
-
-    /** HTMLObject Validity isValid ignores custom error property. */
-    @BrowserFeature({CHROME, EDGE})
-    JS_HTML_OBJECT_VALIDITYSTATE_ISVALID_IGNORES_CUSTOM_ERROR,
 
     /** Executes the {@code onload} handler, regardless of the whether the element was already attached to the page. */
     @BrowserFeature({FF, FF_ESR})
@@ -429,10 +429,10 @@ public enum BrowserVersionFeatures {
     JS_WINDOW_INSTALL_TRIGGER_NULL,
 
     /**
-     * Difference of window.outer/inner height is 136.
+     * Difference of window.outer/inner height is 138.
      */
     @BrowserFeature(EDGE)
-    JS_WINDOW_OUTER_INNER_HEIGHT_DIFF_136,
+    JS_WINDOW_OUTER_INNER_HEIGHT_DIFF_138,
 
     /**
      * Difference of window.outer/inner height is 147.
@@ -443,8 +443,14 @@ public enum BrowserVersionFeatures {
     /**
      * Difference of window.outer/inner height is 91.
      */
-    @BrowserFeature({FF, FF_ESR})
+    @BrowserFeature(FF_ESR)
     JS_WINDOW_OUTER_INNER_HEIGHT_DIFF_91,
+
+    /**
+     * Difference of window.outer/inner height is 93.
+     */
+    @BrowserFeature(FF)
+    JS_WINDOW_OUTER_INNER_HEIGHT_DIFF_93,
 
     /** Window.getSelection returns null, if the window is not visible. */
     @BrowserFeature({FF, FF_ESR})

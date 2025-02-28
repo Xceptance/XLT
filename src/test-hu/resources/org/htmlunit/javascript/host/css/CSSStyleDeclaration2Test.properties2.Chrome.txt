@@ -6,6 +6,7 @@ alignSelf
 alignmentBaseline
 all
 anchorName
+anchorScope
 animation
 animationComposition
 animationDelay
@@ -192,6 +193,7 @@ fontVariant
 fontVariantAlternates
 fontVariantCaps
 fontVariantEastAsian
+fontVariantEmoji
 fontVariantLigatures
 fontVariantNumeric
 fontVariantPosition
@@ -228,7 +230,6 @@ initialLetter
 initialValue
 inlineSize
 inset
-insetArea
 insetBlock
 insetBlockEnd
 insetBlockStart
@@ -364,6 +365,7 @@ rx
 ry
 scale
 scrollBehavior
+scrollInitialTarget
 scrollMargin
 scrollMarginBlock
 scrollMarginBlockEnd
@@ -423,6 +425,9 @@ tableLayout
 textAlign
 textAlignLast
 textAnchor
+textBox
+textBoxEdge
+textBoxTrim
 textCombineUpright
 textDecoration
 textDecorationColor

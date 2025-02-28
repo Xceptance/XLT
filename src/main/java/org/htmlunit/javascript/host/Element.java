@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,6 +57,7 @@ import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.configuration.JsxSetter;
 import org.htmlunit.javascript.host.css.CSSStyleDeclaration;
 import org.htmlunit.javascript.host.dom.Attr;
+import org.htmlunit.javascript.host.dom.DOMException;
 import org.htmlunit.javascript.host.dom.DOMTokenList;
 import org.htmlunit.javascript.host.dom.Node;
 import org.htmlunit.javascript.host.dom.NodeList;
@@ -508,8 +509,11 @@ public class Element extends Node {
             return NodeList.staticNodeList(this, getDomNodeOrDie().querySelectorAll(selectors));
         }
         catch (final CSSException e) {
-            throw JavaScriptEngine.reportRuntimeError("An invalid or illegal selector was specified (selector: '"
-                    + selectors + "' error: " + e.getMessage() + ").");
+            throw JavaScriptEngine.asJavaScriptException(
+                    getWindow(),
+                    "An invalid or illegal selector was specified (selector: '"
+                            + selectors + "' error: " + e.getMessage() + ").",
+                    DOMException.SYNTAX_ERR);
         }
     }
 
@@ -528,8 +532,11 @@ public class Element extends Node {
             return null;
         }
         catch (final CSSException e) {
-            throw JavaScriptEngine.reportRuntimeError("An invalid or illegal selector was specified (selector: '"
-                    + selectors + "' error: " + e.getMessage() + ").");
+            throw JavaScriptEngine.asJavaScriptException(
+                    getWindow(),
+                    "An invalid or illegal selector was specified (selector: '"
+                            + selectors + "' error: " + e.getMessage() + ").",
+                    DOMException.SYNTAX_ERR);
         }
     }
 
@@ -829,16 +836,6 @@ public class Element extends Node {
     }
 
     /**
-     * The {@code getInnerHTML} function.
-     * @return the contents of this node as HTML
-     */
-    @JsxFunction(value = {CHROME, EDGE}, functionName = "getInnerHTML")
-    public String innerHTML() {
-        // ignore the params because we have no shadow dom support so far
-        return getInnerHTML();
-    }
-
-    /**
      * The {@code getHTML} function.
      * @return the contents of this node as HTML
      */
@@ -862,7 +859,7 @@ public class Element extends Node {
             return getInnerHTML(domNode);
         }
         catch (final IllegalStateException e) {
-            throw JavaScriptEngine.throwAsScriptRuntimeEx(e);
+            throw JavaScriptEngine.typeError(e.getMessage());
         }
     }
 
@@ -877,7 +874,7 @@ public class Element extends Node {
             domNode = getDomNodeOrDie();
         }
         catch (final IllegalStateException e) {
-            throw JavaScriptEngine.throwAsScriptRuntimeEx(e);
+            throw JavaScriptEngine.typeError(e.getMessage());
         }
 
         String html = null;
@@ -939,7 +936,10 @@ public class Element extends Node {
         final DomNode parent = domNode.getParentNode();
         if (null == parent) {
             if (getBrowserVersion().hasFeature(JS_OUTER_HTML_THROWS_FOR_DETACHED)) {
-                throw JavaScriptEngine.reportRuntimeError("outerHTML is readonly for detached nodes");
+                throw JavaScriptEngine.asJavaScriptException(
+                        getWindow(),
+                        "outerHTML is readonly for detached nodes",
+                        DOMException.NO_MODIFICATION_ALLOWED_ERR);
             }
             return;
         }
@@ -1090,12 +1090,8 @@ public class Element extends Node {
     @JsxFunction
     public void removeAttributeNode(final Attr attribute) {
         final String name = attribute.getName();
-        final Object namespaceUri = attribute.getNamespaceURI();
-        if (namespaceUri instanceof String) {
-            removeAttributeNS((String) namespaceUri, name);
-            return;
-        }
-        removeAttributeNS(null, name);
+        final String namespaceUri = attribute.getNamespaceURI();
+        removeAttributeNS(namespaceUri, name);
     }
 
     /**
@@ -1536,9 +1532,11 @@ public class Element extends Node {
             return domNode != null && ((DomElement) domNode).matches(selectorString);
         }
         catch (final CSSException e) {
-            throw JavaScriptEngine.constructError("SyntaxError",
+            throw JavaScriptEngine.asJavaScriptException(
+                    (HtmlUnitScriptable) getTopLevelScope(thisObj),
                     "An invalid or illegal selector was specified (selector: '"
-                    + selectorString + "' error: " + e.getMessage() + ").");
+                            + selectorString + "' error: " + e.getMessage() + ").",
+                    DOMException.SYNTAX_ERR);
         }
     }
 
@@ -1592,7 +1590,7 @@ public class Element extends Node {
             return elem.getScriptableObject();
         }
         catch (final CSSException e) {
-            throw JavaScriptEngine.constructError("SyntaxError",
+            throw JavaScriptEngine.syntaxError(
                     "An invalid or illegal selector was specified (selector: '"
                     + selectorString + "' error: " + e.getMessage() + ").");
         }

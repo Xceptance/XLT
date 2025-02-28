@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,8 +26,8 @@ import org.htmlunit.HttpHeader;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.http.HttpStatus;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
 import org.junit.Test;
@@ -91,7 +91,7 @@ public class HtmlScript2Test extends WebDriverTestCase {
             + "  log('created');\n"
             + "  element.parentNode.replaceChild(fragment, element);\n"
             + "  log('replaced');\n"
-            + "} catch(e) { log('exception'); }\n"
+            + "} catch(e) { logEx(e); }\n"
             + "</script></body></html>";
 
         loadPageVerifyTitle2(html);
@@ -462,7 +462,7 @@ public class HtmlScript2Test extends WebDriverTestCase {
             + "    script.appendChild(document.createTextNode('log(\"2\");'));\n"
             + "    script.text = 'log(\"3\");';\n"
             + "    document.body.appendChild(script);\n"
-            + "  } catch (e) {log('exception');}\n"
+            + "  } catch(e) {logEx(e);}\n"
             + "</script>\n"
             + "</body></html>";
 
@@ -560,8 +560,8 @@ public class HtmlScript2Test extends WebDriverTestCase {
             + "  function test() {\n"
             + "    var s1 = document.createElement('script');\n"
             + "    s1.src = '" + scriptUrl + "';\n"
-            + "    s1.addEventListener('load', function() {log('load')}, false);\n"
-            + "    s1.addEventListener('error', function() {log('error')}, false);\n"
+            + "    s1.addEventListener('load', function() { log('load'); }, false);\n"
+            + "    s1.addEventListener('error', function() { logEx(e); }, false);\n"
             + "    document.body.insertBefore(s1, document.body.firstChild);\n"
             + "  }\n"
             + "</script>\n"

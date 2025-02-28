@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ package org.htmlunit.javascript.host;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -56,7 +56,7 @@ public class WeakMapTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("TypeError")
     public void constructorSetParam() throws Exception {
         final String html
             = "<html><head>\n"
@@ -67,7 +67,7 @@ public class WeakMapTest extends WebDriverTestCase {
             + "    var myMap = new WeakMap(new Set('test'));\n"
             + "    log(myMap.has('test'));\n"
             + "  } catch(e) {\n"
-            + "    log('exception');\n"
+            + "    logEx(e);\n"
             + "  }\n"
             + "}\n"
             + "</script></head><body onload='test()'>\n"
@@ -94,7 +94,7 @@ public class WeakMapTest extends WebDriverTestCase {
             + "    var myMap = new WeakMap(testMap);\n"
             + "    log(myMap.has(foo));\n"
             + "  } catch(e) {\n"
-            + "    log('exception');\n"
+            + "    logEx(e);\n"
             + "  }\n"
             + "}\n"
             + "</script></head><body onload='test()'>\n"
@@ -134,7 +134,7 @@ public class WeakMapTest extends WebDriverTestCase {
             + "      var myMap = new WeakMap(myIterable);\n"
             + "      log(myMap.has(foo));\n"
             + "    } catch(e) {\n"
-            + "      log('exception');\n"
+            + "      logEx(e);\n"
             + "    }\n"
             + "  }"
             + "}\n"
@@ -169,7 +169,7 @@ public class WeakMapTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("TypeError")
     public void setNonObject() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -180,7 +180,7 @@ public class WeakMapTest extends WebDriverTestCase {
             + "      var myMap = new WeakMap(kvArray);\n"
             + "      try {\n"
             + "        myMap.set(1, 2);\n"
-            + "      } catch(e) {log('exception')}\n"
+            + "      } catch(e) {logEx(e)}\n"
             + "    }\n"
             + "  }\n"
             + "</script></head><body onload='test()'>\n"

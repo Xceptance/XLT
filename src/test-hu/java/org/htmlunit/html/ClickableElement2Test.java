@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ package org.htmlunit.html;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
@@ -58,21 +58,22 @@ public class ClickableElement2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("click click dblclick ")
+    @Alerts({"click", "click", "dblclick"})
     public void dblClick() throws Exception {
         final String content = "<html>\n"
             + "<head>\n"
             + "<script>\n"
+            + LOG_TEXTAREA_FUNCTION
             + "  function clickMe() {\n"
-            + "    document.getElementById('myTextarea').value+='click ';\n"
+            + "    log('click');\n"
             + "  }\n"
             + "  function dblClickMe() {\n"
-            + "    document.getElementById('myTextarea').value+='dblclick ';\n"
+            + "    log('dblclick');\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
             + "<body id='myBody' onclick='clickMe()' ondblclick='dblClickMe()'>\n"
-            + "<textarea id='myTextarea'></textarea>\n"
+            + LOG_TEXTAREA
             + "</body></html>";
 
         final WebDriver driver = loadPage2(content);
@@ -81,6 +82,6 @@ public class ClickableElement2Test extends WebDriverTestCase {
         action.doubleClick(driver.findElement(By.id("myBody")));
         action.perform();
 
-        assertEquals(getExpectedAlerts()[0], driver.findElement(By.id("myTextarea")).getAttribute("value"));
+        verifyTextArea2(driver, getExpectedAlerts());
     }
 }

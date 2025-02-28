@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,7 +74,6 @@ public class NumberFormat extends HtmlUnitScriptable {
         commonFormats.put("fr", "\u202f,");
         commonFormats.put("fr-CA", "\u00a0,");
 
-        FF_FORMATS_.putAll(commonFormats);
         FF_ESR_FORMATS_.putAll(commonFormats);
 
         commonFormats.put("ar", ",.0");
@@ -90,6 +89,9 @@ public class NumberFormat extends HtmlUnitScriptable {
         commonFormats.put("ar-SD", "\u066c\u066b\u0660");
         commonFormats.put("ar-SY", "\u066c\u066b\u0660");
         commonFormats.put("ar-YE", "\u066c\u066b\u0660");
+
+        FF_FORMATS_.putAll(commonFormats);
+
         commonFormats.put("be", ",.");
         commonFormats.put("en-ZA", ",.");
         commonFormats.put("mk", ",.");

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -136,7 +136,10 @@ public final class StyleAttributes implements Serializable {
         ALL("all", "all", chromeAndEdgeAndFirefox("")),
 
         /** The style property {@code anchorName}. */
-        ANCHOR_NAME("anchorName", "anchor.name", chromeAndEdgeNone()),
+        ANCHOR_NAME("anchorName", "anchor-name", chromeAndEdgeNone()),
+
+        /** The style property {@code anchorScope}. */
+        ANCHOR_SCOPE("anchorScope", "anchor-scope", chromeAndEdgeNone()),
 
         /** The style property {@code animation}. */
         ANIMATION("animation", "animation", chromeAndEdge("none 0s ease 0s 1 normal none running"),
@@ -692,10 +695,10 @@ public final class StyleAttributes implements Serializable {
         BORDER_RIGHT_WIDTH_("border-right-width", "border-right-width", ff("0px")),
 
         /** The style property {@code borderSpacing}. */
-        BORDER_SPACING("borderSpacing", "border-spacing", chromeAndEdge("0px 0px"), ff("0px 0px")),
+        BORDER_SPACING("borderSpacing", "border-spacing", chromeAndEdge("0px 0px"), ffEsr("0px 0px"), ffLatest("0px")),
 
         /** The style property {@code border-spacing}. */
-        BORDER_SPACING_("border-spacing", "border-spacing", ff("0px 0px")),
+        BORDER_SPACING_("border-spacing", "border-spacing", ffEsr("0px 0px"), ffLatest("0px")),
 
         /** The style property {@code borderStartEndRadius}. */
         BORDER_START_END_RADIUS("borderStartEndRadius", "border-start-end-radius", chromeAndEdge("0px"), ff("0px")),
@@ -1259,6 +1262,9 @@ public final class StyleAttributes implements Serializable {
         /** The style property {@code font-variant-east-asian}. */
         FONT_VARIANT_EAST_ASIAN_("font-variant-east-asian", "font-variant-east-asian", ffNormal()),
 
+        /** The style property {@code fontVariantEmoji}. */
+        FONT_VARIANT_EMOKJI("fontVariantEmoji", "font-variant-emoji", chromeAndEdgeNormal()),
+
         /** The style property {@code fontVariantLigatures}. */
         FONT_VARIANT_LIGATURES("fontVariantLigatures", "font-variant-ligatures", ffNormal(), chromeAndEdgeNormal()),
 
@@ -1455,16 +1461,13 @@ public final class StyleAttributes implements Serializable {
         INITIAL_VALUE("initialValue", "initial-value", chromeAndEdgeEmpty()),
 
         /** The style property {@code inlineSize}. */
-        INLINE_SIZE("inlineSize", "inline-size", ff("1244px"), chrome("1240px"), edge("1232px")),
+        INLINE_SIZE("inlineSize", "inline-size", ffEsr("1244px"), ffLatest("1240px"), chrome("1240px"), edge("1232px")),
 
         /** The style property {@code inline-size}. */
-        INLINE_SIZE_("inline-size", "inline-size", ff("1244px")),
+        INLINE_SIZE_("inline-size", "inline-size", ffEsr("1244px"), ffLatest("1240px")),
 
         /** The style property {@code inset}. */
         INSET("inset", "inset", chromeAndEdgeAuto(), ff("auto")),
-
-        /** The style property {@code insetArea}. */
-        INSET_AREA("insetArea", "inset-area", chromeAndEdgeNone()),
 
         /** The style property {@code insetBlock}. */
         INSET_BLOCK("insetBlock", "inset-block", chromeAndEdgeAuto(), ff("auto")),
@@ -1871,6 +1874,14 @@ public final class StyleAttributes implements Serializable {
         /** The style property {@code -moz-appearance}. */
         MOZ_APPEARANCE__("-moz-appearance", "-moz-appearance", ffNone()),
 
+        /** The style property {@code MozBackfaceVisibility}. */
+        MOZ_BACKFACE_VISIBILITY("MozBackfaceVisibility", "-moz-backface-visibility",
+                ffLatest("visible")),
+
+        /** The style property {@code -moz-backface-visibility}. */
+        MOZ_BACKFACE_VISIBILITY__("-moz-backface-visibility", "-moz-backface-visibility",
+                ffLatest("visible")),
+
         /** The style property {@code MozBorderBottomColors}. */
         MOZ_BORDER_BOTTOM_COLORS("MozBorderBottomColors", "-moz-border-bottom-colors",
                 ffNotIterable("none")),
@@ -2066,6 +2077,18 @@ public final class StyleAttributes implements Serializable {
         /** The style property {@code -moz-padding-start}. */
         MOZ_PADDING_START__("-moz-padding-start", "-moz-padding-start", ff("0px")),
 
+        /** The style property {@code MozPerspective}. */
+        MOZ_PERSPECTIVE("MozPerspective", "-moz-perspective", ffLatest("none")),
+
+        /** The style property {@code -moz-perspective}. */
+        MOZ_PERSPECTIVE__("-moz-perspective", "-moz-perspective", ffLatest("none")),
+
+        /** The style property {@code MozPerspectiveOrigin}. */
+        MOZ_PERSPECTIVE_ORIGIN("MozPerspectiveOrigin", "-moz-perspective-origin", ffLatest("620px 164px")),
+
+        /** The style property {@code -moz-perspective-origin}. */
+        MOZ_PERSPECTIVE_ORIGIN__("-moz-perspective-origin", "-moz-perspective-origin", ffLatest("620px 164px")),
+
         /** The style property {@code MozTabSize}. */
         MOZ_TAB_SIZE("MozTabSize", "-moz-tab-size", ff("8")),
 
@@ -2095,16 +2118,24 @@ public final class StyleAttributes implements Serializable {
         MOZ_TRANSFORM__("-moz-transform", "-moz-transform", ffNone()),
 
         /** The style property {@code MozTransformOrigin}. */
-        MOZ_TRANSFORM_ORIGIN("MozTransformOrigin", "-moz-transform-origin", ff("622px 164px")),
+        MOZ_TRANSFORM_ORIGIN("MozTransformOrigin", "-moz-transform-origin",
+                ffEsr("622px 164px"), ffLatest("620px 164px")),
 
         /** The style property {@code -moz-transform-origin}. */
-        MOZ_TRANSFORM_ORIGIN__("-moz-transform-origin", "-moz-transform-origin", ff("622px 164px")),
+        MOZ_TRANSFORM_ORIGIN__("-moz-transform-origin", "-moz-transform-origin",
+                ffEsr("622px 164px"), ffLatest("620px 164px")),
+
+        /** The style property {@code MozTransformStyle}. */
+        MOZ_TRANSFORM_STYLE("MozTransformStyle", "-moz-transform-style", ffLatest("flat")),
+
+        /** The style property {@code -moz-transform-style}. */
+        MOZ_TRANSFORM_STYLE__("-moz-transform-style", "-moz-transform-style", ffLatest("flat")),
 
         /** The style property {@code MozUserInput}. */
-        MOZ_USER_INPUT("MozUserInput", "-moz-user-input", ff("auto")),
+        MOZ_USER_INPUT("MozUserInput", "-moz-user-input", ffEsr("auto")),
 
         /** The style property {@code -moz-user-input}. */
-        MOZ_USER_INPUT__("-moz-user-input", "-moz-user-input", ff("auto")),
+        MOZ_USER_INPUT__("-moz-user-input", "-moz-user-input", ffEsr("auto")),
 
         /** The style property {@code MozUserModify}. */
         MOZ_USER_MODIFY("MozUserModify", "-moz-user-modify", ffEsr("read-only")),
@@ -2402,10 +2433,10 @@ public final class StyleAttributes implements Serializable {
 
         /** The style property {@code perspectiveOrigin}. */
         PERSPECTIVE_ORIGIN("perspectiveOrigin", "perspective-origin",
-                ff("622px 164px"), chrome("620px 162px"), edge("616px 162px")),
+                ffEsr("622px 164px"), ffLatest("620px 164px"), chrome("620px 162px"), edge("616px 162px")),
 
         /** The style property {@code perspective-origin}. */
-        PERSPECTIVE_ORIGIN_("perspective-origin", "perspective-origin", ff("622px 164px")),
+        PERSPECTIVE_ORIGIN_("perspective-origin", "perspective-origin", ffEsr("622px 164px"), ffLatest("620px 164px")),
 
         /** The style property {@code placeContent}. */
         PLACE_CONTENT("placeContent", "place-content", chromeAndEdgeNormal(), ffNormal()),
@@ -2512,6 +2543,9 @@ public final class StyleAttributes implements Serializable {
 
         /** The style property {@code scroll-behavior}. */
         SCROLL_BEHAVIOR_("scroll-behavior", "scroll-behavior", ff("auto")),
+
+        /** The style property {@code scrollInitialTarget}. */
+        SCROLL_INITIAL_TARGET("scrollInitialTarget", "scroll-initial-target", chromeAndEdgeNone()),
 
         /** The style property {@code scrollMargin}. */
         SCROLL_MARGIN("scrollMargin", "scroll-margin", chromeAndEdge("0px"), ff("0px")),
@@ -2840,6 +2874,15 @@ public final class StyleAttributes implements Serializable {
         /** The style property {@code text-anchor}. */
         TEXT_ANCHOR_("text-anchor", "text-anchor", ff("start")),
 
+        /** The style property {@code textBox}. */
+        TEXT_BOX("textBox", "text-box", chromeAndEdgeNormal()),
+
+        /** The style property {@code textBoxEdge}. */
+        TEXT_BOX_EDGE("textBoxEdge", "text-box-edge", chromeAndEdgeAuto()),
+
+        /** The style property {@code textBoxTrim}. */
+        TEXT_BOX_TRIM("textBoxTrim", "text-box-trim", chromeAndEdgeNone()),
+
         /** The style property {@code textCombineUpright}. */
         TEXT_COMBINE_UPRIGHT("textCombineUpright", "text-combine-upright", chromeAndEdgeNone(), ffNone()),
 
@@ -3019,10 +3062,10 @@ public final class StyleAttributes implements Serializable {
 
         /** The style property {@code transformOrigin}. */
         TRANSFORM_ORIGIN("transformOrigin", "transform-origin",
-                ff("622px 164px"), chrome("620px 162px"), edge("616px 162px")),
+                ffEsr("622px 164px"), ffLatest("620px 164px"), chrome("620px 162px"), edge("616px 162px")),
 
         /** The style property {@code transform-origin}. */
-        TRANSFORM_ORIGIN_("transform-origin", "transform-origin", ff("622px 164px")),
+        TRANSFORM_ORIGIN_("transform-origin", "transform-origin", ffEsr("622px 164px"), ffLatest("620px 164px")),
 
         /** The style property {@code transformStyle}. */
         TRANSFORM_STYLE("transformStyle", "transform-style", ff("flat"), chromeAndEdge("flat")),
@@ -3836,15 +3879,15 @@ public final class StyleAttributes implements Serializable {
 
         /** The style property {@code webkitPerspectiveOrigin}. */
         WEBKIT_PERSPECTIVE_ORIGIN("webkitPerspectiveOrigin", "webkit-perspective-origin",
-                ff("622px 164px"), chrome("620px 162px"), edge("616px 162px")),
+                ffEsr("622px 164px"), ffLatest("620px 164px"), chrome("620px 162px"), edge("616px 162px")),
 
         /** The style property {@code WebkitPerspectiveOrigin}. */
         WEBKIT_PERSPECTIVE_ORIGIN_("WebkitPerspectiveOrigin", "webkit-perspective-origin",
-                ff("622px 164px")),
+                ffEsr("622px 164px"), ffLatest("620px 164px")),
 
         /** The style property {@code -webkit-perspective-origin}. */
         WEBKIT_PERSPECTIVE_ORIGIN__("-webkit-perspective-origin", "webkit-perspective-origin",
-                ff("622px 164px")),
+                ffEsr("622px 164px"), ffLatest("620px 164px")),
 
         /** The style property {@code webkitPerspectiveOriginX}. */
         WEBKIT_PERSPECTIVE_ORIGIN_X("webkitPerspectiveOriginX", "webkit-perspective-origin-x", chromeAndEdgeEmpty()),
@@ -3970,15 +4013,15 @@ public final class StyleAttributes implements Serializable {
 
         /** The style property {@code webkitTransformOrigin}. */
         WEBKIT_TRANSFORM_ORIGIN("webkitTransformOrigin", "webkit-transform-origin",
-                ff("622px 164px"), chrome("620px 162px"), edge("616px 162px")),
+                ffEsr("622px 164px"), ffLatest("620px 164px"), chrome("620px 162px"), edge("616px 162px")),
 
         /** The style property {@code WebkitTransformOrigin}. */
         WEBKIT_TRANSFORM_ORIGIN_("WebkitTransformOrigin", "webkit-transform-origin",
-                ff("622px 164px")),
+                ffEsr("622px 164px"), ffLatest("620px 164px")),
 
         /** The style property {@code -webkit-transform-origin}. */
         WEBKIT_TRANSFORM_ORIGIN__("-webkit-transform-origin", "webkit-transform-origin",
-                ff("622px 164px")),
+                ffEsr("622px 164px"), ffLatest("620px 164px")),
 
         /** The style property {@code webkitTransformOriginX}. */
         WEBKIT_TRANSFORM_ORIGIN_X("webkitTransformOriginX", "webkit-transform-origin-x", chromeAndEdgeEmpty()),

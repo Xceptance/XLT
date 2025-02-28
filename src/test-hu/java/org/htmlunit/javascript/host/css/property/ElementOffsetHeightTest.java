@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,9 @@ package org.htmlunit.javascript.host.css.property;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.NotYetImplemented;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
@@ -56,7 +56,7 @@ public class ElementOffsetHeightTest extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
         final String expected = loadExpectation("ElementOffsetHeightTest.properties", ".txt");
-        final String actual = driver.findElement(By.id("myTextarea")).getAttribute("value");
+        final String actual = driver.findElement(By.id("myTextarea")).getDomProperty("value");
         assertEquals(expected, actual);
     }
 
@@ -91,7 +91,7 @@ public class ElementOffsetHeightTest extends WebDriverTestCase {
             + "</body></html>";
 
         final WebDriver driver = loadPage2(html);
-        final String actual = driver.findElement(By.id("myTextarea")).getAttribute("value");
+        final String actual = driver.findElement(By.id("myTextarea")).getDomProperty("value");
         assertEquals(getExpectedAlerts()[0], actual);
     }
 
@@ -126,7 +126,7 @@ public class ElementOffsetHeightTest extends WebDriverTestCase {
             + "</body></html>";
 
         final WebDriver driver = loadPage2(html);
-        final String actual = driver.findElement(By.id("myTextarea")).getAttribute("value");
+        final String actual = driver.findElement(By.id("myTextarea")).getDomProperty("value");
         assertEquals(getExpectedAlerts()[0], actual);
     }
 
@@ -165,7 +165,7 @@ public class ElementOffsetHeightTest extends WebDriverTestCase {
             + "</body></html>";
 
         final WebDriver driver = loadPage2(html);
-        final String actual = driver.findElement(By.id("myTextarea")).getAttribute("value");
+        final String actual = driver.findElement(By.id("myTextarea")).getDomProperty("value");
         assertEquals(getExpectedAlerts()[0], actual);
     }
 

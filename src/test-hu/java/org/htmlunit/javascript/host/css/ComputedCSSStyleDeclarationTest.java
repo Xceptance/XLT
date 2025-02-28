@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,8 @@
  */
 package org.htmlunit.javascript.host.css;
 
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.FF;
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.FF_ESR;
+import static org.htmlunit.junit.annotation.TestedBrowser.FF;
+import static org.htmlunit.junit.annotation.TestedBrowser.FF_ESR;
 
 import java.io.InputStream;
 import java.net.URL;
@@ -25,9 +25,9 @@ import org.apache.commons.io.IOUtils;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.NotYetImplemented;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
@@ -125,14 +125,14 @@ public class ComputedCSSStyleDeclarationTest extends WebDriverTestCase {
             + "    if(typeof s1 == 'string')\n"
             + "      array.push(i + '=' + s1 + ':' + s2);\n"
             + "  }\n"
-            + "} catch (e) { array[array.length] = 'exception'; }\n"
+            + "} catch(e) { array[array.length] = e.name; }\n"
             + "array.sort();\n"
             + "document.getElementById('myTextarea').value = array.join('\\n');\n"
             + "</script></body></html>";
 
         final WebDriver driver = loadPage2(html);
         final String expected = loadExpectation("ComputedCSSStyleDeclarationTest.properties", ".txt");
-        final String actual = driver.findElement(By.id("myTextarea")).getAttribute("value");
+        final String actual = driver.findElement(By.id("myTextarea")).getDomProperty("value");
         assertEquals(expected, actual);
     }
 
@@ -162,14 +162,14 @@ public class ComputedCSSStyleDeclarationTest extends WebDriverTestCase {
             + "    if(typeof s1 == 'string')\n"
             + "      array.push(i + '=' + s1 + ':' + s2);\n"
             + "  }\n"
-            + "} catch (e) { array[array.length] = 'exception'; }\n"
+            + "} catch(e) { array[array.length] = e.name; }\n"
             + "array.sort();\n"
             + "document.getElementById('myTextarea').value = array.join('\\n');\n"
             + "</script></body></html>";
 
         final WebDriver driver = loadPage2(html);
         final String expected = loadExpectation("ComputedCSSStyleDeclarationTest.properties.notAttached", ".txt");
-        final String actual = driver.findElement(By.id("myTextarea")).getAttribute("value");
+        final String actual = driver.findElement(By.id("myTextarea")).getDomProperty("value");
         assertEquals(expected, actual);
     }
 
@@ -1624,7 +1624,7 @@ public class ComputedCSSStyleDeclarationTest extends WebDriverTestCase {
             + "    var s = window.getComputedStyle(d, null);\n"
             + "    log(s.getPropertyValue('test'));\n"
             + "    log(s.getPropertyValue('color'));\n"
-            + "  } catch (e) { log('exception'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script>\n"
             + "<style>#div1 { test: red }</style>\n"

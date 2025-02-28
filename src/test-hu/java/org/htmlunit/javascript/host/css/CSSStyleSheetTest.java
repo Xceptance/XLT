@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import org.htmlunit.WebClient;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
 import org.junit.Test;
@@ -256,7 +256,7 @@ public class CSSStyleSheetTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("SyntaxError/DOMException")
     public void addInvalidRule() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -267,9 +267,9 @@ public class CSSStyleSheetTest extends WebDriverTestCase {
             + "  var rules = s.cssRules || s.rules;\n"
             + "  try {\n"
             + "    if (s.addRule)\n"
-            + "      s.addRule('.testStyle1;', '', 1);\n"
+            + "      s.addRule('.testStyle1;', '', 0);\n"
             + "    log('added');\n"
-            + "  } catch(err) { log('exception'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "}</script>\n"
             + "<style id='myStyle'></style>\n"
             + "</head><body onload='doTest()'>\n"
@@ -348,7 +348,7 @@ public class CSSStyleSheetTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("SyntaxError/DOMException")
     public void insertInvalidRule() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -362,7 +362,7 @@ public class CSSStyleSheetTest extends WebDriverTestCase {
             + "    if (s.insertRule)\n"
             + "      s.insertRule('.testStyle1', 0);\n"
             + "    log('inserted');\n"
-            + "  } catch(err) { log('exception'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "}</script>\n"
             + "<style id='myStyle'></style>\n"
             + "</head><body onload='doTest()'>\n"
@@ -407,7 +407,7 @@ public class CSSStyleSheetTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("IndexSizeError/DOMException")
     public void deleteRuleInvalidParam() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -423,7 +423,7 @@ public class CSSStyleSheetTest extends WebDriverTestCase {
             + "    else\n"
             + "      s.removeRule(19);\n"
             + "    log('deleted');\n"
-            + "  } catch(err) { log('exception'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "}</script>\n"
             + "<style id='myStyle'></style>\n"
             + "</head><body onload='doTest()'>\n"
@@ -455,7 +455,7 @@ public class CSSStyleSheetTest extends WebDriverTestCase {
             + "    log(rules.length);\n"
             + "    log(rules[0].selectorText);\n"
             + "    log(rules[0].style.cssText);\n"
-            + "  } catch(err) { log('exception'); }\n"
+            + "  } catch(err) { logEx(e); }\n"
             + "}</script>\n"
             + "<style id='myStyle'>\n"
             + "  p { vertical-align:top }\n"
@@ -491,7 +491,7 @@ public class CSSStyleSheetTest extends WebDriverTestCase {
             + "    log(rules.length);\n"
             + "    log(rules[0].selectorText);\n"
             + "    log(rules[0].style.cssText);\n"
-            + "  } catch(err) { log('exception'); }\n"
+            + "  } catch(err) { logEx(e); }\n"
             + "}</script>\n"
             + "<style id='myStyle'>\n"
             + "  p { vertical-align:top }\n"
@@ -1712,7 +1712,7 @@ public class CSSStyleSheetTest extends WebDriverTestCase {
                 + "      s.addRule('.testStyle1', 'color: red;', 0);\n"
                 + "    }\n"
                 + "    log('inserted');\n"
-                + "  } catch(err) { log('exception'); }\n"
+                + "  } catch(err) { logEx(e); }\n"
                 + "}</script>\n"
                 + "<style id='myStyle'></style>\n"
                 + "</head>\n"

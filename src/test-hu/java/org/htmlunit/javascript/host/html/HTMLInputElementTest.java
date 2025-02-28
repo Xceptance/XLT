@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,8 +22,8 @@ import org.apache.commons.io.IOUtils;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
 import org.htmlunit.util.MimeType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -1034,13 +1034,9 @@ public class HTMLInputElementTest extends WebDriverTestCase {
             + "</body></html>";
 
         final WebDriver driver = loadPageVerifyTitle2(html);
-
-        // HtmlUnitDriver is buggy, it returns null here
-        // assertEquals("", driver.findElement(By.name("form1")).getAttribute("target"));
-
         driver.findElement(By.id("clickMe")).click();
 
-        assertEquals("_blank", driver.findElement(By.name("form1")).getAttribute("target"));
+        assertEquals("_blank", driver.findElement(By.name("form1")).getDomProperty("target"));
     }
 
     /**
@@ -1129,7 +1125,7 @@ public class HTMLInputElementTest extends WebDriverTestCase {
         button.click();
         assertTitle(driver, getExpectedAlerts()[0]);
         Thread.sleep(100);
-        assertEquals(getExpectedAlerts()[1], textinput.getAttribute("value"));
+        assertEquals(getExpectedAlerts()[1], textinput.getDomProperty("value"));
     }
 
     /**
@@ -1161,7 +1157,7 @@ public class HTMLInputElementTest extends WebDriverTestCase {
         assertTitle(driver, getExpectedAlerts()[0]);
 
         Thread.sleep(100);
-        assertEquals(getExpectedAlerts()[1], textinput.getAttribute("value"));
+        assertEquals(getExpectedAlerts()[1], textinput.getDomProperty("value"));
     }
 
     /**
@@ -1477,17 +1473,17 @@ public class HTMLInputElementTest extends WebDriverTestCase {
         final WebDriver webDriver = loadPage2(html);
         final WebElement textField = webDriver.findElement(By.id("text1"));
         textField.sendKeys("123456789");
-        assertEquals("12345", textField.getAttribute("value"));
+        assertEquals("12345", textField.getDomProperty("value"));
         textField.sendKeys(Keys.BACK_SPACE);
         textField.sendKeys("7");
-        assertEquals("12347", textField.getAttribute("value"));
+        assertEquals("12347", textField.getDomProperty("value"));
 
         final WebElement passwordField = webDriver.findElement(By.id("password1"));
         passwordField.sendKeys("123456789");
-        assertEquals("123456", passwordField.getAttribute("value"));
+        assertEquals("123456", passwordField.getDomProperty("value"));
         passwordField.sendKeys(Keys.BACK_SPACE);
         passwordField.sendKeys("7");
-        assertEquals("123457", passwordField.getAttribute("value"));
+        assertEquals("123457", passwordField.getDomProperty("value"));
     }
 
     /**
@@ -1506,15 +1502,15 @@ public class HTMLInputElementTest extends WebDriverTestCase {
         final WebDriver webDriver = loadPage2(html);
         final WebElement textField = webDriver.findElement(By.id("text1"));
         textField.sendKeys("123456789");
-        assertEquals("", textField.getAttribute("value"));
+        assertEquals("", textField.getDomProperty("value"));
         textField.sendKeys("\b7");
-        assertEquals("", textField.getAttribute("value"));
+        assertEquals("", textField.getDomProperty("value"));
 
         final WebElement passwordField = webDriver.findElement(By.id("password1"));
         passwordField.sendKeys("123456789");
-        assertEquals("", passwordField.getAttribute("value"));
+        assertEquals("", passwordField.getDomProperty("value"));
         passwordField.sendKeys("\b7");
-        assertEquals("", passwordField.getAttribute("value"));
+        assertEquals("", passwordField.getDomProperty("value"));
     }
 
     /**
@@ -1533,17 +1529,17 @@ public class HTMLInputElementTest extends WebDriverTestCase {
         final WebDriver webDriver = loadPage2(html);
         final WebElement textField = webDriver.findElement(By.id("text1"));
         textField.sendKeys("123456789");
-        assertEquals("12", textField.getAttribute("value"));
+        assertEquals("12", textField.getDomProperty("value"));
         textField.sendKeys(Keys.BACK_SPACE);
         textField.sendKeys("7");
-        assertEquals("17", textField.getAttribute("value"));
+        assertEquals("17", textField.getDomProperty("value"));
 
         final WebElement passwordField = webDriver.findElement(By.id("password1"));
         passwordField.sendKeys("123456789");
-        assertEquals("1234", passwordField.getAttribute("value"));
+        assertEquals("1234", passwordField.getDomProperty("value"));
         passwordField.sendKeys(Keys.BACK_SPACE);
         passwordField.sendKeys("7");
-        assertEquals("1237", passwordField.getAttribute("value"));
+        assertEquals("1237", passwordField.getDomProperty("value"));
     }
 
     /**
@@ -1574,7 +1570,7 @@ public class HTMLInputElementTest extends WebDriverTestCase {
             + "  try {\n"
             + "    f.type = 'CHECKBOX';\n"
             + "    log(f.type + ' ' + f.getAttribute('type'));\n"
-            + "  } catch(e) { log('error');}\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -1729,7 +1725,7 @@ public class HTMLInputElementTest extends WebDriverTestCase {
             + "  function setAlign(elem, value) {\n"
             + "    try {\n"
             + "      elem.align = value;\n"
-            + "    } catch (e) { log('error'); }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "    log(elem.align);\n"
             + "  }\n"
 
@@ -2001,7 +1997,7 @@ public class HTMLInputElementTest extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
         driver.findElement(By.id("myButton")).click();
-        assertEquals("abcdefg", driver.findElement(By.id("myInput")).getAttribute("value"));
+        assertEquals("abcdefg", driver.findElement(By.id("myInput")).getDomProperty("value"));
         driver.findElement(By.id("mySubmit")).click();
 
         expandExpectedAlertsVariables(URL_FIRST);
@@ -2027,7 +2023,7 @@ public class HTMLInputElementTest extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
         driver.findElement(By.id("myInput")).sendKeys("abcdefg");
-        assertEquals("ab", driver.findElement(By.id("myInput")).getAttribute("value"));
+        assertEquals("ab", driver.findElement(By.id("myInput")).getDomProperty("value"));
 
         driver.findElement(By.id("mySubmit")).click();
 
@@ -2137,7 +2133,7 @@ public class HTMLInputElementTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = {"173", "17", "173", "17", "13", "13", "13", "13"},
-            FF = {"154", "18", "154", "18", "14", "14", "14", "14"},
+            FF = {"161", "18", "161", "18", "14", "14", "14", "14"},
             FF_ESR = {"154", "18", "154", "18", "10", "10", "10", "10"})
     public void defaultClientWidthHeight() throws Exception {
         final String html = "<html><head>\n"

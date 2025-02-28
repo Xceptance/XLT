@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -201,7 +201,8 @@ public class HtmlSelect extends HtmlElement implements DisabledElement, Submitta
      */
     public void removeOption(final int index) {
         final ChildElementsIterator iterator = new ChildElementsIterator(this);
-        for (int i = 0; iterator.hasNext();) {
+        int i = 0;
+        while (iterator.hasNext()) {
             final DomElement element = iterator.next();
             if (element instanceof HtmlOption) {
                 if (i == index) {
@@ -221,7 +222,8 @@ public class HtmlSelect extends HtmlElement implements DisabledElement, Submitta
      */
     public void replaceOption(final int index, final HtmlOption newOption) {
         final ChildElementsIterator iterator = new ChildElementsIterator(this);
-        for (int i = 0; iterator.hasNext();) {
+        int i = 0;
+        while (iterator.hasNext()) {
             final DomElement element = iterator.next();
             if (element instanceof HtmlOption) {
                 if (i == index) {

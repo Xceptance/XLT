@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ package org.htmlunit.javascript.host.html;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -284,7 +284,7 @@ public class HTMLOptionsCollectionTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"0", "exception"})
+    @Alerts({"0", "NotFoundError/DOMException"})
     public void addBeforeUnknownEmpty() throws Exception {
         add(", new Option('foo', '123')", true, false);
     }
@@ -293,7 +293,7 @@ public class HTMLOptionsCollectionTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"0", "exception"})
+    @Alerts({"0", "NotFoundError/DOMException"})
     public void addBeforeUnknownEmptyMulti() throws Exception {
         add(", new Option('foo', '123')", true, true);
     }
@@ -302,7 +302,7 @@ public class HTMLOptionsCollectionTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"3", "exception"})
+    @Alerts({"3", "NotFoundError/DOMException"})
     public void addBeforeUnknown() throws Exception {
         add(", new Option('foo', '123')", false, false);
     }
@@ -311,7 +311,7 @@ public class HTMLOptionsCollectionTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"3", "exception"})
+    @Alerts({"3", "NotFoundError/DOMException"})
     public void addBeforeUnknownMulti() throws Exception {
         add(", new Option('foo', '123')", false, true);
     }
@@ -387,7 +387,7 @@ public class HTMLOptionsCollectionTest extends WebDriverTestCase {
             + "        for (var i = 0; i < oSelect.options.length; i++) {\n"
             + "          log(oSelect.options[i].text + (oSelect.options[i].selected ? '*' : ''));\n"
             + "        }\n"
-            + "      } catch (e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
             + "    }\n"
             + "  </script>\n"
             + "</head>\n"
@@ -491,7 +491,7 @@ public class HTMLOptionsCollectionTest extends WebDriverTestCase {
             + "        var oSelect = document.forms.testForm.select1;\n"
             + "        var opt = oSelect.options[" + pos + "];\n"
             + "        log(opt ? opt.text + (opt.selected ? '*' : '') : opt);\n"
-            + "      } catch (e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
             + "    }\n"
             + "  </script>\n"
             + "</head>\n"
@@ -709,7 +709,7 @@ public class HTMLOptionsCollectionTest extends WebDriverTestCase {
             + "        for (var i = 0; i < oSelect.options.length; i++) {\n"
             + "          log(oSelect.options[i].text + (oSelect.options[i].selected ? '*' : ''));\n"
             + "        }\n"
-            + "      } catch (e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
             + "    }\n"
             + "  </script>\n"
             + "</head>\n"
@@ -889,7 +889,7 @@ public class HTMLOptionsCollectionTest extends WebDriverTestCase {
             + "        for (var i = 0; i < oSelect.options.length; i++) {\n"
             + "          log(oSelect.options[i].text + (oSelect.options[i].selected ? '*' : ''));\n"
             + "        }\n"
-            + "      } catch (e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
             + "    }\n"
             + "  </script>\n"
             + "</head>\n"
@@ -1015,7 +1015,7 @@ public class HTMLOptionsCollectionTest extends WebDriverTestCase {
             + "    for (var i = 0; i < sel.options.length; i++) {\n"
             + "      log(sel.options[i].text);\n"
             + "    }\n"
-            + "  } catch (e) { log('exception'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
 
             + "  var sel = document.form1.select1;\n"
             + "  try {\n"
@@ -1024,7 +1024,7 @@ public class HTMLOptionsCollectionTest extends WebDriverTestCase {
             + "    for (var i = 0; i < sel.options.length; i++) {\n"
             + "      log(sel.options[i].text);\n"
             + "    }\n"
-            + "  } catch (e) { log('exception'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
 
             + "  var sel = document.form1.select3;\n"
             + "  try {\n"
@@ -1033,7 +1033,7 @@ public class HTMLOptionsCollectionTest extends WebDriverTestCase {
             + "    for (var i = 0; i < sel.options.length; i++) {\n"
             + "      log(sel.options[i].text);\n"
             + "    }\n"
-            + "  } catch (e) { log('exception'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "}</script></head>\n"
 
             + "<body onload='test()'>\n"
@@ -1070,7 +1070,7 @@ public class HTMLOptionsCollectionTest extends WebDriverTestCase {
             + "    sel.options.length = 1;\n"
             + "    log(sel.options.length);\n"
             + "    log(sel.options[0].text);\n"
-            + "  } catch (e) { log(e); }\n"
+            + "  } catch(e) { log(e); }\n"
 
             + "  sel = document.form1.select1;\n"
             + "  try {\n"
@@ -1080,7 +1080,7 @@ public class HTMLOptionsCollectionTest extends WebDriverTestCase {
             + "    log(sel.options[0].childNodes.length);\n"
             + "    log(sel.options[1].text);\n"
             + "    log(sel.options[1].childNodes.length);\n"
-            + "  } catch (e) { log(e); }\n"
+            + "  } catch(e) { log(e); }\n"
             + "}</script></head>\n"
 
             + "<body onload='test()'>\n"

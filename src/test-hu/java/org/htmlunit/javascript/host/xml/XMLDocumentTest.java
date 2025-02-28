@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,8 @@ import java.net.URL;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.NotYetImplemented;
 import org.htmlunit.util.MimeType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -135,7 +135,7 @@ public class XMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("TypeError")
     public void load() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -150,7 +150,7 @@ public class XMLDocumentTest extends WebDriverTestCase {
             + "      log(doc.childNodes[0].childNodes.length);\n"
             + "      log(doc.childNodes[0].childNodes[0].nodeName);\n"
             + "      log(doc.getElementsByTagName('books').item(0).attributes.length);\n"
-            + "    } catch(e) { log('exception'); }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "  }\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -172,7 +172,7 @@ public class XMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("TypeError")
     // TODO what is the difference to load()?
     public void load_relativeURL() throws Exception {
         final String html = "<html><head>\n"
@@ -188,7 +188,7 @@ public class XMLDocumentTest extends WebDriverTestCase {
             + "      log(doc.childNodes[0].childNodes.length);\n"
             + "      log(doc.childNodes[0].childNodes[0].nodeName);\n"
             + "      log(doc.getElementsByTagName('books').item(0).attributes.length);\n"
-            + "    } catch(e) { log('exception'); }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "  }\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -229,7 +229,7 @@ public class XMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("TypeError")
     public void setProperty() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -239,7 +239,7 @@ public class XMLDocumentTest extends WebDriverTestCase {
             + "    try {\n"
             + "      doc.setProperty('SelectionNamespaces', \"xmlns:xsl='http://www.w3.org/1999/XSL/Transform'\");\n"
             + "      doc.setProperty('SelectionLanguage', 'XPath');\n"
-            + "    } catch(e) { log('exception'); }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "  }\n"
             + "</script></head><body onload='test()'>\n"
             + "</body></html>";
@@ -250,7 +250,7 @@ public class XMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("TypeError")
     public void selectNodes() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -261,7 +261,7 @@ public class XMLDocumentTest extends WebDriverTestCase {
             + "      var nodes = doc.selectNodes('/books');\n"
             + "      log(nodes.length);\n"
             + "      log(nodes[0].tagName);\n"
-            + "    } catch(e) { log('exception'); }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "  }\n"
             + LOAD_XML_DOCUMENT_FROM_FILE_FUNCTION
             + "</script></head>\n"
@@ -284,7 +284,7 @@ public class XMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("TypeError")
     public void selectNodes_caseSensitive() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -294,7 +294,7 @@ public class XMLDocumentTest extends WebDriverTestCase {
             + "    try {\n"
             + "      log(doc.selectNodes('/bOoKs').length);\n"
             + "      log(doc.selectNodes('/books').length);\n"
-            + "    } catch(e) { log('exception'); }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "  }\n"
             + LOAD_XML_DOCUMENT_FROM_FILE_FUNCTION
             + "</script></head>\n"
@@ -317,7 +317,7 @@ public class XMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("TypeError")
     public void selectNodes_namespace() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -327,7 +327,7 @@ public class XMLDocumentTest extends WebDriverTestCase {
             + "    try {\n"
             + "      log(doc.selectNodes('//ns1:title').length);\n"
             + "      log(doc.selectNodes('//ns2:title').length);\n"
-            + "    } catch(e) { log('exception'); }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "  }\n"
             + LOAD_XML_DOCUMENT_FROM_FILE_FUNCTION
             + "</script></head>\n"
@@ -357,7 +357,7 @@ public class XMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("TypeError")
     public void selectNodes_nextNodeAndReset() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -371,7 +371,7 @@ public class XMLDocumentTest extends WebDriverTestCase {
             + "      nodes.reset();\n"
             + "      log(nodes.nextNode().nodeName);\n"
             + "      log(nodes.nextNode());\n"
-            + "    } catch(e) { log('exception'); }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "  }\n"
             + LOAD_XML_DOCUMENT_FROM_FILE_FUNCTION
             + "</script></head>\n"
@@ -394,7 +394,7 @@ public class XMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"book", "exception /title", "exception title"})
+    @Alerts({"book", "exception /title", "TypeError", "exception title", "TypeError"})
     public void selectNodes_fromRoot() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -407,12 +407,12 @@ public class XMLDocumentTest extends WebDriverTestCase {
 
             + "      try {\n"
             + "        log(child.selectNodes('/title').length);\n"
-            + "      } catch(e) { log('exception /title'); }\n"
+            + "      } catch(e) { log('exception /title'); logEx(e); }\n"
 
             + "      try {\n"
             + "        log(child.selectNodes('title').length);\n"
-            + "      } catch(e) { log('exception title'); }\n"
-            + "    } catch(e) { log('exception'); }\n"
+            + "      } catch(e) { log('exception title'); logEx(e); }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "  }\n"
             + LOAD_XML_DOCUMENT_FROM_FILE_FUNCTION
             + "</script></head>\n"
@@ -428,7 +428,7 @@ public class XMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("TypeError")
     public void selectSingleNode() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -441,7 +441,7 @@ public class XMLDocumentTest extends WebDriverTestCase {
             + "      log(doc.selectNodes('/')[0].nodeName);\n"
             + "      log(doc.selectSingleNode('*').nodeName);\n"
             + "      log(doc.selectNodes('*')[0].selectSingleNode('/').nodeName);\n"
-            + "    } catch(e) { log('exception'); }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "  }\n"
             + LOAD_XML_DOCUMENT_FROM_STRING_FUNCTION
             + "</script></head><body onload='test()'>\n"
@@ -505,7 +505,7 @@ public class XMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void parseError() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -531,7 +531,7 @@ public class XMLDocumentTest extends WebDriverTestCase {
             + "      log(doc.parseError.reason !== '');\n"
             + "      log(doc.parseError.srcText !== '');\n"
             + "      log(doc.parseError.url !== '');\n"
-            + "    } catch(e) { log('exception'); }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "  }\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -581,7 +581,7 @@ public class XMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("TypeError")
     public void xmlInsideHtml() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -589,7 +589,7 @@ public class XMLDocumentTest extends WebDriverTestCase {
             + "  function test() {\n"
             + "    try {\n"
             + "      log(messageTableHeaders.documentElement.nodeName);\n"
-            + "    } catch(e) {log('exception'); }\n"
+            + "    } catch(e) {logEx(e); }\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -617,7 +617,7 @@ public class XMLDocumentTest extends WebDriverTestCase {
             + "    var x = " + callLoadXMLDocumentFromString("'<x/>'") + ";\n"
             + "    try {\n"
             + "      log(x instanceof XMLDocument);\n"
-            + "    }catch(e) {log('exception')}\n"
+            + "    }catch(e) {logEx(e)}\n"
             + "  }\n"
             + LOAD_XML_DOCUMENT_FROM_STRING_FUNCTION
             + "</script>\n"
@@ -828,7 +828,7 @@ public class XMLDocumentTest extends WebDriverTestCase {
             + "      log(doc.getElementById('item2') != null);\n"
             + "      log(doc.getElementById('item3') != null);\n"
             + "      log(doc.getElementById('item4') != null);\n"
-            + "    } catch(e) { log('exception'); }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "  }\n"
             + LOAD_XML_DOCUMENT_FROM_STRING_FUNCTION
             + "</script></head>\n"
@@ -855,7 +855,7 @@ public class XMLDocumentTest extends WebDriverTestCase {
             + "      var doc = " + callLoadXMLDocumentFromString("text") + ";\n"
             + "      log(doc.getElementById('form1') != null);\n"
             + "      log(doc.getElementById('div1') != null);\n"
-            + "    } catch(e) { log('exception'); }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "  }\n"
             + LOAD_XML_DOCUMENT_FROM_STRING_FUNCTION
             + "</script></head>\n"
@@ -881,7 +881,7 @@ public class XMLDocumentTest extends WebDriverTestCase {
             + "      var doc = " + callLoadXMLDocumentFromString("text") + ";\n"
             + "      log(doc.getElementById('form1') != null);\n"
             + "      log(doc.getElementById('div1') != null);\n"
-            + "    } catch(e) { log('exception'); }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "  }\n"
             + LOAD_XML_DOCUMENT_FROM_STRING_FUNCTION
             + "</script></head>\n"
@@ -903,12 +903,12 @@ public class XMLDocumentTest extends WebDriverTestCase {
             + "    var doc = " + callLoadXMLDocumentFromFile("'" + URL_SECOND + "'") + ";\n"
             + "    try {\n"
             + "      log(doc.selectNodes('//soap:book').length);\n"
-            + "    } catch (e) {\n"
+            + "    } catch(e) {\n"
             + "      try {\n"
             + "      log(doc.evaluate('count(//book)', doc.documentElement, "
             + "null, XPathResult.NUMBER_TYPE, null).numberValue);\n"
-            + "      } catch (e) {\n"
-            + "        log('exception');\n"
+            + "      } catch(e) {\n"
+            + "        logEx(e);\n"
             + "      }\n"
             + "    }\n"
             + "  }\n"
@@ -950,7 +950,7 @@ public class XMLDocumentTest extends WebDriverTestCase {
             + "    doc.load('" + URL_SECOND + "');\n"
             + "    try {\n"
             + "      log(doc.selectNodes('/s:Envelope/ns1:books/s:book').length);\n"
-            + "    } catch (e) {\n"
+            + "    } catch(e) {\n"
             + "      log(doc.evaluate('count(//book)', doc.documentElement, "
             + "null, XPathResult.NUMBER_TYPE, null).numberValue);\n"
             + "    }}\n"
@@ -986,7 +986,7 @@ public class XMLDocumentTest extends WebDriverTestCase {
             + "    var doc = " + callLoadXMLDocumentFromFile("'" + URL_SECOND + "'") + ";\n"
             + "    try {\n"
             + "      log('nodeFromID ' + doc.nodeFromID('target'));\n"
-            + "    } catch (e) {\n"
+            + "    } catch(e) {\n"
             + "      log('nodeFromID not available');\n"
             + "    }\n"
             + "  }\n"

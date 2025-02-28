@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,8 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
 import org.htmlunit.util.MimeType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -128,7 +128,7 @@ public class NodeTest extends WebDriverTestCase {
             + "  div1.remove();\n"
             + "  log(document.body.childNodes.length);\n"
             + "}\n"
-            + "catch (e) { log('exception'); }\n"
+            + "catch(e) { logEx(e); }\n"
             + "</script></body></html>";
 
         loadPageVerifyTitle2(html);
@@ -162,7 +162,7 @@ public class NodeTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("NotFoundError/DOMException")
     public void removeChildSibling() throws Exception {
         final String html
             = "<html><head><script>\n"
@@ -172,7 +172,7 @@ public class NodeTest extends WebDriverTestCase {
             + "  var div2 = document.getElementById('div2');\n"
             + "  try {\n"
             + "    div1.removeChild(div2);\n"
-            + "  } catch(e) { log('exception') }\n"
+            + "  } catch(e) { logEx(e) }\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='doTest()'>\n"
@@ -340,7 +340,7 @@ public class NodeTest extends WebDriverTestCase {
      * @throws Exception on test failure
      */
     @Test
-    @Alerts("exception")
+    @Alerts("TypeError")
     public void attachEvent() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -350,7 +350,7 @@ public class NodeTest extends WebDriverTestCase {
             + "  try {\n"
             + "    oField.attachEvent('onclick', foo1);\n"
             + "    oField.attachEvent('onclick', foo2);\n"
-            + "  } catch(e) { log('exception') }\n"
+            + "  } catch(e) { logEx(e) }\n"
             + "}\n"
             + "function foo1() {log('in foo1');}\n"
             + "function foo2() {log('in foo2');}\n"
@@ -483,7 +483,8 @@ public class NodeTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"1", "exception", "1", "exception", "1", "exception", "1"})
+    @Alerts({"1", "HierarchyRequestError/DOMException", "1",
+             "HierarchyRequestError/DOMException", "1", "HierarchyRequestError/DOMException", "1"})
     public void append_insert_html_node() throws Exception {
         final String html = "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
@@ -491,11 +492,11 @@ public class NodeTest extends WebDriverTestCase {
             + "  var htmlNode = document.documentElement;\n"
             + "  var body = document.body;\n"
             + "  log(body.childNodes.length);\n"
-            + "  try { body.appendChild(htmlNode); } catch(e) { log('exception'); }\n"
+            + "  try { body.appendChild(htmlNode); } catch(e) { logEx(e); }\n"
             + "  log(body.childNodes.length);\n"
-            + "  try { body.insertBefore(htmlNode, body.firstChild); } catch(e) { log('exception'); }\n"
+            + "  try { body.insertBefore(htmlNode, body.firstChild); } catch(e) { logEx(e); }\n"
             + "  log(body.childNodes.length);\n"
-            + "  try { body.replaceChild(htmlNode, body.firstChild); } catch(e) { log('exception'); }\n"
+            + "  try { body.replaceChild(htmlNode, body.firstChild); } catch(e) { logEx(e); }\n"
             + "  log(body.childNodes.length);\n"
             + "}\n"
             + "</script></head><body onload='test()'><span>hi</span></body></html>";
@@ -581,9 +582,7 @@ public class NodeTest extends WebDriverTestCase {
             + "      log(parent.innerHTML);\n"
             + "      log(parent.replaceChild(fragment, parent.firstChild).id);\n"
             + "      log(parent.innerHTML);\n"
-            + "    } catch(e) {\n"
-            + "      log('exception thrown');\n"
-            + "    }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "  }\n"
             + "</script></head><body onload='test()'>\n"
             + "  <div id='myDiv'><div id='myDiv2'></div><div id='myDiv3'></div></div>\n"
@@ -611,9 +610,7 @@ public class NodeTest extends WebDriverTestCase {
             + "      log(parent.innerHTML);\n"
             + "      log(parent.replaceChild(fragment, parent.firstChild).id);\n"
             + "      log(parent.innerHTML);\n"
-            + "    } catch(e) {\n"
-            + "      log('exception thrown');\n"
-            + "    }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "  }\n"
             + "</script></head><body onload='test()'>\n"
             + "  <div id='myDiv'><div id='myDiv2'></div><div id='myDiv3'></div></div>\n"
@@ -693,7 +690,7 @@ public class NodeTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"0", "20", "20", "4", "10", "10", "2", "20", "exception"})
+    @Alerts({"0", "20", "20", "4", "10", "10", "2", "20", "TypeError"})
     public void compareDocumentPosition() throws Exception {
         final String html
             = "<html><head>\n"
@@ -715,7 +712,7 @@ public class NodeTest extends WebDriverTestCase {
             + "  log(div2.compareDocumentPosition(div3));\n"
             + "  try {\n"
             + "    log(div2.compareDocumentPosition({}));\n"
-            + "  } catch(e) { log('exception'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script></head><body onload='test()'>\n"
             + "<div id='div1'>\n"
@@ -746,7 +743,7 @@ public class NodeTest extends WebDriverTestCase {
             + "      log(div.compareDocumentPosition(childDiv) & Node.DOCUMENT_POSITION_CONTAINED_BY);\n"
             + "      div.appendChild(childDiv);\n"
             + "      log(div.compareDocumentPosition(childDiv) & Node.DOCUMENT_POSITION_CONTAINED_BY);\n"
-            + "    } catch(e) {log('exception');}\n"
+            + "    } catch(e) {logEx(e);}\n"
             + "  }\n"
             + "</script></head><body onload='test()'>\n"
             + "</body></html>";
@@ -839,7 +836,7 @@ public class NodeTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("NotFoundError/DOMException")
     public void insertBefore_myself() throws Exception {
         insertBefore("aNode.insertBefore(newNode, newNode);");
     }
@@ -848,7 +845,7 @@ public class NodeTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("NotFoundError/DOMException")
     public void insertBefore_sibling() throws Exception {
         insertBefore("aNode.insertBefore(newNode, siblingNode);");
     }
@@ -868,7 +865,7 @@ public class NodeTest extends WebDriverTestCase {
                 + "    e.innerHTML = 'new element';\n"
                 + "    document.body.insertBefore(e, undefined);\n"
                 + "    log('done');"
-                + "  } catch(e) {log('exception');}\n"
+                + "  } catch(e) {logEx(e);}\n"
                 + "}\n"
                 + "</script>\n"
                 + "</head><body onload='doTest()'>\n"
@@ -883,7 +880,7 @@ public class NodeTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("TypeError")
     public void insertBefore_noArgs() throws Exception {
         insertBefore("aNode.insertBefore();");
     }
@@ -894,7 +891,7 @@ public class NodeTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("TypeError")
     public void insertBefore_noSecondArg() throws Exception {
         insertBefore("aNode.insertBefore(newNode);");
     }
@@ -916,7 +913,7 @@ public class NodeTest extends WebDriverTestCase {
             + "        log(aNode.childNodes.length);\n"
             + "        log(aNode.childNodes[2].nodeName);\n"
             + "      }\n"
-            + "      catch (e) { log('exception'); }\n"
+            + "      catch(e) { logEx(e); }\n"
             + "    }\n"
             + "  </script>\n"
             + "</head>\n"
@@ -943,7 +940,7 @@ public class NodeTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("NotFoundError/DOMException")
     public void insertBeforeFragment_myself() throws Exception {
         insertBeforeFragment("aNode.insertBefore(fragment, fragment);");
     }
@@ -952,7 +949,7 @@ public class NodeTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void insertBeforeFragment_sibling() throws Exception {
         insertBeforeFragment("aNode.insertBefore(fragment, siblingNode);");
     }
@@ -963,7 +960,7 @@ public class NodeTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("TypeError")
     public void insertBeforeFragment_noSecondArg() throws Exception {
         insertBeforeFragment("aNode.insertBefore(fragment);");
     }
@@ -985,7 +982,7 @@ public class NodeTest extends WebDriverTestCase {
             + "        log(aNode.childNodes.length);\n"
             + "        log(aNode.childNodes[2].nodeName);\n"
             + "      }\n"
-            + "      catch (e) { log('exception'); }\n"
+            + "      catch(e) { logEx(e); }\n"
             + "    }\n"
             + "  </script>\n"
             + "</head>\n"
@@ -1050,7 +1047,7 @@ public class NodeTest extends WebDriverTestCase {
      * @throws Exception on test failure
      */
     @Test
-    @Alerts("exception")
+    @Alerts("TypeError")
     public void insertBefore_newElement() throws Exception {
         final String html = "<html><head>\n"
                 + "<script>\n"
@@ -1060,7 +1057,7 @@ public class NodeTest extends WebDriverTestCase {
                 + "    var e = document.createElement('div');\n"
                 + "    e.innerHTML = 'new element';\n"
                 + "    document.body.insertBefore(e);\n"
-                + "  } catch(e) {log('exception');}\n"
+                + "  } catch(e) {logEx(e);}\n"
                 + "}\n"
                 + "</script>\n"
                 + "</head><body onload='doTest()'>\n"
@@ -1186,7 +1183,7 @@ public class NodeTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("TypeError")
     public void event() throws Exception {
         final String firstHtml = "<html>\n"
             + "<head><title>First Page</title>\n"
@@ -1217,7 +1214,7 @@ public class NodeTest extends WebDriverTestCase {
             + "      function test() {\n"
             + "        try {\n"
             + "          parent.document.body.attachEvent('onclick', handler);\n"
-            + "        } catch(e) { log('exception') }\n"
+            + "        } catch(e) { logEx(e) }\n"
             + "      }\n"
             + "    </script>\n"
             + "  </head>\n"

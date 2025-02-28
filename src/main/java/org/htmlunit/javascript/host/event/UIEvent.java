@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -131,12 +131,12 @@ public class UIEvent extends Event {
      * @return the view from which the event was generated
      */
     @JsxGetter
-    public Object getView() {
+    public Window getView() {
         if (view_ == NO_VIEW) {
             return null;
         }
         if (view_ != null) {
-            return view_;
+            return (Window) view_;
         }
         return getWindow();
     }

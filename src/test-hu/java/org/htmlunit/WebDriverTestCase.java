@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -90,7 +90,7 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeDriverService;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.devtools.DevTools;
-import org.openqa.selenium.devtools.v85.emulation.Emulation;
+import org.openqa.selenium.devtools.v133.emulation.Emulation;
 import org.openqa.selenium.edge.EdgeDriver;
 import org.openqa.selenium.edge.EdgeDriverService;
 import org.openqa.selenium.edge.EdgeOptions;
@@ -145,11 +145,33 @@ import org.openqa.selenium.remote.UnreachableBrowserException;
  */
 public abstract class WebDriverTestCase extends WebTestCase {
 
+    private static final String LOG_EX_FUNCTION =
+            "  function logEx(e) {\n"
+            + "  let toStr = null;\n"
+            + "  if (toStr === null && e instanceof EvalError) { toStr = ''; }\n"
+            + "  if (toStr === null && e instanceof RangeError) { toStr = ''; }\n"
+            + "  if (toStr === null && e instanceof ReferenceError) { toStr = ''; }\n"
+            + "  if (toStr === null && e instanceof SyntaxError) { toStr = ''; }\n"
+            + "  if (toStr === null && e instanceof TypeError) { toStr = ''; }\n"
+            + "  if (toStr === null && e instanceof URIError) { toStr = ''; }\n"
+            + "  if (toStr === null && e instanceof AggregateError) { toStr = '/AggregateError'; }\n"
+            + "  if (toStr === null && typeof InternalError == 'function' "
+                        + "&& e instanceof InternalError) { toStr = '/InternalError'; }\n"
+            + "  if (toStr === null) {\n"
+            + "    let rx = /\\[object (.*)\\]/;\n"
+            + "    toStr = Object.prototype.toString.call(e);\n"
+            + "    let match = rx.exec(toStr);\n"
+            + "    if (match != null) { toStr = '/' + match[1]; }\n"
+            + "  }"
+            + "  log(e.name + toStr);\n"
+            + "}\n";
+
     /**
      * Function used in many tests.
      */
     public static final String LOG_TITLE_FUNCTION =
-            "  function log(msg) { window.document.title += msg + '\\u00a7'; }\n";
+            "  function log(msg) { window.document.title += msg + '\\u00a7'; }\n"
+            + LOG_EX_FUNCTION;
 
     /**
      * Function used in many tests.
@@ -162,13 +184,16 @@ public abstract class WebDriverTestCase extends WebTestCase {
                     + "msg = msg.replace(/\\r/g, '\\\\r'); "
                     + "msg = msg.replace(/\\t/g, '\\\\t'); "
                     + "msg = msg.replace(/\\u001e/g, '\\\\u001e'); "
-                    + "window.document.title += msg + '\u00A7';}\n";
+                    + "window.document.title += msg + '\u00A7';}\n"
+
+                    + LOG_EX_FUNCTION;
 
     /**
      * Function used in many tests.
      */
     public static final String LOG_WINDOW_NAME_FUNCTION =
-            "  function log(msg) { window.top.name += msg + '\\u00a7'; }\n  window.top.name = '';";
+            "  function log(msg) { window.top.name += msg + '\\u00a7'; }\n  window.top.name = '';"
+            + LOG_EX_FUNCTION;
 
     /**
      * Function used in many tests.
@@ -182,7 +207,8 @@ public abstract class WebDriverTestCase extends WebTestCase {
      * Function used in many tests.
      */
     public static final String LOG_TEXTAREA_FUNCTION = "  function log(msg) { "
-            + "document.getElementById('myLog').value += msg + '\u00A7';}\n";
+            + "document.getElementById('myLog').value += msg + '\u00A7';}\n"
+            + LOG_EX_FUNCTION;
 
     /**
      * HtmlSniped to insert text area used for logging.
@@ -505,6 +531,9 @@ public abstract class WebDriverTestCase extends WebTestCase {
                 final String locale = getBrowserVersion().getBrowserLocale().toLanguageTag();
 
                 final EdgeOptions options = new EdgeOptions();
+                // BiDi
+                // options.setCapability("webSocketUrl", true);
+
                 options.addArguments("--lang=" + locale);
                 options.addArguments("--remote-allow-origins=*");
 
@@ -538,6 +567,9 @@ public abstract class WebDriverTestCase extends WebTestCase {
                 final String locale = getBrowserVersion().getBrowserLocale().toLanguageTag();
 
                 final ChromeOptions options = new ChromeOptions();
+                // BiDi
+                // options.setCapability("webSocketUrl", true);
+
                 options.addArguments("--lang=" + locale);
                 options.addArguments("--remote-allow-origins=*");
                 options.addArguments("--disable-search-engine-choice-screen");
@@ -590,6 +622,9 @@ public abstract class WebDriverTestCase extends WebTestCase {
                 .build();
 
         final FirefoxOptions options = new FirefoxOptions();
+        // BiDi
+        // options.setCapability("webSocketUrl", true);
+
         options.setBinary(binary);
 
         String locale = getBrowserVersion().getBrowserLocale().toLanguageTag();
@@ -603,16 +638,6 @@ public abstract class WebDriverTestCase extends WebTestCase {
         options.setProfile(profile);
 
         return new FirefoxDriver(service, options);
-    }
-
-    private static String getBrowserName(final BrowserVersion browserVersion) {
-        if (browserVersion == BrowserVersion.FIREFOX) {
-            return browserVersion.getNickname() + '-' + browserVersion.getBrowserVersionNumeric();
-        }
-        if (browserVersion == BrowserVersion.FIREFOX_ESR) {
-            return browserVersion.getNickname() + '-' + browserVersion.getBrowserVersionNumeric();
-        }
-        return browserVersion.getNickname();
     }
 
     /**
@@ -1088,18 +1113,28 @@ public abstract class WebDriverTestCase extends WebTestCase {
 
     protected final WebDriver verifyTitle2(final long maxWaitTime, final WebDriver driver,
             final String... expectedAlerts) throws Exception {
+
+        final StringBuilder expected = new StringBuilder();
+        for (int i = 0; i < expectedAlerts.length; i++) {
+            expected.append(expectedAlerts[i]).append('\u00A7');
+        }
+        final String expectedTitle = expected.toString();
+
         final long maxWait = System.currentTimeMillis() + maxWaitTime;
 
         while (System.currentTimeMillis() < maxWait) {
             try {
-                return verifyTitle2(driver, expectedAlerts);
+                final String title = driver.getTitle();
+                assertEquals(expectedTitle, title);
+                return driver;
             }
             catch (final AssertionError e) {
                 // ignore and wait
             }
         }
 
-        return verifyTitle2(driver, expectedAlerts);
+        assertEquals(expectedTitle, driver.getTitle());
+        return driver;
     }
 
     protected final WebDriver verifyTitle2(final WebDriver driver,
@@ -1143,14 +1178,14 @@ public abstract class WebDriverTestCase extends WebTestCase {
         final WebElement textArea = driver.findElement(By.id("myLog"));
 
         if (expectedAlerts.length == 0) {
-            assertEquals("", textArea.getAttribute("value"));
+            assertEquals("", textArea.getDomProperty("value"));
             return driver;
         }
 
         if (!useRealBrowser()
                 && expectedAlerts.length == 1
                 && expectedAlerts[0].startsWith("data:image/png;base64,")) {
-            String value = textArea.getAttribute("value");
+            String value = textArea.getDomProperty("value");
             if (value.endsWith("\u00A7")) {
                 value = value.substring(0, value.length() - 1);
             }
@@ -1162,13 +1197,12 @@ public abstract class WebDriverTestCase extends WebTestCase {
         for (int i = 0; i < expectedAlerts.length; i++) {
             expected.append(expectedAlerts[i]).append('\u00A7');
         }
-        verify(() -> textArea.getAttribute("value"), expected.toString());
+        verify(() -> textArea.getDomProperty("value"), expected.toString());
 
         return driver;
     }
 
     protected final String getJsVariableValue(final WebDriver driver, final String varName) throws Exception {
-
         final String script = "return String(" + varName + ")";
         final String result = (String) ((JavascriptExecutor) driver).executeScript(script);
 

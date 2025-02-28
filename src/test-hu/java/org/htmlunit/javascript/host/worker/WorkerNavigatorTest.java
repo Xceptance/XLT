@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ import java.net.URL;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.util.MimeType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -82,9 +82,9 @@ public class WorkerNavigatorTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(CHROME = "5.0\\s(Windows\\sNT\\s10.0;\\sWin64;\\sx64)\\sAppleWebKit/537.36\\s"
-                        + "(KHTML,\\slike\\sGecko)\\sChrome/130.0.0.0\\sSafari/537.36",
+                        + "(KHTML,\\slike\\sGecko)\\sChrome/133.0.0.0\\sSafari/537.36",
             EDGE = "5.0\\s(Windows\\sNT\\s10.0;\\sWin64;\\sx64)\\sAppleWebKit/537.36\\s"
-                        + "(KHTML,\\slike\\sGecko)\\sChrome/130.0.0.0\\sSafari/537.36\\sEdg/130.0.0.0",
+                        + "(KHTML,\\slike\\sGecko)\\sChrome/133.0.0.0\\sSafari/537.36\\sEdg/133.0.0.0",
             FF = "5.0\\s(Windows)",
             FF_ESR = "5.0\\s(Windows)")
     public void appVersion() throws Exception {
@@ -161,10 +161,10 @@ public class WorkerNavigatorTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(CHROME = "Mozilla/5.0\\s(Windows\\sNT\\s10.0;\\sWin64;\\sx64)\\sAppleWebKit/537.36\\s"
-                        + "(KHTML,\\slike\\sGecko)\\sChrome/130.0.0.0\\sSafari/537.36",
+                        + "(KHTML,\\slike\\sGecko)\\sChrome/133.0.0.0\\sSafari/537.36",
             EDGE = "Mozilla/5.0\\s(Windows\\sNT\\s10.0;\\sWin64;\\sx64)\\sAppleWebKit/537.36\\s"
-                        + "(KHTML,\\slike\\sGecko)\\sChrome/130.0.0.0\\sSafari/537.36\\sEdg/130.0.0.0",
-            FF = "Mozilla/5.0\\s(Windows\\sNT\\s10.0;\\sWin64;\\sx64;\\srv:132.0)\\sGecko/20100101\\sFirefox/132.0",
+                        + "(KHTML,\\slike\\sGecko)\\sChrome/133.0.0.0\\sSafari/537.36\\sEdg/133.0.0.0",
+            FF = "Mozilla/5.0\\s(Windows\\sNT\\s10.0;\\sWin64;\\sx64;\\srv:135.0)\\sGecko/20100101\\sFirefox/135.0",
             FF_ESR = "Mozilla/5.0\\s(Windows\\sNT\\s10.0;\\sWin64;\\sx64;\\srv:128.0)\\sGecko/20100101\\sFirefox/128.0")
     public void userAgent() throws Exception {
         final String workerJs = "postMessage(navigator.userAgent);\n";
@@ -198,7 +198,7 @@ public class WorkerNavigatorTest extends WebDriverTestCase {
             + "  myWorker.onmessage = function(e) {\n"
             + "    log(e.data);\n"
             + "  };\n"
-            + "} catch(e) { log('exception'); }\n"
+            + "} catch(e) { logEx(e); }\n"
             + "</script></body></html>\n";
 
         getMockWebConnection().setResponse(new URL(URL_FIRST, "worker.js"),

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ package org.htmlunit.javascript;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -340,7 +340,7 @@ public class NativeStringTest extends WebDriverTestCase {
             + "      var res = '';\n"
             + "      try {\n"
             + "        log('/./'.includes(regExp));\n"
-            + "      } catch (e) {\n"
+            + "      } catch(e) {\n"
             + "        log('Error');\n"
             + "      }\n"
             + "      regExp[Symbol.match] = false;\n"
@@ -358,7 +358,7 @@ public class NativeStringTest extends WebDriverTestCase {
      * @throws Exception if something goes wrong
      */
     @Test
-    @Alerts({"Error", "true"})
+    @Alerts({"TypeError", "true"})
     public void startsWithRegExpMatch() throws Exception {
         final String html
             = "<!DOCTYPE html>\n"
@@ -370,9 +370,7 @@ public class NativeStringTest extends WebDriverTestCase {
             + "      var res = '';\n"
             + "      try {\n"
             + "        log('/./'.startsWith(regExp));\n"
-            + "      } catch (e) {\n"
-            + "        log('Error');\n"
-            + "      }\n"
+            + "      } catch(e) { logEx(e); }\n"
             + "      regExp[Symbol.match] = false;\n"
             + "      log('/./'.startsWith(regExp));\n"
             + "    }\n"
@@ -388,7 +386,7 @@ public class NativeStringTest extends WebDriverTestCase {
      * @throws Exception if something goes wrong
      */
     @Test
-    @Alerts({"Error", "true"})
+    @Alerts({"TypeError", "true"})
     public void endsWithRegExpMatch() throws Exception {
         final String html
             = "<!DOCTYPE html>\n"
@@ -400,9 +398,7 @@ public class NativeStringTest extends WebDriverTestCase {
             + "      var res = '';\n"
             + "      try {\n"
             + "        log('/./'.endsWith(regExp));\n"
-            + "      } catch (e) {\n"
-            + "        log('Error');\n"
-            + "      }\n"
+            + "      } catch(e) { logEx(e); }\n"
             + "      regExp[Symbol.match] = false;\n"
             + "      log('/./'.endsWith(regExp));\n"
             + "    }\n"

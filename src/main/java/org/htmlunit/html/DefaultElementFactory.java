@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -730,11 +730,16 @@ public class DefaultElementFactory implements ElementFactory {
      * @return the map of attribute values for {@link HtmlElement}s
      */
     static Map<String, DomAttr> toMap(final SgmlPage page, final Attributes attributes) {
+        // it is ok to return null here, the element ctor's are able to deal with that
         if (attributes == null) {
-            return new OrderedFastHashMapWithLowercaseKeys<>(0);
+            return null;
         }
 
         final int length = attributes.getLength();
+        if (length == 0) {
+            return null;
+        }
+
         final Map<String, DomAttr> attributeMap = new OrderedFastHashMapWithLowercaseKeys<>(length);
 
         // small performance optimization if we know the attributes we can avoid some index lookups

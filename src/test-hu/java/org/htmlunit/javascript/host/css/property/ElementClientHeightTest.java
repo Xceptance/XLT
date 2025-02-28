@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@ package org.htmlunit.javascript.host.css.property;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -320,8 +320,8 @@ public class ElementClientHeightTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(CHROME = "621",
-            EDGE = "632",
-            FF = "677",
+            EDGE = "630",
+            FF = "675",
             FF_ESR = "677")
     @HtmlUnitNYI(CHROME = "605",
             EDGE = "605",
@@ -667,8 +667,8 @@ public class ElementClientHeightTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(CHROME = "621",
-            EDGE = "632",
-            FF = "677",
+            EDGE = "630",
+            FF = "675",
             FF_ESR = "677")
     @HtmlUnitNYI(CHROME = "0",
             EDGE = "0",
@@ -685,8 +685,8 @@ public class ElementClientHeightTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(CHROME = "621",
-            EDGE = "632",
-            FF = "677",
+            EDGE = "630",
+            FF = "675",
             FF_ESR = "677")
     @HtmlUnitNYI(CHROME = "18",
             EDGE = "18",
@@ -802,7 +802,7 @@ public class ElementClientHeightTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(CHROME = "621",
-            EDGE = "632",
+            EDGE = "630",
             FF = "8",
             FF_ESR = "8")
     @HtmlUnitNYI(CHROME = "605",
@@ -1195,9 +1195,7 @@ public class ElementClientHeightTest extends WebDriverTestCase {
     @Test
     @Alerts("0")
     @HtmlUnitNYI(CHROME = "18",
-            EDGE = "18",
-            FF = "0",
-            FF_ESR = "0")
+            EDGE = "18")
     public void noscript() throws Exception {
         loadPageVerifyTitle2(test("noscript"));
     }

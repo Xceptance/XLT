@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@ package org.htmlunit.javascript.host.css;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -43,7 +43,7 @@ public class CSSTest extends WebDriverTestCase {
             + "  try {\n"
             + "    log(CSS);"
             + "    log(CSS.prototype);"
-            + "  } catch (e) { log('Exception'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "</script>\n"
             + "</body></html>";
 
@@ -54,7 +54,7 @@ public class CSSTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("ctor Exception")
+    @Alerts("TypeError")
     public void constructor() throws Exception {
         final String html
             = "<html><body>\n"
@@ -64,7 +64,7 @@ public class CSSTest extends WebDriverTestCase {
             + "  try {\n"
             + "    var o = Object.create(CSS.prototype);\n"
             + "    log(o);"
-            + "  } catch (e) { log('ctor Exception'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "</script>\n"
             + "</body></html>";
 
@@ -85,7 +85,7 @@ public class CSSTest extends WebDriverTestCase {
             + "    log(CSS.supports('display', 'flex'));"
             + "    log(CSS.supports('display', 'grid'));"
             + "    log(CSS.supports('color', 'red'));"
-            + "  } catch (e) { log('Exception'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "</script>\n"
             + "</body></html>";
 
@@ -105,7 +105,7 @@ public class CSSTest extends WebDriverTestCase {
             + "  try {\n"
             + "    log(CSS.supports('display: flex'));"
             + "    log(CSS.supports('color: red'));"
-            + "  } catch (e) { log('Exception'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "</script>\n"
             + "</body></html>";
 
@@ -129,7 +129,7 @@ public class CSSTest extends WebDriverTestCase {
             + "  try {\n"
             + "    log(CSS.supports('selector(div)'));"
             + "    log(CSS.supports('selector(div, span)'));"
-            + "  } catch (e) { log('Exception'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "</script>\n"
             + "</body></html>";
 

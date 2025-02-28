@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import java.util.HashSet;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.text.StringEscapeUtils;
 import org.htmlunit.SgmlPage;
 import org.htmlunit.html.impl.SelectableTextInput;
 import org.htmlunit.html.impl.SelectableTextSelectionDelegate;
@@ -436,7 +435,7 @@ public class HtmlTextArea extends HtmlElement implements DisabledElement, Submit
         printOpeningTagContentAsXml(printWriter);
 
         printWriter.print(">");
-        printWriter.print(StringEscapeUtils.escapeXml10(getText()));
+        printWriter.print(org.htmlunit.util.StringUtils.escapeXml(getText()));
         printWriter.print("</textarea>");
     }
 

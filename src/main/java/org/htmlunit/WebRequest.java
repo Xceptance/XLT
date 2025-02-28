@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -690,6 +690,7 @@ public class WebRequest implements Serializable {
     private void writeObject(final ObjectOutputStream oos) throws IOException {
         oos.defaultWriteObject();
         oos.writeObject(charset_ == null ? null : charset_.name());
+        oos.writeObject(defaultResponseContentCharset_ == null ? null : defaultResponseContentCharset_.name());
     }
 
     private void readObject(final ObjectInputStream ois) throws ClassNotFoundException, IOException {
@@ -697,6 +698,10 @@ public class WebRequest implements Serializable {
         final String charsetName = (String) ois.readObject();
         if (charsetName != null) {
             charset_ = Charset.forName(charsetName);
+        }
+        final String defaultResponseContentCharset = (String) ois.readObject();
+        if (defaultResponseContentCharset != null) {
+            defaultResponseContentCharset_ = Charset.forName(defaultResponseContentCharset);
         }
     }
 }

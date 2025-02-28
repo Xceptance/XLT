@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import java.util.Map;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -224,7 +224,7 @@ public class MapTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("TypeError")
     public void constructorInt32Array() throws Exception {
         final String html
             = "<html><head>\n"
@@ -236,7 +236,7 @@ public class MapTest extends WebDriverTestCase {
             + "    var myMap = new Map(array);\n"
             + "    log(myMap.size);\n"
             + "  } catch(e) {\n"
-            + "    log('exception');\n"
+            + "    logEx(e);\n"
             + "  }\n"
             + "}\n"
             + "</script></head><body onload='test()'>\n"
@@ -249,7 +249,7 @@ public class MapTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("TypeError")
     public void constructorStringParam() throws Exception {
         final String html
             = "<html><head>\n"
@@ -260,7 +260,7 @@ public class MapTest extends WebDriverTestCase {
             + "    var myMap = new Map('test');\n"
             + "    log(myMap.size);\n"
             + "  } catch(e) {\n"
-            + "    log('exception');\n"
+            + "    logEx(e);\n"
             + "  }\n"
             + "}\n"
             + "</script></head><body onload='test()'>\n"
@@ -273,7 +273,7 @@ public class MapTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("TypeError")
     public void constructorSetParam() throws Exception {
         final String html
             = "<html><head>\n"
@@ -284,7 +284,7 @@ public class MapTest extends WebDriverTestCase {
             + "    var myMap = new Map(new Set('test'));\n"
             + "    log(myMap.size);\n"
             + "  } catch(e) {\n"
-            + "    log('exception');\n"
+            + "    logEx(e);\n"
             + "  }\n"
             + "}\n"
             + "</script></head><body onload='test()'>\n"
@@ -347,7 +347,7 @@ public class MapTest extends WebDriverTestCase {
             + "    var myMap = new Map(myIterable);\n"
             + "    log(myMap.size);\n"
             + "    myMap.forEach(logElement);\n"
-            + "  }catch(e) { log('exception'); }"
+            + "  }catch(e) { logEx(e); }"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"

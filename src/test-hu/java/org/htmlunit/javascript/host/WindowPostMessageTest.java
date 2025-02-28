@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ package org.htmlunit.javascript.host;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
@@ -122,7 +122,7 @@ public class WindowPostMessageTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("TypeError")
     public void postMessageMissingParameters() throws Exception {
         final String html
             = "<html>\n"
@@ -132,8 +132,8 @@ public class WindowPostMessageTest extends WebDriverTestCase {
             + LOG_TITLE_FUNCTION
             + "  try {\n"
             + "    window.postMessage();\n"
-            + "  } catch (e) {\n"
-            + "    log('exception');\n"
+            + "  } catch(e) {\n"
+            + "    logEx(e);\n"
             + "  }\n"
             + "</script>\n"
             + "</body></html>";
@@ -381,7 +381,7 @@ public class WindowPostMessageTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("SyntaxError/DOMException")
     public void postMessageTargetOriginNotUrl() throws Exception {
         postMessageInvalidTargetOrigin("abcd");
     }
@@ -390,7 +390,7 @@ public class WindowPostMessageTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("SyntaxError/DOMException")
     public void postMessageTargetOriginEmpty() throws Exception {
         postMessageInvalidTargetOrigin("");
     }
@@ -399,7 +399,7 @@ public class WindowPostMessageTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("SyntaxError/DOMException")
     public void postMessageTargetOriginSubpath() throws Exception {
         postMessageInvalidTargetOrigin("/abc");
     }
@@ -413,8 +413,8 @@ public class WindowPostMessageTest extends WebDriverTestCase {
             + LOG_TITLE_FUNCTION
             + "  try {\n"
             + "    window.postMessage('hello', '" + targetOrigin + "');\n"
-            + "  } catch (e) {\n"
-            + "    log('exception');\n"
+            + "  } catch(e) {\n"
+            + "    logEx(e);\n"
             + "  }\n"
             + "</script>\n"
             + "</body></html>";

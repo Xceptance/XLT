@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ package org.htmlunit.javascript.host.xml;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.util.MimeType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -217,7 +217,7 @@ public class XMLDocument2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void text() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -225,8 +225,8 @@ public class XMLDocument2Test extends WebDriverTestCase {
             + "  function test() {\n"
             + "    try {\n"
             + "      new ActiveXObject('Microsoft.XMLDOM');\n"
-            + "    } catch (e) {\n"
-            + "      log('exception');\n"
+            + "    } catch(e) {\n"
+            + "      logEx(e);\n"
             + "      return;\n"
             + "    }\n"
             + "    var xmldoc = new ActiveXObject('Microsoft.XMLDOM');\n"

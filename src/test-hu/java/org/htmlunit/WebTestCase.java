@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -36,7 +37,6 @@ import java.util.function.Supplier;
 
 import javax.imageio.ImageIO;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.SerializationUtils;
 import org.htmlunit.junit.RetryRule;
@@ -553,7 +553,7 @@ public abstract class WebTestCase {
 
     protected void compareImages(final String expected, final String current) throws IOException {
         final String currentBase64Image = current.split(",")[1];
-        final byte[] currentImageBytes = Base64.decodeBase64(currentBase64Image);
+        final byte[] currentImageBytes = Base64.getDecoder().decode(currentBase64Image);
 
         try (ByteArrayInputStream currentBis = new ByteArrayInputStream(currentImageBytes)) {
             final BufferedImage currentImage = ImageIO.read(currentBis);
@@ -565,7 +565,7 @@ public abstract class WebTestCase {
     protected void compareImages(final String expected,
             final String current, final BufferedImage currentImage) throws IOException {
         final String expectedBase64Image = expected.split(",")[1];
-        final byte[] expectedImageBytes = Base64.decodeBase64(expectedBase64Image);
+        final byte[] expectedImageBytes = Base64.getDecoder().decode(expectedBase64Image);
 
         try (ByteArrayInputStream expectedBis = new ByteArrayInputStream(expectedImageBytes)) {
             final BufferedImage expectedImage = ImageIO.read(expectedBis);

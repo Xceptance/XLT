@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ package org.htmlunit.javascript.host.html;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -75,7 +75,7 @@ public class HTMLBaseFontElementTest extends WebDriverTestCase {
             + "          base.size = 42;\n"
             + "          log(base.size);\n"
             + "        } catch(e) {\n"
-            + "          log('exception');\n"
+            + "          logEx(e);\n"
             + "        }\n"
             + "      }\n"
             + "    </script>\n"
@@ -105,7 +105,7 @@ public class HTMLBaseFontElementTest extends WebDriverTestCase {
             + "          base.face = 'helvetica';\n"
             + "          log(base.face);\n"
             + "        } catch(e) {\n"
-            + "          log('exception');\n"
+            + "          logEx(e);\n"
             + "        }\n"
             + "      }\n"
             + "    </script>\n"
@@ -135,7 +135,7 @@ public class HTMLBaseFontElementTest extends WebDriverTestCase {
             + "          base.color = 'blue';\n"
             + "          log(base.color);\n"
             + "        } catch(e) {\n"
-            + "          log('exception');\n"
+            + "          logEx(e);\n"
             + "        }\n"
             + "      }\n"
             + "    </script>\n"
@@ -150,7 +150,7 @@ public class HTMLBaseFontElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"[object HTMLElement]", "exception"})
+    @Alerts({"[object HTMLElement]", "ReferenceError"})
     public void type() throws Exception {
         final String html = ""
             + "<html><head>\n"
@@ -161,7 +161,7 @@ public class HTMLBaseFontElementTest extends WebDriverTestCase {
             + "    try {\n"
             + "      log(elem);\n"
             + "      log(HTMLBaseFontElement);\n"
-            + "    } catch(e) { log('exception'); }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"

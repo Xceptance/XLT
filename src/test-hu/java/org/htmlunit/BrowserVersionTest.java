@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,10 +38,10 @@ public class BrowserVersionTest {
      */
     @Test
     public void getBrowserVersionNumeric() {
-        assertEquals(132, BrowserVersion.FIREFOX.getBrowserVersionNumeric());
+        assertEquals(135, BrowserVersion.FIREFOX.getBrowserVersionNumeric());
         assertEquals(128, BrowserVersion.FIREFOX_ESR.getBrowserVersionNumeric());
-        assertEquals(130, BrowserVersion.CHROME.getBrowserVersionNumeric());
-        assertEquals(130, BrowserVersion.EDGE.getBrowserVersionNumeric());
+        assertEquals(133, BrowserVersion.CHROME.getBrowserVersionNumeric());
+        assertEquals(133, BrowserVersion.EDGE.getBrowserVersionNumeric());
     }
 
     /**
@@ -51,12 +51,6 @@ public class BrowserVersionTest {
     public void testClone() {
         final BrowserVersion ff = BrowserVersion.FIREFOX;
 
-        final PluginConfiguration flash = new PluginConfiguration("Shockwave Flash",
-                "Shockwave Flash 32.0 r0", "32.0.0.445", "Flash.ocx");
-        flash.getMimeTypes().add(new PluginConfiguration.MimeType("application/x-shockwave-flash",
-                "Shockwave Flash", "swf"));
-        ff.getPlugins().add(flash);
-
         final BrowserVersion clone = new BrowserVersion.BrowserVersionBuilder(ff).build();
 
         // Nickname is used as key for dictionaries storing browser setups
@@ -64,11 +58,6 @@ public class BrowserVersionTest {
 
         assertFalse(ff == clone);
         assertFalse(ff.equals(clone));
-
-        assertFalse(clone.getPlugins().isEmpty());
-        clone.getPlugins().clear();
-        assertTrue(clone.getPlugins().isEmpty());
-        assertFalse(ff.getPlugins().isEmpty());
     }
 
     /**

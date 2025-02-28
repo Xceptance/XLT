@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package org.htmlunit.javascript.host.event;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
@@ -57,7 +57,7 @@ public class UIEventTest extends WebDriverTestCase {
             + "    try {\n"
             + "      var event = new UIEvent('event');\n"
             + "      dump(event);\n"
-            + "    } catch (e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + DUMP_EVENT_FUNCTION
             + "</script></head><body onload='test()'>\n"
@@ -82,7 +82,7 @@ public class UIEventTest extends WebDriverTestCase {
             + "        'view': window\n"
             + "      });\n"
             + "      dump(event);\n"
-            + "    } catch (e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + DUMP_EVENT_FUNCTION
             + "</script></head><body onload='test()'>\n"
@@ -95,7 +95,7 @@ public class UIEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("TypeError")
     public void create_ctorWithDetailsViewNotWindow() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"
@@ -105,7 +105,7 @@ public class UIEventTest extends WebDriverTestCase {
             + "      var event = new UIEvent('event', {\n"
             + "        'view': {}\n"
             + "      });\n"
-            + "    } catch (e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + DUMP_EVENT_FUNCTION
             + "</script></head><body onload='test()'>\n"
@@ -152,7 +152,7 @@ public class UIEventTest extends WebDriverTestCase {
             + "  log(e.cancelable);\n"
             + "  log(e.view == window);\n"
             + "  log(e.detail);\n"
-            + "} catch(e) { log('exception') }\n"
+            + "} catch(e) { logEx(e) }\n"
             + "</script></body></html>";
         loadPageVerifyTitle2(html);
     }

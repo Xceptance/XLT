@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -99,6 +99,7 @@ import org.htmlunit.javascript.host.css.ComputedCSSStyleDeclaration;
 import org.htmlunit.javascript.host.css.MediaQueryList;
 import org.htmlunit.javascript.host.css.StyleMedia;
 import org.htmlunit.javascript.host.dom.AbstractList.EffectOnCache;
+import org.htmlunit.javascript.host.dom.DOMException;
 import org.htmlunit.javascript.host.dom.Document;
 import org.htmlunit.javascript.host.dom.Selection;
 import org.htmlunit.javascript.host.event.Event;
@@ -290,7 +291,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
     @JsxFunction
     @Override
     public String btoa(final String stringToEncode) {
-        return WindowOrWorkerGlobalScopeMixin.btoa(stringToEncode);
+        return WindowOrWorkerGlobalScopeMixin.btoa(stringToEncode, this);
     }
 
     /**
@@ -301,7 +302,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
     @JsxFunction
     @Override
     public String atob(final String encodedData) {
-        return WindowOrWorkerGlobalScopeMixin.atob(encodedData);
+        return WindowOrWorkerGlobalScopeMixin.atob(encodedData, this);
     }
 
     /**
@@ -1395,9 +1396,8 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
      * @param e the error that needs to be reported
      */
     public void triggerOnError(final ScriptException e) {
-        final Object o = getOnerror();
-        if (o instanceof Function) {
-            final Function f = (Function) o;
+        final Function f = getOnerror();
+        if (f != null) {
             String msg = e.getMessage();
             final String url = e.getPage().getUrl().toExternalForm();
 
@@ -1785,8 +1785,17 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
      * Returns the value of {@code mozInnerScreenX} property.
      * @return the value of {@code mozInnerScreenX} property
      */
-    @JsxGetter({FF, FF_ESR})
+    @JsxGetter(FF)
     public int getMozInnerScreenX() {
+        return 12;
+    }
+
+    /**
+     * Returns the value of {@code mozInnerScreenX} property.
+     * @return the value of {@code mozInnerScreenX} property
+     */
+    @JsxGetter(value = FF_ESR, propertyName = "mozInnerScreenX")
+    public int getMozInnerScreenXffesr_js() {
         return 10;
     }
 
@@ -1871,7 +1880,6 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
     }
 
     /**
-     * Returns the value of {@code netscape} property.
      * @return the value of {@code netscape} property
      */
     @JsxGetter({FF, FF_ESR})
@@ -1985,10 +1993,11 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
                     targetURL = new URL(targetOrigin);
                 }
                 catch (final Exception e) {
-                    throw JavaScriptEngine.throwAsScriptRuntimeEx(
-                            new Exception(
-                                    "SyntaxError: Failed to execute 'postMessage' on 'Window': Invalid target origin '"
-                                            + targetOrigin + "' was specified (reason: " + e.getMessage() + "."));
+                    throw JavaScriptEngine.asJavaScriptException(
+                            (HtmlUnitScriptable) getTopLevelScope(thisObj),
+                            "Failed to execute 'postMessage' on 'Window': Invalid target origin '"
+                                    + targetOrigin + "' was specified (reason: " + e.getMessage() + ".",
+                            DOMException.SYNTAX_ERR);
                 }
             }
 
@@ -2146,7 +2155,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
      * @return the {@code offscreenBuffering} property
      */
     @JsxGetter({CHROME, EDGE})
-    public Object getOffscreenBuffering() {
+    public boolean getOffscreenBuffering() {
         return true;
     }
 
@@ -3807,7 +3816,7 @@ public class Window extends EventTarget implements WindowOrWorkerGlobalScope, Au
      * @return a boolean indicating whether the current context is secure (true) or not (false).
      */
     @JsxGetter
-    public Object getIsSecureContext() {
+    public boolean getIsSecureContext() {
         final Page page = getWebWindow().getEnclosedPage();
         if (page != null) {
             final String protocol = page.getUrl().getProtocol();

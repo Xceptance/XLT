@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@ package org.htmlunit.html.parser;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -651,7 +651,7 @@ public class HTMLParser2Test extends WebDriverTestCase {
             + "  log(tmp.tagName);\n"
             + "  tmp = tmp.firstChild.tagName;\n"
             + "  log(tmp);\n"
-            + "} catch(e) { log('exception'); }\n"
+            + "} catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script>\n"
             + "</head>\n"
@@ -680,7 +680,7 @@ public class HTMLParser2Test extends WebDriverTestCase {
             + "  log(tmp.tagName);\n"
             + "  tmp = tmp.firstChild.tagName;\n"
             + "  log(tmp);\n"
-            + "} catch(e) { log('exception'); }\n"
+            + "} catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script>\n"
             + "</head>\n"
@@ -843,7 +843,7 @@ public class HTMLParser2Test extends WebDriverTestCase {
             + "  log(tmp.innerHTML);\n"
             + "  tmp = document.getElementById('my2');\n"
             + "  log(tmp.innerHTML);\n"
-            + "} catch(e) { log('exception'); }\n"
+            + "} catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script>\n"
             + "</head>\n"
@@ -977,7 +977,7 @@ public class HTMLParser2Test extends WebDriverTestCase {
             + "  log(child2.nodeName);\n"
             + "  log(child2.nodeValue);\n"
 
-            + "} catch(e) { log('exception'); }\n"
+            + "} catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script>\n"
             + "</head>\n"
@@ -1015,7 +1015,7 @@ public class HTMLParser2Test extends WebDriverTestCase {
             + "  var child2 = child.childNodes[0];\n"
             + "  log(child2.childNodes.length + '-' + child2.nodeType + '#' +child2.nodeName);\n"
 
-            + "} catch(e) { log('exception'); }\n"
+            + "} catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script>\n"
             + "</head>\n"
@@ -1047,7 +1047,7 @@ public class HTMLParser2Test extends WebDriverTestCase {
             + "  var child = tmp.childNodes[0];\n"
             + "  log(child.childNodes.length + '-' + child.nodeType + '#' + child.nodeName);\n"
 
-            + "} catch(e) { log('exception'); }\n"
+            + "} catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script>\n"
             + "</head>\n"
@@ -1080,7 +1080,7 @@ public class HTMLParser2Test extends WebDriverTestCase {
 
             + "  tmp = tmp.nextSibling;\n"
             + "  log(tmp.textContent);\n"
-            + "} catch(e) { log('exception'); }\n"
+            + "} catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script>\n"
             + "</head>\n"
@@ -1107,7 +1107,7 @@ public class HTMLParser2Test extends WebDriverTestCase {
 
             + "  tmp = tmp.firstChild;\n"
             + "  log(tmp.tagName);\n"
-            + "} catch(e) { log('exception'); }\n"
+            + "} catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script>\n"
             + "</head>\n"

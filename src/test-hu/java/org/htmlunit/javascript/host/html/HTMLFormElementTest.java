@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,8 +28,8 @@ import org.htmlunit.HttpHeader;
 import org.htmlunit.MockWebConnection;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.NotYetImplemented;
 import org.htmlunit.util.MimeType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -449,7 +449,7 @@ public class HTMLFormElementTest extends WebDriverTestCase {
             + "    try {\n"
             + "      document.forms[0].enctype = '" + enctype + "';\n"
             + "      log(document.forms[0].enctype);\n"
-            + "    } catch(e) { log('exception'); }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "    log(document.forms[0].encoding);\n"
             + "  }\n"
             + "  </script>\n"
@@ -491,7 +491,7 @@ public class HTMLFormElementTest extends WebDriverTestCase {
             + "    try {\n"
             + "      document.forms[0].encoding = '" + encoding + "';\n"
             + "      log(document.forms[0].encoding);\n"
-            + "    } catch(e) { log('exception'); }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "    log(document.forms[0].enctype);\n"
             + "  }\n"
             + "  </script>\n"
@@ -579,7 +579,7 @@ public class HTMLFormElementTest extends WebDriverTestCase {
             + "    document.forms[0]." + jsProperty + "='" + newValue + "';\n"
             + "    log(document.forms[0]." + jsProperty + ");\n"
             + "    log(document.forms[0].getAttribute('" + htmlProperty + "'));\n"
-            + "  } catch(e) { log('exception'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script></head><body onload='doTest()'>\n"
             + "<p>hello world</p>\n"
@@ -1296,7 +1296,7 @@ public class HTMLFormElementTest extends WebDriverTestCase {
             + "    try {\n"
             + "      form.onsubmit = undefined;\n"
             + "      log(form.onsubmit);\n"
-            + "    } catch(e) { log('exception'); }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "  }\n"
             + "</script>\n"
             + "<body onload=test()>\n"
@@ -1348,7 +1348,7 @@ public class HTMLFormElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("TypeError")
     public void item() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -1357,7 +1357,7 @@ public class HTMLFormElementTest extends WebDriverTestCase {
             + "    function test() {\n"
             + "      try {\n"
             + "        log(document.forms['myForm'].item('myRadio').type);\n"
-            + "      } catch(e) { log('exception') }\n"
+            + "      } catch(e) { logEx(e) }\n"
             + "    }\n"
             + "  </script>\n"
             + "</head>\n"
@@ -1375,7 +1375,7 @@ public class HTMLFormElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("TypeError")
     public void item_many() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -1384,7 +1384,7 @@ public class HTMLFormElementTest extends WebDriverTestCase {
             + "    function test() {\n"
             + "      try {\n"
             + "        log(document.forms['myForm'].item('myRadio').length);\n"
-            + "      } catch(e) { log('exception') }\n"
+            + "      } catch(e) { logEx(e) }\n"
             + "    }\n"
             + "  </script>\n"
             + "</head>\n"
@@ -1403,7 +1403,7 @@ public class HTMLFormElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("TypeError")
     public void item_many_subindex() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -1412,7 +1412,7 @@ public class HTMLFormElementTest extends WebDriverTestCase {
             + "    function test() {\n"
             + "      try {\n"
             + "        log(document.forms['myForm'].item('myRadio', 1).id);\n"
-            + "      } catch(e) { log('exception') }\n"
+            + "      } catch(e) { logEx(e) }\n"
             + "    }\n"
             + "  </script>\n"
             + "</head>\n"
@@ -1431,7 +1431,7 @@ public class HTMLFormElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("TypeError")
     public void item_integer() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -1440,7 +1440,7 @@ public class HTMLFormElementTest extends WebDriverTestCase {
             + "    function test() {\n"
             + "      try {\n"
             + "        log(document.forms['myForm'].item(1).id);\n"
-            + "      } catch(e) { log('exception') }\n"
+            + "      } catch(e) { logEx(e) }\n"
             + "    }\n"
             + "  </script>\n"
             + "</head>\n"
@@ -2716,7 +2716,7 @@ public class HTMLFormElementTest extends WebDriverTestCase {
             + "    var sub = document.getElementById('submit1');\n"
             + "    try {\n"
             + "      myForm.requestSubmit(sub);\n"
-            + "    } catch (e) { alert('requestSubmit failed' + e); }\n"
+            + "    } catch(e) { alert('requestSubmit failed' + e); }\n"
             + "    return;\n"
             + "  }\n"
             + "  alert('requestSubmit() not available');\n"
@@ -2760,7 +2760,7 @@ public class HTMLFormElementTest extends WebDriverTestCase {
             + "    var sub = document.getElementById('submit2');\n"
             + "    try {\n"
             + "      myForm.requestSubmit(sub);\n"
-            + "    } catch (e) { alert('requestSubmit failed'); }\n"
+            + "    } catch(e) { alert('requestSubmit failed'); }\n"
             + "    return;\n"
             + "  }\n"
             + "  alert('requestSubmit() not available');\n"
@@ -2806,7 +2806,7 @@ public class HTMLFormElementTest extends WebDriverTestCase {
             + "    var sub = document.getElementById('param1');\n"
             + "    try {\n"
             + "      myForm.requestSubmit(sub);\n"
-            + "    } catch (e) { alert('requestSubmit failed'); }\n"
+            + "    } catch(e) { alert('requestSubmit failed'); }\n"
             + "    return;\n"
             + "  }\n"
             + "  alert('requestSubmit() not available');\n"
@@ -3210,7 +3210,7 @@ public class HTMLFormElementTest extends WebDriverTestCase {
             + "  for (var i = 0; i < a2.relList.length; i++) {\n"
             + "    log(a2.relList[i]);\n"
             + "  }\n"
-            + "} catch(e) { log('exception'); }\n"
+            + "} catch(e) { logEx(e); }\n"
 
             + "</script></body></html>";
         loadPageVerifyTitle2(html);
@@ -3247,7 +3247,7 @@ public class HTMLFormElementTest extends WebDriverTestCase {
 
             + "  log(a1.rel);\n"
             + "  log(a2.rel);\n"
-            + "} catch(e) { log('exception'); }\n"
+            + "} catch(e) { logEx(e); }\n"
 
             + "</script></body></html>";
         loadPageVerifyTitle2(html);
@@ -3276,7 +3276,7 @@ public class HTMLFormElementTest extends WebDriverTestCase {
 
             + "  log(a1.rel);\n"
             + "  log(a2.rel);\n"
-            + "} catch(e) { log('exception'); }\n"
+            + "} catch(e) { logEx(e); }\n"
 
             + "</script></body></html>";
         loadPageVerifyTitle2(html);
@@ -3313,7 +3313,7 @@ public class HTMLFormElementTest extends WebDriverTestCase {
 
             + "  log(a1.rel);\n"
             + "  log(a2.rel);\n"
-            + "} catch(e) { log('exception'); }\n"
+            + "} catch(e) { logEx(e); }\n"
 
             + "</script></body></html>";
         loadPageVerifyTitle2(html);
@@ -3350,7 +3350,7 @@ public class HTMLFormElementTest extends WebDriverTestCase {
 
             + "  log(a1.rel);\n"
             + "  log(a2.rel);\n"
-            + "} catch(e) { log('exception'); }\n"
+            + "} catch(e) { logEx(e); }\n"
 
             + "</script></body></html>";
         loadPageVerifyTitle2(html);

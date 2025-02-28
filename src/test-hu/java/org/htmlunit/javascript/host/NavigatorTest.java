@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,12 @@
  */
 package org.htmlunit.javascript.host;
 
-import org.htmlunit.PluginConfiguration;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
 
 /**
  * Tests for {@link Navigator}.
@@ -171,38 +168,34 @@ public class NavigatorTest extends WebDriverTestCase {
      * @throws Exception on test failure
      */
     @Test
+    @Alerts({"5",
+        "PDF Viewer", "Portable Document Format", "internal-pdf-viewer", "undefined",
+        "Chrome PDF Viewer", "Portable Document Format", "internal-pdf-viewer", "undefined",
+        "Chromium PDF Viewer", "Portable Document Format", "internal-pdf-viewer", "undefined",
+        "Microsoft Edge PDF Viewer", "Portable Document Format", "internal-pdf-viewer", "undefined",
+        "WebKit built-in PDF", "Portable Document Format", "internal-pdf-viewer", "undefined"})
     public void plugins() throws Exception {
         final String html = "<html>\n"
                 + "<head>\n"
-                + "  <title>test</title>\n"
                 + "  <script>\n"
-                + "    function log(text) {\n"
-                + "      var textarea = document.getElementById('myTextarea');\n"
-                + "      textarea.value += text + ',';\n"
-                + "    }\n"
-
+                + LOG_TITLE_FUNCTION
                 + "    function doTest() {\n"
-                + "      var names = [];"
+                + "      log(window.navigator.plugins.length);\n"
                 + "      for (var i = 0; i < window.navigator.plugins.length; i++) {\n"
-                + "        names[i] = window.navigator.plugins[i].name;\n"
+                + "        let pl = window.navigator.plugins[i];\n"
+                + "        log(pl.name);\n"
+                + "        log(pl.description);\n"
+                + "        log(pl.filename);\n"
+                + "        log(pl.version);\n"
                 + "      }\n"
-                // there is no fixed order, sort for stable testing
-                + "    name = names.sort().join('; ');\n"
-                + "    log(names);\n"
-                + "  }\n"
+                + "    }\n"
                 + "  </script>\n"
                 + "</head>\n"
                 + "<body onload='doTest()'>\n"
-                + "  <textarea id='myTextarea' cols='80' rows='10'></textarea>\n"
                 + "</body>\n"
                 + "</html>";
 
-        final WebDriver driver = loadPage2(html);
-        final String alerts = driver.findElement(By.id("myTextarea")).getAttribute("value");
-
-        for (final PluginConfiguration plugin : getBrowserVersion().getPlugins()) {
-            assertTrue(plugin.getName() + " not found", alerts.contains(plugin.getName()));
-        }
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -242,13 +235,43 @@ public class NavigatorTest extends WebDriverTestCase {
     }
 
     /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"2",
+             "application/pdf", "Portable Document Format", "pdf", "[object Plugin]", "true",
+             "text/pdf", "Portable Document Format", "pdf", "[object Plugin]", "true"})
+    public void mimeTypes() throws Exception {
+        final String html
+            = "<html><head>\n"
+                + "  <script>\n"
+                + LOG_TITLE_FUNCTION
+                + "    function doTest() {\n"
+                + "      log(window.navigator.mimeTypes.length);\n"
+                + "      for (var i = 0; i < window.navigator.mimeTypes.length; i++) {\n"
+                + "        let mt = window.navigator.mimeTypes[i];\n"
+                + "        log(mt.type);\n"
+                + "        log(mt.description);\n"
+                + "        log(mt.suffixes);\n"
+                + "        log(mt.enabledPlugin);\n"
+                + "        log(mt.enabledPlugin === window.navigator.plugins[0]);"
+                + "      }\n"
+                + "    }\n"
+                + "  </script>\n"
+            + "</head><body onload='doTest()'></body>\n"
+            + "</html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
      * Tests the {@code taintEnabled} property.
      * @throws Exception on test failure
      */
     @Test
     @Alerts(DEFAULT = "false",
-            CHROME = "exception",
-            EDGE = "exception")
+            CHROME = "TypeError",
+            EDGE = "TypeError")
     public void taintEnabled() throws Exception {
         final String html = "<html>\n"
                 + "<head>\n"
@@ -257,7 +280,7 @@ public class NavigatorTest extends WebDriverTestCase {
                 + "  function doTest() {\n"
                 + "    try {\n"
                 + "      log(window.navigator.taintEnabled());\n"
-                + "    } catch(e) { log('exception'); }\n"
+                + "    } catch(e) { logEx(e); }\n"
                 + "  }\n"
                 + "  </script>\n"
                 + "</head>\n"
@@ -519,6 +542,26 @@ public class NavigatorTest extends WebDriverTestCase {
             + "  function test() {\n"
             + "    log(navigator.mediaDevices);\n"
             + "    log(navigator.mediaDevices === navigator.mediaDevices);\n"
+            + "  }\n"
+            + "</script>\n"
+            + "</head><body onload='test()'>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("true")
+    public void pdfViewerEnabled() throws Exception {
+        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+            + "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    log(navigator.pdfViewerEnabled);\n"
             + "  }\n"
             + "</script>\n"
             + "</head><body onload='test()'>\n"

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,8 +40,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -153,10 +151,10 @@ public class HtmlPage extends SgmlPage {
     private transient Charset originalCharset_;
     private final Object lock_ = new SerializableLock(); // used for synchronization
 
-    private Map<String, SortedSet<DomElement>> idMap_ = new ConcurrentHashMap<>();
-    private Map<String, SortedSet<DomElement>> nameMap_ = new ConcurrentHashMap<>();
+    private Map<String, MappedElementIndexEntry> idMap_ = new ConcurrentHashMap<>();
+    private Map<String, MappedElementIndexEntry> nameMap_ = new ConcurrentHashMap<>();
 
-    private SortedSet<BaseFrameElement> frameElements_ = new TreeSet<>(DOCUMENT_POSITION_COMPERATOR);
+    private List<BaseFrameElement> frameElements_ = new ArrayList<>();
     private int parserCount_;
     private int snippetParserCount_;
     private int inlineSnippetParserCount_;
@@ -297,9 +295,9 @@ public class HtmlPage extends SgmlPage {
             executeEventHandlersIfNeeded(Event.TYPE_LOAD);
         }
 
-        for (final FrameWindow frameWindow : getFrames()) {
-            if (frameWindow.getFrameElement() instanceof HtmlFrame) {
-                final Page page = frameWindow.getEnclosedPage();
+        for (final BaseFrameElement frameElement : new ArrayList<>(frameElements_)) {
+            if (frameElement instanceof HtmlFrame) {
+                final Page page = frameElement.getEnclosedWindow().getEnclosedPage();
                 if (page != null && page.isHtmlPage()) {
                     ((HtmlPage) page).executeEventHandlersIfNeeded(Event.TYPE_LOAD);
                 }
@@ -629,7 +627,7 @@ public class HtmlPage extends SgmlPage {
     @Override
     public DomElement getElementById(final String elementId) {
         if (elementId != null) {
-            final SortedSet<DomElement> elements = idMap_.get(elementId);
+            final MappedElementIndexEntry elements = idMap_.get(elementId);
             if (elements != null) {
                 return elements.first();
             }
@@ -1482,7 +1480,8 @@ public class HtmlPage extends SgmlPage {
      * Deregister frames that are no longer in use.
      */
     public void deregisterFramesIfNeeded() {
-        for (final WebWindow window : getFrames()) {
+        for (final BaseFrameElement frameElement : frameElements_) {
+            final WebWindow window = frameElement.getEnclosedWindow();
             getWebClient().deregisterWebWindow(window);
             final Page page = window.getEnclosedPage();
             if (page != null && page.isHtmlPage()) {
@@ -1494,12 +1493,16 @@ public class HtmlPage extends SgmlPage {
     }
 
     /**
-     * Returns a list containing all the frames (from frame and iframe tags) in this page.
+     * Returns a list containing all the frames (from frame and iframe tags) in this page
+     * in document order.
      * @return a list of {@link FrameWindow}
      */
     public List<FrameWindow> getFrames() {
-        final List<FrameWindow> list = new ArrayList<>(frameElements_.size());
-        for (final BaseFrameElement frameElement : frameElements_) {
+        final List<BaseFrameElement> frameElements = new ArrayList<>(frameElements_);
+        Collections.sort(frameElements, DOCUMENT_POSITION_COMPERATOR);
+
+        final List<FrameWindow> list = new ArrayList<>(frameElements.size());
+        for (final BaseFrameElement frameElement : frameElements) {
             list.add(frameElement.getEnclosedWindow());
         }
         return list;
@@ -1512,9 +1515,10 @@ public class HtmlPage extends SgmlPage {
      * @exception ElementNotFoundException If no frame exist in this page with the specified name.
      */
     public FrameWindow getFrameByName(final String name) throws ElementNotFoundException {
-        for (final FrameWindow frame : getFrames()) {
-            if (frame.getName().equals(name)) {
-                return frame;
+        for (final BaseFrameElement frameElement : frameElements_) {
+            final FrameWindow fw = frameElement.getEnclosedWindow();
+            if (fw.getName().equals(name)) {
+                return fw;
             }
         }
 
@@ -1659,9 +1663,9 @@ public class HtmlPage extends SgmlPage {
      */
     public List<DomElement> getElementsById(final String elementId) {
         if (elementId != null) {
-            final SortedSet<DomElement> elements = idMap_.get(elementId);
+            final MappedElementIndexEntry elements = idMap_.get(elementId);
             if (elements != null) {
-                return new ArrayList<>(elements);
+                return new ArrayList<>(elements.elements());
             }
         }
         return Collections.emptyList();
@@ -1679,7 +1683,7 @@ public class HtmlPage extends SgmlPage {
     @SuppressWarnings("unchecked")
     public <E extends DomElement> E getElementByName(final String name) throws ElementNotFoundException {
         if (name != null) {
-            final SortedSet<DomElement> elements = nameMap_.get(name);
+            final MappedElementIndexEntry elements = nameMap_.get(name);
             if (elements != null) {
                 return (E) elements.first();
             }
@@ -1697,9 +1701,9 @@ public class HtmlPage extends SgmlPage {
      */
     public List<DomElement> getElementsByName(final String name) {
         if (name != null) {
-            final SortedSet<DomElement> elements = nameMap_.get(name);
+            final MappedElementIndexEntry elements = nameMap_.get(name);
             if (elements != null) {
-                return new ArrayList<>(elements);
+                return new ArrayList<>(elements.elements());
             }
         }
         return Collections.emptyList();
@@ -1716,14 +1720,14 @@ public class HtmlPage extends SgmlPage {
         if (idAndOrName == null) {
             return Collections.emptyList();
         }
-        final Collection<DomElement> list1 = idMap_.get(idAndOrName);
-        final Collection<DomElement> list2 = nameMap_.get(idAndOrName);
+        final MappedElementIndexEntry list1 = idMap_.get(idAndOrName);
+        final MappedElementIndexEntry list2 = nameMap_.get(idAndOrName);
         final List<DomElement> list = new ArrayList<>();
         if (list1 != null) {
-            list.addAll(list1);
+            list.addAll(list1.elements());
         }
         if (list2 != null) {
-            for (final DomElement elt : list2) {
+            for (final DomElement elt : list2.elements()) {
                 if (!list.contains(elt)) {
                     list.add(elt);
                 }
@@ -1745,12 +1749,13 @@ public class HtmlPage extends SgmlPage {
                 frameElements_.add((BaseFrameElement) node);
             }
 
-            for (final Iterator<HtmlElement> iterator
-                          = node.new DescendantElementsIterator<>(HtmlElement.class);
-                            iterator.hasNext();) {
-                final HtmlElement child = iterator.next();
-                if (child instanceof BaseFrameElement) {
-                    frameElements_.add((BaseFrameElement) child);
+            if (node.getFirstChild() != null) {
+                for (final Iterator<HtmlElement> iterator = node.new DescendantHtmlElementsIterator();
+                        iterator.hasNext();) {
+                    final HtmlElement child = iterator.next();
+                    if (child instanceof BaseFrameElement) {
+                        frameElements_.add((BaseFrameElement) child);
+                    }
                 }
             }
 
@@ -1797,14 +1802,14 @@ public class HtmlPage extends SgmlPage {
         }
     }
 
-    private void addElement(final Map<String, SortedSet<DomElement>> map, final DomElement element,
+    private void addElement(final Map<String, MappedElementIndexEntry> map, final DomElement element,
             final String attribute, final boolean recurse) {
         final String value = element.getAttribute(attribute);
 
         if (ATTRIBUTE_NOT_DEFINED != value) {
-            SortedSet<DomElement> elements = map.get(value);
+            MappedElementIndexEntry elements = map.get(value);
             if (elements == null) {
-                elements = new TreeSet<>(DOCUMENT_POSITION_COMPERATOR);
+                elements = new MappedElementIndexEntry();
                 elements.add(element);
                 map.put(value, elements);
             }
@@ -1838,15 +1843,17 @@ public class HtmlPage extends SgmlPage {
         }
     }
 
-    private void removeElement(final Map<String, SortedSet<DomElement>> map, final DomElement element,
+    private void removeElement(final Map<String, MappedElementIndexEntry> map, final DomElement element,
             final String attribute, final boolean recurse) {
         final String value = element.getAttribute(attribute);
 
         if (ATTRIBUTE_NOT_DEFINED != value) {
-            final SortedSet<DomElement> elements = map.remove(value);
-            if (elements != null && (elements.size() != 1 || !elements.contains(element))) {
+            final MappedElementIndexEntry elements = map.remove(value);
+            if (elements != null) {
                 elements.remove(element);
-                map.put(value, elements);
+                if (!elements.elements_.isEmpty()) {
+                    map.put(value, elements);
+                }
             }
         }
         if (recurse) {
@@ -1889,15 +1896,14 @@ public class HtmlPage extends SgmlPage {
      *         {@link WebClientOptions#setThrowExceptionOnFailingStatusCode(boolean)} is set to {@code true}
      */
     void loadFrames() throws FailingHttpStatusCodeException {
-        for (final FrameWindow w : getFrames()) {
-            final BaseFrameElement frame = w.getFrameElement();
+        for (final BaseFrameElement frameElement : new ArrayList<>(frameElements_)) {
             // test if the frame should really be loaded:
             // if a script has already changed its content, it should be skipped
             // use == and not equals(...) to identify initial content (versus URL set to "about:blank")
-            if (frame.getEnclosedWindow() != null
-                    && UrlUtils.URL_ABOUT_BLANK == frame.getEnclosedPage().getUrl()
-                    && !frame.isContentLoaded()) {
-                frame.loadInnerPage();
+            if (frameElement.getEnclosedWindow() != null
+                    && UrlUtils.URL_ABOUT_BLANK == frameElement.getEnclosedPage().getUrl()
+                    && !frameElement.isContentLoaded()) {
+                frameElement.loadInnerPage();
             }
         }
     }
@@ -1925,11 +1931,10 @@ public class HtmlPage extends SgmlPage {
         if (getDocumentElement() == null) {
             return Collections.emptyList(); // weird case, for instance if document.documentElement has been removed
         }
-        final String nameLC = httpEquiv.toLowerCase(Locale.ROOT);
         final List<HtmlMeta> tags = getDocumentElement().getStaticElementsByTagName("meta");
         final List<HtmlMeta> foundTags = new ArrayList<>();
         for (final HtmlMeta htmlMeta : tags) {
-            if (nameLC.equals(htmlMeta.getHttpEquivAttribute().toLowerCase(Locale.ROOT))) {
+            if (httpEquiv.equalsIgnoreCase(htmlMeta.getHttpEquivAttribute())) {
                 foundTags.add(htmlMeta);
             }
         }
@@ -1974,7 +1979,7 @@ public class HtmlPage extends SgmlPage {
             result.selectionRanges_ = new ArrayList<>(3);
             // the original one is synchronized so we should do that here too, shouldn't we?
             result.afterLoadActions_ = Collections.synchronizedList(new ArrayList<>());
-            result.frameElements_ = new TreeSet<>(DOCUMENT_POSITION_COMPERATOR);
+            result.frameElements_ = new ArrayList<>();
             for (DomNode child = getFirstChild(); child != null; child = child.getNextSibling()) {
                 result.appendChild(child.cloneNode(true));
             }
@@ -2872,6 +2877,56 @@ public class HtmlPage extends SgmlPage {
         private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
             in.defaultReadObject();
             computedStyles_ = new WeakHashMap<>();
+        }
+    }
+
+    private static final class MappedElementIndexEntry implements Serializable {
+        private ArrayList<DomElement> elements_;
+        private boolean sorted_;
+
+        MappedElementIndexEntry() {
+            // we do not expect to many elements having the same id/name
+            elements_ = new ArrayList<>(2);
+            sorted_ = false;
+        }
+
+        void add(final DomElement element) {
+            elements_.add(element);
+            sorted_ = false;
+        }
+
+        DomElement first() {
+            if (elements_.size() == 0) {
+                return null;
+            }
+
+            if (sorted_) {
+                return elements_.get(0);
+            }
+
+            Collections.sort(elements_, DOCUMENT_POSITION_COMPERATOR);
+            sorted_ = true;
+
+            return elements_.get(0);
+        }
+
+        List<DomElement> elements() {
+            if (sorted_ || elements_.size() == 0) {
+                return elements_;
+            }
+
+            Collections.sort(elements_, DOCUMENT_POSITION_COMPERATOR);
+            sorted_ = true;
+
+            return elements_;
+        }
+
+        boolean remove(final DomElement element) {
+            if (elements_.size() == 0) {
+                return false;
+            }
+
+            return elements_.remove(element);
         }
     }
 }

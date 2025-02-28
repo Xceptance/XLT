@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ package org.htmlunit.javascript.host.arrays;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -48,9 +48,7 @@ public class Uint32ArrayTest extends WebDriverTestCase {
             + "    var array2 = new Int8Array(array.buffer);\n"
             + "    for (var i = 0; i < array2.length; i++)\n"
             + "      log(array2[i]);\n"
-            + "  } catch(e) {\n"
-            + "    log('exception');\n"
-            + "  }\n"
+            + "  } catch(e) {logEx(e);}\n"
             + "}\n"
             + "</script></head><body onload='test()'>\n"
             + "</body></html>";
@@ -71,9 +69,7 @@ public class Uint32ArrayTest extends WebDriverTestCase {
             + "function test() {\n"
             + "  try {\n"
             + "    log(Uint32Array.BYTES_PER_ELEMENT);\n"
-            + "  } catch(e) {\n"
-            + "    log('exception');\n"
-            + "  }\n"
+            + "  } catch(e) {logEx(e);}\n"
             + "}\n"
             + "</script></head><body onload='test()'>\n"
             + "</body></html>";
@@ -204,9 +200,7 @@ public class Uint32ArrayTest extends WebDriverTestCase {
             + "  try {\n"
             + "    var array = new Uint32Array(null);\n"
             + "    log(array.length);\n"
-            + "  } catch(e) {\n"
-            + "    log('exception');\n"
-            + "  }\n"
+            + "  } catch(e) {logEx(e);}\n"
             + "}\n"
             + "</script></head><body onload='test()'>\n"
             + "</body></html>";

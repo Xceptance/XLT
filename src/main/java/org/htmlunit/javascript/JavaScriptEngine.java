@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,7 +46,6 @@ import org.htmlunit.corejs.javascript.ContextFactory;
 import org.htmlunit.corejs.javascript.EcmaError;
 import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.FunctionObject;
-import org.htmlunit.corejs.javascript.Interpreter;
 import org.htmlunit.corejs.javascript.JavaScriptException;
 import org.htmlunit.corejs.javascript.NativeArray;
 import org.htmlunit.corejs.javascript.NativeArrayIterator;
@@ -423,7 +422,7 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
                 NumberCustom.class, ScriptableObject.DONTENUM);
 
         // remove some objects, that Rhino defines in top scope but that we don't want
-        deleteProperties(scope, "Continuation", "StopIteration", "BigInt");
+        deleteProperties(scope, "Continuation", "StopIteration");
         if (!browserVersion.hasFeature(JS_ITERATOR_VISIBLE_IN_WINDOW)) {
             deleteProperties(scope, "Iterator");
         }
@@ -917,7 +916,7 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
         protected abstract String getSourceCode(Context cx);
     }
 
-    void doProcessPostponedActions() {
+    private void doProcessPostponedActions() {
         holdPostponedActions_ = false;
 
         final WebClient webClient = getWebClient();
@@ -1156,8 +1155,8 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
      * @param message the error message to report
      * @return EcmaError
      */
-    public static EcmaError typeError(final String message) {
-        return ScriptRuntime.typeError(message);
+    public static EcmaError syntaxError(final String message) {
+        return ScriptRuntime.syntaxError(message);
     }
 
     /**
@@ -1166,8 +1165,17 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
      * @param message the error message to report
      * @return EcmaError
      */
-    public static EcmaError networkError(final String message) {
-        return ScriptRuntime.networkError(message);
+    public static EcmaError typeError(final String message) {
+        return ScriptRuntime.typeError(message);
+    }
+
+    /**
+     * Report a TypeError with the message "Illegal constructor.".
+     *
+     * @return EcmaError
+     */
+    public static EcmaError typeErrorIllegalConstructor() {
+        throw JavaScriptEngine.typeError("Illegal constructor.");
     }
 
     /**
@@ -1192,34 +1200,26 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
     /**
      * <span style="color:red">INTERNAL API - SUBJECT TO CHANGE AT ANY TIME - USE AT YOUR OWN RISK.</span><br>
      *
-     * Encapsulates the given {@link DOMException} into a Rhino-compatible exception.
+     * Creates a {@link DOMException} and encapsulates it into a Rhino-compatible exception.
      *
-     * @param window the window to be used as parent scope
-     * @param exception the exception to encapsulate
+     * @param scope the parent scope
+     * @param message the exception message
+     * @param type the exception type
      * @return the created exception
      */
-    public static RhinoException asJavaScriptException(final Window window, final DOMException exception) {
-        exception.setParentScope(window);
-        exception.setPrototype(window.getPrototype(exception.getClass()));
+    public static RhinoException asJavaScriptException(final HtmlUnitScriptable scope, final String message, final int type) {
+        final DOMException domException = new DOMException(message, type);
+        domException.setParentScope(scope);
+        domException.setPrototype(scope.getPrototype(DOMException.class));
 
-        // get current line and file name
-        // this method can only be used in interpreted mode. If one day we choose to use compiled mode,
-        // then we'll have to find an other way here.
-        final String fileName;
-        final int lineNumber;
-        if (Context.getCurrentContext().getOptimizationLevel() == -1) {
-            final int[] linep = new int[1];
-            final String sourceName = new Interpreter().getSourcePositionFromStack(Context.getCurrentContext(), linep);
-            fileName = sourceName.replaceFirst("script in (.*) from .*", "$1");
-            lineNumber = linep[0];
+        final EcmaError helper = ScriptRuntime.syntaxError("helper");
+        String fileName = helper.sourceName();
+        if (fileName != null) {
+            fileName = fileName.replaceFirst("script in (.*) from .*", "$1");
         }
-        else {
-            throw new Error("HtmlUnit not ready to run in compiled mode");
-        }
+        domException.setLocation(fileName, helper.lineNumber());
 
-        exception.setLocation(fileName, lineNumber);
-
-        return new JavaScriptException(exception, fileName, lineNumber);
+        return new JavaScriptException(domException, fileName, helper.lineNumber());
     }
 
     /**
@@ -1350,7 +1350,7 @@ public class JavaScriptEngine implements AbstractJavaScriptEngine<Script> {
     public static String uncompressJavaScript(final String scriptSource, final String scriptName) {
         final ContextFactory factory = new ContextFactory();
         final ContextAction<Object> action = cx -> {
-            cx.setOptimizationLevel(-1);
+            cx.setInterpretedMode(true);
             final Script script = cx.compileString(scriptSource, scriptName, 0, null);
             return cx.decompileScript(script, 4);
         };

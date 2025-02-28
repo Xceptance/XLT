@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package org.htmlunit.javascript.host;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -154,7 +154,7 @@ public class SymbolTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"Symbol()", "Symbol(foo)", "Symbol(Symbol.iterator)", "exception"})
+    @Alerts({"Symbol()", "Symbol(foo)", "Symbol(Symbol.iterator)", "TypeError"})
     public void string() throws Exception {
         final String html =
             HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -167,7 +167,7 @@ public class SymbolTest extends WebDriverTestCase {
             + "    log(Symbol().toString());\n"
             + "    log(Symbol('foo').toString());\n"
             + "    log(Symbol.iterator.toString());\n"
-            + "    try { log(Symbol.replace) } catch(e) { log('exception'); };\n"
+            + "    try { log(Symbol.replace) } catch(e) { logEx(e); };\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -195,7 +195,7 @@ public class SymbolTest extends WebDriverTestCase {
             + "      log(Symbol().toString());\n"
             + "      log(Symbol('foo').toString());\n"
             + "      log(Symbol.iterator.toString());\n"
-            + "    } catch(e) {log('exception')}\n"
+            + "    } catch(e) {logEx(e)}\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -224,7 +224,7 @@ public class SymbolTest extends WebDriverTestCase {
             + "      log(typeof Symbol());\n"
             + "      log(typeof Symbol('foo'));\n"
             + "      log(typeof Symbol.iterator);\n"
-            + "    } catch(e) {log('exception')}\n"
+            + "    } catch(e) {logEx(e)}\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -254,7 +254,7 @@ public class SymbolTest extends WebDriverTestCase {
 
             + "      var sym = Symbol.for('mario');\n"
             + "      log(sym.toString());\n"
-            + "    } catch(e) {log('exception')}\n"
+            + "    } catch(e) {logEx(e)}\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -284,7 +284,7 @@ public class SymbolTest extends WebDriverTestCase {
             + "    try {\n"
             + "      log(Symbol.for('global') === globSym);\n"
             + "      log(Symbol('global') === globSym);\n"
-            + "    } catch(e) {log('exception')}\n"
+            + "    } catch(e) {logEx(e)}\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -298,7 +298,7 @@ public class SymbolTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"exception", "exception"})
+    @Alerts({"TypeError", "TypeError"})
     public void symbolNew() throws Exception {
         final String html =
             HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -310,10 +310,10 @@ public class SymbolTest extends WebDriverTestCase {
             + "    if (!window.Symbol) { log('not supported'); return; }\n"
             + "    try {\n"
             + "      new Symbol();\n"
-            + "    } catch(e) {log('exception')}\n"
+            + "    } catch(e) {logEx(e)}\n"
             + "    try {\n"
             + "      new Symbol('foo');\n"
-            + "    } catch(e) {log('exception')}\n"
+            + "    } catch(e) {logEx(e)}\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -327,7 +327,7 @@ public class SymbolTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"exception", "exception"})
+    @Alerts({"TypeError", "TypeError"})
     public void globalSymbolRegistry() throws Exception {
         final String html =
             HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -339,10 +339,10 @@ public class SymbolTest extends WebDriverTestCase {
             + "    if (!window.Symbol) { log('not supported'); return; }\n"
             + "    try {\n"
             + "      new Symbol();\n"
-            + "    } catch(e) {log('exception')}\n"
+            + "    } catch(e) {logEx(e)}\n"
             + "    try {\n"
             + "      new Symbol('foo');\n"
-            + "    } catch(e) {log('exception')}\n"
+            + "    } catch(e) {logEx(e)}\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -390,7 +390,7 @@ public class SymbolTest extends WebDriverTestCase {
             + "      try {\n"
             + "        var x = Symbol('hello');\n"
             + "        log('called');\n"
-            + "      } catch(e) {log('exception');}\n"
+            + "      } catch(e) {logEx(e);}\n"
             + "    });\n"
             + "  }\n"
             + "}\n"

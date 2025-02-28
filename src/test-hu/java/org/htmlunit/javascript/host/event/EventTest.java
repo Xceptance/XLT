@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@ package org.htmlunit.javascript.host.event;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
@@ -61,7 +61,7 @@ public class EventTest extends WebDriverTestCase {
             + "    try {\n"
             + "      var event = new Event('event');\n"
             + "      dump(event);\n"
-            + "    } catch (e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + DUMP_EVENT_FUNCTION
             + "</script></head><body onload='test()'>\n"
@@ -85,7 +85,7 @@ public class EventTest extends WebDriverTestCase {
             + "        'bubbles': true\n"
             + "      });\n"
             + "      dump(event);\n"
-            + "    } catch (e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + DUMP_EVENT_FUNCTION
             + "</script></head><body onload='test()'>\n"
@@ -109,7 +109,7 @@ public class EventTest extends WebDriverTestCase {
             + "        'bubbles': 'true'\n"
             + "      });\n"
             + "      dump(event);\n"
-            + "    } catch (e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + DUMP_EVENT_FUNCTION
             + "</script></head><body onload='test()'>\n"
@@ -133,7 +133,7 @@ public class EventTest extends WebDriverTestCase {
             + "        'bubbles': 1\n"
             + "      });\n"
             + "      dump(event);\n"
-            + "    } catch (e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + DUMP_EVENT_FUNCTION
             + "</script></head><body onload='test()'>\n"
@@ -157,7 +157,7 @@ public class EventTest extends WebDriverTestCase {
             + "        'bubbles': {}\n"
             + "      });\n"
             + "      dump(event);\n"
-            + "    } catch (e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + DUMP_EVENT_FUNCTION
             + "</script></head><body onload='test()'>\n"
@@ -181,7 +181,7 @@ public class EventTest extends WebDriverTestCase {
             + "        'bubbles': undefined\n"
             + "      });\n"
             + "      dump(event);\n"
-            + "    } catch (e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + DUMP_EVENT_FUNCTION
             + "</script></head><body onload='test()'>\n"
@@ -205,7 +205,7 @@ public class EventTest extends WebDriverTestCase {
             + "        'bubbles': null\n"
             + "      });\n"
             + "      dump(event);\n"
-            + "    } catch (e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + DUMP_EVENT_FUNCTION
             + "</script></head><body onload='test()'>\n"
@@ -227,7 +227,7 @@ public class EventTest extends WebDriverTestCase {
             + "    try {\n"
             + "      var event = document.createEvent('Event');\n"
             + "      dump(event);\n"
-            + "    } catch (e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + DUMP_EVENT_FUNCTION
             + "</script></head><body onload='test()'>\n"
@@ -276,7 +276,7 @@ public class EventTest extends WebDriverTestCase {
             + "      var event = document.createEvent('Event');\n"
             + "      event.initEvent('event', true, false);\n"
             + "      dump(event);\n"
-            + "    } catch (e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + DUMP_EVENT_FUNCTION
             + "</script></head><body onload='test()'>\n"
@@ -462,9 +462,7 @@ public class EventTest extends WebDriverTestCase {
             + LOG_TITLE_FUNCTION
             + "try {\n"
             + "  window.addEventListener('mousedown', null, true);\n"
-            + "} catch (err) {\n"
-            + "  log('error');\n"
-            + "}\n"
+            + "} catch(e) { logEx(e); }\n"
             + "</script>\n"
             + "</body></html>";
         loadPageVerifyTitle2(content);
@@ -659,7 +657,7 @@ public class EventTest extends WebDriverTestCase {
             + "  log(window.event == null);\n"
             + "  try {\n"
             + "    log(event == null);\n"
-            + "  } catch(e) { log('exception'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script>\n"
             + "</head><body onload='test()'></body></html>";
@@ -798,7 +796,7 @@ public class EventTest extends WebDriverTestCase {
             + "      log(e.type);\n"
             + "      log(e.bubbles);\n"
             + "      log(e.cancelable);\n"
-            + "    } catch(e) { log('e-' + '" + eventType + "'); }\n"
+            + "    } catch(e) { log('e-' + '" + eventType + "'); logEx(e); }\n"
 
             + "    var e = document.createEvent('Event');\n"
             + "    try {\n"
@@ -806,7 +804,7 @@ public class EventTest extends WebDriverTestCase {
             + "      log(e.type);\n"
             + "      log(e.bubbles);\n"
             + "      log(e.cancelable);\n"
-            + "    } catch(e) { log('e2-' + '" + eventType + "'); }\n"
+            + "    } catch(e) { log('e2-' + '" + eventType + "'); logEx(e); }\n"
             + "  }\n"
             + "</script></head>\n"
             + "<body onload='test()'></body></html>";
@@ -895,7 +893,7 @@ public class EventTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("TypeError")
     public void text() throws Exception {
         final String html =
               "<html><body onload='test(event)'><script>\n"
@@ -903,7 +901,7 @@ public class EventTest extends WebDriverTestCase {
             + "  function test(e) {\n"
             + "    try {\n"
             + "      log(e.TEXT.toString(16));\n"// But Event.TEXT is undefined!!!
-            + "    } catch(e) { log('exception'); }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "  }\n"
             + "</script>\n"
             + "</body></html>";
@@ -961,6 +959,7 @@ public class EventTest extends WebDriverTestCase {
         final String html = "<html>\n"
                 + "<head>\n"
                 + "<script>\n"
+                + LOG_TEXTAREA_FUNCTION
                 + "  function test() {\n"
                 + "    handle(document);\n"
                 + "    log('activeElement ' + document.activeElement.nodeName);\n"
@@ -975,18 +974,13 @@ public class EventTest extends WebDriverTestCase {
                 + "    log(e.type + ' ' + src.nodeName);\n"
                 + "    log('handler: activeElement ' + document.activeElement.nodeName);\n"
                 + "  }\n"
-                + "  function log(x) {\n"
-                + "    document.getElementById('log').value += x + '\\n';\n"
-                + "  }\n"
                 + "</script>\n"
                 + "</head>\n"
                 + "<body onload='test()'>\n"
-                + "  <textarea id='log' cols='80' rows='40'></textarea>\n"
+                + LOG_TEXTAREA
                 + "</body></html>";
 
-        final WebDriver driver = loadPage2(html);
-        final String text = driver.findElement(By.id("log")).getAttribute("value").trim().replaceAll("\r", "");
-        assertEquals(String.join("\n", getExpectedAlerts()), text);
+        loadPageVerifyTextArea2(html);
     }
 
     /**
@@ -994,6 +988,8 @@ public class EventTest extends WebDriverTestCase {
      */
     @Test
     @Alerts({"focus INPUT", "focus INPUT"})
+    @HtmlUnitNYI(FF = {"focus undefined", "focus INPUT", "focus INPUT"},
+            FF_ESR = {"focus undefined", "focus INPUT", "focus INPUT"})
     public void document_input_focus() throws Exception {
         document_input("focus");
     }
@@ -1011,6 +1007,7 @@ public class EventTest extends WebDriverTestCase {
         final String html = "<html>\n"
                 + "<head>\n"
                 + "<script>\n"
+                + LOG_TEXTAREA_FUNCTION
                 + "  function test() {\n"
                 + "    handle(document);\n"
                 + "  }\n"
@@ -1023,9 +1020,6 @@ public class EventTest extends WebDriverTestCase {
                 + "      src = e.target;\n"
                 + "    log(e.type + ' ' + src.nodeName);\n"
                 + "  }\n"
-                + "  function log(x) {\n"
-                + "    document.getElementById('log').value += x + '\\n';\n"
-                + "  }\n"
                 + "</script>\n"
                 + "</head>\n"
                 + "<body onload='test()'>\n"
@@ -1033,17 +1027,15 @@ public class EventTest extends WebDriverTestCase {
                 + "    <input id=\"input1\" type=\"text\">\n"
                 + "    <input id=\"input2\" type=\"text\">\n"
                 + "  </div>\n"
-                + "<textarea id='log' cols='80' rows='40'></textarea>\n"
+                + LOG_TEXTAREA
                 + "</body></html>";
 
         final WebDriver driver = loadPage2(html);
-        final WebElement logElement = driver.findElement(By.id("log"));
-        final String initialValue = logElement.getAttribute("value");
+
         driver.findElement(By.id("input1")).click();
         driver.findElement(By.id("input2")).click();
-        final String addedValue = logElement.getAttribute("value").substring(initialValue.length());
-        final String text = addedValue.trim().replaceAll("\r", "");
-        assertEquals(String.join("\n", getExpectedAlerts()), text);
+
+        verifyTextArea2(driver, getExpectedAlerts());
     }
 
     /**
@@ -1206,7 +1198,7 @@ public class EventTest extends WebDriverTestCase {
             + "      var event = document.createEvent('Event');\n"
             + "      log(event.defaultPrevented);\n"
             + "      log(typeof event.defaultPrevented);\n"
-            + "    } catch (e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + "</script></head><body onload='test()'>\n"
             + "</body></html>";
@@ -1228,7 +1220,7 @@ public class EventTest extends WebDriverTestCase {
             + "      var event = document.createEvent('Event');\n"
             + "      log(event.returnValue);\n"
             + "      log(typeof event.returnValue);\n"
-            + "    } catch (e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + "</script></head><body onload='test()'>\n"
             + "</body></html>";
@@ -1272,7 +1264,7 @@ public class EventTest extends WebDriverTestCase {
             + "      event.preventDefault();\n"
             + "      log(event.returnValue);\n"
             + "      log(typeof event.returnValue);\n"
-            + "    } catch (e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + "</script></head><body onload='test()'>\n"
             + "</body></html>";
@@ -1424,7 +1416,7 @@ public class EventTest extends WebDriverTestCase {
 
             + "          event.returnValue = !event.returnValue;\n"
             + "          log(event.returnValue);\n"
-            + "        } catch (e) { log('exception') }\n"
+            + "        } catch(e) { logEx(e) }\n"
             + "      }\n"
 
             + "      triggerClick.addEventListener('click', function (event) {\n"
@@ -1488,7 +1480,7 @@ public class EventTest extends WebDriverTestCase {
 
             + "          event.initEvent('click', 'true', 'true');\n"
             + "          log(event.cancelable + ' - ' + event.defaultPrevented);\n"
-            + "        } catch (e) { log('exception') }\n"
+            + "        } catch(e) { logEx(e) }\n"
             + "      }\n"
             + "    </script>\n"
             + "  </head>\n"

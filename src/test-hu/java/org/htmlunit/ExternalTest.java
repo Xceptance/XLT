@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,6 +40,7 @@ import org.htmlunit.html.HtmlAnchor;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.xml.XmlPage;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -54,19 +55,16 @@ public class ExternalTest {
     static String MAVEN_REPO_URL_ = "https://repo1.maven.org/maven2/";
 
     /** Chrome driver. */
-    static String CHROME_DRIVER_ = "130.0.6723";
+    static String CHROME_DRIVER_ = "133.0.6943";
     static String CHROME_DRIVER_URL_ =
             "https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions-with-downloads.json";
 
-    static String EDGE_DRIVER_ = "130.0.2849";
+    static String EDGE_DRIVER_ = "133.0.3065";
     static String EDGE_DRIVER_URL_ = "https://developer.microsoft.com/en-us/microsoft-edge/tools/webdriver/";
 
     /** Gecko driver. */
     static String GECKO_DRIVER_ = "0.35.0";
     static String GECKO_DRIVER_URL_ = "https://github.com/mozilla/geckodriver/releases/latest";
-
-    /** IE driver. */
-    static String IE_DRIVER_ = "3.150.1.0";
 
     /**
      * Tests the current environment matches the expected setup.
@@ -97,7 +95,7 @@ public class ExternalTest {
             }
             if (line.contains("artifactId")
                     && !line.contains(">htmlunit<")
-                    && !line.contains(">selenium-devtools-v130<")) {
+                    && !line.contains(">selenium-devtools-v")) {
                 final String artifactId = getValue(line);
                 final String groupId = getValue(lines.get(i - 1));
                 if (!lines.get(i + 1).contains("</exclusion>")) {
@@ -164,6 +162,7 @@ public class ExternalTest {
      * @throws Exception if an error occurs
      */
     @Test
+    @Ignore("javascript errors")
     public void assertEdgeDriver() throws Exception {
         try (WebClient webClient = buildWebClient()) {
             final HtmlPage page = webClient.getPage(EDGE_DRIVER_URL_);
@@ -334,15 +333,21 @@ public class ExternalTest {
             return true;
         }
 
-        // version > 3.12.0 does not work with out site.xml and also not with a refactored one
+        // version > 3.12.0 does not work with our site.xml and also not with a refactored one
         if ("maven-site-plugin".equals(artifactId)
                 && (version.startsWith("3.12.1") || version.startsWith("3.20.") || version.startsWith("3.21."))) {
             return true;
         }
 
-        // 11.x requires java11
+        // >= 11.x requires java11
         if ("org.owasp".equals(groupId)
-                && version.startsWith("11.")) {
+                && (version.startsWith("11.") || version.startsWith("12."))) {
+            return true;
+        }
+
+        // 6.x requires java11
+        if ("org.apache.felix".equals(groupId)
+                && version.startsWith("6.")) {
             return true;
         }
 
