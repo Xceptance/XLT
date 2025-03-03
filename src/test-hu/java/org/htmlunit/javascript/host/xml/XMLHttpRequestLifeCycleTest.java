@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,8 +38,8 @@ import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.WebTestCase;
 import org.htmlunit.http.HttpStatus;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.Retry;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.Retry;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
 import org.junit.After;
@@ -1631,7 +1631,7 @@ public final class XMLHttpRequestLifeCycleTest {
     }
 
     static String extractLog(final WebDriver driver) {
-        return driver.findElement(By.id("log")).getAttribute("value").trim().replaceAll("\r", "");
+        return driver.findElement(By.id("log")).getDomProperty("value").trim().replaceAll("\r", "");
     }
 
     /**
@@ -1726,7 +1726,7 @@ public final class XMLHttpRequestLifeCycleTest {
             htmlBuilder.append("           xhr.abort();\n");
             htmlBuilder.append("           logText('abort-done: ' + xhr.readyState + '_' + xhr.status);\n");
         }
-        htmlBuilder.append("        } catch (e) { logText('ExceptionThrown'); }\n");
+        htmlBuilder.append("        } catch(e) { logText('ExceptionThrown'); }\n");
         htmlBuilder.append("      }\n");
 
         htmlBuilder.append("      function alertEventState(event) {\n");
@@ -1739,7 +1739,7 @@ public final class XMLHttpRequestLifeCycleTest {
             htmlBuilder.append("            logText('abort-done: ' + xhr.readyState + '_' + xhr.status);");
             htmlBuilder.append("          }\n");
         }
-        htmlBuilder.append("        } catch (e) { logText('ExceptionThrown abort'); }\n");
+        htmlBuilder.append("        } catch(e) { logText('ExceptionThrown abort'); }\n");
         htmlBuilder.append("      }\n");
 
         htmlBuilder.append("      function logText(txt) {\n");

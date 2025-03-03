@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,13 @@
  */
 package org.htmlunit.html;
 
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.FF;
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.FF_ESR;
+import static org.htmlunit.junit.annotation.TestedBrowser.FF;
+import static org.htmlunit.junit.annotation.TestedBrowser.FF_ESR;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.NotYetImplemented;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
@@ -54,7 +54,7 @@ public class HtmlWeekInputTest extends WebDriverTestCase {
             + "      input = document.createElement('input');\n"
             + "      input.type = 'week';\n"
             + "      log(input.value + '-' + input.defaultValue + '-' + input.getAttribute('value'));\n"
-            + "    } catch(e)  { log('exception'); }\n"
+            + "    } catch(e)  { logEx(e); }\n"
 
             + "    var builder = document.createElement('div');\n"
             + "    builder.innerHTML = '<input type=\"week\">';\n"
@@ -90,7 +90,7 @@ public class HtmlWeekInputTest extends WebDriverTestCase {
             + "      input.type = 'week';\n"
             + "      input = input.cloneNode(false);\n"
             + "      log(input.value + '-' + input.defaultValue + '-' + input.getAttribute('value'));\n"
-            + "    } catch(e)  { log('exception'); }\n"
+            + "    } catch(e)  { logEx(e); }\n"
 
             + "    var builder = document.createElement('div');\n"
             + "    builder.innerHTML = '<input type=\"week\">';\n"
@@ -126,8 +126,10 @@ public class HtmlWeekInputTest extends WebDriverTestCase {
         final WebDriver driver = loadPage2(htmlContent);
 
         final WebElement input = driver.findElement(By.id("foo"));
+
         input.sendKeys("36");
-        assertEquals(getExpectedAlerts()[0], input.getAttribute("value"));
+        assertNull(input.getDomAttribute("value"));
+        assertEquals(getExpectedAlerts()[0], input.getDomProperty("value"));
     }
 
     /**
@@ -161,7 +163,7 @@ public class HtmlWeekInputTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("")
+    @Alerts({"2018-W20", ""})
     public void clearInput() throws Exception {
         final String htmlContent
                 = "<html>\n"
@@ -175,8 +177,12 @@ public class HtmlWeekInputTest extends WebDriverTestCase {
         final WebDriver driver = loadPage2(htmlContent);
         final WebElement element = driver.findElement(By.id("tester"));
 
+        assertEquals(getExpectedAlerts()[0], element.getDomAttribute("value"));
+        assertEquals(getExpectedAlerts()[0], element.getDomProperty("value"));
+
         element.clear();
-        assertEquals(getExpectedAlerts()[0], element.getAttribute("value"));
+        assertEquals(getExpectedAlerts()[0], element.getDomAttribute("value"));
+        assertEquals(getExpectedAlerts()[1], element.getDomProperty("value"));
     }
 
     /**

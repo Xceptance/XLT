@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@ package org.htmlunit.javascript.host.html;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.NotYetImplemented;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -52,9 +52,7 @@ public class HTMLTableCellElementTest extends WebDriverTestCase {
             + "  function set(e, value) {\n"
             + "    try {\n"
             + "      e.align = value;\n"
-            + "    } catch (e) {\n"
-            + "      log('error');\n"
-            + "    }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "  }\n"
             + "  var td1 = document.getElementById('td1');\n"
             + "  var td2 = document.getElementById('td2');\n"
@@ -161,9 +159,7 @@ public class HTMLTableCellElementTest extends WebDriverTestCase {
             + "  function set(e, value) {\n"
             + "    try {\n"
             + "      e.vAlign = value;\n"
-            + "    } catch (e) {\n"
-            + "      log('error');\n"
-            + "    }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "  }\n"
             + "  var td1 = document.getElementById('td1');\n"
             + "  var td2 = document.getElementById('td2');\n"
@@ -300,9 +296,7 @@ public class HTMLTableCellElementTest extends WebDriverTestCase {
             + "  function set(e, value) {\n"
             + "    try {\n"
             + "      e.colSpan = value;\n"
-            + "    } catch (e) {\n"
-            + "      log('error');\n"
-            + "    }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "  }\n"
             + "  var td1 = document.getElementById('td1');\n"
             + "  var td2 = document.getElementById('td2');\n"
@@ -438,9 +432,7 @@ public class HTMLTableCellElementTest extends WebDriverTestCase {
             + "  function set(e, value) {\n"
             + "    try {\n"
             + "      e.rowSpan = value;\n"
-            + "    } catch (e) {\n"
-            + "      log('error');\n"
-            + "    }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "  }\n"
             + "  var td1 = document.getElementById('td1');\n"
             + "  var td2 = document.getElementById('td2');\n"
@@ -703,9 +695,7 @@ public class HTMLTableCellElementTest extends WebDriverTestCase {
             + "      function set(e, value) {\n"
             + "        try {\n"
             + "          e.width = value;\n"
-            + "        } catch (e) {\n"
-            + "          log('error');\n"
-            + "        }\n"
+            + "        } catch(e) { logEx(e); }\n"
             + "      }\n"
             + "      function test() {\n"
             + "        var td = document.getElementById('td');\n"

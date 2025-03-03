@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,9 +24,9 @@ import java.util.List;
 import org.htmlunit.MockWebConnection;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.NotYetImplemented;
 import org.htmlunit.util.MimeType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -230,13 +230,14 @@ public class HTMLDocumentWrite2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"Hello", "HelloHello"})
+    @Alerts({" after-write Hello", " after-write Hello after-write Hello"})
     public void writeExternalScriptAfterClick() throws Exception {
         shutDownAll();
 
         final String html = "<html><head>\n"
             + "<script>\n"
             + "document.write('<scr'+'ipt src=\"script.js\"></scr'+'ipt>');\n"
+            + "window.name += ' after-write ';\n"
             + "</script>\n"
             + "<script>\n"
             + "window.name += window.foo;\n"
@@ -421,7 +422,7 @@ public class HTMLDocumentWrite2Test extends WebDriverTestCase {
             + "  var t = document.createTextNode(\"document.write('in inline script'); document.title = 'done';\");\n"
             + "  s.appendChild(t);\n"
             + "  document.body.appendChild(s);\n"
-            + "} catch (e) { log('exception'); }\n"
+            + "} catch(e) { logEx(e); }\n"
             + "</script></div></body></html>";
 
         final WebDriver driver = loadPage2(html);
@@ -798,7 +799,7 @@ public class HTMLDocumentWrite2Test extends WebDriverTestCase {
             + "  function foo() { log('foo called'); var d = document.write; d(4); }\n"
             + "  try {\n"
             + "    foo();\n"
-            + "  } catch (e) { log('exception occurred'); document.write(7); }\n"
+            + "  } catch(e) { log('exception occurred'); document.write(7); }\n"
             + "</script>\n"
             + "</body></html>";
 

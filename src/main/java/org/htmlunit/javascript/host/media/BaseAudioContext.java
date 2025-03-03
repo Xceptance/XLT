@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.host.Window;
+import org.htmlunit.javascript.host.dom.DOMException;
 import org.htmlunit.javascript.host.event.EventTarget;
 
 /**
@@ -41,7 +42,7 @@ public class BaseAudioContext extends EventTarget {
     @Override
     @JsxConstructor
     public void jsConstructor() {
-        throw JavaScriptEngine.reportRuntimeError("Illegal constructor.");
+        throw JavaScriptEngine.typeErrorIllegalConstructor();
     }
 
     /**
@@ -103,16 +104,22 @@ public class BaseAudioContext extends EventTarget {
         final JavaScriptEngine jsEngine =
                 (JavaScriptEngine) window.getWebWindow().getWebClient().getJavaScriptEngine();
 
+        final DOMException domException = new DOMException(
+                "decodeAudioData not supported by HtmlUnit", DOMException.NOT_SUPPORTED_ERR);
+        domException.setParentScope(window);
+        domException.setPrototype(window.getPrototype(DOMException.class));
+
         if (error != null) {
             jsEngine.addPostponedAction(new PostponedAction(owningPage, "BaseAudioContext.decodeAudioData") {
                 @Override
                 public void execute() {
-                    jsEngine.callFunction(owningPage, error, getParentScope(), BaseAudioContext.this, new Object[] {});
+                    jsEngine.callFunction(owningPage, error, getParentScope(), BaseAudioContext.this,
+                            new Object[] {domException});
                 }
             });
             return null;
         }
 
-        return setupRejectedPromise(() -> null);
+        return setupRejectedPromise(() -> domException);
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ package org.htmlunit.javascript.host.html;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -40,7 +40,7 @@ public class HTMLTemplateElementTest extends WebDriverTestCase {
             + LOG_TITLE_FUNCTION
             + "  try {\n"
             + "    log(HTMLTemplateElement.prototype == null);\n"
-            + "  } catch (e) { log('exception'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "</script>\n"
             + "</body></html>";
 
@@ -62,7 +62,7 @@ public class HTMLTemplateElementTest extends WebDriverTestCase {
             + "        try {\n"
             + "          var template = document.createElement('template');\n"
             + "          log('content' in template);\n"
-            + "        } catch (e) { log('exception'); }\n"
+            + "        } catch(e) { logEx(e); }\n"
             + "      }\n"
             + "    </script>\n"
             + "  </head>\n"

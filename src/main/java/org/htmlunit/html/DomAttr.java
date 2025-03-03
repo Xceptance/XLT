@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -108,7 +108,13 @@ public class DomAttr extends DomNamespaceNode implements Attr {
      */
     @Override
     public void setValue(final String value) {
-        value_ = value;
+        if (value != null
+                && value.isEmpty()) {
+            value_ = DomElement.ATTRIBUTE_VALUE_EMPTY;
+        }
+        else {
+            value_ = value;
+        }
         specified_ = true;
     }
 
@@ -174,7 +180,9 @@ public class DomAttr extends DomNamespaceNode implements Attr {
      */
     @Override
     public void setTextContent(final String textContent) {
-        final boolean mappedElement = HtmlPage.isMappedElement(getOwnerDocument(), getName());
+        final boolean mappedElement =
+                getOwnerDocument() instanceof HtmlPage
+                && (DomElement.NAME_ATTRIBUTE.equals(getName()) || DomElement.ID_ATTRIBUTE.equals(getName()));
         if (mappedElement) {
             ((HtmlPage) getPage()).removeMappedElement(getOwnerElement(), false, false);
         }

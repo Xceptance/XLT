@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,8 @@ import org.htmlunit.html.DomNode;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.serializer.HtmlSerializerVisibleText.HtmlSerializerTextBuilder;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
 import org.htmlunit.xml.XmlPage;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -799,9 +799,9 @@ public class HtmlSerializerVisibleText2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "A B C D EF G H I\nSecond",
-            CHROME = "       A B C D EF G H I\n      Second\n    ",
-            EDGE = "       A B C D EF G H I\n      Second\n    ")
+    @Alerts(DEFAULT = "       A B C D EF G H I\n      Second\n    ",
+            FF = "A B C D EF G H I\nSecond",
+            FF_ESR = "A B C D EF G H I\nSecond")
     @HtmlUnitNYI(CHROME = "A B C D EF G H I\nSecond",
             EDGE = "A B C D EF G H I\nSecond")
     public void getVisibleTextWhiteSpaceSelect() throws Exception {

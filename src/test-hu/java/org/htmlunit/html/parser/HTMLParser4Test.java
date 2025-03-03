@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,9 @@ package org.htmlunit.html.parser;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.NotYetImplemented;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.WebDriver;
@@ -367,7 +367,7 @@ public class HTMLParser4Test extends WebDriverTestCase {
             + "    try {\n"
             + "      div = document.createElementNS('http://www.appcelerator.org', 'app:script');\n"
             + "      debug(div);\n"
-            + "    } catch (e) {log('createElementNS() is not defined')}\n"
+            + "    } catch(e) {log('createElementNS() is not defined')}\n"
             + "    debug(document.getElementById('script1'));\n"
             + "    debug(document.getElementById('script2'));\n"
             + "  }\n"
@@ -743,7 +743,7 @@ public class HTMLParser4Test extends WebDriverTestCase {
             + "      document.getElementsByTagName('html')[0].innerHTML ="
             + "        '<html><head><title>Inner Html</title></head>"
             + "        <body><DIV id=innerDiv>Inner DIV</DIV></body></html>';\n"
-            + "    } catch(e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  </script>\n"
             + "</body>\n"
             + "</html>\n";

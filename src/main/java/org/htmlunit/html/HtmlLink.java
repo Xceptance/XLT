@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,8 @@ package org.htmlunit.html;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Locale;
 import java.util.Map;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.htmlunit.BrowserVersion;
@@ -34,6 +32,7 @@ import org.htmlunit.javascript.AbstractJavaScriptEngine;
 import org.htmlunit.javascript.PostponedAction;
 import org.htmlunit.javascript.host.event.Event;
 import org.htmlunit.javascript.host.html.HTMLLinkElement;
+import org.htmlunit.util.ArrayUtils;
 import org.htmlunit.util.StringUtils;
 import org.htmlunit.xml.XmlPage;
 
@@ -274,55 +273,57 @@ public class HtmlLink extends HtmlElement {
             LOG.debug("Link node added: " + asXml());
         }
 
-        if (!isStyleSheetLink()) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Link type '" + getRelAttribute() + "' not supported ("
-                            + asXml().replaceAll("[\\r\\n]", "") + ").");
+        final boolean isStyleSheetLink = isStyleSheetLink();
+
+        if (isStyleSheetLink) {
+            final WebClient webClient = getPage().getWebClient();
+            if (!webClient.getOptions().isCssEnabled()) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Stylesheet Link found but ignored because css support is disabled ("
+                                + asXml().replaceAll("[\\r\\n]", "") + ").");
+                }
+                return;
+            }
+
+            if (!webClient.isJavaScriptEngineEnabled()) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Stylesheet Link found but ignored because javascript engine is disabled ("
+                                + asXml().replaceAll("[\\r\\n]", "") + ").");
+                }
+                return;
+            }
+
+            final PostponedAction action = new PostponedAction(getPage(), "Loading of link " + this) {
+                @Override
+                public void execute() {
+                    final HTMLLinkElement linkElem = HtmlLink.this.getScriptableObject();
+                    // force loading, caching inside the link
+                    linkElem.getSheet();
+                }
+            };
+
+            final AbstractJavaScriptEngine<?> engine = webClient.getJavaScriptEngine();
+            if (postponed) {
+                engine.addPostponedAction(action);
+            }
+            else {
+                try {
+                    action.execute();
+                }
+                catch (final RuntimeException e) {
+                    throw e;
+                }
+                catch (final Exception e) {
+                    throw new RuntimeException(e);
+                }
             }
 
             return;
         }
 
-        final WebClient webClient = getPage().getWebClient();
-        if (!webClient.getOptions().isCssEnabled()) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Stylesheet Link found but ignored because css support is disabled ("
-                            + asXml().replaceAll("[\\r\\n]", "") + ").");
-            }
-            return;
-        }
-
-        if (!webClient.isJavaScriptEngineEnabled()) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Stylesheet Link found but ignored because javascript engine is disabled ("
-                            + asXml().replaceAll("[\\r\\n]", "") + ").");
-            }
-            return;
-        }
-
-        final PostponedAction action = new PostponedAction(getPage(), "Loading of link " + this) {
-            @Override
-            public void execute() {
-                final HTMLLinkElement linkElem = HtmlLink.this.getScriptableObject();
-                // force loading, caching inside the link
-                linkElem.getSheet();
-            }
-        };
-
-        final AbstractJavaScriptEngine<?> engine = webClient.getJavaScriptEngine();
-        if (postponed) {
-            engine.addPostponedAction(action);
-        }
-        else {
-            try {
-                action.execute();
-            }
-            catch (final RuntimeException e) {
-                throw e;
-            }
-            catch (final Exception e) {
-                throw new RuntimeException(e);
-            }
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Link type '" + getRelAttribute() + "' not supported ("
+                        + asXml().replaceAll("[\\r\\n]", "") + ").");
         }
     }
 
@@ -342,10 +343,20 @@ public class HtmlLink extends HtmlElement {
      * @return true if the rel attribute is 'stylesheet'
      */
     public boolean isStyleSheetLink() {
-        String rel = getRelAttribute();
+        final String rel = getRelAttribute();
         if (rel != null) {
-            rel = rel.toLowerCase(Locale.ROOT);
-            return ArrayUtils.contains(StringUtils.splitAtBlank(rel), "stylesheet");
+            return ArrayUtils.containsIgnoreCase(StringUtils.splitAtBlank(rel), "stylesheet");
+        }
+        return false;
+    }
+
+    /**
+     * @return true if the rel attribute is 'modulepreload'
+     */
+    public boolean isModulePreloadLink() {
+        final String rel = getRelAttribute();
+        if (rel != null) {
+            return ArrayUtils.containsIgnoreCase(StringUtils.splitAtBlank(rel), "modulepreload");
         }
         return false;
     }

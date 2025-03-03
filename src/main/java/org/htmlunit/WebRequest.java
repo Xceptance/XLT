@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -441,21 +441,21 @@ public class WebRequest implements Serializable {
                 // getRequestParameters and getRequestBody are mutually exclusive
                 if (getRequestBody() == null) {
                     allParameters.addAll(getRequestParameters());
-            }
+                }
                 else {
                     allParameters.addAll(HttpUtils.parseUrlQuery(getRequestBody(), getCharset()));
-        }
+                }
             }
             else if (FormEncodingType.MULTIPART == getEncodingType()) {
                 if (httpMethod == HttpMethod.POST) {
                     allParameters.addAll(getRequestParameters());
-        }
+                }
                 else {
                     // for PUT, PATCH, DELETE and OPTIONS spring moves the parameters up to the query
                     // it doesn't replace the query
                     allParameters.addAll(0, getRequestParameters());
+                }
             }
-        }
         }
 
         return normalize(allParameters);
@@ -752,6 +752,7 @@ public class WebRequest implements Serializable {
     private void writeObject(final ObjectOutputStream oos) throws IOException {
         oos.defaultWriteObject();
         oos.writeObject(charset_ == null ? null : charset_.name());
+        oos.writeObject(defaultResponseContentCharset_ == null ? null : defaultResponseContentCharset_.name());
     }
 
     private void readObject(final ObjectInputStream ois) throws ClassNotFoundException, IOException {
@@ -759,6 +760,10 @@ public class WebRequest implements Serializable {
         final String charsetName = (String) ois.readObject();
         if (charsetName != null) {
             charset_ = Charset.forName(charsetName);
+        }
+        final String defaultResponseContentCharset = (String) ois.readObject();
+        if (defaultResponseContentCharset != null) {
+            defaultResponseContentCharset_ = Charset.forName(defaultResponseContentCharset);
         }
     }
 }

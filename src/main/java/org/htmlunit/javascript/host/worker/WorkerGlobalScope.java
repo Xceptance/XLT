@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ public class WorkerGlobalScope extends EventTarget implements WindowOrWorkerGlob
     @Override
     @JsxConstructor
     public void jsConstructor() {
-        throw JavaScriptEngine.reportRuntimeError("Illegal constructor.");
+        throw JavaScriptEngine.typeErrorIllegalConstructor();
     }
 
     /**
@@ -54,7 +54,7 @@ public class WorkerGlobalScope extends EventTarget implements WindowOrWorkerGlob
     @JsxFunction
     @Override
     public String btoa(final String stringToEncode) {
-        return WindowOrWorkerGlobalScopeMixin.btoa(stringToEncode);
+        return WindowOrWorkerGlobalScopeMixin.btoa(stringToEncode, this);
     }
 
     /**
@@ -65,6 +65,6 @@ public class WorkerGlobalScope extends EventTarget implements WindowOrWorkerGlob
     @JsxFunction
     @Override
     public String atob(final String encodedData) {
-        return WindowOrWorkerGlobalScopeMixin.atob(encodedData);
+        return WindowOrWorkerGlobalScopeMixin.atob(encodedData, this);
     }
 }

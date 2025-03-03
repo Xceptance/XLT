@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ public class TreeWalker extends HtmlUnitScriptable {
      */
     @JsxConstructor
     public void jsConstructor() {
-        throw JavaScriptEngine.reportRuntimeError("Illegal constructor.");
+        throw JavaScriptEngine.typeErrorIllegalConstructor();
     }
 
     /**
@@ -67,17 +67,14 @@ public class TreeWalker extends HtmlUnitScriptable {
      *          or {@code null} to indicate no filter.
      * @param expandEntityReferences If false, the contents of
      *          EntityReference nodes are not present in the logical view.
-     * @throws DOMException on attempt to create a TreeWalker with a root that
-     *          is {@code null}.
      */
     public TreeWalker(final Node root,
                       final int whatToShow,
                       final org.w3c.dom.traversal.NodeFilter filter,
-                      final boolean expandEntityReferences) throws DOMException {
+                      final boolean expandEntityReferences) {
         super();
         if (root == null) {
-            throw JavaScriptEngine.throwAsScriptRuntimeEx(new DOMException(DOMException.NOT_SUPPORTED_ERR,
-                                   "root must not be null"));
+            throw JavaScriptEngine.typeError("root must not be null");
         }
         walker_ = new HtmlDomTreeWalker(root.getDomNodeOrDie(), whatToShow, filter, expandEntityReferences);
     }

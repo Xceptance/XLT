@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ package org.htmlunit.javascript.host.html;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
@@ -149,8 +149,8 @@ public class HTMLLabelElementTest extends WebDriverTestCase {
             + "      function doTest() {\n"
             + "        try {\n"
             + "          document.getElementById('label1').htmlFor = 'unknown';\n"
-            + "        } catch (e) {"
-            + "          log('exception');\n"
+            + "        } catch(e) {"
+            + "          logEx(e);\n"
             + "        }\n"
             + "        log(document.getElementById('label1').htmlFor);\n"
             + "        log(document.getElementById('label1').control);\n"
@@ -183,8 +183,8 @@ public class HTMLLabelElementTest extends WebDriverTestCase {
             + "      function doTest() {\n"
             + "        try {\n"
             + "          document.getElementById('label1').htmlFor = 'div1';\n"
-            + "        } catch (e) {"
-            + "          log('exception');\n"
+            + "        } catch(e) {"
+            + "          logEx(e);\n"
             + "        }\n"
             + "        log(document.getElementById('label1').htmlFor);\n"
             + "        log(document.getElementById('label1').control);\n"
@@ -217,8 +217,8 @@ public class HTMLLabelElementTest extends WebDriverTestCase {
             + "      function doTest() {\n"
             + "        try {\n"
             + "          document.getElementById('label1').htmlFor = 'text1';\n"
-            + "        } catch (e) {"
-            + "          log('exception');\n"
+            + "        } catch(e) {"
+            + "          logEx(e);\n"
             + "        }\n"
             + "        log(document.getElementById('label1').htmlFor);\n"
             + "        log(document.getElementById('label1').control);\n"
@@ -602,8 +602,8 @@ public class HTMLLabelElementTest extends WebDriverTestCase {
             + "      function doTest() {\n"
             + "        try {\n"
             + "          document.getElementById('label1').control = document.getElementById('text1');\n"
-            + "        } catch (e) {"
-            + "          log('exception');\n"
+            + "        } catch(e) {"
+            + "          logEx(e);\n"
             + "        }\n"
             + "        log(document.getElementById('label1').control);\n"
             + "      }\n"
@@ -789,8 +789,8 @@ public class HTMLLabelElementTest extends WebDriverTestCase {
             + "      function doTest() {\n"
             + "        try {\n"
             + "          document.getElementById('label1').form = document.getElementById('form1');\n"
-            + "        } catch (e) {"
-            + "          log('exception');\n"
+            + "        } catch(e) {"
+            + "          logEx(e);\n"
             + "        }\n"
             + "        log(document.getElementById('label1').form);\n"
             + "      }\n"
@@ -876,7 +876,7 @@ public class HTMLLabelElementTest extends WebDriverTestCase {
             + "      function delegateClick() {\n"
             + "        try {\n"
             + "          document.getElementById('label1').click();\n"
-            + "        } catch (e) {}\n"
+            + "        } catch(e) {}\n"
             + "      }\n"
             + "    </script>\n"
             + "  </head>\n"
@@ -909,7 +909,7 @@ public class HTMLLabelElementTest extends WebDriverTestCase {
             + "      function delegateClick() {\n"
             + "        try {\n"
             + "          document.getElementById('label1').click();\n"
-            + "        } catch (e) {}\n"
+            + "        } catch(e) {}\n"
             + "      }\n"
             + "    </script>\n"
             + "  </head>\n"

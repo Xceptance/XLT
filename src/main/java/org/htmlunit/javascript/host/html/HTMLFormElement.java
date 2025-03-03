@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -533,7 +533,7 @@ public class HTMLFormElement extends HTMLElement implements Function {
      */
     @Override
     public Object call(final Context cx, final Scriptable scope, final Scriptable thisObj, final Object[] args) {
-        throw JavaScriptEngine.reportRuntimeError("Not a function.");
+        throw JavaScriptEngine.typeError("Not a function.");
     }
 
     /**
@@ -541,7 +541,7 @@ public class HTMLFormElement extends HTMLElement implements Function {
      */
     @Override
     public Scriptable construct(final Context cx, final Scriptable scope, final Object[] args) {
-        throw JavaScriptEngine.reportRuntimeError("Not a function.");
+        throw JavaScriptEngine.typeError("Not a function.");
     }
 
     @Override

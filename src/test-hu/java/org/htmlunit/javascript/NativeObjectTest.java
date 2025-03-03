@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@ package org.htmlunit.javascript;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -238,7 +238,7 @@ public class NativeObjectTest extends WebDriverTestCase {
             + "  function test() {\n"
             + "    try {\n"
             + "      log(String.prototype === Object.getPrototypeOf(''));\n"
-            + "    } catch(e) {log('exception')}\n"
+            + "    } catch(e) {logEx(e)}\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -261,7 +261,7 @@ public class NativeObjectTest extends WebDriverTestCase {
             + "  function test() {\n"
             + "    try {\n"
             + "      log(Number.prototype === Object.getPrototypeOf(1));\n"
-            + "    } catch(e) {log('exception')}\n"
+            + "    } catch(e) {logEx(e)}\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -284,7 +284,7 @@ public class NativeObjectTest extends WebDriverTestCase {
             + "  function test() {\n"
             + "    try {\n"
             + "      log(Boolean.prototype === Object.getPrototypeOf(true));\n"
-            + "    } catch(e) {log('exception')}\n"
+            + "    } catch(e) {logEx(e)}\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -307,7 +307,7 @@ public class NativeObjectTest extends WebDriverTestCase {
             + "  function test() {\n"
             + "    try {\n"
             + "      log(typeof Object.getPrototypeOf(1));\n"
-            + "    } catch(e) {log('exception')}\n"
+            + "    } catch(e) {logEx(e)}\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -340,7 +340,7 @@ public class NativeObjectTest extends WebDriverTestCase {
             + "      log(objectSymbols.length);\n"
             + "      log(objectSymbols[0] === a);\n"
             + "      log(objectSymbols[1] === b);\n"
-            + "    } catch(e) {log('exception')}\n"
+            + "    } catch(e) {logEx(e)}\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -354,7 +354,7 @@ public class NativeObjectTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("TypeError")
     public void getOwnPropertySymbolsEmpty() throws Exception {
         final String html = ""
             + "<html><head>\n"
@@ -364,7 +364,7 @@ public class NativeObjectTest extends WebDriverTestCase {
             + "    try {\n"
             + "      var objectSymbols = Object.getOwnPropertySymbols();\n"
             + "      log(objectSymbols.length);\n"
-            + "    } catch(e) {log('exception')}\n"
+            + "    } catch(e) {logEx(e)}\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -397,7 +397,7 @@ public class NativeObjectTest extends WebDriverTestCase {
             + "      log(desc);\n"
 
             + "      log(typeof desc.get);\n"
-            + "    } catch(e) {log('exception')}\n"
+            + "    } catch(e) {logEx(e)}\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"

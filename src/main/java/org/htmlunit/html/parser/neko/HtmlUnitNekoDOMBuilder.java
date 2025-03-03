@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayDeque;
 import java.util.Deque;
-import java.util.Locale;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.htmlunit.BrowserVersion;
@@ -434,6 +433,10 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
     }
 
     private static boolean isTableChild(final String nodeName) {
+        if (nodeName == null || nodeName.length() < 5) {
+            return false;
+        }
+
         return "thead".equals(nodeName)
                 || "tbody".equals(nodeName)
                 || "tfoot".equals(nodeName)
@@ -712,13 +715,12 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
         // when multiple html/body elements are encountered, the attributes of the discarded
         // elements are used when not previously defined
         if (attrs != null && body_ != null) {
-            String lp = elem.getLocalpart();
+            final String lp = elem.getLocalpart();
             if (lp != null && lp.length() == 4) {
-                lp = lp.toLowerCase(Locale.ROOT);
-                if ("body".equals(lp)) {
+                if ("body".equalsIgnoreCase(lp)) {
                     copyAttributes(body_, attrs);
                 }
-                else if ("html".equals(lp)) {
+                else if ("html".equalsIgnoreCase(lp)) {
                     final DomNode parent = body_.getParentNode();
                     if (parent instanceof DomElement) {
                         copyAttributes((DomElement) parent, attrs);

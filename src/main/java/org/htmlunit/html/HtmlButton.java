@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Locale;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
@@ -259,11 +258,11 @@ public class HtmlButton extends HtmlElement implements DisabledElement, Submitta
      * @return the normalized type value (submit|reset|button).
      */
     public String getType() {
-        final String type = getTypeAttribute().toLowerCase(Locale.ROOT);
-        if (TYPE_RESET.equals(type)) {
+        final String type = getTypeAttribute();
+        if (TYPE_RESET.equalsIgnoreCase(type)) {
             return TYPE_RESET;
         }
-        if (TYPE_BUTTON.equals(type)) {
+        if (TYPE_BUTTON.equalsIgnoreCase(type)) {
             return TYPE_BUTTON;
         }
         return TYPE_SUBMIT;

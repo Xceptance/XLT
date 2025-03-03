@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,9 @@ import java.net.URL;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.BuggyWebDriver;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.BuggyWebDriver;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
 import org.htmlunit.util.MimeType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -132,7 +132,7 @@ public class JavaScriptEngine2Test extends WebDriverTestCase {
             + "    try {\n"
             + "      hoo();\n"
             + "      foo();\n"
-            + "    } catch (e) {\n"
+            + "    } catch(e) {\n"
             + "      log('foo error');\n"
             + "    }\n"
             + "    function foo() { log('in foo'); }\n"
@@ -161,14 +161,14 @@ public class JavaScriptEngine2Test extends WebDriverTestCase {
             + "  try {\n"
             + "    log(window.foo);\n"
             + "    log(foo);\n"
-            + "  } catch (e) {\n"
+            + "  } catch(e) {\n"
             + "    log('foo error');\n"
             + "  }\n"
             + "  function foo() {}\n"
             + "  try {\n"
             + "    log(window.foo);\n"
             + "    log(foo);\n"
-            + "  } catch (e) {\n"
+            + "  } catch(e) {\n"
             + "    log('foo error');\n"
             + "  }\n"
             + "}\n"
@@ -191,14 +191,14 @@ public class JavaScriptEngine2Test extends WebDriverTestCase {
             + "  try {\n"
             + "    log(window.foo);\n"
             + "    log(foo);\n"
-            + "  } catch (e) {\n"
+            + "  } catch(e) {\n"
             + "    log('foo error');\n"
             + "  }\n"
             + "  var fo = function foo() {}\n"
             + "  try {\n"
             + "    log(window.foo);\n"
             + "    log(foo);\n"
-            + "  } catch (e) {\n"
+            + "  } catch(e) {\n"
             + "    log('foo error');\n"
             + "  }\n"
             + "}\n"
@@ -219,19 +219,19 @@ public class JavaScriptEngine2Test extends WebDriverTestCase {
         final String html = "<html><head></head><body>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
-            + "  try { log(Window); } catch (e) { log('ex window'); }\n"
+            + "  try { log(Window); } catch(e) { log('ex window'); }\n"
             + "  log(window.constructor);\n"
             + "  try {\n"
             + "    log(window.constructor === Window);\n"
-            + "  } catch (e) {\n"
+            + "  } catch(e) {\n"
             + "    log('ex win const');\n"
             + "  }\n"
 
-            + "  try { log(HTMLDocument); } catch (e) { log('ex doc'); }\n"
+            + "  try { log(HTMLDocument); } catch(e) { log('ex doc'); }\n"
             + "  log(document.constructor);\n"
             + "  try {\n"
             + "    log(document.constructor === HTMLDocument);\n"
-            + "  } catch (e) {\n"
+            + "  } catch(e) {\n"
             + "    log('exception doc const');\n"
             + "  }\n"
             + "  log(typeof new Object().constructor);\n"
@@ -245,7 +245,7 @@ public class JavaScriptEngine2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void packages() throws Exception {
         object("Packages");
     }
@@ -254,7 +254,7 @@ public class JavaScriptEngine2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void java() throws Exception {
         object("java");
     }
@@ -274,8 +274,8 @@ public class JavaScriptEngine2Test extends WebDriverTestCase {
             + LOG_TITLE_FUNCTION
             + "try {\n"
             + "  log(" + object + ");\n"
-            + "} catch (e) {\n"
-            + "  log('exception');\n"
+            + "} catch(e) {\n"
+            + "  logEx(e);\n"
             + "}\n"
             + "</script>\n"
             + "</body></html>";
@@ -423,16 +423,18 @@ public class JavaScriptEngine2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("error")
+    @Alerts(DEFAULT = "RangeError",
+            FF = "InternalError/InternalError",
+            FF_ESR = "InternalError/InternalError")
+    @HtmlUnitNYI(CHROME = "InternalError/InternalError",
+            EDGE = "InternalError/InternalError")
     public void recursion() throws Exception {
         final String html = "<html><head><script>\n"
             + "  function recurse(c) {\n"
             + LOG_TITLE_FUNCTION
             + "    try {\n"
             + "      recurse(c++);\n"
-            + "    } catch (e) {\n"
-            + "      log('error');\n"
-            + "    }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "  }\n"
             + "</script></head>\n"
             + "<body onload='recurse(1)'>\n"
@@ -686,14 +688,17 @@ public class JavaScriptEngine2Test extends WebDriverTestCase {
     public void comment() throws Exception {
         final String html =
             "<html><head>\n"
-            + "<script><!-- alert(1);\n"
-            + " alert(2);\n"
-            + "alert(3)//--></script>\n"
+            + "    <script>\n"
+            + LOG_TITLE_FUNCTION
+            + "    </script>\n"
+            + "<script><!-- log(1);\n"
+            + " log(2);\n"
+            + "log(3)//--></script>\n"
             + "</head>\n"
             + "<body>\n"
             + "</body></html>";
 
-        loadPageWithAlerts2(html);
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -933,14 +938,14 @@ public class JavaScriptEngine2Test extends WebDriverTestCase {
 
                 + "  void function f8() { log('f8'); }\n"
 
-                + "  try { f1() } catch (e) { log('!f1'); }"
-                + "  try { f2() } catch (e) { log('!f2'); }"
-                + "  try { f3() } catch (e) { log('!f3'); }"
-                + "  try { f4() } catch (e) { log('!f4'); }"
-                + "  try { f5() } catch (e) { log('!f5'); }"
-                + "  try { f6() } catch (e) { log('!f6'); }"
-                + "  try { f7() } catch (e) { log('!f7'); }"
-                + "  try { f8() } catch (e) { log('!f8'); }"
+                + "  try { f1() } catch(e) { log('!f1'); }"
+                + "  try { f2() } catch(e) { log('!f2'); }"
+                + "  try { f3() } catch(e) { log('!f3'); }"
+                + "  try { f4() } catch(e) { log('!f4'); }"
+                + "  try { f5() } catch(e) { log('!f5'); }"
+                + "  try { f6() } catch(e) { log('!f6'); }"
+                + "  try { f7() } catch(e) { log('!f7'); }"
+                + "  try { f8() } catch(e) { log('!f8'); }"
 
                 + "  {\n"
                 + "    function f10() { log('f10'); }\n"
@@ -951,12 +956,12 @@ public class JavaScriptEngine2Test extends WebDriverTestCase {
                 + "    f12();\n"
                 + "  }\n"
 
-                + "  try { f10() } catch (e) { log('!f10'); }"
-                + "  try { f11() } catch (e) { log('!f11'); }"
-                + "  try { f12() } catch (e) { log('!f12'); }"
+                + "  try { f10() } catch(e) { log('!f10'); }"
+                + "  try { f11() } catch(e) { log('!f11'); }"
+                + "  try { f12() } catch(e) { log('!f12'); }"
 
                 + "  function f13() { log('f13') } + 1;"
-                + "  try { f13() } catch (e) { log('!f13'); }"
+                + "  try { f13() } catch(e) { log('!f13'); }"
 
                 + "</script>\n"
                 + "</head>\n"
@@ -1028,7 +1033,7 @@ public class JavaScriptEngine2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void javaNotAccessable() throws Exception {
         final String html = "<html><head>\n"
                 + "<script>\n"
@@ -1036,7 +1041,7 @@ public class JavaScriptEngine2Test extends WebDriverTestCase {
                 + "function test() {\n"
                 + "  try {\n"
                 + "    log(java.lang.Math.PI);\n"
-                + "  } catch (e) { log('exception'); }\n"
+                + "  } catch(e) { logEx(e); }\n"
                 + "}\n"
                 + "</script>\n"
                 + "</head>\n"
@@ -1060,13 +1065,13 @@ public class JavaScriptEngine2Test extends WebDriverTestCase {
             + "  myWorker.onmessage = function(e) {\n"
             + "    log('Received: ' + e.data);\n"
             + "  };\n"
-            + "} catch(e) { log('exception' + e); }\n"
+            + "} catch(e) { logEx(e); }\n"
             + "</script></body></html>\n";
 
         final String workerJs = "var pi = 'from worker';\n"
                 + "try {\n"
                 + "  pi = pi + ' - ' + java.lang.Math.PI\n"
-                + "} catch (e) { pi = pi + ' - ' + 'exception'; }\n"
+                + "} catch(e) { pi = pi + ' - ' + 'exception'; }\n"
                 + "postMessage(pi);\n";
 
         getMockWebConnection().setResponse(new URL(URL_FIRST, "worker.js"), workerJs, MimeType.TEXT_JAVASCRIPT);
@@ -1174,5 +1179,38 @@ public class JavaScriptEngine2Test extends WebDriverTestCase {
         final WebDriver driver = loadPage2(html);
         Thread.sleep(DEFAULT_WAIT_TIME);
         verifyTitle2(driver, getExpectedAlerts());
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"false", "aa", "0", "aabbc", "false", "bb", "2", "aabbc", "true", "undefined"})
+    public void matchAll() throws Exception {
+        final String html = "<html><body>"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "const s = 'aabbc';\n"
+            + "const re = /([a-z])\\1/g;\n"
+            + "const matches = s.matchAll(re);\n"
+
+            + "var match = matches.next();\n"
+            + "log(match.done);\n"
+            + "log(match.value[0]);\n"
+            + "log(match.value.index);\n"
+            + "log(match.value.input);\n"
+
+            + "match = matches.next();\n"
+            + "log(match.done);\n"
+            + "log(match.value[0]);\n"
+            + "log(match.value.index);\n"
+            + "log(match.value.input);\n"
+
+            + "match = matches.next();\n"
+            + "log(match.done);\n"
+            + "log(match.value);\n"
+            + "</script></body></html>";
+
+        loadPageVerifyTitle2(html);
     }
 }

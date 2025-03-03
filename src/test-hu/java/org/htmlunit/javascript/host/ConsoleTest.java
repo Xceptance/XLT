@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,8 @@ import java.util.List;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.BuggyWebDriver;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.BuggyWebDriver;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.WebDriver;
@@ -53,7 +53,7 @@ public class ConsoleTest extends WebDriverTestCase {
             + "    log(window.console == undefined);\n"
             + "    log(typeof window.console);\n"
             + "    log('console' in window);\n"
-            + "  } catch(e) { log('exception');}\n"
+            + "  } catch(e) { logEx(e);}\n"
             + "</script>\n"
             + "</body></html>";
 
@@ -75,7 +75,7 @@ public class ConsoleTest extends WebDriverTestCase {
             + "    log(window.Console == undefined);\n"
             + "    log(typeof window.Console);\n"
             + "    log('Console' in window);\n"
-            + "  } catch(e) { log('exception');}\n"
+            + "  } catch(e) { logEx(e);}\n"
             + "</script>\n"
             + "</body></html>";
 
@@ -140,7 +140,7 @@ public class ConsoleTest extends WebDriverTestCase {
             + "  try {\n"
             + "    var x = Object.getOwnPropertyNames(window).indexOf('console');\n"
             + "    log(x >= 0);\n"
-            + "  } catch(e) {log('exception')}\n"
+            + "  } catch(e) {logEx(e)}\n"
             + "</script>\n"
             + "</body></html>";
 
@@ -162,7 +162,7 @@ public class ConsoleTest extends WebDriverTestCase {
             + "    var x = console.error;\n"
             + "    x('hello');\n"
             + "    log('success');\n"
-            + "  } catch(e) {log('exception')}\n"
+            + "  } catch(e) {logEx(e)}\n"
             + "</script>\n"
             + "</body></html>";
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ package org.htmlunit.html;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
@@ -258,13 +258,19 @@ public class HtmlResetInput2Test extends WebDriverTestCase {
         final WebDriver webDriver = loadPage2(html);
 
         final WebElement textfield = webDriver.findElement(By.id("textfield"));
-        assertEquals(getExpectedAlerts()[0], textfield.getAttribute("value"));
+
+        assertEquals(getExpectedAlerts()[0], textfield.getDomAttribute("value"));
+        assertEquals(getExpectedAlerts()[0], textfield.getDomProperty("value"));
+
         textfield.sendKeys("newValue");
-        assertEquals(getExpectedAlerts()[1], textfield.getAttribute("value"));
+        assertEquals(getExpectedAlerts()[0], textfield.getDomAttribute("value"));
+        assertEquals(getExpectedAlerts()[1], textfield.getDomProperty("value"));
 
         final WebElement reset = webDriver.findElement(By.name("resetBtn"));
         reset.click();
-        assertEquals(getExpectedAlerts()[2], textfield.getAttribute("value"));
+
+        assertEquals(getExpectedAlerts()[0], textfield.getDomAttribute("value"));
+        assertEquals(getExpectedAlerts()[2], textfield.getDomProperty("value"));
     }
 
     /**
@@ -291,13 +297,17 @@ public class HtmlResetInput2Test extends WebDriverTestCase {
         final WebDriver webDriver = loadPage2(html);
 
         final WebElement textfield = webDriver.findElement(By.id("textfield"));
-        assertEquals(getExpectedAlerts()[0], textfield.getAttribute("value"));
+        assertEquals(getExpectedAlerts()[0], textfield.getDomAttribute("value"));
+        assertEquals(getExpectedAlerts()[0], textfield.getDomProperty("value"));
+
         textfield.sendKeys("newValue");
-        assertEquals(getExpectedAlerts()[1], textfield.getAttribute("value"));
+        assertEquals(getExpectedAlerts()[0], textfield.getDomAttribute("value"));
+        assertEquals(getExpectedAlerts()[1], textfield.getDomProperty("value"));
 
         final WebElement reset = webDriver.findElement(By.name("resetBtn"));
         reset.click();
-        assertEquals(getExpectedAlerts()[2], textfield.getAttribute("value"));
+        assertEquals(getExpectedAlerts()[0], textfield.getDomAttribute("value"));
+        assertEquals(getExpectedAlerts()[2], textfield.getDomProperty("value"));
     }
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,8 @@ import java.util.List;
 import org.htmlunit.HttpHeader;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.NotYetImplemented;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
 import org.junit.Test;
@@ -85,7 +85,7 @@ public class StyleSheetListTest extends WebDriverTestCase {
             + "          log(window.getComputedStyle(div, null).color);\n"
             + "          var div2 = document.getElementById('myDiv2');\n"
             + "          log(window.getComputedStyle(div2, null).color);\n"
-            + "        } catch(e) { log('exception'); }\n"
+            + "        } catch(e) { logEx(e); }\n"
             + "      }\n"
             + "    </script>\n"
             + "  </head>\n"
@@ -117,24 +117,15 @@ public class StyleSheetListTest extends WebDriverTestCase {
 
             + "        try {\n"
             + "          log(document.styleSheets[0]);\n"
-            + "        }\n"
-            + "        catch (e) {\n"
-            + "          log('exception for 0');\n"
-            + "        }\n"
+            + "        } catch(e) { logEx(e); }\n"
 
             + "        try {\n"
             + "          log(document.styleSheets[46]);\n"
-            + "        }\n"
-            + "        catch (e) {\n"
-            + "          log('exception for 46');\n"
-            + "        }\n"
+            + "        } catch(e) { logEx(e); }\n"
 
             + "        try {\n"
             + "          log(document.styleSheets[-2]);\n"
-            + "        }\n"
-            + "        catch (e) {\n"
-            + "          log('exception for -2');\n"
-            + "        }\n"
+            + "        } catch(e) { logEx(e); }\n"
             + "      }\n"
             + "    </script>\n"
             + "  </head>\n"

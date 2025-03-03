@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,16 @@
  */
 package org.htmlunit.javascript.host.dom;
 
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.FF;
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.FF_ESR;
+import static org.htmlunit.junit.annotation.TestedBrowser.FF;
+import static org.htmlunit.junit.annotation.TestedBrowser.FF_ESR;
 
 import java.net.URL;
 
 import org.htmlunit.MockWebConnection;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.NotYetImplemented;
 import org.htmlunit.util.MimeType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -46,7 +46,7 @@ public class Document2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("InvalidCharacterError/DOMException")
     public void createElementWithAngleBrackets() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -56,7 +56,7 @@ public class Document2Test extends WebDriverTestCase {
             + "      var select = document.createElement('<select>');\n"
             + "      log(select.add == undefined);\n"
             + "    }\n"
-            + "    catch (e) { log('exception') }\n"
+            + "    catch(e) { logEx(e) }\n"
             + "  }\n"
             + "</script></head><body onload='test()'>\n"
             + "</body></html>";
@@ -68,7 +68,7 @@ public class Document2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("InvalidCharacterError/DOMException")
     public void createElementWithHtml() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -85,7 +85,7 @@ public class Document2Test extends WebDriverTestCase {
             + "      log(option.id);\n"
             + "      log(option.childNodes.length);\n"
             + "    }\n"
-            + "    catch (e) { log('exception') }\n"
+            + "    catch(e) { logEx(e) }\n"
             + "  }\n"
             + "</script></head><body onload='test()'>\n"
             + "</body></html>";
@@ -439,8 +439,8 @@ public class Document2Test extends WebDriverTestCase {
             + LOG_TITLE_FUNCTION
             + "function x() {\n"
             + "  var d = window.frames['f'].document;\n"
-            + "  try { log(d.queryCommandEnabled('SelectAll')); } catch(e) { log('error'); }\n"
-            + "  try { log(d.queryCommandEnabled('sElectaLL')); } catch(e) { log('error'); }\n"
+            + "  try { log(d.queryCommandEnabled('SelectAll')); } catch(e) { logEx(e); }\n"
+            + "  try { log(d.queryCommandEnabled('sElectaLL')); } catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script></body></html>";
 
@@ -490,6 +490,32 @@ public class Document2Test extends WebDriverTestCase {
             + "</script></head><body onload='doTest()'>\n"
             + "<form id='form1'>\n"
             + "<input id='input1' name='foo' type='text' value='bar' />\n"
+            + "</form>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"zero", "udef"})
+    public void getElementByIdNull() throws Exception {
+        final String html
+            = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "function doTest() {\n"
+            + "  log(top.document.getElementById(null).name);\n"
+            + "  log(top.document.getElementById(undefined).name);\n"
+            + "}\n"
+            + "</script></head>\n"
+            + "<body onload='doTest()'>\n"
+            + "<form id='form1'>\n"
+            + "<input id='undefined' name='udef' type='text' value='u' />\n"
+            + "<input id='null' name='zero' type='text' value='n' />\n"
             + "</form>\n"
             + "</body></html>";
 

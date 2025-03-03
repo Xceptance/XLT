@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -288,10 +288,10 @@ public class DateTimeFormat extends HtmlUnitScriptable {
         DateTimeFormatHelper(final String locale, final BrowserVersion browserVersion, final String pattern) {
             locale_ = locale;
             if (locale.startsWith("ar")
-                    && (!"ar-DZ".equals(locale)
-                                    && !"ar-LY".equals(locale)
-                                    && !"ar-MA".equals(locale)
-                                    && !"ar-TN".equals(locale))) {
+                    && !"ar-DZ".equals(locale)
+                    && !"ar-LY".equals(locale)
+                    && !"ar-MA".equals(locale)
+                    && !"ar-TN".equals(locale)) {
                 final DecimalStyle decimalStyle = DecimalStyle.STANDARD.withZeroDigit('\u0660');
                 formatter_ = DateTimeFormatter.ofPattern(pattern).withDecimalStyle(decimalStyle);
             }

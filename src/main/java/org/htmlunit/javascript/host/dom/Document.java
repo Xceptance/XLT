@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,8 +43,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Predicate;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
@@ -164,8 +162,7 @@ import org.w3c.dom.ProcessingInstruction;
 public class Document extends Node {
 
     private static final Log LOG = LogFactory.getLog(Document.class);
-    private static final Pattern TAG_NAME_PATTERN = Pattern.compile("[a-zA-z][a-zA-z1-6:]*");
-    // all as lowercase for performance
+
     /** https://developer.mozilla.org/en/Rich-Text_Editing_in_Mozilla#Executing_Commands */
     private static final Set<String> EXECUTE_CMDS_FF = new HashSet<>();
     private static final Set<String> EXECUTE_CMDS_CHROME = new HashSet<>();
@@ -283,7 +280,7 @@ public class Document extends Node {
     @Override
     @JsxConstructor
     public void jsConstructor() {
-        throw JavaScriptEngine.reportRuntimeError("Illegal constructor.");
+        throw JavaScriptEngine.typeErrorIllegalConstructor();
     }
 
     /**
@@ -549,28 +546,28 @@ public class Document extends Node {
     @JsxFunction
     public XPathResult evaluate(final String expression, final Node contextNode,
             final Object resolver, final int type, final Object result) {
-        try {
-            XPathResult xPathResult = null;
-            if (result instanceof XPathResult) {
-                xPathResult = (XPathResult) result;
+        XPathResult xPathResult = null;
+        if (result instanceof XPathResult) {
+            xPathResult = (XPathResult) result;
 
-                if (getBrowserVersion().hasFeature(JS_DOCUMENT_EVALUATE_RECREATES_RESULT)) {
-                    xPathResult = new XPathResult();
-                    xPathResult.setParentScope(getParentScope());
-                    xPathResult.setPrototype(getPrototype(xPathResult.getClass()));
-                }
-            }
-            else if (result == null
-                    || JavaScriptEngine.isUndefined(result)
-                    || result instanceof ScriptableObject) {
+            if (getBrowserVersion().hasFeature(JS_DOCUMENT_EVALUATE_RECREATES_RESULT)) {
                 xPathResult = new XPathResult();
                 xPathResult.setParentScope(getParentScope());
                 xPathResult.setPrototype(getPrototype(xPathResult.getClass()));
             }
-            else {
-                throw JavaScriptEngine.typeError("Argument 5 of Document.evaluate has to be an XPathResult or null.");
-            }
+        }
+        else if (result == null
+                || JavaScriptEngine.isUndefined(result)
+                || result instanceof ScriptableObject) {
+            xPathResult = new XPathResult();
+            xPathResult.setParentScope(getParentScope());
+            xPathResult.setPrototype(getPrototype(xPathResult.getClass()));
+        }
+        else {
+            throw JavaScriptEngine.typeError("Argument 5 of Document.evaluate has to be an XPathResult or null.");
+        }
 
+        try {
             PrefixResolver prefixResolver = null;
             if (resolver instanceof NativeFunction) {
                 prefixResolver = new NativeFunctionPrefixResolver(
@@ -583,7 +580,10 @@ public class Document extends Node {
             return xPathResult;
         }
         catch (final Exception e) {
-            throw JavaScriptEngine.reportRuntimeError("Failed to execute 'evaluate': " + e.getMessage());
+            throw JavaScriptEngine.asJavaScriptException(
+                    getWindow(),
+                    "Failed to execute 'evaluate': " + e.getMessage(),
+                    org.htmlunit.javascript.host.dom.DOMException.SYNTAX_ERR);
         }
     }
 
@@ -601,14 +601,46 @@ public class Document extends Node {
             return getScriptableFor(element);
         }
 
+        // https://dom.spec.whatwg.org/#dom-document-createelement
+        // NameStartChar ::= ":" | [A-Z] | "_" | [a-z] | [#xC0-#xD6] | [#xD8-#xF6] | [#xF8-#x2FF] | [#x370-#x37D]
+        //                       | [#x37F-#x1FFF] | [#x200C-#x200D] | [#x2070-#x218F] | [#x2C00-#x2FEF]
+        //                       | [#x3001-#xD7FF] | [#xF900-#xFDCF] | [#xFDF0-#xFFFD] | [#x10000-#xEFFFF]
+        // NameChar      ::= NameStartChar | "-" | "." | [0-9] | #xB7 | [#x0300-#x036F] | [#x203F-#x2040]
+        // Name          ::= NameStartChar (NameChar)*
+
+        // but i have no idea what the browsers are doing
+        // the following code is a wild guess that might be good enough for the moment
         final String tagNameString = JavaScriptEngine.toString(tagName);
         if (tagNameString.length() > 0) {
-            final Matcher matcher = TAG_NAME_PATTERN.matcher(tagNameString);
-            if (!matcher.matches()) {
+            final int firstChar = tagNameString.charAt(0);
+            if (!(isLetter(firstChar)
+                    || ':' == firstChar
+                    || '_' == firstChar)) {
                 if (LOG.isInfoEnabled()) {
                     LOG.info("createElement: Provided string '" + tagNameString + "' contains an invalid character");
                 }
-                throw JavaScriptEngine.reportRuntimeError("String contains an invalid character");
+                throw JavaScriptEngine.asJavaScriptException(
+                        getWindow(),
+                        "createElement: Provided string '" + tagNameString + "' contains an invalid character",
+                        org.htmlunit.javascript.host.dom.DOMException.INVALID_CHARACTER_ERR);
+            }
+            for (int i = 1; i < tagNameString.length(); i++) {
+                final int c = tagNameString.charAt(i);
+                if (!(Character.isLetterOrDigit(c)
+                        || ':' == c
+                        || '_' == c
+                        || '-' == c
+                        || '.' == c)) {
+                    if (LOG.isInfoEnabled()) {
+                        LOG.info("createElement: Provided string '"
+                                    + tagNameString + "' contains an invalid character");
+                    }
+                    throw JavaScriptEngine.asJavaScriptException(
+                            getWindow(),
+                            "createElement: Provided string '" + tagNameString
+                                + "' contains an invalid character",
+                            org.htmlunit.javascript.host.dom.DOMException.INVALID_CHARACTER_ERR);
+                }
             }
         }
 
@@ -648,6 +680,15 @@ public class Document extends Node {
         return jsElement;
     }
 
+    // our version of the Character.isLetter() without MODIFIER_LETTER
+    private static boolean isLetter(final int codePoint) {
+        return ((((1 << Character.UPPERCASE_LETTER)
+                    | (1 << Character.LOWERCASE_LETTER)
+                    | (1 << Character.TITLECASE_LETTER)
+                    | (1 << Character.OTHER_LETTER)
+                ) >> Character.getType(codePoint)) & 1) != 0;
+    }
+
     /**
      * Creates a new HTML element with the given tag name, and name.
      *
@@ -658,7 +699,7 @@ public class Document extends Node {
     @JsxFunction
     public HtmlUnitScriptable createElementNS(final String namespaceURI, final String qualifiedName) {
         if ("http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul".equals(namespaceURI)) {
-            throw JavaScriptEngine.reportRuntimeError("XUL not available");
+            throw JavaScriptEngine.typeError("XUL not available");
         }
 
         final org.w3c.dom.Element element;
@@ -835,9 +876,12 @@ public class Document extends Node {
             }
             return;
         }
-        throw JavaScriptEngine.reportRuntimeError("Failed to set the 'body' property on 'Document': "
-                + "The new body element is of type '" +  htmlElement.getTagName() + "'. "
-                + "It must be either a 'BODY' or 'FRAMESET' element.");
+        throw JavaScriptEngine.asJavaScriptException(
+                getWindow(),
+                "Failed to set the 'body' property on 'Document': "
+                        + "The new body element is of type '" +  htmlElement.getTagName() + "'. "
+                        + "It must be either a 'BODY' or 'FRAMESET' element.",
+                org.htmlunit.javascript.host.dom.DOMException.HIERARCHY_REQUEST_ERR);
     }
 
     /**
@@ -938,9 +982,11 @@ public class Document extends Node {
             return null;
         }
         catch (final CSSException e) {
-            throw JavaScriptEngine.constructError("SyntaxError",
+            throw JavaScriptEngine.asJavaScriptException(
+                    getWindow(),
                     "An invalid or illegal selector was specified (selector: '"
-                            + selectors + "' error: " + e.getMessage() + ").");
+                            + selectors + "' error: " + e.getMessage() + ").",
+                    org.htmlunit.javascript.host.dom.DOMException.SYNTAX_ERR);
         }
     }
 
@@ -957,8 +1003,11 @@ public class Document extends Node {
             return NodeList.staticNodeList(this, getDomNodeOrDie().querySelectorAll(selectors));
         }
         catch (final CSSException e) {
-            throw JavaScriptEngine.reportRuntimeError("An invalid or illegal selector was specified (selector: '"
-                    + selectors + "' error: " + e.getMessage() + ").");
+            throw JavaScriptEngine.asJavaScriptException(
+                    getWindow(),
+                    "An invalid or illegal selector was specified (selector: '"
+                            + selectors + "' error: " + e.getMessage() + ").",
+                    org.htmlunit.javascript.host.dom.DOMException.SYNTAX_ERR);
         }
     }
 
@@ -1128,8 +1177,10 @@ public class Document extends Node {
         }
 
         if (clazz == null) {
-            throw JavaScriptEngine.throwAsScriptRuntimeEx(new DOMException(DOMException.NOT_SUPPORTED_ERR,
-                "Event Type is not supported: " + eventType));
+            throw JavaScriptEngine.asJavaScriptException(
+                    this,
+                    "Event Type '" + eventType + "' is not supported.",
+                    org.htmlunit.javascript.host.dom.DOMException.NOT_SUPPORTED_ERR);
         }
 
         try {
@@ -3468,9 +3519,10 @@ public class Document extends Node {
     @JsxFunction
     public HtmlUnitScriptable getElementById(final String id) {
         final DomNode domNode = getDomNodeOrDie();
-        final Object domElement = domNode.getFirstByXPath("//*[@id = \"" + id + "\"]");
-        if (domElement != null) {
-            return ((DomElement) domElement).getScriptableObject();
+        for (final DomElement descendant : domNode.getDomElementDescendants()) {
+            if (id.equals(descendant.getId())) {
+                return descendant.getScriptableObject();
+            }
         }
         return null;
     }

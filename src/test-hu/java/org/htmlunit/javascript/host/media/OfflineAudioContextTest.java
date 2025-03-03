@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,8 @@ package org.htmlunit.javascript.host.media;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -55,7 +56,7 @@ public class OfflineAudioContextTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"function", "error", "[object OfflineAudioContext]"})
+    @Alerts({"function", "TypeError", "[object OfflineAudioContext]"})
     public void ctor() throws Exception {
         final String html
             = "<html>\n"
@@ -72,7 +73,7 @@ public class OfflineAudioContextTest extends WebDriverTestCase {
             + "      log(typeof OfflineAudioContext);\n"
             + "      try {\n"
             + "        log(new OfflineAudioContext());\n"
-            + "      } catch(e) { log('error'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
             + "      log(new OfflineAudioContext({length: 44100 * 1, sampleRate: 44100}));\n"
             + "    }\n"
             + "  </script>\n"
@@ -119,7 +120,15 @@ public class OfflineAudioContextTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"OfflineAudioContext prep done", "Error with decoding audio data"})
+    @Alerts({"OfflineAudioContext prep done", "Error with decoding audio data", "EncodingError/DOMException"})
+    @HtmlUnitNYI(CHROME = {"OfflineAudioContext prep done", "Error with decoding audio data",
+                           "NotSupportedError/DOMException"},
+            EDGE = {"OfflineAudioContext prep done", "Error with decoding audio data",
+                    "NotSupportedError/DOMException"},
+            FF = {"OfflineAudioContext prep done", "Error with decoding audio data",
+                  "NotSupportedError/DOMException"},
+            FF_ESR = {"OfflineAudioContext prep done", "Error with decoding audio data",
+                      "NotSupportedError/DOMException"})
     public void decodeAudioData() throws Exception {
         final String html
             = "<html>\n"
@@ -137,7 +146,7 @@ public class OfflineAudioContextTest extends WebDriverTestCase {
             + "      var audioData = new ArrayBuffer(0);\n"
             + "      audioCtx.decodeAudioData(audioData,\n"
             + "             function(buffer) { log('Decoding audio data done'); },\n"
-            + "             function(e) { log('Error with decoding audio data'); }\n"
+            + "             function(e) { log('Error with decoding audio data'); logEx(e); }\n"
             + "           );\n"
             + "      log('OfflineAudioContext prep done');\n"
             + "    }\n"
@@ -155,7 +164,15 @@ public class OfflineAudioContextTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"OfflineAudioContext prep done", "Error with decoding audio data"})
+    @Alerts({"OfflineAudioContext prep done", "Error with decoding audio data", "EncodingError/DOMException"})
+    @HtmlUnitNYI(CHROME = {"OfflineAudioContext prep done", "Error with decoding audio data",
+                           "NotSupportedError/DOMException"},
+            EDGE = {"OfflineAudioContext prep done", "Error with decoding audio data",
+                    "NotSupportedError/DOMException"},
+            FF = {"OfflineAudioContext prep done", "Error with decoding audio data",
+                  "NotSupportedError/DOMException"},
+            FF_ESR = {"OfflineAudioContext prep done", "Error with decoding audio data",
+                      "NotSupportedError/DOMException"})
     public void decodeAudioData2() throws Exception {
         final String html
             = "<html>\n"
@@ -173,7 +190,7 @@ public class OfflineAudioContextTest extends WebDriverTestCase {
             + "      var audioData = new ArrayBuffer(0);\n"
             + "      audioCtx.decodeAudioData(audioData).then(\n"
             + "             function(buffer) { log('Decoding audio data done'); },\n"
-            + "             function(e) { log('Error with decoding audio data'); }\n"
+            + "             function(e) { log('Error with decoding audio data'); logEx(e); }\n"
             + "           );\n"
             + "      log('OfflineAudioContext prep done');\n"
             + "    }\n"

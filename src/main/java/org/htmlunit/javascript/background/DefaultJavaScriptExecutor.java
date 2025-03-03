@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -102,7 +102,13 @@ public class DefaultJavaScriptExecutor implements JavaScriptExecutor {
             }
 
             // Stop the thread
-            eventLoopThread_.stop();
+            try {
+                eventLoopThread_.stop();
+            }
+            catch (final Exception e) {
+                LOG.warn("JS thread did not interrupt after 10s, maybe there is an endless loop."
+                        + "Please consider setting an JavaScriptTimeout for the WebClient.", e);
+            }
         }
     }
 
@@ -174,6 +180,8 @@ public class DefaultJavaScriptExecutor implements JavaScriptExecutor {
             catch (final InterruptedException e) {
                 // restore interrupted status
                 Thread.currentThread().interrupt();
+
+                break;
             }
         }
     }

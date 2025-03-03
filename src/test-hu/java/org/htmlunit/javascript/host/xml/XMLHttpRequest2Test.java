@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,8 +45,8 @@ import org.htmlunit.WebRequest;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.javascript.host.xml.XMLHttpRequestTest.BasicAuthenticationServlet;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
 import org.junit.Ignore;
@@ -277,7 +277,7 @@ public class XMLHttpRequest2Test extends WebDriverTestCase {
             + "    xhr.open('GET', values[i], false);\n"
             + "    xhr.send('');\n"
             + "    log('pass');\n"
-            + "  } catch(e) { log('exception') }\n"
+            + "  } catch(e) { logEx(e) }\n"
             + "}\n"
             + "</script>\n"
             + "</head>\n"
@@ -412,7 +412,7 @@ public class XMLHttpRequest2Test extends WebDriverTestCase {
             + "  try {\n"
             + "    xhr.open('GET', '" + url + "', false);\n"
             + "    log('ok');\n"
-            + "  } catch(e) { log('exception'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script>\n"
             + "</head>\n"
@@ -745,7 +745,7 @@ public class XMLHttpRequest2Test extends WebDriverTestCase {
             + "    log('ok');\n"
             + "    xhr.send();\n"
             + "    log(xhr.readyState);\n"
-            + "  } catch(e) { log('exception'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script>\n"
             + "</head>\n"
@@ -780,7 +780,7 @@ public class XMLHttpRequest2Test extends WebDriverTestCase {
             + "    log('ok');\n"
             + "    xhr.send();\n"
             + "    log(xhr.readyState);\n"
-            + "  } catch(e) { log('exception'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script>\n"
             + "</head>\n"
@@ -824,7 +824,7 @@ public class XMLHttpRequest2Test extends WebDriverTestCase {
             + "    log('ok');\n"
             + "    xhr.send();\n"
             + "    log(xhr.readyState);\n"
-            + "  } catch(e) { log('exception'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script>\n"
             + "</head>\n"
@@ -1269,7 +1269,7 @@ public class XMLHttpRequest2Test extends WebDriverTestCase {
             + "    try {\n"
             + "      xhr.open('POST', 'redirect.html', false);\n"
             + "      xhr.send('" + content + "');\n"
-            + "    } catch(e) { log('exception'); }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "  }\n"
             + "</script></head>\n"
             + "<body onload='test()'></body></html>";

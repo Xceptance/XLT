@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,8 +27,8 @@ import java.util.Map;
 
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
 import org.junit.Before;
@@ -1150,5 +1150,57 @@ public class CookieManager4Test extends WebDriverTestCase {
             assertEquals("", mgr.getCookie("c4").getSameSite());
             assertEquals("unknown", mgr.getCookie("c5").getSameSite());
         }
+    }
+
+    /**
+     * Test for issue #270.
+     * @throws Exception in case of error
+     */
+    @Test
+    @Alerts("JDSessionID=1234567890")
+    public void issue270() throws Exception {
+        final List<NameValuePair> responseHeader1 = new ArrayList<>();
+        responseHeader1.add(new NameValuePair("Set-Cookie", "first=1; path=/c"));
+
+        final String html = "<html>\n"
+            + "<head></head>\n"
+            + "<body><script>\n"
+
+            + "function setCookie(name, value, expires, path, domain, secure) {\n"
+            + "  var curCookie = name + '=' + escape(value) +\n"
+            + "    ((expires) ? '; expires=' + expires.toGMTString() : '') +\n"
+            + "    ((path) ? '; path=' + path : '') +\n"
+            + "    ((domain) ? '; domain=' + domain : '') +\n"
+            + "    ((secure) ? '; secure' : '');\n"
+
+            + "  document.cookie = curCookie;\n"
+            + "}\n"
+
+            + "var now = new Date();\n"
+            + "now.setTime(now.getTime() + 60 * 60 * 1000);\n"
+            + "setCookie('JDSessionID', '1234567890', now, '/', 'htmlunit.org');\n"
+
+//             + "alert('cookies: ' + document.cookie);\n"
+
+            + "</script></body>\n"
+            + "</html>";
+
+        final URL firstUrl = new URL(URL_HOST1);
+        getMockWebConnection().setResponse(firstUrl, html);
+        loadPage2(html, firstUrl);
+
+        loadPage2(HTML_ALERT_COOKIE, firstUrl);
+        verifyTitle2(getWebDriver(), getExpectedAlerts());
+    }
+
+    @Override
+    protected final WebDriver getWebDriver() {
+        final WebDriver driver = super.getWebDriver();
+        if (driver instanceof HtmlUnitDriver) {
+            // set timeout to fail fast when the url not mapped
+            ((HtmlUnitDriver) driver).getWebClient().getOptions().setTimeout(1000);
+        }
+
+        return driver;
     }
 }

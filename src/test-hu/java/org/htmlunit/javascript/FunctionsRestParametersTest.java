@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ package org.htmlunit.javascript;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -46,7 +46,7 @@ public class FunctionsRestParametersTest extends WebDriverTestCase {
             + "}\n"
             + "try {\n"
             + "  log(rest(1, 'abc', 2, '##').toString());\n"
-            + "} catch (e) { log(e.message) }"
+            + "} catch(e) { log(e.message) }"
             + "</script>\n"
             + "</body></html>";
 
@@ -72,7 +72,7 @@ public class FunctionsRestParametersTest extends WebDriverTestCase {
             + "try {\n"
             + "  var r = rest();\n"
             + "  log('' + Array.isArray(r) + '-' + r.length);\n"
-            + "} catch (e) { log(e.message) }"
+            + "} catch(e) { log(e.message) }"
             + "</script>\n"
             + "</body></html>";
 
@@ -98,7 +98,7 @@ public class FunctionsRestParametersTest extends WebDriverTestCase {
             + "try {\n"
             + "  var r = rest('xy');\n"
             + "  log('' + Array.isArray(r) + '-' + r.length);\n"
-            + "} catch (e) { log(e.message) }"
+            + "} catch(e) { log(e.message) }"
             + "</script>\n"
             + "</body></html>";
 
@@ -123,7 +123,7 @@ public class FunctionsRestParametersTest extends WebDriverTestCase {
             + "}\n"
             + "try {\n"
             + "  log(rest(1, 'abc', 2, '##').toString());\n"
-            + "} catch (e) { log(e.message) }"
+            + "} catch(e) { log(e.message) }"
             + "</script>\n"
             + "</body></html>";
 
@@ -148,7 +148,7 @@ public class FunctionsRestParametersTest extends WebDriverTestCase {
             + "}\n"
             + "try {\n"
             + "  log(rest());\n"
-            + "} catch (e) { log(e.message) }"
+            + "} catch(e) { log(e.message) }"
             + "</script>\n"
             + "</body></html>";
 
@@ -173,7 +173,7 @@ public class FunctionsRestParametersTest extends WebDriverTestCase {
             + "}\n"
             + "try {\n"
             + "  log(rest('77'));\n"
-            + "} catch (e) { log(e.message) }"
+            + "} catch(e) { log(e.message) }"
             + "</script>\n"
             + "</body></html>";
 
@@ -198,7 +198,7 @@ public class FunctionsRestParametersTest extends WebDriverTestCase {
             + "}\n"
             + "try {\n"
             + "  log('' + rest('77') + '-' + rest(1, 2, 3, 4));\n"
-            + "} catch (e) { log(e.message) }"
+            + "} catch(e) { log(e.message) }"
             + "</script>\n"
             + "</body></html>";
 
@@ -222,7 +222,7 @@ public class FunctionsRestParametersTest extends WebDriverTestCase {
             + "function foo2(arg, ...theArgs) {}\n"
             + "try {\n"
             + "  log(foo1.length + '-' + foo2.length);\n"
-            + "} catch (e) { log(e.message) }"
+            + "} catch(e) { log(e.message) }"
             + "</script>\n"
             + "</body></html>";
 
@@ -247,7 +247,7 @@ public class FunctionsRestParametersTest extends WebDriverTestCase {
             + "}\n"
             + "try {\n"
             + "  log(rest(1,2) + '-' + rest(1) + '-' + rest());\n"
-            + "} catch (e) { log(e.message) }"
+            + "} catch(e) { log(e.message) }"
             + "</script>\n"
             + "</body></html>";
 
@@ -272,7 +272,7 @@ public class FunctionsRestParametersTest extends WebDriverTestCase {
             + "}\n"
             + "try {\n"
             + "  log(rest.toString());\n"
-            + "} catch (e) { log(e.message) }"
+            + "} catch(e) { log(e.message) }"
             + "</script>\n"
             + "</body></html>";
 

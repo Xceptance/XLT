@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,7 +50,7 @@ import org.htmlunit.WebRequest;
 import org.htmlunit.WebResponse;
 import org.htmlunit.html.HtmlElementTest.HtmlAttributeChangeListenerTestImpl;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.util.Cookie;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
@@ -1137,11 +1137,16 @@ public class HtmlPageTest extends SimpleWebTestCase {
      */
     @Test
     public void getElementsById() throws Exception {
-        final String html = "<html><body><div id='a'>foo</div><div id='b'/><div id='b'/></body></html>";
+        final String html = "<html><body>"
+                + "<div id='a'>foo</div>"
+                + "<div id='b'/><div id='b'/>"
+                + "<div id='c'><div id='c'/></div>"
+                + "</body></html>";
         final HtmlPage page = loadPage(html);
         assertEquals(1, page.getElementsById("a").size());
         assertEquals(2, page.getElementsById("b").size());
-        assertEquals(0, page.getElementsById("c").size());
+        assertEquals(2, page.getElementsById("c").size());
+        assertEquals(0, page.getElementsById("d").size());
 
         final DomElement a = page.getElementsById("a").get(0);
         a.remove();
@@ -1149,6 +1154,7 @@ public class HtmlPageTest extends SimpleWebTestCase {
 
         final DomElement b1 = page.getElementsById("b").get(0);
         b1.appendChild(a);
+
         assertEquals(1, page.getElementsById("a").size());
     }
 
@@ -1743,52 +1749,6 @@ public class HtmlPageTest extends SimpleWebTestCase {
     }
 
     /**
-     * Tests getElementById() of child element after appendChild(), removeChild(), then appendChild()
-     * of the parent element.
-     *
-     * @throws Exception if the test fails
-     */
-    @Test
-    public void getElementById_AfterAppendRemoveAppendChild() throws Exception {
-        final String content = "<html><head><title>foo</title><script>\n"
-            + "  function test() {\n"
-            + "    var table = document.createElement('table');\n"
-            + "    var tr = document.createElement('tr');\n"
-            + "    tr.id = 'myTR';\n"
-            + "    table.appendChild(tr);\n"
-            + "    document.body.appendChild(table);\n"
-            + "    document.body.removeChild(table);\n"
-            + "    document.body.appendChild(table);\n"
-            + "    alert(document.getElementById('myTR'));\n"
-            + "  }\n"
-            + "</script></head><body onload='test()'>\n"
-            + "</body></html>";
-        final List<String> collectedAlerts = new ArrayList<>();
-        loadPage(content, collectedAlerts);
-        assertFalse("null".equals(collectedAlerts.get(0)));
-    }
-
-    /**
-     * @throws Exception if the test fails
-     */
-    @Test
-    public void getElementById_AfterAppendingToNewlyCreatedElement() throws Exception {
-        final String content = "<html><head><title>foo</title><script>\n"
-            + "  function test() {\n"
-            + "    var table = document.createElement('table');\n"
-            + "    var tr = document.createElement('tr');\n"
-            + "    tr.id = 'myTR';\n"
-            + "    table.appendChild(tr);\n"
-            + "    alert(document.getElementById('myTR'));\n"
-            + "  }\n"
-            + "</script></head><body onload='test()'>\n"
-            + "</body></html>";
-        final List<String> collectedAlerts = new ArrayList<>();
-        loadPage(content, collectedAlerts);
-        assertTrue("null".equals(collectedAlerts.get(0)));
-    }
-
-    /**
      * @throws Exception if the test fails
      */
     @Test
@@ -1899,7 +1859,7 @@ public class HtmlPageTest extends SimpleWebTestCase {
             + "</table></body></html>";
 
         final HtmlPage page = loadPage(htmlContent);
-        page.asNormalizedText();
+        assertEquals("test\na", page.asNormalizedText());
     }
 
     /**

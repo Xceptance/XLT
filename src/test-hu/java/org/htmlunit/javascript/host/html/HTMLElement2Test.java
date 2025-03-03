@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,15 @@
  */
 package org.htmlunit.javascript.host.html;
 
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.CHROME;
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.EDGE;
+import static org.htmlunit.junit.annotation.TestedBrowser.CHROME;
+import static org.htmlunit.junit.annotation.TestedBrowser.EDGE;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.NotYetImplemented;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
@@ -78,9 +78,7 @@ public class HTMLElement2Test extends WebDriverTestCase {
             + "      x.tagUrn = 'http://www.meh.com/meh';\n"
             + "      log(x.scopeName);\n"
             + "      log(x.tagUrn);\n"
-            + "    } catch(e) {\n"
-            + "      log('error');\n"
-            + "    }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -1377,11 +1375,9 @@ public class HTMLElement2Test extends WebDriverTestCase {
             + "<div id='div' on" + type + "='log(\"div handler\")'>\n"
             + "<input id='input' on" + type + "='log(\"input handler\")'>\n"
             + "</div>\n"
-            + "<textarea id='log'></textarea>\n"
+            + LOG_TEXTAREA
             + "<script>\n"
-            + "function log(x) {\n"
-            + "  document.getElementById('log').value += x + '\\n';\n"
-            + "}\n"
+            + LOG_TEXTAREA_FUNCTION
             + "function addListener(id, event) {\n"
             + "  var handler = function(e) { log(event + ' ' + id) };\n"
             + "  var e = document.getElementById(id);\n"
@@ -1395,10 +1391,9 @@ public class HTMLElement2Test extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
         driver.findElement(By.id("input")).click();
-        final WebElement log = driver.findElement(By.id("log"));
+        final WebElement log = driver.findElement(By.id("myLog"));
         log.click();
-        final String text = log.getAttribute("value").trim().replaceAll("\r", "");
-        assertEquals(String.join("\n", getExpectedAlerts()), text);
+        verifyTextArea2(driver, getExpectedAlerts());
     }
 
     /**
@@ -1568,7 +1563,7 @@ public class HTMLElement2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("SyntaxError/DOMException")
     public void querySelectorAll_badSelector() throws Exception {
         for (final String selector : HTMLDocumentTest.JQUERY_CUSTOM_SELECTORS) {
             doTestQuerySelectorAll_badSelector(selector);
@@ -1588,7 +1583,7 @@ public class HTMLElement2Test extends WebDriverTestCase {
             + "try {\n"
             + "  document.getElementById('it').querySelectorAll('" + selector + "');\n"
             + "  log('working: " + selector + "');\n"
-            + "} catch(e) { log('exception'); }\n"
+            + "} catch(e) { logEx(e); }\n"
             + "</script></body></html>";
 
         loadPageVerifyTitle2(html);
@@ -1598,7 +1593,7 @@ public class HTMLElement2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("SyntaxError/DOMException")
     public void querySelector_badSelector() throws Exception {
         for (final String selector : HTMLDocumentTest.JQUERY_CUSTOM_SELECTORS) {
             doTestQuerySelector_badSelector(selector);
@@ -1611,7 +1606,7 @@ public class HTMLElement2Test extends WebDriverTestCase {
             + "try {\n"
             + "  document.getElementById('it').querySelector('" + selector + "');\n"
             + "  log('working " + selector + "');\n"
-            + "} catch(e) { log('exception'); }\n"
+            + "} catch(e) { logEx(e); }\n"
             + "</script></body></html>";
 
         loadPageVerifyTitle2(html);
@@ -1647,9 +1642,7 @@ public class HTMLElement2Test extends WebDriverTestCase {
         final String html = "<html>\n"
             + "<head>\n"
             + "  <script>\n"
-            + "  function log(x) {\n"
-            + "    document.getElementById('log').value += x + '\\n';\n"
-            + "  }\n"
+            + LOG_TEXTAREA_FUNCTION
             + "  function doTest() {\n"
             + "    var myNode = document.getElementById('myNode');\n"
             + "    log('Old = ' + myNode.innerHTML);\n"
@@ -1661,14 +1654,11 @@ public class HTMLElement2Test extends WebDriverTestCase {
             + "</head>\n"
             + "<body onload='doTest()'>\n"
             + "  <p id='myNode'><b>Old innerHTML</b><!-- old comment --></p>\n"
-            + "  <textarea id='log'></textarea>\n"
+            + LOG_TEXTAREA
             + "</body>\n"
             + "</html>";
 
-        final WebDriver driver = loadPage2(html);
-        final WebElement log = driver.findElement(By.id("log"));
-        final String text = log.getAttribute("value").trim().replaceAll("\r", "");
-        assertEquals(String.join("\n", getExpectedAlerts()), text);
+        final WebDriver driver = loadPageVerifyTextArea2(html);
 
         final WebElement pElt = driver.findElement(By.id("myNode"));
         assertEquals("p", pElt.getTagName());

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,14 @@ import static org.htmlunit.BrowserVersionFeatures.JS_ARRAY_SORT_ACCEPTS_INCONSIS
 import static org.htmlunit.BrowserVersionFeatures.JS_PROPERTY_DESCRIPTOR_NAME;
 
 import java.io.Serializable;
+import java.util.function.Consumer;
 
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.ScriptException;
 import org.htmlunit.ScriptPreProcessor;
 import org.htmlunit.WebClient;
 import org.htmlunit.corejs.javascript.Callable;
+import org.htmlunit.corejs.javascript.CompilerEnvirons;
 import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.ContextAction;
 import org.htmlunit.corejs.javascript.ContextFactory;
@@ -156,7 +158,8 @@ public class HtmlUnitContextFactory extends ContextFactory {
         @Override
         protected Script compileString(String source, final Evaluator compiler,
                 final ErrorReporter compilationErrorReporter, final String sourceName,
-                final int lineno, final Object securityDomain) {
+                final int lineno, final Object securityDomain,
+                final Consumer<CompilerEnvirons> compilerEnvironsProcessor) {
 
             // this method gets called by Context.compileString and by ScriptRuntime.evalSpecial
             // which is used for window.eval. We have to take care in which case we are.
@@ -192,7 +195,7 @@ public class HtmlUnitContextFactory extends ContextFactory {
             source = preProcess(page, source, sourceName, lineno, null);
 
             return super.compileString(source, compiler, compilationErrorReporter,
-                    sourceName, lineno, securityDomain);
+                    sourceName, lineno, securityDomain, compilerEnvironsProcessor);
         }
 
         @Override
@@ -252,7 +255,7 @@ public class HtmlUnitContextFactory extends ContextFactory {
         cx.setClassShutter(fullClassName -> false);
 
         // Use pure interpreter mode to get observeInstructionCount() callbacks.
-        cx.setOptimizationLevel(-1);
+        cx.setInterpretedMode(true);
 
         // Set threshold on how often we want to receive the callbacks
         cx.setInstructionObserverThreshold(INSTRUCTION_COUNT_THRESHOLD);
@@ -340,8 +343,6 @@ public class HtmlUnitContextFactory extends ContextFactory {
             case Context.FEATURE_INTL_402:
                 return true;
             case Context.FEATURE_HTMLUNIT_FN_ARGUMENTS_IS_RO_VIEW:
-                return true;
-            case Context.FEATURE_HTMLUNIT_FUNCTION_DECLARED_FORWARD_IN_BLOCK:
                 return true;
             case Context.FEATURE_HTMLUNIT_MEMBERBOX_NAME:
                 return browserVersion_.hasFeature(JS_PROPERTY_DESCRIPTOR_NAME);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,10 +45,10 @@ import org.junit.runners.parameterized.TestWithParameters;
  * It uses {@link org.junit.runners.Parameterized.Parameter} for field injection.
  *
  * You must define a single {@link Default} method, which has global
- * {@link org.htmlunit.junit.BrowserRunner.Alerts}.
+ * {@link org.htmlunit.junit.annotation.Alerts}.
  * You can add other specific tests, which will not be parameterized, and they can have other
- * {@link org.htmlunit.junit.BrowserRunner.Alerts} or
- * {@link org.htmlunit.junit.BrowserRunner.NotYetImplemented}.
+ * {@link org.htmlunit.junit.annotation.Alerts} or
+ * {@link org.htmlunit.junit.annotation.NotYetImplemented}.
  *
  * The method name will start with underscore '_' and have the parameters joined by an underscore.
  * If the method of a data entry already exists, then it will not be considered, as the actual method will override it.

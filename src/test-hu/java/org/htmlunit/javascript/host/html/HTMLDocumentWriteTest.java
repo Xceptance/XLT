@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import org.htmlunit.WebClient;
 import org.htmlunit.html.FrameWindow;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -49,7 +49,7 @@ public class HTMLDocumentWriteTest extends SimpleWebTestCase {
             + "var d = document.writeln;\n"
             + "try {\n"
             + "  d('foo');\n"
-            + "} catch (e) { alert('exception occurred') }\n"
+            + "} catch(e) { alert('exception occurred') }\n"
             + "  document.writeln('foo');\n"
             + "}\n"
             + "</script></head><body onload='doTheFoo()'>\n"

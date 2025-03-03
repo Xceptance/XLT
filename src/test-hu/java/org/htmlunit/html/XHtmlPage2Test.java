@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,8 @@ import static java.nio.charset.StandardCharsets.ISO_8859_1;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
@@ -115,7 +115,9 @@ public class XHtmlPage2Test extends WebDriverTestCase {
             + "<html xmlns=\"http://www.w3.org/1999/xhtml\">\n"
             + "<head>"
             + "  <script>\n"
-            + LOG_TITLE_FUNCTION
+
+            // do not use LOG_TITLE_FUNCTION here
+            + "    function log(msg) { window.document.title += msg + '\\u00a7'; }\n"
             + "    function test() {"
             + "      log(document.getElementById('tester').innerHTML);\n"
             + "      log(document.getElementById('tester').outerHTML);\n"
@@ -163,7 +165,9 @@ public class XHtmlPage2Test extends WebDriverTestCase {
             + "<html xmlns=\"http://www.w3.org/1999/xhtml\">\n"
             + "<head>"
             + "  <script>\n"
-            + LOG_TITLE_FUNCTION
+
+            // do not use LOG_TITLE_FUNCTION here
+            + "    function log(msg) { window.document.title += msg + '\\u00a7'; }\n"
             + "    function test() {"
             + "      log(document.getElementById('tester').innerHTML);\n"
             + "      log(document.getElementById('tester').outerHTML);\n"

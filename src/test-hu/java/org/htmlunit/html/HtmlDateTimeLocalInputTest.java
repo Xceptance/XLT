@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ package org.htmlunit.html;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
@@ -50,7 +50,7 @@ public class HtmlDateTimeLocalInputTest extends WebDriverTestCase {
             + "      input = document.createElement('input');\n"
             + "      input.type = 'datetime-local';\n"
             + "      log(input.value + '-' + input.defaultValue + '-' + input.getAttribute('value'));\n"
-            + "    } catch(e)  { log('exception'); }\n"
+            + "    } catch(e)  { logEx(e); }\n"
 
             + "    var builder = document.createElement('div');\n"
             + "    builder.innerHTML = '<input type=\"datetime-local\">';\n"
@@ -86,7 +86,7 @@ public class HtmlDateTimeLocalInputTest extends WebDriverTestCase {
             + "      input.type = 'datetime-local';\n"
             + "      input = input.cloneNode(false);\n"
             + "      log(input.value + '-' + input.defaultValue + '-' + input.getAttribute('value'));\n"
-            + "    } catch(e)  { log('exception'); }\n"
+            + "    } catch(e)  { logEx(e); }\n"
 
             + "    var builder = document.createElement('div');\n"
             + "    builder.innerHTML = '<input type=\"datetime-local\">';\n"
@@ -136,7 +136,7 @@ public class HtmlDateTimeLocalInputTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("")
+    @Alerts({"2018-06-12T19:30", ""})
     public void clearInput() throws Exception {
         final String htmlContent
                 = "<html>\n"
@@ -150,8 +150,12 @@ public class HtmlDateTimeLocalInputTest extends WebDriverTestCase {
         final WebDriver driver = loadPage2(htmlContent);
         final WebElement element = driver.findElement(By.id("tester"));
 
+        assertEquals(getExpectedAlerts()[0], element.getDomAttribute("value"));
+        assertEquals(getExpectedAlerts()[0], element.getDomProperty("value"));
+
         element.clear();
-        assertEquals(getExpectedAlerts()[0], element.getAttribute("value"));
+        assertEquals(getExpectedAlerts()[0], element.getDomAttribute("value"));
+        assertEquals(getExpectedAlerts()[1], element.getDomProperty("value"));
     }
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -199,8 +199,8 @@ public class Node extends EventTarget {
             if (!isNodeInsertable(childNode)) {
                 throw JavaScriptEngine.asJavaScriptException(
                         getWindow(),
-                        new DOMException("Node cannot be inserted at the specified point in the hierarchy",
-                            DOMException.HIERARCHY_REQUEST_ERR));
+                        "Node cannot be inserted at the specified point in the hierarchy",
+                        DOMException.HIERARCHY_REQUEST_ERR);
             }
 
             // Get XML node for the DOM node passed in
@@ -210,7 +210,12 @@ public class Node extends EventTarget {
             final DomNode parentNode = getDomNodeOrDie();
 
             // Append the child to the parent node
-            parentNode.appendChild(childDomNode);
+            try {
+                parentNode.appendChild(childDomNode);
+            }
+            catch (final org.w3c.dom.DOMException e) {
+                throw JavaScriptEngine.asJavaScriptException(getWindow(), e.getMessage(), e.code);
+            }
 
             initInlineFrameIfNeeded(childDomNode);
             for (final HtmlElement htmlElement : childDomNode.getHtmlElementDescendants()) {
@@ -277,8 +282,10 @@ public class Node extends EventTarget {
 
             // is the node allowed here?
             if (!isNodeInsertable(newChild)) {
-                throw JavaScriptEngine.constructError("ReferenceError",
-                        "Node cannot be inserted at the specified point in the hierarchy");
+                throw JavaScriptEngine.asJavaScriptException(
+                        getWindow(),
+                        "Node cannot be inserted at the specified point in the hierarchy",
+                        DOMException.HIERARCHY_REQUEST_ERR);
             }
 
             final DomNode newChildNode = newChild.getDomNodeOrDie();
@@ -288,8 +295,8 @@ public class Node extends EventTarget {
                     if (!isNodeInsertable(child.getScriptableObject())) {
                         throw JavaScriptEngine.asJavaScriptException(
                                 getWindow(),
-                                new DOMException("Node cannot be inserted at the specified point in the hierarchy",
-                                    DOMException.HIERARCHY_REQUEST_ERR));
+                                "Node cannot be inserted at the specified point in the hierarchy",
+                                DOMException.HIERARCHY_REQUEST_ERR);
                     }
                 }
             }
@@ -318,7 +325,7 @@ public class Node extends EventTarget {
                 domNode.insertBefore(newChildNode, refChildNode);
             }
             catch (final org.w3c.dom.DOMException e) {
-                throw JavaScriptEngine.constructError("ReferenceError", e.getMessage());
+                throw JavaScriptEngine.asJavaScriptException(getWindow(), e.getMessage(), DOMException.NOT_FOUND_ERR);
             }
             return newChild;
         }
@@ -362,9 +369,11 @@ public class Node extends EventTarget {
         final DomNode childDomNode = childObjectNode.getDomNodeOrDie();
 
         if (!getDomNodeOrDie().isAncestorOf(childDomNode)) {
-            throw JavaScriptEngine.throwAsScriptRuntimeEx(
-                    new Exception("NotFoundError: Failed to execute 'removeChild' on '"
-                        + this + "': The node to be removed is not a child of this node."));
+            throw JavaScriptEngine.asJavaScriptException(
+                    getWindow(),
+                    "Failed to execute 'removeChild' on '"
+                            + this + "': The node to be removed is not a child of this node.",
+                    DOMException.NOT_FOUND_ERR);
         }
         // Remove the child from the parent node
         childDomNode.remove();
@@ -406,8 +415,10 @@ public class Node extends EventTarget {
 
             // is the node allowed here?
             if (!isNodeInsertable(newChild)) {
-                throw JavaScriptEngine.reportRuntimeError(
-                        "Node cannot be inserted at the specified point in the hierarchy");
+                throw JavaScriptEngine.asJavaScriptException(
+                        getWindow(),
+                        "Node cannot be inserted at the specified point in the hierarchy",
+                        DOMException.HIERARCHY_REQUEST_ERR);
             }
 
             // Get XML nodes for the DOM nodes passed in
@@ -728,7 +739,7 @@ public class Node extends EventTarget {
     @JsxFunction
     public int compareDocumentPosition(final Object node) {
         if (!(node instanceof Node)) {
-            throw JavaScriptEngine.reportRuntimeError("Could not convert JavaScript argument arg 0");
+            throw JavaScriptEngine.typeError("Could not convert JavaScript argument arg 0");
         }
         return getDomNodeOrDie().compareDocumentPosition(((Node) node).getDomNodeOrDie());
     }
@@ -778,7 +789,7 @@ public class Node extends EventTarget {
      * @see <a href="https://developer.mozilla.org/en-US/docs/DOM/Node.attributes">Gecko DOM Reference</a>
      * @return the attributes of this XML element
      */
-    public Object getAttributes() {
+    public NamedNodeMap getAttributes() {
         return null;
     }
 

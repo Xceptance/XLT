@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package org.htmlunit.javascript.host.event;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -61,7 +61,7 @@ public class MessageEventTest extends WebDriverTestCase {
             + "    try {\n"
             + "      var event = new MessageEvent('type-message');\n"
             + "      dump(event);\n"
-            + "    } catch (e) { log('exception'); }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "  }\n"
             + DUMP_EVENT_FUNCTION
             + "</script></head><body onload='test()'>\n"
@@ -89,7 +89,7 @@ public class MessageEventTest extends WebDriverTestCase {
             + "        'source': window\n"
             + "      });\n"
             + "      dump(event);\n"
-            + "    } catch (e) { log('exception'); }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "  }\n"
             + DUMP_EVENT_FUNCTION
             + "</script></head><body onload='test()'>\n"
@@ -124,7 +124,7 @@ public class MessageEventTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("TypeError")
     public void initMessageEventPortsNull() throws Exception {
         final String[] expectedAlerts = getExpectedAlerts();
         if (expectedAlerts.length > 4) {
@@ -140,7 +140,7 @@ public class MessageEventTest extends WebDriverTestCase {
             + "  try {\n"
             + "    e.initMessageEvent('message', true, true, 'hello', '" + origin + "', 2, window, null);\n"
             + "    dump(e);\n"
-            + "  } catch (e) { log('exception'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "} else {\n"
             + "  log('no initMessageEvent');\n"
             + "}\n"
@@ -171,7 +171,7 @@ public class MessageEventTest extends WebDriverTestCase {
             + "  try {\n"
             + "    e.initMessageEvent('message', true, true, 'hello', '" + origin + "', 2, window, undefined);\n"
             + "    dump(e);\n"
-            + "  } catch (e) { log('exception'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "} else {\n"
             + "  log('no initMessageEvent');\n"
             + "}\n"
@@ -200,7 +200,7 @@ public class MessageEventTest extends WebDriverTestCase {
             + "  try {\n"
             + "    e.initMessageEvent('message', true, true, 'hello', '" + origin + "', 2, window, []);\n"
             + "    dump(e);\n"
-            + "  } catch (e) { log('exception ' + e); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "} else {\n"
             + "  log('no initMessageEvent');\n"
             + "}\n"

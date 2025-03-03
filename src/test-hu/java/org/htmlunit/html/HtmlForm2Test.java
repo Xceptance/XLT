@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,8 +40,8 @@ import org.htmlunit.MockWebConnection;
 import org.htmlunit.WebClient;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
 import org.htmlunit.util.UrlUtils;
@@ -123,7 +123,7 @@ public class HtmlForm2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts({"error", "error", "error"})
+    @Alerts({"TypeError", "TypeError", "TypeError"})
     public void asFunction() throws Exception {
         final String html
             = "<html><head>\n"
@@ -131,9 +131,9 @@ public class HtmlForm2Test extends WebDriverTestCase {
             + LOG_TITLE_FUNCTION
             + "function test() {\n"
             + "  var f1 = document.forms[0];\n"
-            + "  try { log(f1('textfieldid').id) } catch (e) { log('error') }\n"
-            + "  try { log(f1('textfieldname').name) } catch (e) { log('error') }\n"
-            + "  try { log(f1(0).id) } catch (e) { log('error') }\n"
+            + "  try { log(f1('textfieldid').id) } catch(e) { logEx(e) }\n"
+            + "  try { log(f1('textfieldname').name) } catch(e) { logEx(e) }\n"
+            + "  try { log(f1(0).id) } catch(e) { logEx(e) }\n"
             + "}\n"
             + "</script></head><body onload='test()'>\n"
             + "<p>hello world</p>\n"
@@ -159,10 +159,10 @@ public class HtmlForm2Test extends WebDriverTestCase {
             + "function test() {\n"
             + "  try {\n"
             + "    var f1 = document.forms(0);\n"
-            + "    try { log(f1('textfieldid').id) } catch (e) { log('error') }\n"
-            + "    try { log(f1('textfieldname').name) } catch (e) { log('error') }\n"
-            + "    try { log(f1(0).id) } catch (e) { log('error') }\n"
-            + "  } catch (e) { log('TypeError') }\n"
+            + "    try { log(f1('textfieldid').id) } catch(e) { logEx(e) }\n"
+            + "    try { log(f1('textfieldname').name) } catch(e) { logEx(e) }\n"
+            + "    try { log(f1(0).id) } catch(e) { logEx(e) }\n"
+            + "  } catch(e) { logEx(e) }\n"
             + "}\n"
             + "</script></head><body onload='test()'>\n"
             + "<p>hello world</p>\n"
@@ -397,8 +397,7 @@ public class HtmlForm2Test extends WebDriverTestCase {
     @Alerts(DEFAULT = "text/html,application/xhtml+xml,application/xml;q=0.9,"
                     + "image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
             FF = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-            FF_ESR = "text/html,application/xhtml+xml,application/xml;q=0.9,"
-                    + "image/avif,image/webp,image/png,image/svg+xml,*/*;q=0.8")
+            FF_ESR = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
     public void acceptHeader() throws Exception {
         final String html
             = HtmlPageTest.STANDARDS_MODE_PREFIX_

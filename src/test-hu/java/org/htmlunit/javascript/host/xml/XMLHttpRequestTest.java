@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,10 +39,10 @@ import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.WebRequest;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
-import org.htmlunit.junit.BrowserRunner.Tries;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.NotYetImplemented;
+import org.htmlunit.junit.annotation.Tries;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
 import org.junit.ComparisonFailure;
@@ -157,7 +157,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "      msg = msg + xhr.status + '-';\n"
             + "    } catch(e) { msg = msg + 'ex: status' + '-' }\n"
             + "    try {\n"
-            + "      msg = msg + xhr.statusText;;\n"
+            + "      msg = msg + xhr.statusText;\n"
             + "    } catch(e) { msg = msg + 'ex: statusText' }\n"
             + "    log(msg);\n"
             + "  }\n"
@@ -210,7 +210,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "      msg = msg + xhr.status + '-';\n"
             + "    } catch(e) { msg = msg + 'ex: status' + '-' }\n"
             + "    try {\n"
-            + "      msg = msg + xhr.statusText;;\n"
+            + "      msg = msg + xhr.statusText;\n"
             + "    } catch(e) { msg = msg + 'ex: statusText' }\n"
             + "    document.getElementById('log').value += msg + '\\n';\n"
             + "  }\n"
@@ -232,7 +232,11 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
         final long maxWait = System.currentTimeMillis() + DEFAULT_WAIT_TIME;
         while (true) {
             try {
-                final String text = driver.findElement(By.id("log")).getAttribute("value").trim().replaceAll("\r", "");
+                final String text = driver
+                                        .findElement(By.id("log"))
+                                        .getDomProperty("value")
+                                        .trim()
+                                        .replaceAll("\r", "");
                 assertEquals(expected, text);
                 return;
             }
@@ -1084,7 +1088,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "  request.overrideMimeType('text/xml');\n"
             + "  request.send('');\n"
             + "  log(request.responseXML == null);\n"
-            + "} catch (e) { log('exception'); }\n"
+            + "} catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script>\n"
             + "</head>\n"
@@ -1101,7 +1105,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"true", "exception"})
+    @Alerts({"true", "InvalidStateError/DOMException"})
     public void overrideMimeTypeAfterSend() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -1114,7 +1118,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "  try {\n"
             + "    request.overrideMimeType('text/xml');\n"
             + "    log('overwritten');\n"
-            + "  } catch (e) { log('exception'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script>\n"
             + "</head>\n"
@@ -1143,7 +1147,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "  request.overrideMimeType('text/plain; charset=GBK');\n"
             + "  request.send('');\n"
             + "  log(request.responseText.charCodeAt(0));\n"
-            + "} catch (e) { log('exception'); }\n"
+            + "} catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script>\n"
             + "</head>\n"
@@ -1169,7 +1173,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "  request.overrideMimeType('text/plain; chaRSet=GBK');\n"
             + "  request.send('');\n"
             + "  log(request.responseText.charCodeAt(0));\n"
-            + "} catch (e) { log('exception'); }\n"
+            + "} catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script>\n"
             + "</head>\n"
@@ -1195,7 +1199,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "  request.overrideMimeType('text/plain; charset=');\n"
             + "  request.send('');\n"
             + "  log(request.responseText.charCodeAt(0));\n"
-            + "} catch (e) { log('exception'); }\n"
+            + "} catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script>\n"
             + "</head>\n"
@@ -1224,7 +1228,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "    for (var i = 0; i < text.length; i++) {\n"
             + "      log(text.charCodeAt(i));\n"
             + "    }\n"
-            + "  } catch (e) { log('exception'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script>\n"
             + "</head>\n"
@@ -1544,7 +1548,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
 
             + "    var req = new ActiveXObject('msxml2.xMLhTTp');\n"
             + "    log(req.readyState);\n"
-            + "  } catch (e) { log('ActiveXObject not available'); }\n"
+            + "  } catch(e) { log('ActiveXObject not available'); }\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'></body></html>";
@@ -1796,7 +1800,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "          request.open('GET', '" + URL_SECOND + "', false);\n"
             + "          request.send('');\n"
             + "          log(request.responseXML.getElementById('myID').id);\n"
-            + "        } catch (e) { log('exception'); }\n"
+            + "        } catch(e) { logEx(e); }\n"
             + "      }\n"
             + "    </script>\n"
             + "  </head>\n"
@@ -1834,7 +1838,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "          request.open('GET', '" + URL_SECOND + "', false);\n"
             + "          request.send('');\n"
             + "          log(request.responseXML.getElementById('myID').myInput.name);\n"
-            + "        } catch (e) { log('exception'); }\n"
+            + "        } catch(e) { logEx(e); }\n"
             + "      }\n"
             + "    </script>\n"
             + "  </head>\n"
@@ -1869,7 +1873,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "    var req = new ActiveXObject('MSXML2.XmlHttp');\n"
             + "    log(req.readyState);\n"
             + "    log(req.reAdYsTaTe);\n"
-            + "  } catch (e) { log('ActiveXObject not available'); }\n"
+            + "  } catch(e) { log('ActiveXObject not available'); }\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'></body></html>";
@@ -1890,7 +1894,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "    var req = new XMLHttpRequest();\n"
             + "    log(req.readyState);\n"
             + "    log(req.reAdYsTaTe);\n"
-            + "  } catch (e) { log('exception'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'></body></html>";
@@ -1942,7 +1946,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "  for (var i = 0; i < request.responseText.length; i++) {\n"
             + "    log(request.responseText.charCodeAt(i));\n"
             + "  }\n"
-            + "} catch (e) { log('exception'); }\n"
+            + "} catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script>\n"
             + "</head>\n"
@@ -1993,7 +1997,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "          request.onload = someLoad;\n"
             + "          request.open('GET', '" + URL_SECOND + "', false);\n"
             + "          request.send('');\n"
-            + "        } catch (e) { log('exception'); }\n"
+            + "        } catch(e) { logEx(e); }\n"
             + "      }\n"
             + "    </script>\n"
             + "  </head>\n"
@@ -2031,7 +2035,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "          request.addEventListener('load', someLoad, false);\n"
             + "          request.open('GET', '" + URL_SECOND + "', false);\n"
             + "          request.send('');\n"
-            + "        } catch (e) { log('exception'); }\n"
+            + "        } catch(e) { logEx(e); }\n"
             + "      }\n"
             + "    </script>\n"
             + "  </head>\n"
@@ -2069,7 +2073,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "          request.addEventListener('load', someLoad, false);\n"
             + "          request.open('GET', '" + URL_SECOND + "', false);\n"
             + "          request.send('');\n"
-            + "        } catch (e) { log('exception'); }\n"
+            + "        } catch(e) { logEx(e); }\n"
             + "      }\n"
             + "    </script>\n"
             + "  </head>\n"
@@ -2108,7 +2112,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "          request.addEventListener('load', someLoad, false);\n"
             + "          request.open('GET', '" + URL_SECOND + "', false);\n"
             + "          request.send('');\n"
-            + "        } catch (e) { log('exception'); }\n"
+            + "        } catch(e) { logEx(e); }\n"
             + "      }\n"
             + "    </script>\n"
             + "  </head>\n"
@@ -2137,7 +2141,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "        try {\n"
             + "          var request = new XMLHttpRequest();\n"
             + "          log(request.upload);\n"
-            + "        } catch (e) { log('exception'); }\n"
+            + "        } catch(e) { logEx(e); }\n"
             + "      }\n"
             + "    </script>\n"
             + "  </head>\n"
@@ -2294,9 +2298,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "    xhr.open('post', '/test2', false);\n"
             + "    xhr.send(blob);\n"
             + "    log('done');\n"
-            + "  } catch (e) {\n"
-            + "    log('error: ' + e.message);\n"
-            + "  }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script>\n"
             + "</head>\n"
@@ -2339,9 +2341,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "    xhr.open('post', '/test2', false);\n"
             + "    xhr.send(typedArray);\n"
             + "    log('done');\n"
-            + "  } catch (e) {\n"
-            + "    log('error: ' + e.message);\n"
-            + "  }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script>\n"
             + "</head>\n"
@@ -2381,17 +2381,14 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "    searchParams.append('q', 'HtmlUnit');\n"
             + "    searchParams.append('u', '\u043B\u0189');\n"
             + "    log(searchParams);\n"
-            + "  } catch (e) {\n"
-            + "    log('error: URLSearchParams');\n"
-            + "  }\n"
+            + "  } catch(e) { logEx(e); }\n"
+
             + "  try {\n"
             + "    var xhr = new XMLHttpRequest();\n"
             + "    xhr.open('post', '/test2', false);\n"
             + "    xhr.send(searchParams);\n"
             + "    log('done');\n"
-            + "  } catch (e) {\n"
-            + "    log('error: ' + e.message);\n"
-            + "  }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script>\n"
             + "</head>\n"
@@ -2435,9 +2432,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "    xhr.open('post', '/test2', false);\n"
             + "    xhr.send(formData);\n"
             + "    log('done');\n"
-            + "  } catch (e) {\n"
-            + "    log('error: ' + e.message);\n"
-            + "  }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script>\n"
             + "</head>\n"
@@ -2478,9 +2473,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "    xhr.open('post', '/test2', false);\n"
             + "    xhr.send('HtmlUnit \u043B\u0189');\n"
             + "    log('done');\n"
-            + "  } catch (e) {\n"
-            + "    log('error: ' + e.message);\n"
-            + "  }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script>\n"
             + "</head>\n"
@@ -2519,9 +2512,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "    xhr.setRequestHeader('Content-Type', 'text/jpeg');\n"
             + "    xhr.send('HtmlUnit \u043B\u0189');\n"
             + "    log('done');\n"
-            + "  } catch (e) {\n"
-            + "    log('error: ' + e.message);\n"
-            + "  }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script>\n"
             + "</head>\n"
@@ -2545,7 +2536,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("error")
+    @Alerts("InvalidStateError/DOMException")
     public void setRequestHeaderNotOpend() throws Exception {
         final String html
             = "<html>\n"
@@ -2557,9 +2548,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "    var xhr = new XMLHttpRequest();\n"
             + "    xhr.setRequestHeader('Content-Type', 'text/jpeg');\n"
             + "    log('done');\n"
-            + "  } catch (e) {\n"
-            + "    log('error');\n"
-            + "  }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script>\n"
             + "</head>\n"
@@ -2713,7 +2702,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "        log(request.responseType);\n"
             + "        request.responseType = 'text';\n"
             + "        log(request.responseType);\n"
-            + "      } catch(e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
 
             + "      try {\n"
             + "        request.responseType = 'JsON';\n"
@@ -2721,22 +2710,22 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
 
             + "        request.responseType = 'unknown';\n"
             + "        log(request.responseType);\n"
-            + "      } catch(e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
 
             + "      try {\n"
             + "        request.responseType = null;\n"
             + "        log(request.responseType);\n"
-            + "      } catch(e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
 
             + "      try {\n"
             + "        request.responseType = undefined;\n"
             + "        log(request.responseType);\n"
-            + "      } catch(e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
 
             + "      try {\n"
             + "        request.responseType = '';\n"
             + "        log(request.responseType);\n"
-            + "      } catch(e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
             + "      }\n"
             + "    </script>\n"
             + "  </head>\n"
@@ -2751,8 +2740,9 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"", "exception", "exception", "exception", "exception", "exception",
-             "", "", "", "", "exception"})
+    @Alerts({"", "InvalidAccessError/DOMException", "InvalidAccessError/DOMException",
+             "InvalidAccessError/DOMException", "InvalidAccessError/DOMException",
+             "InvalidAccessError/DOMException", "", "", "", "", "InvalidAccessError/DOMException"})
     public void responseTypeSetAfterOpenSync() throws Exception {
         final String html =
               "<html>\n"
@@ -2768,52 +2758,52 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "      try {\n"
             + "        request.responseType = 'arraybuffer';\n"
             + "        log(request.responseType);\n"
-            + "      } catch(e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
 
             + "      try {\n"
             + "        request.responseType = 'blob';\n"
             + "        log(request.responseType);\n"
-            + "      } catch(e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
 
             + "      try {\n"
             + "        request.responseType = 'json';\n"
             + "        log(request.responseType);\n"
-            + "      } catch(e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
 
             + "      try {\n"
             + "        request.responseType = 'text';\n"
             + "        log(request.responseType);\n"
-            + "      } catch(e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
 
             + "      try {\n"
             + "        request.responseType = 'document';\n"
             + "        log(request.responseType);\n"
-            + "      } catch(e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
 
             + "      try {\n"
             + "        request.responseType = 'JsON';\n"
             + "        log(request.responseType);\n"
-            + "      } catch(e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
 
             + "      try {\n"
             + "        request.responseType = 'unknown';\n"
             + "        log(request.responseType);\n"
-            + "      } catch(e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
 
             + "      try {\n"
             + "        request.responseType = null;\n"
             + "        log(request.responseType);\n"
-            + "      } catch(e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
 
             + "      try {\n"
             + "        request.responseType = undefined;\n"
             + "        log(request.responseType);\n"
-            + "      } catch(e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
 
             + "      try {\n"
             + "        request.responseType = '';\n"
             + "        log(request.responseType);\n"
-            + "      } catch(e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
             + "      }\n"
             + "    </script>\n"
             + "  </head>\n"
@@ -2844,52 +2834,52 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "      try {\n"
             + "        request.responseType = 'arraybuffer';\n"
             + "        log(request.responseType);\n"
-            + "      } catch(e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
 
             + "      try {\n"
             + "        request.responseType = 'blob';\n"
             + "        log(request.responseType);\n"
-            + "      } catch(e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
 
             + "      try {\n"
             + "        request.responseType = 'json';\n"
             + "        log(request.responseType);\n"
-            + "      } catch(e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
 
             + "      try {\n"
             + "        request.responseType = 'text';\n"
             + "        log(request.responseType);\n"
-            + "      } catch(e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
 
             + "      try {\n"
             + "        request.responseType = 'document';\n"
             + "        log(request.responseType);\n"
-            + "      } catch(e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
 
             + "      try {\n"
             + "        request.responseType = 'JsON';\n"
             + "        log(request.responseType);\n"
-            + "      } catch(e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
 
             + "      try {\n"
             + "        request.responseType = 'unknown';\n"
             + "        log(request.responseType);\n"
-            + "      } catch(e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
 
             + "      try {\n"
             + "        request.responseType = null;\n"
             + "        log(request.responseType);\n"
-            + "      } catch(e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
 
             + "      try {\n"
             + "        request.responseType = undefined;\n"
             + "        log(request.responseType);\n"
-            + "      } catch(e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
 
             + "      try {\n"
             + "        request.responseType = '';\n"
             + "        log(request.responseType);\n"
-            + "      } catch(e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
             + "      }\n"
             + "    </script>\n"
             + "  </head>\n"
@@ -2901,9 +2891,10 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
     }
 
     @Test
-    @Alerts(DEFAULT = {"", "", "exception", "exception"},
-            FF = {"", "", "", "exception"},
-            FF_ESR = {"", "", "", "exception"})
+    @Alerts(DEFAULT = {"", "", "arraybuffer", "InvalidStateError/DOMException",
+                       "send done", "InvalidStateError/DOMException"},
+            FF = {"", "", "arraybuffer", "", "send done", "InvalidStateError/DOMException"},
+            FF_ESR = {"", "", "arraybuffer", "", "send done", "InvalidStateError/DOMException"})
     public void responseTextInvalidResponseType() throws Exception {
         final String html =
               "<html>\n"
@@ -2918,20 +2909,30 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "        xhr.open('GET', '" + URL_SECOND + "', true);\n"
             + "        log(xhr.responseText);\n"
 
-            + "        xhr.responseType = 'arraybuffer';\n"
+            + "        try {\n"
+            + "          xhr.responseType = 'arraybuffer';\n"
+            + "        } catch(e) { logEx(e); }\n"
+            + "        log(xhr.responseType);\n"
+
             + "        try {\n"
             + "          log(xhr.responseText);\n"
-            + "        } catch(ex) { log('exception'); }\n"
+            + "        } catch(e) { logEx(e); }\n"
 
-            + "        xhr.onreadystatechange = onStateChange;\n"
-            + "        xhr.send('');\n"
+            + "        try {\n"
+            + "          xhr.onreadystatechange = onStateChange;\n"
+            + "        } catch(e) { logEx(e); }\n"
+
+            + "        try {\n"
+            + "          xhr.send('');\n"
+            + "          log('send done');\n"
+            + "        } catch(e) { logEx(e); }\n"
             + "      }\n"
 
             + "      function onStateChange(e) {\n"
             + "        if (xhr.readyState == 4) {\n"
             + "          try {\n"
             + "            log(xhr.responseText);\n"
-            + "          } catch(ex) { log('exception'); }\n"
+            + "          } catch(e) { logEx(e); }\n"
             + "        }\n"
             + "      }\n"
             + "    </script>\n"
@@ -2974,7 +2975,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "        if (xhr.readyState == 4) {\n"
             + "          try {\n"
             + "            log(xhr.response);\n"
-            + "          } catch(ex) { log('exception'); }\n"
+            + "          } catch(ex) { logEx(e); }\n"
             + "        }\n"
             + "      }\n"
             + "    </script>\n"
@@ -3018,7 +3019,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "        if (xhr.readyState == 4) {\n"
             + "          try {\n"
             + "            log(xhr.response);\n"
-            + "          } catch(ex) { log('exception'); }\n"
+            + "          } catch(ex) { logEx(e); }\n"
             + "        }\n"
             + "      }\n"
             + "    </script>\n"
@@ -3063,7 +3064,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "          try {\n"
             + "            log(xhr.response);\n"
             + "            log(xhr.response.byteLength);\n"
-            + "          } catch(ex) { log('exception'); }\n"
+            + "          } catch(ex) { logEx(e); }\n"
             + "        }\n"
             + "      }\n"
             + "    </script>\n"
@@ -3108,7 +3109,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "          try {\n"
             + "            log(xhr.response);\n"
             + "            log(xhr.response.byteLength);\n"
-            + "          } catch(ex) { log('exception'); }\n"
+            + "          } catch(ex) { logEx(e); }\n"
             + "        }\n"
             + "      }\n"
             + "    </script>\n"
@@ -3164,7 +3165,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "          try {\n"
             + "            log(xhr.response);\n"
             + "            log(xhr.response.byteLength);\n"
-            + "          } catch(ex) { log('exception'); }\n"
+            + "          } catch(ex) { logEx(e); }\n"
             + "        }\n"
             + "      }\n"
             + "    </script>\n"
@@ -3220,7 +3221,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "          try {\n"
             + "            log(xhr.response);\n"
             + "            log(xhr.response.byteLength);\n"
-            + "          } catch(ex) { log('exception'); }\n"
+            + "          } catch(ex) { logEx(e); }\n"
             + "        }\n"
             + "      }\n"
             + "    </script>\n"
@@ -3263,7 +3264,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "            log(xhr.response);\n"
             + "            log(xhr.response.size);\n"
             + "            log(xhr.response.type);\n"
-            + "          } catch(ex) { log('exception'); }\n"
+            + "          } catch(ex) { logEx(e); }\n"
             + "        }\n"
             + "      }\n"
             + "    </script>\n"
@@ -3308,7 +3309,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "          try {\n"
             + "            log(xhr.response);\n"
             + "            log(xhr.response.size);\n"
-            + "          } catch(ex) { log('exception'); }\n"
+            + "          } catch(ex) { logEx(e); }\n"
             + "        }\n"
             + "      }\n"
             + "    </script>\n"
@@ -3351,7 +3352,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "            log(xhr.response);\n"
             + "            log(xhr.response.Html);\n"
             + "            log(JSON.stringify(xhr.response));\n"
-            + "          } catch(ex) { log('exception' + ex); }\n"
+            + "          } catch(e) { logEx(e); }\n"
             + "        }\n"
             + "      }\n"
             + "    </script>\n"
@@ -3392,7 +3393,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "        if (xhr.readyState == 4) {\n"
             + "          try {\n"
             + "            log(xhr.response);\n"
-            + "          } catch(ex) { log('exception' + ex); }\n"
+            + "          } catch(e) { logEx(e); }\n"
             + "        }\n"
             + "      }\n"
             + "    </script>\n"
@@ -3433,7 +3434,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "        if (xhr.readyState == 4) {\n"
             + "          try {\n"
             + "            log(xhr.response);\n"
-            + "          } catch(ex) { log('exception' + ex); }\n"
+            + "          } catch(e) { logEx(e); }\n"
             + "        }\n"
             + "      }\n"
             + "    </script>\n"
@@ -3477,7 +3478,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "        if (xhr.readyState == 4) {\n"
             + "          try {\n"
             + "            log(xhr.response);\n"
-            + "          } catch(ex) { log('exception' + ex); }\n"
+            + "          } catch(e) { logEx(e); }\n"
             + "        }\n"
             + "      }\n"
             + "    </script>\n"
@@ -3521,7 +3522,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "        if (xhr.readyState == 4) {\n"
             + "          try {\n"
             + "            log(xhr.response);\n"
-            + "          } catch(ex) { log('exception' + ex); }\n"
+            + "          } catch(e) { logEx(e); }\n"
             + "        }\n"
             + "      }\n"
             + "    </script>\n"

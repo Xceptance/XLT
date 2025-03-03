@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.configuration.JsxSetter;
+import org.htmlunit.javascript.host.dom.DOMException;
 
 /**
  * Superclass for all row-containing JavaScript host classes, including tables,
@@ -107,8 +108,11 @@ public class RowContainer extends HTMLElement {
         }
 
         if (r < 0 || r > rowCount) {
-            throw JavaScriptEngine.reportRuntimeError("Index or size is negative or greater than the allowed amount "
-                    + "(index: " + rowIndex + ", " + rowCount + " rows)");
+            throw JavaScriptEngine.asJavaScriptException(
+                    getWindow(),
+                    "Index or size is negative or greater than the allowed amount "
+                            + "(index: " + rowIndex + ", " + rowCount + " rows)",
+                    DOMException.INDEX_SIZE_ERR);
         }
 
         return insertRow(r);

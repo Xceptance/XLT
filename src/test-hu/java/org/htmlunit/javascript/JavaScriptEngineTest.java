@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,8 +50,8 @@ import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlScript;
 import org.htmlunit.html.HtmlTextInput;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.Retry;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.Retry;
 import org.htmlunit.util.NameValuePair;
 import org.htmlunit.util.UrlUtils;
 import org.junit.Test;
@@ -1182,6 +1182,50 @@ public class JavaScriptEngineTest extends SimpleWebTestCase {
                 + "</body></html>";
 
         try (WebClient webClient = getWebClient()) {
+            // there is no way to kill a thread in later JDK's
+            // to make the test running we need a final timeout for js stuff
+            webClient.setJavaScriptTimeout(DEFAULT_WAIT_TIME * 10);
+
+            final List<String> collectedAlerts = new ArrayList<>();
+            webClient.setAlertHandler(new CollectingAlertHandler(collectedAlerts));
+
+            loadPage(html);
+            Thread.sleep(100);
+            assertEquals(getExpectedAlerts(), collectedAlerts);
+
+        }
+        Thread.sleep(400);
+        try {
+            assertTrue(getJavaScriptThreads().isEmpty());
+        }
+        catch (final AssertionError e) {
+            Thread.sleep(DEFAULT_WAIT_TIME * 10);
+            assertTrue(getJavaScriptThreads().isEmpty());
+        }
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Retry
+    @Alerts("starting")
+    public void shutdownShouldKillJavaScriptTimeout() throws Exception {
+        final String html = "<html>\n"
+                + "<head><title>Test page</title>\n"
+                + "<script>\n"
+                + "  function test() {\n"
+                + "    alert('starting');\n"
+                + "    while(true) { Math.sin(3.14) * Math.sin(3.14);}\n"
+                + "  }\n"
+                + "</script>\n"
+                + "</head>\n"
+                + "<body onload='setTimeout(test, 50);'>\n"
+                + "</body></html>";
+
+        try (WebClient webClient = getWebClient()) {
+            webClient.setJavaScriptTimeout(DEFAULT_WAIT_TIME);
+
             final List<String> collectedAlerts = new ArrayList<>();
             webClient.setAlertHandler(new CollectingAlertHandler(collectedAlerts));
 

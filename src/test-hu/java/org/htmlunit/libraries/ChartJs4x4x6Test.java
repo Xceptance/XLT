@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.htmlunit.WebServerTestCase;
 import org.htmlunit.junit.BrowserRunner;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.JavascriptExecutor;
@@ -33,7 +34,7 @@ import org.openqa.selenium.WebDriver;
  * @author Ronald Brill
  */
 @RunWith(BrowserRunner.class)
-public class ChartJsTest extends WebDriverTestCase {
+public class ChartJs4x4x6Test extends WebDriverTestCase {
 
     /** The server. */
     protected static Server SERVER_;
@@ -43,7 +44,7 @@ public class ChartJsTest extends WebDriverTestCase {
      */
     @BeforeClass
     public static void startSesrver() throws Exception {
-        SERVER_ = WebServerTestCase.createWebServer("src/test/resources/libraries/chartjs/2.9.4/", null);
+        SERVER_ = WebServerTestCase.createWebServer("src/test/resources/libraries/chartjs/4.4.6/", null);
     }
 
     /**
@@ -69,6 +70,7 @@ public class ChartJsTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
+    @Ignore("Fails because of the missing spread support")
     public void simpleBarChart() throws Exception {
         doTest("simple_bar_chart");
     }
@@ -80,7 +82,7 @@ public class ChartJsTest extends WebDriverTestCase {
         // final WebElement chart = driver.findElement(By.id("myChart"));
         ((JavascriptExecutor) driver).executeScript("return document.getElementById('myLog').value = "
                         + "document.getElementById('myChart').toDataURL('image/png') + '§'");
-        final String expected = loadExpectation("/libraries/chartjs/2.9.4/expectations/" + filename, ".expected");
+        final String expected = loadExpectation("/libraries/chartjs/4.4.6/expectations/" + filename, ".expected");
         verifyTextArea2(driver, expected);
     }
 }

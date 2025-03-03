@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,9 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.charset.UnsupportedCharsetException;
+import java.util.Base64;
 import java.util.Locale;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.Charsets;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
@@ -106,7 +106,7 @@ public class FileReader extends EventTarget {
         result_ = DataURLConnection.DATA_PREFIX;
 
         final byte[] bytes = ((Blob) object).getBytes();
-        final String value = new String(Base64.encodeBase64(bytes), StandardCharsets.US_ASCII);
+        final String value = new String(Base64.getEncoder().encode(bytes), StandardCharsets.US_ASCII);
 
         String contentType = ((Blob) object).getType();
         if (StringUtils.isEmpty(contentType)) {

@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,8 @@ import java.io.Serializable;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -32,8 +34,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -112,6 +112,13 @@ public class DomElement extends DomNamespaceNode implements Element {
     private String styleString_;
     private LinkedHashMap<String, StyleElement> styleMap_;
 
+    private static final Comparator<StyleElement> STYLE_ELEMENT_COMPARATOR = new Comparator<StyleElement>() {
+        @Override
+        public int compare(final StyleElement first, final StyleElement second) {
+            return StyleElement.compareToByImportanceAndSpecificity(first, second);
+        }
+    };
+
     /**
      * Whether the Mouse is currently over this element or not.
      */
@@ -130,7 +137,10 @@ public class DomElement extends DomNamespaceNode implements Element {
             final Map<String, DomAttr> attributes) {
         super(namespaceURI, qualifiedName, page);
 
-        if (attributes != null) {
+        if (attributes == null) {
+            attributes_ = new NamedAttrNodeMapImpl(this, isAttributeCaseSensitive());
+        }
+        else {
             attributes_ = new NamedAttrNodeMapImpl(this, isAttributeCaseSensitive(), attributes);
 
             for (final DomAttr entry : attributes.values()) {
@@ -145,9 +155,6 @@ public class DomElement extends DomNamespaceNode implements Element {
                     namespaces_.put(attrNamespaceURI, prefix);
                 }
             }
-        }
-        else {
-            attributes_ = new NamedAttrNodeMapImpl(this, isAttributeCaseSensitive());
         }
     }
 
@@ -599,9 +606,15 @@ public class DomElement extends DomNamespaceNode implements Element {
      * @param styleMap the styles
      */
     public void writeStyleToElement(final Map<String, StyleElement> styleMap) {
+        if (styleMap.isEmpty()) {
+            setAttribute("style", "");
+            return;
+        }
+
         final StringBuilder builder = new StringBuilder();
-        final SortedSet<StyleElement> sortedValues = new TreeSet<>(styleMap.values());
-        for (final StyleElement e : sortedValues) {
+        final List<StyleElement> styleElements = new ArrayList<>(styleMap.values());
+        Collections.sort(styleElements, STYLE_ELEMENT_COMPARATOR);
+        for (final StyleElement e : styleElements) {
             if (builder.length() != 0) {
                 builder.append(' ');
             }
@@ -615,8 +628,7 @@ public class DomElement extends DomNamespaceNode implements Element {
             }
             builder.append(';');
         }
-        final String value = builder.toString();
-        setAttribute("style", value);
+        setAttribute("style", builder.toString());
     }
 
     /**
@@ -657,13 +669,14 @@ public class DomElement extends DomNamespaceNode implements Element {
      */
     public <E extends HtmlElement> List<E> getStaticElementsByTagName(final String tagName) {
         final List<E> res = new ArrayList<>();
-        for (final Iterator<HtmlElement> iterator
-                = this.new DescendantElementsIterator<>(HtmlElement.class);
-                iterator.hasNext();) {
+        for (final Iterator<HtmlElement> iterator = this.new DescendantHtmlElementsIterator(); iterator.hasNext();) {
             final HtmlElement elem = iterator.next();
             if (elem.getLocalName().equalsIgnoreCase(tagName)) {
+                final String prefix = elem.getPrefix();
+                if (prefix == null || prefix.isEmpty()) {
                 res.add((E) elem);
             }
+        }
         }
         return res;
     }
@@ -786,10 +799,12 @@ public class DomElement extends DomNamespaceNode implements Element {
      * Returns the current number of element nodes that are children of this element.
      * @return the current number of element nodes that are children of this element.
      */
-    @SuppressWarnings("PMD.UnusedLocalVariable")
     public int getChildElementCount() {
         int counter = 0;
-        for (final DomElement elem : getChildElements()) {
+
+        final Iterator<DomElement> iterator = getChildElements().iterator();
+        while (iterator.hasNext()) {
+            iterator.next();
             counter++;
         }
         return counter;

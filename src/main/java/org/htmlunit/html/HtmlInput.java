@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1050,8 +1050,11 @@ public abstract class HtmlInput extends HtmlElement implements DisabledElement, 
      * @return false for type submit/resest/image/button otherwise true
      */
     public boolean isSubmitable() {
-        final String type = getAttributeDirect(TYPE_ATTRIBUTE).toLowerCase(Locale.ROOT);
-        return !"submit".equals(type) && !"image".equals(type) && !"reset".equals(type) && !"button".equals(type);
+        final String type = getAttributeDirect(TYPE_ATTRIBUTE);
+        return !"submit".equalsIgnoreCase(type)
+                && !"image".equalsIgnoreCase(type)
+                && !"reset".equalsIgnoreCase(type)
+                && !"button".equalsIgnoreCase(type);
     }
 
     @Override

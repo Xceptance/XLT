@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 package org.htmlunit.javascript.host.css;
+
+import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
+import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -100,6 +103,12 @@ public class CSSRule extends HtmlUnitScriptable {
     public static final int KEYFRAME_RULE             = 8;
 
     /**
+     * The rule is a {@code CSSMerginRule}.
+     */
+    @JsxConstant({CHROME, EDGE})
+    public static final int MARGIN_RULE               = 9;
+
+    /**
      * The rule is a {@code CSSNamespaceRule}.
      */
     @JsxConstant
@@ -146,7 +155,7 @@ public class CSSRule extends HtmlUnitScriptable {
      */
     @JsxConstructor
     public void jsConstructor() {
-        throw JavaScriptEngine.reportRuntimeError("Illegal constructor.");
+        throw JavaScriptEngine.typeErrorIllegalConstructor();
     }
 
     /**

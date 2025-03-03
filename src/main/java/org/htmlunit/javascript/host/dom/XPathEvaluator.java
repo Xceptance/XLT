@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,7 +78,7 @@ public class XPathEvaluator extends HtmlUnitScriptable {
         try {
             // contextNodeObj can be either a node or an array with the node as the first element.
             if (!(contextNodeObj instanceof Node)) {
-                throw JavaScriptEngine.reportRuntimeError("Illegal value for parameter 'context'");
+                throw JavaScriptEngine.typeError("Illegal value for parameter 'context'");
             }
 
             final Node contextNode = (Node) contextNodeObj;
@@ -105,7 +105,7 @@ public class XPathEvaluator extends HtmlUnitScriptable {
             return xPathResult;
         }
         catch (final Exception e) {
-            throw JavaScriptEngine.reportRuntimeError("Failed to execute 'evaluate': " + e.getMessage());
+            throw JavaScriptEngine.typeError("Failed to execute 'evaluate': " + e.getMessage());
         }
     }
 
@@ -149,7 +149,7 @@ public class XPathEvaluator extends HtmlUnitScriptable {
             return xPathExpression;
         }
         catch (final Exception e) {
-            throw JavaScriptEngine.constructError("SyntaxError",
+            throw JavaScriptEngine.syntaxError(
                     "Failed to compile xpath '" + args[0] + "' (" + e.getMessage() + ")");
         }
     }

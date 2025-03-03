@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,11 @@
  */
 package org.htmlunit.javascript.host.css;
 
-import org.apache.commons.lang3.StringUtils;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
@@ -90,7 +90,7 @@ public class CSSStyleDeclaration2Test extends WebDriverTestCase {
         buffer += ',' + node.style[prop];
         node.style[prop] = '42';
         buffer += ',' + node.style[prop];
-      } catch (e) {
+      } catch(e) {
           buffer += ',' + 'error';
       }
       ta.value += buffer + '\n';
@@ -157,7 +157,7 @@ public class CSSStyleDeclaration2Test extends WebDriverTestCase {
                        "success",
                        "success",
                        "wordSpacing 42% - 42em"},
-            FF = {"success", "letterSpacing 42% - 42em",
+            FF = {"success", "success",
                   "outlineWidth 42.0 - ; 42.7 - ; 42 - ; 42% - 42em",
                   "success",
                   "success",
@@ -167,6 +167,11 @@ public class CSSStyleDeclaration2Test extends WebDriverTestCase {
                       "success",
                       "success",
                       "success"})
+    @HtmlUnitNYI(FF = {"success", "letterSpacing 42% - 42em",
+                       "outlineWidth 42.0 - ; 42.7 - ; 42 - ; 42% - 42em",
+                       "success",
+                       "success",
+                       "success"})
     public void width_like_properties_font() throws Exception {
         width_like_properties("fontSize", "letterSpacing", "outlineWidth", "textIndent",
                         "verticalAlign", "wordSpacing");
@@ -330,22 +335,18 @@ public class CSSStyleDeclaration2Test extends WebDriverTestCase {
             + "    } catch(e) {}\n" // ignore strange properties like '@@iterator'
             + "  }\n"
             + "  array.sort();\n"
-            + "  document.getElementById('myTextarea').value = array.join('\\n');\n"
+            + "  document.getElementById('myLog').value = array.join('\\n');\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
             + "  <div id='myDiv'><br></div>\n"
-            + "  <textarea id='myTextarea' cols='120' rows='20'></textarea>\n"
+            + LOG_TEXTAREA
             + "</body></html>";
 
         final String expected = loadExpectation("CSSStyleDeclaration2Test.properties", ".txt");
 
         final WebDriver driver = loadPage2(html);
-
-        String actual = driver.findElement(By.id("myTextarea")).getAttribute("value");
-        actual = StringUtils.replace(actual, "\r\n", "\n");
-
-        assertEquals(expected, actual);
+        verify(() -> driver.findElement(By.id("myLog")).getDomProperty("value"), expected);
     }
 
     /**
@@ -367,21 +368,18 @@ public class CSSStyleDeclaration2Test extends WebDriverTestCase {
             + "    } catch(e) {}\n" // ignore strange properties like '@@iterator'
             + "  }\n"
             + "  array.sort();\n"
-            + "  document.getElementById('myTextarea').value = array.join('\\n');\n"
+            + "  document.getElementById('myLog').value = array.join('\\n');\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
             + "  <div id='myDiv'><br></div>\n"
-            + "  <textarea id='myTextarea' cols='120' rows='20'></textarea>\n"
+            + LOG_TEXTAREA
             + "</body></html>";
 
         final String expected = loadExpectation("CSSStyleDeclaration2Test.properties2", ".txt");
 
         final WebDriver driver = loadPage2(html);
-
-        String actual = driver.findElement(By.id("myTextarea")).getAttribute("value");
-        actual = StringUtils.replace(actual, "\r\n", "\n");
-        assertEquals(expected, actual);
+        verify(() -> driver.findElement(By.id("myLog")).getDomProperty("value"), expected);
     }
 
     /**

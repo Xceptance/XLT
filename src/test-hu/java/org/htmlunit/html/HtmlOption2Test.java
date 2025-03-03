@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,13 @@
  */
 package org.htmlunit.html;
 
-import java.util.Arrays;
 import java.util.List;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.BuggyWebDriver;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.BuggyWebDriver;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
@@ -117,47 +116,44 @@ public class HtmlOption2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("oDown,sDown,dDown,oUp,sUp,dUp,")
+    @Alerts({"oDown", "sDown", "dDown", "oUp", "sUp", "dUp"})
     // there seems to be a bug in selenium; for FF >= 10 this triggers
     // "sDown,dDown,sUp,dUp,oDown,sDown,dDown,oUp,sUp,dUp," but a
     // manual test shows, that this is wrong.
     // for Chrome selenium shows only "sUp,dUp," but again
     // manual test are showing something different
-    @BuggyWebDriver(CHROME = "sUp,dUp,",
-                    EDGE = "sUp,dUp,",
-                    FF = "sDown,dDown,sUp,dUp,",
-                    FF_ESR = "sDown,dDown,sUp,dUp,")
+    @BuggyWebDriver(CHROME = {"sUp", "dUp"},
+                    EDGE = {"sUp", "dUp"},
+                    FF = {"sDown", "dDown", "sUp", "dUp"},
+                    FF_ESR = {"sDown", "dDown", "sUp", "dUp"})
     public void onMouse() throws Exception {
         final String html = "<html><head><title>foo</title>\n"
             + "<script>\n"
-            + "  function debug(string) {\n"
-            + "    document.getElementById('myTextarea').value += string + ',';\n"
-            + "  }\n"
+            + LOG_TEXTAREA_FUNCTION
             + "</script>\n"
             + "</head><body>\n"
             + "  <form>\n"
             + "    <div"
-                    + " onMouseDown='debug(\"dDown\");'"
-                    + " onMouseUp='debug(\"dUp\");'>\n"
+                    + " onMouseDown='log(\"dDown\");'"
+                    + " onMouseUp='log(\"dUp\");'>\n"
             + "    <select name='select1' size='4'"
-                        + " onMouseDown='debug(\"sDown\");'"
-                        + " onMouseUp='debug(\"sUp\");'>\n"
+                        + " onMouseDown='log(\"sDown\");'"
+                        + " onMouseUp='log(\"sUp\");'>\n"
             + "      <option id='opt1' value='option1'>Option1</option>\n"
             + "      <option id='opt2' value='option2' selected='selected'>Option2</option>\n"
             + "      <option id='opt3' value='option3'"
-                        + " onMouseDown='debug(\"oDown\");'"
-                        + " onMouseUp='debug(\"oUp\");'>Option3</option>\n"
+                        + " onMouseDown='log(\"oDown\");'"
+                        + " onMouseUp='log(\"oUp\");'>Option3</option>\n"
             + "    </select>\n"
             + "    </div>\n"
             + "  </form>\n"
-            + "  <textarea id='myTextarea'></textarea>\n"
+            + LOG_TEXTAREA
             + "</body></html>";
 
         final WebDriver driver = loadPage2(html);
         driver.findElement(By.id("opt3")).click();
 
-        assertEquals(Arrays.asList(getExpectedAlerts()).toString(),
-                '[' + driver.findElement(By.id("myTextarea")).getAttribute("value") + ']');
+        verifyTextArea2(driver, getExpectedAlerts());
     }
 
     /**

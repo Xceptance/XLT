@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@ package org.htmlunit.javascript.host.dom;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.NotYetImplemented;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -58,7 +58,7 @@ public class SelectionTest extends WebDriverTestCase {
             + LOG_TITLE_FUNCTION
             + "try {\n"
             + "  log(window.getSelection()==window.getSelection());\n"
-            + "} catch (e) {log('exception')}\n"
+            + "} catch(e) {logEx(e)}\n"
             + "</script>\n"
             + "</body></html>";
         loadPageVerifyTitle2(html);
@@ -376,7 +376,7 @@ public class SelectionTest extends WebDriverTestCase {
             + "    var s3 = document.getElementById('s3');\n"
             + "    try {\n"
                         + jsSnippet
-            + "    } catch(e) { log('exception'); }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "  }\n"
 
             + "  function alertSelection(s) {\n"

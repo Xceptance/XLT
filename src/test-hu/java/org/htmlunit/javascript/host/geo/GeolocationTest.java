@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import java.util.Map;
 import org.htmlunit.WebClientOptions;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.WebDriver;
@@ -43,7 +43,7 @@ public class GeolocationTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("TypeError")
     public void ctor() throws Exception {
         final String html =
             "<html><head><script>\n"
@@ -51,7 +51,7 @@ public class GeolocationTest extends WebDriverTestCase {
             + "  function test() {\n"
             + "    try {\n"
             + "      new Geolocation();\n"
-            + "    } catch (e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + "</script></head><body onload='test()'>\n"
             + "</body></html>";
@@ -71,7 +71,7 @@ public class GeolocationTest extends WebDriverTestCase {
             + "  function test() {\n"
             + "    try {\n"
             + "      log(navigator.geolocation);\n"
-            + "    } catch (e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + "</script></head><body onload='test()'>\n"
             + "</body></html>";
@@ -104,7 +104,7 @@ public class GeolocationTest extends WebDriverTestCase {
             + "  function test() {\n"
             + "    try {\n"
             + "      navigator.geolocation.getCurrentPosition(success, error);\n"
-            + "    } catch (e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"

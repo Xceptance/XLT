@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ import java.util.Arrays;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.BuggyWebDriver;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.BuggyWebDriver;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
@@ -40,7 +40,7 @@ public class MutationObserverTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void observeNullNode() throws Exception {
         final String html
             = "<html><head><script>\n"
@@ -50,7 +50,7 @@ public class MutationObserverTest extends WebDriverTestCase {
             + "\n"
             + "  try {\n"
             + "    observer.observe(div, {});\n"
-            + "  } catch(e) { log('exception'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -64,7 +64,7 @@ public class MutationObserverTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("TypeError")
     public void observeNullInit() throws Exception {
         final String html
             = "<html><head><script>\n"
@@ -75,7 +75,7 @@ public class MutationObserverTest extends WebDriverTestCase {
             + "\n"
             + "  try {\n"
             + "    observer.observe(div);\n"
-            + "  } catch(e) { log('exception'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -89,7 +89,7 @@ public class MutationObserverTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("TypeError")
     public void observeEmptyInit() throws Exception {
         final String html
             = "<html><head><script>\n"
@@ -100,7 +100,7 @@ public class MutationObserverTest extends WebDriverTestCase {
             + "\n"
             + "  try {\n"
             + "    observer.observe(div, {});\n"
-            + "  } catch(e) { log('exception'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -114,7 +114,7 @@ public class MutationObserverTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"exception", "childList", "attributes", "characterData"})
+    @Alerts({"TypeError", "childList", "attributes", "characterData"})
     public void observeRequiredMissingInit() throws Exception {
         final String html
             = "<html><head><script>\n"
@@ -125,19 +125,19 @@ public class MutationObserverTest extends WebDriverTestCase {
             + "\n"
             + "  try {\n"
             + "    observer.observe(div, {subtree: true});\n"
-            + "  } catch(e) { log('exception'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "  try {\n"
             + "    observer.observe(div, {childList: true});\n"
             + "    log('childList');\n"
-            + "  } catch(e) { log('exception'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "  try {\n"
             + "    observer.observe(div, {attributes: true});\n"
             + "    log('attributes');\n"
-            + "  } catch(e) { log('exception'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "  try {\n"
             + "    observer.observe(div, {characterData: true});\n"
             + "    log('characterData');\n"
-            + "  } catch(e) { log('exception'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -394,28 +394,26 @@ public class MutationObserverTest extends WebDriverTestCase {
      */
     @Test
     @Alerts("[object HTMLHeadingElement]-attributes")
-    @BuggyWebDriver(FF = "[object HTMLInputElement]-attributes\n"
-            + "[object HTMLInputElement]-attributes\n"
-            + "[object HTMLInputElement]-attributes\n"
-            + "[object HTMLInputElement]-attributes\n"
-            + "[object HTMLHeadingElement]-attributes",
-            FF_ESR = "[object HTMLInputElement]-attributes\n"
-            + "[object HTMLInputElement]-attributes\n"
-            + "[object HTMLInputElement]-attributes\n"
-            + "[object HTMLInputElement]-attributes\n"
-            + "[object HTMLHeadingElement]-attributes")
+    @BuggyWebDriver(
+            FF = {"[object HTMLInputElement]-attributesn",
+                  "[object HTMLInputElement]-attributes",
+                  "[object HTMLInputElement]-attributes",
+                  "[object HTMLInputElement]-attributes",
+                  "[object HTMLHeadingElement]-attributes"},
+            FF_ESR = {"[object HTMLInputElement]-attributes",
+                      "[object HTMLInputElement]-attributes",
+                      "[object HTMLInputElement]-attributes",
+                      "[object HTMLInputElement]-attributes",
+                      "[object HTMLHeadingElement]-attributes"})
     public void attributeValue2() throws Exception {
         final String html = "<html><head><script>\n"
+            + LOG_TEXTAREA_FUNCTION
             + "  function makeRed() {\n"
             + "    document.getElementById('headline').setAttribute('style', 'color: red');\n"
             + "  }\n"
 
             + "  function print(mutation) {\n"
             + "    log(mutation.target + '-' + mutation.type);\n"
-            + "  }\n"
-
-            + "  function log(x) {\n"
-            + "    document.getElementById('log').value += x + '\\n';\n"
             + "  }\n"
 
             + "  function test() {\n"
@@ -439,13 +437,12 @@ public class MutationObserverTest extends WebDriverTestCase {
             + "    <h1 id='headline' style='font-style: italic'>Some headline</h1>\n"
             + "    <input id='id1' type='button' onclick='makeRed()' value='Make Red'>\n"
             + "  </div>\n"
-            + "  <textarea id='log' cols='80' rows='40'></textarea>\n"
+            + LOG_TEXTAREA
             + "</body></html>\n";
         final WebDriver driver = loadPage2(html);
         driver.findElement(By.id("id1")).click();
 
-        final String text = driver.findElement(By.id("log")).getAttribute("value").trim().replaceAll("\r", "");
-        assertEquals(String.join("\n", getExpectedAlerts()), text);
+        verifyTextArea2(driver, getExpectedAlerts());
     }
 
     /**

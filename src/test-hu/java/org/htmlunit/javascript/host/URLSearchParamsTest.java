@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@ package org.htmlunit.javascript.host;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -349,7 +349,7 @@ public class URLSearchParamsTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception param")
+    @Alerts("TypeError")
     @HtmlUnitNYI(CHROME = "noValue=undefined",
             EDGE = "noValue=undefined",
             FF = "noValue=undefined",
@@ -366,7 +366,7 @@ public class URLSearchParamsTest extends WebDriverTestCase {
             + "          searchParams = new URLSearchParams();\n"
             + "          searchParams.append('noValue');\n"
             + "          log(searchParams);\n"
-            + "        } catch(e) { log('exception param'); }\n"
+            + "        } catch(e) { logEx(e); }\n"
             + "      }\n"
             + "    }\n"
             + "  </script>\n"
@@ -926,7 +926,7 @@ public class URLSearchParamsTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"exception", "exception"})
+    @Alerts({"TypeError", "TypeError"})
     public void forEachWrongParam() throws Exception {
         final String html
                 = "<html><head><script>\n"
@@ -936,10 +936,10 @@ public class URLSearchParamsTest extends WebDriverTestCase {
                 + "    var param = new URLSearchParams('key1=val1&key2=val2&key3=val3');\n"
                 + "    try {\n"
                 + "      param.forEach();\n"
-                + "    } catch(e) { log('exception'); }\n"
+                + "    } catch(e) { logEx(e); }\n"
                 + "    try {\n"
                 + "      param.forEach('wrong');\n"
-                + "    } catch(e) { log('exception'); }\n"
+                + "    } catch(e) { logEx(e); }\n"
                 + "  }\n"
                 + "}\n"
                 + "</script></head><body onload='test()'>\n"

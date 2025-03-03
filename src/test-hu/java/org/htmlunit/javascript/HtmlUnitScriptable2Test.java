@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@ package org.htmlunit.javascript;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -55,7 +55,7 @@ public class HtmlUnitScriptable2Test extends WebDriverTestCase {
             + "      log(document.contentType);\n"
             + "      document.contentType = '123456';\n"
             + "      log(document.contentType);\n"
-            + "    } catch (e) { log('exception'); }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "  }\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -79,7 +79,7 @@ public class HtmlUnitScriptable2Test extends WebDriverTestCase {
             + "      log(document.compatMode);\n"
             + "      document.compatMode = '123456';\n"
             + "      log(document.compatMode);\n"
-            + "    } catch (e) { log('exception'); }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "  }\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -316,7 +316,7 @@ public class HtmlUnitScriptable2Test extends WebDriverTestCase {
             + "  try {\n"
             + "    " + expression + " = '" + expression + " was set" + "';\n"
             + "    log(" + expression + ");\n"
-            + "  } catch(e) {log('exception')}\n"
+            + "  } catch(e) {logEx(e)}\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -350,7 +350,7 @@ public class HtmlUnitScriptable2Test extends WebDriverTestCase {
             + "    log(lengthGetter);\n"
             + "    log(lengthGetter.call(window));\n"
             + "    log(lengthGetter.call());\n"
-            + "  } catch(e) {log('exception')}\n"
+            + "  } catch(e) {logEx(e)}\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,9 +29,9 @@ import org.htmlunit.HttpMethod;
 import org.htmlunit.MockWebConnection;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.BuggyWebDriver;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.BuggyWebDriver;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
 import org.junit.Test;
@@ -430,7 +430,7 @@ public class HtmlAnchorTest extends WebDriverTestCase {
             + "      log(anchor.text + ' ' + anchor.children.length);\n"
             + "      anchor.text = 'Hello';\n"
             + "      log(anchor.text + ' ' + anchor.children.length);\n"
-            + "    } catch (e) { log('exception' + e) }\n"
+            + "    } catch(e) { log('exception' + e) }\n"
             + "  }\n"
             + "</script></head>\n"
             + "<body onload=test()>\n"
@@ -599,23 +599,26 @@ public class HtmlAnchorTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("click href click doubleClick href ")
-    @BuggyWebDriver(
-            FF = "click click doubleClick href href ",
-            FF_ESR = "click click doubleClick href href ")
-    @HtmlUnitNYI(CHROME = "click href click href doubleClick ",
-            EDGE = "click href click href doubleClick ",
-            FF = "click href click href doubleClick ",
-            FF_ESR = "click href click href doubleClick ")
+    @Alerts({"click", "href", "click", "doubleClick", "href"})
+    @BuggyWebDriver(FF_ESR = {"click", "click", "doubleClick", "href", "href"})
+    @HtmlUnitNYI(CHROME = {"click", "href", "click", "href", "doubleClick"},
+            EDGE = {"click", "href", "click", "href", "doubleClick"},
+            FF = {"click", "href", "click", "href", "doubleClick"},
+            FF_ESR = {"click", "href", "click", "href", "doubleClick"})
     public void doubleClick() throws Exception {
         final String html =
               "<html>\n"
+              + "<head>\n"
+              + "<script>\n"
+              + LOG_TEXTAREA_FUNCTION
+              + "</script>\n"
+              + "</head>\n"
             + "<body>\n"
             + "  <a id='myAnchor' "
-            +       "href=\"javascript:document.getElementById('myTextarea').value+='href ';void(0);\" "
-            +       "onClick=\"document.getElementById('myTextarea').value+='click ';\" "
-            +       "onDblClick=\"document.getElementById('myTextarea').value+='doubleClick ';\">foo</a>\n"
-            + "  <textarea id='myTextarea'></textarea>\n"
+            +       "href=\"javascript:log('href');void(0);\" "
+            +       "onClick=\"log('click');\" "
+            +       "onDblClick=\"log('doubleClick');\">foo</a>\n"
+            + LOG_TEXTAREA
             + "</body></html>";
 
         final WebDriver driver = loadPage2(html);
@@ -624,7 +627,7 @@ public class HtmlAnchorTest extends WebDriverTestCase {
         action.doubleClick(driver.findElement(By.id("myAnchor")));
         action.perform();
 
-        assertEquals(getExpectedAlerts()[0], driver.findElement(By.id("myTextarea")).getAttribute("value"));
+        verifyTextArea2(driver, getExpectedAlerts());
     }
 
     /**

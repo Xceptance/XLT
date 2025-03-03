@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.htmlunit.FailingHttpStatusCodeException;
 import org.htmlunit.SgmlPage;
+import org.htmlunit.WebClient;
 import org.htmlunit.WebWindow;
 import org.htmlunit.html.HtmlPage.JavaScriptLoadResult;
 import org.htmlunit.javascript.AbstractJavaScriptEngine;
@@ -59,15 +60,13 @@ public final class ScriptElementSupport {
     }
 
     /**
-     * Lifecycle method invoked after a node and all its children have been added to a page, during
-     * parsing of the HTML. Intended to be overridden by nodes which need to perform custom logic
-     * after they and all their child nodes have been processed by the HTML parser. This method is
-     * not recursive, and the default implementation is empty, so there is no need to call
-     * <code>super.onAllChildrenAddedToPage()</code> if you implement this method.
-     * @param element the element
-     * @param postponed whether to use {@link org.htmlunit.javascript.PostponedAction} or no
+     * Support method that is called from the (html or svg) script and the link tag.
+     *
+     * @param script the ScriptElement to work for
+     * @param postponed whether to use {@link org.htmlunit.javascript.PostponedAction} or not
      */
-    public static void onAllChildrenAddedToPage(final DomElement element, final boolean postponed) {
+    public static void onAllChildrenAddedToPage(final ScriptElement script, final boolean postponed) {
+        final DomElement element = (DomElement) script;
         if (element.getOwnerDocument() instanceof XmlPage) {
             return;
         }
@@ -75,13 +74,13 @@ public final class ScriptElementSupport {
             LOG.debug("Script node added: " + element.asXml());
         }
 
-        if (!element.getPage().getWebClient().isJavaScriptEngineEnabled()) {
+        final WebClient webClient = element.getPage().getWebClient();
+        if (!webClient.isJavaScriptEngineEnabled()) {
             LOG.debug("Script found but not executed because javascript engine is disabled");
             return;
         }
 
-        final ScriptElement script = (ScriptElement) element;
-        final String srcAttrib = script.getSrcAttribute();
+        final String srcAttrib = script.getScriptSource();
         final boolean hasNoSrcAttrib = ATTRIBUTE_NOT_DEFINED == srcAttrib;
         if (!hasNoSrcAttrib && script.isDeferred()) {
             return;
@@ -109,7 +108,7 @@ public final class ScriptElementSupport {
                                 && ATTRIBUTE_NOT_DEFINED != srcAttrib);
                     }
                     try {
-                        executeScriptIfNeeded(element, false, false);
+                        executeScriptIfNeeded(script, false, false);
                     }
                     finally {
                         if (jsDoc != null) {
@@ -119,23 +118,19 @@ public final class ScriptElementSupport {
                 }
             };
 
-            final AbstractJavaScriptEngine<?> engine = element.getPage().getWebClient().getJavaScriptEngine();
-            if (engine != null
-                    && element.hasAttribute("async") && !engine.isScriptRunning()) {
+            final AbstractJavaScriptEngine<?> engine = webClient.getJavaScriptEngine();
+            if (element.hasAttribute("async") && !engine.isScriptRunning()) {
                 final HtmlPage owningPage = element.getHtmlPageOrNull();
                 owningPage.addAfterLoadAction(action);
             }
-            else if (engine != null
-                    && (element.hasAttribute("async")
-                            || postponed && StringUtils.isBlank(element.getTextContent()))) {
+            else if (element.hasAttribute("async")
+                            || postponed && StringUtils.isBlank(element.getTextContent())) {
                 engine.addPostponedAction(action);
             }
             else {
                 try {
                     action.execute();
-                    if (engine != null) {
-                        engine.processPostponedActions();
-                    }
+                    engine.processPostponedActions();
                 }
                 catch (final RuntimeException e) {
                     throw e;
@@ -151,19 +146,19 @@ public final class ScriptElementSupport {
      * <span style="color:red">INTERNAL API - SUBJECT TO CHANGE AT ANY TIME - USE AT YOUR OWN RISK.</span><br>
      *
      * Executes this script node if necessary and/or possible.
-     * @param element the element
+     *
+     * @param script the ScriptElement to work for
      * @param ignoreAttachedToPage don't do the isAttachedToPage check
      * @param ignorePageIsAncestor don't do the element.getPage().isAncestorOf(element) check
      */
-    public static void executeScriptIfNeeded(final DomElement element, final boolean ignoreAttachedToPage,
+    public static void executeScriptIfNeeded(final ScriptElement script, final boolean ignoreAttachedToPage,
             final boolean ignorePageIsAncestor) {
-        if (!isExecutionNeeded(element, ignoreAttachedToPage, ignorePageIsAncestor)) {
+        if (!isExecutionNeeded(script, ignoreAttachedToPage, ignorePageIsAncestor)) {
             return;
         }
 
-        final ScriptElement scriptElement = (ScriptElement) element;
-
-        final String src = scriptElement.getSrcAttribute();
+        final String src = script.getScriptSource();
+        final DomElement element = (DomElement) script;
         if (SLASH_SLASH_COLON.equals(src)) {
             executeEvent(element, Event.TYPE_ERROR);
             return;
@@ -177,8 +172,8 @@ public final class ScriptElementSupport {
                     LOG.debug("Loading external JavaScript: " + src);
                 }
                 try {
-                    scriptElement.setExecuted(true);
-                    Charset charset = EncodingSniffer.toCharset(scriptElement.getCharsetAttribute());
+                    script.setExecuted(true);
+                    Charset charset = EncodingSniffer.toCharset(script.getScriptCharset());
                     if (charset == null) {
                         charset = page.getCharset();
                     }
@@ -216,7 +211,7 @@ public final class ScriptElementSupport {
             final Document doc = win.getDocument();
             try {
                 doc.setCurrentScript(element.getScriptableObject());
-                executeInlineScriptIfNeeded(element);
+                executeInlineScriptIfNeeded(script);
             }
             finally {
                 doc.setCurrentScript(null);
@@ -227,18 +222,18 @@ public final class ScriptElementSupport {
     /**
      * Indicates if script execution is necessary and/or possible.
      *
-     * @param element the element
+     * @param script the ScriptElement to work for
      * @param ignoreAttachedToPage don't do the isAttachedToPage check
      * @param ignorePageIsAncestor don't do the element.getPage().isAncestorOf(element) check
      * @return {@code true} if the script should be executed
      */
-    private static boolean isExecutionNeeded(final DomElement element, final boolean ignoreAttachedToPage,
+    private static boolean isExecutionNeeded(final ScriptElement script, final boolean ignoreAttachedToPage,
             final boolean ignorePageIsAncestor) {
-        final ScriptElement script = (ScriptElement) element;
         if (script.isExecuted() || script.wasCreatedByDomParser()) {
             return false;
         }
 
+        final DomElement element = (DomElement) script;
         if (!ignoreAttachedToPage && !element.isAttachedToPage()) {
             return false;
         }
@@ -271,7 +266,7 @@ public final class ScriptElementSupport {
         // If the script language is not JavaScript, we can't execute.
         final String t = element.getAttributeDirect("type");
         final String l = element.getAttributeDirect("language");
-        if (!isJavaScript(element, t, l)) {
+        if (!isJavaScript(t, l)) {
             // Was at warn level before 2.46 but other types or tricky implementations with unsupported types
             // are common out there and too many peoples out there thinking the is the root of problems.
             // Browsers are also not warning about this.
@@ -290,12 +285,12 @@ public final class ScriptElementSupport {
      * Returns true if a script with the specified type and language attributes is actually JavaScript.
      * According to <a href="http://www.w3.org/TR/REC-html40/types.html#h-6.7">W3C recommendation</a>
      * are content types case insensitive.<br>
-     * @param element the element
+     *
      * @param typeAttribute the type attribute specified in the script tag
      * @param languageAttribute the language attribute specified in the script tag
      * @return true if the script is JavaScript
      */
-    public static boolean isJavaScript(final DomElement element, String typeAttribute, final String languageAttribute) {
+    public static boolean isJavaScript(String typeAttribute, final String languageAttribute) {
         typeAttribute = typeAttribute.trim();
 
         if (StringUtils.isNotEmpty(typeAttribute)) {
@@ -317,17 +312,17 @@ public final class ScriptElementSupport {
     /**
      * Executes this script node as inline script if necessary and/or possible.
      */
-    private static void executeInlineScriptIfNeeded(final DomElement element) {
-        if (!isExecutionNeeded(element, false, false)) {
+    private static void executeInlineScriptIfNeeded(final ScriptElement script) {
+        if (!isExecutionNeeded(script, false, false)) {
             return;
         }
 
-        final ScriptElement scriptElement = (ScriptElement) element;
-        final String src = scriptElement.getSrcAttribute();
+        final String src = script.getScriptSource();
         if (src != ATTRIBUTE_NOT_DEFINED) {
             return;
         }
 
+        final DomElement element = (DomElement) script;
         final String forr = element.getAttributeDirect("for");
         String event = element.getAttributeDirect("event");
         // The event name can be like "onload" or "onload()".
@@ -345,7 +340,7 @@ public final class ScriptElementSupport {
             final String desc = "script in " + url + " from (" + line1 + ", " + col1
                 + ") to (" + line2 + ", " + col2 + ")";
 
-            scriptElement.setExecuted(true);
+            script.setExecuted(true);
             ((HtmlPage) element.getPage()).executeJavaScript(scriptCode, desc, line1);
         }
     }

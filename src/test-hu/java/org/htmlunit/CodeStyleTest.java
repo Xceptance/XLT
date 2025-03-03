@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
  */
 package org.htmlunit;
 
-import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static org.junit.Assert.fail;
 
 import java.io.File;
@@ -23,6 +22,8 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDate;
@@ -54,6 +55,7 @@ import org.junit.Test;
 @org.junit.Ignore
 public class CodeStyleTest {
 
+    private static final Charset SOURCE_ENCODING = StandardCharsets.UTF_8;
     private static final Pattern LEADING_WHITESPACE = Pattern.compile("^\\s+");
     private static final Pattern LOG_STATIC_STRING =
                                     Pattern.compile("^\\s*LOG\\.[a-z]+\\(\"[^\"]*\"(, [a-zA-Z_]+)?\\);");
@@ -141,7 +143,7 @@ public class CodeStyleTest {
         for (final File file : files) {
             final String relativePath = file.getAbsolutePath().substring(new File(".").getAbsolutePath().length() - 1);
             if (file.getName().endsWith(".java")) {
-                final List<String> lines = FileUtils.readLines(file, ISO_8859_1);
+                final List<String> lines = FileUtils.readLines(file, SOURCE_ENCODING);
                 openingCurlyBracket(lines, relativePath);
                 year(lines, relativePath);
                 javaDocFirstLine(lines, relativePath);
@@ -292,7 +294,7 @@ public class CodeStyleTest {
                 }
                 else {
                     if (file.getName().endsWith(".xml")) {
-                        final List<String> lines = FileUtils.readLines(file, ISO_8859_1);
+                        final List<String> lines = FileUtils.readLines(file, SOURCE_ENCODING);
                         final String relativePath = file.getAbsolutePath().substring(
                                 new File(".").getAbsolutePath().length() - 1);
                         mixedIndentation(lines, relativePath);
@@ -347,13 +349,13 @@ public class CodeStyleTest {
      * Checks the year in {@code LICENSE.txt}.
      */
     private void licenseYear() throws IOException {
-        final List<String> lines = FileUtils.readLines(new File("checkstyle.xml"), ISO_8859_1);
+        final List<String> lines = FileUtils.readLines(new File("checkstyle.xml"), SOURCE_ENCODING);
         boolean check = false;
         final String copyright = "Copyright (c) 2002-" + LocalDate.now().getYear();
         for (final String line : lines) {
             if (line.contains("<property name=\"header\"")) {
                 if (!line.contains(copyright)) {
-                    addFailure("checkstyle.xml", 0, "Incorrect year in LICENSE.txt");
+                    addFailure("checkstyle.xml", 0, "Incorrect year in checkstyle.xml");
                 }
                 check = true;
             }
@@ -369,7 +371,7 @@ public class CodeStyleTest {
     private void versionYear() throws IOException {
         final List<String> lines =
                 FileUtils.readLines(new File("src/main/java/org/htmlunit/Version.java"),
-                        ISO_8859_1);
+                        SOURCE_ENCODING);
         for (final String line : lines) {
             if (line.contains("return \"Copyright (c) 2002-" + Calendar.getInstance(Locale.ROOT).get(Calendar.YEAR))) {
                 return;
@@ -382,7 +384,7 @@ public class CodeStyleTest {
      * Verifies no &lt;parent&gt; tag in {@code pom.xml}.
      */
     private void parentInPom() throws IOException {
-        final List<String> lines = FileUtils.readLines(new File("pom.xml"), ISO_8859_1);
+        final List<String> lines = FileUtils.readLines(new File("pom.xml"), SOURCE_ENCODING);
         for (int i = 0; i < lines.size(); i++) {
             if (lines.get(i).contains("<parent>")) {
                 addFailure("pom.xml", i + 1, "'pom.xml' should not have <parent> tag");
@@ -929,7 +931,7 @@ public class CodeStyleTest {
                                             && method.getAnnotation(Test.class) == null
                                             && method.getReturnType() == Void.TYPE
                                             && method.getParameterTypes().length == 0) {
-                                        final List<String> lines = FileUtils.readLines(file, ISO_8859_1);
+                                        final List<String> lines = FileUtils.readLines(file, SOURCE_ENCODING);
                                         int line = -1;
                                         for (int i = 0; i < lines.size(); ++i) {
                                             if (lines.get(i).contains("public void " + method.getName() + "()")) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,9 @@
  */
 package org.htmlunit.html;
 
-import java.util.Arrays;
-
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
@@ -458,61 +456,55 @@ public class HtmlCheckBoxInput2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("foo,change,")
+    @Alerts({"foo", "change"})
     public void onchangeFires() throws Exception {
         final String html =
             HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><title>foo</title>\n"
             + "<script>\n"
-            + "  function debug(string) {\n"
-            + "    document.getElementById('myTextarea').value += string + ',';\n"
-            + "  }\n"
+            + LOG_TEXTAREA_FUNCTION
             + "</script>\n"
             + "</head><body>\n"
             + "<form>\n"
-            + "<input type='checkbox' id='chkbox' onchange='debug(\"foo\");debug(event.type);'>\n"
+            + "  <input type='checkbox' id='chkbox' onchange='log(\"foo\");log(event.type);'>\n"
             + "</form>\n"
-            + "<textarea id='myTextarea'></textarea>\n"
+            + LOG_TEXTAREA
             + "</body></html>";
 
         final WebDriver driver = loadPage2(html);
         driver.findElement(By.id("chkbox")).click();
 
-        assertEquals(Arrays.asList(getExpectedAlerts()).toString(),
-                '[' + driver.findElement(By.id("myTextarea")).getAttribute("value") + ']');
+        verifyTextArea2(driver, getExpectedAlerts());
     }
 
     /**
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("foo,change,boo,blur,")
+    @Alerts({"onchange change", "onblur blur"})
     public void onchangeFires2() throws Exception {
         final String html =
             HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><title>foo</title>\n"
             + "<script>\n"
-            + "  function debug(string) {\n"
-            + "    document.getElementById('myTextarea').value += string + ',';\n"
-            + "  }\n"
+            + LOG_TEXTAREA_FUNCTION
             + "</script>\n"
             + "</head><body>\n"
             + "<form>\n"
             + "<input type='checkbox' id='chkbox'"
-            + " onChange='debug(\"foo\");debug(event.type);'"
-            + " onBlur='debug(\"boo\");debug(event.type);'"
+            + "  onChange='log(\"onchange \" + event.type);'"
+            + "  onBlur='log(\"onblur \" + event.type);'"
             + ">\n"
             + "<input type='checkbox' id='chkbox2'>\n"
             + "</form>\n"
-            + "<textarea id='myTextarea'></textarea>\n"
+            + LOG_TEXTAREA
             + "</body></html>";
 
         final WebDriver driver = loadPage2(html);
         driver.findElement(By.id("chkbox")).click();
         driver.findElement(By.id("chkbox2")).click();
 
-        assertEquals(Arrays.asList(getExpectedAlerts()).toString(),
-                '[' + driver.findElement(By.id("myTextarea")).getAttribute("value") + ']');
+        verifyTextArea2(driver, getExpectedAlerts());
     }
 
     /**

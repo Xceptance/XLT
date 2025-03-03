@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,11 +80,27 @@ public final class StringUtils {
     }
 
     /**
-     * Escapes the characters '&lt;', '&gt;' and '&amp;' into their XML entity equivalents. Note that
-     * sometimes we have to use this method instead of
-     * {@link org.apache.commons.lang3.StringEscapeUtils#escapeXml(String)} or
-     * {@link org.apache.commons.lang3.StringEscapeUtils#escapeHtml4(String)} because those methods
-     * escape some unicode characters as well.
+     * @param s the string to check
+     * @param expectedStart the string that we expect at the beginning
+     * @return true if the provided string has only one char and this matches the expectation
+     */
+    public static boolean startsWithIgnoreCase(final String s, final String expectedStart) {
+        if (expectedStart == null || expectedStart.length() == 0) {
+            throw new IllegalArgumentException("Expected start string can't be null or empty");
+        }
+
+        if (s == null) {
+            return false;
+        }
+        if (s == expectedStart) {
+            return true;
+        }
+
+        return s.regionMatches(true, 0, expectedStart, 0, expectedStart.length());
+    }
+
+    /**
+     * Escapes the characters '&lt;', '&gt;' and '&amp;' into their XML entity equivalents.
      *
      * @param s the string to escape
      * @return the escaped form of the specified string
@@ -95,6 +111,83 @@ public final class StringUtils {
     }
 
     /**
+     * Escape the string to be used as xml 1.0 content be replacing the
+     * characters '&quot;', '&amp;', '&#39;', '&lt;', and '&gt;' into their XML entity equivalents.
+     * @param text the attribute value
+     * @return the escaped value
+     */
+    public static String escapeXml(final String text) {
+        if (text == null) {
+            return null;
+        }
+
+        StringBuilder escaped = null;
+
+        final int offset = 0;
+        final int max = text.length();
+
+        int readOffset = offset;
+
+        for (int i = offset; i < max; i++) {
+            final int codepoint = Character.codePointAt(text, i);
+            final boolean codepointValid = supportedByXML10(codepoint);
+
+            if (!codepointValid
+                    || codepoint == '<'
+                    || codepoint == '>'
+                    || codepoint == '&'
+                    || codepoint == '\''
+                    || codepoint == '"') {
+
+                // replacement required
+                if (escaped == null) {
+                    escaped = new StringBuilder(max);
+                }
+
+                if (i > readOffset) {
+                    escaped.append(text, readOffset, i);
+                }
+
+                if (Character.charCount(codepoint) > 1) {
+                    i++;
+                }
+                readOffset = i + 1;
+
+                // skip
+                if (!codepointValid) {
+                    continue;
+                }
+
+                if (codepoint == '<') {
+                    escaped.append("&lt;");
+                }
+                else if (codepoint == '>') {
+                    escaped.append("&gt;");
+                }
+                else if (codepoint == '&') {
+                    escaped.append("&amp;");
+                }
+                else if (codepoint == '\'') {
+                    escaped.append("&apos;");
+                }
+                else if (codepoint == '\"') {
+                    escaped.append("&quot;");
+                }
+            }
+        }
+
+        if (escaped == null) {
+            return text;
+        }
+
+        if (max > readOffset) {
+            escaped.append(text, readOffset, max);
+        }
+
+        return escaped.toString();
+    }
+
+    /**
      * Escape the string to be used as attribute value.
      * Only {@code <}, {@code &} and {@code "} have to be escaped (see
      * <a href="http://www.w3.org/TR/REC-xml/#d0e888">http://www.w3.org/TR/REC-xml/#d0e888</a>).
@@ -102,33 +195,96 @@ public final class StringUtils {
      * @return the escaped value
      */
     public static String escapeXmlAttributeValue(final String attValue) {
-        final int len = attValue.length();
-        StringBuilder sb = null;
-        for (int i = len - 1; i >= 0; --i) {
-            final char c = attValue.charAt(i);
-            String replacement = null;
-            if (c == '<') {
-                replacement = "&lt;";
-            }
-            else if (c == '&') {
-                replacement = "&amp;";
-            }
-            else if (c == '\"') {
-                replacement = "&quot;";
-            }
+        if (attValue == null) {
+            return null;
+        }
 
-            if (replacement != null) {
-                if (sb == null) {
-                    sb = new StringBuilder(attValue);
+        StringBuilder escaped = null;
+
+        final int offset = 0;
+        final int max = attValue.length();
+
+        int readOffset = offset;
+
+        for (int i = offset; i < max; i++) {
+            final int codepoint = Character.codePointAt(attValue, i);
+            final boolean codepointValid = supportedByXML10(codepoint);
+
+            if (!codepointValid
+                    || codepoint == '<'
+                    || codepoint == '&'
+                    || codepoint == '"') {
+
+                // replacement required
+                if (escaped == null) {
+                    escaped = new StringBuilder(max);
                 }
-                sb.replace(i, i + 1, replacement);
+
+                if (i > readOffset) {
+                    escaped.append(attValue, readOffset, i);
+                }
+
+                if (Character.charCount(codepoint) > 1) {
+                    i++;
+                }
+                readOffset = i + 1;
+
+                // skip
+                if (!codepointValid) {
+                    continue;
+                }
+
+                if (codepoint == '<') {
+                    escaped.append("&lt;");
+                }
+                else if (codepoint == '&') {
+                    escaped.append("&amp;");
+                }
+                else if (codepoint == '\"') {
+                    escaped.append("&quot;");
+                }
             }
         }
 
-        if (sb != null) {
-            return sb.toString();
+        if (escaped == null) {
+            return attValue;
         }
-        return attValue;
+
+        if (max > readOffset) {
+            escaped.append(attValue, readOffset, max);
+        }
+
+        return escaped.toString();
+    }
+
+    /*
+     * XML 1.0 does not allow control characters or unpaired Unicode surrogate codepoints.
+     * We will remove characters that do not fit in the following ranges:
+     * #x9 | #xA | #xD | [#x20-#xD7FF] | [#xE000-#xFFFD] | [#x10000-#x10FFFF]
+     */
+    private static boolean supportedByXML10(final int codepoint) {
+        if (codepoint < 0x20) {
+            return codepoint == 0x9 || codepoint == 0xA || codepoint == 0xD;
+        }
+        if (codepoint <= 0xD7FF) {
+            return true;
+        }
+
+        if (codepoint < 0xE000) {
+            return false;
+        }
+        if (codepoint <= 0xFFFD) {
+            return true;
+        }
+
+        if (codepoint < 0x10000) {
+            return false;
+        }
+        if (codepoint <= 0x10FFFF) {
+            return true;
+        }
+
+        return true;
     }
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -97,8 +97,8 @@ public class ArchitectureTest {
     public static final ArchRule jdkBase64Rule = noClasses()
         .that()
             .resideOutsideOfPackage("org.htmlunit.jetty..")
-            .and().resideOutsideOfPackage("org.htmlunit.csp..")
-        .should().dependOnClassesThat().haveFullyQualifiedName("java.util.Base64");
+            .and().doNotHaveFullyQualifiedName("org.htmlunit.protocol.data.DataUrlDecoder")
+        .should().dependOnClassesThat().haveFullyQualifiedName("org.apache.commons.codec.binary.Base64");
 
 
     /**
@@ -186,27 +186,17 @@ public class ArchitectureTest {
             .that()
                 .areAnnotatedWith(JsxGetter.class)
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.History.getState()")
-                .and().doNotHaveFullName("org.htmlunit.javascript.host.MimeType.getEnabledPlugin()")
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.Navigator.getDoNotTrack()")
-                .and().doNotHaveFullName("org.htmlunit.javascript.host.Navigator.getMimeTypes()")
-                .and().doNotHaveFullName("org.htmlunit.javascript.host.Navigator.getPlugins()")
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.URL.getOrigin()")
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.Window.getClientInformation()")
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.Window.getControllers()")
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.Window.getEvent()")
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.Window.getFrames_js()")
-                .and().doNotHaveFullName("org.htmlunit.javascript.host.Window.getIsSecureContext()")
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.Window.getLength()")
-                .and().doNotHaveFullName("org.htmlunit.javascript.host.Window.getOffscreenBuffering()")
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.Window.getOpener()")
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.Window.getParent()")
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.Window.getSelf()")
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.Window.getTop()")
-                .and().doNotHaveFullName("org.htmlunit.javascript.host.canvas.CanvasRenderingContext2D.getFillStyle()")
-                .and().doNotHaveFullName("org.htmlunit.javascript.host.canvas.CanvasRenderingContext2D.getGlobalAlpha()")
-                .and().doNotHaveFullName("org.htmlunit.javascript.host.canvas.CanvasRenderingContext2D.getLineWidth()")
-                .and().doNotHaveFullName("org.htmlunit.javascript.host.canvas.CanvasRenderingContext2D.getStrokeStyle()")
-                .and().doNotHaveFullName("org.htmlunit.javascript.host.css.CSSStyleDeclaration.getZIndex()")
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.dom.AbstractRange.getEndContainer()")
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.dom.AbstractRange.getStartContainer()")
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.dom.CharacterData.getData()")
@@ -221,17 +211,11 @@ public class ArchitectureTest {
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.dom.NodeIterator.getFilter()")
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.dom.Range.getCommonAncestorContainer()")
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.dom.TreeWalker.getFilter()")
-                .and().doNotHaveFullName("org.htmlunit.javascript.host.dom.XPathResult.getNumberValue()")
-                .and().doNotHaveFullName("org.htmlunit.javascript.host.draganddrop.DataTransferItem.getKind()")
-                .and().doNotHaveFullName("org.htmlunit.javascript.host.draganddrop.DataTransferItem.getType()")
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.event.BeforeUnloadEvent.getReturnValue()")
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.event.CustomEvent.getDetail()")
-                .and().doNotHaveFullName("org.htmlunit.javascript.host.event.Event.getComposed()")
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.event.Event.getReturnValue()")
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.event.Event.getSrcElement()")
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.event.Event.getTarget()")
-                .and().doNotHaveFullName("org.htmlunit.javascript.host.event.HashChangeEvent.getNewURL()")
-                .and().doNotHaveFullName("org.htmlunit.javascript.host.event.HashChangeEvent.getOldURL()")
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.event.InputEvent.getData()")
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.event.InputEvent.getInputType()")
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.event.MessageEvent.getData()")
@@ -239,9 +223,16 @@ public class ArchitectureTest {
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.event.PopStateEvent.getState()")
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.event.ProgressEvent.getLoaded()")
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.event.TextEvent.getData()")
-                .and().doNotHaveFullName("org.htmlunit.javascript.host.event.UIEvent.getView()")
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.file.FileReader.getResult()")
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.html.HTMLButtonElement.getValue()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.html.HTMLDataElement.getValue()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.html.HTMLInputElement.getValue()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.html.HTMLMeterElement.getValue()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.html.HTMLOptionElement.getValue()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.html.HTMLParamElement.getValue()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.html.HTMLProgressElement.getValue()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.html.HTMLSelectElement.getValue()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.html.HTMLTextAreaElement.getValue()")
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.worker.DedicatedWorkerGlobalScope.getSelf()")
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.xml.XMLHttpRequest.getResponse()")
                 .and().doNotHaveFullName("org.htmlunit.javascript.host.xml.XMLHttpRequest.getResponseXML()")
@@ -256,7 +247,7 @@ public class ArchitectureTest {
             .orShould().haveRawReturnType(isAssignableToScriptable);
 
     /**
-     * JsxGetter should only return Scriptable's.
+     * JsxSetter should only return void.
      */
     @ArchTest
     public static final ArchRule jsxSetterReturnType = methods()
@@ -562,6 +553,22 @@ public class ArchitectureTest {
             .and().resideOutsideOfPackage("org.htmlunit.corejs..")
 
         .should().dependOnClassesThat().haveFullyQualifiedName("org.htmlunit.corejs.javascript.Undefined");
+
+    /**
+     * Do not use core-js ScriptRuntime outside of the JavaScriptEngine.
+     */
+    @ArchTest
+    public static final ArchRule javaScriptEngineRule = noClasses()
+        .that()
+            .resideOutsideOfPackage("org.htmlunit.javascript..")
+
+            .and().doNotHaveFullyQualifiedName("org.htmlunit.WebClient")
+            .and().doNotHaveFullyQualifiedName("org.htmlunit.ScriptResult")
+            .and().doNotHaveFullyQualifiedName("org.htmlunit.html.DomElement")
+            .and().doNotHaveFullyQualifiedName("org.htmlunit.html.HtmlPage")
+            .and().doNotHaveFullyQualifiedName("org.htmlunit.util.DebuggingWebConnection")
+
+        .should().dependOnClassesThat().haveFullyQualifiedName("org.htmlunit.javascript.JavaScriptEngine");
 
     /**
      * Do not use jetty.

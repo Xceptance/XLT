@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -79,6 +79,7 @@ import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.configuration.JsxSetter;
 import org.htmlunit.javascript.host.URLSearchParams;
 import org.htmlunit.javascript.host.Window;
+import org.htmlunit.javascript.host.dom.DOMException;
 import org.htmlunit.javascript.host.dom.DOMParser;
 import org.htmlunit.javascript.host.dom.Document;
 import org.htmlunit.javascript.host.event.Event;
@@ -279,8 +280,10 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
                 || RESPONSE_TYPE_TEXT.equals(responseType)) {
 
             if (state_ == OPENED && !async_) {
-                throw JavaScriptEngine.reportRuntimeError(
-                        "InvalidAccessError: synchronous XMLHttpRequests do not support responseType");
+                throw JavaScriptEngine.asJavaScriptException(
+                        getWindow(),
+                        "synchronous XMLHttpRequests do not support responseType",
+                        DOMException.INVALID_ACCESS_ERR);
             }
 
             responseType_ = responseType;
@@ -451,10 +454,12 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
         }
 
         if (!RESPONSE_TYPE_DEFAULT.equals(responseType_) && !RESPONSE_TYPE_TEXT.equals(responseType_)) {
-            throw JavaScriptEngine.reportRuntimeError(
+            throw JavaScriptEngine.asJavaScriptException(
+                    getWindow(),
                     "InvalidStateError: Failed to read the 'responseText' property from 'XMLHttpRequest': "
                     + "The value is only accessible if the object's 'responseType' is '' or 'text' "
-                    + "(was '" + getResponseType() + "').");
+                            + "(was '" + getResponseType() + "').",
+                    DOMException.INVALID_STATE_ERR);
         }
 
         if (state_ == UNSENT || state_ == OPENED) {
@@ -905,7 +910,10 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Not allowed to load local resource: " + webRequest_.getUrl());
             }
-            throw JavaScriptEngine.networkError("Not allowed to load local resource: " + webRequest_.getUrl());
+            throw JavaScriptEngine.asJavaScriptException(
+                    getWindow(),
+                    "Not allowed to load local resource: " + webRequest_.getUrl(),
+                    DOMException.NETWORK_ERR);
         }
 
         final BrowserVersion browserVersion = getBrowserVersion();
@@ -961,8 +969,10 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
                     if (LOG.isDebugEnabled()) {
                         LOG.debug("No permitted request for URL " + webRequest_.getUrl());
                     }
-                    throw JavaScriptEngine.throwAsScriptRuntimeEx(
-                            new RuntimeException("No permitted \"Access-Control-Allow-Origin\" header."));
+                    throw JavaScriptEngine.asJavaScriptException(
+                            getWindow(),
+                            "No permitted \"Access-Control-Allow-Origin\" header.",
+                            DOMException.NETWORK_ERR);
                 }
             }
 
@@ -1083,7 +1093,8 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
                     fireJavascriptEvent(Event.TYPE_LOAD_END);
                 }
 
-                throw JavaScriptEngine.throwAsScriptRuntimeEx(e);
+                throw JavaScriptEngine.asJavaScriptException(getWindow(),
+                        e.getMessage(), DOMException.NETWORK_ERR);
             }
         }
     }
@@ -1179,7 +1190,10 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
             webRequest_.setAdditionalHeader(name, value);
         }
         else {
-            throw JavaScriptEngine.reportRuntimeError("The open() method must be called before setRequestHeader().");
+            throw JavaScriptEngine.asJavaScriptException(
+                    getWindow(),
+                    "The open() method must be called before setRequestHeader().",
+                    DOMException.INVALID_STATE_ERR);
         }
     }
 
@@ -1210,7 +1224,10 @@ public class XMLHttpRequest extends XMLHttpRequestEventTarget {
     @JsxFunction
     public void overrideMimeType(final String mimeType) {
         if (state_ != UNSENT && state_ != OPENED) {
-            throw JavaScriptEngine.reportRuntimeError("Property 'overrideMimeType' not writable after sent.");
+            throw JavaScriptEngine.asJavaScriptException(
+                    getWindow(),
+                    "Property 'overrideMimeType' not writable after sent.",
+                    DOMException.INVALID_STATE_ERR);
         }
         overriddenMimeType_ = mimeType;
     }
