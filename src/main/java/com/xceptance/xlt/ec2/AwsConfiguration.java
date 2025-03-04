@@ -50,6 +50,14 @@ public class AwsConfiguration extends AbstractConfiguration
      */
     private static final String PROP_SECRET_KEY = PROP_PREFIX + "secretKey";
 
+    /**
+     * AWS property name for the session token.
+     */
+    private static final String PROP_SESSION_TOKEN = PROP_PREFIX + "sessionToken";
+
+    /**
+     * AWS property name for SSH key pair settings.
+     */
     private static final String PROP_SSH_KEY = PROP_PREFIX + "keypair.";
 
     /**
@@ -118,28 +126,22 @@ public class AwsConfiguration extends AbstractConfiguration
     private final String secretKey;
 
     /**
+     * The AWS session token.
+     */
+    private final String sessionToken;
+
+    /**
      * The timeout to wait for a specified instance state.
      */
     private final int instanceConnectTimeout;
 
     /**
-     * Creates a new {@link AwsConfiguration} object.
+     * Creates a new {@link AwsConfiguration} object. The given credentials override the configured credentials.
      *
      * @throws RuntimeException
      *             if an error occurs
      */
     public AwsConfiguration()
-    {
-        this(null, null);
-    }
-
-    /**
-     * Creates a new {@link AwsConfiguration} object. The given credential s override the configured credentials.
-     *
-     * @throws RuntimeException
-     *             if an error occurs
-     */
-    public AwsConfiguration(final String accessKey, final String secretKey)
     {
         try
         {
@@ -148,8 +150,9 @@ public class AwsConfiguration extends AbstractConfiguration
 
             loadProperties(propFile);
 
-            this.accessKey = StringUtils.isNotBlank(accessKey) ? accessKey : getStringProperty(PROP_ACCESS_KEY);
-            this.secretKey = StringUtils.isNotBlank(secretKey) ? secretKey : getStringProperty(PROP_SECRET_KEY);
+            accessKey = getStringProperty(PROP_ACCESS_KEY, null);
+            secretKey = getStringProperty(PROP_SECRET_KEY, null);
+            sessionToken = getStringProperty(PROP_SESSION_TOKEN, null);
 
             protocol = getStringProperty(PROP_PROXY_PROTOCOL, "http");
             proxyHost = getStringProperty(PROP_PROXY_HOST, null);
@@ -232,6 +235,16 @@ public class AwsConfiguration extends AbstractConfiguration
     public String getSecretKey()
     {
         return secretKey;
+    }
+
+    /**
+     * Returns the value of the 'sessionToken' attribute.
+     *
+     * @return the value of sessionToken
+     */
+    public String getSessionToken()
+    {
+        return sessionToken;
     }
 
     /**

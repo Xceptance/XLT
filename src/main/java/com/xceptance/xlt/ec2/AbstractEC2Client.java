@@ -35,6 +35,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.AwsSessionCredentials;
+import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.awscore.exception.AwsServiceException;
 import software.amazon.awssdk.core.exception.SdkException;
@@ -53,7 +56,6 @@ import software.amazon.awssdk.services.ec2.model.DescribeSubnetsRequest;
 import software.amazon.awssdk.services.ec2.model.DescribeVpcsRequest;
 import software.amazon.awssdk.services.ec2.model.Filter;
 import software.amazon.awssdk.services.ec2.model.Image;
-import software.amazon.awssdk.services.ec2.model.ImageState;
 import software.amazon.awssdk.services.ec2.model.Instance;
 import software.amazon.awssdk.services.ec2.model.InstanceStateName;
 import software.amazon.awssdk.services.ec2.model.KeyPairInfo;
@@ -89,12 +91,20 @@ abstract public class AbstractEC2Client
      */
     private final HashMap<String, Ec2Client> clientsByRegion = new HashMap<>();
 
+    /**
+     * The proxy configuration.
+     */
     private final ProxyConfiguration proxyConfig;
 
     /**
      * The AWS configuration.
      */
     protected final AwsConfiguration awsConfiguration;
+
+    /**
+     * The AWS credentials provider.
+     */
+    private final AwsCredentialsProvider credentialsProvider;
 
     private static final long INSTANCE_STATE_POLLING_INTERVAL = 1000;
 
@@ -105,15 +115,10 @@ abstract public class AbstractEC2Client
 
     public AbstractEC2Client() throws Exception
     {
-        this(null, null);
-    }
-
-    public AbstractEC2Client(final String accessKey, final String secretKey) throws Exception
-    {
         // create the AWS EC2 client
         try
         {
-            awsConfiguration = new AwsConfiguration(accessKey, secretKey);
+            awsConfiguration = new AwsConfiguration();
 
             if (awsConfiguration.getProxyHost() != null)
             {
@@ -132,6 +137,7 @@ abstract public class AbstractEC2Client
                 proxyConfig = null;
             }
 
+            credentialsProvider = getCredentialsProvider(awsConfiguration);
         }
         catch (final Exception e)
         {
@@ -139,6 +145,40 @@ abstract public class AbstractEC2Client
             log.error("Failed to initialize AWS EC2 client", e);
             throw e;
         }
+    }
+
+    /**
+     * Get credentials provider. Uses the credentials from the given AwsConfiguration if possible. Otherwise, uses the
+     * default credential provider chain.
+     *
+     * @param awsConfiguration
+     *            the AwsConfiguration
+     * @return the credentials provider
+     */
+    private AwsCredentialsProvider getCredentialsProvider(final AwsConfiguration awsConfiguration) throws Exception
+    {
+        final String accessKey = awsConfiguration.getAccessKey();
+        final String secretKey = awsConfiguration.getSecretKey();
+        final String sessionToken = awsConfiguration.getSessionToken();
+
+        if (accessKey != null && secretKey != null)
+        {
+            if (sessionToken != null)
+            {
+                return StaticCredentialsProvider.create(AwsSessionCredentials.create(accessKey, secretKey, sessionToken));
+            }
+            else
+            {
+                return StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKey, secretKey));
+            }
+        }
+
+        if (accessKey == null && secretKey == null && sessionToken == null)
+        {
+            return DefaultCredentialsProvider.create();
+        }
+
+        throw new Exception("Invalid credential configuration in 'ec2_admin.properties'.");
     }
 
     protected Ec2Client getClient(final Region region)
@@ -157,9 +197,7 @@ abstract public class AbstractEC2Client
                 httpClientBuilder.proxyConfiguration(proxyConfig);
             }
 
-            client = Ec2Client.builder().httpClientBuilder(httpClientBuilder)
-                              .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(awsConfiguration.getAccessKey(),
-                                                                                                               awsConfiguration.getSecretKey())))
+            client = Ec2Client.builder().httpClientBuilder(httpClientBuilder).credentialsProvider(credentialsProvider)
                               .region(software.amazon.awssdk.regions.Region.of(regionName)).build();
 
             clientsByRegion.put(regionName, client);
