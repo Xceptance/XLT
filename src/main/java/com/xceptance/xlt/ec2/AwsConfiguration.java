@@ -136,7 +136,7 @@ public class AwsConfiguration extends AbstractConfiguration
     private final int instanceConnectTimeout;
 
     /**
-     * Creates a new {@link AwsConfiguration} object. The given credentials override the configured credentials.
+     * Creates a new {@link AwsConfiguration} object.
      *
      * @throws RuntimeException
      *             if an error occurs
