@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 //
-// Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+// Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
 
 package com.xceptance.xlt.engine.xltdriver.options;
 
@@ -211,7 +211,9 @@ public enum HtmlUnitOption implements HtmlUnitOptionNames, OptionEnum {
     /**
      * The SSL client certificate <b>KeyStore</b> to use.
      * <p>
-     * <b>NOTE</b>:
+     * <b>NOTE</b>: This option is omitted when serializing session settings.
+     * The SSL client certificate key store type is serialized via <b>SSL_CLIENT_CERTIFICATE_TYPE</b> and
+     * the SSL client certificate key store password is serialized via <b>SSL_CLIENT_CERTIFICATE_PASSWORD</b>
      * <p>
      * property: <b>webdriver.htmlunit.sslClientCertificateStore</b><br>
      * type: {@link KeyStore}<br>
@@ -298,6 +300,10 @@ public enum HtmlUnitOption implements HtmlUnitOptionNames, OptionEnum {
     /**
      * The SSL server certificate trust store. All server certificates will be validated against
      * this trust store.
+     * <p>
+     * <b>NOTE</b>: This option is omitted when serializing session settings.
+     * The SSL server certificate trust store type is serialized via <b>SSL_TRUST_STORE_TYPE</b> and
+     * the SSL server certificate trust store password is serialized via <b>SSL_TRUST_STORE_PASSWORD</b>
      * <p>
      * property: <b>webdriver.htmlunit.sslTrustStore</b><br>
      * type: {@link KeyStore}<br>
@@ -843,6 +849,10 @@ public enum HtmlUnitOption implements HtmlUnitOptionNames, OptionEnum {
     /**
      * Sets whether or not the file protocol is allowed for XMLHttpRequests.
      * <p>
+     * <b>NOTE</b>: If set to {@code true}, the client will accept XMLHttpRequests to URLs using the 'file' protocol.
+     * Allowing this introduces security problems and is therefore not allowed by current browsers. But some browsers
+     * have special settings to open this door; therefore, we have this option.
+     * <p>
      * property: <b>webdriver.htmlunit.fileProtocolForXMLHttpRequestsAllowed</b><br>
      * type: {@code boolean}<br>
      * default: {@code false}
@@ -1010,6 +1020,12 @@ public enum HtmlUnitOption implements HtmlUnitOptionNames, OptionEnum {
         return null;
     }
 
+    /**
+     * Get the enumerated constant for the specified option key name.
+     *
+     * @param key option key name
+     * @return {@link HtmlUnitOption} constant for option key; {@code null} if constant not found
+     */
     public static HtmlUnitOption fromCapabilityKey(final String key) {
         for (final HtmlUnitOption option : HtmlUnitOption.values()) {
             if (option.capabilityKey_.equals(key)) {
@@ -1019,6 +1035,12 @@ public enum HtmlUnitOption implements HtmlUnitOptionNames, OptionEnum {
         return null;
     }
 
+    /**
+     * Get the enumerated constant for the specified system property name.
+     *
+     * @param name system property name
+     * @return {@link HtmlUnitOption} constant for property name; {@code null} if constant not found
+     */
     public static HtmlUnitOption fromPropertyName(final String name) {
         for (final HtmlUnitOption option : HtmlUnitOption.values()) {
             if (option.propertyName_.equals(name)) {

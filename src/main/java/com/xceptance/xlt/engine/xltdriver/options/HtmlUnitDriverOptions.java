@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 //
-// Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+// Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
 
 package com.xceptance.xlt.engine.xltdriver.options;
 
@@ -307,7 +307,9 @@ public class HtmlUnitDriverOptions extends AbstractDriverOptions<HtmlUnitDriverO
     }
 
     public HtmlUnitDriverOptions setWebClientVersion(final BrowserVersion webClientVersion) {
-        Require.nonNull("Web client version", webClientVersion);
+        // JW start
+        //Require.nonNull("Web client version", webClientVersion);
+        // JW end
         this.webClientVersion_ = webClientVersion;
         return this;
     }

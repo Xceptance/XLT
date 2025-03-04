@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 //
-// Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+// Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
 
 package com.xceptance.xlt.engine.xltdriver.options;
 
@@ -372,7 +372,7 @@ public enum BrowserVersionTrait implements BrowserVersionTraitNames, OptionEnum 
 
     /**
      * Returns the value used by the browser for the {@code Accept} header
-     * if performing an XMLHttpRequest.
+     * if performing an <b>XMLHttpRequest</b>.
      * <p>
      * property: <b>webdriver.htmlunit.xmlHttpRequestAcceptHeader</b><br>
      * type: {@link String}<br>
