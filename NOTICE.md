@@ -1,7 +1,7 @@
 XLT
 ===
 
-Copyright 2005-2023 Xceptance Software Technologies GmbH (https://www.xceptance.com/)
+Copyright 2005-2025 Xceptance Software Technologies GmbH (https://www.xceptance.com/)
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -238,6 +238,12 @@ okhttp
   * Homepage: https://github.com/square/okhttp
   * More information in folder: doc/3rd-party-licenses/okhttp
 
+opentelemetry
+
+  * License: Apache License 2.0
+  * Homepage: https://github.com/open-telemetry
+  * More information in folder: doc/3rd-party-licenses/opentelemetry
+
 pegdown
 
   * License: Apache License 2.0
@@ -249,6 +255,12 @@ progressbar
   * License: MIT License
   * Homepage: https://github.com/ctongfei/progressbar
   * More information in folder: doc/3rd-party-licenses/progressbar
+
+saxon-he
+
+  * License: Mozilla Public License 2.0
+  * Homepage: https://www.saxonica.com/
+  * More information in folder: doc/3rd-party-licenses/saxon-he
 
 selenium-java
 
@@ -297,18 +309,6 @@ websocket-client
   * License: Apache License 2.0
   * Homepage: https://www.eclipse.org/jetty/
   * More information in folder: doc/3rd-party-licenses/websocket-client
-
-xalan
-
-  * License: Apache License 2.0
-  * Homepage: https://xml.apache.org/xalan-j/
-  * More information in folder: doc/3rd-party-licenses/xalan
-
-xerces
-
-  * License: Apache License 2.0
-  * Homepage: http://xerces.apache.org/xerces2-j/
-  * More information in folder: doc/3rd-party-licenses/xerces
 
 xstream
 

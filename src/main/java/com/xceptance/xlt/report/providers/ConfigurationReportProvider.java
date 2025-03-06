@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,9 @@ import com.xceptance.common.util.RegExUtils;
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.report.AbstractReportProvider;
 import com.xceptance.xlt.common.XltConstants;
+import com.xceptance.xlt.mastercontroller.TestCaseLoadProfileConfiguration;
 import com.xceptance.xlt.mastercontroller.TestLoadProfileConfiguration;
+import com.xceptance.xlt.report.util.ReportUtils;
 import com.xceptance.xlt.util.PropertiesConfigurationException;
 import com.xceptance.xlt.util.PropertiesIOException;
 import com.xceptance.xlt.util.PropertyFileNotFoundException;
@@ -115,7 +117,11 @@ public class ConfigurationReportProvider extends AbstractReportProvider
         // add the load profile
         try
         {
-            report.loadProfile = new TestLoadProfileConfiguration(props).getLoadTestConfiguration();
+            for (TestCaseLoadProfileConfiguration tclpc : new TestLoadProfileConfiguration(props).getLoadTestConfiguration())
+            {    
+                report.loadProfile.add(new LoadProfileConfigurationReport(tclpc));
+            }
+            calculatePercentages(report.loadProfile);
         }
         catch (final Exception e)
         {
@@ -136,6 +142,45 @@ public class ConfigurationReportProvider extends AbstractReportProvider
         report.chartWidth = getConfiguration().getChartWidth();
 
         return report;
+    }
+
+    private void calculatePercentages(List<LoadProfileConfigurationReport> loadProfile)
+    {
+        // iterate through report.loadProfile --> calculate totals of (max) users and (max) arrivalrate
+        int arrivalRateTotal = 0;
+        int userCountTotal = 0;
+        for (LoadProfileConfigurationReport loadProfileConfig : loadProfile)
+        {
+            arrivalRateTotal += getMaxFromLoadFunction(loadProfileConfig.arrivalRate);
+            userCountTotal += getMaxFromLoadFunction(loadProfileConfig.numberOfUsers);
+            
+        }
+        // iterate through report.loadProfile again and add percentages calculated from totals
+        for (LoadProfileConfigurationReport loadProfileConfig : loadProfile)
+        {
+            loadProfileConfig.arrivalRatePercentage = (loadProfileConfig.arrivalRate == null ? null : ReportUtils.calculatePercentage(getMaxFromLoadFunction(loadProfileConfig.arrivalRate), arrivalRateTotal));
+            loadProfileConfig.numberOfUsersPercentage = (ReportUtils.calculatePercentage(getMaxFromLoadFunction(loadProfileConfig.numberOfUsers), userCountTotal));
+        }        
+        return;
+    }
+    
+    private int getMaxFromLoadFunction(int[][] loadFunction)
+    {
+        if (loadFunction == null)
+        {
+            return 0;
+        }
+        //see LoadFunctionXStreamConverter
+        int maximum = 0;
+        for (final int[] array : loadFunction)
+        {
+            final int users = array[1];
+            if (users > maximum)
+            {
+                maximum = users;
+            }
+        }
+        return maximum;
     }
 
     private Map<? extends Object, ? extends Object> mask(Properties properties)

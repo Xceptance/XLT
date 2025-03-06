@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,9 +26,9 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.amazonaws.services.ec2.model.Image;
-import com.amazonaws.services.ec2.model.Instance;
-import com.amazonaws.services.ec2.model.Tag;
+import software.amazon.awssdk.services.ec2.model.Image;
+import software.amazon.awssdk.services.ec2.model.Instance;
+import software.amazon.awssdk.services.ec2.model.Tag;
 
 public class MachineInfo
 {
@@ -128,25 +128,25 @@ public class MachineInfo
 
     public static MachineInfo createMachineInfo(final Instance instance, final Image image)
     {
-        final String name = getNameFromTags(instance.getTags()).orElse("<not tagged>");
+        final String name = getNameFromTags(instance.tags()).orElse("<not tagged>");
 
-        String address = instance.getPublicIpAddress();
+        String address = instance.publicIpAddress();
         if (StringUtils.isBlank(address))
         {
-            address = StringUtils.defaultIfBlank(instance.getPublicDnsName(), "<unknown>");
+            address = StringUtils.defaultIfBlank(instance.publicDnsName(), "<unknown>");
         }
 
-        final Date launchStart = instance.getLaunchTime();
-        Duration diffToNow = Duration.between(launchStart.toInstant(), Instant.now());
+        final Instant launchStart = instance.launchTime();
+        Duration diffToNow = Duration.between(launchStart, Instant.now());
 
         final long runTime = diffToNow.toMinutes();
 
-        final List<String> secGroups = instance.getSecurityGroups().stream().map(g -> g.getGroupName()).collect(Collectors.toList());
+        final List<String> secGroups = instance.securityGroups().stream().map(g -> g.groupName()).collect(Collectors.toList());
 
-        final String imageName = StringUtils.defaultIfBlank(getImageName(image), instance.getImageId());
-        return new MachineInfo(name, address, TIME_FORMATTER.format(launchStart), runTime, instance.getInstanceType(),
-                               StringUtils.defaultString(instance.getKeyName(), "<none>"), imageName, secGroups.isEmpty() ? "<none>" : StringUtils.join(secGroups, "; "),
-                               instance.getState().getName());
+        final String imageName = StringUtils.defaultIfBlank(getImageName(image), instance.imageId());
+        return new MachineInfo(name, address, TIME_FORMATTER.format(Date.from(launchStart)), runTime, instance.instanceType().toString(),
+                               StringUtils.defaultString(instance.keyName(), "<none>"), imageName,
+                               secGroups.isEmpty() ? "<none>" : StringUtils.join(secGroups, "; "), instance.state().name().toString());
     }
 
     private static String getImageName(final Image image)
@@ -156,12 +156,12 @@ public class MachineInfo
             return null;
         }
 
-        return getNameFromTags(image.getTags()).orElse(StringUtils.defaultIfBlank(image.getName(), image.getDescription()));
+        return getNameFromTags(image.tags()).orElse(StringUtils.defaultIfBlank(image.name(), image.description()));
     }
 
     private static Optional<String> getNameFromTags(final List<Tag> tags)
     {
-        return tags.stream().filter(tag -> tag.getKey().equals("Name")).map(tag -> tag.getValue()).findAny();
+        return tags.stream().filter(tag -> tag.key().equals("Name")).map(tag -> tag.value()).findAny();
     }
 
     private static String getUptimeStr(final long runtimeInMinutes)

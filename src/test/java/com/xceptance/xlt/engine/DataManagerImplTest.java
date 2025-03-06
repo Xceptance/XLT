@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,7 +77,7 @@ public class DataManagerImplTest
     public void loggingPeriod() throws IOException
     {
         var session = new TestSession("TName");
-        var dm = new DataManagerImpl(session, metrics);
+        var dm = new DataManagerImpl(session, () -> metrics);
 
         dm.setStartOfLoggingPeriod(8000L);
         dm.setEndOfLoggingPeriod(9000L);
@@ -125,7 +125,7 @@ public class DataManagerImplTest
         GlobalClock.installFixed(1666646047921L);
 
         var session = new TestSession("TName");
-        var dm = new DataManagerImpl(session, metrics);
+        var dm = new DataManagerImpl(session, () -> metrics);
 
         dm.enableLogging();
         assertTrue(dm.isLoggingEnabled());
@@ -161,7 +161,7 @@ public class DataManagerImplTest
         GlobalClock.installFixed(1666646047921L);
 
         var session = new TestSession("TName");
-        var dm = new DataManagerImpl(session, metrics);
+        var dm = new DataManagerImpl(session, () -> metrics);
 
         dm.setLoggingEnabled(true);
         assertTrue(dm.isLoggingEnabled());
@@ -198,7 +198,7 @@ public class DataManagerImplTest
         GlobalClock.installFixed(1666646047921L);
 
         var session = new TestSession("TName");
-        var dm = new DataManagerImpl(session, metrics);
+        var dm = new DataManagerImpl(session, () -> metrics);
 
         dm.logEvent("EventName1", "Just a message1");
 
@@ -226,7 +226,7 @@ public class DataManagerImplTest
         GlobalClock.installFixed(1666646047921L);
 
         var session = new TestSession("TName");
-        var dm = new DataManagerImpl(session, metrics);
+        var dm = new DataManagerImpl(session, () -> metrics);
 
         dm.logEvent("EventName", "Just a message");
 
@@ -293,7 +293,7 @@ public class DataManagerImplTest
     public void dontCountOtherThanEvent() throws IOException
     {
         var session = new TestSession("TName");
-        var dm = new DataManagerImpl(session, metrics);
+        var dm = new DataManagerImpl(session, () -> metrics);
 
         var c = new CustomData("Custom");
         c.setTime(1000L);
@@ -315,7 +315,7 @@ public class DataManagerImplTest
     public void logEventAppend() throws IOException
     {
         var session = new TestSession("TName");
-        var dm = new DataManagerImpl(session, metrics);
+        var dm = new DataManagerImpl(session, () -> metrics);
 
         GlobalClock.installFixed(1666646047921L);
         dm.logEvent("EventName1", "M1");
@@ -328,7 +328,7 @@ public class DataManagerImplTest
         session.clear();
 
         session = new TestSession("TName");
-        dm = new DataManagerImpl(session, metrics);
+        dm = new DataManagerImpl(session, () -> metrics);
 
         GlobalClock.installFixed(1666646047923L);
         dm.logEvent("EventName3", "M3");
@@ -357,7 +357,7 @@ public class DataManagerImplTest
     public void numberOfEvents()
     {
         var session = new TestSession("TName");
-        var dm = new DataManagerImpl(session, metrics);
+        var dm = new DataManagerImpl(session, () -> metrics);
 
         GlobalClock.installFixed(1666646047921L);
         dm.logEvent("EventName1", "M1");
@@ -376,7 +376,7 @@ public class DataManagerImplTest
     public void directLogging() throws IOException
     {
         var session = new TestSession("TName");
-        var dm = new DataManagerImpl(session, metrics);
+        var dm = new DataManagerImpl(session, () -> metrics);
 
         var e = new EventData();
         e.setTime(1000L);

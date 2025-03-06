@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 8.2.0
+#Version 8.6.0
 
 CLSS public abstract com.xceptance.xlt.api.actions.AbstractAction
 cons protected init(com.xceptance.xlt.api.actions.AbstractAction,java.lang.String)
@@ -326,8 +326,14 @@ meth public abstract void setRemainingValues(java.util.List<com.xceptance.xlt.ap
 meth public abstract void setTime(long)
 meth public abstract void setTransactionName(java.lang.String)
 
+CLSS public abstract interface com.xceptance.xlt.api.engine.DataLogger
+meth public abstract void log(java.lang.String)
+meth public abstract void setExtension(java.lang.String)
+meth public abstract void setHeader(java.lang.String)
+
 CLSS public abstract interface com.xceptance.xlt.api.engine.DataManager
 meth public abstract boolean isLoggingEnabled()
+meth public abstract com.xceptance.xlt.api.engine.DataLogger dataLogger(java.lang.String)
 meth public abstract long getEndOfLoggingPeriod()
 meth public abstract long getStartOfLoggingPeriod()
 meth public abstract void disableLogging()
@@ -505,6 +511,7 @@ meth public abstract void setWebDriverActionName(java.lang.String)
  anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
 meth public abstract void startAction(java.lang.String)
 meth public abstract void stopAction()
+meth public final static void logData(java.lang.String,java.lang.String)
 meth public final static void logEvent(java.lang.String,java.lang.String)
 meth public static com.xceptance.xlt.api.engine.Session getCurrent()
 supr java.lang.Object

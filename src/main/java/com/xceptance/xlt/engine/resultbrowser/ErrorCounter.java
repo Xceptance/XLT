@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -141,15 +141,15 @@ public class ErrorCounter
         }
         catch (final Exception e)
         {
-            XltLogger.runTimeLogger.warn(String.format("The value '%s' of property '%s' cannot be resolved or parsed as time period. Disabling error limiter reset interval, keeping count limitation.",
-                                                       intervalString, COUNTER_RESET_INTERVAL_PROPERTY));
+            XltLogger.runTimeLogger.warn("The value '{}' of property '{}' cannot be resolved or parsed as time period. Disabling error limiter reset interval, keeping count limitation.",
+                                         intervalString, COUNTER_RESET_INTERVAL_PROPERTY);
         }
 
         // interval in milliseconds
         this.resetInterval = tmpInterval * 1000;
         if (resetInterval > 0)
         {
-            timer = new Timer("ErrorCounter-ResetTimer");
+            timer = new Timer("ErrorCounter-ResetTimer", true);
         }
         else
         {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,8 @@ package com.xceptance.xlt.gce;
 import java.io.File;
 import java.util.List;
 
-import com.google.api.services.compute.model.Instance;
-import com.google.api.services.compute.model.InstanceGroup;
+import com.google.cloud.compute.v1.Instance;
+import com.google.cloud.compute.v1.InstanceGroup;
 
 /**
  * Retrieves all machine instances in a certain instance group and prints their corresponding agent controller URLs to a

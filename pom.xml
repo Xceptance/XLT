@@ -6,7 +6,7 @@
 
     <groupId>com.xceptance</groupId>
     <artifactId>xlt</artifactId>
-    <version>8.2.0</version>
+    <version>8.6.0</version>
     <packaging>jar</packaging>
 
     <name>XLT</name>
@@ -73,7 +73,8 @@
         <powermock.version>2.0.9</powermock.version>
         <selenium.version>4.29.0</selenium.version>
         <htmlunitdriver.version>4.29.0</htmlunitdriver.version>
-        <copyright>Copyright (c) ${project.inceptionYear}-2024 ${project.organization.name}</copyright>
+        <otel.version>1.43.0</otel.version>
+        <copyright>Copyright (c) ${project.inceptionYear}-2025 ${project.organization.name}</copyright>
     </properties>
 
     <build>
@@ -124,8 +125,51 @@
                     </mapping>
                 </configuration>
             </plugin>
+            <!-- Checks dependencies for known vulnerabilities. -->
+            <!-- Usage: mvn dependency-check:aggregate -->
+            <plugin>
+                <groupId>org.owasp</groupId>
+                <artifactId>dependency-check-maven</artifactId>
+                <version>12.1.0</version>
+                <configuration>
+                    <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.fasterxml.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>2.17.2</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>software.amazon.awssdk</groupId>
+                <artifactId>bom</artifactId>
+                <version>2.27.21</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.google.cloud</groupId>
+                <artifactId>libraries-bom</artifactId>
+                <version>26.54.0</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-bom</artifactId>
+                <version>${otel.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
         <!-- HtmlUnit -->
@@ -215,20 +259,28 @@
         </dependency>
         <!-- XLT -->
         <dependency>
-            <groupId>com.amazonaws</groupId>
-            <artifactId>aws-java-sdk-ec2</artifactId>
-            <version>1.12.386</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.httpcomponents</groupId>
-                    <artifactId>httpclient</artifactId>
-                </exclusion>
-            </exclusions>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>ec2</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.google.apis</groupId>
-            <artifactId>google-api-services-compute</artifactId>
-            <version>v1-rev20221224-2.0.0</version>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>url-connection-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.google.cloud</groupId>
+            <artifactId>google-cloud-compute</artifactId>
         </dependency>
         <dependency>
             <groupId>commons-cli</groupId>
@@ -270,7 +322,7 @@
         <dependency>
             <groupId>dnsjava</groupId>
             <artifactId>dnsjava</artifactId>
-            <version>3.5.2</version>
+            <version>3.6.0</version>
         </dependency>
         <dependency>
             <groupId>com.caucho</groupId>
@@ -290,7 +342,7 @@
         <dependency>
             <groupId>org.jfree</groupId>
             <artifactId>jfreechart</artifactId>
-            <version>1.5.4</version>
+            <version>1.5.5</version>
         </dependency>
         <dependency>
             <!-- optional dependency of dnsjava, but XLT requires it -->
@@ -331,7 +383,7 @@
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp</artifactId>
-            <version>4.10.0</version>
+            <version>4.12.0</version>
         </dependency>
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
@@ -355,30 +407,9 @@
             <version>0.3.3</version>
         </dependency>
         <dependency>
-            <groupId>xalan</groupId>
-            <artifactId>xalan</artifactId>
-            <version>2.7.3</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>xerces</groupId>
-                    <artifactId>xercesImpl</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>xml-apis</groupId>
-                    <artifactId>xml-apis</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <!-- optional dependency of xalan -->
-            <groupId>xalan</groupId>
-            <artifactId>serializer</artifactId>
-            <version>2.7.3</version>
-        </dependency>
-        <dependency>
             <groupId>com.thoughtworks.xstream</groupId>
             <artifactId>xstream</artifactId>
-            <version>1.4.20</version>
+            <version>1.4.21</version>
         </dependency>
         <!-- ASM Libraries (required for Parboiled, PMD and Cobertura) -->
         <dependency>
@@ -391,13 +422,13 @@
         <dependency>
             <groupId>net.bytebuddy</groupId>
             <artifactId>byte-buddy</artifactId>
-            <version>1.14.11</version>
+            <version>1.15.7</version>
         </dependency>
         <!-- guava is used by Selenium, Google Compute and Checkstyle. Ensure that the highest version wins. -->
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>33.0.0-jre</version>
+            <version>33.3.1-jre</version>
         </dependency>
         <!-- slf4j is used by many libs. Ensure that the version used by log4j-slf4j2-impl wins. -->
         <dependency>
@@ -472,6 +503,33 @@
             <artifactId>jline</artifactId>
             <version>3.23.0</version>
         </dependency>
+        <dependency>
+            <groupId>dev.harrel</groupId>
+            <artifactId>json-schema</artifactId>
+            <version>1.5.2</version>
+        </dependency>
+        <dependency>
+            <groupId>net.sf.saxon</groupId>
+            <artifactId>Saxon-HE</artifactId>
+            <version>12.5</version>
+        </dependency>
+        <dependency>
+            <groupId>io.opentelemetry.semconv</groupId>
+            <artifactId>opentelemetry-semconv</artifactId>
+            <version>1.26.0-alpha</version>
+        </dependency>
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-sdk-logs</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-exporter-otlp</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-sdk-extension-autoconfigure</artifactId>
+        </dependency>
 
         <!-- ================= -->
         <!-- Test dependencies -->
@@ -530,6 +588,16 @@
             <artifactId>pmd-java</artifactId>
             <version>6.55.0</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>net.sourceforge.saxon</groupId>
+                    <artifactId>saxon</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>net.sourceforge.saxon</groupId>
+                    <artifactId>saxon-dom</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!-- HtmlUnit -->
         <dependency>
@@ -587,6 +655,12 @@
             <artifactId>checkstyle</artifactId>
             <version>10.20.1</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>net.sf.saxon</groupId>
+                    <artifactId>Saxon-HE</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!-- Cobertura -->
         <dependency>

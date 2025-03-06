@@ -40,7 +40,6 @@
 
 <xsl:template match="testreport">
 
-<xsl:text disable-output-escaping="yes">&lt;!</xsl:text><xsl:text>DOCTYPE html</xsl:text><xsl:text disable-output-escaping="yes">&gt;&#13;</xsl:text>
 <html lang="en">
 <head>
     <xsl:call-template name="head">

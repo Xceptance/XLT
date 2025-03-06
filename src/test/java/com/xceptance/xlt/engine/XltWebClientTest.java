@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,9 @@ import java.util.Set;
 
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.MockWebConnection;
+import org.htmlunit.WebConnection;
 import org.htmlunit.WebResponse;
+import org.htmlunit.javascript.AbstractJavaScriptEngine;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
@@ -202,16 +204,42 @@ public class XltWebClientTest extends AbstractXLTTestCase
         }
     }
 
+    @Test
+    public void testReset()
+    {
+        try (final XltWebClient webClient = new XltWebClient(BrowserVersion.BEST_SUPPORTED, true))
+        {
+            // prevalidation
+            final WebConnection webConnection = webClient.getWebConnection();
+            final AbstractJavaScriptEngine<?> javaScriptEngine = webClient.getJavaScriptEngine();
+
+            Assert.assertEquals("Unexpected WebConnection class", XltHttpWebConnection.class, webConnection.getClass());
+            Assert.assertEquals("Unexpected JavaScriptEngine class", XltJavaScriptEngine.class, javaScriptEngine.getClass());
+
+            // reset
+            webClient.reset();
+
+            // validate that web connection and javascript engine are still XLT classes, but different objects
+            final WebConnection newWebConnection = webClient.getWebConnection();
+            final AbstractJavaScriptEngine<?> newJavaScriptEngine = webClient.getJavaScriptEngine();
+
+            Assert.assertEquals("Unexpected WebConnection class", XltHttpWebConnection.class, newWebConnection.getClass());
+            Assert.assertEquals("Unexpected JavaScriptEngine class", XltJavaScriptEngine.class, newJavaScriptEngine.getClass());
+
+            Assert.assertNotEquals("WebConnection is the same as before", webConnection, newWebConnection);
+            Assert.assertNotEquals("JavaScriptEngine is the same as before", javaScriptEngine, newJavaScriptEngine);
+        }
+    }
+
     /**
      * Response processor which simple stores the request URLs.
      */
     static class URLCollector implements ResponseProcessor
     {
         /**
-         * Collected URLs.
-         * This has to be a synchronized set because some of the processing runs in another thread and hence
-         * we might experiencene false sharing otherwise, mainly because a response processor is not designed
-         * to be a data collector
+         * Collected URLs. This has to be a synchronized set because some of the processing runs in another thread and
+         * hence we might experiencene false sharing otherwise, mainly because a response processor is not designed to
+         * be a data collector
          */
         private final Set<URL> urls = Collections.synchronizedSet(new HashSet<URL>());
 
