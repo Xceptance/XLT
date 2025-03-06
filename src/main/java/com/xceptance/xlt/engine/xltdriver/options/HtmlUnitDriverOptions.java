@@ -307,9 +307,7 @@ public class HtmlUnitDriverOptions extends AbstractDriverOptions<HtmlUnitDriverO
     }
 
     public HtmlUnitDriverOptions setWebClientVersion(final BrowserVersion webClientVersion) {
-        // JW start
-        //Require.nonNull("Web client version", webClientVersion);
-        // JW end
+        Require.nonNull("Web client version", webClientVersion);
         this.webClientVersion_ = webClientVersion;
         return this;
     }
