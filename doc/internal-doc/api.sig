@@ -2086,12 +2086,7 @@ supr java.lang.Object
 hfds binary,headless,options,profile
 
 CLSS public com.xceptance.xlt.engine.xltdriver.HtmlUnitDriver
-cons public init()
-cons public init(boolean)
-cons public init(org.htmlunit.BrowserVersion)
-cons public init(org.htmlunit.BrowserVersion,boolean)
-cons public init(org.openqa.selenium.Capabilities)
-cons public init(org.openqa.selenium.Capabilities,org.openqa.selenium.Capabilities)
+cons protected init(org.htmlunit.BrowserVersion)
 fld public final static java.lang.String BROWSER_LANGUAGE_CAPABILITY = "browserLanguage"
 fld public final static java.lang.String DOWNLOAD_IMAGES_CAPABILITY = "downloadImages"
 fld public final static java.lang.String JAVASCRIPT_ENABLED = "javascriptEnabled"
