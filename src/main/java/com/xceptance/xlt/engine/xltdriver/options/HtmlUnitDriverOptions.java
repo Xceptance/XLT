@@ -20,8 +20,8 @@
 package com.xceptance.xlt.engine.xltdriver.options;
 
 import static org.openqa.selenium.remote.Browser.HTMLUNIT;
-import static org.openqa.selenium.htmlunit.HtmlUnitDriver.JAVASCRIPT_ENABLED;
-import static org.openqa.selenium.htmlunit.HtmlUnitDriver.DOWNLOAD_IMAGES_CAPABILITY;
+import static com.xceptance.xlt.engine.xltdriver.HtmlUnitDriver.JAVASCRIPT_ENABLED;
+import static com.xceptance.xlt.engine.xltdriver.HtmlUnitDriver.DOWNLOAD_IMAGES_CAPABILITY;
 
 import java.io.IOException;
 import java.io.InputStream;
