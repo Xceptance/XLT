@@ -9,7 +9,6 @@
         <xsl:param name="seq"/>
         <xsl:param name="minSumSoFar" select="0"/>
         <xsl:param name="maxSumSoFar" select="0"/>
-        <xsl:param name="unit"/>
         <xsl:choose>
             <xsl:when test="$seq">
                 <xsl:variable name="min">
@@ -36,7 +35,6 @@
                     <xsl:with-param name="seq" select="$seq[position()!=1]"/>
                     <xsl:with-param name="minSumSoFar" select="$minSumSoFar + translate($min, ',', '')"/>
                     <xsl:with-param name="maxSumSoFar" select="$maxSumSoFar + translate($max, ',', '')"/>
-                    <xsl:with-param name="unit" select="$unit"/>
                 </xsl:call-template>
             </xsl:when>
             <xsl:otherwise>
@@ -46,13 +44,11 @@
                     </xsl:when>
                     <xsl:when test="$minSumSoFar = $maxSumSoFar">
                         <xsl:value-of select="format-number($minSumSoFar, '#,##0')"/>
-                        <xsl:value-of select="$unit"/>
                     </xsl:when>
                     <xsl:otherwise>
                         <xsl:value-of select="format-number($minSumSoFar, '#,##0')"/>
                         <xsl:text>...</xsl:text>
                         <xsl:value-of select="format-number($maxSumSoFar, '#,##0')"/>
-                        <xsl:value-of select="$unit"/>
                     </xsl:otherwise>
                 </xsl:choose>
             </xsl:otherwise>
