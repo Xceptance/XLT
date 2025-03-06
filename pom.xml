@@ -72,7 +72,6 @@
         <log4j.version>2.24.1</log4j.version>
         <powermock.version>2.0.9</powermock.version>
         <selenium.version>4.29.0</selenium.version>
-        <htmlunitdriver.version>4.29.0</htmlunitdriver.version>
         <copyright>Copyright (c) ${project.inceptionYear}-2024 ${project.organization.name}</copyright>
     </properties>
 
@@ -337,17 +336,6 @@
             <groupId>org.seleniumhq.selenium</groupId>
             <artifactId>selenium-java</artifactId>
             <version>${selenium.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.seleniumhq.selenium</groupId>
-            <artifactId>htmlunit3-driver</artifactId>
-            <version>${htmlunitdriver.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.htmlunit</groupId>
-                    <artifactId>htmlunit</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>io.github.darkxanter</groupId>

@@ -175,73 +175,12 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor, HasCapabil
     private Executor executor_;
 
     /**
-     * Constructs a new instance with JavaScript disabled, and the
-     * {@link BrowserVersion#getDefault() default} BrowserVersion.
-     */
-    public HtmlUnitDriver() {
-        this(BrowserVersion.getDefault(), false);
-    }
-
-    /**
      * Constructs a new instance with the specified {@link BrowserVersion}.
      *
      * @param version the browser version to use
      */
-    public HtmlUnitDriver(final BrowserVersion version) {
-        this(version, false);
-    }
-
-    /**
-     * Constructs a new instance, specify JavaScript support and using the
-     * {@link BrowserVersion#getDefault() default} BrowserVersion.
-     *
-     * @param enableJavascript whether to enable JavaScript support or not
-     */
-    public HtmlUnitDriver(final boolean enableJavascript) {
-        this(BrowserVersion.getDefault(), enableJavascript);
-    }
-
-    /**
-     * Constructs a new instance with the specified {@link BrowserVersion} and the
-     * JavaScript support.
-     *
-     * @param version          the browser version to use
-     * @param enableJavascript whether to enable JavaScript support or not
-     */
-    public HtmlUnitDriver(final BrowserVersion version, final boolean enableJavascript) {
-        this(new HtmlUnitDriverOptions(version, enableJavascript));
-    }
-
-    public HtmlUnitDriver(final Capabilities desiredCapabilities, final Capabilities requiredCapabilities) {
-        this(new DesiredCapabilities(desiredCapabilities, requiredCapabilities));
-    }
-
-    /**
-     * The browserName is {@link Browser#HTMLUNIT} "htmlunit" and the
-     * browserVersion denotes the required browser AND its version. For example
-     * "chrome" for Chrome, "firefox-100" for Firefox 100.
-     *
-     * @param capabilities desired capabilities requested for the htmlunit driver
-     *                     session
-     */
-    public HtmlUnitDriver(final Capabilities capabilities) {
-        final HtmlUnitDriverOptions driverOptions = new HtmlUnitDriverOptions(capabilities);
-        webClient_ = newWebClient(driverOptions.getWebClientVersion());
-
-        setAcceptInsecureCerts(Boolean.FALSE != driverOptions.getCapability(ACCEPT_INSECURE_CERTS));
-
-        final String pageLoadStrategyString = (String) driverOptions.getCapability(PAGE_LOAD_STRATEGY);
-        if ("none".equals(pageLoadStrategyString)) {
-            pageLoadStrategy_ = PageLoadStrategy.NONE;
-        }
-        else if ("eager".equals(pageLoadStrategyString)) {
-            pageLoadStrategy_ = PageLoadStrategy.EAGER;
-        }
-
-        final WebClientOptions clientOptions = webClient_.getOptions();
-        driverOptions.applyOptions(clientOptions);
-
-        setProxySettings(Proxy.extractFrom(driverOptions));
+    protected HtmlUnitDriver(final BrowserVersion version) {
+        webClient_ = newWebClient(version);
 
         webClient_.setRefreshHandler(new WaitingRefreshHandler());
         webClient_.setClipboardHandler(new AwtClipboardHandler());
@@ -249,7 +188,6 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor, HasCapabil
         elementFinder_ = new HtmlUnitElementFinder();
 
         alert_ = new HtmlUnitAlert(this);
-        alert_.handleBrowserCapabilities(driverOptions);
         currentWindow_ = new HtmlUnitWindow(webClient_.getCurrentWindow());
 
         defaultExecutor_ = Executors.newCachedThreadPool();

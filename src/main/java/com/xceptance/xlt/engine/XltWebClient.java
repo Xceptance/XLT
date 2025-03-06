@@ -1909,8 +1909,6 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
             browserVersion = determineBrowserVersion();
         }
 
-        System.err.println(browserVersion);
-        
         // create a builder to build a modified version of the passed browser version
         final BrowserVersionBuilder browserVersionBuilder = new BrowserVersionBuilder(browserVersion);
 
