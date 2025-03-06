@@ -17,32 +17,23 @@ package com.xceptance.xlt.mastercontroller;
 
 import org.apache.commons.lang3.ArrayUtils;
 
-import com.thoughtworks.xstream.annotations.XStreamAlias;
-import com.thoughtworks.xstream.annotations.XStreamConverter;
-import com.thoughtworks.xstream.annotations.XStreamOmitField;
-
 /**
  * The {@link TestCaseLoadProfileConfiguration} represents the load profile as configured for a certain test case.
  */
-@XStreamAlias("testCase")
 public class TestCaseLoadProfileConfiguration
 {
-    @XStreamConverter(LoadFunctionXStreamConverter.class)
     private int[][] arrivalRate;
 
-    @XStreamConverter(ComplexLoadFunctionXStreamConverter.class)
     private int[][] complexLoadFunction;
 
     private int initialDelay;
 
-    @XStreamOmitField
     private int[][] loadFactor;
 
     private int measurementPeriod;
 
     private int numberOfIterations;
 
-    @XStreamConverter(LoadFunctionXStreamConverter.class)
     private int[][] numberOfUsers;
 
     private int rampUpPeriod;
@@ -199,7 +190,6 @@ public class TestCaseLoadProfileConfiguration
         return buf.toString();
     }
 
-    @XStreamOmitField
     private boolean isCPTest;
 
     public boolean isCPTest()

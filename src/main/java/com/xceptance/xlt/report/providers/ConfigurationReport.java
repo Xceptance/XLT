@@ -47,7 +47,7 @@ public class ConfigurationReport
     /**
      * The detailed load profile.
      */
-    public List<TestCaseLoadProfileConfiguration> loadProfile = new ArrayList<TestCaseLoadProfileConfiguration>();
+    public List<LoadProfileConfigurationReport> loadProfile = new ArrayList<LoadProfileConfigurationReport>();
 
     /**
      * The test comments.
