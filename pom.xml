@@ -63,8 +63,8 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
         <asm.version>9.4</asm.version>
         <htmlunit.version>3.11.0</htmlunit.version>
         <httpclient.version>4.5.14</httpclient.version>
