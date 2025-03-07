@@ -845,51 +845,11 @@ public class Main extends AbstractEC2Client
         sb.append("  Count             : ").append(instanceCount).append("\n");
         sb.append("  Name              : ").append(name).append("\n");
         sb.append("  Key-pair          : ").append(StringUtils.isBlank(keyPairName) ? "<none>" : keyPairName).append("\n");
-        sb.append("  Password          : ").append(password).append("\n");
-        sb.append("  Host data         : ");
-        if (StringUtils.isBlank(hostData))
-        {
-            sb.append("<none>\n");
-        }
-        else
-        {
-            boolean firstHostDataLine = true;
-            for (final String hostDataLine : hostData.split("\\\\n"))
-            {
-                if (firstHostDataLine)
-                {
-                    firstHostDataLine = false;
-                }
-                else
-                {
-                    sb.append("                      ");
-                }
-                sb.append(hostDataLine).append("\n");
-            }
-        }
+        sb.append("  Password          : ").append(StringUtils.isBlank(password) ? "<none>" : password).append("\n");
+        sb.append("  Host data         : ").append(StringUtils.isBlank(hostData) ? "<none>" : hostData).append("\n");
         if (showUserData)
         {
-            sb.append("  User data         : ");
-            if (StringUtils.isBlank(userData))
-            {
-                sb.append("<none>\n");
-            }
-            else
-            {
-                boolean firstUserDataLine = true;
-                for (final String userDataLine : userData.split("\\\\n"))
-                {
-                    if (firstUserDataLine)
-                    {
-                        firstUserDataLine = false;
-                    }
-                    else
-                    {
-                        sb.append("                      ");
-                    }
-                    sb.append(userDataLine).append("\n");
-                }
-            }
+            sb.append("  User data         : ").append(StringUtils.isBlank(userData) ? "<none>" : userData).append("\n");
         }
         sb.append("\n");
         sb.append("Do you want to run the instance(s) with the above configuration?");
@@ -1803,8 +1763,8 @@ public class Main extends AbstractEC2Client
         {
             JSONObject userDataObj = new JSONObject();
 
-            userDataObj.put("acPassword", password);
-            userDataObj.put("hostData", hostData.replaceAll("\\\\n", "\n"));
+            userDataObj.put("acPassword", StringUtils.isNotBlank(password) ? password : "");
+            userDataObj.put("hostData", StringUtils.isNotBlank(hostData) ? hostData.replaceAll("\\\\n", "\n") : "");
 
             return userDataObj.toString();
         }
