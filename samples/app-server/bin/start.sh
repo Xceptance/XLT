@@ -13,4 +13,4 @@ JAVA_OPTIONS=$JAVA_OPTIONS\ -Xmx512m
 JAVA_OPTIONS=$JAVA_OPTIONS\ -Djava.security.egd=file:/dev/./urandom
  
 # run Java
-java -jar start.jar $JAVA_OPTIONS
+java --add-opens=java.base/java.lang=ALL-UNNAMED -jar start.jar $JAVA_OPTIONS
