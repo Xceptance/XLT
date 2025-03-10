@@ -139,7 +139,9 @@
 
         <parallel>
             <daemons>
-                <java jar="${jetty.dir}/start.jar" fork="yes" dir="${jetty.dir}" maxmemory="512m" />
+                <java jar="${jetty.dir}/start.jar" fork="yes" dir="${jetty.dir}"  maxmemory="512m" >
+                    <jvmarg value="--add-opens=java.base/java.lang=ALL-UNNAMED" />
+                </java>
             </daemons>
 
             <sequential>
