@@ -21,7 +21,6 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
@@ -223,34 +222,5 @@ public abstract class AbstractXLTTestCase
         }
 
         return null;
-    }
-
-    /**
-     * Method to set a final static field to a value for a test Important: You have to reset it within a final block
-     * later on again.
-     *
-     * @param clazz
-     *            the class to modify
-     * @param fieldName
-     *            the name of the field to set
-     * @param newValue
-     *            the new value to set
-     * @throws NoSuchFieldException
-     * @throws SecurityException
-     * @throws IllegalAccessException
-     * @throws IllegalArgumentException
-     */
-    public static void setFinalStatic(final Class<?> clazz, final String fieldName, final Object newValue)
-        throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException
-    {
-        final Field field = clazz.getDeclaredField(fieldName);
-        field.setAccessible(true);
-
-        // remove final modifier from field
-        final Field modifiersField = Field.class.getDeclaredField("modifiers");
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
-
-        field.set(null, newValue);
     }
 }
