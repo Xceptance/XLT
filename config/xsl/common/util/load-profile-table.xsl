@@ -309,16 +309,16 @@
                                     </xsl:choose>
                                 </td>
                                	<xsl:choose>
-                                	<xsl:when test="string-length(arrivalRate) != 0">
-                                		<td class="value number load-meter" style="--loadp:{arrivalRatePercentage}">
-                                    	<xsl:value-of select="format-number(arrivalRatePercentage, '#,##0.00')" />
-                                    	<xsl:text>%</xsl:text>
-	        							</td>
+                                    <xsl:when test="string-length(arrivalRate) != 0">
+                                        <td class="value number load-meter" style="--loadp:{arrivalRatePercentage}">
+                                        <xsl:value-of select="format-number(arrivalRatePercentage, '#,##0.00')" />
+                                        <xsl:text>%</xsl:text>
+                                        </td>
                                     </xsl:when>
                                     <xsl:otherwise>
-                                    	<td class="value number">
-                                    	<xsl:text disable-output-escaping="yes">&amp;ndash;</xsl:text>
-                                    	</td>
+                                        <td class="value number">
+                                        <xsl:text disable-output-escaping="yes">&amp;ndash;</xsl:text>
+                                        </td>
                                     </xsl:otherwise> 
                                 </xsl:choose>                                
                                 
