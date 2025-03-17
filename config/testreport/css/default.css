@@ -405,6 +405,8 @@ template {
     --web-vital-color-good: rgb(110,160,110);
     --web-vital-color-improve: #e0b669;
     --web-vital-color-poor: rgb(200,120,120);
+    
+    --load-bar-color: #8aa4c1;
 }
 
 /*
@@ -1725,6 +1727,24 @@ tr:hover td.a100                                                                
 
 .web-vital-bar-segment-poor {
     background-color: var(--web-vital-color-poor);
+}
+
+/*
+ * ----------------------------------------------------
+ * Load Distribution
+ * ----------------------------------------------------
+ */
+
+table tbody tr:nth-child(odd) .load-meter {
+    background: linear-gradient(to right, var(--load-bar-color) calc(var(--loadp) * 1%), #f9f9fc calc(var(--loadp) * 1%));
+}
+
+table tbody tr .load-meter {
+    background: linear-gradient(to right, var(--load-bar-color) calc(var(--loadp) * 1%), #e8e8e8 calc(var(--loadp) * 1%));
+}
+
+table tbody tr:hover .load-meter {
+    background: linear-gradient(to right, var(--load-bar-color) calc(var(--loadp) * 1%), #BCCBDC calc(var(--loadp) * 1%));
 }
 
 /*
