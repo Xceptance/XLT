@@ -1736,27 +1736,15 @@ tr:hover td.a100                                                                
  */
 
 table tbody tr:nth-child(odd) .load-meter {
-	background: -webkit-linear-gradient(left, var(--load-bar-color) calc(var(--loadp) * 1%), #f9f9fc calc(var(--loadp) * 1%));
-    background:    -moz-linear-gradient(left, var(--load-bar-color) calc(var(--loadp) * 1%), #f9f9fc calc(var(--loadp) * 1%));
-    background:     -ms-linear-gradient(left, var(--load-bar-color) calc(var(--loadp) * 1%), #f9f9fc calc(var(--loadp) * 1%));
-    background:      -o-linear-gradient(left, var(--load-bar-color) calc(var(--loadp) * 1%), #f9f9fc calc(var(--loadp) * 1%));
-    background:         linear-gradient(to right, var(--load-bar-color) calc(var(--loadp) * 1%), #f9f9fc calc(var(--loadp) * 1%));
+    background: linear-gradient(to right, var(--load-bar-color) calc(var(--loadp) * 1%), #f9f9fc calc(var(--loadp) * 1%));
 }
 
 table tbody tr .load-meter {
-	background: -webkit-linear-gradient(left, var(--load-bar-color) calc(var(--loadp) * 1%), #e8e8e8 calc(var(--loadp) * 1%));
-    background:    -moz-linear-gradient(left, var(--load-bar-color) calc(var(--loadp) * 1%), #e8e8e8 calc(var(--loadp) * 1%));
-    background:     -ms-linear-gradient(left, var(--load-bar-color) calc(var(--loadp) * 1%), #e8e8e8 calc(var(--loadp) * 1%));
-    background:      -o-linear-gradient(left, var(--load-bar-color) calc(var(--loadp) * 1%), #e8e8e8 calc(var(--loadp) * 1%));
-    background:         linear-gradient(to right, var(--load-bar-color) calc(var(--loadp) * 1%), #e8e8e8 calc(var(--loadp) * 1%));
+    background: linear-gradient(to right, var(--load-bar-color) calc(var(--loadp) * 1%), #e8e8e8 calc(var(--loadp) * 1%));
 }
 
 table tbody tr:hover .load-meter {
-	background: -webkit-linear-gradient(left, var(--load-bar-color) calc(var(--loadp) * 1%), #BCCBDC calc(var(--loadp) * 1%));
-    background:    -moz-linear-gradient(left, var(--load-bar-color) calc(var(--loadp) * 1%), #BCCBDC calc(var(--loadp) * 1%));
-    background:     -ms-linear-gradient(left, var(--load-bar-color) calc(var(--loadp) * 1%), #BCCBDC calc(var(--loadp) * 1%));
-    background:      -o-linear-gradient(left, var(--load-bar-color) calc(var(--loadp) * 1%), #BCCBDC calc(var(--loadp) * 1%));
-    background:         linear-gradient(to right, var(--load-bar-color) calc(var(--loadp) * 1%), #BCCBDC calc(var(--loadp) * 1%));
+    background: linear-gradient(to right, var(--load-bar-color) calc(var(--loadp) * 1%), #BCCBDC calc(var(--loadp) * 1%));
 }
 
 /*
