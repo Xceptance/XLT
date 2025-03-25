@@ -8,7 +8,7 @@
 
         <meta charset="utf-8" />
         <!-- Min width set because we cannot handle our data size on a smartphone display -->
-        <meta name="viewport" content="width=768, initial-scale=1" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <meta name="generator" content="XLT" />
 
         <xsl:variable name="normProjName" select="normalize-space($projectName)"/>
