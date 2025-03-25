@@ -105,7 +105,7 @@
     <target name="test.compile" depends="test.init">
         <mkdir dir="${test.classes.dir}" />
 
-        <javac srcdir="${src.dir}/test/java" includeantruntime="no" destdir="${test.classes.dir}" debug="on" optimize="off" deprecation="on" encoding="utf8" source="11" target="11">
+        <javac srcdir="${src.dir}/test/java" includeantruntime="no" destdir="${test.classes.dir}" debug="on" optimize="off" deprecation="on" encoding="utf8" source="21" target="21">
             <classpath refid="test.classpath" />
         </javac>
 
@@ -389,7 +389,7 @@
     <target name="test.compile-hu" description="Generates HtmlUnit test class files." depends="test.init">
         <mkdir dir="${test-hu.classes.dir}" />
 
-        <javac srcdir="${src-test-hu.dir}/java" destdir="${test-hu.classes.dir}" debug="on" optimize="off" deprecation="on" encoding="utf8" includeantruntime="false" source="11" target="11">
+        <javac srcdir="${src-test-hu.dir}/java" destdir="${test-hu.classes.dir}" debug="on" optimize="off" deprecation="on" encoding="utf8" includeantruntime="false" source="21" target="21">
             <classpath refid="test.classpath" />
         </javac>
 

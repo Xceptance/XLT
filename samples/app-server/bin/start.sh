@@ -8,9 +8,10 @@ mkdir -p logs
 
 # setup Java options
 JAVA_OPTIONS=$JAVA_OPTIONS\ -Xmx512m
+JAVA_OPTIONS=$JAVA_OPTIONS\ --add-opens=java.base/java.lang=ALL-UNNAMED
 
 # fix #35/#382
 JAVA_OPTIONS=$JAVA_OPTIONS\ -Djava.security.egd=file:/dev/./urandom
  
 # run Java
-java --add-opens=java.base/java.lang=ALL-UNNAMED -jar start.jar $JAVA_OPTIONS
+java $JAVA_OPTIONS -jar start.jar

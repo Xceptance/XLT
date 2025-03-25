@@ -9,6 +9,7 @@ if not exist logs mkdir logs
 
 :: setup Java options
 set JAVA_OPTIONS=%JAVA_OPTIONS% -Xmx512m
+set JAVA_OPTIONS=%JAVA_OPTIONS% --add-opens=java.base/java.lang=ALL-UNNAMED
 
 :: run Java
-java --add-opens=java.base/java.lang=ALL-UNNAMED -jar start.jar %JAVA_OPTIONS%
+java %JAVA_OPTIONS% -jar start.jar
