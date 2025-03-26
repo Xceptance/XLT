@@ -1158,7 +1158,7 @@ public class MasterController
 
             final XltPropertiesImpl props = new XltPropertiesImpl(fsMgr.resolveFile(testResultsDir.getAbsolutePath()),
                                                                   fsMgr.resolveFile(confDir.getAbsolutePath()), false, true);
-            return props.getTestPropertyFile();
+            return props.getTestPropertyFile(true);
         }
         catch (final Exception e)
         {
