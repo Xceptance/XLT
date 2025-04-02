@@ -382,53 +382,13 @@
                     in the report generator properties.
                 </p>
 
-                <h3>Bandwidth</h3>
-                <p>
-                    The Bandwidth tab shows the incoming and outgoing bandwidth per request. XLT measures on socket level. Thus,
-                    actual incoming and outgoing data is recorded. XLT does not analyze or modify that data when taking the
-                    measurements.
-                </p>
-                <p>
-                    The Bytes Sent column comprises all data sent out of the application including overhead such as HTTP(S)
-                    headers and SSL protocol data. The Bytes Received column includes all received data and the connected
-                    overhead. As the data is measured right above the socket level and before it gets decoded by the
-                    application, any compressed traffic is measured as seen by the network layer. The data size you see is not
-                    the expanded data as seen by the DOM parser.
-                </p>
+                <xsl:call-template name="bandwidth-explained">
+                    <xsl:with-param name="isTab" select="true()"/>
+                </xsl:call-template>
 
-                <h3>Network Timing</h3>
-                <p>
-                    The Network Timing tab displays all low-level network timing data that has been measured on socket level.
-                    Each measurement point includes the minimum and maximum times and the mean of all gathered data. The
-                    following measurement points are shown:
-                </p>
-                <ul>
-                    <li>
-                        Connect Time: Time needed to establish a connection to the other system. Note that when you use
-                        keep-alive semantics during testing, the connect time will mainly be 0 except for the first request of a
-                        transaction.
-                    </li>
-                    <li>
-                        Send Time: Time needed to send the request to the other system. Depending on the payload and the network
-                        speed, this data often amounts to zero or very small values.
-                    </li>
-                    <li>
-                        Server Busy Time: Time spent waiting from sending the last bytes to receiving the first bytes.
-                    </li>
-                    <li>
-                        Receive Time: Time spent receiving data from the first to the last bytes received.
-                    </li>
-                    <li>
-                        Time to First Bytes: Total time from the connection start until the first bytes are received. Includes
-                        Connect, Send, Server Busy, and Receive Time.
-                    </li>
-                    <li>
-                        Time to Last Bytes: Total time from the connection start until the last bytes are received. This is the
-                        time needed to connect, send, and receive data. Often it is called network runtime. In contrast, the
-                        request runtime includes the network runtime and the application time needed to process header and
-                        protocol information and transfer the data from socket level to the application level.
-                    </li>
-                </ul>
+                <xsl:call-template name="network-timing-explained">
+                    <xsl:with-param name="isTab" select="true()"/>
+                </xsl:call-template>
 
                 <h3>Charts</h3>
                 <p>
@@ -451,6 +411,75 @@
                 
                 <p>**) Numbers are estimated using <a href="https://en.wikipedia.org/wiki/HyperLogLog">HyperLogLog</a> and can be off by up to 0.5%, but only for distinct counts larger than 100,000. A difference of up to 2%
                 can occur for distinct counts larger than 1,000,000.</p>
+            </div>
+        </div>
+    </xsl:template>
+
+    <!--- ## Description: Slowest Requests Summary ## -->
+    <xsl:template name="headline-slowest-requests-summary">
+        <h2>Slowest Requests</h2>
+    </xsl:template>
+    <xsl:template name="description-slowest-requests-summary">
+        <div class="description">
+            <xsl:variable name="gid" select="concat('slowest-requests', generate-id(.))"/>
+            <xsl:variable name="config" select="/testreport/configuration/reportGeneratorConfiguration"/>
+            <xsl:variable name="minRuntime" select="$config/slowestRequestsMinRuntime"/>
+            <xsl:variable name="maxRuntime" select="$config/slowestRequestsMaxRuntime"/>
+            <xsl:variable name="requestsPerBucket" select="$config/slowestRequestsPerBucket"/>
+            <xsl:variable name="totalRequests" select="$config/slowestRequestsTotal"/>
+            <p>
+                This sections lists the requests with the slowest runtime recorded during the test run.
+                <xsl:call-template name="show-n-hide">
+                    <xsl:with-param name="gid" select="$gid"/>
+                </xsl:call-template>
+            </p>
+            <div id="more-{$gid}" class="more">
+                <h3>Overview</h3>
+                <p>
+                    The table lists the requests with the slowest overall runtime matching the following criteria (as configured
+                    in the reportgenerator.properties):
+                    <ul>
+                        <li>Request runtime must be between <xsl:value-of select="format-number($minRuntime, '#,##0')"/> ms and
+                            <xsl:value-of select="format-number($maxRuntime, '#,##0')"/> ms to be listed.</li>
+                        <li>A maximum of <xsl:value-of select="format-number($requestsPerBucket, '#,##0')"/> requests per
+                            request name are listed.</li>
+                        <li>A total maximum of <xsl:value-of select="format-number($totalRequests, '#,##0')"/> requests are listed.</li>
+                    </ul>
+                </p>
+                <p>
+                    Each row in the table displays the data for one individual request. The request names are derived from
+                    the action names and may have been modified using request filter and transformation rules. When hovering
+                    over the request name, a pop-up will show further request information if available (e.g. the URL, HTTP method,
+                    or form data).
+                </p>
+
+                <h3>Baseline</h3>
+                <p>
+                    The Baseline columns show the mean and p95 runtimes across all requests with the respective name to allow
+                    easy comparison with the runtime of the respective slow requests. These are the same mean and p95 values
+                    displayed in the Requests section.
+                </p>
+
+                <xsl:call-template name="bandwidth-explained">
+                    <xsl:with-param name="isTab" select="false()"/>
+                </xsl:call-template>
+
+                <xsl:call-template name="network-timing-explained">
+                    <xsl:with-param name="isTab" select="false()"/>
+                </xsl:call-template>
+
+                <h3>Request Details</h3>
+                <p>
+                    The Request Details columns show the HTTP response code and the start date and time of the request.
+                </p>
+
+                <h3>IP Addresses</h3>
+                <p>
+                    The IP Addresses columns show the IP address used to perform the request, as well as all IP addresses
+                    reported by the DNS (if the information is available). If more than one address was reported, hover
+                    over the field to see a list of all the IP addresses.
+                </p>
+
             </div>
         </div>
     </xsl:template>
@@ -783,6 +812,84 @@
                 This section lists custom JVM settings for the agents as specified in the <code>jvmargs.cfg</code> file of the test suite.
             </p>
         </div>
+    </xsl:template>
+
+    <!-- ## Description: Shared text about bandwidth values ## -->
+    <xsl:template name="bandwidth-explained">
+        <xsl:param name="isTab"/>
+
+        <h3>Bandwidth</h3>
+        <p>
+            The Bandwidth
+            <xsl:choose>
+                <xsl:when test="$isTab">
+                    <xsl:text> tab shows </xsl:text>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:text> columns show </xsl:text>
+                </xsl:otherwise>
+            </xsl:choose>
+            the incoming and outgoing bandwidth per request. XLT measures on socket level. Thus,
+            actual incoming and outgoing data is recorded. XLT does not analyze or modify that data when taking the
+            measurements.
+        </p>
+        <p>
+            The Bytes Sent column comprises all data sent out of the application including overhead such as HTTP(S)
+            headers and SSL protocol data. The Bytes Received column includes all received data and the connected
+            overhead. As the data is measured right above the socket level and before it gets decoded by the
+            application, any compressed traffic is measured as seen by the network layer. The data size you see is not
+            the expanded data as seen by the DOM parser.
+        </p>
+
+    </xsl:template>
+
+    <!-- ## Description: Shared text about network timing values ## -->
+    <xsl:template name="network-timing-explained">
+        <xsl:param name="isTab"/>
+
+        <h3>Network Timing</h3>
+        <p>
+            The Network Timing
+            <xsl:choose>
+                <xsl:when test="$isTab">
+                    <xsl:text> tab displays </xsl:text>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:text> columns display </xsl:text>
+                </xsl:otherwise>
+            </xsl:choose>
+            all low-level network timing data that has been measured on socket level.
+            Each measurement point includes the minimum and maximum times and the mean of all gathered data. The
+            following measurement points are shown:
+        </p>
+        <ul>
+            <li>
+                Connect Time: Time needed to establish a connection to the other system. Note that when you use
+                keep-alive semantics during testing, the connect time will mainly be 0 except for the first request of a
+                transaction.
+            </li>
+            <li>
+                Send Time: Time needed to send the request to the other system. Depending on the payload and the network
+                speed, this data often amounts to zero or very small values.
+            </li>
+            <li>
+                Server Busy Time: Time spent waiting from sending the last bytes to receiving the first bytes.
+            </li>
+            <li>
+                Receive Time: Time spent receiving data from the first to the last bytes received.
+            </li>
+            <li>
+                Time to First Bytes: Total time from the connection start until the first bytes are received. Includes
+                Connect, Send, Server Busy, and Receive Time.
+            </li>
+            <li>
+                Time to Last Bytes: Total time from the connection start until the last bytes are received. This is the
+                time needed to connect, send, and receive data. Often it is called network runtime. In contrast, the
+                request runtime includes the network runtime and the application time needed to process header and
+                protocol information and transfer the data from socket level to the application level.
+            </li>
+        </ul>
+
     </xsl:template>
 
     <!-- ## Description: Shared text about chart compression and capping ## -->

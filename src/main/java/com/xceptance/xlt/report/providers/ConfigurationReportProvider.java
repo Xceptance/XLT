@@ -27,6 +27,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.TreeMap;
 
+import com.xceptance.xlt.report.ReportGeneratorConfiguration;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.vfs2.FileSystemException;
 import org.apache.commons.vfs2.FileSystemManager;
@@ -88,6 +89,9 @@ public class ConfigurationReportProvider extends AbstractReportProvider
 
         // add the masked plain properties
         report.properties.putAll(mask(props.getProperties()));
+
+        // add relevant report generator settings
+        report.reportGeneratorConfiguration = new ReportGeneratorConfigurationReport((ReportGeneratorConfiguration) getConfiguration());
 
         // add product information for later output
         report.version = ProductInformation.getProductInformation();

@@ -15,41 +15,17 @@
  */
 package com.xceptance.xlt.report.providers;
 
-import java.util.Date;
+import com.thoughtworks.xstream.annotations.XStreamAlias;
+import com.thoughtworks.xstream.annotations.XStreamImplicit;
+
 import java.util.List;
 
-import com.thoughtworks.xstream.annotations.XStreamAlias;
-
-@XStreamAlias("general")
-public class GeneralReport
+/**
+ * Represents the list of slowest requests in a test run.
+ */
+@XStreamAlias("slowestRequests")
+public class SlowestRequestsReport
 {
-    /**
-     * The total number of bytes sent.
-     */
-    public long bytesSent;
-
-    /**
-     * The total number of bytes received.
-     */
-    public long bytesReceived;
-
-    /**
-     * The total number of hits.
-     */
-    public long hits;
-
-    /**
-     * The start time of the test.
-     */
-    public Date startTime;
-
-    /**
-     * The end time of the test.
-     */
-    public Date endTime;
-
-    /**
-     * The total run time of the test.
-     */
-    public int duration;
+    @XStreamImplicit
+    public List<SlowRequestReport> slowestRequests;
 }

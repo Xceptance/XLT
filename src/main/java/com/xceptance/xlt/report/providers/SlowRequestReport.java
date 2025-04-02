@@ -16,38 +16,220 @@
 package com.xceptance.xlt.report.providers;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
+import com.thoughtworks.xstream.annotations.XStreamOmitField;
+import com.xceptance.xlt.api.engine.RequestData;
+
+import java.util.Comparator;
+import java.util.Date;
+import java.util.Objects;
 
 /**
- * Represents URL and runtime of a slow request.
+ * Represents request data of a single slow request.
  */
 @XStreamAlias("request")
-public class SlowRequestReport implements Comparable<SlowRequestReport>
+public class SlowRequestReport
 {
     /**
-     * The request's URL.
+     * The request name.
      */
-    public String url;
+    public final String name;
 
     /**
-     * The request's runtime.
+     * The request runtime.
      */
-    public long runtime;
+    public final long runtime;
 
     /**
-     * {@inheritDoc}
+     * The request start time.
      */
-    @Override
-    public int compareTo(SlowRequestReport o)
-    {
+    public final Date time;
+
+    /**
+     * The request ID.
+     */
+    public final String requestId;
+
+    /**
+     * The request HTTP method.
+     */
+    public final String httpMethod;
+
+    /**
+     * The request URL.
+     */
+    public final String url;
+
+    /**
+     * The request form data encoding.
+     */
+    public final String formDataEncoding;
+
+    /**
+     * The request form data.
+     */
+    public final String formData;
+
+    /**
+     * The response ID.
+     */
+    public final String responseId;
+
+    /**
+     * The HTTP response code.
+     */
+    public final int responseCode;
+
+    /**
+     * The response content type.
+     */
+    public final String contentType;
+
+    /**
+     * The size of the request message.
+     */
+    public final int bytesSent;
+
+    /**
+     * The size of the response message.
+     */
+    public final int bytesReceived;
+
+    /**
+     * The time it took to look up the IP address.
+     */
+    public final int dnsTime;
+
+    /**
+     * The time it took to connect to the server.
+     */
+    public final int connectTime;
+
+    /**
+     * The time it took to send the request to the server.
+     */
+    public final int sendTime;
+
+    /**
+     * The time it took the server to process the request.
+     */
+    public final int serverBusyTime;
+
+    /**
+     * The time it took to receive the response from the server.
+     */
+    public final int receiveTime;
+
+    /**
+     * The time until the first response bytes arrived.
+     */
+    public final int timeToFirstBytes;
+
+    /**
+     * The time needed to read all response bytes.
+     */
+    public final int timeToLastBytes;
+
+    /**
+     * The IP address used for the request.
+     */
+    public final String usedIpAddress;
+
+    /**
+     * The IP addresses reported by the DNS.
+     */
+    public final String[] ipAddresses;
+
+    @XStreamOmitField
+    private long processingOrder;
+
+    /**
+     * General comparator for slow requests. Compares requests by runtime, bucket name, start time and processing order.
+     */
+    @XStreamOmitField
+    public static final Comparator<SlowRequestReport> COMPARATOR = (o1, o2) -> {
         // first reverse-compare by runtime
-        int result = Long.compare(o.runtime, runtime);
+        int result = Long.compare(o2.runtime, o1.runtime);
 
         if (result == 0)
         {
-            // compare by URL
-            result = (url == null) ? -1 : (o.url == null) ? 1 : url.compareTo(o.url);
+            // compare the names
+            result = o1.name.compareTo(o2.name);
+
+            if (result == 0)
+            {
+                // compare which request started first
+                result = o1.time.compareTo(o2.time);
+
+                if (result == 0)
+                {
+                    // compare which request was processed first to break ties
+                    result = Long.compare(o1.processingOrder, o2.processingOrder);
+                }
+            }
         }
 
         return result;
+    };
+
+    /**
+     * Comparator for slow requests within the same bucket. Compares requests by runtime, start time and processing
+     * order. Comparing by (bucket) name is not necessary.
+     */
+    @XStreamOmitField
+    public static final Comparator<SlowRequestReport> BUCKET_COMPARATOR = (o1, o2) -> {
+        // first reverse-compare by runtime
+        int result = Long.compare(o2.runtime, o1.runtime);
+
+        if (result == 0)
+        {
+            // compare which request started first
+            result = o1.time.compareTo(o2.time);
+
+            if (result == 0)
+            {
+                // compare which request was processed first to break ties
+                result = Long.compare(o1.processingOrder, o2.processingOrder);
+            }
+        }
+
+        return result;
+    };
+
+    public SlowRequestReport(final RequestData requestData, final long processingOrder)
+    {
+        this.name = requestData.getName();
+        this.runtime = requestData.getRunTime();
+        this.time = new Date(requestData.getTime());
+
+        // request information
+        this.requestId = requestData.getRequestId();
+        this.httpMethod = Objects.toString(requestData.getHttpMethod(), null);
+        this.url = Objects.toString(requestData.getUrl(), null);
+        this.formDataEncoding = Objects.toString(requestData.getFormDataEncoding(), null);
+        this.formData = Objects.toString(requestData.getFormData(), null);
+
+        // response information
+        this.responseId = requestData.getResponseId();
+        this.responseCode = requestData.getResponseCode();
+        this.contentType = Objects.toString(requestData.getContentType(), null);
+
+        // network timings
+        this.dnsTime = requestData.getDnsTime();
+        this.connectTime = requestData.getConnectTime();
+        this.sendTime = requestData.getSendTime();
+        this.serverBusyTime = requestData.getServerBusyTime();
+        this.receiveTime = requestData.getReceiveTime();
+        this.timeToFirstBytes = requestData.getTimeToFirstBytes();
+        this.timeToLastBytes = requestData.getTimeToLastBytes();
+
+        // bandwidth
+        this.bytesSent = requestData.getBytesSent();
+        this.bytesReceived = requestData.getBytesReceived();
+
+        // IP address information
+        this.ipAddresses = requestData.getIpAddresses();
+        this.usedIpAddress = Objects.toString(requestData.getUsedIpAddress(), null);
+
+        this.processingOrder = processingOrder;
     }
 }
