@@ -65,7 +65,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
-        <asm.version>9.4</asm.version>
+        <asm.version>9.7.1</asm.version>
         <htmlunit.version>4.10.0</htmlunit.version>
         <httpclient.version>4.5.14</httpclient.version>
         <jetty.version>9.4.57.v20241219</jetty.version>
@@ -73,7 +73,7 @@
         <powermock.version>2.0.9</powermock.version>
         <selenium.version>4.29.0</selenium.version>
         <htmlunitdriver.version>4.29.0</htmlunitdriver.version>
-        <otel.version>1.43.0</otel.version>
+        <otel.version>1.46.0</otel.version>
         <copyright>Copyright (c) ${project.inceptionYear}-2025 ${project.organization.name}</copyright>
     </properties>
 
@@ -225,20 +225,18 @@
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
+            <artifactId>httpmime</artifactId>
             <version>${httpclient.version}</version>
             <exclusions>
-            	<!-- don't use outdated commons-codec:1.11 -->
                 <exclusion>
                     <groupId>commons-codec</groupId>
                     <artifactId>commons-codec</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
             </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpmime</artifactId>
-            <version>${httpclient.version}</version>
         </dependency>
         <dependency>
             <groupId>org.htmlunit</groupId>
@@ -374,6 +372,12 @@
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-jcl</artifactId>
             <version>${log4j.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
@@ -398,6 +402,14 @@
                 <exclusion>
                     <groupId>org.htmlunit</groupId>
                     <artifactId>htmlunit</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.httpcomponents</groupId>
+                    <artifactId>httpclient</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.httpcomponents</groupId>
+                    <artifactId>httpcore</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -428,7 +440,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>33.3.1-jre</version>
+            <version>33.4.0-jre</version>
         </dependency>
         <!-- slf4j is used by many libs. Ensure that the version used by log4j-slf4j2-impl wins. -->
         <dependency>
@@ -516,7 +528,7 @@
         <dependency>
             <groupId>io.opentelemetry.semconv</groupId>
             <artifactId>opentelemetry-semconv</artifactId>
-            <version>1.26.0-alpha</version>
+            <version>1.28.0-alpha</version>
         </dependency>
         <dependency>
             <groupId>io.opentelemetry</groupId>
@@ -585,8 +597,14 @@
         <!-- PMD -->
         <dependency>
             <groupId>net.sourceforge.pmd</groupId>
+            <artifactId>pmd-ant</artifactId>
+            <version>7.10.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.sourceforge.pmd</groupId>
             <artifactId>pmd-java</artifactId>
-            <version>6.55.0</version>
+            <version>7.10.0</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
@@ -613,6 +631,38 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>com.twelvemonkeys.imageio</groupId>
+            <artifactId>imageio-batik</artifactId>
+            <version>3.12.0</version>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.xmlgraphics</groupId>
+                    <artifactId>xmlgraphics-commons</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>commons-io</groupId>
+                    <artifactId>commons-io</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.xmlgraphics</groupId>
+            <artifactId>batik-transcoder</artifactId>
+            <version>1.18</version>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>commons-io</groupId>
+                    <artifactId>commons-io</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
             <version>${httpclient.version}</version>
@@ -628,6 +678,10 @@
                 <exclusion>
                     <groupId>commons-io</groupId>
                     <artifactId>commons-io</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>javax.servlet</groupId>
+                    <artifactId>servlet-api</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -647,6 +701,12 @@
             <groupId>org.eclipse.jetty.websocket</groupId>
             <artifactId>websocket-server</artifactId>
             <version>${jetty.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.caucho</groupId>
+            <artifactId>quercus</artifactId>
+            <version>4.0.66</version>
             <scope>test</scope>
         </dependency>
         <!-- Checkstyle -->

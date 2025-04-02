@@ -175,11 +175,170 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor, HasCapabil
     private Executor executor_;
 
     /**
+     * Constructs a new instance with JavaScript disabled, and the
+     * {@link BrowserVersion#getDefault() default} BrowserVersion.
+     */
+    /* XC: TODO: Not supported at the moment.
+    public HtmlUnitDriver() {
+        this(BrowserVersion.getDefault(), false);
+    }
+    */
+
+    /**
+     * Constructs a new instance with the specified {@link BrowserVersion}.
+     *
+     * @param version the browser version to use
+     */
+    /* XC: TODO: Not supported at the moment.
+    public HtmlUnitDriver(final BrowserVersion version) {
+        this(version, false);
+    }
+    */
+
+    /**
+     * Constructs a new instance, specify JavaScript support and using the
+     * {@link BrowserVersion#getDefault() default} BrowserVersion.
+     *
+     * @param enableJavascript whether to enable JavaScript support or not
+     */
+    /* XC: TODO: Not supported at the moment.
+    public HtmlUnitDriver(final boolean enableJavascript) {
+        this(BrowserVersion.getDefault(), enableJavascript);
+    }
+    */
+
+    /**
+     * Constructs a new instance with the specified {@link BrowserVersion} and the
+     * JavaScript support.
+     *
+     * @param version          the browser version to use
+     * @param enableJavascript whether to enable JavaScript support or not
+     */
+    /* XC: TODO: Not supported at the moment.
+    public HtmlUnitDriver(final BrowserVersion version, final boolean enableJavascript) {
+        this(new HtmlUnitDriverOptions(version, enableJavascript));
+    }
+    */
+
+    /* XC: TODO: Not supported at the moment.
+    public HtmlUnitDriver(final Capabilities desiredCapabilities, final Capabilities requiredCapabilities) {
+        this(new DesiredCapabilities(desiredCapabilities, requiredCapabilities));
+    }
+    */
+
+    /**
+     * The browserName is {@link Browser#HTMLUNIT} "htmlunit" and the
+     * browserVersion denotes the required browser AND its version. For example
+     * "chrome" for Chrome, "firefox-100" for Firefox 100.
+     *
+     * @param capabilities desired capabilities requested for the htmlunit driver
+     *                     session
+     */
+    /* XC: TODO: Not supported at the moment.
+    public HtmlUnitDriver(final Capabilities capabilities) {
+        final HtmlUnitDriverOptions driverOptions = new HtmlUnitDriverOptions(capabilities);
+        webClient_ = newWebClient(driverOptions.getWebClientVersion());
+
+        setAcceptInsecureCerts(Boolean.FALSE != driverOptions.getCapability(ACCEPT_INSECURE_CERTS));
+
+        final String pageLoadStrategyString = (String) driverOptions.getCapability(PAGE_LOAD_STRATEGY);
+        if ("none".equals(pageLoadStrategyString)) {
+            pageLoadStrategy_ = PageLoadStrategy.NONE;
+        }
+        else if ("eager".equals(pageLoadStrategyString)) {
+            pageLoadStrategy_ = PageLoadStrategy.EAGER;
+        }
+
+        final WebClientOptions clientOptions = webClient_.getOptions();
+        driverOptions.applyOptions(clientOptions);
+
+        setProxySettings(Proxy.extractFrom(driverOptions));
+
+        webClient_.setRefreshHandler(new WaitingRefreshHandler());
+        webClient_.setClipboardHandler(new AwtClipboardHandler());
+
+        elementFinder_ = new HtmlUnitElementFinder();
+
+        alert_ = new HtmlUnitAlert(this);
+        alert_.handleBrowserCapabilities(driverOptions);
+        currentWindow_ = new HtmlUnitWindow(webClient_.getCurrentWindow());
+
+        defaultExecutor_ = Executors.newCachedThreadPool();
+        executor_ = defaultExecutor_;
+
+        // Now put us on the home page, like a real browser
+        get(clientOptions.getHomePage());
+
+        options_ = new HtmlUnitWebDriverOptions(this);
+        targetLocator_ = new HtmlUnitTargetLocator(this);
+
+        webClient_.addWebWindowListener(new WebWindowListener() {
+            @Override
+            public void webWindowOpened(final WebWindowEvent webWindowEvent) {
+                if (webWindowEvent.getWebWindow() instanceof TopLevelWindow) {
+                    // use the first top level window we are getting aware of
+                    if (currentWindow_ == null && webClient_.getTopLevelWindows().size() == 1) {
+                        currentWindow_ = new HtmlUnitWindow(webClient_.getTopLevelWindows().get(0));
+                    }
+                }
+            }
+
+            @Override
+            public void webWindowContentChanged(final WebWindowEvent event) {
+                elementsMap_.remove(event.getOldPage());
+                if (event.getWebWindow() != currentWindow_.getWebWindow()) {
+                    return;
+                }
+
+                // Do we need to pick some new default content?
+                switchToDefaultContentOfWindow(currentWindow_.getWebWindow());
+            }
+
+            @Override
+            public void webWindowClosed(final WebWindowEvent event) {
+                elementsMap_.remove(event.getOldPage());
+
+                // the last window is gone
+                if (getWebClient().getTopLevelWindows().size() == 0) {
+                    currentWindow_ = null;
+                    return;
+                }
+
+                // Check if the event window refers to us or one of our parent windows
+                // setup the currentWindow appropriately if necessary
+                WebWindow ourCurrentWindow = currentWindow_.getWebWindow();
+                final WebWindow ourCurrentTopWindow = currentWindow_.getWebWindow().getTopWindow();
+                do {
+                    // Instance equality is okay in this case
+                    if (ourCurrentWindow == event.getWebWindow()) {
+                        setCurrentWindow(ourCurrentTopWindow);
+                        return;
+                    }
+                    ourCurrentWindow = ourCurrentWindow.getParentWindow();
+                }
+                while (ourCurrentWindow != ourCurrentTopWindow);
+            }
+        });
+
+        resetKeyboardAndMouseState();
+        modifyWebClient(webClient_);
+    }
+    */
+
+    /**
      * Constructs a new instance with the specified {@link BrowserVersion}.
      *
      * @param version the browser version to use
      */
     protected HtmlUnitDriver(final BrowserVersion version) {
+
+        /*
+         * Similar to the constructor above, but stripped down a little. The constructor is based on BrowserVersion
+         * instead of Capabilities, so it does not support setting WebClient options via capabilities. This is by
+         * intention as the XltWebClient has already configured itself via properties. Applying the capabilities would
+         * reconfigure our web client again.
+         */
+        
         webClient_ = newWebClient(version);
 
         webClient_.setRefreshHandler(new WaitingRefreshHandler());
