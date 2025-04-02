@@ -52,7 +52,7 @@ public class TestLoadProfileConfiguration extends AbstractConfiguration
     /**
      * property suffix to set the class of a test
      */
-    private static final String PROP_SUFFIX_CLASS = ".class";
+    public static final String PROP_SUFFIX_CLASS = ".class";
 
     /**
      * property suffix to set the initial delay of a test
@@ -142,7 +142,7 @@ public class TestLoadProfileConfiguration extends AbstractConfiguration
     /**
      * property prefix to set the test cases of the load test
      */
-    private static final String PROP_PREFIX_LOAD_TESTS = PROP_ACTIVE_LOAD_TESTS + ".";
+    public static final String PROP_PREFIX_LOAD_TESTS = PROP_ACTIVE_LOAD_TESTS + ".";
 
     /**
      * property suffix to set the default value of all tests
@@ -416,9 +416,9 @@ public class TestLoadProfileConfiguration extends AbstractConfiguration
                                                               .orElse(defaultConfiguration.getActionThinkTimeDeviation());
 
             // check mandatory parameters
-            if (className == null || className.isBlank())
+            if (className != null && className.isBlank())
             {
-                throw new XltException("No test class specified for test case '" + testCaseName + "'.");
+                throw new XltException("Test class specified for test case '" + testCaseName + "', but the value is empty.");
             }
 
             if (measurementPeriod == 0)
@@ -701,6 +701,20 @@ public class TestLoadProfileConfiguration extends AbstractConfiguration
         loadFunction = LoadFunctionUtils.completeLoadFunctionIfNecessary(loadFunction);
 
         return loadFunction;
+    }
+
+    /**
+     * Set the test classes in the test case specific configurations.
+     *
+     * @param testCaseClassMappings
+     *            the map of test case names and their associated test class names to set
+     */
+    public void setTestCaseClassMappings(final Map<String, String> testCaseClassMappings)
+    {
+        for (final String testCaseName : testCaseClassMappings.keySet())
+        {
+            this.loadTestConfigs.get(testCaseName).setTestCaseClassName(testCaseClassMappings.get(testCaseName));
+        }
     }
 
     private static class DefaultTestCaseLoadProfileConfiguration extends TestCaseLoadProfileConfiguration
