@@ -105,7 +105,7 @@
     <target name="test.compile" depends="test.init">
         <mkdir dir="${test.classes.dir}" />
 
-        <javac srcdir="${src.dir}/test/java" includeantruntime="no" destdir="${test.classes.dir}" debug="on" optimize="off" deprecation="on" encoding="utf8" source="11" target="11">
+        <javac srcdir="${src.dir}/test/java" includeantruntime="no" destdir="${test.classes.dir}" debug="on" optimize="off" deprecation="on" encoding="utf8" source="21" target="21">
             <classpath refid="test.classpath" />
         </javac>
 
@@ -139,7 +139,9 @@
 
         <parallel>
             <daemons>
-                <java jar="${jetty.dir}/start.jar" fork="yes" dir="${jetty.dir}" maxmemory="512m" />
+                <java jar="${jetty.dir}/start.jar" fork="yes" dir="${jetty.dir}"  maxmemory="512m" >
+                    <jvmarg value="--add-opens=java.base/java.lang=ALL-UNNAMED" />
+                </java>
             </daemons>
 
             <sequential>
@@ -306,9 +308,12 @@
             <sysproperty key="net.sourceforge.cobertura.datafile" value="${basedir}/cobertura.ser" />
             <jvmarg value="--add-opens=java.base/java.lang=ALL-UNNAMED" />
             <jvmarg value="--add-opens=java.base/java.lang.reflect=ALL-UNNAMED" />
+            <jvmarg value="--add-opens=java.base/java.lang.invoke=ALL-UNNAMED" />
             <jvmarg value="--add-opens=java.base/java.net=ALL-UNNAMED" />
             <jvmarg value="--add-opens=java.base/java.text=ALL-UNNAMED" />
+            <jvmarg value="--add-opens=java.base/java.time=ALL-UNNAMED" />
             <jvmarg value="--add-opens=java.base/java.util=ALL-UNNAMED" />
+            <jvmarg value="--add-opens=java.base/java.util.concurrent=ALL-UNNAMED" />
             <jvmarg value="--add-opens=java.base/java.util.regex=ALL-UNNAMED" />
             <jvmarg value="--add-opens=java.base/java.io=ALL-UNNAMED" />
             <jvmarg value="--add-opens=java.base/sun.nio.fs=ALL-UNNAMED" />
@@ -387,7 +392,7 @@
     <target name="test.compile-hu" description="Generates HtmlUnit test class files." depends="test.init">
         <mkdir dir="${test-hu.classes.dir}" />
 
-        <javac srcdir="${src-test-hu.dir}/java" destdir="${test-hu.classes.dir}" debug="on" optimize="off" deprecation="on" encoding="utf8" includeantruntime="false" source="11" target="11">
+        <javac srcdir="${src-test-hu.dir}/java" destdir="${test-hu.classes.dir}" debug="on" optimize="off" deprecation="on" encoding="utf8" includeantruntime="false" source="21" target="21">
             <classpath refid="test.classpath" />
         </javac>
 

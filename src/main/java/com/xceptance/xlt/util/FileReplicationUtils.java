@@ -32,6 +32,9 @@ import java.util.zip.Checksum;
  */
 public final class FileReplicationUtils
 {
+    // non-final and package access for unit testing 
+    static char SEP = File.separatorChar;
+    
     /**
      * Converts the path of the files in the index to use the file separator of the local OS.
      * 
@@ -44,8 +47,8 @@ public final class FileReplicationUtils
         final FileReplicationIndex result = new FileReplicationIndex();
 
         // current OS separator char / or \
-        final char currentSeparatorChar = File.separatorChar;
-        final char separatorCharToChange = File.separatorChar == '/' ? '\\' : '/';
+        final char currentSeparatorChar = SEP;
+        final char separatorCharToChange = SEP == '/' ? '\\' : '/';
 
         for (final Entry<File, Long> entry : sourceIndex.entrySet())
         {
@@ -122,14 +125,14 @@ public final class FileReplicationUtils
                 final File fileContained = it.next();
                 final String filePathContained = fileContained.getPath();
 
-                if (filePath2add.startsWith(filePathContained + File.separatorChar))
+                if (filePath2add.startsWith(filePathContained + SEP))
                 {
                     // parent already contained, new file is just a child
                     // no need to add
                     addFile = false;
                     break;
                 }
-                else if (filePathContained.startsWith(filePath2add + File.separatorChar))
+                else if (filePathContained.startsWith(filePath2add + SEP))
                 {
                     // new file is parent of contained file
                     // remove contained file

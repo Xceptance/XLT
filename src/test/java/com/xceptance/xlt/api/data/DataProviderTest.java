@@ -18,14 +18,10 @@ package com.xceptance.xlt.api.data;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.nio.charset.MalformedInputException;
 import java.nio.file.NoSuchFileException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.AfterClass;
@@ -33,7 +29,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 import com.xceptance.xlt.api.util.XltProperties;
 import com.xceptance.xlt.api.util.XltRandom;
@@ -154,50 +149,6 @@ public class DataProviderTest
 
         Assert.assertSame(defaultProvider1, defaultProvider2);
         Assert.assertSame(enProvider1, enProvider2);
-    }
-
-    /**
-     * Test correct synchronization logic in terms of returning the same instance when in between something was created
-     * concurrently. This might break other test down the line, because we set something at a static class.
-     * 
-     * @throws NoSuchFieldException
-     * @throws SecurityException
-     * @throws IllegalAccessException
-     * @throws IllegalArgumentException
-     * @throws IOException
-     * @throws FileNotFoundException
-     */
-    @Test
-    public void getInstance_Synchronization()
-        throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException, FileNotFoundException, IOException
-    {
-        @SuppressWarnings("unchecked")
-        final Map<String, DataProvider> dataProvidersMock = Mockito.mock(ConcurrentHashMap.class);
-        Mockito.when(dataProvidersMock.get("default/data.txt")).thenReturn(null).thenReturn(defaultProvider);
-
-        // lets hack visibility to avoid final private mocking
-        final Field privateField = DataProvider.class.getDeclaredField("dataProviders");
-        privateField.setAccessible(true);
-
-        // remove final modifier from field
-        final Field modifiersField = Field.class.getDeclaredField("modifiers");
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(privateField, privateField.getModifiers() & ~Modifier.FINAL);
-
-        // modify the field
-        final Object old = privateField.get(null);
-        privateField.set(null, dataProvidersMock);
-
-        try
-        {
-            // read the results
-            Assert.assertSame(defaultProvider, DataProvider.getInstance("default/data.txt"));
-        }
-        finally
-        {
-            // restore the class what a hack ;)
-            privateField.set(null, old);
-        }
     }
 
     /**

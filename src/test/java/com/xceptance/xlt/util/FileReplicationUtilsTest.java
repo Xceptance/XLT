@@ -35,8 +35,6 @@ import org.junit.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
-import com.xceptance.xlt.AbstractXLTTestCase;
-
 /**
  * Tests the implementation of {@link FileReplicationUtils}.
  * 
@@ -275,12 +273,12 @@ public class FileReplicationUtilsTest
 
         try
         {
-            AbstractXLTTestCase.setFinalStatic(File.class, "separatorChar", '\\');
+            FileReplicationUtils.SEP = '\\';
             newIndex = FileReplicationUtils.sanitizeFileReplicationIndex(source);
         }
         finally
         {
-            AbstractXLTTestCase.setFinalStatic(File.class, "separatorChar", currentSeparatorChar);
+            FileReplicationUtils.SEP = currentSeparatorChar;
         }
 
         Assert.assertTrue(2 == newIndex.size());
@@ -305,12 +303,12 @@ public class FileReplicationUtilsTest
 
         try
         {
-            AbstractXLTTestCase.setFinalStatic(File.class, "separatorChar", '/');
+            FileReplicationUtils.SEP = '/';
             newIndex = FileReplicationUtils.sanitizeFileReplicationIndex(source);
         }
         finally
         {
-            AbstractXLTTestCase.setFinalStatic(File.class, "separatorChar", currentSeparatorChar);
+            FileReplicationUtils.SEP = currentSeparatorChar;
         }
 
         Assert.assertTrue(2 == newIndex.size());

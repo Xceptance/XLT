@@ -29,7 +29,7 @@ import com.xceptance.common.lang.ThreadUtils;
 
 /**
  * The {@link ConsoleUiUtils} class provides utility methods to ease building console-based UIs.
- * 
+ *
  * @author Jörg Werner (Xceptance Software Technologies GmbH)
  */
 public final class ConsoleUiUtils
@@ -48,16 +48,17 @@ public final class ConsoleUiUtils
     /**
      * The list of registered {@link EofHandler} instances.
      */
-    private static final Set<EofHandler> EOF_HANDLERS = new LinkedHashSet<EofHandler>();
+    private static final Set<EofHandler> EOF_HANDLERS = new LinkedHashSet<>();
 
     /**
      * A reader on top of {@link System#in}.
      */
-    private static final BufferedReader STDIN_READER = new BufferedReader(new InputStreamReader(System.in));
+    // don't make field final, we need non-final access for unit testing
+    private static BufferedReader STDIN_READER = new BufferedReader(new InputStreamReader(System.in));
 
     /**
      * Adds the passed {@link EofHandler} instance to the internal list of handlers.
-     * 
+     *
      * @param eofHandler
      *            the handler
      */
@@ -69,7 +70,7 @@ public final class ConsoleUiUtils
 
     /**
      * Asks the user for confirmation.
-     * 
+     *
      * @param message
      *            the message text presented to the user
      * @return <code>true</code> if the user confirmed, <code>false</code> otherwise
@@ -96,7 +97,7 @@ public final class ConsoleUiUtils
     /**
      * Presents the user a list of items from which the user might select one or more. The selected items will be
      * returned. If so specified, an "All" item is added to the list, which - when chosen - selects all items at once.
-     * 
+     *
      * @param <T>
      * @param header
      *            the header text
@@ -117,7 +118,7 @@ public final class ConsoleUiUtils
     /**
      * Presents the user a list of items from which the user might select one or more. The selected items will be
      * returned. If so specified, an "All" item is added to the list, which - when chosen - selects all items at once.
-     * 
+     *
      * @param <T>
      * @param header
      *            the header text
@@ -136,7 +137,7 @@ public final class ConsoleUiUtils
     {
         // copy the list of display names as we will extend the list
         displayNames = new ArrayList<>(displayNames);
-        
+
         // add the "all"/"none" item as the first item
         if (StringUtils.isNotBlank(allInsteadOfNothingLabel))
         {
@@ -148,7 +149,7 @@ public final class ConsoleUiUtils
         }
 
         // determine longest key
-        int maxKeyLength = String.valueOf(displayNames.size()).length();
+        final int maxKeyLength = String.valueOf(displayNames.size()).length();
 
         // print the menu
         System.out.println(header);
@@ -166,7 +167,7 @@ public final class ConsoleUiUtils
                 try
                 {
                     final String[] parts = StringUtils.split(s, " ,;");
-                    final Set<T> result = new LinkedHashSet<T>();
+                    final Set<T> result = new LinkedHashSet<>();
 
                     for (int i = 0; i < parts.length; i++)
                     {
@@ -187,7 +188,7 @@ public final class ConsoleUiUtils
                         }
                     }
 
-                    return new ArrayList<T>(result);
+                    return new ArrayList<>(result);
                 }
                 catch (final IndexOutOfBoundsException e)
                 {
@@ -203,7 +204,7 @@ public final class ConsoleUiUtils
 
     /**
      * Asks the user to enter an integer value. The number must be greater than 0.
-     * 
+     *
      * @param message
      *            the message text
      * @return the value entered
@@ -232,7 +233,7 @@ public final class ConsoleUiUtils
 
     /**
      * Reads a line of text from the console.
-     * 
+     *
      * @return the line just read (never <code>null</code>)
      */
     public static String readLine()
@@ -242,7 +243,7 @@ public final class ConsoleUiUtils
 
     /**
      * Reads a line of text from the console.
-     * 
+     *
      * @param message
      *            the message text to show
      * @return the line just read (never <code>null</code>)
@@ -287,7 +288,7 @@ public final class ConsoleUiUtils
 
     /**
      * Removes the passed {@link EofHandler} instance from the internal list of handlers.
-     * 
+     *
      * @param eofHandler
      *            the handler
      */
@@ -299,7 +300,7 @@ public final class ConsoleUiUtils
 
     /**
      * Asks the user to select an item from a list of items.
-     * 
+     *
      * @param <T>
      * @param header
      *            the header line
@@ -317,7 +318,7 @@ public final class ConsoleUiUtils
         // build the list of keys if none was specified
         if (keys == null)
         {
-            keys = new ArrayList<String>();
+            keys = new ArrayList<>();
             for (int i = 0; i < displayNames.size(); i++)
             {
                 keys.add(String.valueOf(i + 1));
@@ -336,7 +337,7 @@ public final class ConsoleUiUtils
 
         // determine longest key
         int maxKeyLength = 0;
-        for (String key : keys)
+        for (final String key : keys)
         {
             maxKeyLength = Math.max(maxKeyLength, key.length());
         }
@@ -367,7 +368,7 @@ public final class ConsoleUiUtils
 
     /**
      * Asks the user to select an item from a list of items.
-     * 
+     *
      * @param <T>
      * @param header
      *            the header line
@@ -389,7 +390,7 @@ public final class ConsoleUiUtils
 
     /**
      * Checks whether the ENTER key was pressed.
-     * 
+     *
      * @return <code>true</code> if the ENTER key was pressed, <code>false</code> otherwise
      */
     public static boolean wasEnterKeyPressed()
