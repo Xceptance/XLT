@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -84,7 +84,12 @@ public class WebResponseMock extends WebResponse {
     @Override
     public String getResponseHeaderValue(final String headerName) {
         count("getResponseHeaderValue");
-        return headers_.get(headerName);
+        for (final Map.Entry<String, String> pair : headers_.entrySet()) {
+            if (pair.getKey().equalsIgnoreCase(headerName)) {
+                return pair.getValue();
+            }
+        }
+        return null;
     }
 
     @Override

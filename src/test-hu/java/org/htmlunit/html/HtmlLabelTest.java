@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,7 @@ package org.htmlunit.html;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
@@ -196,8 +195,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "meter1",
-            IE = "null")
+    @Alerts("meter1")
     public void getLabeledElementForMeter() throws Exception {
         final String html = "<html>\n"
             + "<body>\n"
@@ -225,8 +223,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "output1",
-            IE = "null")
+    @Alerts("output1")
     public void getLabeledElementForOutput() throws Exception {
         final String html = "<html>\n"
             + "<body>\n"
@@ -394,8 +391,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "meter1",
-            IE = "null")
+    @Alerts("meter1")
     public void getLabeledElementNestedMeter() throws Exception {
         final String html = "<html>\n"
             + "<body>\n"
@@ -425,8 +421,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "output1",
-            IE = "null")
+    @Alerts("output1")
     public void getLabeledElementNestedOutput() throws Exception {
         final String html = "<html>\n"
             + "<body>\n"
@@ -650,9 +645,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "labelclick",
-            IE = "labelclick;divclick")
-    @HtmlUnitNYI(IE = "labelclick")
+    @Alerts("labelclick")
     public void clickForNotLabelable() throws Exception {
         final String html =
               "  <label id='label1' for='div1' onclick='log(\"labelclick\")' "
@@ -669,9 +662,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"labelclick", "textfocus", "textclick"},
-            IE = {"labelclick", "textclick", "textfocus"})
-    @HtmlUnitNYI(IE = {"labelclick", "textfocus", "textclick"})
+    @Alerts({"labelclick", "textfocus", "textclick"})
     public void clickForInput() throws Exception {
         final String html =
               "  <label id='label1' for='text1' onclick='log(\"labelclick\")' "
@@ -688,9 +679,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"labelclick", "selectfocus", "selectclick"},
-            IE = {"labelclick", "selectclick", "selectfocus"})
-    @HtmlUnitNYI(IE = {"labelclick", "selectfocus", "selectclick"})
+    @Alerts({"labelclick", "selectfocus", "selectclick"})
     public void clickForSelect() throws Exception {
         final String html =
               "  <label id='label1' for='select1' onclick='log(\"labelclick\")' "
@@ -707,9 +696,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"labelclick", "textfocus", "textclick"},
-            IE = {"labelclick", "textclick", "textfocus"})
-    @HtmlUnitNYI(IE = {"labelclick", "textfocus", "textclick"})
+    @Alerts({"labelclick", "textfocus", "textclick"})
     public void clickForTextArea() throws Exception {
         final String html =
               "  <label id='label1' for='text1' onclick='log(\"labelclick\")' "
@@ -794,12 +781,8 @@ public class HtmlLabelTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"labelclick:label1", "parentclick:label1", "textfocus:text1",
-                       "textclick:text1", "parentclick:text1"},
-            IE = {"labelclick:label1", "parentclick:label1", "textclick:text1",
-                  "parentclick:text1", "textfocus:text1"})
-    @HtmlUnitNYI(IE = {"labelclick:label1", "parentclick:label1", "textfocus:text1",
-                       "textclick:text1", "parentclick:text1"})
+    @Alerts({"labelclick:label1", "parentclick:label1", "textfocus:text1",
+             "textclick:text1", "parentclick:text1"})
     public void clickForEventBubbling() throws Exception {
         final String html =
               "  <div onclick='log(\"parentclick:\" + event.target.id)' "
@@ -837,9 +820,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"labelclick", "text1focus", "text1click", "labelclick"},
-            IE = {"labelclick", "text1click", "labelclick", "text1focus"})
-    @HtmlUnitNYI(IE = {"labelclick", "text1focus", "text1click", "labelclick"})
+    @Alerts({"labelclick", "text1focus", "text1click", "labelclick"})
     public void clickNestedInput() throws Exception {
         final String html =
               "  <label id='label1' onclick='log(\"labelclick\")' onfocus='log(\"labelfocus\")'>Click me"
@@ -858,9 +839,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"labelclick", "select1focus", "select1click", "labelclick"},
-            IE = {"labelclick", "select1click", "labelclick", "select1focus"})
-    @HtmlUnitNYI(IE = {"labelclick", "select1focus", "select1click", "labelclick"})
+    @Alerts({"labelclick", "select1focus", "select1click", "labelclick"})
     public void clickNestedSelect() throws Exception {
         final String html =
               "  <label id='label1' onclick='log(\"labelclick\")' onfocus='log(\"labelfocus\")'>Click me"
@@ -881,9 +860,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"labelclick", "text1focus", "text1click", "labelclick"},
-            IE = {"labelclick", "text1click", "labelclick", "text1focus"})
-    @HtmlUnitNYI(IE = {"labelclick", "text1focus", "text1click", "labelclick"})
+    @Alerts({"labelclick", "text1focus", "text1click", "labelclick"})
     public void clickNestedTextArea() throws Exception {
         final String html =
               "  <label id='label1' onclick='log(\"labelclick\")' onfocus='log(\"labelfocus\")'>Click me"
@@ -902,9 +879,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "labelclick",
-            IE = {"labelclick", "labelclick"})
-    @HtmlUnitNYI(IE = "labelclick")
+    @Alerts("labelclick")
     public void clickNestedDisabled() throws Exception {
         final String html =
               "  <label id='label1' onclick='log(\"labelclick\")' onfocus='log(\"labelfocus\")'>Click me"
@@ -985,12 +960,8 @@ public class HtmlLabelTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"labelclick:label1", "parentclick:label1", "text1focus:text1",
-                       "text1click:text1", "labelclick:text1", "parentclick:text1"},
-            IE = {"labelclick:label1", "parentclick:label1", "text1click:text1",
-                  "labelclick:text1", "parentclick:text1", "text1focus:text1"})
-    @HtmlUnitNYI(IE = {"labelclick:label1", "parentclick:label1", "text1focus:text1",
-                       "text1click:text1", "labelclick:text1", "parentclick:text1"})
+    @Alerts({"labelclick:label1", "parentclick:label1", "text1focus:text1",
+             "text1click:text1", "labelclick:text1", "parentclick:text1"})
     public void clickNestedEventBubbling() throws Exception {
         final String html =
               "  <div onclick='log(\"parentclick:\" + event.target.id)' "
@@ -1015,12 +986,8 @@ public class HtmlLabelTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"labelclick:label1", "parentclick:label1", "text1focus:text1",
-                       "text1click:text1", "labelclick:text1", "parentclick:text1"},
-            IE = {"labelclick:label1", "parentclick:label1", "text1click:text1",
-                  "labelclick:text1", "parentclick:text1", "text1focus:text1"})
-    @HtmlUnitNYI(IE = {"labelclick:label1", "parentclick:label1", "text1focus:text1",
-                       "text1click:text1", "labelclick:text1", "parentclick:text1"})
+    @Alerts({"labelclick:label1", "parentclick:label1", "text1focus:text1",
+             "text1click:text1", "labelclick:text1", "parentclick:text1"})
     public void clickForAndNestedEventBubbling() throws Exception {
         final String html =
               "  <div onclick='log(\"parentclick:\" + event.target.id)' "
@@ -1045,9 +1012,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"labelclick", "text2focus", "text2click"},
-            IE = {"labelclick", "text2click", "text2focus"})
-    @HtmlUnitNYI(IE = {"labelclick", "text2focus", "text2click"})
+    @Alerts({"labelclick", "text2focus", "text2click"})
     public void clickForVersusNested() throws Exception {
         final String html =
               "  <label id='label1' for='text2' onclick='log(\"labelclick\")' onfocus='log(\"labelfocus\")'>Click me"
@@ -1085,9 +1050,7 @@ public class HtmlLabelTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "labelclick",
-            IE = "labelclick;div1click")
-    @HtmlUnitNYI(IE = "labelclick")
+    @Alerts("labelclick")
     public void clickForNotLabelableVersusNested() throws Exception {
         final String html =
               "  <label id='label1' for='div1' onclick='log(\"labelclick\")' onfocus='log(\"labelfocus\")'>Click me"

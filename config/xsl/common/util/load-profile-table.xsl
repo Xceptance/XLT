@@ -171,10 +171,10 @@
                     <th rowspan="2">Iterations</th>
                     <th colspan="2">Arrival Rate</th>
                     <th rowspan="2">Initial Delay</th>
-                    <th rowspan="2">Ramp-Up Period</th>
-                    <th rowspan="2">Warm-Up Period</th>
-                    <th rowspan="2">Measurement Period</th>
-                    <th rowspan="2">Shutdown Period</th>
+                    <th rowspan="2">Ramp-Up</th>
+                    <th rowspan="2">Warm-Up</th>
+                    <th rowspan="2">Measurement</th>
+                    <th rowspan="2">Shutdown</th>
                     <th rowspan="2" title="Thinking time between actions">Think Time [ms]</th>
                 </tr>
                 <tr>
@@ -274,7 +274,7 @@
                                     </xsl:if>
                                     <xsl:value-of select="numberOfUsers"/>
                                 </td>
-                                <td class="value number">
+                                <td class="value number load-meter" style="--loadp:{numberOfUsersPercentage}">
                                     <xsl:value-of select="format-number(numberOfUsersPercentage, '#,##0.00')" />
                                     <xsl:text>%</xsl:text>
                                 </td>
@@ -308,17 +308,20 @@
                                         </xsl:otherwise>
                                     </xsl:choose>
                                 </td>
-                                <td class="value number">
-                                	<xsl:choose>
-	                                	<xsl:when test="string-length(arrivalRate) != 0">
-	                                    	<xsl:value-of select="format-number(arrivalRatePercentage, '#,##0.00')" />
-	                                    	<xsl:text>%</xsl:text>
-	                                    </xsl:when>
-	                                    <xsl:otherwise>
-	                                    	<xsl:text disable-output-escaping="yes">&amp;ndash;</xsl:text>
-	                                    </xsl:otherwise> 
-                                    </xsl:choose>                                
-                                </td>
+                               	<xsl:choose>
+                                    <xsl:when test="string-length(arrivalRate) != 0">
+                                        <td class="value number load-meter" style="--loadp:{arrivalRatePercentage}">
+                                        <xsl:value-of select="format-number(arrivalRatePercentage, '#,##0.00')" />
+                                        <xsl:text>%</xsl:text>
+                                        </td>
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        <td class="value number">
+                                        <xsl:text disable-output-escaping="yes">&amp;ndash;</xsl:text>
+                                        </td>
+                                    </xsl:otherwise> 
+                                </xsl:choose>                                
+                                
                                 <td class="value number">
                                     <xsl:choose>
                                         <xsl:when test="initialDelay > 0">

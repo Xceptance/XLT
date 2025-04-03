@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,14 +34,13 @@ import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.util.MimeType;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.ie.InternetExplorerDriver;
 
 /**
  * Tests for {@link HtmlFileInput}.
@@ -139,8 +138,7 @@ public class HtmlFileInput3Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"CONTENT_TYPE:image/webp", "charset"},
-            IE = {"CONTENT_TYPE:application/octet-stream", "charset"})
+    @Alerts({"CONTENT_TYPE:image/webp", "charset"})
     public void contentTypeWebp() throws Exception {
         contentType("webp");
     }
@@ -243,8 +241,7 @@ public class HtmlFileInput3Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"CONTENT_TYPE:application/pdf", "charset"},
-            IE = {"CONTENT_TYPE:application/octet-stream", "charset"})
+    @Alerts({"CONTENT_TYPE:application/pdf", "charset"})
     public void contentTypePdf() throws Exception {
         contentType("pdf");
     }
@@ -264,8 +261,7 @@ public class HtmlFileInput3Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"CONTENT_TYPE:audio/flac", "charset"},
             FF = {"CONTENT_TYPE:audio/x-flac", "charset"},
-            FF_ESR = {"CONTENT_TYPE:audio/x-flac", "charset"},
-            IE = {"CONTENT_TYPE:audio/x-flac", "charset"})
+            FF_ESR = {"CONTENT_TYPE:audio/x-flac", "charset"})
     public void contentTypeFlac() throws Exception {
         contentType("flac");
     }
@@ -303,8 +299,7 @@ public class HtmlFileInput3Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"CONTENT_TYPE:text/plain", "charset"},
-            IE = {"CONTENT_TYPE:application/octet-stream", "charset"})
+    @Alerts({"CONTENT_TYPE:text/plain", "charset"})
     public void contentTypeText() throws Exception {
         contentType("text");
     }
@@ -349,10 +344,7 @@ public class HtmlFileInput3Test extends WebDriverTestCase {
 
         final File tmpFile = File.createTempFile("htmlunit-test", "." + extension);
         try {
-            String path = tmpFile.getAbsolutePath();
-            if (driver instanceof InternetExplorerDriver) {
-                path = path.substring(path.indexOf('/') + 1).replace('/', '\\');
-            }
+            final String path = tmpFile.getAbsolutePath();
             driver.findElement(By.name("myInput")).sendKeys(path);
             driver.findElement(By.id("mySubmit")).submit();
         }

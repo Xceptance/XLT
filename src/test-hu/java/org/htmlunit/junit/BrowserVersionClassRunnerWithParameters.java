@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -135,7 +135,7 @@ public class BrowserVersionClassRunnerWithParameters extends BrowserVersionClass
 
         final String methodName = method.getName();
 
-        if (!maven_) {
+        if (!MAVEN) {
             return String.format("%s [%s]", methodName, browserString);
         }
         String className = method.getMethod().getDeclaringClass().getName();

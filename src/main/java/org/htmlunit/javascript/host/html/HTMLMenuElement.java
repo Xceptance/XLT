@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,22 +14,12 @@
  */
 package org.htmlunit.javascript.host.html;
 
-import static org.htmlunit.BrowserVersionFeatures.JS_MENU_TYPE_EMPTY;
 import static org.htmlunit.BrowserVersionFeatures.JS_MENU_TYPE_PASS;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
-import org.apache.commons.lang3.StringUtils;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.HtmlMenu;
-import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
-import org.htmlunit.javascript.configuration.JsxGetter;
-import org.htmlunit.javascript.configuration.JsxSetter;
 
 /**
  * The JavaScript object {@code HTMLMenuElement}.
@@ -42,16 +32,10 @@ import org.htmlunit.javascript.configuration.JsxSetter;
 public class HTMLMenuElement extends HTMLListElement {
 
     /**
-     * Creates an instance.
-     */
-    public HTMLMenuElement() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @Override
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
         super.jsConstructor();
     }
@@ -61,12 +45,7 @@ public class HTMLMenuElement extends HTMLListElement {
      * @return the value of the {@code type} property
      */
     @Override
-    @JsxGetter(IE)
     public String getType() {
-        if (getBrowserVersion().hasFeature(JS_MENU_TYPE_EMPTY)) {
-            return "";
-        }
-
         final String type = getDomNodeOrDie().getAttributeDirect("type");
         if (getBrowserVersion().hasFeature(JS_MENU_TYPE_PASS)) {
             return type;
@@ -87,15 +66,7 @@ public class HTMLMenuElement extends HTMLListElement {
      * @param type the value of the {@code type} property
      */
     @Override
-    @JsxSetter(IE)
     public void setType(final String type) {
-        if (getBrowserVersion().hasFeature(JS_MENU_TYPE_EMPTY)) {
-            if (StringUtils.isEmpty(type)) {
-                return;
-            }
-            throw JavaScriptEngine.reportRuntimeError("Cannot set the type property to invalid value: '" + type + "'");
-        }
-
         if (getBrowserVersion().hasFeature(JS_MENU_TYPE_PASS)) {
             getDomNodeOrDie().setAttribute(DomElement.TYPE_ATTRIBUTE, type);
             return;

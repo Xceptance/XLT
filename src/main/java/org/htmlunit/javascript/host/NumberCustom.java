@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,8 @@ import java.util.Locale;
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.Function;
-import org.htmlunit.corejs.javascript.ScriptRuntime;
 import org.htmlunit.corejs.javascript.Scriptable;
+import org.htmlunit.javascript.JavaScriptEngine;
 
 /**
  * Contains some missing features of Rhino NativeNumber.
@@ -33,6 +33,7 @@ import org.htmlunit.corejs.javascript.Scriptable;
 public final class NumberCustom {
 
     private NumberCustom() {
+        super();
     }
 
     /**
@@ -53,7 +54,7 @@ public final class NumberCustom {
                 return NumberFormat.getInstance(locale).format(Double.parseDouble(thisObj.toString()));
             }
             catch (final IllformedLocaleException e) {
-                throw ScriptRuntime.rangeError("Invalid language tag: " + localeStr);
+                throw JavaScriptEngine.rangeError("Invalid language tag: " + localeStr);
             }
         }
 

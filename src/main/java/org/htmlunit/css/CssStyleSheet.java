@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,8 @@
  */
 package org.htmlunit.css;
 
-import static java.nio.charset.StandardCharsets.UTF_16BE;
-import static java.nio.charset.StandardCharsets.UTF_16LE;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.htmlunit.BrowserVersionFeatures.CSS_PSEUDO_SELECTOR_MS_PLACEHHOLDER;
-import static org.htmlunit.BrowserVersionFeatures.CSS_PSEUDO_SELECTOR_PLACEHOLDER_SHOWN;
 import static org.htmlunit.BrowserVersionFeatures.HTMLLINK_CHECK_TYPE_FOR_STYLESHEET;
-import static org.htmlunit.BrowserVersionFeatures.QUERYSELECTORALL_NOT_IN_QUIRKS;
-import static org.htmlunit.BrowserVersionFeatures.QUERYSELECTOR_CSS3_PSEUDO_REQUIRE_ATTACHED_NODE;
 import static org.htmlunit.html.DomElement.ATTRIBUTE_NOT_DEFINED;
 
 import java.io.IOException;
@@ -44,9 +38,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import org.apache.commons.io.ByteOrderMark;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.input.BOMInputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.commons.logging.Log;
@@ -81,7 +73,6 @@ import org.htmlunit.cssparser.parser.condition.AttributeCondition;
 import org.htmlunit.cssparser.parser.condition.Condition;
 import org.htmlunit.cssparser.parser.condition.Condition.ConditionType;
 import org.htmlunit.cssparser.parser.condition.NotPseudoClassCondition;
-import org.htmlunit.cssparser.parser.javacc.CSS3Parser;
 import org.htmlunit.cssparser.parser.media.MediaQuery;
 import org.htmlunit.cssparser.parser.selector.ChildSelector;
 import org.htmlunit.cssparser.parser.selector.DescendantSelector;
@@ -108,11 +99,8 @@ import org.htmlunit.html.HtmlRadioButtonInput;
 import org.htmlunit.html.HtmlStyle;
 import org.htmlunit.html.HtmlTextArea;
 import org.htmlunit.html.ValidatableElement;
-import org.htmlunit.javascript.HtmlUnitScriptable;
 import org.htmlunit.javascript.host.css.MediaList;
 import org.htmlunit.javascript.host.dom.Document;
-import org.htmlunit.javascript.host.html.HTMLDocument;
-import org.htmlunit.util.EncodingSniffer;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.UrlUtils;
 
@@ -126,6 +114,7 @@ import org.htmlunit.util.UrlUtils;
  * @author Guy Burton
  * @author Frank Danek
  * @author Carsten Steul
+ * @author Sven Strickroth
  */
 public class CssStyleSheet implements Serializable {
 
@@ -170,7 +159,7 @@ public class CssStyleSheet implements Serializable {
     private final Map<CSSImportRuleImpl, CssStyleSheet> imports_ = new HashMap<>();
 
     /** cache parsed media strings */
-    private static final transient Map<String, MediaListImpl> media_ = new HashMap<>();
+    private static final Map<String, MediaListImpl> MEDIA = new HashMap<>();
 
     /** This stylesheet's URI (used to resolved contained @import rules). */
     private final String uri_;
@@ -319,7 +308,9 @@ public class CssStyleSheet implements Serializable {
                 // Use href.
                 final BrowserVersion browser = client.getBrowserVersion();
                 request = new WebRequest(new URL(url), browser.getCssAcceptHeader(), browser.getAcceptEncodingHeader());
-                request.setRefererlHeader(page.getUrl());
+                request.setRefererHeader(page.getUrl());
+                // https://www.w3.org/TR/css-syntax-3/#input-byte-stream
+                request.setDefaultResponseContentCharset(UTF_8);
 
                 // our cache is a bit strange;
                 // loadWebResponse check the cache for the web response
@@ -335,6 +326,14 @@ public class CssStyleSheet implements Serializable {
                     if (StringUtils.isNotBlank(type) && !MimeType.TEXT_CSS.equals(type)) {
                         return new CssStyleSheet(element, "", uri);
                     }
+                }
+
+                if (request.getCharset() != null) {
+                    request.setDefaultResponseContentCharset(request.getCharset());
+                }
+                else {
+                    // https://www.w3.org/TR/css-syntax-3/#input-byte-stream
+                    request.setDefaultResponseContentCharset(UTF_8);
                 }
 
                 // our cache is a bit strange;
@@ -360,48 +359,19 @@ public class CssStyleSheet implements Serializable {
             final CssStyleSheet sheet;
             final String contentType = response.getContentType();
             if (StringUtils.isEmpty(contentType) || MimeType.TEXT_CSS.equals(contentType)) {
-
-                final InputStream in = response.getContentAsStreamWithBomIfApplicable();
-                if (in == null) {
-                    if (LOG.isWarnEnabled()) {
-                        LOG.warn("Loading stylesheet for url '" + uri + "' returns empty responseData");
-                    }
-                    return new CssStyleSheet(element, "", uri);
-                }
-                try {
-                    Charset cssEncoding = Charset.forName("windows-1252");
-                    final Charset contentCharset =
-                            EncodingSniffer.sniffEncodingFromHttpHeaders(response.getResponseHeaders());
-                    if (contentCharset == null && request.getCharset() != null) {
-                        cssEncoding = request.getCharset();
-                    }
-                    else if (contentCharset != null) {
-                        cssEncoding = contentCharset;
-                    }
-
-                    if (in instanceof BOMInputStream) {
-                        final BOMInputStream bomIn = (BOMInputStream) in;
-                        // there seems to be a bug in BOMInputStream
-                        // we have to call this before hasBOM(ByteOrderMark)
-                        if (bomIn.hasBOM()) {
-                            if (bomIn.hasBOM(ByteOrderMark.UTF_8)) {
-                                cssEncoding = UTF_8;
-                            }
-                            else if (bomIn.hasBOM(ByteOrderMark.UTF_16BE)) {
-                                cssEncoding = UTF_16BE;
-                            }
-                            else if (bomIn.hasBOM(ByteOrderMark.UTF_16LE)) {
-                                cssEncoding = UTF_16LE;
-                            }
+                try (InputStream in = response.getContentAsStreamWithBomIfApplicable()) {
+                    if (in == null) {
+                        if (LOG.isWarnEnabled()) {
+                            LOG.warn("Loading stylesheet for url '" + uri + "' returns empty responseData");
                         }
+                        return new CssStyleSheet(element, "", uri);
                     }
-                    try (InputSource source = new InputSource(new InputStreamReader(in, cssEncoding))) {
+
+                    final Charset cssEncoding2 = response.getContentCharset();
+                    try (InputSource source = new InputSource(new InputStreamReader(in, cssEncoding2))) {
                         source.setURI(uri);
                         sheet = new CssStyleSheet(element, source, uri);
                     }
-                }
-                finally {
-                    in.close();
                 }
             }
             else {
@@ -602,33 +572,33 @@ public class CssStyleSheet implements Serializable {
                 final AttributeCondition prefixAttributeCondition = (AttributeCondition) condition;
                 final String prefixValue = prefixAttributeCondition.getValue();
                 if (prefixAttributeCondition.isCaseInSensitive()) {
-                    return !"".equals(prefixValue)
+                    return !org.htmlunit.util.StringUtils.isEmptyString(prefixValue)
                             && StringUtils.startsWithIgnoreCase(
                                     element.getAttribute(prefixAttributeCondition.getLocalName()), prefixValue);
                 }
-                return !"".equals(prefixValue)
+                return !org.htmlunit.util.StringUtils.isEmptyString(prefixValue)
                         && element.getAttribute(prefixAttributeCondition.getLocalName()).startsWith(prefixValue);
 
             case SUFFIX_ATTRIBUTE_CONDITION:
                 final AttributeCondition suffixAttributeCondition = (AttributeCondition) condition;
                 final String suffixValue = suffixAttributeCondition.getValue();
                 if (suffixAttributeCondition.isCaseInSensitive()) {
-                    return !"".equals(suffixValue)
+                    return !org.htmlunit.util.StringUtils.isEmptyString(suffixValue)
                             && StringUtils.endsWithIgnoreCase(
                                     element.getAttribute(suffixAttributeCondition.getLocalName()), suffixValue);
                 }
-                return !"".equals(suffixValue)
+                return !org.htmlunit.util.StringUtils.isEmptyString(suffixValue)
                         && element.getAttribute(suffixAttributeCondition.getLocalName()).endsWith(suffixValue);
 
             case SUBSTRING_ATTRIBUTE_CONDITION:
                 final AttributeCondition substringAttributeCondition = (AttributeCondition) condition;
                 final String substringValue = substringAttributeCondition.getValue();
                 if (substringAttributeCondition.isCaseInSensitive()) {
-                    return !"".equals(substringValue)
+                    return !org.htmlunit.util.StringUtils.isEmptyString(substringValue)
                             && StringUtils.containsIgnoreCase(
                                     element.getAttribute(substringAttributeCondition.getLocalName()), substringValue);
                 }
-                return !"".equals(substringValue)
+                return !org.htmlunit.util.StringUtils.isEmptyString(substringValue)
                         && element.getAttribute(substringAttributeCondition.getLocalName()).contains(substringValue);
 
             case BEGIN_HYPHEN_ATTRIBUTE_CONDITION:
@@ -769,15 +739,9 @@ public class CssStyleSheet implements Serializable {
         return false;
     }
 
+    @SuppressWarnings("PMD.UselessParentheses")
     private static boolean selectsPseudoClass(final BrowserVersion browserVersion,
             final Condition condition, final DomElement element) {
-        if (browserVersion.hasFeature(QUERYSELECTORALL_NOT_IN_QUIRKS)) {
-            final HtmlUnitScriptable sobj = element.getPage().getScriptableObject();
-            if (sobj instanceof HTMLDocument && ((HTMLDocument) sobj).getDocumentMode() < 8) {
-                return false;
-            }
-        }
-
         final String value = condition.getValue();
         switch (value) {
             case "root":
@@ -910,18 +874,9 @@ public class CssStyleSheet implements Serializable {
                 return element.isMouseOver();
 
             case "placeholder-shown":
-                if (browserVersion.hasFeature(CSS_PSEUDO_SELECTOR_PLACEHOLDER_SHOWN)) {
-                    return element instanceof HtmlInput
-                            && StringUtils.isEmpty(((HtmlInput) element).getValue())
-                            && StringUtils.isNotEmpty(((HtmlInput) element).getPlaceholder());
-                }
-
-            case "-ms-input-placeholder":
-                if (browserVersion.hasFeature(CSS_PSEUDO_SELECTOR_MS_PLACEHHOLDER)) {
-                    return element instanceof HtmlInput
-                            && StringUtils.isEmpty(((HtmlInput) element).getValue())
-                            && StringUtils.isNotEmpty(((HtmlInput) element).getPlaceholder());
-                }
+                return element instanceof HtmlInput
+                        && StringUtils.isEmpty(((HtmlInput) element).getValue())
+                        && StringUtils.isNotEmpty(((HtmlInput) element).getPlaceholder());
 
             default:
                 if (value.startsWith("nth-child(")) {
@@ -993,7 +948,7 @@ public class CssStyleSheet implements Serializable {
         int denominator = 0;
         if (nIndex != -1) {
             String value = nth.substring(0, nIndex).trim();
-            if ("-".equals(value)) {
+            if (org.htmlunit.util.StringUtils.equalsChar('-', value)) {
                 denominator = -1;
             }
             else {
@@ -1035,9 +990,9 @@ public class CssStyleSheet implements Serializable {
             parser.setErrorHandler(errorHandler);
             ss = parser.parseStyleSheet(source, null);
         }
-        catch (final Throwable t) {
+        catch (final Throwable ex) {
             if (LOG.isErrorEnabled()) {
-                LOG.error("Error parsing CSS from '" + toString(source) + "': " + t.getMessage(), t);
+                LOG.error("Error parsing CSS from '" + toString(source) + "': " + ex.getMessage(), ex);
             }
             ss = new CSSStyleSheetImpl();
         }
@@ -1053,7 +1008,7 @@ public class CssStyleSheet implements Serializable {
      * @return the media parsed from the specified input source
      */
     public static MediaListImpl parseMedia(final String mediaString, final WebClient webClient) {
-        MediaListImpl media = media_.get(mediaString);
+        MediaListImpl media = MEDIA.get(mediaString);
         if (media != null) {
             return media;
         }
@@ -1064,7 +1019,7 @@ public class CssStyleSheet implements Serializable {
             parser.setErrorHandler(webClient.getCssErrorHandler());
 
             media = new MediaListImpl(parser.parseMedia(mediaString));
-            media_.put(mediaString, media);
+            MEDIA.put(mediaString, media);
             return media;
         }
         catch (final Exception e) {
@@ -1074,43 +1029,7 @@ public class CssStyleSheet implements Serializable {
         }
 
         media = new MediaListImpl(null);
-        media_.put(mediaString, media);
-        return media;
-    }
-
-    /**
-     * Parses the given media string. If anything at all goes wrong, this
-     * method returns an empty MediaList list.
-     *
-     * @param mediaString the source from which to retrieve the media to be parsed
-     * @param errorHandler the {@link CSSErrorHandler} to be used
-     * @return the media parsed from the specified input source
-     *
-     * @deprecated as of version 3.8.0; use {@link #parseMedia(String, WebClient)} instead
-     */
-    @Deprecated
-    public static MediaListImpl parseMedia(final CSSErrorHandler errorHandler, final String mediaString) {
-        MediaListImpl media = media_.get(mediaString);
-        if (media != null) {
-            return media;
-        }
-
-        try {
-            final CSSOMParser parser = new CSSOMParser(new CSS3Parser());
-            parser.setErrorHandler(errorHandler);
-
-            media = new MediaListImpl(parser.parseMedia(mediaString));
-            media_.put(mediaString, media);
-            return media;
-        }
-        catch (final Exception e) {
-            if (LOG.isErrorEnabled()) {
-                LOG.error("Error parsing CSS media from '" + mediaString + "': " + e.getMessage(), e);
-            }
-        }
-
-        media = new MediaListImpl(null);
-        media_.put(mediaString, media);
+        MEDIA.put(mediaString, media);
         return media;
     }
 
@@ -1144,12 +1063,29 @@ public class CssStyleSheet implements Serializable {
      * @param documentMode see {@link Document#getDocumentMode()}
      * @param domNode the dom node the query should work on
      * @throws CSSException if a selector is invalid
+     *
+     * @deprecated as of version 4.5.0; use {@link #validateSelectors(SelectorList, DomNode)} instead
      */
+    @Deprecated
     public static void validateSelectors(final SelectorList selectorList, final int documentMode,
                 final DomNode domNode) throws CSSException {
         for (final Selector selector : selectorList) {
-            if (!isValidSelector(selector, documentMode, domNode)) {
-                throw new CSSException("Invalid selector: " + selector);
+            if (!isValidSelector(selector, domNode)) {
+                throw new CSSException("Invalid selector: " + selector, null);
+            }
+        }
+    }
+
+    /**
+     * Validates the list of selectors.
+     * @param selectorList the selectors
+     * @param domNode the dom node the query should work on
+     * @throws CSSException if a selector is invalid
+     */
+    public static void validateSelectors(final SelectorList selectorList, final DomNode domNode) throws CSSException {
+        for (final Selector selector : selectorList) {
+            if (!isValidSelector(selector, domNode)) {
+                throw new CSSException("Invalid selector: " + selector, null);
             }
         }
     }
@@ -1157,13 +1093,13 @@ public class CssStyleSheet implements Serializable {
     /**
      * @param documentMode see {@link Document#getDocumentMode()}
      */
-    private static boolean isValidSelector(final Selector selector, final int documentMode, final DomNode domNode) {
+    private static boolean isValidSelector(final Selector selector, final DomNode domNode) {
         switch (selector.getSelectorType()) {
             case ELEMENT_NODE_SELECTOR:
                 final List<Condition> conditions = ((ElementSelector) selector).getConditions();
                 if (conditions != null) {
                     for (final Condition condition : conditions) {
-                        if (!isValidCondition(condition, documentMode, domNode)) {
+                        if (!isValidCondition(condition, domNode)) {
                             return false;
                         }
                     }
@@ -1171,20 +1107,20 @@ public class CssStyleSheet implements Serializable {
                 return true;
             case DESCENDANT_SELECTOR:
                 final DescendantSelector ds = (DescendantSelector) selector;
-                return isValidSelector(ds.getAncestorSelector(), documentMode, domNode)
-                        && isValidSelector(ds.getSimpleSelector(), documentMode, domNode);
+                return isValidSelector(ds.getAncestorSelector(), domNode)
+                        && isValidSelector(ds.getSimpleSelector(), domNode);
             case CHILD_SELECTOR:
                 final ChildSelector cs = (ChildSelector) selector;
-                return isValidSelector(cs.getAncestorSelector(), documentMode, domNode)
-                        && isValidSelector(cs.getSimpleSelector(), documentMode, domNode);
+                return isValidSelector(cs.getAncestorSelector(), domNode)
+                        && isValidSelector(cs.getSimpleSelector(), domNode);
             case DIRECT_ADJACENT_SELECTOR:
                 final DirectAdjacentSelector das = (DirectAdjacentSelector) selector;
-                return isValidSelector(das.getSelector(), documentMode, domNode)
-                        && isValidSelector(das.getSimpleSelector(), documentMode, domNode);
+                return isValidSelector(das.getSelector(), domNode)
+                        && isValidSelector(das.getSimpleSelector(), domNode);
             case GENERAL_ADJACENT_SELECTOR:
                 final GeneralAdjacentSelector gas = (GeneralAdjacentSelector) selector;
-                return isValidSelector(gas.getSelector(), documentMode, domNode)
-                        && isValidSelector(gas.getSimpleSelector(), documentMode, domNode);
+                return isValidSelector(gas.getSelector(), domNode)
+                        && isValidSelector(gas.getSimpleSelector(), domNode);
             default:
                 if (LOG.isWarnEnabled()) {
                     LOG.warn("Unhandled CSS selector type '"
@@ -1197,7 +1133,7 @@ public class CssStyleSheet implements Serializable {
     /**
      * @param documentMode see {@link Document#getDocumentMode()}
      */
-    private static boolean isValidCondition(final Condition condition, final int documentMode, final DomNode domNode) {
+    private static boolean isValidCondition(final Condition condition, final DomNode domNode) {
         switch (condition.getConditionType()) {
             case ATTRIBUTE_CONDITION:
             case ID_CONDITION:
@@ -1213,7 +1149,7 @@ public class CssStyleSheet implements Serializable {
                 final NotPseudoClassCondition notPseudoCondition = (NotPseudoClassCondition) condition;
                 final SelectorList selectorList = notPseudoCondition.getSelectors();
                 for (final Selector selector : selectorList) {
-                    if (!isValidSelector(selector, documentMode, domNode)) {
+                    if (!isValidSelector(selector, domNode)) {
                         return false;
                     }
                 }
@@ -1226,16 +1162,6 @@ public class CssStyleSheet implements Serializable {
                     }
                     value = value.substring(0, value.indexOf('(') + 1) + ')';
                 }
-                if (documentMode < 9) {
-                    return CSS2_PSEUDO_CLASSES.contains(value);
-                }
-
-                if (!CSS2_PSEUDO_CLASSES.contains(value)
-                        && domNode.hasFeature(QUERYSELECTOR_CSS3_PSEUDO_REQUIRE_ATTACHED_NODE)
-                        && !domNode.isAttachedToPage()
-                        && !domNode.hasChildNodes()) {
-                    throw new CSSException("Syntax Error");
-                }
 
                 if ("nth-child()".equals(value)) {
                     final String arg = StringUtils.substringBetween(condition.getValue(), "(", ")").trim();
@@ -1245,11 +1171,7 @@ public class CssStyleSheet implements Serializable {
                 }
 
                 if ("placeholder-shown".equals(value)) {
-                    return domNode.hasFeature(CSS_PSEUDO_SELECTOR_PLACEHOLDER_SHOWN);
-                }
-
-                if ("-ms-input-placeholder".equals(value)) {
-                    return domNode.hasFeature(CSS_PSEUDO_SELECTOR_MS_PLACEHHOLDER);
+                    return true;
                 }
 
                 return CSS4_PSEUDO_CLASSES.contains(value);
@@ -1262,6 +1184,10 @@ public class CssStyleSheet implements Serializable {
         }
     }
 
+    /**
+     * @param importRule the {@link CSSImportRuleImpl} that imports the {@link CssStyleSheet}
+     * @return the {@link CssStyleSheet} imported by this rule
+     */
     public CssStyleSheet getImportedStyleSheet(final CSSImportRuleImpl importRule) {
         CssStyleSheet sheet = imports_.get(importRule);
         if (sheet == null) {
@@ -1414,9 +1340,7 @@ public class CssStyleSheet implements Serializable {
                     case "orientation":
                         final CSSValueImpl cssValue = property.getValue();
                         if (cssValue == null) {
-                            if (LOG.isWarnEnabled()) {
-                                LOG.warn("CSSValue is null not supported for feature 'orientation'");
-                            }
+                            LOG.warn("CSSValue is null not supported for feature 'orientation'");
                             return true;
                         }
 
@@ -1454,12 +1378,11 @@ public class CssStyleSheet implements Serializable {
         return false;
     }
 
+    @SuppressWarnings("PMD.UselessParentheses")
     private static double pixelValue(final CSSValueImpl cssValue, final WebWindow webWindow) {
         if (cssValue == null) {
-            if (LOG.isWarnEnabled()) {
-                LOG.warn("CSSValue is null but has to be a 'px', 'em', '%', 'ex', 'ch', "
-                        + "'vw', 'vh', 'vmin', 'vmax', 'rem', 'mm', 'cm', 'Q', or 'pt' value.");
-            }
+            LOG.warn("CSSValue is null but has to be a 'px', 'em', '%', 'ex', 'ch', "
+                    + "'vw', 'vh', 'vmin', 'vmax', 'rem', 'mm', 'cm', 'Q', or 'pt' value.");
             return -1;
         }
 
@@ -1524,9 +1447,7 @@ public class CssStyleSheet implements Serializable {
 
     private static double resolutionValue(final CSSValueImpl cssValue) {
         if (cssValue == null) {
-            if (LOG.isWarnEnabled()) {
-                LOG.warn("CSSValue is null but has to be a 'dpi', 'dpcm', or 'dppx' value.");
-            }
+            LOG.warn("CSSValue is null but has to be a 'dpi', 'dpcm', or 'dppx' value.");
             return -1;
         }
 
@@ -1660,8 +1581,8 @@ public class CssStyleSheet implements Serializable {
 
             CSSStyleSheetImpl.SelectorEntry entry = iter.next();
             while (null != entry) {
-                if (CssStyleSheet.selects(browserVersion, entry.getSelector(),
-                                            element, pseudoElement, fromQuerySelectorAll, false)) {
+                if (selects(browserVersion, entry.getSelector(),
+                            element, pseudoElement, fromQuerySelectorAll, false)) {
                     matchingRules.add(entry);
                 }
                 entry = iter.next();

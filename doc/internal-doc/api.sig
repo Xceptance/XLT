@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 8.6.0-SNAPSHOT
+#Version 8.6.0
 
 CLSS public abstract com.xceptance.xlt.api.actions.AbstractAction
 cons protected init(com.xceptance.xlt.api.actions.AbstractAction,java.lang.String)
@@ -2093,15 +2093,11 @@ supr java.lang.Object
 hfds binary,headless,options,profile
 
 CLSS public com.xceptance.xlt.engine.xltdriver.HtmlUnitDriver
-cons public init()
-cons public init(boolean)
-cons public init(org.htmlunit.BrowserVersion)
-cons public init(org.htmlunit.BrowserVersion,boolean)
-cons public init(org.openqa.selenium.Capabilities)
-cons public init(org.openqa.selenium.Capabilities,org.openqa.selenium.Capabilities)
+cons protected init(org.htmlunit.BrowserVersion)
 fld public final static java.lang.String BROWSER_LANGUAGE_CAPABILITY = "browserLanguage"
 fld public final static java.lang.String DOWNLOAD_IMAGES_CAPABILITY = "downloadImages"
 fld public final static java.lang.String JAVASCRIPT_ENABLED = "javascriptEnabled"
+innr protected HtmlUnitWebDriverOptions
 innr protected abstract interface static JavaScriptResultsCollection
 innr protected static ElementsMap
 intf org.openqa.selenium.HasCapabilities
@@ -2126,6 +2122,7 @@ meth public com.xceptance.xlt.engine.xltdriver.HtmlUnitAlert getAlert()
 meth public com.xceptance.xlt.engine.xltdriver.HtmlUnitDriver$ElementsMap getElementsMap()
 meth public com.xceptance.xlt.engine.xltdriver.HtmlUnitKeyboard getKeyboard()
 meth public com.xceptance.xlt.engine.xltdriver.HtmlUnitMouse getMouse()
+meth public com.xceptance.xlt.engine.xltdriver.HtmlUnitWebElement toWebElement(java.lang.String)
 meth public com.xceptance.xlt.engine.xltdriver.HtmlUnitWindow getCurrentWindow()
 meth public java.lang.String getCurrentUrl()
 meth public java.lang.String getPageSource()
@@ -2436,7 +2433,6 @@ intf org.openqa.selenium.devtools.HasDevTools
 intf org.openqa.selenium.html5.LocationContext
 intf org.openqa.selenium.html5.WebStorage
 intf org.openqa.selenium.logging.HasLogEvents
-intf org.openqa.selenium.mobile.NetworkConnection
 meth public !varargs java.lang.Object executeScript(org.openqa.selenium.ScriptKey,java.lang.Object[])
 meth public <%0 extends java.lang.Object> void onLogEvent(org.openqa.selenium.logging.EventType<{%%0}>)
 meth public java.lang.String getCastIssueMessage()
@@ -2454,10 +2450,6 @@ meth public org.openqa.selenium.html5.Location location()
  anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
 meth public org.openqa.selenium.html5.SessionStorage getSessionStorage()
  anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
-meth public org.openqa.selenium.mobile.NetworkConnection$ConnectionType getNetworkConnection()
- anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
-meth public org.openqa.selenium.mobile.NetworkConnection$ConnectionType setNetworkConnection(org.openqa.selenium.mobile.NetworkConnection$ConnectionType)
- anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
 meth public void deleteNetworkConditions()
 meth public void launchApp(java.lang.String)
 meth public void quit()
@@ -2473,7 +2465,7 @@ meth public void startTabMirroring(java.lang.String)
 meth public void stopCasting(java.lang.String)
 meth public void unpin(org.openqa.selenium.ScriptKey)
 supr org.openqa.selenium.remote.RemoteWebDriver
-hfds LOG,biDi,biDiUri,capabilities,connection,devTools,launch,locationContext,networkConditions,networkConnection,permissions,scriptKeys,webStorage
+hfds LOG,biDi,biDiUri,capabilities,connection,devTools,launch,locationContext,networkConditions,permissions,scriptKeys,webStorage
 
 CLSS public abstract interface org.openqa.selenium.chromium.HasCasting
  anno 0 org.openqa.selenium.Beta()
@@ -2520,7 +2512,6 @@ cons public init(org.openqa.selenium.firefox.FirefoxDriverService,org.openqa.sel
 cons public init(org.openqa.selenium.firefox.FirefoxOptions)
 innr public final static SystemProperty
 intf org.openqa.selenium.bidi.HasBiDi
-intf org.openqa.selenium.devtools.HasDevTools
 intf org.openqa.selenium.firefox.HasContext
 intf org.openqa.selenium.firefox.HasExtensions
 intf org.openqa.selenium.firefox.HasFullPageScreenshot
@@ -2529,12 +2520,8 @@ meth public <%0 extends java.lang.Object> {%%0} getFullPageScreenshotAs(org.open
 meth public java.lang.String installExtension(java.nio.file.Path)
 meth public java.lang.String installExtension(java.nio.file.Path,java.lang.Boolean)
 meth public java.util.Optional<org.openqa.selenium.bidi.BiDi> maybeGetBiDi()
-meth public java.util.Optional<org.openqa.selenium.devtools.DevTools> maybeGetDevTools()
- anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
 meth public org.openqa.selenium.Capabilities getCapabilities()
 meth public org.openqa.selenium.bidi.BiDi getBiDi()
-meth public org.openqa.selenium.devtools.DevTools getDevTools()
- anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
 meth public org.openqa.selenium.firefox.FirefoxCommandContext getContext()
 meth public org.openqa.selenium.html5.LocalStorage getLocalStorage()
  anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
@@ -2547,7 +2534,7 @@ meth public void setContext(org.openqa.selenium.firefox.FirefoxCommandContext)
 meth public void setFileDetector(org.openqa.selenium.remote.FileDetector)
 meth public void uninstallExtension(java.lang.String)
 supr org.openqa.selenium.remote.RemoteWebDriver
-hfds LOG,biDi,biDiUri,capabilities,cdpUri,connection,context,devTools,extensions,fullPageScreenshot,webStorage
+hfds LOG,biDi,biDiUri,capabilities,context,extensions,fullPageScreenshot,webStorage
 hcls FirefoxDriverCommandExecutor
 
 CLSS public abstract interface org.openqa.selenium.firefox.HasContext
@@ -2581,12 +2568,6 @@ meth public abstract void resetInputState()
 
 CLSS public abstract interface org.openqa.selenium.logging.HasLogEvents
 meth public abstract <%0 extends java.lang.Object> void onLogEvent(org.openqa.selenium.logging.EventType<{%%0}>)
-
-CLSS public abstract interface org.openqa.selenium.mobile.NetworkConnection
- anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
-innr public static ConnectionType
-meth public abstract org.openqa.selenium.mobile.NetworkConnection$ConnectionType getNetworkConnection()
-meth public abstract org.openqa.selenium.mobile.NetworkConnection$ConnectionType setNetworkConnection(org.openqa.selenium.mobile.NetworkConnection$ConnectionType)
 
 CLSS public abstract interface !annotation org.openqa.selenium.remote.Augmentable
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
@@ -2670,6 +2651,7 @@ hfds LOG,WEBDRIVER_REMOTE_ENABLE_TRACING,converter,elementLocation,errorHandler,
 hcls RemoteAlert,RemoteNavigation,RemoteVirtualAuthenticator
 
 CLSS public abstract interface org.openqa.selenium.virtualauthenticator.HasVirtualAuthenticator
+ anno 0 org.jspecify.annotations.NullMarked()
 meth public abstract org.openqa.selenium.virtualauthenticator.VirtualAuthenticator addVirtualAuthenticator(org.openqa.selenium.virtualauthenticator.VirtualAuthenticatorOptions)
 meth public abstract void removeVirtualAuthenticator(org.openqa.selenium.virtualauthenticator.VirtualAuthenticator)
 

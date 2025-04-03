@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,8 @@
  */
 package org.htmlunit.javascript.host.media;
 
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-
 import org.htmlunit.corejs.javascript.Function;
+import org.htmlunit.corejs.javascript.NativePromise;
 import org.htmlunit.corejs.javascript.typedarrays.NativeArrayBuffer;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.javascript.JavaScriptEngine;
@@ -28,6 +24,7 @@ import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.host.Window;
+import org.htmlunit.javascript.host.dom.DOMException;
 import org.htmlunit.javascript.host.event.EventTarget;
 
 /**
@@ -36,14 +33,8 @@ import org.htmlunit.javascript.host.event.EventTarget;
  * @author Ahmed Ashour
  * @author Ronald Brill
  */
-@JsxClass({CHROME, EDGE, FF, FF_ESR})
+@JsxClass
 public class BaseAudioContext extends EventTarget {
-
-    /**
-     * Creates an instance.
-     */
-    public BaseAudioContext() {
-    }
 
     /**
      * Creates an instance.
@@ -51,7 +42,7 @@ public class BaseAudioContext extends EventTarget {
     @Override
     @JsxConstructor
     public void jsConstructor() {
-        throw JavaScriptEngine.reportRuntimeError("Illegal constructor.");
+        throw JavaScriptEngine.typeErrorIllegalConstructor();
     }
 
     /**
@@ -107,22 +98,28 @@ public class BaseAudioContext extends EventTarget {
      * @return the promise or null
      */
     @JsxFunction
-    public Object decodeAudioData(final NativeArrayBuffer buffer, final Function success, final Function error) {
+    public NativePromise decodeAudioData(final NativeArrayBuffer buffer, final Function success, final Function error) {
         final Window window = getWindow();
         final HtmlPage owningPage = (HtmlPage) window.getDocument().getPage();
         final JavaScriptEngine jsEngine =
                 (JavaScriptEngine) window.getWebWindow().getWebClient().getJavaScriptEngine();
 
+        final DOMException domException = new DOMException(
+                "decodeAudioData not supported by HtmlUnit", DOMException.NOT_SUPPORTED_ERR);
+        domException.setParentScope(window);
+        domException.setPrototype(window.getPrototype(DOMException.class));
+
         if (error != null) {
             jsEngine.addPostponedAction(new PostponedAction(owningPage, "BaseAudioContext.decodeAudioData") {
                 @Override
                 public void execute() {
-                    jsEngine.callFunction(owningPage, error, getParentScope(), BaseAudioContext.this, new Object[] {});
+                    jsEngine.callFunction(owningPage, error, getParentScope(), BaseAudioContext.this,
+                            new Object[] {domException});
                 }
             });
             return null;
         }
 
-        return setupRejectedPromise(() -> null);
+        return setupRejectedPromise(() -> domException);
     }
 }

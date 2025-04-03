@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,13 +39,12 @@ import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.WebRequest;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
-import org.htmlunit.junit.BrowserRunner.Tries;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.NotYetImplemented;
+import org.htmlunit.junit.annotation.Tries;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
-import org.junit.After;
 import org.junit.ComparisonFailure;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -73,23 +72,12 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
     private static final String COMPLETED = String.valueOf(XMLHttpRequest.DONE);
 
     /**
-     * Closes the real IE; otherwise tests are failing because of cached responses.
-     */
-    @After
-    public void shutDownRealBrowsersAfter() {
-        shutDownRealIE();
-    }
-
-    /**
      * Tests synchronous use of XMLHttpRequest.
      * @throws Exception if the test fails
      */
     @Test
     @Tries(3)
     public void syncUse() throws Exception {
-        // TODO [IE]SINGLE-VS-BULK test runs when executed as single but breaks as bulk
-        shutDownRealIE();
-
         final String html =
               "<html>\n"
             + "  <head>\n"
@@ -135,13 +123,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "  <head>\n"
             + "    <script>\n"
             + LOG_TITLE_FUNCTION
-            + "        if (window.XMLHttpRequest) {\n"
-            + "          log(new XMLHttpRequest());\n"
-            + "        }\n"
-            + "        else if (window.ActiveXObject) {\n"
-            + "          new ActiveXObject('Microsoft.XMLHTTP');\n"
-            + "          log('activeX created');\n"
-            + "        }\n"
+            + "        log(new XMLHttpRequest());\n"
             + "    </script>\n"
             + "  </head>\n"
             + "  <body></body>\n"
@@ -175,7 +157,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "      msg = msg + xhr.status + '-';\n"
             + "    } catch(e) { msg = msg + 'ex: status' + '-' }\n"
             + "    try {\n"
-            + "      msg = msg + xhr.statusText;;\n"
+            + "      msg = msg + xhr.statusText;\n"
             + "    } catch(e) { msg = msg + 'ex: statusText' }\n"
             + "    log(msg);\n"
             + "  }\n"
@@ -192,8 +174,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"1: 0-", "2: 0-", "#1: 0-", "3: 0-", "4: 0-", "#2: 200-OK", "#3: 200-OK", "#4: 200-OK"},
-            IE = {"1: 0-", "2: 0-", "#1: 0-", "3: 0-", "#1: 0-", "4: 0-", "#2: 200-OK", "#3: 200-OK", "#4: 200-OK"})
+    @Alerts({"1: 0-", "2: 0-", "#1: 0-", "3: 0-", "4: 0-", "#2: 200-OK", "#3: 200-OK", "#4: 200-OK"})
     public void statusAsync() throws Exception {
         final String html =
             "<html>\n"
@@ -229,7 +210,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "      msg = msg + xhr.status + '-';\n"
             + "    } catch(e) { msg = msg + 'ex: status' + '-' }\n"
             + "    try {\n"
-            + "      msg = msg + xhr.statusText;;\n"
+            + "      msg = msg + xhr.statusText;\n"
             + "    } catch(e) { msg = msg + 'ex: statusText' }\n"
             + "    document.getElementById('log').value += msg + '\\n';\n"
             + "  }\n"
@@ -251,7 +232,11 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
         final long maxWait = System.currentTimeMillis() + DEFAULT_WAIT_TIME;
         while (true) {
             try {
-                final String text = driver.findElement(By.id("log")).getAttribute("value").trim().replaceAll("\r", "");
+                final String text = driver
+                                        .findElement(By.id("log"))
+                                        .getDomProperty("value")
+                                        .trim()
+                                        .replaceAll("\r", "");
                 assertEquals(expected, text);
                 return;
             }
@@ -312,14 +297,9 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"orsc1", "open-done", "send-done",
-                       "orsc2", "orsc3", "orsc4", "4", "<a>b</a>", "[object XMLHttpRequest]"},
-            IE = {"orsc1", "open-done", "orsc1", "send-done",
-                  "orsc2", "orsc3", "orsc4", "4", "<a>b</a>", "[object XMLHttpRequest]"})
+    @Alerts({"orsc1", "open-done", "send-done",
+             "orsc2", "orsc3", "orsc4", "4", "<a>b</a>", "[object XMLHttpRequest]"})
     public void onload() throws Exception {
-        // TODO [IE]SINGLE-VS-BULK test runs when executed as single but breaks as bulk
-        shutDownRealIE();
-
         final String html =
               "<html>\n"
             + "  <head>\n"
@@ -385,9 +365,6 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
      */
     @Test
     public void relativeUrl() throws Exception {
-        // TODO [IE]SINGLE-VS-BULK test runs when executed as single but breaks as bulk
-        shutDownRealIE();
-
         final String html =
               "<html>\n"
             + "  <head>\n"
@@ -423,9 +400,6 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
     @Test
     @Alerts("bla bla")
     public void responseText_NotXml() throws Exception {
-        // TODO [IE]SINGLE-VS-BULK test runs when executed as single but breaks as bulk
-        shutDownRealIE();
-
         final String html = "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -449,138 +423,510 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
     @Test
     @Alerts("null")
     public void responseXML_text_html() throws Exception {
-        // TODO [IE]SINGLE-VS-BULK test runs when executed as single but breaks as bulk
-        shutDownRealIE();
-
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
-            + "<html><head>\n"
-            + "<script>\n"
-            + LOG_TITLE_FUNCTION
-            + "  function test() {\n"
-            + "    var xhr = new XMLHttpRequest();\n"
-            + "    xhr.open('GET', 'foo.xml', false);\n"
-            + "    xhr.send('');\n"
-            + "    try {\n"
-            + "      log(xhr.responseXML);\n"
-            + "    } catch(e) { log('exception'); }\n"
-            + "  }\n"
-            + "</script></head><body onload='test()'>\n"
-            + "</body></html>";
-
-        getMockWebConnection().setDefaultResponse("<html></html>", MimeType.TEXT_HTML);
-        loadPageVerifyTitle2(html);
+        responseXML("<html></html>", MimeType.TEXT_HTML, false, false);
     }
 
     /**
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("[object XMLDocument]")
-    public void responseXML_text_xml() throws Exception {
-        // TODO [IE]SINGLE-VS-BULK test runs when executed as single but breaks as bulk
-        shutDownRealIE();
+    @Alerts("null")
+    public void responseXMLAsync_text_html() throws Exception {
+        responseXML("<html></html>", MimeType.TEXT_HTML, true, false);
+    }
 
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"[object HTMLDocument]", "[object HTMLHtmlElement]", "HTML", "§§URL§§foo"})
+    public void responseXMLAsyncDocument_text_html() throws Exception {
+        responseXML("<html></html>", MimeType.TEXT_HTML, true, true);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("null")
+    public void responseXML_text_html_empty() throws Exception {
+        responseXML("", MimeType.TEXT_HTML, false, false);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("null")
+    public void responseXMLAsync_text_html_empty() throws Exception {
+        responseXML("", MimeType.TEXT_HTML, true, false);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"[object HTMLDocument]", "[object HTMLHtmlElement]", "HTML", "§§URL§§foo"})
+    public void responseXMLAsyncDocument_text_html_empty() throws Exception {
+        responseXML("", MimeType.TEXT_HTML, true, true);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("null")
+    public void responseXML_text_html_blank() throws Exception {
+        responseXML("    ", MimeType.TEXT_HTML, false, false);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("null")
+    public void responseXMLAsync_text_html_blank() throws Exception {
+        responseXML("    ", MimeType.TEXT_HTML, true, false);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"[object HTMLDocument]", "[object HTMLHtmlElement]", "HTML", "§§URL§§foo"})
+    public void responseXMLAsyncDocument_text_html_blank() throws Exception {
+        responseXML("    ", MimeType.TEXT_HTML, true, true);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"[object XMLDocument]", "[object Element]", "note", "§§URL§§foo"})
+    public void responseXML_text_xml() throws Exception {
+        responseXML("<note/>", MimeType.TEXT_XML, false, false);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"[object XMLDocument]", "[object Element]", "note", "§§URL§§foo"})
+    public void responseXMLAsync_text_xml() throws Exception {
+        responseXML("<note/>", MimeType.TEXT_XML, true, false);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"[object XMLDocument]", "[object Element]", "note", "§§URL§§foo"})
+    public void responseXMLAsyncDocument_text_xml() throws Exception {
+        responseXML("<note/>", MimeType.TEXT_XML, true, true);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("null")
+    public void responseXML_text_xml_empty() throws Exception {
+        responseXML("", MimeType.TEXT_XML, false, false);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("null")
+    public void responseXMLAsync_text_xml_empty() throws Exception {
+        responseXML("", MimeType.TEXT_XML, true, false);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("null")
+    public void responseXMLAsyncDocument_text_xml_empty() throws Exception {
+        responseXML("", MimeType.TEXT_XML, true, true);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("null")
+    public void responseXML_text_xml_blank() throws Exception {
+        responseXML("    ", MimeType.TEXT_XML, false, false);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("null")
+    public void responseXMLAsync_text_xml_blank() throws Exception {
+        responseXML("    ", MimeType.TEXT_XML, true, false);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("null")
+    public void responseXMLAsyncDocument_text_xml_blank() throws Exception {
+        responseXML("    ", MimeType.TEXT_XML, true, true);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"[object XMLDocument]", "[object Element]", "note", "§§URL§§foo"})
+    public void responseXML_application_xml() throws Exception {
+        responseXML("<note/>", MimeType.APPLICATION_XML, false, false);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"[object XMLDocument]", "[object Element]", "note", "§§URL§§foo"})
+    public void responseXMLAsync_application_xml() throws Exception {
+        responseXML("<note/>", MimeType.APPLICATION_XML, true, false);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"[object XMLDocument]", "[object Element]", "note", "§§URL§§foo"})
+    public void responseXMLAsyncDocument_application_xml() throws Exception {
+        responseXML("<note/>", MimeType.APPLICATION_XML, true, true);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"[object XMLDocument]", "[object Element]", "html", "§§URL§§foo"})
+    public void responseXML_application_xhtmlXml() throws Exception {
+        responseXML("<html/>", MimeType.APPLICATION_XHTML, false, false);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"[object XMLDocument]", "[object Element]", "html", "§§URL§§foo"})
+    public void responseXMLAsync_application_xhtmlXml() throws Exception {
+        responseXML("<html/>", MimeType.APPLICATION_XHTML, true, false);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"[object XMLDocument]", "[object Element]", "html", "§§URL§§foo"})
+    public void responseXMLAsyncDocument_application_xhtmlXml() throws Exception {
+        responseXML("<html/>", MimeType.APPLICATION_XHTML, true, true);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"[object XMLDocument]", "[object SVGSVGElement]", "svg", "§§URL§§foo"})
+    @HtmlUnitNYI(CHROME = {"[object XMLDocument]", "[object SVGElement]", "svg", "§§URL§§foo"},
+            EDGE = {"[object XMLDocument]", "[object SVGElement]", "svg", "§§URL§§foo"},
+            FF = {"[object XMLDocument]", "[object SVGElement]", "svg", "§§URL§§foo"},
+            FF_ESR = {"[object XMLDocument]", "[object SVGElement]", "svg", "§§URL§§foo"})
+    public void responseXML_application_svgXml() throws Exception {
+        responseXML("<svg xmlns=\"http://www.w3.org/2000/svg\"/>", "image/svg+xml", false, false);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"[object XMLDocument]", "[object SVGSVGElement]", "svg", "§§URL§§foo"})
+    @HtmlUnitNYI(CHROME = {"[object XMLDocument]", "[object SVGElement]", "svg", "§§URL§§foo"},
+            EDGE = {"[object XMLDocument]", "[object SVGElement]", "svg", "§§URL§§foo"},
+            FF = {"[object XMLDocument]", "[object SVGElement]", "svg", "§§URL§§foo"},
+            FF_ESR = {"[object XMLDocument]", "[object SVGElement]", "svg", "§§URL§§foo"})
+    public void responseXMLAsync_application_svgXml() throws Exception {
+        responseXML("<svg xmlns=\"http://www.w3.org/2000/svg\"/>", "image/svg+xml", true, false);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"[object XMLDocument]", "[object SVGSVGElement]", "svg", "§§URL§§foo"})
+    @HtmlUnitNYI(CHROME = {"[object XMLDocument]", "[object SVGElement]", "svg", "§§URL§§foo"},
+            EDGE = {"[object XMLDocument]", "[object SVGElement]", "svg", "§§URL§§foo"},
+            FF = {"[object XMLDocument]", "[object SVGElement]", "svg", "§§URL§§foo"},
+            FF_ESR = {"[object XMLDocument]", "[object SVGElement]", "svg", "§§URL§§foo"})
+    public void responseXMLAsyncDocument_application_svgXml() throws Exception {
+        responseXML("<svg xmlns=\"http://www.w3.org/2000/svg\"/>", "image/svg+xml", true, true);
+    }
+
+    private void responseXML(final String resp, final String mimeType,
+                    final boolean async, final boolean document) throws Exception {
+        String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
+            + "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var xhr = new XMLHttpRequest();\n";
+
+        if (document) {
+            html +=  "    xhr.responseType = 'document';";
+        }
+        if (async) {
+            html += "    xhr.onreadystatechange = () => {\n"
+                    + "      if (xhr.readyState === 4) {\n"
+                    + "        let respXml = xhr.responseXML;\n"
+                    + "        log(respXml);\n"
+                    + "        if (respXml !== null) {\n"
+                    + "          log(respXml.documentElement);\n"
+                    + "          log(respXml.documentElement.tagName);\n"
+                    + "          log(respXml.documentElement.baseURI);\n"
+                    + "        }\n"
+                    + "      }\n"
+                    + "    }\n"
+                    + "    xhr.open('GET', 'foo', true);\n"
+                    + "    xhr.send('');\n";
+        }
+        else {
+            html += "    xhr.open('GET', 'foo', false);\n"
+                    + "    xhr.send('');\n"
+                    + "    let respXml = xhr.responseXML;\n"
+                    + "    log(respXml);\n"
+                    + "    if (respXml !== null) {\n"
+                    + "      log(respXml.documentElement);\n"
+                    + "      log(respXml.documentElement.tagName);\n"
+                    + "      log(respXml.documentElement.baseURI);\n"
+                    + "    }\n";
+        }
+
+        html += "  }\n"
+                + "</script></head><body onload='test()'>\n"
+                + "</body></html>";
+
+        getMockWebConnection().setDefaultResponse(resp, mimeType);
+        expandExpectedAlertsVariables(URL_FIRST);
+
+        final WebDriver driver = loadPage2(html);
+        verifyTitle2(DEFAULT_WAIT_TIME * 2, driver, getExpectedAlerts());
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"[object HTMLDocument]", "[object HTMLHtmlElement]", "HTML", "§§URL§§foo"})
+    public void response_text_html() throws Exception {
+        response("<html></html>", MimeType.TEXT_HTML);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"[object HTMLDocument]", "[object HTMLHtmlElement]", "HTML", "§§URL§§foo"})
+    public void response_text_html_empty() throws Exception {
+        response("", MimeType.TEXT_HTML);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"[object HTMLDocument]", "[object HTMLHtmlElement]", "HTML", "§§URL§§foo"})
+    public void response_text_html_blank() throws Exception {
+        response("    ", MimeType.TEXT_HTML);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"[object XMLDocument]", "[object Element]", "note", "§§URL§§foo"})
+    public void response_text_xml() throws Exception {
+        response("<note/>", MimeType.TEXT_XML);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("null")
+    public void response_text_xml_empty() throws Exception {
+        response("", MimeType.TEXT_XML);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("null")
+    public void response_text_xml_blank() throws Exception {
+        response("    ", MimeType.TEXT_XML);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"[object XMLDocument]", "[object Element]", "note", "§§URL§§foo"})
+    public void response_application_xml() throws Exception {
+        response("<note/>", MimeType.APPLICATION_XML);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"[object XMLDocument]", "[object Element]", "html", "§§URL§§foo"})
+    public void responseAsyncDocument_application_xhtmlXml() throws Exception {
+        response("<html/>", MimeType.APPLICATION_XHTML);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"[object XMLDocument]", "[object SVGSVGElement]", "svg", "§§URL§§foo"})
+    @HtmlUnitNYI(CHROME = {"[object XMLDocument]", "[object SVGElement]", "svg", "§§URL§§foo"},
+            EDGE = {"[object XMLDocument]", "[object SVGElement]", "svg", "§§URL§§foo"},
+            FF = {"[object XMLDocument]", "[object SVGElement]", "svg", "§§URL§§foo"},
+            FF_ESR = {"[object XMLDocument]", "[object SVGElement]", "svg", "§§URL§§foo"})
+    public void responseAsyncDocument_application_svgXml() throws Exception {
+        response("<svg xmlns=\"http://www.w3.org/2000/svg\"/>", "image/svg+xml");
+    }
+
+    private void response(final String resp, final String mimeType) throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    var xhr = new XMLHttpRequest();\n"
-            + "    xhr.open('GET', 'foo.xml', false);\n"
+            + "    xhr.responseType = 'document';"
+            + "    xhr.onreadystatechange = () => {\n"
+            + "      if (xhr.readyState === 4) {\n"
+            + "        let respXml = xhr.response;\n"
+            + "        log(respXml);\n"
+            + "        if (respXml !== null) {\n"
+            + "          log(respXml.documentElement);\n"
+            + "          log(respXml.documentElement.tagName);\n"
+            + "          log(respXml.documentElement.baseURI);\n"
+            + "        }\n"
+            + "      }\n"
+            + "    }\n"
+            + "    xhr.open('GET', 'foo', true);\n"
             + "    xhr.send('');\n"
-            + "    try {\n"
-            + "      log(xhr.responseXML);\n"
-            + "    } catch(e) { log('exception'); }\n"
             + "  }\n"
             + "</script></head><body onload='test()'>\n"
             + "</body></html>";
+
+        getMockWebConnection().setDefaultResponse(resp, mimeType);
+        expandExpectedAlertsVariables(URL_FIRST);
+
+        final WebDriver driver = loadPage2(html);
+        verifyTitle2(DEFAULT_WAIT_TIME * 2, driver, getExpectedAlerts());
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("true")
+    public void responseXMLCalledTwoTimes() throws Exception {
+        final String html = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "function test() {\n"
+            + "  var xhr = new XMLHttpRequest();\n"
+            + "  xhr.open('GET', 'foo', false);\n"
+            + "  xhr.send('');\n"
+            + "  let xml1 = xhr.responseXML;\n"
+            + "  let xml2 = xhr.responseXML;\n"
+            + "  log(xml1 === xml2);\n"
+            + "}\n"
+            + "</script>\n"
+            + "</head>\n"
+            + "<body onload='test()'></body></html>";
 
         getMockWebConnection().setDefaultResponse("<note/>", MimeType.TEXT_XML);
-        loadPageVerifyTitle2(html);
+
+        final WebDriver driver = loadPage2(html);
+        verifyTitle2(DEFAULT_WAIT_TIME * 2, driver, getExpectedAlerts());
     }
 
     /**
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("[object XMLDocument]")
-    public void responseXML_application_xml() throws Exception {
-        // TODO [IE]SINGLE-VS-BULK test runs when executed as single but breaks as bulk
-        shutDownRealIE();
-
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
-            + "<html><head>\n"
+    @Alerts("true")
+    public void responseXMLAsyncCalledTwoTimes() throws Exception {
+        final String html = "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
-            + "  function test() {\n"
-            + "    var xhr = new XMLHttpRequest();\n"
-            + "    xhr.open('GET', 'foo.xml', false);\n"
-            + "    xhr.send('');\n"
-            + "    try {\n"
-            + "      log(xhr.responseXML);\n"
-            + "    } catch(e) { log('exception'); }\n"
+            + "function test() {\n"
+            + "  var xhr = new XMLHttpRequest();\n"
+            + "  xhr.onreadystatechange = () => {\n"
+            + "    if (xhr.readyState === 4) {\n"
+            + "      let xml1 = xhr.responseXML;\n"
+            + "      let xml2 = xhr.responseXML;\n"
+            + "      log(xml1 === xml2);\n"
+            + "    }\n"
             + "  }\n"
-            + "</script></head><body onload='test()'>\n"
-            + "</body></html>";
+            + "  xhr.open('GET', 'foo', true);\n"
+            + "  xhr.send('');\n"
+            + "}\n"
+            + "</script>\n"
+            + "</head>\n"
+            + "<body onload='test()'></body></html>";
 
-        getMockWebConnection().setDefaultResponse("<note/>", "application/xml");
-        loadPageVerifyTitle2(html);
+        getMockWebConnection().setDefaultResponse("<note/>", MimeType.TEXT_XML);
+
+        final WebDriver driver = loadPage2(html);
+        verifyTitle2(DEFAULT_WAIT_TIME * 2, driver, getExpectedAlerts());
     }
 
     /**
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("[object XMLDocument]")
-    public void responseXML_application_xhtmlXml() throws Exception {
-        // TODO [IE]SINGLE-VS-BULK test runs when executed as single but breaks as bulk
-        shutDownRealIE();
-
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
-            + "<html><head>\n"
+    @Alerts("true")
+    public void responseXMLDocumentXMLAsync() throws Exception {
+        final String html = "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
-            + "  function test() {\n"
-            + "    var xhr = new XMLHttpRequest();\n"
-            + "    xhr.open('GET', 'foo.xml', false);\n"
-            + "    xhr.send('');\n"
-            + "    try {\n"
-            + "      log(xhr.responseXML);\n"
-            + "    } catch(e) { log('exception'); }\n"
+            + "function test() {\n"
+            + "  var xhr = new XMLHttpRequest();\n"
+            + "  xhr.responseType = 'document';"
+            + "  xhr.onreadystatechange = () => {\n"
+            + "    if (xhr.readyState === 4) {\n"
+            + "      let xml1 = xhr.responseXML;\n"
+            + "      let xml2 = xhr.response;\n"
+            + "      log(xml1 === xml2);\n"
+            + "    }\n"
             + "  }\n"
-            + "</script></head><body onload='test()'>\n"
-            + "</body></html>";
+            + "  xhr.open('GET', 'foo', true);\n"
+            + "  xhr.send('');\n"
+            + "}\n"
+            + "</script>\n"
+            + "</head>\n"
+            + "<body onload='test()'></body></html>";
 
-        getMockWebConnection().setDefaultResponse("<html/>", "application/xhtml+xml");
-        loadPageVerifyTitle2(html);
-    }
+        getMockWebConnection().setDefaultResponse("<note/>", MimeType.TEXT_XML);
 
-    /**
-     * @throws Exception if the test fails
-     */
-    @Test
-    @Alerts("[object XMLDocument]")
-    public void responseXML_application_svgXml() throws Exception {
-        // TODO [IE]SINGLE-VS-BULK test runs when executed as single but breaks as bulk
-        shutDownRealIE();
-
-        final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
-            + "<html><head>\n"
-            + "<script>\n"
-            + LOG_TITLE_FUNCTION
-            + "  function test() {\n"
-            + "    var xhr = new XMLHttpRequest();\n"
-            + "    xhr.open('GET', 'foo.xml', false);\n"
-            + "    xhr.send('');\n"
-            + "    try {\n"
-            + "      log(xhr.responseXML);\n"
-            + "    } catch(e) { log('exception'); }\n"
-            + "  }\n"
-            + "</script></head><body onload='test()'>\n"
-            + "</body></html>";
-
-        getMockWebConnection().setDefaultResponse("<svg xmlns=\"http://www.w3.org/2000/svg\"/>", "image/svg+xml");
-        loadPageVerifyTitle2(html);
+        final WebDriver driver = loadPage2(html);
+        verifyTitle2(DEFAULT_WAIT_TIME * 2, driver, getExpectedAlerts());
     }
 
     /**
@@ -590,9 +936,6 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
     @Test
     @Alerts({"1", "someAttr", "undefined", "undefined"})
     public void responseXML2() throws Exception {
-        // TODO [IE]SINGLE-VS-BULK test runs when executed as single but breaks as bulk
-        shutDownRealIE();
-
         final String html = "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -745,7 +1088,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "  request.overrideMimeType('text/xml');\n"
             + "  request.send('');\n"
             + "  log(request.responseXML == null);\n"
-            + "} catch (e) { log('exception'); }\n"
+            + "} catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script>\n"
             + "</head>\n"
@@ -762,7 +1105,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"true", "exception"})
+    @Alerts({"true", "InvalidStateError/DOMException"})
     public void overrideMimeTypeAfterSend() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -775,7 +1118,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "  try {\n"
             + "    request.overrideMimeType('text/xml');\n"
             + "    log('overwritten');\n"
-            + "  } catch (e) { log('exception'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script>\n"
             + "</head>\n"
@@ -794,9 +1137,6 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
     @Test
     @Alerts("27035")
     public void overrideMimeType_charset() throws Exception {
-        // TODO [IE]SINGLE-VS-BULK test runs when executed as single but breaks as bulk
-        shutDownRealIE();
-
         final String html = "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -807,7 +1147,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "  request.overrideMimeType('text/plain; charset=GBK');\n"
             + "  request.send('');\n"
             + "  log(request.responseText.charCodeAt(0));\n"
-            + "} catch (e) { log('exception'); }\n"
+            + "} catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script>\n"
             + "</head>\n"
@@ -823,9 +1163,6 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
     @Test
     @Alerts("27035")
     public void overrideMimeType_charset_upper_case() throws Exception {
-        // TODO [IE]SINGLE-VS-BULK test runs when executed as single but breaks as bulk
-        shutDownRealIE();
-
         final String html = "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -836,7 +1173,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "  request.overrideMimeType('text/plain; chaRSet=GBK');\n"
             + "  request.send('');\n"
             + "  log(request.responseText.charCodeAt(0));\n"
-            + "} catch (e) { log('exception'); }\n"
+            + "} catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script>\n"
             + "</head>\n"
@@ -852,9 +1189,6 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
     @Test
     @Alerts("40644")
     public void overrideMimeType_charset_empty() throws Exception {
-        // TODO [IE]SINGLE-VS-BULK test runs when executed as single but breaks as bulk
-        shutDownRealIE();
-
         final String html = "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -865,7 +1199,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "  request.overrideMimeType('text/plain; charset=');\n"
             + "  request.send('');\n"
             + "  log(request.responseText.charCodeAt(0));\n"
-            + "} catch (e) { log('exception'); }\n"
+            + "} catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script>\n"
             + "</head>\n"
@@ -879,12 +1213,8 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "40644",
-            IE = {})
+    @Alerts("40644")
     public void overrideMimeType_charset_wrong() throws Exception {
-        // TODO [IE]SINGLE-VS-BULK test runs when executed as single but breaks as bulk
-        shutDownRealIE();
-
         final String html = "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -898,7 +1228,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "    for (var i = 0; i < text.length; i++) {\n"
             + "      log(text.charCodeAt(i));\n"
             + "    }\n"
-            + "  } catch (e) { log('exception'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script>\n"
             + "</head>\n"
@@ -918,9 +1248,6 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
     @Test
     @Alerts({"ibcdefg", "xxxxxfg"})
     public void replaceOnTextData() throws Exception {
-        // TODO [IE]SINGLE-VS-BULK test runs when executed as single but breaks as bulk
-        shutDownRealIE();
-
         final String html =
               "<html>\n"
             + "  <head>\n"
@@ -1018,8 +1345,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "§§URL§§",
-            IE = "null")
+    @Alerts("§§URL§§")
     public void originHeaderPost() throws Exception {
         final String html = "<html><head><script>\n"
             + "function test() {\n"
@@ -1046,8 +1372,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "§§URL§§",
-            IE = "null")
+    @Alerts("§§URL§§")
     public void originHeaderPut() throws Exception {
         final String html = "<html><head><script>\n"
             + "function test() {\n"
@@ -1074,8 +1399,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "§§URL§§",
-            IE = "null")
+    @Alerts("§§URL§§")
     public void originHeaderDelete() throws Exception {
         final String html = "<html><head><script>\n"
             + "function test() {\n"
@@ -1184,8 +1508,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "§§URL§§",
-            IE = "null")
+    @Alerts("§§URL§§")
     public void originHeaderOptions() throws Exception {
         final String html = "<html><head><script>\n"
             + "function test() {\n"
@@ -1213,8 +1536,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "ActiveXObject not available",
-            IE = {"0", "0"})
+    @Alerts("ActiveXObject not available")
     public void caseInsensitivityActiveXConstructor() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -1226,7 +1548,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
 
             + "    var req = new ActiveXObject('msxml2.xMLhTTp');\n"
             + "    log(req.readyState);\n"
-            + "  } catch (e) { log('ActiveXObject not available'); }\n"
+            + "  } catch(e) { log('ActiveXObject not available'); }\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'></body></html>";
@@ -1272,12 +1594,8 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object Element]", "myID", "blah", "span", "[object XMLDocument]", "[object XMLDocument]"},
-            IE = {"null", "myID", "blah", "span", "[object XMLDocument]", "-"})
+    @Alerts({"[object Element]", "myID", "blah", "span", "[object XMLDocument]", "[object XMLDocument]"})
     public void responseXML_getElementById2() throws Exception {
-        // TODO [IE]SINGLE-VS-BULK test runs when executed as single but breaks as bulk
-        shutDownRealIE();
-
         final String html =
               "<html>\n"
             + "  <head>\n"
@@ -1324,14 +1642,9 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object Element]", "[object Element]", "[object HTMLBodyElement]",
-                       "[object HTMLSpanElement]", "[object XMLDocument]", "[object XMLDocument]", "undefined"},
-            IE = {"[object Element]", "[object Element]", "[object HTMLBodyElement]",
-                  "[object HTMLSpanElement]", "[object XMLDocument]", "-", "undefined"})
+    @Alerts({"[object Element]", "[object Element]", "[object HTMLBodyElement]",
+             "[object HTMLSpanElement]", "[object XMLDocument]", "[object XMLDocument]", "undefined"})
     public void responseXML_getElementById() throws Exception {
-        // TODO [IE]SINGLE-VS-BULK test runs when executed as single but breaks as bulk
-        shutDownRealIE();
-
         final String html =
               "<html>\n"
             + "  <head>\n"
@@ -1380,9 +1693,6 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
     @Test
     @Alerts("ol\u00E9")
     public void defaultEncodingIsUTF8() throws Exception {
-        // TODO [IE]SINGLE-VS-BULK test runs when executed as single but breaks as bulk
-        shutDownRealIE();
-
         final String html =
               "<html>\n"
             + "  <head>\n"
@@ -1404,7 +1714,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
         final byte[] responseBytes = response.getBytes(UTF_8);
 
         getMockWebConnection().setResponse(URL_SECOND, responseBytes, 200, "OK", MimeType.TEXT_HTML,
-            new ArrayList<NameValuePair>());
+            new ArrayList<>());
         loadPageVerifyTitle2(html);
     }
 
@@ -1490,7 +1800,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "          request.open('GET', '" + URL_SECOND + "', false);\n"
             + "          request.send('');\n"
             + "          log(request.responseXML.getElementById('myID').id);\n"
-            + "        } catch (e) { log('exception'); }\n"
+            + "        } catch(e) { logEx(e); }\n"
             + "      }\n"
             + "    </script>\n"
             + "  </head>\n"
@@ -1517,9 +1827,6 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
     @Test
     @Alerts("myInput")
     public void responseXML_html_form() throws Exception {
-        // TODO [IE]SINGLE-VS-BULK test runs when executed as single but breaks as bulk
-        shutDownRealIE();
-
         final String html =
               "<html>\n"
             + "  <head>\n"
@@ -1531,7 +1838,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "          request.open('GET', '" + URL_SECOND + "', false);\n"
             + "          request.send('');\n"
             + "          log(request.responseXML.getElementById('myID').myInput.name);\n"
-            + "        } catch (e) { log('exception'); }\n"
+            + "        } catch(e) { logEx(e); }\n"
             + "      }\n"
             + "    </script>\n"
             + "  </head>\n"
@@ -1556,8 +1863,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "ActiveXObject not available",
-            IE = {"0", "0"})
+    @Alerts("ActiveXObject not available")
     public void caseSensitivity_activeX() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -1567,7 +1873,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "    var req = new ActiveXObject('MSXML2.XmlHttp');\n"
             + "    log(req.readyState);\n"
             + "    log(req.reAdYsTaTe);\n"
-            + "  } catch (e) { log('ActiveXObject not available'); }\n"
+            + "  } catch(e) { log('ActiveXObject not available'); }\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'></body></html>";
@@ -1588,7 +1894,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "    var req = new XMLHttpRequest();\n"
             + "    log(req.readyState);\n"
             + "    log(req.reAdYsTaTe);\n"
-            + "  } catch (e) { log('exception'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'></body></html>";
@@ -1626,13 +1932,8 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"39", "27035", "65533", "39"},
-            IE = {"39", "27035", "63"})
-    @HtmlUnitNYI(IE = {"39", "27035", "65533", "39"})
+    @Alerts({"39", "27035", "65533", "39"})
     public void overrideMimeType_charset_all() throws Exception {
-        // TODO [IE]SINGLE-VS-BULK test runs when executed as single but breaks as bulk
-        shutDownRealIE();
-
         final String html = "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -1645,7 +1946,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "  for (var i = 0; i < request.responseText.length; i++) {\n"
             + "    log(request.responseText.charCodeAt(i));\n"
             + "  }\n"
-            + "} catch (e) { log('exception'); }\n"
+            + "} catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script>\n"
             + "</head>\n"
@@ -1696,7 +1997,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "          request.onload = someLoad;\n"
             + "          request.open('GET', '" + URL_SECOND + "', false);\n"
             + "          request.send('');\n"
-            + "        } catch (e) { log('exception'); }\n"
+            + "        } catch(e) { logEx(e); }\n"
             + "      }\n"
             + "    </script>\n"
             + "  </head>\n"
@@ -1714,8 +2015,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"someLoad [object ProgressEvent]", "load", "false", "11", "0"},
-            IE = {"someLoad [object ProgressEvent]", "load", "true", "11", "11"})
+    @Alerts({"someLoad [object ProgressEvent]", "load", "false", "11", "0"})
     public void addEventListener() throws Exception {
         final String html =
               "<html>\n"
@@ -1735,7 +2035,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "          request.addEventListener('load', someLoad, false);\n"
             + "          request.open('GET', '" + URL_SECOND + "', false);\n"
             + "          request.send('');\n"
-            + "        } catch (e) { log('exception'); }\n"
+            + "        } catch(e) { logEx(e); }\n"
             + "      }\n"
             + "    </script>\n"
             + "  </head>\n"
@@ -1753,8 +2053,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"someLoad [object ProgressEvent]", "load", "false", "11", "0"},
-            IE = {"someLoad [object ProgressEvent]", "load", "true", "11", "11"})
+    @Alerts({"someLoad [object ProgressEvent]", "load", "false", "11", "0"})
     public void addEventListenerDetails() throws Exception {
         final String html =
               "<html>\n"
@@ -1774,7 +2073,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "          request.addEventListener('load', someLoad, false);\n"
             + "          request.open('GET', '" + URL_SECOND + "', false);\n"
             + "          request.send('');\n"
-            + "        } catch (e) { log('exception'); }\n"
+            + "        } catch(e) { logEx(e); }\n"
             + "      }\n"
             + "    </script>\n"
             + "  </head>\n"
@@ -1792,13 +2091,11 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "function",
-            IE = "null")
+    @Alerts("function")
     @HtmlUnitNYI(CHROME = "undefined",
             EDGE = "undefined",
             FF = "undefined",
-            FF_ESR = "undefined",
-            IE = "undefined")
+            FF_ESR = "undefined")
     public void addEventListenerCaller() throws Exception {
         final String html =
               "<html>\n"
@@ -1815,7 +2112,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "          request.addEventListener('load', someLoad, false);\n"
             + "          request.open('GET', '" + URL_SECOND + "', false);\n"
             + "          request.send('');\n"
-            + "        } catch (e) { log('exception'); }\n"
+            + "        } catch(e) { logEx(e); }\n"
             + "      }\n"
             + "    </script>\n"
             + "  </head>\n"
@@ -1833,8 +2130,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "[object XMLHttpRequestUpload]",
-            IE = "[object XMLHttpRequestEventTarget]")
+    @Alerts("[object XMLHttpRequestUpload]")
     public void upload() throws Exception {
         final String html =
               "<html>\n"
@@ -1845,7 +2141,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "        try {\n"
             + "          var request = new XMLHttpRequest();\n"
             + "          log(request.upload);\n"
-            + "        } catch (e) { log('exception'); }\n"
+            + "        } catch(e) { logEx(e); }\n"
             + "      }\n"
             + "    </script>\n"
             + "  </head>\n"
@@ -1861,8 +2157,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"0", "1", "2", "3", "4"},
-            IE = {"0", "1", "1", "2", "3", "4"})
+    @Alerts({"0", "1", "2", "3", "4"})
     public void asyncUse() throws Exception {
         final String html =
               "<html>\n"
@@ -1915,11 +2210,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             FF_ESR = {"[object Object]", "undefined", "undefined",
                       "function() { return !0 }",
                       "function onreadystatechange() { [native code] }",
-                      "true", "true"},
-            IE = {"[object Object]", "undefined", "undefined",
-                  "function() { return !0 }",
-                  " function onreadystatechange() { [native code] } ",
-                  "true", "true"})
+                      "true", "true"})
     @HtmlUnitNYI(CHROME = {"[object Object]", "undefined", "undefined",
                            "function() { return !0 }",
                            "function onreadystatechange() { [native code] }",
@@ -1965,9 +2256,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "[object XMLHttpRequest]",
-            IE = "[object XMLHttpRequestPrototype]")
-    @HtmlUnitNYI(IE = "[object XMLHttpRequest]")
+    @Alerts("[object XMLHttpRequest]")
     public void defineProperty2() throws Exception {
         final String html =
               "<html>\n"
@@ -1993,9 +2282,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "application/json",
-            IE = "null")
-    @HtmlUnitNYI(IE = "application/x-www-form-urlencoded")
+    @Alerts("application/json")
     public void enctypeBlob() throws Exception {
         final String html
             = "<html>\n"
@@ -2011,9 +2298,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "    xhr.open('post', '/test2', false);\n"
             + "    xhr.send(blob);\n"
             + "    log('done');\n"
-            + "  } catch (e) {\n"
-            + "    log('error: ' + e.message);\n"
-            + "  }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script>\n"
             + "</head>\n"
@@ -2042,8 +2327,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = "text/plain",
             EDGE = "text/plain",
             FF = "text/plain",
-            FF_ESR = "text/plain",
-            IE = "text/plain")
+            FF_ESR = "text/plain")
     public void enctypeBufferSource() throws Exception {
         final String html
             = "<html>\n"
@@ -2057,9 +2341,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "    xhr.open('post', '/test2', false);\n"
             + "    xhr.send(typedArray);\n"
             + "    log('done');\n"
-            + "  } catch (e) {\n"
-            + "    log('error: ' + e.message);\n"
-            + "  }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script>\n"
             + "</head>\n"
@@ -2084,9 +2366,8 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"q=HtmlUnit&u=%D0%BB%C6%89", "done", "application/x-www-form-urlencoded;charset=UTF-8",
-                       "q=HtmlUnit", "u=\u043B\u0189"},
-            IE = {"error: URLSearchParams", "done", "text/plain;charset=UTF-8"})
+    @Alerts({"q=HtmlUnit&u=%D0%BB%C6%89", "done", "application/x-www-form-urlencoded;charset=UTF-8",
+             "q=HtmlUnit", "u=\u043B\u0189"})
     public void enctypeURLSearchParams() throws Exception {
         final String html
             = "<html>\n"
@@ -2100,17 +2381,14 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "    searchParams.append('q', 'HtmlUnit');\n"
             + "    searchParams.append('u', '\u043B\u0189');\n"
             + "    log(searchParams);\n"
-            + "  } catch (e) {\n"
-            + "    log('error: URLSearchParams');\n"
-            + "  }\n"
+            + "  } catch(e) { logEx(e); }\n"
+
             + "  try {\n"
             + "    var xhr = new XMLHttpRequest();\n"
             + "    xhr.open('post', '/test2', false);\n"
             + "    xhr.send(searchParams);\n"
             + "    log('done');\n"
-            + "  } catch (e) {\n"
-            + "    log('error: ' + e.message);\n"
-            + "  }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script>\n"
             + "</head>\n"
@@ -2154,9 +2432,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "    xhr.open('post', '/test2', false);\n"
             + "    xhr.send(formData);\n"
             + "    log('done');\n"
-            + "  } catch (e) {\n"
-            + "    log('error: ' + e.message);\n"
-            + "  }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script>\n"
             + "</head>\n"
@@ -2184,7 +2460,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"text/plain;charset=UTF-8", "HtmlUnit \u00D0\u00BB\u00C6\u0089"})
+    @Alerts({"text/plain;charset=UTF-8", "HtmlUnit \u043B\u0189"})
     public void enctypeString() throws Exception {
         final String html
             = "<html>\n"
@@ -2197,9 +2473,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "    xhr.open('post', '/test2', false);\n"
             + "    xhr.send('HtmlUnit \u043B\u0189');\n"
             + "    log('done');\n"
-            + "  } catch (e) {\n"
-            + "    log('error: ' + e.message);\n"
-            + "  }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script>\n"
             + "</head>\n"
@@ -2238,9 +2512,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "    xhr.setRequestHeader('Content-Type', 'text/jpeg');\n"
             + "    xhr.send('HtmlUnit \u043B\u0189');\n"
             + "    log('done');\n"
-            + "  } catch (e) {\n"
-            + "    log('error: ' + e.message);\n"
-            + "  }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script>\n"
             + "</head>\n"
@@ -2264,7 +2536,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("error")
+    @Alerts("InvalidStateError/DOMException")
     public void setRequestHeaderNotOpend() throws Exception {
         final String html
             = "<html>\n"
@@ -2276,9 +2548,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "    var xhr = new XMLHttpRequest();\n"
             + "    xhr.setRequestHeader('Content-Type', 'text/jpeg');\n"
             + "    log('done');\n"
-            + "  } catch (e) {\n"
-            + "    log('error');\n"
-            + "  }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script>\n"
             + "</head>\n"
@@ -2293,11 +2563,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
      * @throws Exception if the test fails.
      */
     @Test
-    @Alerts(DEFAULT = "undefined",
-            IE = {"[object Object]", "undefined", "undefined",
-                  " function onabort() { [native code] } ",
-                  " function onabort() { [native code] } ",
-                  "true", "true"})
+    @Alerts("undefined")
     public void getOwnPropertyDescriptor_onabort() throws Exception {
         getOwnPropertyDescriptor("onabort");
     }
@@ -2306,11 +2572,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
      * @throws Exception if the test fails.
      */
     @Test
-    @Alerts(DEFAULT = "undefined",
-            IE = {"[object Object]", "undefined", "undefined",
-                  " function onerror() { [native code] } ",
-                  " function onerror() { [native code] } ",
-                  "true", "true"})
+    @Alerts("undefined")
     public void getOwnPropertyDescriptor_onerror() throws Exception {
         getOwnPropertyDescriptor("onerror");
     }
@@ -2319,11 +2581,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
      * @throws Exception if the test fails.
      */
     @Test
-    @Alerts(DEFAULT = "undefined",
-            IE = {"[object Object]", "undefined", "undefined",
-                  " function onload() { [native code] } ",
-                  " function onload() { [native code] } ",
-                  "true", "true"})
+    @Alerts("undefined")
     public void getOwnPropertyDescriptor_onload() throws Exception {
         getOwnPropertyDescriptor("onload");
     }
@@ -2332,11 +2590,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
      * @throws Exception if the test fails.
      */
     @Test
-    @Alerts(DEFAULT = "undefined",
-            IE = {"[object Object]", "undefined", "undefined",
-                  " function onloadstart() { [native code] } ",
-                  " function onloadstart() { [native code] } ",
-                  "true", "true"})
+    @Alerts("undefined")
     public void getOwnPropertyDescriptor_onloadstart() throws Exception {
         getOwnPropertyDescriptor("onloadstart");
     }
@@ -2345,11 +2599,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
      * @throws Exception if the test fails.
      */
     @Test
-    @Alerts(DEFAULT = "undefined",
-            IE = {"[object Object]", "undefined", "undefined",
-                  " function onloadend() { [native code] } ",
-                  " function onloadend() { [native code] } ",
-                  "true", "true"})
+    @Alerts("undefined")
     public void getOwnPropertyDescriptor_onloadend() throws Exception {
         getOwnPropertyDescriptor("onloadend");
     }
@@ -2358,11 +2608,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
      * @throws Exception if the test fails.
      */
     @Test
-    @Alerts(DEFAULT = "undefined",
-            IE = {"[object Object]", "undefined", "undefined",
-                  " function onprogress() { [native code] } ",
-                  " function onprogress() { [native code] } ",
-                  "true", "true"})
+    @Alerts("undefined")
     public void getOwnPropertyDescriptor_onprogress() throws Exception {
         getOwnPropertyDescriptor("onprogress");
     }
@@ -2382,11 +2628,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             FF_ESR = {"[object Object]", "undefined", "undefined",
                       "function onreadystatechange() { [native code] }",
                       "function onreadystatechange() { [native code] }",
-                      "true", "true"},
-            IE = {"[object Object]", "undefined", "undefined",
-                  " function onreadystatechange() { [native code] } ",
-                  " function onreadystatechange() { [native code] } ",
-                  "true", "true"})
+                      "true", "true"})
     @HtmlUnitNYI(CHROME = {"[object Object]", "undefined", "undefined",
                            "function onreadystatechange() { [native code] }",
                            "function onreadystatechange() { [native code] }",
@@ -2403,11 +2645,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
      * @throws Exception if the test fails.
      */
     @Test
-    @Alerts(DEFAULT = "undefined",
-            IE = {"[object Object]", "undefined", "undefined",
-                  " function ontimeout() { [native code] } ",
-                  " function ontimeout() { [native code] } ",
-                  "true", "true"})
+    @Alerts("undefined")
     public void getOwnPropertyDescriptor_ontimeout() throws Exception {
         getOwnPropertyDescriptor("ontimeout");
     }
@@ -2445,8 +2683,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"", "arraybuffer", "blob", "json", "text", "text", "text", "text", "text", ""},
-            IE = {"", "exception", "exception", "exception", "exception", "exception"})
+    @Alerts({"", "arraybuffer", "blob", "json", "text", "text", "text", "text", "text", ""})
     public void responseTypeSetBeforeOpen() throws Exception {
         final String html =
               "<html>\n"
@@ -2465,7 +2702,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "        log(request.responseType);\n"
             + "        request.responseType = 'text';\n"
             + "        log(request.responseType);\n"
-            + "      } catch(e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
 
             + "      try {\n"
             + "        request.responseType = 'JsON';\n"
@@ -2473,22 +2710,22 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
 
             + "        request.responseType = 'unknown';\n"
             + "        log(request.responseType);\n"
-            + "      } catch(e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
 
             + "      try {\n"
             + "        request.responseType = null;\n"
             + "        log(request.responseType);\n"
-            + "      } catch(e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
 
             + "      try {\n"
             + "        request.responseType = undefined;\n"
             + "        log(request.responseType);\n"
-            + "      } catch(e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
 
             + "      try {\n"
             + "        request.responseType = '';\n"
             + "        log(request.responseType);\n"
-            + "      } catch(e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
             + "      }\n"
             + "    </script>\n"
             + "  </head>\n"
@@ -2503,10 +2740,9 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"", "exception", "exception", "exception", "exception", "exception",
-                       "", "", "", "", "exception"},
-            IE = {"", "arraybuffer", "blob", "blob", "text", "document", "document",
-                  "document", "document", "document", ""})
+    @Alerts({"", "InvalidAccessError/DOMException", "InvalidAccessError/DOMException",
+             "InvalidAccessError/DOMException", "InvalidAccessError/DOMException",
+             "InvalidAccessError/DOMException", "", "", "", "", "InvalidAccessError/DOMException"})
     public void responseTypeSetAfterOpenSync() throws Exception {
         final String html =
               "<html>\n"
@@ -2522,52 +2758,52 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "      try {\n"
             + "        request.responseType = 'arraybuffer';\n"
             + "        log(request.responseType);\n"
-            + "      } catch(e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
 
             + "      try {\n"
             + "        request.responseType = 'blob';\n"
             + "        log(request.responseType);\n"
-            + "      } catch(e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
 
             + "      try {\n"
             + "        request.responseType = 'json';\n"
             + "        log(request.responseType);\n"
-            + "      } catch(e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
 
             + "      try {\n"
             + "        request.responseType = 'text';\n"
             + "        log(request.responseType);\n"
-            + "      } catch(e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
 
             + "      try {\n"
             + "        request.responseType = 'document';\n"
             + "        log(request.responseType);\n"
-            + "      } catch(e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
 
             + "      try {\n"
             + "        request.responseType = 'JsON';\n"
             + "        log(request.responseType);\n"
-            + "      } catch(e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
 
             + "      try {\n"
             + "        request.responseType = 'unknown';\n"
             + "        log(request.responseType);\n"
-            + "      } catch(e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
 
             + "      try {\n"
             + "        request.responseType = null;\n"
             + "        log(request.responseType);\n"
-            + "      } catch(e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
 
             + "      try {\n"
             + "        request.responseType = undefined;\n"
             + "        log(request.responseType);\n"
-            + "      } catch(e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
 
             + "      try {\n"
             + "        request.responseType = '';\n"
             + "        log(request.responseType);\n"
-            + "      } catch(e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
             + "      }\n"
             + "    </script>\n"
             + "  </head>\n"
@@ -2582,10 +2818,8 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"", "arraybuffer", "blob", "json", "text", "document",
-                       "document", "document", "document", "document", ""},
-            IE = {"", "arraybuffer", "blob", "blob", "text", "document",
-                  "document", "document", "document", "document", ""})
+    @Alerts({"", "arraybuffer", "blob", "json", "text", "document",
+             "document", "document", "document", "document", ""})
     public void responseTypeSetAfterOpenAsync() throws Exception {
         final String html =
               "<html>\n"
@@ -2600,52 +2834,52 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "      try {\n"
             + "        request.responseType = 'arraybuffer';\n"
             + "        log(request.responseType);\n"
-            + "      } catch(e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
 
             + "      try {\n"
             + "        request.responseType = 'blob';\n"
             + "        log(request.responseType);\n"
-            + "      } catch(e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
 
             + "      try {\n"
             + "        request.responseType = 'json';\n"
             + "        log(request.responseType);\n"
-            + "      } catch(e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
 
             + "      try {\n"
             + "        request.responseType = 'text';\n"
             + "        log(request.responseType);\n"
-            + "      } catch(e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
 
             + "      try {\n"
             + "        request.responseType = 'document';\n"
             + "        log(request.responseType);\n"
-            + "      } catch(e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
 
             + "      try {\n"
             + "        request.responseType = 'JsON';\n"
             + "        log(request.responseType);\n"
-            + "      } catch(e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
 
             + "      try {\n"
             + "        request.responseType = 'unknown';\n"
             + "        log(request.responseType);\n"
-            + "      } catch(e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
 
             + "      try {\n"
             + "        request.responseType = null;\n"
             + "        log(request.responseType);\n"
-            + "      } catch(e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
 
             + "      try {\n"
             + "        request.responseType = undefined;\n"
             + "        log(request.responseType);\n"
-            + "      } catch(e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
 
             + "      try {\n"
             + "        request.responseType = '';\n"
             + "        log(request.responseType);\n"
-            + "      } catch(e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
             + "      }\n"
             + "    </script>\n"
             + "  </head>\n"
@@ -2657,9 +2891,10 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
     }
 
     @Test
-    @Alerts(DEFAULT = {"", "", "exception", "exception"},
-            FF = {"", "", "", "exception"},
-            FF_ESR = {"", "", "", "exception"})
+    @Alerts(DEFAULT = {"", "", "arraybuffer", "InvalidStateError/DOMException",
+                       "send done", "InvalidStateError/DOMException"},
+            FF = {"", "", "arraybuffer", "", "send done", "InvalidStateError/DOMException"},
+            FF_ESR = {"", "", "arraybuffer", "", "send done", "InvalidStateError/DOMException"})
     public void responseTextInvalidResponseType() throws Exception {
         final String html =
               "<html>\n"
@@ -2674,20 +2909,30 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "        xhr.open('GET', '" + URL_SECOND + "', true);\n"
             + "        log(xhr.responseText);\n"
 
-            + "        xhr.responseType = 'arraybuffer';\n"
+            + "        try {\n"
+            + "          xhr.responseType = 'arraybuffer';\n"
+            + "        } catch(e) { logEx(e); }\n"
+            + "        log(xhr.responseType);\n"
+
             + "        try {\n"
             + "          log(xhr.responseText);\n"
-            + "        } catch(ex) { log('exception'); }\n"
+            + "        } catch(e) { logEx(e); }\n"
 
-            + "        xhr.onreadystatechange = onStateChange;\n"
-            + "        xhr.send('');\n"
+            + "        try {\n"
+            + "          xhr.onreadystatechange = onStateChange;\n"
+            + "        } catch(e) { logEx(e); }\n"
+
+            + "        try {\n"
+            + "          xhr.send('');\n"
+            + "          log('send done');\n"
+            + "        } catch(e) { logEx(e); }\n"
             + "      }\n"
 
             + "      function onStateChange(e) {\n"
             + "        if (xhr.readyState == 4) {\n"
             + "          try {\n"
             + "            log(xhr.responseText);\n"
-            + "          } catch(ex) { log('exception'); }\n"
+            + "          } catch(e) { logEx(e); }\n"
             + "        }\n"
             + "      }\n"
             + "    </script>\n"
@@ -2730,7 +2975,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "        if (xhr.readyState == 4) {\n"
             + "          try {\n"
             + "            log(xhr.response);\n"
-            + "          } catch(ex) { log('exception'); }\n"
+            + "          } catch(ex) { logEx(e); }\n"
             + "        }\n"
             + "      }\n"
             + "    </script>\n"
@@ -2774,7 +3019,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "        if (xhr.readyState == 4) {\n"
             + "          try {\n"
             + "            log(xhr.response);\n"
-            + "          } catch(ex) { log('exception'); }\n"
+            + "          } catch(ex) { logEx(e); }\n"
             + "        }\n"
             + "      }\n"
             + "    </script>\n"
@@ -2819,7 +3064,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "          try {\n"
             + "            log(xhr.response);\n"
             + "            log(xhr.response.byteLength);\n"
-            + "          } catch(ex) { log('exception'); }\n"
+            + "          } catch(ex) { logEx(e); }\n"
             + "        }\n"
             + "      }\n"
             + "    </script>\n"
@@ -2864,7 +3109,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "          try {\n"
             + "            log(xhr.response);\n"
             + "            log(xhr.response.byteLength);\n"
-            + "          } catch(ex) { log('exception'); }\n"
+            + "          } catch(ex) { logEx(e); }\n"
             + "        }\n"
             + "      }\n"
             + "    </script>\n"
@@ -2920,7 +3165,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "          try {\n"
             + "            log(xhr.response);\n"
             + "            log(xhr.response.byteLength);\n"
-            + "          } catch(ex) { log('exception'); }\n"
+            + "          } catch(ex) { logEx(e); }\n"
             + "        }\n"
             + "      }\n"
             + "    </script>\n"
@@ -2976,7 +3221,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "          try {\n"
             + "            log(xhr.response);\n"
             + "            log(xhr.response.byteLength);\n"
-            + "          } catch(ex) { log('exception'); }\n"
+            + "          } catch(ex) { logEx(e); }\n"
             + "        }\n"
             + "      }\n"
             + "    </script>\n"
@@ -2993,9 +3238,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
     }
 
     @Test
-    @Alerts(DEFAULT = {"", "blob", "[object Blob]", "36", "text/xml"},
-            IE = {"", "blob", "[object Blob]", "36", "text/xml;charset=iso-8859-1"})
-    @HtmlUnitNYI(IE = {"", "blob", "[object Blob]", "36", "text/xml"})
+    @Alerts({"", "blob", "[object Blob]", "36", "text/xml"})
     public void responseResponseTypeBlob() throws Exception {
         final String html =
               "<html>\n"
@@ -3021,7 +3264,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "            log(xhr.response);\n"
             + "            log(xhr.response.size);\n"
             + "            log(xhr.response.type);\n"
-            + "          } catch(ex) { log('exception'); }\n"
+            + "          } catch(ex) { logEx(e); }\n"
             + "        }\n"
             + "      }\n"
             + "    </script>\n"
@@ -3066,7 +3309,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "          try {\n"
             + "            log(xhr.response);\n"
             + "            log(xhr.response.size);\n"
-            + "          } catch(ex) { log('exception'); }\n"
+            + "          } catch(ex) { logEx(e); }\n"
             + "        }\n"
             + "      }\n"
             + "    </script>\n"
@@ -3083,8 +3326,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
     }
 
     @Test
-    @Alerts(DEFAULT = {"", "json", "[object Object]", "Unit", "{\"Html\":\"Unit\"}"},
-            IE = {"", "", "{ \"Html\": \"Unit\" }", "undefined", "\"{ \\\"Html\\\": \\\"Unit\\\" }\""})
+    @Alerts({"", "json", "[object Object]", "Unit", "{\"Html\":\"Unit\"}"})
     public void responseResponseTypeJson() throws Exception {
         final String html =
               "<html>\n"
@@ -3110,7 +3352,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "            log(xhr.response);\n"
             + "            log(xhr.response.Html);\n"
             + "            log(JSON.stringify(xhr.response));\n"
-            + "          } catch(ex) { log('exception' + ex); }\n"
+            + "          } catch(e) { logEx(e); }\n"
             + "        }\n"
             + "      }\n"
             + "    </script>\n"
@@ -3127,8 +3369,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
     }
 
     @Test
-    @Alerts(DEFAULT = {"", "json", "null"},
-            IE = {"", "", ""})
+    @Alerts({"", "json", "null"})
     public void responseResponseTypeJsonEmpty() throws Exception {
         final String html =
               "<html>\n"
@@ -3152,7 +3393,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "        if (xhr.readyState == 4) {\n"
             + "          try {\n"
             + "            log(xhr.response);\n"
-            + "          } catch(ex) { log('exception' + ex); }\n"
+            + "          } catch(e) { logEx(e); }\n"
             + "        }\n"
             + "      }\n"
             + "    </script>\n"
@@ -3193,7 +3434,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "        if (xhr.readyState == 4) {\n"
             + "          try {\n"
             + "            log(xhr.response);\n"
-            + "          } catch(ex) { log('exception' + ex); }\n"
+            + "          } catch(e) { logEx(e); }\n"
             + "        }\n"
             + "      }\n"
             + "    </script>\n"
@@ -3211,7 +3452,6 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
         loadPage2(html);
         verifyTitle2(DEFAULT_WAIT_TIME, getWebDriver(), getExpectedAlerts());
     }
-
 
     @Test
     @Alerts({"", "document", "[object HTMLDocument]"})
@@ -3238,7 +3478,7 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
             + "        if (xhr.readyState == 4) {\n"
             + "          try {\n"
             + "            log(xhr.response);\n"
-            + "          } catch(ex) { log('exception' + ex); }\n"
+            + "          } catch(e) { logEx(e); }\n"
             + "        }\n"
             + "      }\n"
             + "    </script>\n"
@@ -3253,6 +3493,50 @@ public class XMLHttpRequestTest extends WebDriverTestCase {
               + "<html>";
 
         getMockWebConnection().setResponse(URL_SECOND, xml, MimeType.TEXT_HTML);
+        loadPage2(html);
+        verifyTitle2(DEFAULT_WAIT_TIME, getWebDriver(), getExpectedAlerts());
+    }
+
+    @Test
+    @Alerts({"", "document", "null"})
+    public void responseResponseTypeDocumentJs() throws Exception {
+        final String html =
+              "<html>\n"
+            + "  <head>\n"
+            + "    <script>\n"
+            + LOG_TITLE_FUNCTION
+            + "      var xhr;\n"
+            + "      function test() {\n"
+            + "        xhr = new XMLHttpRequest();\n"
+            + "        log(xhr.responseText);\n"
+
+            + "        xhr.open('GET', '" + URL_SECOND + "', true);\n"
+            + "        xhr.responseType = 'document';\n"
+            + "        log(xhr.responseType);\n"
+
+            + "        xhr.onreadystatechange = onStateChange;\n"
+            + "        xhr.send('');\n"
+            + "      }\n"
+
+            + "      function onStateChange(e) {\n"
+            + "        if (xhr.readyState == 4) {\n"
+            + "          try {\n"
+            + "            log(xhr.response);\n"
+            + "          } catch(e) { logEx(e); }\n"
+            + "        }\n"
+            + "      }\n"
+            + "    </script>\n"
+            + "  </head>\n"
+            + "  <body onload='test()'>\n"
+            + "  </body>\n"
+            + "</html>";
+
+        final String xml =
+                "<html>\n"
+              + "<body>Test</body>\n"
+              + "<html>";
+
+        getMockWebConnection().setResponse(URL_SECOND, xml, MimeType.TEXT_JAVASCRIPT);
         loadPage2(html);
         verifyTitle2(DEFAULT_WAIT_TIME, getWebDriver(), getExpectedAlerts());
     }

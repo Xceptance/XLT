@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,18 +14,9 @@
  */
 package org.htmlunit.javascript.host.html;
 
-import static org.htmlunit.BrowserVersionFeatures.JS_TABLE_VALIGN_SUPPORTS_IE_VALUES;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
-
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 import java.util.function.Supplier;
 
 import org.htmlunit.html.DomNode;
@@ -35,12 +26,14 @@ import org.htmlunit.html.HtmlTableBody;
 import org.htmlunit.html.HtmlTableFooter;
 import org.htmlunit.html.HtmlTableHeader;
 import org.htmlunit.html.HtmlTableRow;
+import org.htmlunit.javascript.HtmlUnitScriptable;
 import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.configuration.JsxSetter;
+import org.htmlunit.javascript.host.dom.Node;
 
 /**
  * The JavaScript object {@code HTMLTableElement}.
@@ -57,19 +50,11 @@ import org.htmlunit.javascript.configuration.JsxSetter;
 @JsxClass(domClass = HtmlTable.class)
 public class HTMLTableElement extends RowContainer {
 
-    private static final List<String> VALID_RULES_ = Arrays.asList("none", "groups", "rows", "cols");
-
-    /**
-     * Creates an instance.
-     */
-    public HTMLTableElement() {
-    }
-
     /**
      * JavaScript constructor.
      */
     @Override
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
         super.jsConstructor();
     }
@@ -80,8 +65,8 @@ public class HTMLTableElement extends RowContainer {
      * @return the table's caption element
      */
     @JsxGetter
-    public Object getCaption() {
-        final List<HtmlElement> captions = getDomNodeOrDie().getElementsByTagName("caption");
+    public HtmlUnitScriptable getCaption() {
+        final List<HtmlElement> captions = getDomNodeOrDie().getStaticElementsByTagName("caption");
         if (captions.isEmpty()) {
             return null;
         }
@@ -95,7 +80,7 @@ public class HTMLTableElement extends RowContainer {
     @JsxSetter
     public void setCaption(final Object o) {
         if (!(o instanceof HTMLTableCaptionElement)) {
-            throw JavaScriptEngine.reportRuntimeError("Not a caption");
+            throw JavaScriptEngine.typeError("Not a caption");
         }
 
         // remove old caption (if any)
@@ -111,8 +96,8 @@ public class HTMLTableElement extends RowContainer {
      * @return the table's tfoot element
      */
     @JsxGetter
-    public Object getTFoot() {
-        final List<HtmlElement> tfoots = getDomNodeOrDie().getElementsByTagName("tfoot");
+    public HtmlUnitScriptable getTFoot() {
+        final List<HtmlElement> tfoots = getDomNodeOrDie().getStaticElementsByTagName("tfoot");
         if (tfoots.isEmpty()) {
             return null;
         }
@@ -127,7 +112,7 @@ public class HTMLTableElement extends RowContainer {
     public void setTFoot(final Object o) {
         if (!(o instanceof HTMLTableSectionElement
             && "TFOOT".equals(((HTMLTableSectionElement) o).getTagName()))) {
-            throw JavaScriptEngine.reportRuntimeError("Not a tFoot");
+            throw JavaScriptEngine.typeError("Not a tFoot");
         }
 
         // remove old caption (if any)
@@ -143,8 +128,8 @@ public class HTMLTableElement extends RowContainer {
      * @return the table's thead element
      */
     @JsxGetter
-    public Object getTHead() {
-        final List<HtmlElement> theads = getDomNodeOrDie().getElementsByTagName("thead");
+    public HtmlUnitScriptable getTHead() {
+        final List<HtmlElement> theads = getDomNodeOrDie().getStaticElementsByTagName("thead");
         if (theads.isEmpty()) {
             return null;
         }
@@ -159,7 +144,7 @@ public class HTMLTableElement extends RowContainer {
     public void setTHead(final Object o) {
         if (!(o instanceof HTMLTableSectionElement
             && "THEAD".equals(((HTMLTableSectionElement) o).getTagName()))) {
-            throw JavaScriptEngine.reportRuntimeError("Not a tHead");
+            throw JavaScriptEngine.typeError("Not a tHead");
         }
 
         // remove old caption (if any)
@@ -174,7 +159,7 @@ public class HTMLTableElement extends RowContainer {
      * @return the tbody's in the table
      */
     @JsxGetter
-    public Object getTBodies() {
+    public HtmlUnitScriptable getTBodies() {
         final HtmlTable table = (HtmlTable) getDomNodeOrDie();
         final HTMLCollection bodies = new HTMLCollection(table, false);
         bodies.setElementsSupplier((Supplier<List<DomNode>> & Serializable) () -> new ArrayList<>(table.getBodies()));
@@ -189,7 +174,7 @@ public class HTMLTableElement extends RowContainer {
      * @return a newly added caption if no caption exists, or the first existing caption
      */
     @JsxFunction
-    public Object createCaption() {
+    public HtmlUnitScriptable createCaption() {
         return getScriptableFor(getDomNodeOrDie().appendChildIfNoneExists("caption"));
     }
 
@@ -201,7 +186,7 @@ public class HTMLTableElement extends RowContainer {
      * @return a newly added caption if no caption exists, or the first existing caption
      */
     @JsxFunction
-    public Object createTFoot() {
+    public HtmlUnitScriptable createTFoot() {
         return getScriptableFor(getDomNodeOrDie().appendChildIfNoneExists("tfoot"));
     }
 
@@ -213,7 +198,7 @@ public class HTMLTableElement extends RowContainer {
      * @return a newly added caption if no caption exists, or the first existing caption
      */
     @JsxFunction
-    public Object createTBody() {
+    public HtmlUnitScriptable createTBody() {
         return getScriptableFor(getDomNodeOrDie().appendChildIfNoneExists("tbody"));
     }
 
@@ -225,7 +210,7 @@ public class HTMLTableElement extends RowContainer {
      * @return a newly added caption if no caption exists, or the first existing caption
      */
     @JsxFunction
-    public Object createTHead() {
+    public HtmlUnitScriptable createTHead() {
         return getScriptableFor(getDomNodeOrDie().appendChildIfNoneExists("thead"));
     }
 
@@ -279,7 +264,7 @@ public class HTMLTableElement extends RowContainer {
      * {@inheritDoc}
      */
     @Override
-    public Object insertRow(final int index) {
+    public HtmlUnitScriptable insertRow(final int index) {
         // check if a tbody should be created
         if (index != 0) {
             for (final HtmlElement htmlElement : getDomNodeOrDie().getHtmlElementDescendants()) {
@@ -388,65 +373,11 @@ public class HTMLTableElement extends RowContainer {
     }
 
     /**
-     * Gets the {@code borderColor} property.
-     * @return the property
-     */
-    @JsxGetter(IE)
-    public String getBorderColor() {
-        return getDomNodeOrDie().getAttribute("borderColor");
-    }
-
-    /**
-     * Sets the {@code borderColor} property.
-     * @param borderColor the new property
-     */
-    @JsxSetter(IE)
-    public void setBorderColor(final String borderColor) {
-        setColorAttribute("borderColor", borderColor);
-    }
-
-    /**
-     * Gets the {@code borderColor} property.
-     * @return the property
-     */
-    @JsxGetter(IE)
-    public String getBorderColorDark() {
-        return getDomNodeOrDie().getAttribute("borderColorDark");
-    }
-
-    /**
-     * Sets the {@code borderColor} property.
-     * @param borderColor the new property
-     */
-    @JsxSetter(IE)
-    public void setBorderColorDark(final String borderColor) {
-        setColorAttribute("borderColorDark", borderColor);
-    }
-
-    /**
-     * Gets the {@code borderColor} property.
-     * @return the property
-     */
-    @JsxGetter(IE)
-    public String getBorderColorLight() {
-        return getDomNodeOrDie().getAttribute("borderColorLight");
-    }
-
-    /**
-     * Sets the {@code borderColor} property.
-     * @param borderColor the new property
-     */
-    @JsxSetter(IE)
-    public void setBorderColorLight(final String borderColor) {
-        setColorAttribute("borderColorLight", borderColor);
-    }
-
-    /**
      * {@inheritDoc}
      */
     @Override
-    public Object appendChild(final Object childObject) {
-        final Object appendedChild = super.appendChild(childObject);
+    public Node appendChild(final Object childObject) {
+        final Node appendedChild = super.appendChild(childObject);
         getDomNodeOrDie().getPage().clearComputedStyles(getDomNodeOrDie());
         return appendedChild;
     }
@@ -455,8 +386,8 @@ public class HTMLTableElement extends RowContainer {
      * {@inheritDoc}
      */
     @Override
-    public Object removeChild(final Object childObject) {
-        final Object removedChild = super.removeChild(childObject);
+    public Node removeChild(final Object childObject) {
+        final Node removedChild = super.removeChild(childObject);
         getDomNodeOrDie().getPage().clearComputedStyles(getDomNodeOrDie());
         return removedChild;
     }
@@ -485,12 +416,7 @@ public class HTMLTableElement extends RowContainer {
      */
     @JsxGetter
     public String getRules() {
-        String rules = getDomNodeOrDie().getAttributeDirect("rules");
-        if (getBrowserVersion().hasFeature(JS_TABLE_VALIGN_SUPPORTS_IE_VALUES)
-                && !VALID_RULES_.contains(rules)) {
-            rules = "";
-        }
-        return rules;
+        return getDomNodeOrDie().getAttributeDirect("rules");
     }
 
     /**
@@ -498,13 +424,7 @@ public class HTMLTableElement extends RowContainer {
      * @param rules the new property
      */
     @JsxSetter
-    public void setRules(String rules) {
-        if (getBrowserVersion().hasFeature(JS_TABLE_VALIGN_SUPPORTS_IE_VALUES)) {
-            rules = rules.toLowerCase(Locale.ROOT);
-            if (!rules.isEmpty() && !VALID_RULES_.contains(rules)) {
-                throw JavaScriptEngine.throwAsScriptRuntimeEx(new Exception("Invalid argument"));
-            }
-        }
+    public void setRules(final String rules) {
         setAttribute("rules", rules);
     }
 

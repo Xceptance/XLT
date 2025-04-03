@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,9 +65,7 @@ public class HtmlTitle extends HtmlElement {
     }
 
     /**
-     * Indicates if a node without children should be written in expanded form as XML
-     * (i.e. with closing tag rather than with "/&gt;").
-     * @return {@code true} as required by Internet Explorer
+     * {@inheritDoc}
      */
     @Override
     protected boolean isEmptyXmlTagExpanded() {
@@ -80,5 +78,32 @@ public class HtmlTitle extends HtmlElement {
     @Override
     public DisplayStyle getDefaultStyleDisplay() {
         return DisplayStyle.NONE;
+    }
+
+    /**
+     * Returns the {@code text} attribute.
+     * @return the {@code text} attribute
+     */
+    public String getText() {
+        final DomNode firstChild = getFirstChild();
+        if (firstChild != null) {
+            return firstChild.getNodeValue();
+        }
+        return "";
+    }
+
+    /**
+     * Sets the {@code text} attribute.
+     * @param text the {@code text} attribute
+     */
+    public void setText(final String text) {
+        DomNode firstChild = getFirstChild();
+        if (firstChild == null) {
+            firstChild = new DomText(getPage(), text);
+            appendChild(firstChild);
+        }
+        else {
+            firstChild.setNodeValue(text);
+        }
     }
 }

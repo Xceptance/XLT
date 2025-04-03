@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,7 +51,7 @@ import org.htmlunit.WebClient;
 import org.htmlunit.WebRequest;
 import org.htmlunit.WebServerTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.util.KeyDataPair;
 import org.htmlunit.util.MimeType;
 import org.junit.Test;
@@ -122,7 +122,7 @@ public class HtmlFileInput2Test extends WebServerTestCase {
     }
 
     /**
-     * Tests setData method.
+     * Tests setValueAttribute method.
      * @throws Exception if the test fails
      */
     @Test
@@ -152,16 +152,14 @@ public class HtmlFileInput2Test extends WebServerTestCase {
         firstPage.getHtmlElementById("mySubmit").click();
         final KeyDataPair pair = (KeyDataPair) webConnection.getLastParameters().get(0);
 
-        assertNotNull(pair.getData());
-        assertTrue(pair.getData().length > 10);
+        assertNull(pair.getData());
 
         final HttpEntity httpEntity = post(client, webConnection);
 
         try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             httpEntity.writeTo(out);
 
-            assertTrue(out.toString().contains(
-                    "Content-Disposition: form-data; name=\"image\"; filename=\"dummy.txt\""));
+            assertFalse(out.toString().contains("dummy.txt"));
         }
     }
 
@@ -204,13 +202,12 @@ public class HtmlFileInput2Test extends WebServerTestCase {
         try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             httpEntity.writeTo(out);
 
-            assertTrue(out.toString().contains(
-                    "Content-Disposition: form-data; name=\"image\"; filename=\"dummy.txt\""));
+            assertTrue(out.toString().contains("dummy.txt"));
         }
     }
 
     /**
-     * Tests setData method.
+     * Tests setValueAttribute method.
      * @throws Exception if the test fails
      */
     @Test
@@ -240,15 +237,14 @@ public class HtmlFileInput2Test extends WebServerTestCase {
         firstPage.getHtmlElementById("mySubmit").click();
         final KeyDataPair pair = (KeyDataPair) webConnection.getLastParameters().get(0);
 
-        assertNotNull(pair.getData());
-        assertTrue(pair.getData().length > 10);
+        assertNull(pair.getData());
 
         final HttpEntity httpEntity = post(client, webConnection);
 
         try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             httpEntity.writeTo(out);
 
-            assertTrue(out.toString()
+            assertFalse(out.toString()
                     .contains("Content-Disposition: form-data; name=\"image\"; filename=\"tiny-png.img\""));
         }
     }

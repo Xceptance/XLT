@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,8 @@
  */
 package org.htmlunit.javascript.host.html;
 
-import static org.htmlunit.BrowserVersionFeatures.HTMLDOCUMENT_COOKIES_IGNORE_BLANK;
 import static org.htmlunit.BrowserVersionFeatures.HTMLDOCUMENT_ELEMENTS_BY_NAME_EMPTY;
-import static org.htmlunit.BrowserVersionFeatures.HTMLDOCUMENT_FUNCTION_DETACHED;
 import static org.htmlunit.BrowserVersionFeatures.HTMLDOCUMENT_GET_ALSO_FRAMES;
-import static org.htmlunit.BrowserVersionFeatures.HTMLDOCUMENT_GET_FOR_ID_AND_OR_NAME;
-import static org.htmlunit.BrowserVersionFeatures.HTMLDOCUMENT_GET_PREFERS_STANDARD_FUNCTIONS;
-import static org.htmlunit.BrowserVersionFeatures.JS_DOCUMENT_CREATE_ATTRUBUTE_LOWER_CASE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
@@ -31,7 +24,6 @@ import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Supplier;
 
 import org.apache.commons.lang3.StringUtils;
@@ -48,14 +40,12 @@ import org.htmlunit.html.BaseFrameElement;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.html.FrameWindow;
-import org.htmlunit.html.HtmlApplet;
 import org.htmlunit.html.HtmlAttributeChangeEvent;
 import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlImage;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlScript;
-import org.htmlunit.httpclient.HtmlUnitBrowserCompatCookieSpec;
 import org.htmlunit.javascript.HtmlUnitScriptable;
 import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.PostponedAction;
@@ -63,16 +53,14 @@ import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
-import org.htmlunit.javascript.configuration.JsxSetter;
 import org.htmlunit.javascript.host.Element;
-import org.htmlunit.javascript.host.Window;
 import org.htmlunit.javascript.host.dom.AbstractList.EffectOnCache;
 import org.htmlunit.javascript.host.dom.Attr;
 import org.htmlunit.javascript.host.dom.Document;
+import org.htmlunit.javascript.host.dom.Node;
 import org.htmlunit.javascript.host.dom.NodeList;
 import org.htmlunit.javascript.host.dom.Selection;
 import org.htmlunit.javascript.host.event.Event;
-import org.htmlunit.util.Cookie;
 import org.htmlunit.util.UrlUtils;
 
 /**
@@ -93,6 +81,8 @@ import org.htmlunit.util.UrlUtils;
  * @author <a href="mailto:mike@10gen.com">Mike Dirolf</a>
  * @author Ronald Brill
  * @author Frank Danek
+ * @author Sven Strickroth
+ *
  * @see <a href="http://msdn.microsoft.com/en-us/library/ms535862.aspx">MSDN documentation</a>
  * @see <a href="http://www.w3.org/TR/2000/WD-DOM-Level-1-20000929/level-one-html.html#ID-7068919">
  * W3C DOM Level 1</a>
@@ -112,16 +102,10 @@ public class HTMLDocument extends Document {
     private boolean executionExternalPostponed_;
 
     /**
-     * The constructor.
-     */
-    public HTMLDocument() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @Override
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
         super.jsConstructor();
     }
@@ -135,7 +119,7 @@ public class HTMLDocument extends Document {
             return super.getDomNodeOrDie();
         }
         catch (final IllegalStateException e) {
-            throw JavaScriptEngine.reportRuntimeError("No node attached to this object");
+            throw JavaScriptEngine.typeError("No node attached to this object");
         }
     }
 
@@ -210,10 +194,6 @@ public class HTMLDocument extends Document {
             return (HTMLDocument) ((DocumentProxy) thisObj).getDelegee();
         }
 
-        final Window window = getWindow(thisObj);
-        if (window.getBrowserVersion().hasFeature(HTMLDOCUMENT_FUNCTION_DETACHED)) {
-            return (HTMLDocument) window.getDocument();
-        }
         throw JavaScriptEngine.reportRuntimeError("Function can't be used detached from document");
     }
 
@@ -258,17 +238,13 @@ public class HTMLDocument extends Document {
 
         // If open() was called; don't write to doc yet -- wait for call to close().
         if (!writeInCurrentDocument_) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("wrote content to buffer");
-            }
+            LOG.debug("wrote content to buffer");
             scheduleImplicitClose();
             return;
         }
         final String bufferedContent = writeBuilder_.toString();
         if (!canAlreadyBeParsed(bufferedContent)) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("write: not enough content to parse it now");
-            }
+            LOG.debug("write: not enough content to parse it now");
             return;
         }
 
@@ -427,52 +403,6 @@ public class HTMLDocument extends Document {
     }
 
     /**
-     * {@inheritDoc}
-     */
-    @Override
-    @JsxGetter
-    public String getCookie() {
-        final HtmlPage page = getPage();
-
-        final URL url = page.getUrl();
-
-        final StringBuilder builder = new StringBuilder();
-        final Set<Cookie> cookies = page.getWebClient().getCookies(url);
-        for (final Cookie cookie : cookies) {
-            if (cookie.isHttpOnly()) {
-                continue;
-            }
-            if (builder.length() != 0) {
-                builder.append("; ");
-            }
-            if (!HtmlUnitBrowserCompatCookieSpec.EMPTY_COOKIE_NAME.equals(cookie.getName())) {
-                builder.append(cookie.getName());
-                builder.append('=');
-            }
-            builder.append(cookie.getValue());
-        }
-
-        return builder.toString();
-    }
-
-    /**
-     * Adds a cookie, as long as cookies are enabled.
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms533693.aspx">MSDN documentation</a>
-     * @param newCookie in the format "name=value[;expires=date][;domain=domainname][;path=path][;secure]
-     */
-    @JsxSetter
-    public void setCookie(final String newCookie) {
-        final HtmlPage page = getPage();
-        final WebClient client = page.getWebClient();
-
-        if (StringUtils.isBlank(newCookie)
-                && client.getBrowserVersion().hasFeature(HTMLDOCUMENT_COOKIES_IGNORE_BLANK)) {
-            return;
-        }
-        client.addCookie(newCookie, getPage().getUrl(), this);
-    }
-
-    /**
      * JavaScript function "open".
      * <p>
      * See http://www.whatwg.org/specs/web-apps/current-work/multipage/section-dynamic.html for
@@ -487,7 +417,7 @@ public class HTMLDocument extends Document {
      * @see <a href="http://msdn.microsoft.com/en-us/library/ms536652.aspx">MSDN documentation</a>
      */
     @JsxFunction
-    public Object open(final Object url, final Object name, final Object features,
+    public HTMLDocument open(final Object url, final Object name, final Object features,
             final Object replace) {
         // Any open() invocations are ignored during the parsing stage, because write() and
         // writeln() invocations will directly append content to the current insertion point.
@@ -570,8 +500,11 @@ public class HTMLDocument extends Document {
      * {@inheritDoc}
      */
     @Override
-    public Object appendChild(final Object childObject) {
-        throw JavaScriptEngine.reportRuntimeError("Node cannot be inserted at the specified point in the hierarchy.");
+    public Node appendChild(final Object childObject) {
+        throw JavaScriptEngine.asJavaScriptException(
+                getWindow(),
+                "Node cannot be inserted at the specified point in the hierarchy.",
+                org.htmlunit.javascript.host.dom.DOMException.HIERARCHY_REQUEST_ERR);
     }
 
     /**
@@ -622,7 +555,7 @@ public class HTMLDocument extends Document {
         if ("null".equals(elementName)
                 || (elementName.isEmpty()
                     && getBrowserVersion().hasFeature(HTMLDOCUMENT_ELEMENTS_BY_NAME_EMPTY))) {
-            return NodeList.staticNodeList(getWindow(), new ArrayList<DomNode>());
+            return NodeList.staticNodeList(getWindow(), new ArrayList<>());
         }
 
         final HtmlPage page = getPage();
@@ -652,7 +585,7 @@ public class HTMLDocument extends Document {
     @Override
     protected Object getWithPreemption(final String name) {
         final HtmlPage page = (HtmlPage) getDomNodeOrNull();
-        if (page == null || getBrowserVersion().hasFeature(HTMLDOCUMENT_GET_PREFERS_STANDARD_FUNCTIONS)) {
+        if (page == null) {
             final Object response = getPrototype().get(name, this);
             if (response != NOT_FOUND) {
                 return response;
@@ -667,13 +600,12 @@ public class HTMLDocument extends Document {
             return NOT_FOUND;
         }
 
-        final boolean forIDAndOrName = getBrowserVersion().hasFeature(HTMLDOCUMENT_GET_FOR_ID_AND_OR_NAME);
         final boolean alsoFrames = getBrowserVersion().hasFeature(HTMLDOCUMENT_GET_ALSO_FRAMES);
 
         // for performance
         // we will calculate the elements to decide if we really have
         // to really create a HTMLCollection or not
-        final List<DomNode> matchingElements = getItComputeElements(page, name, forIDAndOrName, alsoFrames);
+        final List<DomNode> matchingElements = getItComputeElements(page, name, alsoFrames);
         final int size = matchingElements.size();
         if (size == 0) {
             return NOT_FOUND;
@@ -698,14 +630,13 @@ public class HTMLDocument extends Document {
 
         coll.setElementsSupplier(
                 (Supplier<List<DomNode>> & Serializable)
-                () -> getItComputeElements(page, name, forIDAndOrName, alsoFrames));
+                () -> getItComputeElements(page, name, alsoFrames));
 
         coll.setEffectOnCacheFunction(
                 (java.util.function.Function<HtmlAttributeChangeEvent, EffectOnCache> & Serializable)
                 event -> {
                     final String attributeName = event.getName();
-                    if (DomElement.NAME_ATTRIBUTE.equals(attributeName)
-                            || (forIDAndOrName && DomElement.ID_ATTRIBUTE.equals(attributeName))) {
+                    if (DomElement.NAME_ATTRIBUTE.equals(attributeName)) {
                         return EffectOnCache.RESET;
                     }
 
@@ -716,17 +647,11 @@ public class HTMLDocument extends Document {
     }
 
     static List<DomNode> getItComputeElements(final HtmlPage page, final String name,
-            final boolean forIDAndOrName, final boolean alsoFrames) {
-        final List<DomElement> elements;
-        if (forIDAndOrName) {
-            elements = page.getElementsByIdAndOrName(name);
-        }
-        else {
-            elements = page.getElementsByName(name);
-        }
+            final boolean alsoFrames) {
+        final List<DomElement> elements = page.getElementsByName(name);
         final List<DomNode> matchingElements = new ArrayList<>();
         for (final DomElement elt : elements) {
-            if (elt instanceof HtmlForm || elt instanceof HtmlImage || elt instanceof HtmlApplet
+            if (elt instanceof HtmlForm || elt instanceof HtmlImage
                     || (alsoFrames && elt instanceof BaseFrameElement)) {
                 matchingElements.add(elt);
             }
@@ -816,8 +741,7 @@ public class HTMLDocument extends Document {
     @Override
     public Attr createAttribute(final String attributeName) {
         String name = attributeName;
-        if (StringUtils.isNotEmpty(name)
-                && getBrowserVersion().hasFeature(JS_DOCUMENT_CREATE_ATTRUBUTE_LOWER_CASE)) {
+        if (StringUtils.isNotEmpty(name)) {
             name = org.htmlunit.util.StringUtils.toRootLowerCase(name);
         }
 

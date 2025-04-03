@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,19 +14,14 @@
  */
 package org.htmlunit.javascript.host.css;
 
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.CHROME;
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.EDGE;
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.FF;
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.FF_ESR;
-
 import java.util.ArrayList;
 import java.util.List;
 
 import org.htmlunit.HttpHeader;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.NotYetImplemented;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
 import org.junit.Test;
@@ -90,7 +85,7 @@ public class StyleSheetListTest extends WebDriverTestCase {
             + "          log(window.getComputedStyle(div, null).color);\n"
             + "          var div2 = document.getElementById('myDiv2');\n"
             + "          log(window.getComputedStyle(div2, null).color);\n"
-            + "        } catch(e) { log('exception'); }\n"
+            + "        } catch(e) { logEx(e); }\n"
             + "      }\n"
             + "    </script>\n"
             + "  </head>\n"
@@ -122,24 +117,15 @@ public class StyleSheetListTest extends WebDriverTestCase {
 
             + "        try {\n"
             + "          log(document.styleSheets[0]);\n"
-            + "        }\n"
-            + "        catch (e) {\n"
-            + "          log('exception for 0');\n"
-            + "        }\n"
+            + "        } catch(e) { logEx(e); }\n"
 
             + "        try {\n"
             + "          log(document.styleSheets[46]);\n"
-            + "        }\n"
-            + "        catch (e) {\n"
-            + "          log('exception for 46');\n"
-            + "        }\n"
+            + "        } catch(e) { logEx(e); }\n"
 
             + "        try {\n"
             + "          log(document.styleSheets[-2]);\n"
-            + "        }\n"
-            + "        catch (e) {\n"
-            + "          log('exception for -2');\n"
-            + "        }\n"
+            + "        } catch(e) { logEx(e); }\n"
             + "      }\n"
             + "    </script>\n"
             + "  </head>\n"
@@ -248,9 +234,8 @@ public class StyleSheetListTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"1", "1"},
-            IE = {"1", "2"})
-    @NotYetImplemented({CHROME, EDGE, FF, FF_ESR})
+    @Alerts({"1", "1"})
+    @NotYetImplemented
     public void dynamicAddedStyleSheet() throws Exception {
         final String html =
               "<html>\n"
@@ -302,6 +287,70 @@ public class StyleSheetListTest extends WebDriverTestCase {
             + "        log(0 in sheets);\n"
             + "        log(1 in sheets);\n"
             + "        log(42 in sheets);\n"
+            + "      }\n"
+            + "    </script>\n"
+            + "  </head>\n"
+            + "  <body onload='test()'>abc</body>\n"
+            + "</html>";
+
+        final String css = "div {color:red}";
+        getMockWebConnection().setDefaultResponse(css, MimeType.TEXT_CSS);
+
+        loadPageVerifyTitle2(html);
+    }
+
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts({"1", "undefined", "[object CSSStyleSheet]", "undefined", "undefined"})
+    public void index() throws Exception {
+        final String html =
+              "<html>\n"
+            + "  <head>\n"
+            + "    <link rel='stylesheet' type='text/css' href='foo.css'/>\n"
+            + "    <script>\n"
+            + LOG_TITLE_FUNCTION
+            + "      function test() {\n"
+            + "        var sheets = document.styleSheets;\n"
+            + "        log(sheets.length);\n"
+            + "        log(sheets[-1]);\n"
+            + "        log(sheets[0]);\n"
+            + "        log(sheets[1]);\n"
+            + "        log(sheets[42]);\n"
+            + "      }\n"
+            + "    </script>\n"
+            + "  </head>\n"
+            + "  <body onload='test()'>abc</body>\n"
+            + "</html>";
+
+        final String css = "div {color:red}";
+        getMockWebConnection().setDefaultResponse(css, MimeType.TEXT_CSS);
+
+        loadPageVerifyTitle2(html);
+    }
+
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts({"1", "null", "[object CSSStyleSheet]", "null", "null"})
+    public void item() throws Exception {
+        final String html =
+              "<html>\n"
+            + "  <head>\n"
+            + "    <link rel='stylesheet' type='text/css' href='foo.css'/>\n"
+            + "    <script>\n"
+            + LOG_TITLE_FUNCTION
+            + "      function test() {\n"
+            + "        var sheets = document.styleSheets;\n"
+            + "        log(sheets.length);\n"
+            + "        log(sheets.item(-1));\n"
+            + "        log(sheets.item(0));\n"
+            + "        log(sheets.item(1));\n"
+            + "        log(sheets.item(42));\n"
             + "      }\n"
             + "    </script>\n"
             + "  </head>\n"

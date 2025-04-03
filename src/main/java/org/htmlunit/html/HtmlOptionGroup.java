@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,10 @@
  */
 package org.htmlunit.html;
 
-import static org.htmlunit.BrowserVersionFeatures.CSS_DISPLAY_BLOCK2;
-
 import java.util.Map;
 
 import org.htmlunit.SgmlPage;
+import org.w3c.dom.Node;
 
 /**
  * Wrapper for the HTML element "optgroup".
@@ -50,16 +49,24 @@ public class HtmlOptionGroup extends HtmlElement implements DisabledElement {
     }
 
     /**
-     * Returns {@code true} if the disabled attribute is set for this element. Note that this
-     * method always returns {@code false} when emulating IE, because IE does not allow individual
-     * option groups to be disabled.
-     *
-     * @return {@code true} if the disabled attribute is set for this element (always {@code false}
-     *         when emulating IE)
+     * @return {@code true} if the disabled attribute is set for this element
      */
     @Override
     public final boolean isDisabled() {
-        return hasAttribute(ATTRIBUTE_DISABLED);
+        if (hasAttribute(ATTRIBUTE_DISABLED)) {
+            return true;
+        }
+
+        Node node = getParentNode();
+        while (node != null) {
+            if (node instanceof DisabledElement
+                    && ((DisabledElement) node).isDisabled()) {
+                return true;
+            }
+            node = node.getParentNode();
+        }
+
+        return false;
     }
 
     /**
@@ -105,9 +112,6 @@ public class HtmlOptionGroup extends HtmlElement implements DisabledElement {
      */
     @Override
     public DisplayStyle getDefaultStyleDisplay() {
-        if (hasFeature(CSS_DISPLAY_BLOCK2)) {
-            return DisplayStyle.BLOCK;
-        }
-        return DisplayStyle.INLINE;
+        return DisplayStyle.BLOCK;
     }
 }

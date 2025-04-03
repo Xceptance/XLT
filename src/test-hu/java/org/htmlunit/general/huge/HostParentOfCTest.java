@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@ package org.htmlunit.general.huge;
 import java.util.Collection;
 
 import org.htmlunit.junit.BrowserParameterizedRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized.Parameters;
@@ -51,8 +51,7 @@ public class HostParentOfCTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _Cache_Cache() throws Exception {
         test("Cache", "Cache");
     }
@@ -61,8 +60,7 @@ public class HostParentOfCTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _CacheStorage_CacheStorage() throws Exception {
         test("CacheStorage", "CacheStorage");
     }
@@ -120,9 +118,7 @@ public class HostParentOfCTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "false",
-            FF = "true",
-            FF_ESR = "true")
+    @Alerts("true")
     public void _CaretPosition_CaretPosition() throws Exception {
         test("CaretPosition", "CaretPosition");
     }
@@ -140,8 +136,7 @@ public class HostParentOfCTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _ChannelMergerNode_ChannelMergerNode() throws Exception {
         test("ChannelMergerNode", "ChannelMergerNode");
     }
@@ -150,8 +145,7 @@ public class HostParentOfCTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _ChannelSplitterNode_ChannelSplitterNode() throws Exception {
         test("ChannelSplitterNode", "ChannelSplitterNode");
     }
@@ -187,9 +181,7 @@ public class HostParentOfCTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
-    @HtmlUnitNYI(IE = "true")
+    @Alerts("true")
     public void _CharacterData_ProcessingInstruction() throws Exception {
         test("CharacterData", "ProcessingInstruction");
     }
@@ -207,8 +199,7 @@ public class HostParentOfCTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "false",
-            IE = "true")
+    @Alerts("false")
     public void _ClientRect_ClientRect() throws Exception {
         test("ClientRect", "ClientRect");
     }
@@ -217,8 +208,7 @@ public class HostParentOfCTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "false",
-            IE = "true")
+    @Alerts("false")
     public void _ClientRectList_ClientRectList() throws Exception {
         test("ClientRectList", "ClientRectList");
     }
@@ -227,8 +217,7 @@ public class HostParentOfCTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _ClipboardEvent_ClipboardEvent() throws Exception {
         test("ClipboardEvent", "ClipboardEvent");
     }
@@ -264,9 +253,7 @@ public class HostParentOfCTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "false",
-            IE = "true")
-    @HtmlUnitNYI(IE = "false")
+    @Alerts("false")
     public void _Console_Console() throws Exception {
         test("Console", "Console");
     }
@@ -275,8 +262,7 @@ public class HostParentOfCTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _ConstantSourceNode_ConstantSourceNode() throws Exception {
         test("ConstantSourceNode", "ConstantSourceNode");
     }
@@ -285,8 +271,7 @@ public class HostParentOfCTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _ConvolverNode_ConvolverNode() throws Exception {
         test("ConvolverNode", "ConvolverNode");
     }
@@ -295,8 +280,7 @@ public class HostParentOfCTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "false",
-            IE = "true")
+    @Alerts("false")
     public void _Coordinates_Coordinates() throws Exception {
         test("Coordinates", "Coordinates");
     }
@@ -305,8 +289,7 @@ public class HostParentOfCTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _Credential_Credential() throws Exception {
         test("Credential", "Credential");
     }
@@ -337,8 +320,7 @@ public class HostParentOfCTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _CredentialsContainer_CredentialsContainer() throws Exception {
         test("CredentialsContainer", "CredentialsContainer");
     }
@@ -356,8 +338,7 @@ public class HostParentOfCTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _CryptoKey_CryptoKey() throws Exception {
         test("CryptoKey", "CryptoKey");
     }
@@ -386,8 +367,7 @@ public class HostParentOfCTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _CSSConditionRule_CSSConditionRule() throws Exception {
         test("CSSConditionRule", "CSSConditionRule");
     }
@@ -396,8 +376,7 @@ public class HostParentOfCTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _CSSConditionRule_CSSMediaRule() throws Exception {
         test("CSSConditionRule", "CSSMediaRule");
     }
@@ -406,8 +385,7 @@ public class HostParentOfCTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _CSSConditionRule_CSSSupportsRule() throws Exception {
         test("CSSConditionRule", "CSSSupportsRule");
     }
@@ -416,8 +394,7 @@ public class HostParentOfCTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _CSSCounterStyleRule_CSSCounterStyleRule() throws Exception {
         test("CSSCounterStyleRule", "CSSCounterStyleRule");
     }
@@ -435,8 +412,7 @@ public class HostParentOfCTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _CSSGroupingRule_CSSConditionRule() throws Exception {
         test("CSSGroupingRule", "CSSConditionRule");
     }
@@ -445,8 +421,7 @@ public class HostParentOfCTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _CSSGroupingRule_CSSGroupingRule() throws Exception {
         test("CSSGroupingRule", "CSSGroupingRule");
     }
@@ -455,8 +430,7 @@ public class HostParentOfCTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _CSSGroupingRule_CSSMediaRule() throws Exception {
         test("CSSGroupingRule", "CSSMediaRule");
     }
@@ -476,8 +450,7 @@ public class HostParentOfCTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _CSSGroupingRule_CSSSupportsRule() throws Exception {
         test("CSSGroupingRule", "CSSSupportsRule");
     }
@@ -549,8 +522,7 @@ public class HostParentOfCTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _CSSRule_CSSConditionRule() throws Exception {
         test("CSSRule", "CSSConditionRule");
     }
@@ -559,8 +531,7 @@ public class HostParentOfCTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _CSSRule_CSSCounterStyleRule() throws Exception {
         test("CSSRule", "CSSCounterStyleRule");
     }
@@ -578,8 +549,7 @@ public class HostParentOfCTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _CSSRule_CSSGroupingRule() throws Exception {
         test("CSSRule", "CSSGroupingRule");
     }
@@ -660,8 +630,7 @@ public class HostParentOfCTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _CSSRule_CSSSupportsRule() throws Exception {
         test("CSSRule", "CSSSupportsRule");
     }
@@ -717,8 +686,7 @@ public class HostParentOfCTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _CSSSupportsRule_CSSSupportsRule() throws Exception {
         test("CSSSupportsRule", "CSSSupportsRule");
     }
@@ -763,8 +731,7 @@ public class HostParentOfCTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _CustomElementRegistry_CustomElementRegistry() throws Exception {
         test("CustomElementRegistry", "CustomElementRegistry");
     }

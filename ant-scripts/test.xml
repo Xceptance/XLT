@@ -241,7 +241,7 @@
     <!-- Run PMD for checking the code. -->
     <target name="test.pmd" depends="test.pmd.check" unless="test.pmd.results.available">
         <mkdir dir="${reports.pmd}" />
-        <pmd shortfilenames="true">
+        <pmd>
             <ruleset>
                 category/java/bestpractices.xml,
                 category/java/codestyle.xml,
@@ -256,6 +256,9 @@
             <fileset dir="${src.dir}/main/java">
                 <include name="com/xceptance/**/*.java" />
             </fileset>
+            <relativizePathsWith>
+                <pathelement location=""/>
+            </relativizePathsWith>
         </pmd>
     </target>
 

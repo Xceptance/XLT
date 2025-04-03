@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 package org.htmlunit.javascript;
 
 import java.lang.reflect.Member;
+import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -23,9 +24,9 @@ import org.htmlunit.BrowserVersion;
 import org.htmlunit.corejs.javascript.FunctionObject;
 import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.corejs.javascript.ScriptableObject;
-import org.htmlunit.javascript.configuration.AbstractJavaScriptConfiguration;
 import org.htmlunit.javascript.configuration.ClassConfiguration;
 import org.htmlunit.javascript.configuration.ClassConfiguration.ConstantInfo;
+import org.htmlunit.javascript.configuration.JavaScriptConfiguration;
 
 /**
  * A FunctionObject that returns IDs of this object and all its parent classes.
@@ -74,17 +75,13 @@ public class RecursiveFunctionObject extends FunctionObject {
     @Override
     public Object[] getIds() {
         final Set<Object> objects = new LinkedHashSet<>();
-        for (final Object obj : super.getIds()) {
-            objects.add(obj);
-        }
+        objects.addAll(Arrays.asList(super.getIds()));
 
         for (Class<?> c = getMethodOrConstructor().getDeclaringClass().getSuperclass();
                 c != null; c = c.getSuperclass()) {
             final Object scripatble = getParentScope().get(c.getSimpleName(), this);
             if (scripatble instanceof Scriptable) {
-                for (final Object obj : ((Scriptable) scripatble).getIds()) {
-                    objects.add(obj);
-                }
+                objects.addAll(Arrays.asList(((Scriptable) scripatble).getIds()));
             }
         }
         return objects.toArray(new Object[0]);
@@ -103,8 +100,8 @@ public class RecursiveFunctionObject extends FunctionObject {
         Class<?> klass = getPrototypeProperty().getClass();
 
         while (value == NOT_FOUND && HtmlUnitScriptable.class.isAssignableFrom(klass)) {
-            final ClassConfiguration config = AbstractJavaScriptConfiguration.getClassConfiguration(
-                    klass.asSubclass(HtmlUnitScriptable.class), browserVersion_);
+            final ClassConfiguration config = JavaScriptConfiguration.getInstance(browserVersion_)
+                    .getClassConfiguration(klass.getSimpleName());
             if (config != null) {
                 final List<ConstantInfo> constants = config.getConstants();
                 if (constants != null) {

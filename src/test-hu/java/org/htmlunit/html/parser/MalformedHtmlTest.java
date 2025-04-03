@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@ package org.htmlunit.html.parser;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
@@ -368,25 +368,21 @@ public class MalformedHtmlTest extends WebDriverTestCase {
                 "innerA", "DIV:null", "1", "#text:X", "false", "true"})
     @HtmlUnitNYI(
             CHROME = {"4", "#text:\\n\\s\\s", "A:null", "A:null", "#text:YZ\\n\\n",
-                      "2", "innerDiv", "A:null", "1", "#text:W", "exception",
+                      "2", "innerDiv", "A:null", "1", "#text:W", "TypeError",
                       "outerA", "BODY:null", "2", "#text:V", "true", "false",
-                      "innerA", "BODY:null", "1", "#text:X", "false", "true", "exception"},
+                      "innerA", "BODY:null", "1", "#text:X", "false", "true", "TypeError"},
             EDGE = {"4", "#text:\\n\\s\\s", "A:null", "A:null", "#text:YZ\\n\\n",
-                    "2", "innerDiv", "A:null", "1", "#text:W", "exception",
+                    "2", "innerDiv", "A:null", "1", "#text:W", "TypeError",
                     "outerA", "BODY:null", "2", "#text:V", "true", "false",
-                    "innerA", "BODY:null", "1", "#text:X", "false", "true", "exception"},
+                    "innerA", "BODY:null", "1", "#text:X", "false", "true", "TypeError"},
             FF = {"4", "#text:\\n\\s\\s", "A:null", "A:null", "#text:YZ\\n\\n",
-                  "2", "innerDiv", "A:null", "1", "#text:W", "exception",
+                  "2", "innerDiv", "A:null", "1", "#text:W", "TypeError",
                   "outerA", "BODY:null", "2", "#text:V", "true", "false",
-                  "innerA", "BODY:null", "1", "#text:X", "false", "true", "exception"},
+                  "innerA", "BODY:null", "1", "#text:X", "false", "true", "TypeError"},
             FF_ESR = {"4", "#text:\\n\\s\\s", "A:null", "A:null", "#text:YZ\\n\\n",
-                      "2", "innerDiv", "A:null", "1", "#text:W", "exception",
+                      "2", "innerDiv", "A:null", "1", "#text:W", "TypeError",
                       "outerA", "BODY:null", "2", "#text:V", "true", "false",
-                      "innerA", "BODY:null", "1", "#text:X", "false", "true", "exception"},
-            IE = {"4", "#text:\\n\\s\\s", "A:null", "A:null", "#text:YZ\\n\\n",
-                  "2", "innerDiv", "A:null", "1", "#text:W", "exception",
-                  "outerA", "BODY:null", "2", "#text:V", "true", "false",
-                  "innerA", "BODY:null", "1", "#text:X", "false", "true", "exception"})
+                      "innerA", "BODY:null", "1", "#text:X", "false", "true", "TypeError"})
     // Input:
     // <a id="outerA">V<div id="innerDiv">W<a id="innerA">X</a>Y</div>Z</a>
     // CHROME and IE generate:
@@ -410,7 +406,7 @@ public class MalformedHtmlTest extends WebDriverTestCase {
             + "      dump(document.body.childNodes[2]);\n"
             + "      dump(document.body.childNodes[3]);\n"
             + "      log(document.getElementsByTagName('a').length);\n"
-            + "    } catch (e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
 
             + "    try {\n"
             + "      log(innerDiv.id);\n"
@@ -419,7 +415,7 @@ public class MalformedHtmlTest extends WebDriverTestCase {
             + "      dump(innerDiv.childNodes[0]);\n"
             + "      dump(innerDiv.childNodes[1]);\n"
             + "      dump(innerDiv.childNodes[2]);\n"
-            + "    } catch (e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
 
             + "    try {\n"
             + "      log(anchors[0].id);\n"
@@ -428,7 +424,7 @@ public class MalformedHtmlTest extends WebDriverTestCase {
             + "      dump(anchors[0].childNodes[0]);\n"
             + "      log(anchors[0] == outerA);\n"
             + "      log(anchors[0] == innerA);\n"
-            + "    } catch (e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
 
             + "    try {\n"
             + "      log(anchors[1].id);\n"
@@ -437,7 +433,7 @@ public class MalformedHtmlTest extends WebDriverTestCase {
             + "      dump(anchors[1].childNodes[0]);\n"
             + "      log(anchors[1] == outerA);\n"
             + "      log(anchors[1] == innerA);\n"
-            + "    } catch (e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
 
             + "    try {\n"
             + "      log(anchors[2].id);\n"
@@ -446,7 +442,7 @@ public class MalformedHtmlTest extends WebDriverTestCase {
             + "      dump(anchors[2].childNodes[0]);\n"
             + "      log(anchors[2] == outerA);\n"
             + "      log(anchors[2] == innerA);\n"
-            + "    } catch (e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + "  function dump(e) {\n"
             + "    log(e.nodeName + ':' + e.nodeValue);\n"
@@ -510,6 +506,20 @@ public class MalformedHtmlTest extends WebDriverTestCase {
             + "</tbody>"
             + "</table>"
             + "<script> function log(msg) { window.document.title += msg + '\\u00a7'; } "
+                + "function logEx(e) { let toStr = null; "
+                + "if (toStr === null && e instanceof EvalError) { toStr = ''; } "
+                + "if (toStr === null && e instanceof RangeError) { toStr = ''; } "
+                + "if (toStr === null && e instanceof ReferenceError) { toStr = ''; } "
+                + "if (toStr === null && e instanceof SyntaxError) { toStr = ''; } "
+                + "if (toStr === null && e instanceof TypeError) { toStr = ''; } "
+                + "if (toStr === null && e instanceof URIError) { toStr = ''; } "
+                + "if (toStr === null && e instanceof AggregateError) { toStr = '/AggregateError'; } "
+                + "if (toStr === null && typeof InternalError == 'function' "
+                + "&& e instanceof InternalError) { toStr = '/InternalError'; } "
+                + "if (toStr === null) { let rx = /\\[object (.*)\\]/; "
+                + "toStr = Object.prototype.toString.call(e); "
+                + "let match = rx.exec(toStr); if (match != null) { toStr = '/' + match[1]; } } "
+                + "log(e.name + toStr); } "
                 + "log(document.getElementById('bdy').innerHTML); </script>")
     public void formInTableData() throws Exception {
         final String html = "<html>\n"
@@ -548,6 +558,20 @@ public class MalformedHtmlTest extends WebDriverTestCase {
             + "</tbody>"
             + "</table>"
             + "<script> function log(msg) { window.document.title += msg + '\\u00a7'; } "
+                + "function logEx(e) { let toStr = null; "
+                + "if (toStr === null && e instanceof EvalError) { toStr = ''; } "
+                + "if (toStr === null && e instanceof RangeError) { toStr = ''; } "
+                + "if (toStr === null && e instanceof ReferenceError) { toStr = ''; } "
+                + "if (toStr === null && e instanceof SyntaxError) { toStr = ''; } "
+                + "if (toStr === null && e instanceof TypeError) { toStr = ''; } "
+                + "if (toStr === null && e instanceof URIError) { toStr = ''; } "
+                + "if (toStr === null && e instanceof AggregateError) { toStr = '/AggregateError'; } "
+                + "if (toStr === null && typeof InternalError == 'function' "
+                + "&& e instanceof InternalError) { toStr = '/InternalError'; } "
+                + "if (toStr === null) { let rx = /\\[object (.*)\\]/; "
+                + "toStr = Object.prototype.toString.call(e); "
+                + "let match = rx.exec(toStr); if (match != null) { toStr = '/' + match[1]; } } "
+                + "log(e.name + toStr); } "
                 + "log(document.getElementById('bdy').innerHTML); </script>")
     public void formInTableRow() throws Exception {
         final String html = "<html>\n"
@@ -595,8 +619,21 @@ public class MalformedHtmlTest extends WebDriverTestCase {
             + "</tbody>"
             + "</table>"
             + "<script> function log(msg) { window.document.title += msg + '\\u00a7'; } "
+                + "function logEx(e) { let toStr = null; "
+                + "if (toStr === null && e instanceof EvalError) { toStr = ''; } "
+                + "if (toStr === null && e instanceof RangeError) { toStr = ''; } "
+                + "if (toStr === null && e instanceof ReferenceError) { toStr = ''; } "
+                + "if (toStr === null && e instanceof SyntaxError) { toStr = ''; } "
+                + "if (toStr === null && e instanceof TypeError) { toStr = ''; } "
+                + "if (toStr === null && e instanceof URIError) { toStr = ''; } "
+                + "if (toStr === null && e instanceof AggregateError) { toStr = '/AggregateError'; } "
+                + "if (toStr === null && typeof InternalError == 'function' "
+                + "&& e instanceof InternalError) { toStr = '/InternalError'; } "
+                + "if (toStr === null) { let rx = /\\[object (.*)\\]/; "
+                + "toStr = Object.prototype.toString.call(e); "
+                + "let match = rx.exec(toStr); if (match != null) { toStr = '/' + match[1]; } } "
+                + "log(e.name + toStr); } "
                 + "log(document.getElementById('bdy').innerHTML); </script>")
-
     public void formInTable() throws Exception {
         final String html = "<html>\n"
                 + "<body id='bdy'>\n"
@@ -982,9 +1019,7 @@ public class MalformedHtmlTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"3", "1b", "1a", "1c", "0", "TABLE"},
-            IE = {"3", "1a", "1b", "1c", "0", "TABLE"})
-    @HtmlUnitNYI(IE = {"3", "1b", "1a", "1c", "0", "TABLE"})
+    @Alerts({"3", "1b", "1a", "1c", "0", "TABLE"})
     public void formInTable9() throws Exception {
         final String html = "<html>\n"
                 + "<body>\n"
@@ -1120,8 +1155,7 @@ public class MalformedHtmlTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = {"", "0", "1"},
             EDGE = {"", "0", "1"},
             FF = {"", "0", "1"},
-            FF_ESR = {"", "0", "1"},
-            IE = {"", "0", "1"})
+            FF_ESR = {"", "0", "1"})
     public void siblingWithoutContentBeforeFrameset() throws Exception {
         final String html = "<html>\n"
                 + "<div id='div1'><span></span></div>\n"
@@ -1152,8 +1186,7 @@ public class MalformedHtmlTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = {"", "0", "1"},
             EDGE = {"", "0", "1"},
             FF = {"", "0", "1"},
-            FF_ESR = {"", "0", "1"},
-            IE = {"", "0", "1"})
+            FF_ESR = {"", "0", "1"})
     public void siblingWithWhitespaceContentBeforeFrameset() throws Exception {
         final String html = "<html>\n"
                 + "<div id='div1'>     \t \r \r\n</div>\n"
@@ -1295,8 +1328,7 @@ public class MalformedHtmlTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = {"", "0", "1"},
             EDGE = {"", "0", "1"},
             FF = {"", "0", "1"},
-            FF_ESR = {"", "0", "1"},
-            IE = {"", "0", "1"})
+            FF_ESR = {"", "0", "1"})
     public void framesetInsideDiv() throws Exception {
         final String html = "<html>\n"
                 + "<div id='tester'>\n"
@@ -1328,8 +1360,7 @@ public class MalformedHtmlTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = {"", "0", "1"},
             EDGE = {"", "0", "1"},
             FF = {"", "0", "1"},
-            FF_ESR = {"", "0", "1"},
-            IE = {"", "0", "1"})
+            FF_ESR = {"", "0", "1"})
     public void framesetInsideForm() throws Exception {
         final String html = "<html>\n"
                 + "<form id='tester'>\n"
@@ -1428,5 +1459,28 @@ public class MalformedHtmlTest extends WebDriverTestCase {
         driver.findElement(By.id("myLink")).click();
 
         assertEquals(getExpectedAlerts()[0], getMockWebConnection().getLastWebRequest().getUrl());
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"5", "3", "[object HTMLSelectElement]", "[object HTMLTableElement]", "[object HTMLScriptElement]"})
+    public void selectInsideEmptyTable() throws Exception {
+        final String html = "<html><head></head><body>\n"
+                + "<table><select name='Lang'><option value='da'>Dansk</option></select></table>\n"
+                + "<script>\n"
+                + LOG_TITLE_FUNCTION
+                + "log(document.body.childNodes.length);\n"
+                + "log(document.body.children.length);\n"
+                + "log(document.body.children[0]);\n"
+                + "log(document.body.children[1]);\n"
+                + "log(document.body.children[2]);\n"
+                + "</script>\n"
+                + "</body></html>";
+
+        expandExpectedAlertsVariables(URL_FIRST);
+
+        loadPageVerifyTitle2(html);
     }
 }

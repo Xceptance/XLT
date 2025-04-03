@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,7 +60,11 @@ public abstract class DomCharacterData extends DomNode implements CharacterData 
     public void setData(final String data) {
         final String oldData = data_;
         data_ = data;
-        fireCharacterDataChanged(new CharacterDataChangeEvent(this, oldData));
+
+        final SgmlPage page = getPage();
+        if (page == null || page.isCharacterDataChangeListenerInUse()) {
+            fireCharacterDataChanged(this, oldData);
+        }
     }
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,7 @@ package org.htmlunit.javascript.host.html;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -285,7 +284,7 @@ public class HTMLOptionsCollectionTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"0", "exception"})
+    @Alerts({"0", "NotFoundError/DOMException"})
     public void addBeforeUnknownEmpty() throws Exception {
         add(", new Option('foo', '123')", true, false);
     }
@@ -294,7 +293,7 @@ public class HTMLOptionsCollectionTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"0", "exception"})
+    @Alerts({"0", "NotFoundError/DOMException"})
     public void addBeforeUnknownEmptyMulti() throws Exception {
         add(", new Option('foo', '123')", true, true);
     }
@@ -303,7 +302,7 @@ public class HTMLOptionsCollectionTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"3", "exception"})
+    @Alerts({"3", "NotFoundError/DOMException"})
     public void addBeforeUnknown() throws Exception {
         add(", new Option('foo', '123')", false, false);
     }
@@ -312,7 +311,7 @@ public class HTMLOptionsCollectionTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"3", "exception"})
+    @Alerts({"3", "NotFoundError/DOMException"})
     public void addBeforeUnknownMulti() throws Exception {
         add(", new Option('foo', '123')", false, true);
     }
@@ -388,7 +387,7 @@ public class HTMLOptionsCollectionTest extends WebDriverTestCase {
             + "        for (var i = 0; i < oSelect.options.length; i++) {\n"
             + "          log(oSelect.options[i].text + (oSelect.options[i].selected ? '*' : ''));\n"
             + "        }\n"
-            + "      } catch (e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
             + "    }\n"
             + "  </script>\n"
             + "</head>\n"
@@ -458,8 +457,7 @@ public class HTMLOptionsCollectionTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "undefined",
-            IE = "null")
+    @Alerts("undefined")
     public void getThree() throws Exception {
         get("3", false);
     }
@@ -468,8 +466,7 @@ public class HTMLOptionsCollectionTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "undefined",
-            IE = "null")
+    @Alerts("undefined")
     public void getTenEmpty() throws Exception {
         get("10", true);
     }
@@ -478,8 +475,7 @@ public class HTMLOptionsCollectionTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "undefined",
-            IE = "null")
+    @Alerts("undefined")
     public void getTen() throws Exception {
         get("10", false);
     }
@@ -495,7 +491,7 @@ public class HTMLOptionsCollectionTest extends WebDriverTestCase {
             + "        var oSelect = document.forms.testForm.select1;\n"
             + "        var opt = oSelect.options[" + pos + "];\n"
             + "        log(opt ? opt.text + (opt.selected ? '*' : '') : opt);\n"
-            + "      } catch (e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
             + "    }\n"
             + "  </script>\n"
             + "</head>\n"
@@ -713,7 +709,7 @@ public class HTMLOptionsCollectionTest extends WebDriverTestCase {
             + "        for (var i = 0; i < oSelect.options.length; i++) {\n"
             + "          log(oSelect.options[i].text + (oSelect.options[i].selected ? '*' : ''));\n"
             + "        }\n"
-            + "      } catch (e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
             + "    }\n"
             + "  </script>\n"
             + "</head>\n"
@@ -738,8 +734,7 @@ public class HTMLOptionsCollectionTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "0",
-            IE = "exception")
+    @Alerts("0")
     public void removeMinusOneEmpty() throws Exception {
         remove("-1", true, false);
     }
@@ -748,8 +743,7 @@ public class HTMLOptionsCollectionTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "0",
-            IE = "exception")
+    @Alerts("0")
     public void removeMinusOneEmptyMulti() throws Exception {
         remove("-1", true, true);
     }
@@ -758,8 +752,7 @@ public class HTMLOptionsCollectionTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"3", "One", "Two*", "Three"},
-            IE = "exception")
+    @Alerts({"3", "One", "Two*", "Three"})
     public void removeMinusOne() throws Exception {
         remove("-1", false, false);
     }
@@ -768,8 +761,7 @@ public class HTMLOptionsCollectionTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"3", "One", "Two*", "Three*"},
-            IE = "exception")
+    @Alerts({"3", "One", "Two*", "Three*"})
     public void removeMinusOneMulti() throws Exception {
         remove("-1", false, true);
     }
@@ -897,7 +889,7 @@ public class HTMLOptionsCollectionTest extends WebDriverTestCase {
             + "        for (var i = 0; i < oSelect.options.length; i++) {\n"
             + "          log(oSelect.options[i].text + (oSelect.options[i].selected ? '*' : ''));\n"
             + "        }\n"
-            + "      } catch (e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
             + "    }\n"
             + "  </script>\n"
             + "</head>\n"
@@ -959,8 +951,7 @@ public class HTMLOptionsCollectionTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"0", "1", "One", "3", "One", "Two", "Three"},
-            IE = {"exception", "exception", "exception"})
+    @Alerts({"0", "1", "One", "3", "One", "Two", "Three"})
     public void setLengthMinusOne() throws Exception {
         setLength("-1");
     }
@@ -1024,7 +1015,7 @@ public class HTMLOptionsCollectionTest extends WebDriverTestCase {
             + "    for (var i = 0; i < sel.options.length; i++) {\n"
             + "      log(sel.options[i].text);\n"
             + "    }\n"
-            + "  } catch (e) { log('exception'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
 
             + "  var sel = document.form1.select1;\n"
             + "  try {\n"
@@ -1033,7 +1024,7 @@ public class HTMLOptionsCollectionTest extends WebDriverTestCase {
             + "    for (var i = 0; i < sel.options.length; i++) {\n"
             + "      log(sel.options[i].text);\n"
             + "    }\n"
-            + "  } catch (e) { log('exception'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
 
             + "  var sel = document.form1.select3;\n"
             + "  try {\n"
@@ -1042,7 +1033,7 @@ public class HTMLOptionsCollectionTest extends WebDriverTestCase {
             + "    for (var i = 0; i < sel.options.length; i++) {\n"
             + "      log(sel.options[i].text);\n"
             + "    }\n"
-            + "  } catch (e) { log('exception'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "}</script></head>\n"
 
             + "<body onload='test()'>\n"
@@ -1079,7 +1070,7 @@ public class HTMLOptionsCollectionTest extends WebDriverTestCase {
             + "    sel.options.length = 1;\n"
             + "    log(sel.options.length);\n"
             + "    log(sel.options[0].text);\n"
-            + "  } catch (e) { log(e); }\n"
+            + "  } catch(e) { log(e); }\n"
 
             + "  sel = document.form1.select1;\n"
             + "  try {\n"
@@ -1089,7 +1080,7 @@ public class HTMLOptionsCollectionTest extends WebDriverTestCase {
             + "    log(sel.options[0].childNodes.length);\n"
             + "    log(sel.options[1].text);\n"
             + "    log(sel.options[1].childNodes.length);\n"
-            + "  } catch (e) { log(e); }\n"
+            + "  } catch(e) { log(e); }\n"
             + "}</script></head>\n"
 
             + "<body onload='test()'>\n"
@@ -1109,9 +1100,7 @@ public class HTMLOptionsCollectionTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"1", "false", "true", "false", "false"},
-            IE = {"1", "true", "true", "true", "true"})
-    @HtmlUnitNYI(IE = {"1", "false", "true", "true", "true"})
+    @Alerts({"1", "false", "true", "false", "false"})
     public void in() throws Exception {
         final String html
             = "<html><head><script>\n"
@@ -1123,6 +1112,64 @@ public class HTMLOptionsCollectionTest extends WebDriverTestCase {
             + "  log(0 in opts);\n"
             + "  log(1 in opts);\n"
             + "  log(42 in opts);\n"
+            + "}</script></head>\n"
+
+            + "<body onload='test()'>\n"
+            + "  <form name='form1'>\n"
+            + "    <select name='select'>\n"
+            + "      <option>One</option>\n"
+            + "    </select>\n"
+            + "  </form>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"1", "undefined", "[object HTMLOptionElement]", "undefined", "undefined"})
+    public void index() throws Exception {
+        final String html
+            = "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "function test() {\n"
+            + "  var opts = document.form1.select.options;\n"
+            + "  log(opts.length);\n"
+            + "  log(opts[-1]);\n"
+            + "  log(opts[0]);\n"
+            + "  log(opts[1]);\n"
+            + "  log(opts[42]);\n"
+            + "}</script></head>\n"
+
+            + "<body onload='test()'>\n"
+            + "  <form name='form1'>\n"
+            + "    <select name='select'>\n"
+            + "      <option>One</option>\n"
+            + "    </select>\n"
+            + "  </form>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"1", "null", "[object HTMLOptionElement]", "null", "null"})
+    public void item() throws Exception {
+        final String html
+            = "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "function test() {\n"
+            + "  var opts = document.form1.select.options;\n"
+            + "  log(opts.length);\n"
+            + "  log(opts.item(-1));\n"
+            + "  log(opts.item(0));\n"
+            + "  log(opts.item(1));\n"
+            + "  log(opts.item(42));\n"
             + "}</script></head>\n"
 
             + "<body onload='test()'>\n"

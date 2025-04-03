@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
  */
 package org.htmlunit.attachment;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,10 +30,11 @@ import org.htmlunit.WebAssert;
  * @author Sudhan Moghe
  * @author Daniel Gredler
  * @author Ronald Brill
+ * @author Lai Quang Duong
  */
 public class CollectingAttachmentHandler implements AttachmentHandler {
 
-    private final List<Attachment> collectedAttachments_;
+    private transient List<Attachment> collectedAttachments_;
 
     /**
      * Creates a new instance.
@@ -53,8 +56,8 @@ public class CollectingAttachmentHandler implements AttachmentHandler {
      * {@inheritDoc}
      */
     @Override
-    public void handleAttachment(final Page page) {
-        collectedAttachments_.add(new Attachment(page));
+    public void handleAttachment(final Page page, final String attachmentFilename) {
+        collectedAttachments_.add(new Attachment(page, attachmentFilename));
     }
 
     /**
@@ -64,5 +67,10 @@ public class CollectingAttachmentHandler implements AttachmentHandler {
      */
     public List<Attachment> getCollectedAttachments() {
         return collectedAttachments_;
+    }
+
+    private void readObject(final ObjectInputStream ois) throws ClassNotFoundException, IOException {
+        ois.defaultReadObject();
+        collectedAttachments_ = new ArrayList<>();
     }
 }

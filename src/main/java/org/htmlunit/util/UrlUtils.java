@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package org.htmlunit.util;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -29,8 +30,6 @@ import java.util.BitSet;
 import java.util.Locale;
 import java.util.Objects;
 
-import org.apache.commons.codec.DecoderException;
-import org.apache.commons.codec.net.URLCodec;
 import org.htmlunit.WebAssert;
 import org.htmlunit.protocol.AnyHandler;
 import org.htmlunit.protocol.javascript.JavaScriptURLConnection;
@@ -269,11 +268,10 @@ public final class UrlUtils {
      * <code>"http://first/?a=b c"</code> to <code>"http://first/?a=b%20c"</code>.</p>
      *
      * @param url the URL to encode
-     * @param minimalQueryEncoding whether or not to perform minimal query encoding, like IE does
      * @param charset the charset
      * @return the encoded URL
      */
-    public static URL encodeUrl(final URL url, final boolean minimalQueryEncoding, final Charset charset) {
+    public static URL encodeUrl(final URL url, final Charset charset) {
         if (!isNormalUrlProtocol(url.getProtocol())) {
             return url; // javascript:, about:, data: and anything not supported like foo:
         }
@@ -285,12 +283,7 @@ public final class UrlUtils {
             }
             String query = url.getQuery();
             if (query != null) {
-                if (minimalQueryEncoding) {
-                    query = org.apache.commons.lang3.StringUtils.replace(query, " ", "%20");
-                }
-                else {
-                    query = encode(query, QUERY_ALLOWED_CHARS, charset);
-                }
+                query = encode(query, QUERY_ALLOWED_CHARS, charset);
             }
             String anchor = url.getRef();
             if (anchor != null) {
@@ -353,10 +346,10 @@ public final class UrlUtils {
     public static String decode(final String escaped) {
         try {
             final byte[] bytes = escaped.getBytes(US_ASCII);
-            final byte[] bytes2 = URLCodec.decodeUrl(bytes);
+            final byte[] bytes2 = decodeUrl(bytes);
             return new String(bytes2, UTF_8);
         }
-        catch (final DecoderException e) {
+        catch (final IllegalArgumentException e) {
             // Should never happen.
             throw new RuntimeException(e);
         }
@@ -372,7 +365,7 @@ public final class UrlUtils {
      */
     private static String encode(final String unescaped, final BitSet allowed, final Charset charset) {
         final byte[] bytes = unescaped.getBytes(charset);
-        final byte[] bytes2 = URLCodec.encodeUrl(allowed, bytes);
+        final byte[] bytes2 = encodeUrl(allowed, bytes);
         return encodePercentSign(bytes2);
     }
 
@@ -383,7 +376,6 @@ public final class UrlUtils {
      * @return the given input string where every occurrence of <code>%</code> in
      * invalid escape sequences has been replace by <code>%25</code>
      */
-    @SuppressWarnings("PMD.UselessParentheses")
     private static String encodePercentSign(final byte[] input) {
         if (input == null) {
             return null;
@@ -651,15 +643,13 @@ public final class UrlUtils {
         final StringBuilder s = new StringBuilder(len);
         s.append(protocol).append(':');
         if (authority != null && !authority.isEmpty()) {
-            s.append("//");
-            s.append(authority);
+            s.append("//").append(authority);
         }
         if (path != null) {
             s.append(path);
         }
         if (query != null) {
-            s.append('?');
-            s.append(query);
+            s.append('?').append(query);
         }
         if (ref != null) {
             if (ref.isEmpty() || ref.charAt(0) != '#') {
@@ -726,7 +716,6 @@ public final class UrlUtils {
      * @param spec The specification to parse.
      * @return the parsed specification.
      */
-    @SuppressWarnings("PMD.UselessParentheses")
     private static Url parseUrl(String spec) {
         final Url url = new Url();
         int startIndex = 0;
@@ -933,7 +922,6 @@ public final class UrlUtils {
      * @param scheme the scheme string to check
      * @return true if valid
      */
-    @SuppressWarnings("PMD.UselessParentheses")
     public static boolean isValidScheme(final String scheme) {
         final int length = scheme.length();
         if (length < 1) {
@@ -1168,6 +1156,7 @@ public final class UrlUtils {
          * Creates a <code>Url</code> object.
          */
         Url() {
+            super();
         }
 
         /**
@@ -1195,27 +1184,22 @@ public final class UrlUtils {
             final StringBuilder sb = new StringBuilder();
 
             if (scheme_ != null) {
-                sb.append(scheme_);
-                sb.append(':');
+                sb.append(scheme_).append(':');
             }
             if (location_ != null) {
-                sb.append("//");
-                sb.append(location_);
+                sb.append("//").append(location_);
             }
             if (path_ != null) {
                 sb.append(path_);
             }
             if (parameters_ != null) {
-                sb.append(';');
-                sb.append(parameters_);
+                sb.append(';').append(parameters_);
             }
             if (query_ != null) {
-                sb.append('?');
-                sb.append(query_);
+                sb.append('?').append(query_);
             }
             if (fragment_ != null) {
-                sb.append('#');
-                sb.append(fragment_);
+                sb.append('#').append(fragment_);
             }
             return sb.toString();
         }
@@ -1234,7 +1218,6 @@ public final class UrlUtils {
      * @param u2 a URL object
      * @return true if u1 and u2 refer to the same file
      */
-    @SuppressWarnings("PMD.UselessParentheses")
     public static boolean sameFile(final URL u1, final URL u2) {
         if (u1 == u2) {
             return true;
@@ -1278,10 +1261,10 @@ public final class UrlUtils {
                 f1 = u1.toURI().normalize().toURL().getFile();
                 f2 = u2.toURI().normalize().toURL().getFile();
             }
-            catch (final RuntimeException re) {
-                throw re;
+            catch (final RuntimeException e) {
+                throw e;
             }
-            catch (final Exception e) {
+            catch (final Exception ignored) {
                 // ignore
             }
         }
@@ -1314,7 +1297,7 @@ public final class UrlUtils {
                 try {
                     f = url.toURI().normalize().toURL().getFile();
                 }
-                catch (final Exception e) {
+                catch (final Exception ignored) {
                     // ignore
                 }
             }
@@ -1346,13 +1329,11 @@ public final class UrlUtils {
         final StringBuilder buffer = new StringBuilder();
         if (host != null) {
             if (scheme != null) {
-                buffer.append(scheme);
-                buffer.append("://");
+                buffer.append(scheme).append("://");
             }
             buffer.append(host);
             if (port > 0) {
-                buffer.append(':');
-                buffer.append(port);
+                buffer.append(':').append(port);
             }
         }
         if (path == null || path.isEmpty() || path.charAt(0) != '/') {
@@ -1362,8 +1343,7 @@ public final class UrlUtils {
             buffer.append(path);
         }
         if (query != null) {
-            buffer.append('?');
-            buffer.append(query);
+            buffer.append('?').append(query);
         }
         return new URI(buffer.toString());
     }
@@ -1399,4 +1379,96 @@ public final class UrlUtils {
         return url;
     }
 
+    // adapted from apache commons codec
+    public static byte[] decodeDataUrl(final byte[] bytes) throws IllegalArgumentException  {
+        if (bytes == null) {
+            return null;
+        }
+        final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        for (int i = 0; i < bytes.length; i++) {
+            final int b = bytes[i];
+            if (b == '%') {
+                try {
+                    final int u = digit16(bytes[++i]);
+                    final int l = digit16(bytes[++i]);
+                    buffer.write((char) ((u << 4) + l));
+                }
+                catch (final ArrayIndexOutOfBoundsException e) {
+                    throw new IllegalArgumentException("Invalid URL encoding: ", e);
+                }
+            }
+            else {
+                buffer.write(b);
+            }
+        }
+        return buffer.toByteArray();
+    }
+
+    public static byte[] decodeUrl(final byte[] bytes) throws IllegalArgumentException {
+        if (bytes == null) {
+            return null;
+        }
+        final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        for (int i = 0; i < bytes.length; i++) {
+            final int b = bytes[i];
+            if (b == '+') {
+                buffer.write(' ');
+            }
+            else if (b == '%') {
+                try {
+                    final int u = digit16(bytes[++i]);
+                    final int l = digit16(bytes[++i]);
+                    buffer.write((char) ((u << 4) + l));
+                }
+                catch (final ArrayIndexOutOfBoundsException e) {
+                    throw new IllegalArgumentException("Invalid URL encoding: ", e);
+                }
+            }
+            else {
+                buffer.write(b);
+            }
+        }
+        return buffer.toByteArray();
+    }
+
+    private static int digit16(final byte b) throws IllegalArgumentException  {
+        final int i = Character.digit((char) b, 16);
+        if (i == -1) {
+            throw new IllegalArgumentException("Invalid URL encoding: not a valid digit (radix 16): " + b);
+        }
+        return i;
+    }
+
+    // adapted from apache commons codec
+    public static byte[] encodeUrl(final BitSet urlsafe, final byte[] bytes) {
+        if (bytes == null) {
+            return null;
+        }
+
+        final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        for (final byte c : bytes) {
+            int b = c;
+            if (b < 0) {
+                b = 256 + b;
+            }
+            if (urlsafe.get(b)) {
+                if (b == ' ') {
+                    b = '+';
+                }
+                buffer.write(b);
+            }
+            else {
+                buffer.write('%');
+                final char hex1 = hexDigit(b >> 4);
+                final char hex2 = hexDigit(b);
+                buffer.write(hex1);
+                buffer.write(hex2);
+            }
+        }
+        return buffer.toByteArray();
+    }
+
+    private static char hexDigit(final int b) {
+        return Character.toUpperCase(Character.forDigit(b & 0xF, 16));
+    }
 }

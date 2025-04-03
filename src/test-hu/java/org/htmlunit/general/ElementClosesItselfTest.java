@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ package org.htmlunit.general;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -107,7 +107,7 @@ public class ElementClosesItselfTest extends WebDriverTestCase {
                 + "  var e = document.getElementById('outer');\n"
                 + "  try {\n"
                 + "    log(e == null ? e : e.children.length);\n"
-                + "  } catch(e) { log('exception'); }"
+                + "  } catch(e) { logEx(e); }"
                 + "}\n"
                 + "</script>\n"
                 + "</head><body onload='test()'>\n"
@@ -818,8 +818,7 @@ public class ElementClosesItselfTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "1",
-            IE = "0")
+    @Alerts("1")
     public void isindex() throws Exception {
         test("isindex");
     }
@@ -1442,8 +1441,7 @@ public class ElementClosesItselfTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "1",
-            IE = "exception")
+    @Alerts("1")
     public void svg() throws Exception {
         test("svg");
     }
@@ -1718,8 +1716,7 @@ public class ElementClosesItselfTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "0",
-            IE = "1")
+    @Alerts("0")
     public void template() throws Exception {
         test("template");
     }

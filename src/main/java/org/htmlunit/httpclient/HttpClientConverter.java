@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.http.HttpStatus;
 import org.apache.http.NoHttpResponseException;
 import org.apache.http.client.utils.DateUtils;
 import org.apache.http.client.utils.URLEncodedUtils;
@@ -36,6 +35,8 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.message.BufferedHeader;
 import org.apache.http.util.CharArrayBuffer;
 import org.htmlunit.BrowserVersion;
+import org.htmlunit.http.HttpStatus;
+import org.htmlunit.http.HttpUtils;
 import org.htmlunit.util.NameValuePair;
 import org.htmlunit.util.UrlUtils;
 
@@ -46,46 +47,86 @@ import org.htmlunit.util.UrlUtils;
  */
 public final class HttpClientConverter {
 
-    /** Forwarder to HttpStatus.SC_OK. */
-    public static final int OK = HttpStatus.SC_OK;
+    /** Forwarder to HttpStatus.SC_OK.
+     * @deprecated as of version 4.1.0; use {@link HttpStatus#OK_200} instead
+     */
+    @Deprecated
+    public static final int OK = org.apache.http.HttpStatus.SC_OK;
 
-    /** Forwarder to HttpStatus.SC_NO_CONTENT. */
-    public static final int NO_CONTENT = HttpStatus.SC_NO_CONTENT;
+    /** Forwarder to HttpStatus.SC_NO_CONTENT.
+     * @deprecated as of version 4.1.0; use {@link HttpStatus#NO_CONTENT_204} instead
+     */
+    @Deprecated
+    public static final int NO_CONTENT = org.apache.http.HttpStatus.SC_NO_CONTENT;
 
-    /** Forwarder to HttpStatus.MULTIPLE_CHOICES. */
-    public static final int MULTIPLE_CHOICES = HttpStatus.SC_MULTIPLE_CHOICES;
+    /** Forwarder to HttpStatus.MULTIPLE_CHOICES.
+     * @deprecated as of version 4.1.0; use {@link HttpStatus#MULTIPLE_CHOICES_300} instead
+     */
+    @Deprecated
+    public static final int MULTIPLE_CHOICES = org.apache.http.HttpStatus.SC_MULTIPLE_CHOICES;
 
-    /** Forwarder to HttpStatus.MOVED_PERMANENTLY. */
-    public static final int MOVED_PERMANENTLY = HttpStatus.SC_MOVED_PERMANENTLY;
+    /** Forwarder to HttpStatus.MOVED_PERMANENTLY.
+     * @deprecated as of version 4.1.0; use {@link HttpStatus#MOVED_PERMANENTLY_301} instead
+     */
+    @Deprecated
+    public static final int MOVED_PERMANENTLY = org.apache.http.HttpStatus.SC_MOVED_PERMANENTLY;
 
-    /** Forwarder to HttpStatus.MOVED_TEMPORARILY. */
-    public static final int MOVED_TEMPORARILY = HttpStatus.SC_MOVED_TEMPORARILY;
+    /** Forwarder to HttpStatus.MOVED_TEMPORARILY.
+     * @deprecated as of version 4.1.0; use {@link HttpStatus#FOUND_302} instead
+     */
+    @Deprecated
+    public static final int MOVED_TEMPORARILY = org.apache.http.HttpStatus.SC_MOVED_TEMPORARILY;
 
-    /** Forwarder to HttpStatus.SEE_OTHER. */
-    public static final int SEE_OTHER = HttpStatus.SC_SEE_OTHER;
+    /** Forwarder to HttpStatus.SEE_OTHER.
+     * @deprecated as of version 4.1.0; use {@link HttpStatus#SEE_OTHER_303} instead
+     */
+    @Deprecated
+    public static final int SEE_OTHER = org.apache.http.HttpStatus.SC_SEE_OTHER;
 
-    /** Forwarder to HttpStatus.TEMPORARY_REDIRECT. */
-    public static final int TEMPORARY_REDIRECT = HttpStatus.SC_TEMPORARY_REDIRECT;
+    /** Forwarder to HttpStatus.TEMPORARY_REDIRECT.
+     * @deprecated as of version 4.1.0; use {@link HttpStatus#TEMPORARY_REDIRECT_307} instead
+     */
+    @Deprecated
+    public static final int TEMPORARY_REDIRECT = org.apache.http.HttpStatus.SC_TEMPORARY_REDIRECT;
 
-    /** 308. */
+    /** 308.
+     * @deprecated as of version 4.1.0; use {@link HttpStatus#PERMANENT_REDIRECT_308} instead
+     */
+    @Deprecated
     public static final int PERMANENT_REDIRECT = 308;
 
-    /** Forwarder to HttpStatus.NOT_MODIFIED. */
-    public static final int NOT_MODIFIED = HttpStatus.SC_NOT_MODIFIED;
+    /** Forwarder to HttpStatus.NOT_MODIFIED.
+     * @deprecated as of version 4.1.0; use {@link HttpStatus#NOT_MODIFIED_304} instead
+     */
+    @Deprecated
+    public static final int NOT_MODIFIED = org.apache.http.HttpStatus.SC_NOT_MODIFIED;
 
-    /** Forwarder to HttpStatus.SC_USE_PROXY. */
-    public static final int USE_PROXY = HttpStatus.SC_USE_PROXY;
+    /** Forwarder to HttpStatus.SC_USE_PROXY.
+     * @deprecated as of version 4.1.0; use {@link HttpStatus#USE_PROXY_305} instead
+     */
+    @Deprecated
+    public static final int USE_PROXY = org.apache.http.HttpStatus.SC_USE_PROXY;
 
-    /** Forwarder to HttpStatus.SC_FORBIDDEN. */
-    public static final int FORBIDDEN = HttpStatus.SC_FORBIDDEN;
+    /** Forwarder to HttpStatus.SC_FORBIDDEN.
+     * @deprecated as of version 4.1.0; use {@link HttpStatus#FORBIDDEN_403} instead
+     */
+    @Deprecated
+    public static final int FORBIDDEN = org.apache.http.HttpStatus.SC_FORBIDDEN;
 
-    /** Forwarder to HttpStatus.SC_NOT_FOUND. */
-    public static final int NOT_FOUND = HttpStatus.SC_NOT_FOUND;
+    /** Forwarder to HttpStatus.SC_NOT_FOUND.
+     * @deprecated as of version 4.1.0; use {@link HttpStatus#NOT_FOUND_404} instead
+     */
+    @Deprecated
+    public static final int NOT_FOUND = org.apache.http.HttpStatus.SC_NOT_FOUND;
 
-    /** Forwarder to HttpStatus.SC_INTERNAL_SERVER_ERROR. */
-    public static final int INTERNAL_SERVER_ERROR = HttpStatus.SC_INTERNAL_SERVER_ERROR;
+    /** Forwarder to HttpStatus.SC_INTERNAL_SERVER_ERROR.
+     * @deprecated as of version 4.1.0; use {@link HttpStatus#INTERNAL_SERVER_ERROR_500} instead
+     */
+    @Deprecated
+    public static final int INTERNAL_SERVER_ERROR = org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
 
     private HttpClientConverter() {
+        // util class
     }
 
     /**
@@ -102,11 +143,14 @@ public final class HttpClientConverter {
     }
 
     /**
-     * Pares url query into name/value pairs using methods from HttpClient.
+     * Parses url query into name/value pairs using methods from HttpClient.
      * @param query the urlencoded query
      * @param charset the charset or null (defaulting to utf-8)
      * @return the name/value pairs
+     *
+     * @deprecated as of version 4.1.0; use {@link HttpUtils#parseUrlQuery(String, Charset)} instead
      */
+    @Deprecated
     public static List<NameValuePair> parseUrlQuery(final String query, final Charset charset) {
         final List<org.apache.http.NameValuePair> pairs = URLEncodedUtils.parse(query, charset);
 
@@ -121,7 +165,10 @@ public final class HttpClientConverter {
      * @param parameters the paramters
      * @param enc the charset
      * @return the query string from the given parameters
+     *
+     * @deprecated as of version 4.1.0; use {@link HttpUtils#toQueryFormFields(Iterable, Charset)} instead
      */
+    @Deprecated
     public static String toQueryFormFields(final List<NameValuePair> parameters, final Charset enc) {
         return URLEncodedUtils.format(nameValuePairsToHttpClient(parameters), enc);
     }
@@ -132,7 +179,10 @@ public final class HttpClientConverter {
      *
      * @param s the string to parse as a date
      * @return the date version of the specified string, or {@code null}
+     *
+     * @deprecated as of version 4.1.0; use {@link HttpUtils#parseDate(String)} instead
      */
+    @Deprecated
     public static Date parseHttpDate(final String s) {
         if (s == null) {
             return null;
@@ -145,7 +195,10 @@ public final class HttpClientConverter {
      *
      * @param date The date to format.
      * @return An RFC 1123 formatted date string.
+     *
+     * @deprecated as of version 4.1.0; use {@link HttpUtils#parseDate(String)} instead
      */
+    @Deprecated
     public static String formatDate(final Date date) {
         return DateUtils.formatDate(date);
     }
@@ -247,13 +300,12 @@ public final class HttpClientConverter {
 
     public static void addMatching(final Set<org.htmlunit.util.Cookie> cookies,
             final URL normalizedUrl, final BrowserVersion browserVersion,
-            final List<Cookie> matches) {
-        final List<Cookie> all = HttpClientConverter.toHttpClient(cookies);
-        if (all.size() > 0) {
+            final Set<org.htmlunit.util.Cookie> matches) {
+        if (!cookies.isEmpty()) {
             final CookieOrigin cookieOrigin = HttpClientConverter.buildCookieOrigin(normalizedUrl);
             final CookieSpec cookieSpec = new HtmlUnitBrowserCompatCookieSpec(browserVersion);
-            for (final Cookie cookie : all) {
-                if (cookieSpec.match(cookie, cookieOrigin)) {
+            for (final org.htmlunit.util.Cookie cookie : cookies) {
+                if (cookieSpec.match(cookie.toHttpClient(), cookieOrigin)) {
                     matches.add(cookie);
                 }
             }

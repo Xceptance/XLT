@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ package org.htmlunit.html;
 
 import org.htmlunit.SimpleWebTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -210,8 +210,7 @@ public class HtmlUrlInput2Test extends SimpleWebTestCase {
      *         if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"true", "false", "true", "", "https://github.com/HtmlUnit/htmlunit"},
-            IE = {"true", "true", "true", "", "https://github.com/HtmlUnit/htmlunit"})
+    @Alerts({"true", "false", "true", "", "https://github.com/HtmlUnit/htmlunit"})
     public void minLengthValidation() throws Exception {
         final String htmlContent = "<html>\n"
             + "<head></head>\n"

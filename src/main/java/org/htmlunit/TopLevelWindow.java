@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.htmlunit.util.UrlUtils;
  * @author David D. Kilzer
  * @author Ahmed Ashour
  * @author Ronald Brill
+ * @author Sven Strickroth
  */
 public class TopLevelWindow extends WebWindowImpl {
 
@@ -125,11 +126,9 @@ public class TopLevelWindow extends WebWindowImpl {
         try {
             if (page != null && page.isHtmlPage()) {
                 final HtmlPage htmlPage = (HtmlPage) page;
-                final boolean accepted = htmlPage.isOnbeforeunloadAccepted();
-                if (!ignoreOnbeforeunloadAccepted && !accepted) {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("The registered OnbeforeunloadHandler rejected the window close event.");
-                    }
+                final boolean accepted = ignoreOnbeforeunloadAccepted || htmlPage.isOnbeforeunloadAccepted();
+                if (!accepted) {
+                    LOG.debug("The registered OnbeforeunloadHandler rejected the window close event.");
                     rejected = true;
                 }
             }

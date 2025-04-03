@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ package org.htmlunit.html;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
@@ -61,8 +61,7 @@ public class HtmlHeading2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"left", "right", "center", "justify", "wrong", ""},
-            IE = {"left", "right", "center", "justify", "", ""})
+    @Alerts({"left", "right", "center", "justify", "wrong", ""})
     public void getAlign() throws Exception {
         final String html
             = "<html><body>\n"
@@ -93,8 +92,7 @@ public class HtmlHeading2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"CenTer", "8", "foo"},
-            IE = {"center", "error", "center", "error", "center"})
+    @Alerts({"CenTer", "8", "foo"})
     public void setAlign() throws Exception {
         final String html
             = "<html><body>\n"
@@ -107,9 +105,7 @@ public class HtmlHeading2Test extends WebDriverTestCase {
             + "  function setAlign(elem, value) {\n"
             + "    try {\n"
             + "      elem.align = value;\n"
-            + "    } catch (e) {\n"
-            + "      log('error');\n"
-            + "    }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "  }\n"
 
             + "  var elem = document.getElementById('e1');\n"
@@ -129,10 +125,8 @@ public class HtmlHeading2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "undefined", "undefined", "undefined", "undefined", "undefined",
-                       "undefined", "left", "none", "right", "all", "2", "abc", "8"},
-            IE = {"", "left", "all", "right", "none", "", "", "!", "!", "!", "left", "none", "right", "all", "none",
-                  "", ""})
+    @Alerts({"undefined", "undefined", "undefined", "undefined", "undefined", "undefined",
+             "undefined", "left", "none", "right", "all", "2", "abc", "8"})
     public void clear() throws Exception {
         final String html
             = "<html><body>\n"

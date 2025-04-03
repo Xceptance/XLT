@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -178,24 +178,6 @@ public class HtmlFileInput extends HtmlInput implements LabelableElement {
 
     /**
      * {@inheritDoc}
-     * @deprecated as of version 3.0.0; use {@link #setValue(String)} instead
-     */
-    @Deprecated
-    @Override
-    public void setValueAttribute(final String newValue) {
-        // make sure to remove setDefaultValue() also when removing this
-        super.setValueAttribute(newValue);
-
-        if (StringUtils.isEmpty(newValue)) {
-            files_ = new File[0];
-            return;
-        }
-
-        files_ = new File[] {normalizeFile(new File(newValue))};
-    }
-
-    /**
-     * {@inheritDoc}
      */
     @Override
     public void setValue(final String newValue) {
@@ -278,7 +260,7 @@ public class HtmlFileInput extends HtmlInput implements LabelableElement {
             try {
                 f = new File(new URI(path));
             }
-            catch (final URISyntaxException e) {
+            catch (final URISyntaxException ignored) {
                 // nothing here
             }
         }

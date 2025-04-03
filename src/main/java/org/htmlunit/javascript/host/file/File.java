@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,19 +16,19 @@ package org.htmlunit.javascript.host.file;
 
 import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.Date;
-import java.util.Locale;
-import java.util.TimeZone;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.time.FastDateFormat;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.htmlunit.BrowserVersion;
+import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.NativeArray;
 import org.htmlunit.corejs.javascript.ScriptableObject;
 import org.htmlunit.javascript.JavaScriptEngine;
@@ -36,6 +36,7 @@ import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
+import org.htmlunit.util.KeyDataPair;
 
 /**
  * A JavaScript object for {@code File}.
@@ -45,12 +46,17 @@ import org.htmlunit.javascript.configuration.JsxGetter;
  */
 @JsxClass
 public class File extends Blob {
-    private static final String LAST_MODIFIED_DATE_FORMAT = "EEE MMM dd yyyy HH:mm:ss 'GMT'Z (zzzz)";
+
+    private static final DateTimeFormatter LAST_MODIFIED_DATE_FORMATTER
+                            = DateTimeFormatter.ofPattern("EEE MMM dd yyyy HH:mm:ss 'GMT'Z");
 
     private static class FileBackend extends Backend {
+        private static final Log LOG = LogFactory.getLog(FileBackend.class);
+
         private final java.io.File file_;
 
         FileBackend(final String pathname) {
+            super();
             file_ = new java.io.File(pathname);
         }
 
@@ -80,20 +86,23 @@ public class File extends Blob {
         }
 
         @Override
-        public java.io.File getFile() {
-            return file_;
-        }
-
-        @Override
         byte[] getBytes(final int start, final int end) {
             final byte[] result = new byte[end - start];
             try {
                 System.arraycopy(FileUtils.readFileToByteArray(file_), start, result, 0, result.length);
             }
             catch (final IOException e) {
-                // TODO
+                LOG.error("FileBackend.getBytes failed", e);
             }
             return result;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public KeyDataPair getKeyDataPair(final String name, final String fileName, final String contentType) {
+            return new KeyDataPair(name, file_, fileName, contentType, (Charset) null);
         }
     }
 
@@ -101,6 +110,7 @@ public class File extends Blob {
      * Prototye ctor.
      */
     public File() {
+        super();
     }
 
     /**
@@ -109,7 +119,7 @@ public class File extends Blob {
      * @param fileName the Name
      * @param properties the properties
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor(final NativeArray fileBits, final String fileName, final ScriptableObject properties) {
         if (fileBits == null
                 || JavaScriptEngine.isUndefined(fileBits)
@@ -124,6 +134,7 @@ public class File extends Blob {
     }
 
     File(final String pathname) {
+        super();
         setBackend(new FileBackend(pathname));
     }
 
@@ -140,22 +151,23 @@ public class File extends Blob {
      * Returns the {@code lastModifiedDate} property.
      * @return the {@code lastModifiedDate} property
      */
-    @JsxGetter({CHROME, EDGE, IE})
+    @JsxGetter({CHROME, EDGE})
     public String getLastModifiedDate() {
-        final Date date = new Date(getLastModified());
-        final BrowserVersion browser = getBrowserVersion();
-        final Locale locale = browser.getBrowserLocale();
-        final TimeZone timezone = browser.getSystemTimezone();
+        final Context cx = Context.getCurrentContext();
+        final ZoneId zoneid = cx.getTimeZone().toZoneId();
 
-        final FastDateFormat format = FastDateFormat.getInstance(LAST_MODIFIED_DATE_FORMAT, timezone, locale);
-        return format.format(date);
+        // strange only the time zone is locale dependent
+        String date = LAST_MODIFIED_DATE_FORMATTER.format(Instant.ofEpochMilli(getLastModified()).atZone(zoneid));
+        date += DateTimeFormatter.ofPattern(" (zzzz)", cx.getLocale())
+                    .format(Instant.ofEpochMilli(getLastModified()).atZone(zoneid));
+        return date;
     }
 
     /**
      * Returns the {@code lastModified} property.
      * @return the {@code lastModified} property
      */
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxGetter
     public long getLastModified() {
         return getBackend().getLastModified();
     }
@@ -164,7 +176,7 @@ public class File extends Blob {
      * Returns the {@code webkitRelativePath} property.
      * @return the {@code webkitRelativePath} property
      */
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxGetter
     public String getWebkitRelativePath() {
         return "";
     }
@@ -174,20 +186,6 @@ public class File extends Blob {
      */
     @JsxFunction
     public void slice() {
-    }
-
-    /**
-     * Closes the file.
-     */
-    @JsxFunction(IE)
-    public void msClose() {
-    }
-
-    /**
-     * Returns the underlying file.
-     * @return the underlying file
-     */
-    public java.io.File getFile() {
-        return getBackend().getFile();
+        // nothing to do
     }
 }

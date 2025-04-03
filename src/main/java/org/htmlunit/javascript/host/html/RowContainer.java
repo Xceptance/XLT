@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,6 @@
  */
 package org.htmlunit.javascript.host.html;
 
-import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
-
 import java.io.Serializable;
 import java.util.function.Predicate;
 
@@ -29,6 +27,7 @@ import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.configuration.JsxSetter;
+import org.htmlunit.javascript.host.dom.DOMException;
 
 /**
  * Superclass for all row-containing JavaScript host classes, including tables,
@@ -43,18 +42,11 @@ import org.htmlunit.javascript.configuration.JsxSetter;
 public class RowContainer extends HTMLElement {
 
     /**
-     * Creates an instance.
-     */
-    public RowContainer() {
-        // Empty.
-    }
-
-    /**
      * Returns the rows in the element.
      * @return the rows in the element
      */
     @JsxGetter
-    public Object getRows() {
+    public HTMLCollection getRows() {
         final HTMLCollection rows = new HTMLCollection(getDomNodeOrDie(), false);
         rows.setIsMatchingPredicate(
                 (Predicate<DomNode> & Serializable)
@@ -78,7 +70,7 @@ public class RowContainer extends HTMLElement {
      */
     @JsxFunction
     public void deleteRow(int rowIndex) {
-        final HTMLCollection rows = (HTMLCollection) getRows();
+        final HTMLCollection rows = getRows();
         final int rowCount = rows.getLength();
         if (rowIndex == -1) {
             rowIndex = rowCount - 1;
@@ -100,12 +92,12 @@ public class RowContainer extends HTMLElement {
      * @return the newly-created row
      */
     @JsxFunction
-    public Object insertRow(final Object index) {
+    public HtmlUnitScriptable insertRow(final Object index) {
         int rowIndex = -1;
         if (!JavaScriptEngine.isUndefined(index)) {
             rowIndex = (int) JavaScriptEngine.toNumber(index);
         }
-        final HTMLCollection rows = (HTMLCollection) getRows();
+        final HTMLCollection rows = getRows();
         final int rowCount = rows.getLength();
         final int r;
         if (rowIndex == -1 || rowIndex == rowCount) {
@@ -116,8 +108,11 @@ public class RowContainer extends HTMLElement {
         }
 
         if (r < 0 || r > rowCount) {
-            throw JavaScriptEngine.reportRuntimeError("Index or size is negative or greater than the allowed amount "
-                    + "(index: " + rowIndex + ", " + rowCount + " rows)");
+            throw JavaScriptEngine.asJavaScriptException(
+                    getWindow(),
+                    "Index or size is negative or greater than the allowed amount "
+                            + "(index: " + rowIndex + ", " + rowCount + " rows)",
+                    DOMException.INDEX_SIZE_ERR);
         }
 
         return insertRow(r);
@@ -128,8 +123,8 @@ public class RowContainer extends HTMLElement {
      * @param index the index where the row should be inserted (0 &lt;= index &lt;= nbRows)
      * @return the inserted row
      */
-    public Object insertRow(final int index) {
-        final HTMLCollection rows = (HTMLCollection) getRows();
+    public HtmlUnitScriptable insertRow(final int index) {
+        final HTMLCollection rows = getRows();
         final int rowCount = rows.getLength();
         final DomElement newRow = ((HtmlPage) getDomNodeOrDie().getPage()).createElement("tr");
         if (rowCount == 0) {
@@ -150,28 +145,6 @@ public class RowContainer extends HTMLElement {
             }
         }
         return getScriptableFor(newRow);
-    }
-
-    /**
-     * Moves the row at the specified source index to the specified target index, returning
-     * the row that was moved.
-     * @param sourceIndex the index of the row to move
-     * @param targetIndex the index to move the row to
-     * @return the row that was moved
-     */
-    @JsxFunction(IE)
-    public Object moveRow(final int sourceIndex, final int targetIndex) {
-        final HTMLCollection rows = (HTMLCollection) getRows();
-        final int rowCount = rows.getLength();
-        final boolean sourceIndexValid = sourceIndex >= 0 && sourceIndex < rowCount;
-        final boolean targetIndexValid = targetIndex >= 0 && targetIndex < rowCount;
-        if (sourceIndexValid && targetIndexValid) {
-            final HtmlUnitScriptable sourceRow = (HtmlUnitScriptable) rows.item(Integer.valueOf(sourceIndex));
-            final HtmlUnitScriptable targetRow = (HtmlUnitScriptable) rows.item(Integer.valueOf(targetIndex));
-            targetRow.getDomNodeOrDie().insertBefore(sourceRow.getDomNodeOrDie());
-            return sourceRow;
-        }
-        return null;
     }
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,9 +45,8 @@ import org.htmlunit.WebRequest;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.javascript.host.xml.XMLHttpRequestTest.BasicAuthenticationServlet;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.BuggyWebDriver;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
 import org.junit.Ignore;
@@ -266,10 +265,7 @@ public class XMLHttpRequest2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"5", "pass", "pass", "pass", "pass"},
-            IE = {"1", "exception", "exception", "pass", "pass"})
-    @HtmlUnitNYI(IE = {"3", "exception", "exception", "pass", "pass"})
-    // real IE invokes just one request and returns the other two responses from it's cache
+    @Alerts({"5", "pass", "pass", "pass", "pass"})
     public void openThrowOnEmptyUrl() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -281,7 +277,7 @@ public class XMLHttpRequest2Test extends WebDriverTestCase {
             + "    xhr.open('GET', values[i], false);\n"
             + "    xhr.send('');\n"
             + "    log('pass');\n"
-            + "  } catch(e) { log('exception') }\n"
+            + "  } catch(e) { logEx(e) }\n"
             + "}\n"
             + "</script>\n"
             + "</head>\n"
@@ -303,8 +299,6 @@ public class XMLHttpRequest2Test extends WebDriverTestCase {
     @Test
     @Alerts({"1", "bla", "someAttr", "someValue", "true", "foo", "2", "fi1"})
     public void responseXML() throws Exception {
-        shutDownRealIE();
-
         testResponseXML(MimeType.TEXT_XML);
         testResponseXML(null);
     }
@@ -316,8 +310,6 @@ public class XMLHttpRequest2Test extends WebDriverTestCase {
     @Test
     @Alerts("null")
     public void responseXML_badContentType() throws Exception {
-        shutDownRealIE();
-
         final String html = "<html><head>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
@@ -406,8 +398,7 @@ public class XMLHttpRequest2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "ok",
-            IE = "exception")
+    @Alerts("ok")
     public void sameOriginPolicy_aboutBlank() throws Exception {
         sameOriginPolicy("about:blank");
     }
@@ -421,7 +412,7 @@ public class XMLHttpRequest2Test extends WebDriverTestCase {
             + "  try {\n"
             + "    xhr.open('GET', '" + url + "', false);\n"
             + "    log('ok');\n"
-            + "  } catch(e) { log('exception'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script>\n"
             + "</head>\n"
@@ -486,9 +477,7 @@ public class XMLHttpRequest2Test extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = {"hello", "in timeout"},
             EDGE = {"hello", "in timeout"},
             FF = {"hello", "in timeout"},
-            FF_ESR = {"hello", "in timeout"},
-            IE = {"hello", "in timeout"})
-    // TODO [IE]SINGLE-VS-BULK test runs when executed as single but breaks as bulk
+            FF_ESR = {"hello", "in timeout"})
     public void xhrDownloadInBackground() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -516,8 +505,6 @@ public class XMLHttpRequest2Test extends WebDriverTestCase {
      */
     @Test
     @Alerts("hello in timeout")
-    @BuggyWebDriver(IE = "in timeouthello")
-    // IEDriver catches "in timeout", "hello" but real IE gets the correct order
     public void xhrCallbackBeforeTimeout() throws Exception {
         final String html = "<html><head><script>\n"
             + "function wait() {\n"
@@ -758,7 +745,7 @@ public class XMLHttpRequest2Test extends WebDriverTestCase {
             + "    log('ok');\n"
             + "    xhr.send();\n"
             + "    log(xhr.readyState);\n"
-            + "  } catch(e) { log('exception'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script>\n"
             + "</head>\n"
@@ -793,7 +780,7 @@ public class XMLHttpRequest2Test extends WebDriverTestCase {
             + "    log('ok');\n"
             + "    xhr.send();\n"
             + "    log(xhr.readyState);\n"
-            + "  } catch(e) { log('exception'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script>\n"
             + "</head>\n"
@@ -837,7 +824,7 @@ public class XMLHttpRequest2Test extends WebDriverTestCase {
             + "    log('ok');\n"
             + "    xhr.send();\n"
             + "    log(xhr.readyState);\n"
-            + "  } catch(e) { log('exception'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script>\n"
             + "</head>\n"
@@ -1049,9 +1036,7 @@ public class XMLHttpRequest2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"<xml><content>blah</content></xml>", "text/xml;charset=utf-8", "gzip", "45"},
-            IE = {"<xml><content>blah</content></xml>", "text/xml;charset=utf-8", "null", "null"})
-    @HtmlUnitNYI(IE = {"<xml><content>blah</content></xml>", "text/xml;charset=utf-8", "gzip", "45"})
+    @Alerts({"<xml><content>blah</content></xml>", "text/xml;charset=utf-8", "gzip", "45"})
     public void encodedXml() throws Exception {
         final Map<String, Class<? extends Servlet>> servlets = new HashMap<>();
         servlets.put("/test", EncodedXmlServlet.class);
@@ -1085,13 +1070,10 @@ public class XMLHttpRequest2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"", "", "content-type: text/xml;charset=iso-8859-1\\n"
-                                + "date XYZ GMT\\n"
-                                + "server: Jetty(XXX)\\n"
-                                + "transfer-encoding: chunked\\n"},
-            IE = {"", "", "Date XYZ GMT\\nContent-Type: text/xml;charset=iso-8859-1\\n"
-                            + "Transfer-Encoding: chunked\\n"
-                            + "Server: Jetty(XXX)\\n\\n"})
+    @Alerts({"", "", "content-type: text/xml;charset=iso-8859-1\\n"
+                        + "date XYZ GMT\\n"
+                        + "server: Jetty(XXX)\\n"
+                        + "transfer-encoding: chunked\\n"})
     @HtmlUnitNYI(CHROME = {"", "", "Date XYZ GMT\\nContent-Type: text/xml;charset=iso-8859-1\\n"
                                         + "Transfer-Encoding: chunked\\n"
                                         + "Server: Jetty(XXX)\\n"},
@@ -1105,8 +1087,6 @@ public class XMLHttpRequest2Test extends WebDriverTestCase {
                                 + "Transfer-Encoding: chunked\\n"
                                 + "Server: Jetty(XXX)\\n"})
     public void getAllResponseHeaders() throws Exception {
-        shutDownRealIE();
-
         final String html =
                 "<html>\n"
                         + "  <head>\n"
@@ -1219,8 +1199,7 @@ public class XMLHttpRequest2Test extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = "read onerror",
             EDGE = "read onerror",
             FF = "read onerror",
-            FF_ESR = "read onerror",
-            IE = "read onerror")
+            FF_ESR = "read onerror")
     public void readPropertyFromPrototypeShouldThrow() throws Exception {
         final String html = "<html><body>\n"
             + "<script>\n"
@@ -1290,7 +1269,7 @@ public class XMLHttpRequest2Test extends WebDriverTestCase {
             + "    try {\n"
             + "      xhr.open('POST', 'redirect.html', false);\n"
             + "      xhr.send('" + content + "');\n"
-            + "    } catch(e) { log('exception'); }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "  }\n"
             + "</script></head>\n"
             + "<body onload='test()'></body></html>";

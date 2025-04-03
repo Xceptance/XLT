@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@ package org.htmlunit.html.parser;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -651,7 +651,7 @@ public class HTMLParser2Test extends WebDriverTestCase {
             + "  log(tmp.tagName);\n"
             + "  tmp = tmp.firstChild.tagName;\n"
             + "  log(tmp);\n"
-            + "} catch(e) { log('exception'); }\n"
+            + "} catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script>\n"
             + "</head>\n"
@@ -680,7 +680,7 @@ public class HTMLParser2Test extends WebDriverTestCase {
             + "  log(tmp.tagName);\n"
             + "  tmp = tmp.firstChild.tagName;\n"
             + "  log(tmp);\n"
-            + "} catch(e) { log('exception'); }\n"
+            + "} catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script>\n"
             + "</head>\n"
@@ -843,7 +843,7 @@ public class HTMLParser2Test extends WebDriverTestCase {
             + "  log(tmp.innerHTML);\n"
             + "  tmp = document.getElementById('my2');\n"
             + "  log(tmp.innerHTML);\n"
-            + "} catch(e) { log('exception'); }\n"
+            + "} catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script>\n"
             + "</head>\n"
@@ -941,12 +941,9 @@ public class HTMLParser2Test extends WebDriverTestCase {
      * @throws Exception on test failure
      */
     @Test
-    @Alerts(DEFAULT = {"<iframe></div></body></html></iframe>", "1",
-                       "1", "IFRAME", "null", "1",
-                       "3", "#text", "</div></body></html>"},
-            IE = {"<iframe>&lt;/div&gt;&lt;/body&gt;&lt;/html&gt;</iframe>", "1",
-                  "1", "IFRAME", "null", "1",
-                  "3", "#text", "</div></body></html>"})
+    @Alerts({"<iframe></div></body></html></iframe>", "1",
+             "1", "IFRAME", "null", "1",
+             "3", "#text", "</div></body></html>"})
     @HtmlUnitNYI(CHROME = {"<iframe>&lt;/div&gt;&lt;/body&gt;&lt;/html&gt;</iframe>", "1",
                            "1", "IFRAME", "null", "1",
                            "3", "#text", "</div></body></html>"},
@@ -980,7 +977,7 @@ public class HTMLParser2Test extends WebDriverTestCase {
             + "  log(child2.nodeName);\n"
             + "  log(child2.nodeValue);\n"
 
-            + "} catch(e) { log('exception'); }\n"
+            + "} catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script>\n"
             + "</head>\n"
@@ -1018,7 +1015,7 @@ public class HTMLParser2Test extends WebDriverTestCase {
             + "  var child2 = child.childNodes[0];\n"
             + "  log(child2.childNodes.length + '-' + child2.nodeType + '#' +child2.nodeName);\n"
 
-            + "} catch(e) { log('exception'); }\n"
+            + "} catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script>\n"
             + "</head>\n"
@@ -1050,7 +1047,7 @@ public class HTMLParser2Test extends WebDriverTestCase {
             + "  var child = tmp.childNodes[0];\n"
             + "  log(child.childNodes.length + '-' + child.nodeType + '#' + child.nodeName);\n"
 
-            + "} catch(e) { log('exception'); }\n"
+            + "} catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script>\n"
             + "</head>\n"
@@ -1083,7 +1080,7 @@ public class HTMLParser2Test extends WebDriverTestCase {
 
             + "  tmp = tmp.nextSibling;\n"
             + "  log(tmp.textContent);\n"
-            + "} catch(e) { log('exception'); }\n"
+            + "} catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script>\n"
             + "</head>\n"
@@ -1110,13 +1107,40 @@ public class HTMLParser2Test extends WebDriverTestCase {
 
             + "  tmp = tmp.firstChild;\n"
             + "  log(tmp.tagName);\n"
-            + "} catch(e) { log('exception'); }\n"
+            + "} catch(e) { logEx(e); }\n"
             + "}\n"
             + "</script>\n"
             + "</head>\n"
             + "<body onload='test()'>\n"
             + "  <table id='myP'><style>h1 {color:red;} p {color:blue;}</style></table>\n"
             + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"2", "8"})
+    public void childNodesDynamicUpdateDuringParsing() throws Exception {
+        final String html =
+                "<html><head>\n"
+                + "<script>\n"
+                + LOG_TITLE_FUNCTION
+                + "</script>\n"
+                + "</head>\n"
+                + "<body id='id1'>\n"
+                + "<script>\n"
+                + "  var childNodes = document.getElementById('id1').childNodes;\n"
+                + "  log(childNodes.length);\n"
+                + "</script>\n"
+                + "<h1>My First Heading</h1>\n"
+                + "<p>My first paragraph.</p>\n"
+                + "<script>\n"
+                + "  log(childNodes.length);\n"
+                + "</script>\n"
+                + "</body></html>";
 
         loadPageVerifyTitle2(html);
     }

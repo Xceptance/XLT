@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,8 @@
  */
 package org.htmlunit.javascript.host.event;
 
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import java.util.ArrayList;
 
@@ -125,6 +122,7 @@ public class MouseEvent extends UIEvent {
      * Used to build the prototype.
      */
     public MouseEvent() {
+        super();
         screenX_ = Integer.valueOf(0);
         screenY_ = Integer.valueOf(0);
         setDetail(1);
@@ -137,7 +135,7 @@ public class MouseEvent extends UIEvent {
      * @param details the event details (optional)
      */
     @Override
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor(final String type, final ScriptableObject details) {
         super.jsConstructor(JavaScriptEngine.toString(type), details);
         if (details != null && !JavaScriptEngine.isUndefined(details)) {
@@ -335,7 +333,6 @@ public class MouseEvent extends UIEvent {
      * @see <a href="http://unixpapa.com/js/mouse.html">Javascript Madness: Mouse Events</a>
      * @return the button code
      */
-    @JsxGetter(IE)
     @Override
     public int getWhich() {
         return button_ + 1;
@@ -399,7 +396,7 @@ public class MouseEvent extends UIEvent {
         final Context context = Context.getCurrentContext();
         if (context != null) {
             final ArrayList<Event> events = (ArrayList<Event>) context.getThreadLocal(KEY_CURRENT_EVENT);
-            if (events != null && events.size() > 0) {
+            if (events != null && !events.isEmpty()) {
                 final int lastIdx = events.size() - 1;
                 final Event lastEvent = events.get(lastIdx);
                 if (lastEvent instanceof MouseEvent) {

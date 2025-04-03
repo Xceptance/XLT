@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,6 @@ package org.htmlunit.javascript.host.event;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.Function;
@@ -29,7 +27,6 @@ import org.htmlunit.html.DomNode;
 import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
-import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
 
 /**
@@ -57,6 +54,7 @@ public class PointerEvent extends MouseEvent {
      * Default constructor.
      */
     public PointerEvent() {
+        super();
     }
 
     /**
@@ -68,7 +66,7 @@ public class PointerEvent extends MouseEvent {
      * @param inNewExpr Is new or not
      * @return the java object to allow JavaScript to access
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public static Scriptable jsConstructor(final Context cx, final Scriptable scope,
             final Object[] args, final Function ctorObj, final boolean inNewExpr) {
         final PointerEvent event = new PointerEvent();
@@ -140,77 +138,6 @@ public class PointerEvent extends MouseEvent {
     }
 
     /**
-     * Used for initializing the pointer event.
-     *
-     * @param type the event type
-     * @param bubbles can the event bubble
-     * @param cancelable can the event be canceled
-     * @param view the view to use for this event
-     * @param detail the detail to set for the event
-     * @param screenX the initial value of screenX
-     * @param screenY the initial value of screenY
-     * @param clientX the initial value of clientX
-     * @param clientY the initial value of clientY
-     * @param ctrlKey is the control key pressed
-     * @param altKey is the alt key pressed
-     * @param shiftKey is the shift key pressed
-     * @param metaKey is the meta key pressed
-     * @param button what mouse button is pressed
-     * @param relatedTarget is there a related target for the event
-     * @param offsetX the initial value of offsetX
-     * @param offsetY the initial value of offsetY
-     * @param width the initial value of width
-     * @param height the initial value of height
-     * @param pressure the initial value of pressure
-     * @param rotation the initial value of rotation
-     * @param tiltX the initial value of tiltX
-     * @param tiltY the initial value of tiltY
-     * @param pointerId the pointerId
-     * @param pointerType the pointer type
-     * @param hwTimestamp the initial value of hwTimestamp
-     * @param isPrimary the initial value of isPrimary
-     */
-    @JsxFunction(IE)
-    public void initPointerEvent(final String type,
-            final boolean bubbles,
-            final boolean cancelable,
-            final Object view,
-            final int detail,
-            final int screenX,
-            final int screenY,
-            final int clientX,
-            final int clientY,
-            final boolean ctrlKey,
-            final boolean altKey,
-            final boolean shiftKey,
-            final boolean metaKey,
-            final int button,
-            final Object relatedTarget,
-            final int offsetX,
-            final int offsetY,
-            final int width,
-            final int height,
-            final Double pressure,
-            final int rotation,
-            final int tiltX,
-            final int tiltY,
-            final int pointerId,
-            final String pointerType,
-            final int hwTimestamp,
-            final boolean isPrimary) {
-        super.initMouseEvent(type, bubbles, cancelable, view, detail, screenX, screenY, clientX, clientY, ctrlKey,
-            altKey, shiftKey, metaKey, button, relatedTarget);
-        width_ = width;
-        height_ = height;
-        pressure_ = pressure.doubleValue();
-        tiltX_ = tiltX;
-        tiltY_ = tiltY;
-        pointerId_ = pointerId;
-        pointerType_ = pointerType;
-        isPrimary_ = isPrimary;
-    }
-
-    /**
      * @return the pointerId
      */
     @JsxGetter
@@ -277,7 +204,8 @@ public class PointerEvent extends MouseEvent {
     /**
      * @return the pointerType
      */
-    @JsxGetter({CHROME, EDGE})
+    @JsxGetter({CHROME, EDGE, FF})
+    @SuppressWarnings("PMD.UseUnderscoresInNumericLiterals")
     public double getAltitudeAngle() {
         return 1.5707963267948966;
     }
@@ -285,7 +213,7 @@ public class PointerEvent extends MouseEvent {
     /**
      * @return the pointerType
      */
-    @JsxGetter({CHROME, EDGE})
+    @JsxGetter({CHROME, EDGE, FF})
     public double getAzimuthAngle() {
         return 0d;
     }

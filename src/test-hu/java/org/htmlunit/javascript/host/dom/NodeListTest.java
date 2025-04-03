@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,7 @@ package org.htmlunit.javascript.host.dom;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -56,8 +55,7 @@ public class NodeListTest extends WebDriverTestCase {
      * @throws Exception on test failure
      */
     @Test
-    @Alerts(DEFAULT = {"true", "true", "false", "true", "true", "true", "true", "true", "true"},
-            IE = {"true", "true", "false", "false", "false", "true", "false", "true", "false"})
+    @Alerts({"true", "true", "false", "true", "true", "true", "true", "true", "true"})
     public void has() throws Exception {
         final String html = "<html><head>\n"
                 + "<script>\n"
@@ -157,8 +155,7 @@ public class NodeListTest extends WebDriverTestCase {
      * @throws Exception on test failure
      */
     @Test
-    @Alerts(DEFAULT = "0,1,2,3,4,entries,forEach,item,keys,length,values",
-            IE = "0,1,2,3,4,item,length")
+    @Alerts("0,1,2,3,4,entries,forEach,item,keys,length,values")
     public void forIn() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_ + "<html><head>\n"
                 + "<script>\n"
@@ -186,8 +183,7 @@ public class NodeListTest extends WebDriverTestCase {
      * @throws Exception on test failure
      */
     @Test
-    @Alerts(DEFAULT = "entries,forEach,item,keys,length,values",
-            IE = "item,length")
+    @Alerts("entries,forEach,item,keys,length,values")
     public void forInEmptyList() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_ + "<html><head>\n"
                 + "<script>\n"
@@ -215,10 +211,9 @@ public class NodeListTest extends WebDriverTestCase {
      * @throws Exception on test failure
      */
     @Test
-    @Alerts(DEFAULT = {"true", "[object HTMLHtmlElement]", "[object HTMLHeadElement]",
-                       "[object HTMLScriptElement]", "[object HTMLBodyElement]",
-                       "[object HTMLDivElement]"},
-            IE = "no for..of")
+    @Alerts({"true", "[object HTMLHtmlElement]", "[object HTMLHeadElement]",
+             "[object HTMLScriptElement]", "[object HTMLBodyElement]",
+             "[object HTMLDivElement]"})
     public void iterator() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_ + "<html><head>\n"
                 + "<script>\n"
@@ -251,12 +246,11 @@ public class NodeListTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"[object HTMLHtmlElement] 0 [object NodeList] undefined",
-                       "[object HTMLHeadElement] 1 [object NodeList] undefined",
-                       "[object HTMLScriptElement] 2 [object NodeList] undefined",
-                       "[object HTMLBodyElement] 3 [object NodeList] undefined",
-                       "[object HTMLDivElement] 4 [object NodeList] undefined"},
-            IE = "no forEach")
+    @Alerts({"[object HTMLHtmlElement] 0 [object NodeList] undefined",
+             "[object HTMLHeadElement] 1 [object NodeList] undefined",
+             "[object HTMLScriptElement] 2 [object NodeList] undefined",
+             "[object HTMLBodyElement] 3 [object NodeList] undefined",
+             "[object HTMLDivElement] 4 [object NodeList] undefined"})
     public void forEach() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -281,11 +275,35 @@ public class NodeListTest extends WebDriverTestCase {
     }
 
     /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"TypeError", "TypeError"})
+    public void forEachWrongParam() throws Exception {
+        final String html
+                = "<html><head><script>\n"
+                + LOG_TITLE_FUNCTION
+                + "function test() {\n"
+                + "  var nodeList = document.querySelectorAll('*');\n"
+                + "  try {\n"
+                + "    nodeList.forEach();\n"
+                + "  } catch(e) { logEx(e); }\n"
+                + "  try {\n"
+                + "    nodeList.forEach('wrong');\n"
+                + "  } catch(e) { logEx(e); }\n"
+                + "}\n"
+                + "</script></head><body onload='test()'>\n"
+                + "  <div id='d1' class=' a b \t c \n d \u000B e \u000C f \r g'></div>\n"
+                + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"value", "done", "object", "0", "[object HTMLHtmlElement]"},
-            IE = "not defined")
+    @Alerts({"value", "done", "object", "0", "[object HTMLHtmlElement]"})
     public void entries() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -316,8 +334,7 @@ public class NodeListTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"true", "undefined", "function", "undefined", "undefined", "true", "true", "true"},
-            IE = {"false", "undefined", "no entries"})
+    @Alerts({"true", "undefined", "function", "undefined", "undefined", "true", "true", "true"})
     public void entriesPropertyDescriptor() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -348,10 +365,8 @@ public class NodeListTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"0,[object HTMLHtmlElement]", "1,[object HTMLHeadElement]",
-                       "2,[object HTMLScriptElement]", "3,[object HTMLBodyElement]"},
-            IE = {})
-    @HtmlUnitNYI(IE = "not defined")
+    @Alerts({"0,[object HTMLHtmlElement]", "1,[object HTMLHeadElement]",
+             "2,[object HTMLScriptElement]", "3,[object HTMLBodyElement]"})
     public void entriesForOf() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -377,8 +392,7 @@ public class NodeListTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"value", "done", "number", "0"},
-            IE = "not defined")
+    @Alerts({"value", "done", "number", "0"})
     public void keys() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -408,8 +422,7 @@ public class NodeListTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"true", "undefined", "function", "undefined", "undefined", "true", "true", "true"},
-            IE = {"false", "undefined", "no keys"})
+    @Alerts({"true", "undefined", "function", "undefined", "undefined", "true", "true", "true"})
     public void keysPropertyDescriptor() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -440,9 +453,7 @@ public class NodeListTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"0", "1", "2", "3"},
-            IE = {})
-    @HtmlUnitNYI(IE = "not defined")
+    @Alerts({"0", "1", "2", "3"})
     public void keysForOf() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -491,8 +502,7 @@ public class NodeListTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"value", "done", "object", "[object HTMLHtmlElement]"},
-            IE = "not defined")
+    @Alerts({"value", "done", "object", "[object HTMLHtmlElement]"})
     public void values() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -522,8 +532,7 @@ public class NodeListTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"true", "undefined", "function", "undefined", "undefined", "true", "true", "true"},
-            IE = {"false", "undefined", "no values"})
+    @Alerts({"true", "undefined", "function", "undefined", "undefined", "true", "true", "true"})
     public void valuesPropertyDescriptor() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -554,10 +563,8 @@ public class NodeListTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"[object HTMLHtmlElement]", "[object HTMLHeadElement]",
-                       "[object HTMLScriptElement]", "[object HTMLBodyElement]"},
-            IE = {})
-    @HtmlUnitNYI(IE = "not defined")
+    @Alerts({"[object HTMLHtmlElement]", "[object HTMLHeadElement]",
+             "[object HTMLScriptElement]", "[object HTMLBodyElement]"})
     public void valuesForOf() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -583,8 +590,7 @@ public class NodeListTest extends WebDriverTestCase {
      * @throws Exception on failure
      */
     @Test
-    @Alerts(DEFAULT = {"0", "4", "0", "1", "2", "3"},
-            IE = "not defined")
+    @Alerts({"0", "4", "0", "1", "2", "3"})
     public void getOwnPropertySymbols() throws Exception {
         final String html = "<html><body>\n"
                 + "<script>\n"
@@ -615,8 +621,7 @@ public class NodeListTest extends WebDriverTestCase {
      * @throws Exception on failure
      */
     @Test
-    @Alerts(DEFAULT = {"0", "0"},
-            IE = "not defined")
+    @Alerts({"0", "0"})
     public void getOwnPropertySymbolsEmptyList() throws Exception {
         final String html = "<html><body>\n"
                 + "<script>\n"
