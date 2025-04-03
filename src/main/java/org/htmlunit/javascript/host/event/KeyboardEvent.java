@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,8 @@
 package org.htmlunit.javascript.host.event;
 
 import static org.htmlunit.BrowserVersionFeatures.JS_EVENT_KEYBOARD_CTOR_WHICH;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -62,14 +59,6 @@ public class KeyboardEvent extends UIEvent {
     /** Constant for {@code DOM_KEY_LOCATION_NUMPAD}. */
     @JsxConstant
     public static final int DOM_KEY_LOCATION_NUMPAD = 3;
-
-    /** Constant for {@code DOM_KEY_LOCATION_MOBILE}. */
-    @JsxConstant(IE)
-    public static final int DOM_KEY_LOCATION_MOBILE = 4;
-
-    /** Constant for {@code DOM_KEY_LOCATION_JOYSTICK}. */
-    @JsxConstant(IE)
-    public static final int DOM_KEY_LOCATION_JOYSTICK = 5;
 
     /** Constant for {@code DOM_VK_CANCEL}. */
     @JsxConstant({FF, FF_ESR})
@@ -820,41 +809,41 @@ public class KeyboardEvent extends UIEvent {
      * the character (if they are not the same).
      * You can verify this <a href="http://www.asquare.net/javascript/tests/KeyCode.html">here</a>
      */
-    private static final Map<Character, Integer> keyCodeMap = new HashMap<>();
+    private static final Map<Character, Integer> KEX_CODE_MAP = new HashMap<>();
     static {
-        keyCodeMap.put('`', DOM_VK_BACK_QUOTE);
-        keyCodeMap.put('~', DOM_VK_BACK_QUOTE);
-        keyCodeMap.put('!', DOM_VK_1);
-        keyCodeMap.put('@', DOM_VK_2);
-        keyCodeMap.put('#', DOM_VK_3);
-        keyCodeMap.put('$', DOM_VK_4);
-        keyCodeMap.put('%', DOM_VK_5);
-        keyCodeMap.put('^', DOM_VK_6);
-        keyCodeMap.put('&', DOM_VK_7);
-        keyCodeMap.put('*', DOM_VK_8);
-        keyCodeMap.put('(', DOM_VK_9);
-        keyCodeMap.put(')', DOM_VK_0);
+        KEX_CODE_MAP.put('`', DOM_VK_BACK_QUOTE);
+        KEX_CODE_MAP.put('~', DOM_VK_BACK_QUOTE);
+        KEX_CODE_MAP.put('!', DOM_VK_1);
+        KEX_CODE_MAP.put('@', DOM_VK_2);
+        KEX_CODE_MAP.put('#', DOM_VK_3);
+        KEX_CODE_MAP.put('$', DOM_VK_4);
+        KEX_CODE_MAP.put('%', DOM_VK_5);
+        KEX_CODE_MAP.put('^', DOM_VK_6);
+        KEX_CODE_MAP.put('&', DOM_VK_7);
+        KEX_CODE_MAP.put('*', DOM_VK_8);
+        KEX_CODE_MAP.put('(', DOM_VK_9);
+        KEX_CODE_MAP.put(')', DOM_VK_0);
         //Chrome/IE 189
-        keyCodeMap.put('-', DOM_VK_HYPHEN_MINUS);
-        keyCodeMap.put('_', DOM_VK_HYPHEN_MINUS);
+        KEX_CODE_MAP.put('-', DOM_VK_HYPHEN_MINUS);
+        KEX_CODE_MAP.put('_', DOM_VK_HYPHEN_MINUS);
         //Chrome/IE 187
-        keyCodeMap.put('+', DOM_VK_EQUALS);
-        keyCodeMap.put('[', DOM_VK_OPEN_BRACKET);
-        keyCodeMap.put('{', DOM_VK_OPEN_BRACKET);
-        keyCodeMap.put(']', DOM_VK_CLOSE_BRACKET);
-        keyCodeMap.put('}', DOM_VK_CLOSE_BRACKET);
+        KEX_CODE_MAP.put('+', DOM_VK_EQUALS);
+        KEX_CODE_MAP.put('[', DOM_VK_OPEN_BRACKET);
+        KEX_CODE_MAP.put('{', DOM_VK_OPEN_BRACKET);
+        KEX_CODE_MAP.put(']', DOM_VK_CLOSE_BRACKET);
+        KEX_CODE_MAP.put('}', DOM_VK_CLOSE_BRACKET);
         //Chrome/IE 186
-        keyCodeMap.put(':', DOM_VK_SEMICOLON);
-        keyCodeMap.put('\'', DOM_VK_QUOTE);
-        keyCodeMap.put('"', DOM_VK_QUOTE);
-        keyCodeMap.put(',', DOM_VK_COMMA);
-        keyCodeMap.put('<', DOM_VK_COMMA);
-        keyCodeMap.put('.', DOM_VK_PERIOD);
-        keyCodeMap.put('>', DOM_VK_PERIOD);
-        keyCodeMap.put('/', DOM_VK_SLASH);
-        keyCodeMap.put('?', DOM_VK_SLASH);
-        keyCodeMap.put('\\', DOM_VK_BACK_SLASH);
-        keyCodeMap.put('|', DOM_VK_BACK_SLASH);
+        KEX_CODE_MAP.put(':', DOM_VK_SEMICOLON);
+        KEX_CODE_MAP.put('\'', DOM_VK_QUOTE);
+        KEX_CODE_MAP.put('"', DOM_VK_QUOTE);
+        KEX_CODE_MAP.put(',', DOM_VK_COMMA);
+        KEX_CODE_MAP.put('<', DOM_VK_COMMA);
+        KEX_CODE_MAP.put('.', DOM_VK_PERIOD);
+        KEX_CODE_MAP.put('>', DOM_VK_PERIOD);
+        KEX_CODE_MAP.put('/', DOM_VK_SLASH);
+        KEX_CODE_MAP.put('?', DOM_VK_SLASH);
+        KEX_CODE_MAP.put('\\', DOM_VK_BACK_SLASH);
+        KEX_CODE_MAP.put('|', DOM_VK_BACK_SLASH);
     }
 
     /*
@@ -893,6 +882,7 @@ public class KeyboardEvent extends UIEvent {
      * Creates a new keyboard event instance.
      */
     public KeyboardEvent() {
+        super();
     }
 
     /**
@@ -921,14 +911,14 @@ public class KeyboardEvent extends UIEvent {
         }
 
         final int keyCode;
-        if (getType().equals(Event.TYPE_KEY_PRESS)) {
+        if (Event.TYPE_KEY_PRESS.equals(getType())) {
             keyCode = Integer.valueOf(character);
         }
         else {
             keyCode = Integer.valueOf(charToKeyCode(character));
         }
         setKeyCode(keyCode);
-        if (getType().equals(Event.TYPE_KEY_PRESS)) {
+        if (Event.TYPE_KEY_PRESS.equals(getType())) {
             charCode_ = character;
         }
         which_ = charCode_ == 0 ? keyCode : Integer.valueOf(charCode_);
@@ -955,7 +945,7 @@ public class KeyboardEvent extends UIEvent {
             throw new IllegalArgumentException("Please use the 'char' constructor instead of int");
         }
         setKeyCode(keyCode);
-        if (getType().equals(Event.TYPE_KEY_PRESS)) {
+        if (Event.TYPE_KEY_PRESS.equals(getType())) {
             which_ = 0;
         }
         else {
@@ -996,7 +986,7 @@ public class KeyboardEvent extends UIEvent {
             return 'A' + c - 'a';
         }
 
-        final Integer i = keyCodeMap.get(c);
+        final Integer i = KEX_CODE_MAP.get(c);
         if (i != null) {
             return i;
         }
@@ -1054,7 +1044,7 @@ public class KeyboardEvent extends UIEvent {
      * @param type the event type
      * @param details the event details (optional)
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     @Override
     public void jsConstructor(final String type, final ScriptableObject details) {
         super.jsConstructor(type, details);
@@ -1184,7 +1174,6 @@ public class KeyboardEvent extends UIEvent {
      * Returns the numeric keyCode of the key pressed, or the charCode for an alphanumeric key pressed.
      * @return the numeric keyCode of the key pressed, or the charCode for an alphanumeric key pressed
      */
-    @JsxGetter(IE)
     @Override
     public int getWhich() {
         return which_;
@@ -1252,33 +1241,10 @@ public class KeyboardEvent extends UIEvent {
     }
 
     /**
-     * Returns the value of a key or keys pressed by the user.
-     * @return the value of a key or keys pressed by the user
-     */
-    @JsxGetter(IE)
-    public String getChar() {
-        int code = getKeyCode();
-        if (code == 0) {
-            code = getCharCode();
-        }
-        switch (code) {
-            case DOM_VK_SHIFT:
-                return "";
-            case DOM_VK_RETURN:
-                return "\n";
-            case DOM_VK_PERIOD:
-                return ".";
-
-            default:
-                return String.valueOf(isShiftKey() ? (char) which_ : Character.toLowerCase((char) which_));
-        }
-    }
-
-    /**
      * Returns a physical key on the keyboard.
      * @return a physical key on the keyboard
      */
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxGetter
     public String getCode() {
         return code_;
     }
@@ -1346,7 +1312,7 @@ public class KeyboardEvent extends UIEvent {
      * Returns whether or not the event is fired after the compositionstart and before the compositionend events.
      * @return whether or not the event is fired while composing
      */
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxGetter
     public boolean getIsComposing() {
         return isComposing_;
     }

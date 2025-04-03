@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,11 @@
  */
 package org.htmlunit.html;
 
-import static org.htmlunit.BrowserVersionFeatures.EVENT_ONCHANGE_AFTER_ONCLICK;
-import static org.htmlunit.BrowserVersionFeatures.HTMLINPUT_CHECKBOX_DOES_NOT_CLICK_SURROUNDING_ANCHOR;
-
 import java.io.IOException;
 import java.util.Map;
 
 import org.htmlunit.Page;
-import org.htmlunit.ScriptResult;
 import org.htmlunit.SgmlPage;
-import org.htmlunit.javascript.host.event.Event;
 
 /**
  * Wrapper for the HTML element "input".
@@ -113,22 +108,8 @@ public class HtmlCheckBoxInput extends HtmlInput implements LabelableElement {
      * {@inheritDoc}
      */
     @Override
-    protected ScriptResult doClickFireClickEvent(final Event event) {
-        if (!hasFeature(EVENT_ONCHANGE_AFTER_ONCLICK)) {
-            executeOnChangeHandlerIfAppropriate(this);
-        }
-
-        return super.doClickFireClickEvent(event);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     protected void doClickFireChangeEvent() {
-        if (hasFeature(EVENT_ONCHANGE_AFTER_ONCLICK)) {
-            executeOnChangeHandlerIfAppropriate(this);
-        }
+        executeOnChangeHandlerIfAppropriate(this);
     }
 
     /**
@@ -225,8 +206,7 @@ public class HtmlCheckBoxInput extends HtmlInput implements LabelableElement {
      */
     @Override
     protected boolean propagateClickStateUpdateToParent() {
-        return !hasFeature(HTMLINPUT_CHECKBOX_DOES_NOT_CLICK_SURROUNDING_ANCHOR)
-                && super.propagateClickStateUpdateToParent();
+        return false;
     }
 
     @Override

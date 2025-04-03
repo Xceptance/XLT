@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlTable;
 import org.htmlunit.html.HtmlTableCell;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -1691,8 +1691,7 @@ public class HtmlSerializerNormalizedText2Test extends SimpleWebTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "Sum",
-            IE = "Sum\ndetail")
+    @Alerts("Sum")
     public void getNormalizedTextDetails() throws Exception {
         getNormalizedTextFormated("<details id='tester'>"
                 + "<summary>Sum</summary>"
@@ -1704,8 +1703,7 @@ public class HtmlSerializerNormalizedText2Test extends SimpleWebTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "Sum\nSum2",
-            IE = "SumSum2\ndetail")
+    @Alerts("Sum\nSum2")
     public void getNormalizedTextDetailsTwoSums() throws Exception {
         getNormalizedTextFormated("<details id='tester'>"
                 + "<summary>Sum</summary>"
@@ -1858,8 +1856,7 @@ public class HtmlSerializerNormalizedText2Test extends SimpleWebTestCase {
     @Test
     @Alerts(DEFAULT = "x y",
             FF = "x ab y",
-            FF_ESR = "x ab y",
-            IE = "x ab y")
+            FF_ESR = "x ab y")
     public void getNormalizedNumberInputInvalidNumber() throws Exception {
         getNormalizedTextFormatedAfterTyping("<p id='tester'>x<input id='inpt' type='number' value=''/>y</p>", "ab");
     }

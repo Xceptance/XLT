@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 //
-// Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+// Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
 
 package com.xceptance.xlt.engine.xltdriver.w3;
 
@@ -34,6 +34,7 @@ import org.openqa.selenium.interactions.Sequence;
  * and no object oriented design.
  *
  * @author Ronald Brill
+ * @author Scott Babcock
  */
 public final class Algorithms {
 
@@ -52,7 +53,7 @@ public final class Algorithms {
      * @return actions by tick
      */
     public static List<List<Action>> extractActionSequence(
-            final Collection<Sequence> sequences /* InputState inputState, paramters */) {
+            final Collection<Sequence> sequences /* InputState inputState, parameters */) {
 
         // Let actions by tick be an empty List.
         final List<List<Action>> actionsByTick = new ArrayList<>();
@@ -337,6 +338,7 @@ public final class Algorithms {
      *      wheel action</a>
      */
     private static Action processWheelAction(final String id, final Map<String, Object> actionItem) {
+        // TODO: Implement this function
         return null;
     }
 
@@ -449,6 +451,7 @@ public final class Algorithms {
      *      a pointer move action</a>
      */
     private static void processPointerMoveAction(final Map<String, Object> actionItem, final Action action) {
+        // TODO: Implement this function
     }
 
     /**
@@ -457,6 +460,7 @@ public final class Algorithms {
      *      a pointer cancel action</a>
      */
     private static void processPointerCancelAction(final Map<String, Object> actionItem) {
+        // TODO: Implement this function
     }
 
     /**

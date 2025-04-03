@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@ package org.htmlunit.javascript.host.html;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -44,9 +44,7 @@ public class HTMLMediaElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "maybe",
-            IE = "")
-    @HtmlUnitNYI(IE = "maybe")
+    @Alerts("maybe")
     public void canPlayTypeVideoOgg() throws Exception {
         canPlayType("video/ogg");
     }
@@ -64,9 +62,7 @@ public class HTMLMediaElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "maybe",
-            IE = "")
-    @HtmlUnitNYI(IE = "maybe")
+    @Alerts("maybe")
     public void canPlayTypeVideoWebm() throws Exception {
         canPlayType("video/webm");
     }
@@ -97,9 +93,7 @@ public class HTMLMediaElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "probably",
-            IE = "")
-    @HtmlUnitNYI(IE = "probably")
+    @Alerts("probably")
     public void canPlayTypeVideoOggCodecs() throws Exception {
         canPlayType("video/ogg; codecs=\"theora, vorbis\"");
     }
@@ -117,9 +111,7 @@ public class HTMLMediaElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "probably",
-            IE = "")
-    @HtmlUnitNYI(IE = "probably")
+    @Alerts("probably")
     public void canPlayTypeAudioWebmCodecs() throws Exception {
         canPlayType("video/webm; codecs=\"vp8.0, vorbis\"");
     }
@@ -128,9 +120,7 @@ public class HTMLMediaElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "probably",
-            IE = "")
-    @HtmlUnitNYI(IE = "probably")
+    @Alerts("probably")
     public void canPlayTypeAudioOggCodecs() throws Exception {
         canPlayType("audio/ogg; codecs=\"vorbis\"");
     }
@@ -157,7 +147,7 @@ public class HTMLMediaElementTest extends WebDriverTestCase {
             + "try {\n"
             + "  var video = document.createElement('video');"
             + "  log(video.canPlayType('" + type + "'));\n"
-            + "} catch (e) { log('exception'); }\n"
+            + "} catch(e) { logEx(e); }\n"
             + "</script>\n"
             + "</body></html>";
 

@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,6 @@
  */
 package org.htmlunit.javascript.regexp;
 
-import static org.htmlunit.BrowserVersionFeatures.JS_REGEXP_EMPTY_LASTPAREN_IF_TOO_MANY_GROUPS;
-import static org.htmlunit.BrowserVersionFeatures.JS_REGEXP_GROUP0_RETURNS_WHOLE_MATCH;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.MatchResult;
@@ -28,13 +25,11 @@ import java.util.regex.PatternSyntaxException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.htmlunit.BrowserVersion;
 import org.htmlunit.NotYetImplementedException;
 import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.RegExpProxy;
 import org.htmlunit.corejs.javascript.ScriptRuntime;
 import org.htmlunit.corejs.javascript.Scriptable;
-import org.htmlunit.corejs.javascript.Undefined;
 import org.htmlunit.corejs.javascript.regexp.NativeRegExp;
 import org.htmlunit.corejs.javascript.regexp.RegExpImpl;
 import org.htmlunit.corejs.javascript.regexp.SubString;
@@ -63,16 +58,14 @@ public class HtmlUnitRegExpProxy extends RegExpImpl {
 
 
     private final RegExpProxy wrapped_;
-    private final BrowserVersion browserVersion_;
 
     /**
      * Wraps a proxy to enhance it.
      * @param wrapped the original proxy
-     * @param browserVersion the current browser version
      */
-    public HtmlUnitRegExpProxy(final RegExpProxy wrapped, final BrowserVersion browserVersion) {
+    public HtmlUnitRegExpProxy(final RegExpProxy wrapped) {
+        super();
         wrapped_ = wrapped;
-        browserVersion_ = browserVersion;
     }
 
     /**
@@ -86,13 +79,17 @@ public class HtmlUnitRegExpProxy extends RegExpImpl {
             return doAction(cx, scope, thisObj, args, actionType);
         }
         catch (final RegExStickyNotSupportedException e) {
-            LOG.warn(e.getMessage(), e);
+            if (LOG.isWarnEnabled()) {
+                LOG.warn(e.getMessage(), e);
+            }
             return wrapped_.action(cx, scope, thisObj, args, actionType);
         }
         catch (final StackOverflowError e) {
             // TODO: We shouldn't have to catch this exception and fall back to Rhino's regex support!
             // See HtmlUnitRegExpProxyTest.stackOverflow()
-            LOG.warn(e.getMessage(), e);
+            if (LOG.isWarnEnabled()) {
+                LOG.warn(e.getMessage(), e);
+            }
             return wrapped_.action(cx, scope, thisObj, args, actionType);
         }
     }
@@ -126,7 +123,9 @@ public class HtmlUnitRegExpProxy extends RegExpImpl {
                                             reData.isGlobal() || RA_REPLACE_ALL == actionType);
                 }
                 catch (final PatternSyntaxException e) {
-                    LOG.warn(e.getMessage(), e);
+                    if (LOG.isWarnEnabled()) {
+                        LOG.warn(e.getMessage(), e);
+                    }
                 }
             }
         }
@@ -173,7 +172,7 @@ public class HtmlUnitRegExpProxy extends RegExpImpl {
                 for (int i = 0; i <= matcher.groupCount(); i++) {
                     Object group = matcher.group(i);
                     if (group == null) {
-                        group = Undefined.instance;
+                        group = JavaScriptEngine.UNDEFINED;
                     }
                     groups.add(group);
                 }
@@ -229,8 +228,7 @@ public class HtmlUnitRegExpProxy extends RegExpImpl {
             sb.append(originalString, previousIndex, matcher.start());
             String localReplacement = replacement;
             if (replacement.contains("$")) {
-                localReplacement = computeReplacementValue(replacement, originalString, matcher,
-                        browserVersion_.hasFeature(JS_REGEXP_GROUP0_RETURNS_WHOLE_MATCH));
+                localReplacement = computeReplacementValue(replacement, originalString, matcher, false);
             }
             sb.append(localReplacement);
             previousIndex = matcher.end();
@@ -364,17 +362,12 @@ public class HtmlUnitRegExpProxy extends RegExpImpl {
 
         // lastParen
         if (groupCount > 0) {
-            if (groupCount > 9 && browserVersion_.hasFeature(JS_REGEXP_EMPTY_LASTPAREN_IF_TOO_MANY_GROUPS)) {
+            final String last = matcher.group(groupCount);
+            if (last == null) {
                 lastParen = new SubString();
             }
             else {
-                final String last = matcher.group(groupCount);
-                if (last == null) {
-                    lastParen = new SubString();
-                }
-                else {
-                    lastParen = new SubString(last, 0, last.length());
-                }
+                lastParen = new SubString(last, 0, last.length());
             }
         }
 

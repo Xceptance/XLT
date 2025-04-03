@@ -15,10 +15,14 @@
 // specific language governing permissions and limitations
 // under the License.
 //
-// Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+// Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
 
 package com.xceptance.xlt.engine.xltdriver;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -35,9 +39,12 @@ import org.htmlunit.html.HtmlAnchor;
 import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.HtmlPage;
 import org.openqa.selenium.By;
+import org.openqa.selenium.By.Remotable.Parameters;
 import org.openqa.selenium.InvalidSelectorException;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.locators.RelativeLocator;
+import org.openqa.selenium.support.locators.RelativeLocator.RelativeBy;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -51,6 +58,24 @@ public class HtmlUnitElementFinder {
     private static final String INVALIDSELECTIONERROR =
             "The xpath expression '%s' selected an object of type '%s' instead of a WebElement";
 
+    private static final String FIND_ELEMENTS_JS;
+
+    static {
+        try {
+            final String location =
+                    String.format(
+                            "/%s/%s",
+                            HtmlUnitDriver.class.getPackage().getName().replace(".", "/"), "findElements.js");
+
+            try (InputStream stream = HtmlUnitDriver.class.getResourceAsStream(location)) {
+                FIND_ELEMENTS_JS = new String(stream.readAllBytes(), StandardCharsets.UTF_8);
+            }
+        }
+        catch (final IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
     private final Map<Class<? extends By>, HtmlUnitElementLocator> finders_ = new HashMap<>();
 
     HtmlUnitElementFinder() {
@@ -62,6 +87,8 @@ public class HtmlUnitElementFinder {
         finders_.put(By.cssSelector("a").getClass(), new FindByCssSelector());
         finders_.put(By.tagName("a").getClass(), new FindByTagName());
         finders_.put(By.xpath("//a").getClass(), new FindByXPath());
+
+        finders_.put(RelativeLocator.with(By.id("id")).getClass(), new FindByRelativeLocator());
     }
 
     public WebElement findElement(final HtmlUnitDriver driver, final By locator) {
@@ -576,5 +603,24 @@ public class HtmlUnitElementFinder {
         }
 
         return toReturn;
+    }
+
+    public static class FindByRelativeLocator extends HtmlUnitElementLocator {
+
+        @Override
+        public List<WebElement> findElements(final HtmlUnitDriver driver, final By locator) {
+            return (List<WebElement>) driver.executeScript(FIND_ELEMENTS_JS, asParameter(locator));
+        }
+
+        @Override
+        public List<WebElement> findElements(final HtmlUnitWebElement element, final By locator) {
+            // TODO Auto-generated method stub
+            return null;
+        }
+
+        private static Object asParameter(final By locator) {
+            final Parameters params = ((RelativeBy) locator).getRemoteParameters();
+            return Map.of(params.using(), params.value());
+        }
     }
 }

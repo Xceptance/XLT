@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,11 +13,6 @@
  * limitations under the License.
  */
 package org.htmlunit.javascript.host.dom;
-
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import org.htmlunit.html.DomNode;
 import org.htmlunit.html.DomNodeIterator;
@@ -42,13 +37,15 @@ public class NodeIterator extends HtmlUnitScriptable {
      * Creates an instance.
      */
     public NodeIterator() {
+        super();
     }
 
     /**
      * JavaScript constructor.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 
     /**
@@ -61,6 +58,7 @@ public class NodeIterator extends HtmlUnitScriptable {
      */
     public NodeIterator(final Node root, final int whatToShow,
             final org.w3c.dom.traversal.NodeFilter filter) {
+        super();
         iterator_ = new DomNodeIterator(root.getDomNodeOrDie(), whatToShow, filter, true);
     }
 

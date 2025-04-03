@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,12 +13,6 @@
  * limitations under the License.
  */
 package org.htmlunit.javascript.host.css;
-
-import static org.htmlunit.BrowserVersionFeatures.CSS_CSSTEXT_IE_STYLE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import org.htmlunit.css.CssMediaList;
 import org.htmlunit.css.CssStyleSheet;
@@ -46,12 +40,13 @@ public class CSSImportRule extends CSSRule {
      * Creates a new instance.
      */
     public CSSImportRule() {
+        super();
     }
 
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     @Override
     public void jsConstructor() {
         super.jsConstructor();
@@ -111,17 +106,5 @@ public class CSSImportRule extends CSSRule {
      */
     private CSSImportRuleImpl getImportRule() {
         return (CSSImportRuleImpl) getRule();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getCssText() {
-        String cssText = super.getCssText();
-        if (getBrowserVersion().hasFeature(CSS_CSSTEXT_IE_STYLE)) {
-            cssText = REPLACEMENT_IE.matcher(cssText).replaceFirst("url( $1 )");
-        }
-        return cssText;
     }
 }

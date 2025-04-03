@@ -42,14 +42,6 @@ MozTextSizeAdjust
 MozTransform
 MozTransformOrigin
 MozTransformStyle
-MozTransition
-MozTransitionDelay
-MozTransitionDuration
-MozTransitionProperty
-MozTransitionTimingFunction
-MozUserFocus
-MozUserInput
-MozUserModify
 MozUserSelect
 MozWindowDragging
 WebkitAlignContent
@@ -92,6 +84,7 @@ WebkitFlexFlow
 WebkitFlexGrow
 WebkitFlexShrink
 WebkitFlexWrap
+WebkitFontFeatureSettings
 WebkitJustifyContent
 WebkitLineClamp
 WebkitMask
@@ -256,6 +249,7 @@ container-name
 containerName
 containerType
 content
+contentVisibility
 counterIncrement
 counterReset
 counterSet
@@ -526,6 +520,8 @@ textTransform
 textUnderlineOffset
 textUnderlinePosition
 textWrap
+textWrapMode
+textWrapStyle
 top
 touchAction
 transform
@@ -533,6 +529,7 @@ transformBox
 transformOrigin
 transformStyle
 transition
+transitionBehavior
 transitionDelay
 transitionDuration
 transitionProperty
@@ -583,6 +580,7 @@ webkitFlexFlow
 webkitFlexGrow
 webkitFlexShrink
 webkitFlexWrap
+webkitFontFeatureSettings
 webkitJustifyContent
 webkitLineClamp
 webkitMask
@@ -614,6 +612,7 @@ webkitTransitionProperty
 webkitTransitionTimingFunction
 webkitUserSelect
 whiteSpace
+whiteSpaceCollapse
 width
 willChange
 wordBreak
@@ -623,3 +622,4 @@ writingMode
 x
 y
 zIndex
+zoom

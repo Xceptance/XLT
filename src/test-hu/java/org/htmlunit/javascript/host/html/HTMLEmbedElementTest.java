@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,13 @@
  */
 package org.htmlunit.javascript.host.html;
 
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.FF;
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.FF_ESR;
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
+import static org.htmlunit.junit.annotation.TestedBrowser.FF;
+import static org.htmlunit.junit.annotation.TestedBrowser.FF_ESR;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.NotYetImplemented;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -43,9 +42,7 @@ public class HTMLEmbedElementTest extends WebDriverTestCase {
             FF = {"left", "right", "bottom", "middle", "top",
                   "absbottom", "absmiddle", "bottom", "texttop", "wrong", ""},
             FF_ESR = {"left", "right", "bottom", "middle", "top",
-                      "absbottom", "absmiddle", "bottom", "texttop", "wrong", ""},
-            IE = {"undefined", "undefined", "undefined", "undefined", "undefined", "undefined",
-                  "undefined", "undefined", "undefined", "undefined", "undefined"})
+                      "absbottom", "absmiddle", "bottom", "texttop", "wrong", ""})
     @NotYetImplemented({FF, FF_ESR})
     public void getAlign() throws Exception {
         final String html
@@ -94,7 +91,7 @@ public class HTMLEmbedElementTest extends WebDriverTestCase {
             + "  function setAlign(elem, value) {\n"
             + "    try {\n"
             + "      elem.align = value;\n"
-            + "    } catch (e) { log('error'); }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "    log(elem.align);\n"
             + "  }\n"
 
@@ -123,9 +120,7 @@ public class HTMLEmbedElementTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"10px", "20em", "80%", "40", "wrong", ""},
-            IE = {"10", "20", "80%", "40", "", ""})
-    @NotYetImplemented(IE)
+    @Alerts({"10px", "20em", "80%", "40", "wrong", ""})
     public void getHeight() throws Exception {
         final String html
             = "<html><body>\n"
@@ -151,9 +146,7 @@ public class HTMLEmbedElementTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"20px", "8", "foo"},
-            IE = {"20", "8", "error", "8"})
-    @NotYetImplemented(IE)
+    @Alerts({"20px", "8", "foo"})
     public void setHeight() throws Exception {
         final String html
             = "<html><body>\n"
@@ -164,7 +157,7 @@ public class HTMLEmbedElementTest extends WebDriverTestCase {
             + "  function setHeight(elem, value) {\n"
             + "    try {\n"
             + "      elem.height = value;\n"
-            + "    } catch (e) { log('error'); }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "    log(elem.height);\n"
             + "  }\n"
 
@@ -184,9 +177,7 @@ public class HTMLEmbedElementTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"10px", "20em", "80%", "40", "wrong", ""},
-            IE = {"10", "20", "80%", "40", "", ""})
-    @NotYetImplemented(IE)
+    @Alerts({"10px", "20em", "80%", "40", "wrong", ""})
     public void getWidth() throws Exception {
         final String html
             = "<html><body>\n"
@@ -212,9 +203,7 @@ public class HTMLEmbedElementTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"20px", "8", "foo"},
-            IE = {"20", "8", "error", "8"})
-    @NotYetImplemented(IE)
+    @Alerts({"20px", "8", "foo"})
     public void setWidth() throws Exception {
         final String html
             = "<html><body>\n"
@@ -225,7 +214,7 @@ public class HTMLEmbedElementTest extends WebDriverTestCase {
             + "  function setWidth(elem, value) {\n"
             + "    try {\n"
             + "      elem.width = value;\n"
-            + "    } catch (e) { log('error'); }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "    log(elem.width);\n"
             + "  }\n"
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,10 @@ import java.util.List;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.BuggyWebDriver;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.BuggyWebDriver;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.NotYetImplemented;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.WebDriver;
@@ -67,9 +67,9 @@ public class StorageTest extends WebDriverTestCase {
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  try { log('local: ' + (window.localStorage === window.localStorage)); }"
-                        + " catch(e) { log('exception'); }\n"
+                        + " catch(e) { logEx(e); }\n"
             + "  try { log('session: ' + (window.sessionStorage === window.sessionStorage)); }"
-                        + " catch(e) { log('exception'); }\n"
+                        + " catch(e) { logEx(e); }\n"
             + "</script></body></html>";
         loadPageVerifyTitle2(html);
     }
@@ -240,7 +240,7 @@ public class StorageTest extends WebDriverTestCase {
             + "try {\n"
             + "  localStorage.clear();\n"
             + "  localStorage.setItem('hello', 'I was here');\n"
-            + "} catch(e) { log('exception'); }\n"
+            + "} catch(e) { logEx(e); }\n"
             + "</script></body></html>";
         final WebDriver driver = loadPage2(html1);
         final List<String> alerts = getCollectedAlerts(driver);
@@ -248,11 +248,12 @@ public class StorageTest extends WebDriverTestCase {
         final String html2 = "<html><body><script>\n"
             + "try {\n"
             + "  log(localStorage.getItem('hello'));\n"
-            + "} catch(e) { log('exception'); }\n"
+            + "} catch(e) { logEx(e); }\n"
             + "</script></body></html>";
+        releaseResources();
+
         getMockWebConnection().setResponse(URL_FIRST, html2);
 
-        releaseResources();
         // we have to control 2nd driver by ourself
         WebDriver driver2 = null;
         try {
@@ -263,6 +264,7 @@ public class StorageTest extends WebDriverTestCase {
             assertEquals(getExpectedAlerts(), alerts);
         }
         finally {
+            driver2.close();
             if (!(driver2 instanceof HtmlUnitDriver)) {
                 shutDownAll();
             }
@@ -291,7 +293,7 @@ public class StorageTest extends WebDriverTestCase {
             + "    log('localStorage.extraMethod not callable');\n"
             + "  }\n"
             + "  log(localStorage.getItem('extraMethod'));\n"
-            + "} catch (e) { log('exception'); }\n"
+            + "} catch(e) { logEx(e); }\n"
             + "</script></body></html>";
         loadPageVerifyTitle2(html);
     }
@@ -300,8 +302,7 @@ public class StorageTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"function", "null", "function", "value", "1"},
-            IE = {"function", "null", "string", "value", "1"})
+    @Alerts({"function", "null", "function", "value", "1"})
     public void prototypePropertiesAreVisible() throws Exception {
         final String html = "<html><body>\n"
             + "<script>\n"
@@ -313,7 +314,7 @@ public class StorageTest extends WebDriverTestCase {
             + "  localStorage.setItem('hasOwnProperty', 'value');\n"
             + "  log(typeof localStorage.hasOwnProperty);\n"
             + "  log(localStorage.getItem('hasOwnProperty'));\n"
-            + "} catch (e) { log('exception'); }\n"
+            + "} catch(e) { logEx(e); }\n"
             + "  log(localStorage.length);\n"
             + "</script></body></html>";
         loadPageVerifyTitle2(html);
@@ -325,8 +326,7 @@ public class StorageTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"function", "null", "string", "null", "0"},
             FF = {"function", "null", "function", "value", "1"},
-            FF_ESR = {"function", "null", "function", "value", "1"},
-            IE = {"function", "null", "string", "value", "1"})
+            FF_ESR = {"function", "null", "function", "value", "1"})
     @HtmlUnitNYI(FF = {"function", "null", "string", "value", "1"},
             FF_ESR = {"function", "null", "string", "value", "1"})
     public void writeToPrototypeProperty() throws Exception {
@@ -341,7 +341,7 @@ public class StorageTest extends WebDriverTestCase {
             + "  log(typeof localStorage.hasOwnProperty);\n"
             + "  log(localStorage.getItem('hasOwnProperty'));\n"
             + "  log(localStorage.length);\n"
-            + "} catch (e) { log('exception'); }\n"
+            + "} catch(e) { logEx(e); }\n"
             + "</script></body></html>";
         loadPageVerifyTitle2(html);
     }

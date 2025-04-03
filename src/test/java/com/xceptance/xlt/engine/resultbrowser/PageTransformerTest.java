@@ -87,7 +87,7 @@ public class PageTransformerTest
 
             final Document doc = instance.transform(urlMapping);
             final Element imgEl = (Element) doc.getElementsByTagName("img").item(0);
-            Assert.assertEquals(XltConstants.DUMP_CACHE_DIR + "/" + urlMapping.map(UrlUtils.encodeUrl(imageUrl, false, page.getCharset())),
+            Assert.assertEquals(XltConstants.DUMP_CACHE_DIR + "/" + urlMapping.map(UrlUtils.encodeUrl(imageUrl, page.getCharset())),
                                 imgEl.getAttribute("src"));
         }
     }
@@ -113,7 +113,7 @@ public class PageTransformerTest
             final String doc = new PageTransformer(lwPage).transformLW(urlMapping);
 
             Assert.assertEquals(XltConstants.DUMP_CACHE_DIR + "/" +
-                                urlMapping.map(UrlUtils.encodeUrl(imageURL, false, lwPage.getCharset())),
+                                urlMapping.map(UrlUtils.encodeUrl(imageURL, lwPage.getCharset())),
                                 LWPageUtilities.getAllImageLinks(doc).get(0));
         }
     }
@@ -150,7 +150,7 @@ public class PageTransformerTest
 
             final Document doc = instance.transform(urlMapping);
             final Element imgEl = (Element) doc.getElementsByTagName("img").item(0);
-            Assert.assertEquals(XltConstants.DUMP_CACHE_DIR + "/" + urlMapping.map(UrlUtils.encodeUrl(imageUrl, false, page.getCharset())),
+            Assert.assertEquals(XltConstants.DUMP_CACHE_DIR + "/" + urlMapping.map(UrlUtils.encodeUrl(imageUrl, page.getCharset())),
                                 imgEl.getAttribute("src"));
         }
     }
@@ -186,7 +186,7 @@ public class PageTransformerTest
             final String doc = new PageTransformer(lwPage).transformLW(urlMapping);
 
             Assert.assertEquals(XltConstants.DUMP_CACHE_DIR + "/" +
-                                urlMapping.map(UrlUtils.encodeUrl(imageURL, false, lwPage.getCharset())),
+                                urlMapping.map(UrlUtils.encodeUrl(imageURL, lwPage.getCharset())),
                                 LWPageUtilities.getAllImageLinks(doc).get(0));
         }
     }
@@ -213,7 +213,7 @@ public class PageTransformerTest
 
                 final Document doc = instance.transform(urlMapping);
                 final Element imgEl = (Element) doc.getElementsByTagName("img").item(0);
-                Assert.assertEquals(XltConstants.DUMP_CACHE_DIR + "/" + urlMapping.map(UrlUtils.encodeUrl(u, false, page.getCharset())),
+                Assert.assertEquals(XltConstants.DUMP_CACHE_DIR + "/" + urlMapping.map(UrlUtils.encodeUrl(u, page.getCharset())),
                                     imgEl.getAttribute("src"));
             }
 
@@ -233,7 +233,7 @@ public class PageTransformerTest
 
                 final Document doc = instance.transform(urlMapping);
                 final Element imgEl = (Element) doc.getElementsByTagName("img").item(0);
-                Assert.assertEquals(XltConstants.DUMP_CACHE_DIR + "/" + urlMapping.map(UrlUtils.encodeUrl(u, false, page.getCharset())),
+                Assert.assertEquals(XltConstants.DUMP_CACHE_DIR + "/" + urlMapping.map(UrlUtils.encodeUrl(u, page.getCharset())),
                                     imgEl.getAttribute("src"));
             }
         }
@@ -257,7 +257,7 @@ public class PageTransformerTest
                 final UrlMapping urlMapping = new DumpMgr().getUrlMapping();
                 final String doc = new PageTransformer(page).transformLW(urlMapping);
 
-                Assert.assertEquals(XltConstants.DUMP_CACHE_DIR + "/" + urlMapping.map(UrlUtils.encodeUrl(u, false, page.getCharset())),
+                Assert.assertEquals(XltConstants.DUMP_CACHE_DIR + "/" + urlMapping.map(UrlUtils.encodeUrl(u, page.getCharset())),
                                     LWPageUtilities.getAllImageLinks(doc).get(0));
             }
 
@@ -273,7 +273,7 @@ public class PageTransformerTest
                 final UrlMapping urlMapping = new DumpMgr().getUrlMapping();
                 final String doc = new PageTransformer(page).transformLW(urlMapping);
 
-                Assert.assertEquals(XltConstants.DUMP_CACHE_DIR + "/" + urlMapping.map(UrlUtils.encodeUrl(u, false, page.getCharset())),
+                Assert.assertEquals(XltConstants.DUMP_CACHE_DIR + "/" + urlMapping.map(UrlUtils.encodeUrl(u, page.getCharset())),
                                     LWPageUtilities.getAllImageLinks(doc).get(0));
             }
         }

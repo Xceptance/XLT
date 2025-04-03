@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -102,6 +102,7 @@ public class KeyDataPair extends NameValuePair {
      * {@inheritDoc}
      */
     @Override
+    @SuppressWarnings("PMD.UselessOverridingMethod")
     public boolean equals(final Object object) {
         // this is overwritten to make FindBugs happy
         // and to make it clear, that we really want to have
@@ -113,6 +114,7 @@ public class KeyDataPair extends NameValuePair {
      * {@inheritDoc}
      */
     @Override
+    @SuppressWarnings("PMD.UselessOverridingMethod")
     public int hashCode() {
         // this is overwritten to make FindBugs happy
         // and to make it clear, that we really want to have

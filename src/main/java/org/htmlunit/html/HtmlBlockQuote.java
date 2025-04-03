@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,8 +13,6 @@
  * limitations under the License.
  */
 package org.htmlunit.html;
-
-import static org.htmlunit.BrowserVersionFeatures.HTMLKEYGEN_END_TAG_FORBIDDEN;
 
 import java.util.Map;
 
@@ -55,17 +53,5 @@ public class HtmlBlockQuote extends HtmlElement {
      */
     public final String getCiteAttribute() {
         return getAttributeDirect("cite");
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public DisplayStyle getDefaultStyleDisplay() {
-        if ("keygen".equals(getNodeName()) && hasFeature(HTMLKEYGEN_END_TAG_FORBIDDEN)) {
-            return DisplayStyle.INLINE;
-        }
-
-        return super.getDefaultStyleDisplay();
     }
 }

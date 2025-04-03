@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,13 @@
  */
 package org.htmlunit.libraries;
 
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
-
 import java.time.Duration;
 import java.util.List;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.NotYetImplemented;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -47,10 +45,7 @@ public class TinyMceTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"348", "0"},
-            IE = {"348", "13"})
-    @NotYetImplemented(IE)
-    // TODO [IE]XML tinymce 3.2.7 is not compatible with IE
+    @Alerts({"348", "0"})
     public void api() throws Exception {
         test("api", Integer.parseInt(getExpectedAlerts()[0]), Integer.parseInt(getExpectedAlerts()[1]));
     }
@@ -61,10 +56,8 @@ public class TinyMceTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"89", "0"},
             CHROME = {"89", "1"},
-            EDGE = {"89", "1"},
-            IE = {"89", "4"})
+            EDGE = {"89", "1"})
     @NotYetImplemented
-    // TODO [IE]XML tinymce 3.2.7 is not compatible with IE
     public void basic() throws Exception {
         test("basic", Integer.parseInt(getExpectedAlerts()[0]), Integer.parseInt(getExpectedAlerts()[1]));
     }

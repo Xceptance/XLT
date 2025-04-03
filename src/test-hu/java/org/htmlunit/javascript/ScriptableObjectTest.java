@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,9 @@ package org.htmlunit.javascript;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.NotYetImplemented;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -65,8 +65,7 @@ public class ScriptableObjectTest extends WebDriverTestCase {
      * @throws Exception on failure
      */
     @Test
-    @Alerts(DEFAULT = {"2", "symbol", "symbol", "1", "c"},
-            IE = "not defined")
+    @Alerts({"2", "symbol", "symbol", "1", "c"})
     public void getOwnPropertySymbols() throws Exception {
         final String html = "<html><body>\n"
                 + "<script>\n"
@@ -102,7 +101,7 @@ public class ScriptableObjectTest extends WebDriverTestCase {
      * @throws Exception on failure
      */
     @Test
-    @Alerts({"exception", "true", "true"})
+    @Alerts({"TypeError", "true", "true"})
     public void ctorNotChangeableForPrimitives() throws Exception {
         final String html = "<html><body>\n"
                 + "<script>\n"
@@ -110,7 +109,7 @@ public class ScriptableObjectTest extends WebDriverTestCase {
                 + "  let val = null;\n"
                 + "  try {\n"
                 + "    val.constructor = 1;\n"
-                + "  } catch (e) { log('exception'); }\n"
+                + "  } catch(e) { logEx(e); }\n"
 
                 + "  val = 'abc';\n"
                 + "  val.constructor = Number;"
@@ -134,7 +133,7 @@ public class ScriptableObjectTest extends WebDriverTestCase {
      * @throws Exception on failure
      */
     @Test
-    @Alerts({"exception", "true", "true"})
+    @Alerts({"TypeError", "true", "true"})
     @NotYetImplemented
     public void ctorNotChangeableForPrimitivesStrict() throws Exception {
         final String html = "<html><body>\n"
@@ -146,7 +145,7 @@ public class ScriptableObjectTest extends WebDriverTestCase {
                 + "  let val = null;\n"
                 + "  try {\n"
                 + "    val.constructor = 1;\n"
-                + "  } catch (e) { log('exception'); }\n"
+                + "  } catch(e) { logEx(e); }\n"
 
                 + "  val = 'abc';\n"
                 + "  val.constructor = Number;"
@@ -169,8 +168,7 @@ public class ScriptableObjectTest extends WebDriverTestCase {
      * @throws Exception on failure
      */
     @Test
-    @Alerts(DEFAULT = {"true", "false", "true", "ctor", "true"},
-            IE = {"true", "false", "true", "exception"})
+    @Alerts({"true", "false", "true", "ctor", "true"})
     public void ctorChangeableHasNoEffectForTypeOf() throws Exception {
         final String html = "<html><body>\n"
                 + "<script>\n"
@@ -187,7 +185,7 @@ public class ScriptableObjectTest extends WebDriverTestCase {
                 + "    log('ctor');\n"
                 + "    a.constructor = 'bar';\n"
                 + "    log(a.constructor === 'bar');\n"
-                + "  } catch (e) { log('exception') }\n"
+                + "  } catch(e) { logEx(e) }\n"
 
                 + "</script>\n"
                 + "</body>\n"
@@ -200,8 +198,7 @@ public class ScriptableObjectTest extends WebDriverTestCase {
      * @throws Exception on failure
      */
     @Test
-    @Alerts(DEFAULT = {"true", "false", "true", "ctor", "true"},
-            IE = {"true", "false", "true", "exception"})
+    @Alerts({"true", "false", "true", "ctor", "true"})
     public void ctorChangeableHasNoEffectForTypeOfStrict() throws Exception {
         final String html = "<html><body>\n"
                 + "<script>\n"
@@ -219,7 +216,7 @@ public class ScriptableObjectTest extends WebDriverTestCase {
                 + "    log('ctor');\n"
                 + "    a.constructor = 'bar';\n"
                 + "    log(a.constructor === 'bar');\n"
-                + "  } catch (e) { log('exception') }\n"
+                + "  } catch(e) { logEx(e) }\n"
 
                 + "</script>\n"
                 + "</body>\n"
@@ -254,11 +251,10 @@ public class ScriptableObjectTest extends WebDriverTestCase {
      */
     @Test
     @Alerts("true")
-    @HtmlUnitNYI(CHROME = "exception",
-            EDGE = "exception",
-            FF = "exception",
-            FF_ESR = "exception",
-            IE = "exception")
+    @HtmlUnitNYI(CHROME = "TypeError",
+            EDGE = "TypeError",
+            FF = "TypeError",
+            FF_ESR = "TypeError")
     public void ctorChangeableHasNoEffectForSealedStrict() throws Exception {
         final String html = "<html><body>\n"
                 + "<script>\n"
@@ -270,7 +266,7 @@ public class ScriptableObjectTest extends WebDriverTestCase {
                 + "  try {\n"
                 + "    a.constructor = Number;\n"
                 + "    log(a.constructor === Object);\n"
-                + "  } catch (e) { log('exception') }\n"
+                + "  } catch(e) { logEx(e) }\n"
 
                 + "</script>\n"
                 + "</body>\n"

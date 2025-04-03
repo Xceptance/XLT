@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,6 @@
 package org.htmlunit.javascript.host.css;
 
 import static org.htmlunit.BrowserVersionFeatures.JS_CSSRULELIST_ENUM_ITEM_LENGTH;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,14 +44,15 @@ public class CSSRuleList extends HtmlUnitScriptable {
      * Creates a new instance.
      */
     public CSSRuleList() {
+        super();
     }
 
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
-        throw JavaScriptEngine.reportRuntimeError("Illegal constructor.");
+        throw JavaScriptEngine.typeErrorIllegalConstructor();
     }
 
     /**
@@ -63,6 +60,7 @@ public class CSSRuleList extends HtmlUnitScriptable {
      * @param stylesheet the stylesheet
      */
     public CSSRuleList(final CSSStyleSheet stylesheet) {
+        super();
         setParentScope(stylesheet.getParentScope());
         setPrototype(getPrototype(getClass()));
     }
@@ -72,6 +70,7 @@ public class CSSRuleList extends HtmlUnitScriptable {
      * @param groupingRule the grouping rule
      */
     public CSSRuleList(final CSSGroupingRule groupingRule) {
+        super();
         setParentScope(groupingRule.getParentScope());
         setPrototype(getPrototype(getClass()));
     }
@@ -107,7 +106,11 @@ public class CSSRuleList extends HtmlUnitScriptable {
      */
     @JsxFunction
     public Object item(final int index) {
-        return get(index, this);
+        final Object item = get(index, this);
+        if (NOT_FOUND == item) {
+            return null;
+        }
+        return item;
     }
 
     /**
@@ -152,8 +155,8 @@ public class CSSRuleList extends HtmlUnitScriptable {
         try {
             return has(Integer.parseInt(name), start);
         }
-        catch (final Exception e) {
-            //ignore
+        catch (final Exception ignored) {
+            // ignore
         }
         return false;
     }

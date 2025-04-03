@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,12 +30,6 @@ public class NoOpImageData implements ImageData {
     // private static final Log LOG = LogFactory.getLog(NoOpImageData.class);
 
     /**
-     * Ctor.
-     */
-    public NoOpImageData() {
-    }
-
-    /**
      * {@inheritDoc}
      */
     @Override
@@ -57,5 +51,6 @@ public class NoOpImageData implements ImageData {
      */
     @Override
     public void close() {
+        // nothing to do
     }
 }

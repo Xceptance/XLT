@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package org.htmlunit.general.huge;
 import java.util.Collection;
 
 import org.htmlunit.junit.BrowserParameterizedRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized.Parameters;
@@ -192,8 +192,7 @@ public class HostParentOfFTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _FontFace_FontFace() throws Exception {
         test("FontFace", "FontFace");
     }
@@ -222,8 +221,7 @@ public class HostParentOfFTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _GainNode_GainNode() throws Exception {
         test("GainNode", "GainNode");
     }
@@ -232,8 +230,7 @@ public class HostParentOfFTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _Gamepad_Gamepad() throws Exception {
         test("Gamepad", "Gamepad");
     }
@@ -242,8 +239,7 @@ public class HostParentOfFTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _GamepadButton_GamepadButton() throws Exception {
         test("GamepadButton", "GamepadButton");
     }
@@ -252,8 +248,7 @@ public class HostParentOfFTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _GamepadEvent_GamepadEvent() throws Exception {
         test("GamepadEvent", "GamepadEvent");
     }
@@ -267,4 +262,30 @@ public class HostParentOfFTest extends HostParentOf {
         test("Geolocation", "Geolocation");
     }
 
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("true")
+    public void _GeolocationCoordinates_GeolocationCoordinates() throws Exception {
+        test("GeolocationCoordinates", "GeolocationCoordinates");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("true")
+    public void _GeolocationPosition_GeolocationPosition() throws Exception {
+        test("GeolocationPosition", "GeolocationPosition");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("true")
+    public void _GeolocationPositionError_GeolocationPositionError() throws Exception {
+        test("GeolocationPositionError", "GeolocationPositionError");
+    }
 }

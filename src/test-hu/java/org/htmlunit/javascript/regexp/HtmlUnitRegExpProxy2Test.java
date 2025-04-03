@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import org.htmlunit.corejs.javascript.JavaScriptException;
 import org.htmlunit.corejs.javascript.ScriptableObject;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.javascript.HtmlUnitContextFactory;
-import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.junit.BrowserRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -36,17 +35,17 @@ import org.junit.runner.RunWith;
 @RunWith(BrowserRunner.class)
 public class HtmlUnitRegExpProxy2Test extends SimpleWebTestCase {
 
-    private static final String str_ = "(?:<script.*?>)((\\n|\\r|.)*?)(?:<\\/script>)";
-    private static final String begin_ = "<div>bla</div>";
-    private static final String end_ = "foo\n<span>bla2</span>";
-    private static final String text_ = begin_ + "<script>var a = 123;</script>" + end_;
-    private static final String expected_ = begin_ + end_;
-    private static final String src_ = "var re = new RegExp(str, 'img');\n"
+    private static final String STR = "(?:<script.*?>)((\\n|\\r|.)*?)(?:<\\/script>)";
+    private static final String BEGIN = "<div>bla</div>";
+    private static final String END = "foo\n<span>bla2</span>";
+    private static final String TEXT = BEGIN + "<script>var a = 123;</script>" + END;
+    private static final String EXPECTED = BEGIN + END;
+    private static final String SRC = "var re = new RegExp(str, 'img');\n"
         + "var s = text.replace(re, '');\n"
         + "if (s != expected)\n"
         + "  throw 'Expected >' + expected + '< but got >' + s + '<';";
 
-    private static final String scriptTestMatch_ = "function arrayToString(_arr) {\n"
+    private static final String SCRIPT_TEST_MATCH = "function arrayToString(_arr) {\n"
             + "  if (_arr == null) return null;\n"
             + "  var s = '[';\n"
             + "  for (var i = 0; i < _arr.length; i++)\n"
@@ -89,10 +88,10 @@ public class HtmlUnitRegExpProxy2Test extends SimpleWebTestCase {
         final String html = "<html></html>";
         final HtmlPage page = loadPage(html);
         final ScriptableObject topScope = page.getEnclosingWindow().getScriptableObject();
-        topScope.put("str", topScope, str_);
-        topScope.put("text", topScope, text_);
-        topScope.put("expected", topScope, expected_);
-        page.executeJavaScript(src_);
+        topScope.put("str", topScope, STR);
+        topScope.put("text", topScope, TEXT);
+        topScope.put("expected", topScope, EXPECTED);
+        page.executeJavaScript(SRC);
     }
 
     /**
@@ -101,16 +100,16 @@ public class HtmlUnitRegExpProxy2Test extends SimpleWebTestCase {
     @Test
     public void needCustomFix() {
         final WebClient client = getWebClient();
-        final HtmlUnitContextFactory cf = ((JavaScriptEngine) client.getJavaScriptEngine()).getContextFactory();
+        final HtmlUnitContextFactory cf = client.getJavaScriptEngine().getContextFactory();
         final Context ctx = cf.enterContext();
         try {
             final ScriptableObject topScope = ctx.initStandardObjects();
-            topScope.put("str", topScope, str_);
-            topScope.put("text", topScope, text_);
-            topScope.put("expected", topScope, expected_);
-            assertEquals(begin_ + end_, text_.replaceAll(str_, ""));
+            topScope.put("str", topScope, STR);
+            topScope.put("text", topScope, TEXT);
+            topScope.put("expected", topScope, EXPECTED);
+            assertEquals(BEGIN + END, TEXT.replaceAll(STR, ""));
             try {
-                ctx.evaluateString(topScope, src_, "test script", 0, null);
+                ctx.evaluateString(topScope, SRC, "test script", 0, null);
             }
             catch (final JavaScriptException e) {
                 assertTrue(e.getMessage().indexOf("Expected >") == 0);
@@ -130,13 +129,13 @@ public class HtmlUnitRegExpProxy2Test extends SimpleWebTestCase {
     @Test
     public void matchFixNeeded() throws Exception {
         final WebClient client = getWebClient();
-        final HtmlUnitContextFactory cf = ((JavaScriptEngine) client.getJavaScriptEngine()).getContextFactory();
+        final HtmlUnitContextFactory cf = client.getJavaScriptEngine().getContextFactory();
         final Context cx = cf.enterContext();
         try {
             final ScriptableObject topScope = cx.initStandardObjects();
-            cx.evaluateString(topScope, scriptTestMatch_, "test script String.match", 0, null);
+            cx.evaluateString(topScope, SCRIPT_TEST_MATCH, "test script String.match", 0, null);
             try {
-                cx.evaluateString(topScope, scriptTestMatch_, "test script String.match", 0, null);
+                cx.evaluateString(topScope, SCRIPT_TEST_MATCH, "test script String.match", 0, null);
             }
             catch (final JavaScriptException e) {
                 assertTrue(e.getMessage().indexOf("Expected >") == 0);

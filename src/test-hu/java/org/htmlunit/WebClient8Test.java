@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -384,6 +384,24 @@ public class WebClient8Test extends SimpleWebTestCase {
      */
     @Test
     public void imageEventHandlersWithNoJs() throws Exception {
+        final String html = "<html>\n"
+                + "<head>\n"
+                + "</head>\n"
+                + "  <body>\n"
+                + "    <img onerror='doSomething(this)' />\n"
+                + "  </body>\n"
+                + "</html>";
+
+        try (WebClient webClient = new WebClient(getBrowserVersion(), false, null, -1)) {
+            loadPage(webClient, html, null, URL_FIRST);
+        }
+    }
+
+    /**
+     * @throws Exception if something goes wrong
+     */
+    @Test
+    public void clickWithNoJs() throws Exception {
         final String html = "<html>\n"
                 + "<head>\n"
                 + "</head>\n"

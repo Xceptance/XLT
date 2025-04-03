@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,8 @@ package org.htmlunit.javascript.host.media;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -33,8 +34,7 @@ public class MediaDevicesTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void inWindow() throws Exception {
         final String html
             = "<html>\n"
@@ -57,8 +57,11 @@ public class MediaDevicesTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object MediaDevices]", "err"},
-            IE = "undefined")
+    @Alerts({"[object MediaDevices]", "TypeError"})
+    @HtmlUnitNYI(CHROME = {"[object MediaDevices]", "undefined/DOMException"},
+            EDGE = {"[object MediaDevices]", "undefined/DOMException"},
+            FF = {"[object MediaDevices]", "undefined/DOMException"},
+            FF_ESR = {"[object MediaDevices]", "undefined/DOMException"})
     public void getUserMedia() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head>\n"
@@ -71,7 +74,7 @@ public class MediaDevicesTest extends WebDriverTestCase {
             + "    if (md) {\n"
             + "      md.getUserMedia({})\n"
             + "           .then(function(stream) { log(stream); })\n"
-            + "           .catch(function(err) { log('err'); });"
+            + "           .catch(function(e) { logEx(e); });"
             + "    }\n"
             + "  }\n"
             + "</script>\n"

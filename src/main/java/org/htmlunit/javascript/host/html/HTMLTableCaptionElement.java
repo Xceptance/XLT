@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +13,6 @@
  * limitations under the License.
  */
 package org.htmlunit.javascript.host.html;
-
-import static org.htmlunit.BrowserVersionFeatures.HTMLELEMENT_ALIGN_INVALID;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import org.htmlunit.html.HtmlCaption;
 import org.htmlunit.javascript.configuration.JsxClass;
@@ -36,23 +29,11 @@ import org.htmlunit.javascript.configuration.JsxSetter;
 @JsxClass(domClass = HtmlCaption.class)
 public class HTMLTableCaptionElement extends HTMLElement {
 
-    /** The valid <code>vAlign</code> values for this element, when emulating IE. */
-    private static final String[] VALIGN_VALID_VALUES_IE = {"top", "bottom"};
-
-    /** The default value of the "vAlign" property. */
-    private static final String VALIGN_DEFAULT_VALUE = "";
-
-    /**
-     * Creates an instance.
-     */
-    public HTMLTableCaptionElement() {
-    }
-
     /**
      * JavaScript constructor.
      */
     @Override
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
         super.jsConstructor();
     }
@@ -63,8 +44,7 @@ public class HTMLTableCaptionElement extends HTMLElement {
      */
     @JsxGetter
     public String getAlign() {
-        final boolean invalidValues = getBrowserVersion().hasFeature(HTMLELEMENT_ALIGN_INVALID);
-        return getAlign(invalidValues);
+        return getAlign(true);
     }
 
     /**
@@ -74,23 +54,5 @@ public class HTMLTableCaptionElement extends HTMLElement {
     @JsxSetter
     public void setAlign(final String align) {
         setAlign(align, false);
-    }
-
-    /**
-     * Returns the value of the {@code vAlign} property.
-     * @return the value of the {@code vAlign} property
-     */
-    @JsxGetter(IE)
-    public String getVAlign() {
-        return getVAlign(VALIGN_VALID_VALUES_IE, VALIGN_DEFAULT_VALUE);
-    }
-
-    /**
-     * Sets the value of the {@code vAlign} property.
-     * @param vAlign the value of the {@code vAlign} property
-     */
-    @JsxSetter(IE)
-    public void setVAlign(final Object vAlign) {
-        setVAlign(vAlign, VALIGN_VALID_VALUES_IE);
     }
 }

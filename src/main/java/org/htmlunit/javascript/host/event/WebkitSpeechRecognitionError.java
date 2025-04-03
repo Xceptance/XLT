@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,15 +30,10 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 public class WebkitSpeechRecognitionError extends Event {
 
     /**
-     * Creates a new instance.
-     */
-    public WebkitSpeechRecognitionError() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @JsxConstructor(functionName = "SpeechRecognitionErrorEvent")
     public void jsConstructor() {
+        // nothing to do
     }
 }

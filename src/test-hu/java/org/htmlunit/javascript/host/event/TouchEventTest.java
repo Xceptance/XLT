@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@ package org.htmlunit.javascript.host.event;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -43,9 +43,8 @@ public class TouchEventTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = {"[object TouchEvent]", "touch", "false", "false", "false"},
-            FF = "exception",
-            FF_ESR = "exception",
-            IE = "exception")
+            FF = "ReferenceError",
+            FF_ESR = "ReferenceError")
     public void create_ctor() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"
@@ -54,7 +53,7 @@ public class TouchEventTest extends WebDriverTestCase {
             + "    try {\n"
             + "      var event = new TouchEvent('touch');\n"
             + "      dump(event);\n"
-            + "    } catch (e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + DUMP_EVENT_FUNCTION
             + "</script></head><body onload='test()'>\n"
@@ -67,7 +66,9 @@ public class TouchEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts(DEFAULT = "TypeError",
+            FF = "ReferenceError",
+            FF_ESR = "ReferenceError")
     @HtmlUnitNYI(CHROME = {"[object TouchEvent]", "undefined", "false", "false", "false"},
                 EDGE = {"[object TouchEvent]", "undefined", "false", "false", "false"})
     public void create_ctorWithoutType() throws Exception {
@@ -78,7 +79,7 @@ public class TouchEventTest extends WebDriverTestCase {
             + "    try {\n"
             + "      var event = new TouchEvent();\n"
             + "      dump(event);\n"
-            + "    } catch (e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + DUMP_EVENT_FUNCTION
             + "</script></head><body onload='test()'>\n"
@@ -92,9 +93,8 @@ public class TouchEventTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = {"[object TouchEvent]", "42", "false", "false", "false"},
-            FF = "exception",
-            FF_ESR = "exception",
-            IE = "exception")
+            FF = "ReferenceError",
+            FF_ESR = "ReferenceError")
     public void create_ctorNumericType() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"
@@ -103,7 +103,7 @@ public class TouchEventTest extends WebDriverTestCase {
             + "    try {\n"
             + "      var event = new TouchEvent(42);\n"
             + "      dump(event);\n"
-            + "    } catch (e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + DUMP_EVENT_FUNCTION
             + "</script></head><body onload='test()'>\n"
@@ -117,9 +117,8 @@ public class TouchEventTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = {"[object TouchEvent]", "null", "false", "false", "false"},
-            FF = "exception",
-            FF_ESR = "exception",
-            IE = "exception")
+            FF = "ReferenceError",
+            FF_ESR = "ReferenceError")
     public void create_ctorNullType() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"
@@ -128,7 +127,7 @@ public class TouchEventTest extends WebDriverTestCase {
             + "    try {\n"
             + "      var event = new TouchEvent(null);\n"
             + "      dump(event);\n"
-            + "    } catch (e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + DUMP_EVENT_FUNCTION
             + "</script></head><body onload='test()'>\n"
@@ -141,7 +140,7 @@ public class TouchEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void create_ctorUnknownType() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"
@@ -150,7 +149,7 @@ public class TouchEventTest extends WebDriverTestCase {
             + "    try {\n"
             + "      var event = new TouchEvent(unknown);\n"
             + "      dump(event);\n"
-            + "    } catch (e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + DUMP_EVENT_FUNCTION
             + "</script></head><body onload='test()'>\n"
@@ -164,9 +163,8 @@ public class TouchEventTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = {"[object TouchEvent]", "HtmlUnitEvent", "false", "false", "false"},
-            FF = "exception",
-            FF_ESR = "exception",
-            IE = "exception")
+            FF = "ReferenceError",
+            FF_ESR = "ReferenceError")
     public void create_ctorArbitraryType() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"
@@ -175,7 +173,7 @@ public class TouchEventTest extends WebDriverTestCase {
             + "    try {\n"
             + "      var event = new TouchEvent('HtmlUnitEvent');\n"
             + "      dump(event);\n"
-            + "    } catch (e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + DUMP_EVENT_FUNCTION
             + "</script></head><body onload='test()'>\n"
@@ -189,9 +187,8 @@ public class TouchEventTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = {"[object TouchEvent]", "touch", "false", "false", "false"},
-            FF = "exception",
-            FF_ESR = "exception",
-            IE = "exception")
+            FF = "ReferenceError",
+            FF_ESR = "ReferenceError")
     public void create_ctorAllDetails() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"
@@ -209,7 +206,7 @@ public class TouchEventTest extends WebDriverTestCase {
             + "        'metaKey': true\n"
             + "      });\n"
             + "      dump(event);\n"
-            + "    } catch (e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + DUMP_EVENT_FUNCTION
             + "</script></head><body onload='test()'>\n"
@@ -223,9 +220,8 @@ public class TouchEventTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = {"[object TouchEvent]", "touch", "false", "false", "false"},
-            FF = "exception",
-            FF_ESR = "exception",
-            IE = "exception")
+            FF = "ReferenceError",
+            FF_ESR = "ReferenceError")
     public void create_ctorAllDetailsMissingData() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"
@@ -235,7 +231,7 @@ public class TouchEventTest extends WebDriverTestCase {
             + "      var event = new TouchEvent('touch', {\n"
             + "      });\n"
             + "      dump(event);\n"
-            + "    } catch (e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + DUMP_EVENT_FUNCTION
             + "</script></head><body onload='test()'>\n"
@@ -248,7 +244,9 @@ public class TouchEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts(DEFAULT = "TypeError",
+            FF = "ReferenceError",
+            FF_ESR = "ReferenceError")
     @HtmlUnitNYI(CHROME = {"[object TouchEvent]", "touch", "false", "false", "false"},
                 EDGE = {"[object TouchEvent]", "touch", "false", "false", "false"})
     public void create_ctorAllDetailsWrongData() throws Exception {
@@ -261,7 +259,7 @@ public class TouchEventTest extends WebDriverTestCase {
             + "        'touches': 'abc',\n"
             + "      });\n"
             + "      dump(event);\n"
-            + "    } catch (e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + DUMP_EVENT_FUNCTION
             + "</script></head><body onload='test()'>\n"
@@ -276,8 +274,7 @@ public class TouchEventTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "true",
             FF = "false",
-            FF_ESR = "false",
-            IE = "false")
+            FF_ESR = "false")
     public void inWindow() throws Exception {
         final String html
             = "<html>\n"

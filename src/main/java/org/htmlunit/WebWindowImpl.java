@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,10 @@
 package org.htmlunit;
 
 import static org.htmlunit.BrowserVersionFeatures.JS_WINDOW_COMPUTED_STYLE_PSEUDO_ACCEPT_WITHOUT_COLON;
-import static org.htmlunit.BrowserVersionFeatures.JS_WINDOW_OUTER_INNER_HEIGHT_DIFF_131;
 import static org.htmlunit.BrowserVersionFeatures.JS_WINDOW_OUTER_INNER_HEIGHT_DIFF_138;
-import static org.htmlunit.BrowserVersionFeatures.JS_WINDOW_OUTER_INNER_HEIGHT_DIFF_86;
+import static org.htmlunit.BrowserVersionFeatures.JS_WINDOW_OUTER_INNER_HEIGHT_DIFF_147;
 import static org.htmlunit.BrowserVersionFeatures.JS_WINDOW_OUTER_INNER_HEIGHT_DIFF_91;
+import static org.htmlunit.BrowserVersionFeatures.JS_WINDOW_OUTER_INNER_HEIGHT_DIFF_93;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -50,6 +50,7 @@ import org.w3c.dom.Document;
  * @author David K. Taylor
  * @author Ahmed Ashour
  * @author Ronald Brill
+ * @author Sven Strickroth
  */
 public abstract class WebWindowImpl implements WebWindow {
 
@@ -84,20 +85,20 @@ public abstract class WebWindowImpl implements WebWindow {
 
         innerHeight_ = 605;
         innerWidth_ = 1256;
-        if (webClient.getBrowserVersion().hasFeature(JS_WINDOW_OUTER_INNER_HEIGHT_DIFF_86)) {
-            outerHeight_ = innerHeight_ + 86;
-            outerWidth_ = innerWidth_ + 16;
-        }
-        else if (webClient.getBrowserVersion().hasFeature(JS_WINDOW_OUTER_INNER_HEIGHT_DIFF_91)) {
+        if (webClient.getBrowserVersion().hasFeature(JS_WINDOW_OUTER_INNER_HEIGHT_DIFF_91)) {
             outerHeight_ = innerHeight_ + 91;
             outerWidth_ = innerWidth_ + 12;
         }
-        else if (webClient.getBrowserVersion().hasFeature(JS_WINDOW_OUTER_INNER_HEIGHT_DIFF_131)) {
-            outerHeight_ = innerHeight_ + 138;
-            outerWidth_ = innerWidth_ + 64;
+        else if (webClient.getBrowserVersion().hasFeature(JS_WINDOW_OUTER_INNER_HEIGHT_DIFF_93)) {
+            outerHeight_ = innerHeight_ + 93;
+            outerWidth_ = innerWidth_ + 16;
         }
         else if (webClient.getBrowserVersion().hasFeature(JS_WINDOW_OUTER_INNER_HEIGHT_DIFF_138)) {
             outerHeight_ = innerHeight_ + 138;
+            outerWidth_ = innerWidth_ + 24;
+        }
+        else if (webClient.getBrowserVersion().hasFeature(JS_WINDOW_OUTER_INNER_HEIGHT_DIFF_147)) {
+            outerHeight_ = innerHeight_ + 147;
             outerWidth_ = innerWidth_ + 16;
         }
         else {
@@ -224,9 +225,7 @@ public abstract class WebWindowImpl implements WebWindow {
      * Destroy our children.
      */
     protected void destroyChildren() {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("destroyChildren");
-        }
+        LOG.debug("destroyChildren");
         getJobManager().removeAllJobs();
 
         // try to deal with js thread adding a new window in between

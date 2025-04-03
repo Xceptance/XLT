@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,17 +16,15 @@ package org.htmlunit.javascript.host;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Base64;
 
-import org.apache.commons.codec.binary.Base64;
 import org.htmlunit.Page;
 import org.htmlunit.WebWindow;
 import org.htmlunit.corejs.javascript.Context;
-import org.htmlunit.corejs.javascript.EvaluatorException;
 import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.FunctionObject;
-import org.htmlunit.corejs.javascript.ScriptRuntime;
 import org.htmlunit.corejs.javascript.Scriptable;
-import org.htmlunit.corejs.javascript.Undefined;
+import org.htmlunit.javascript.HtmlUnitScriptable;
 import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.background.BackgroundJavaScriptFactory;
 import org.htmlunit.javascript.background.JavaScriptJob;
@@ -49,38 +47,47 @@ public final class WindowOrWorkerGlobalScopeMixin {
     private static final int MIN_TIMER_DELAY = 1;
 
     private WindowOrWorkerGlobalScopeMixin() {
+        super();
     }
 
     /**
      * Decodes a string of data which has been encoded using base-64 encoding.
      * @param encodedData the encoded string
+     * @param scriptable the HtmlUnitScriptable scope
      * @return the decoded value
      */
-    public static String atob(final String encodedData) {
+    public static String atob(final String encodedData, final HtmlUnitScriptable scriptable) {
         final int l = encodedData.length();
         for (int i = 0; i < l; i++) {
             if (encodedData.charAt(i) > 255) {
-                throw new EvaluatorException("Function atob supports only latin1 characters");
+                throw JavaScriptEngine.asJavaScriptException(
+                        scriptable,
+                        "Function atob supports only latin1 characters",
+                        org.htmlunit.javascript.host.dom.DOMException.INVALID_CHARACTER_ERR);
             }
         }
         final byte[] bytes = encodedData.getBytes(StandardCharsets.ISO_8859_1);
-        return new String(Base64.decodeBase64(bytes), StandardCharsets.ISO_8859_1);
+        return new String(Base64.getDecoder().decode(bytes), StandardCharsets.ISO_8859_1);
     }
 
     /**
      * Creates a base-64 encoded ASCII string from a string of binary data.
      * @param stringToEncode string to encode
+     * @param scriptable the HtmlUnitScriptable scope
      * @return the encoded string
      */
-    public static String btoa(final String stringToEncode) {
+    public static String btoa(final String stringToEncode, final HtmlUnitScriptable scriptable) {
         final int l = stringToEncode.length();
         for (int i = 0; i < l; i++) {
             if (stringToEncode.charAt(i) > 255) {
-                throw new EvaluatorException("Function btoa supports only latin1 characters");
+                throw JavaScriptEngine.asJavaScriptException(
+                        scriptable,
+                        "Function btoa supports only latin1 characters",
+                        org.htmlunit.javascript.host.dom.DOMException.INVALID_CHARACTER_ERR);
             }
         }
         final byte[] bytes = stringToEncode.getBytes(StandardCharsets.ISO_8859_1);
-        return new String(Base64.encodeBase64(bytes), StandardCharsets.UTF_8);
+        return new String(Base64.getEncoder().encode(bytes), StandardCharsets.UTF_8);
     }
 
     /**
@@ -103,10 +110,10 @@ public final class WindowOrWorkerGlobalScopeMixin {
             throw JavaScriptEngine.typeError("Function not provided");
         }
 
-        final int timeout = JavaScriptEngine.toInt32((args.length > 1) ? args[1] : Undefined.instance);
+        final int timeout = JavaScriptEngine.toInt32((args.length > 1) ? args[1] : JavaScriptEngine.UNDEFINED);
         final Object[] params = (args.length > 2)
                 ? Arrays.copyOfRange(args, 2, args.length)
-                : ScriptRuntime.emptyArgs;
+                : JavaScriptEngine.EMPTY_ARGS;
         return setTimeoutIntervalImpl((Window) thisObj, args[0], timeout, true, params);
     }
 
@@ -127,10 +134,10 @@ public final class WindowOrWorkerGlobalScopeMixin {
             throw JavaScriptEngine.typeError("Function not provided");
         }
 
-        final int timeout = JavaScriptEngine.toInt32((args.length > 1) ? args[1] : Undefined.instance);
+        final int timeout = JavaScriptEngine.toInt32((args.length > 1) ? args[1] : JavaScriptEngine.UNDEFINED);
         final Object[] params = (args.length > 2)
                 ? Arrays.copyOfRange(args, 2, args.length)
-                : ScriptRuntime.emptyArgs;
+                : JavaScriptEngine.EMPTY_ARGS;
         return setTimeoutIntervalImpl((Window) thisObj, args[0], timeout, false, params);
     }
 

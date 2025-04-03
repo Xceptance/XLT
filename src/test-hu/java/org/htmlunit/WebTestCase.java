@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -143,12 +143,6 @@ public abstract class WebTestCase {
      * Constant for the base URL for cross-origin tests.
      */
     public static final URL URL_CROSS_ORIGIN_BASE;
-
-    /** To be documented. */
-    protected static final BrowserVersion FLAG_ALL_BROWSERS
-        = new BrowserVersion.BrowserVersionBuilder(BrowserVersion.BEST_SUPPORTED)
-                    .setApplicationName("FLAG_ALL_BROWSERS")
-                    .build();
 
     private BrowserVersion browserVersion_;
     private String[] expectedAlerts_;

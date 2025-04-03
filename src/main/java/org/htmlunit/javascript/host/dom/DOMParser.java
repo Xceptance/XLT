@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,16 +49,11 @@ import org.htmlunit.util.MimeType;
 public class DOMParser extends HtmlUnitScriptable {
 
     /**
-     * The constructor.
-     */
-    public DOMParser() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 
     /**
@@ -74,12 +69,12 @@ public class DOMParser extends HtmlUnitScriptable {
         try {
             final Document document = parseFromString(this, str, type);
             if (document == null) {
-                throw JavaScriptEngine.reportRuntimeError("Invalid 'type' parameter: " + type);
+                throw JavaScriptEngine.typeError("Invalid 'type' parameter: " + type);
             }
             return document;
         }
         catch (final IOException e) {
-            throw JavaScriptEngine.reportRuntimeError("Parsing failed" + e.getMessage());
+            throw JavaScriptEngine.syntaxError("Parsing failed" + e.getMessage());
         }
     }
 
@@ -98,7 +93,7 @@ public class DOMParser extends HtmlUnitScriptable {
     public static Document parseFromString(final HtmlUnitScriptable scriptable, final String str, final Object type)
                 throws IOException {
         if (type == null || JavaScriptEngine.isUndefined(type)) {
-            throw JavaScriptEngine.reportRuntimeError("Missing 'type' parameter");
+            throw JavaScriptEngine.typeError("Missing 'type' parameter");
         }
 
         if (MimeType.TEXT_XML.equals(type)
@@ -114,27 +109,43 @@ public class DOMParser extends HtmlUnitScriptable {
 
         if (MimeType.TEXT_HTML.equals(type)) {
             final WebWindow webWindow = scriptable.getWindow().getWebWindow();
-            final WebClient webClient = webWindow.getWebClient();
             final WebResponse webResponse = new StringWebResponse(str, webWindow.getEnclosedPage().getUrl());
 
-            // a similar impl is in
-            // org.htmlunit.javascript.host.dom.DOMImplementation.createHTMLDocument(Object)
-            final HtmlPage page = new HtmlPage(webResponse, webWindow);
-            page.setEnclosingWindow(null);
-            final Window window = webWindow.getScriptableObject();
-
-            // document knows the window but is not the windows document
-            final HTMLDocument document = new HTMLDocument();
-            document.setParentScope(window);
-            document.setPrototype(window.getPrototype(document.getClass()));
-            // document.setWindow(window);
-            document.setDomNode(page);
-
-            final HTMLParser htmlParser = webClient.getPageCreator().getHtmlParser();
-            htmlParser.parse(webResponse, page, false, true);
-            return page.getScriptableObject();
+            return parseHtmlDocument(scriptable, webResponse, webWindow);
         }
 
         return null;
+    }
+
+    /**
+     * <span style="color:red">INTERNAL API - SUBJECT TO CHANGE AT ANY TIME - USE AT YOUR OWN RISK.</span><br>
+     *
+     * Parses the given Unicode string into a DOM document.
+     * @param scriptable the ScriptableObject this belongs to
+     * @param webResponse the response to be parsed
+     * @param webWindow the window
+     * @return the generated document
+     * @throws IOException in case of error
+     */
+    public static Document parseHtmlDocument(final HtmlUnitScriptable scriptable, final WebResponse webResponse,
+                                final WebWindow webWindow)
+                throws IOException {
+        // a similar impl is in
+        // org.htmlunit.javascript.host.dom.DOMImplementation.createHTMLDocument(Object)
+        final HtmlPage page = new HtmlPage(webResponse, webWindow);
+        page.setEnclosingWindow(null);
+        final Window window = webWindow.getScriptableObject();
+
+        // document knows the window but is not the windows document
+        final HTMLDocument document = new HTMLDocument();
+        document.setParentScope(window);
+        document.setPrototype(window.getPrototype(document.getClass()));
+        // document.setWindow(window);
+        document.setDomNode(page);
+
+        final WebClient webClient = webWindow.getWebClient();
+        final HTMLParser htmlParser = webClient.getPageCreator().getHtmlParser();
+        htmlParser.parse(webResponse, page, false, true);
+        return page.getScriptableObject();
     }
 }

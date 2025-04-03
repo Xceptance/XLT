@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,9 @@
 package org.htmlunit.javascript.host.html;
 
 import static org.htmlunit.BrowserVersionFeatures.JS_CANVAS_DATA_URL_CHROME_PNG;
-import static org.htmlunit.BrowserVersionFeatures.JS_CANVAS_DATA_URL_IE_PNG;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import org.htmlunit.html.HtmlCanvas;
+import org.htmlunit.javascript.HtmlUnitScriptable;
 import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
@@ -43,16 +39,10 @@ public class HTMLCanvasElement extends HTMLElement {
     private CanvasRenderingContext2D context2d_;
 
     /**
-     * Creates an instance.
-     */
-    public HTMLCanvasElement() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @Override
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
         super.jsConstructor();
     }
@@ -121,7 +111,7 @@ public class HTMLCanvasElement extends HTMLElement {
      * or null if the given context ID is not supported
      */
     @JsxFunction
-    public Object getContext(final String contextId) {
+    public HtmlUnitScriptable getContext(final String contextId) {
         if ("2d".equals(contextId)) {
             if (context2d_ == null) {
                 final CanvasRenderingContext2D context = new CanvasRenderingContext2D(this);
@@ -151,14 +141,6 @@ public class HTMLCanvasElement extends HTMLElement {
                 typeInUse = JavaScriptEngine.toString(type);
             }
             return context2d_.toDataURL(typeInUse);
-        }
-
-        if (getBrowserVersion().hasFeature(JS_CANVAS_DATA_URL_IE_PNG)) {
-            return "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASwAAACWCAYAAABkW7XSAAAAAXNSR0IArs4c6QAAAARnQU1BAA"
-                + "Cxjwv8YQUAAADGSURBVHhe7cExAQAAAMKg9U9tCF8gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-                + "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-                + "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAONUAv9QAAcDhjokAAAAASUV"
-                + "ORK5CYII=";
         }
 
         if (getBrowserVersion().hasFeature(JS_CANVAS_DATA_URL_CHROME_PNG)) {

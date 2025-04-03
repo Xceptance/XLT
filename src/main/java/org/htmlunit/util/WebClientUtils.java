@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import org.htmlunit.corejs.javascript.tools.debugger.Main;
 import org.htmlunit.corejs.javascript.tools.debugger.ScopeProvider;
 import org.htmlunit.corejs.javascript.tools.debugger.SourceProvider;
 import org.htmlunit.javascript.HtmlUnitContextFactory;
-import org.htmlunit.javascript.JavaScriptEngine;
 
 /**
  * Utility class containing miscellaneous {@link WebClient}-related methods.
@@ -46,7 +45,7 @@ public final class WebClientUtils {
      * @see <a href="http://www.mozilla.org/rhino/debugger.html">Mozilla Rhino Debugger Documentation</a>
      */
     public static void attachVisualDebugger(final WebClient client) {
-        final HtmlUnitContextFactory cf = ((JavaScriptEngine) client.getJavaScriptEngine()).getContextFactory();
+        final HtmlUnitContextFactory cf = client.getJavaScriptEngine().getContextFactory();
         final Main main = Main.mainEmbedded(cf, (ScopeProvider) null, "HtmlUnit JavaScript Debugger");
         main.getDebugFrame().setExtendedState(Frame.MAXIMIZED_BOTH);
 

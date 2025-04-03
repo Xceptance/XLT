@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -129,6 +129,9 @@ public final class HttpHeader {
     /** sec-ch-ua-platform. */
     public static final String SEC_CH_UA_PLATFORM = "sec-ch-ua-platform";
 
+    /** Priority. */
+    public static final String PRIORITY = "Priority";
+
     /** Access-Control-Request-Method. */
     public static final String ACCESS_CONTROL_REQUEST_METHOD = "Access-Control-Request-Method";
     /** Access-Control-Request-Headers. */
@@ -153,5 +156,6 @@ public final class HttpHeader {
     public static final String CONTENT_SECURIRY_POLICY = "Content-Security-Policy";
 
     private HttpHeader() {
+        // util class
     }
 }

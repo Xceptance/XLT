@@ -34,12 +34,6 @@ public class LoadFrameContentByJSUrlTest
         test(BrowserVersion.FIREFOX);
     }
 
-    @Test
-    public void test_ie() throws Exception
-    {
-        test(BrowserVersion.INTERNET_EXPLORER);
-    }
-
     private void test(final BrowserVersion browserVersion) throws Exception
     {
         try (final WebClient wc = new WebClient(browserVersion))

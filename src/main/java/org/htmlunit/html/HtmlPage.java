@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,17 +15,8 @@
  */
 package org.htmlunit.html;
 
-import static java.nio.charset.StandardCharsets.ISO_8859_1;
-import static org.htmlunit.BrowserVersionFeatures.EVENT_FOCUS_FOCUS_IN_BLUR_OUT;
-import static org.htmlunit.BrowserVersionFeatures.EVENT_FOCUS_IN_FOCUS_OUT_BLUR;
 import static org.htmlunit.BrowserVersionFeatures.EVENT_FOCUS_ON_LOAD;
-import static org.htmlunit.BrowserVersionFeatures.FOCUS_BODY_ELEMENT_AT_START;
-import static org.htmlunit.BrowserVersionFeatures.HTTP_HEADER_SEC_FETCH;
 import static org.htmlunit.BrowserVersionFeatures.JS_EVENT_LOAD_SUPPRESSED_BY_CONTENT_SECURIRY_POLICY;
-import static org.htmlunit.BrowserVersionFeatures.JS_IGNORES_UTF8_BOM_SOMETIMES;
-import static org.htmlunit.BrowserVersionFeatures.PAGE_SELECTION_RANGE_FROM_SELECTABLE_TEXT_INPUT;
-import static org.htmlunit.BrowserVersionFeatures.URL_MISSING_SLASHES;
-import static org.htmlunit.html.DisabledElement.ATTRIBUTE_DISABLED;
 import static org.htmlunit.html.DomElement.ATTRIBUTE_NOT_DEFINED;
 
 import java.io.File;
@@ -36,6 +27,7 @@ import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -49,15 +41,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.htmlunit.BrowserVersion;
 import org.htmlunit.Cache;
 import org.htmlunit.ElementNotFoundException;
 import org.htmlunit.FailingHttpStatusCodeException;
@@ -77,16 +66,13 @@ import org.htmlunit.WebWindow;
 import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.Script;
 import org.htmlunit.corejs.javascript.Scriptable;
-import org.htmlunit.corejs.javascript.Undefined;
 import org.htmlunit.css.ComputedCssStyleDeclaration;
 import org.htmlunit.css.CssStyleSheet;
 import org.htmlunit.html.FrameWindow.PageDenied;
-import org.htmlunit.html.impl.SelectableTextInput;
 import org.htmlunit.html.impl.SimpleRange;
 import org.htmlunit.html.parser.HTMLParserDOMBuilder;
-import org.htmlunit.httpclient.HttpClientConverter;
+import org.htmlunit.http.HttpStatus;
 import org.htmlunit.javascript.AbstractJavaScriptEngine;
-import org.htmlunit.javascript.HtmlUnitContextFactory;
 import org.htmlunit.javascript.HtmlUnitScriptable;
 import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.PostponedAction;
@@ -96,7 +82,6 @@ import org.htmlunit.javascript.host.event.Event;
 import org.htmlunit.javascript.host.event.EventTarget;
 import org.htmlunit.javascript.host.html.HTMLDocument;
 import org.htmlunit.protocol.javascript.JavaScriptURLConnection;
-import org.htmlunit.util.EncodingSniffer;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.SerializableLock;
 import org.htmlunit.util.UrlUtils;
@@ -154,21 +139,23 @@ import org.w3c.dom.ProcessingInstruction;
  * @author Atsushi Nakagawa
  * @author Rural Hunter
  * @author Ronny Shapiro
+ * @author Lai Quang Duong
+ * @author Sven Strickroth
  */
 public class HtmlPage extends SgmlPage {
 
     private static final Log LOG = LogFactory.getLog(HtmlPage.class);
 
-    private static final Comparator<DomElement> documentPositionComparator = new DocumentPositionComparator();
+    private static final Comparator<DomElement> DOCUMENT_POSITION_COMPERATOR = new DocumentPositionComparator();
 
     private HTMLParserDOMBuilder domBuilder_;
     private transient Charset originalCharset_;
     private final Object lock_ = new SerializableLock(); // used for synchronization
 
-    private Map<String, SortedSet<DomElement>> idMap_ = new ConcurrentHashMap<>();
-    private Map<String, SortedSet<DomElement>> nameMap_ = new ConcurrentHashMap<>();
+    private Map<String, MappedElementIndexEntry> idMap_ = new ConcurrentHashMap<>();
+    private Map<String, MappedElementIndexEntry> nameMap_ = new ConcurrentHashMap<>();
 
-    private SortedSet<BaseFrameElement> frameElements_ = new TreeSet<>(documentPositionComparator);
+    private List<BaseFrameElement> frameElements_ = new ArrayList<>();
     private int parserCount_;
     private int snippetParserCount_;
     private int inlineSnippetParserCount_;
@@ -285,9 +272,6 @@ public class HtmlPage extends SgmlPage {
         // don't set the ready state if we really load the blank page into the window
         // see Node.initInlineFrameIfNeeded()
         if (!isAboutBlank) {
-            if (hasFeature(FOCUS_BODY_ELEMENT_AT_START)) {
-                setElementWithFocus(getBody());
-            }
             setReadyState(READY_STATE_COMPLETE);
             getDocumentElement().setReadyState(READY_STATE_COMPLETE);
             executeEventHandlersIfNeeded(Event.TYPE_READY_STATE_CHANGE);
@@ -312,9 +296,9 @@ public class HtmlPage extends SgmlPage {
             executeEventHandlersIfNeeded(Event.TYPE_LOAD);
         }
 
-        for (final FrameWindow frameWindow : getFrames()) {
-            if (frameWindow.getFrameElement() instanceof HtmlFrame) {
-                final Page page = frameWindow.getEnclosedPage();
+        for (final BaseFrameElement frameElement : new ArrayList<>(frameElements_)) {
+            if (frameElement instanceof HtmlFrame) {
+                final Page page = frameElement.getEnclosedWindow().getEnclosedPage();
                 if (page != null && page.isHtmlPage()) {
                     ((HtmlPage) page).executeEventHandlersIfNeeded(Event.TYPE_LOAD);
                 }
@@ -398,17 +382,14 @@ public class HtmlPage extends SgmlPage {
     }
 
     /**
-     * Returns the <code>body</code> element (or <code>frameset</code> element),
-     * or {@code null} if it does not yet exist.
-     * @return the <code>body</code> element (or <code>frameset</code> element),
-     * or {@code null} if it does not yet exist
+     * @return the <code>body</code> element, or {@code null} if it does not yet exist
      */
-    public HtmlElement getBody() {
+    public HtmlBody getBody() {
         final DomElement doc = getDocumentElement();
         if (doc != null) {
             for (final DomNode node : doc.getChildren()) {
-                if (node instanceof HtmlBody || node instanceof HtmlFrameSet) {
-                    return (HtmlElement) node;
+                if (node instanceof HtmlBody) {
+                    return (HtmlBody) node;
                 }
             }
         }
@@ -601,7 +582,7 @@ public class HtmlPage extends SgmlPage {
             tagName = org.htmlunit.util.StringUtils.toRootLowerCase(tagName);
         }
         return getWebClient().getPageCreator().getHtmlParser().getFactory(tagName)
-                    .createElementNS(this, null, tagName, null, true);
+                    .createElementNS(this, null, tagName, null);
     }
 
     /**
@@ -611,7 +592,7 @@ public class HtmlPage extends SgmlPage {
     public DomElement createElementNS(final String namespaceURI, final String qualifiedName) {
         return getWebClient().getPageCreator().getHtmlParser()
                 .getElementFactory(this, namespaceURI, qualifiedName, false, true)
-                .createElementNS(this, namespaceURI, qualifiedName, null, true);
+                .createElementNS(this, namespaceURI, qualifiedName, null);
     }
 
     /**
@@ -647,12 +628,13 @@ public class HtmlPage extends SgmlPage {
     @Override
     public DomElement getElementById(final String elementId) {
         if (elementId != null) {
-            final SortedSet<DomElement> elements = idMap_.get(elementId);
+            final MappedElementIndexEntry elements = idMap_.get(elementId);
             if (elements != null) {
                 // XC start
-                if (elements.size() > 1)
+                if (elements.elements().size() > 1)
                 {
-                    notifyIncorrectness(this + ": More than one element was found for ID '" + elementId + "' " + Arrays.toString(elements.toArray()));
+                    notifyIncorrectness(this + ": More than one element was found for ID '" + elementId + "' " +
+                                        Arrays.toString(elements.elements().toArray()));
                 }
                 // XC end
                 return elements.first();
@@ -741,15 +723,13 @@ public class HtmlPage extends SgmlPage {
      */
     public URL getFullyQualifiedUrl(String relativeUrl) throws MalformedURLException {
         // to handle http: and http:/ in FF (Bug #474)
-        if (hasFeature(URL_MISSING_SLASHES)) {
-            boolean incorrectnessNotified = false;
-            while (relativeUrl.startsWith("http:") && !relativeUrl.startsWith("http://")) {
-                if (!incorrectnessNotified) {
-                    notifyIncorrectness("Incorrect URL \"" + relativeUrl + "\" has been corrected");
-                    incorrectnessNotified = true;
-                }
-                relativeUrl = "http:/" + relativeUrl.substring(5);
+        boolean incorrectnessNotified = false;
+        while (relativeUrl.startsWith("http:") && !relativeUrl.startsWith("http://")) {
+            if (!incorrectnessNotified) {
+                notifyIncorrectness("Incorrect URL \"" + relativeUrl + "\" has been corrected");
+                incorrectnessNotified = true;
             }
+            relativeUrl = "http:/" + relativeUrl.substring(5);
         }
 
         return WebClient.expandUrl(getBaseURL(), relativeUrl);
@@ -823,7 +803,7 @@ public class HtmlPage extends SgmlPage {
         for (final HtmlElement element : getHtmlElementDescendants()) {
             final String tagName = element.getTagName();
             if (TABBABLE_TAGS.contains(tagName)) {
-                final boolean disabled = element.hasAttribute(ATTRIBUTE_DISABLED);
+                final boolean disabled = element.isDisabledElementAndDisabled();
                 if (!disabled && !HtmlElement.TAB_INDEX_OUT_OF_BOUNDS.equals(element.getTabIndex())) {
                     tabbableElements.add(element);
                 }
@@ -964,7 +944,7 @@ public class HtmlPage extends SgmlPage {
      */
     public ScriptResult executeJavaScript(String sourceCode, final String sourceName, final int startLine) {
         if (!getWebClient().isJavaScriptEnabled()) {
-            return new ScriptResult(Undefined.instance);
+            return new ScriptResult(JavaScriptEngine.UNDEFINED);
         }
 
         if (StringUtils.startsWithIgnoreCase(sourceCode, JavaScriptURLConnection.JAVASCRIPT_PREFIX)) {
@@ -974,7 +954,8 @@ public class HtmlPage extends SgmlPage {
             }
         }
 
-        final Object result = getWebClient().getJavaScriptEngine().execute(this, sourceCode, sourceName, startLine);
+        final Object result = getWebClient().getJavaScriptEngine()
+                .execute(this, getEnclosingWindow().getScriptableObject(), sourceCode, sourceName, startLine);
         return new ScriptResult(result);
     }
 
@@ -1041,7 +1022,7 @@ public class HtmlPage extends SgmlPage {
             return JavaScriptLoadResult.DOWNLOAD_ERROR;
         }
         catch (final FailingHttpStatusCodeException e) {
-            if (e.getStatusCode() == HttpClientConverter.NO_CONTENT) {
+            if (e.getStatusCode() == HttpStatus.NO_CONTENT_204) {
                 return JavaScriptLoadResult.NO_CONTENT;
             }
             client.getJavaScriptErrorListener().loadScriptError(this, scriptURL, e);
@@ -1054,7 +1035,7 @@ public class HtmlPage extends SgmlPage {
 
         @SuppressWarnings("unchecked")
         final AbstractJavaScriptEngine<Object> engine = (AbstractJavaScriptEngine<Object>) client.getJavaScriptEngine();
-        engine.execute(this, script);
+        engine.execute(this, getEnclosingWindow().getScriptableObject(), script);
         return JavaScriptLoadResult.SUCCESS;
     }
 
@@ -1085,16 +1066,22 @@ public class HtmlPage extends SgmlPage {
         request.setAdditionalHeaders(new HashMap<>(referringRequest.getAdditionalHeaders()));
 
         // at least overwrite this headers
-        final BrowserVersion browserVersion = client.getBrowserVersion();
         request.setAdditionalHeader(HttpHeader.ACCEPT, client.getBrowserVersion().getScriptAcceptHeader());
-        if (browserVersion.hasFeature(HTTP_HEADER_SEC_FETCH)) {
-            request.setAdditionalHeader(HttpHeader.SEC_FETCH_SITE, "same-origin");
-            request.setAdditionalHeader(HttpHeader.SEC_FETCH_MODE, "no-cors");
-            request.setAdditionalHeader(HttpHeader.SEC_FETCH_DEST, "script");
-        }
+        request.setAdditionalHeader(HttpHeader.SEC_FETCH_SITE, "same-origin");
+        request.setAdditionalHeader(HttpHeader.SEC_FETCH_MODE, "no-cors");
+        request.setAdditionalHeader(HttpHeader.SEC_FETCH_DEST, "script");
 
-        request.setRefererlHeader(referringRequest.getUrl());
+        request.setRefererHeader(referringRequest.getUrl());
         request.setCharset(scriptCharset);
+
+        // use info from script tag or fall back to utf-8
+        // https://www.rfc-editor.org/rfc/rfc9239#section-4.2
+        if (scriptCharset != null) {
+            request.setDefaultResponseContentCharset(scriptCharset);
+        }
+        else {
+            request.setDefaultResponseContentCharset(StandardCharsets.UTF_8);
+        }
 
         // our cache is a bit strange;
         // loadWebResponse check the cache for the web response
@@ -1113,7 +1100,7 @@ public class HtmlPage extends SgmlPage {
         client.throwFailingHttpStatusCodeExceptionIfNecessary(response);
 
         final int statusCode = response.getStatusCode();
-        if (statusCode == HttpClientConverter.NO_CONTENT) {
+        if (statusCode == HttpStatus.NO_CONTENT_204) {
             throw new FailingHttpStatusCodeException(response);
         }
 
@@ -1136,33 +1123,12 @@ public class HtmlPage extends SgmlPage {
             }
         }
 
-        Charset scriptEncoding = Charset.forName("windows-1252");
-        final boolean ignoreBom;
-        final Charset contentCharset = EncodingSniffer.sniffEncodingFromHttpHeaders(response.getResponseHeaders());
-        if (contentCharset == null) {
-            // use info from script tag or fall back to utf-8
-            if (scriptCharset != null && ISO_8859_1 != scriptCharset) {
-                ignoreBom = true;
-                scriptEncoding = scriptCharset;
-            }
-            else {
-                ignoreBom = ISO_8859_1 != scriptCharset;
-            }
-        }
-        else if (ISO_8859_1 == contentCharset) {
-            ignoreBom = true;
-        }
-        else {
-            ignoreBom = true;
-            scriptEncoding = contentCharset;
-        }
-
-        final String scriptCode = response.getContentAsString(scriptEncoding,
-                                ignoreBom
-                                && getWebClient().getBrowserVersion().hasFeature(JS_IGNORES_UTF8_BOM_SOMETIMES));
+        final Charset scriptEncoding = response.getContentCharset();
+        final String scriptCode = response.getContentAsString(scriptEncoding);
         if (null != scriptCode) {
             final AbstractJavaScriptEngine<?> javaScriptEngine = client.getJavaScriptEngine();
-            final Object script = javaScriptEngine.compile(this, scriptCode, url.toExternalForm(), 1);
+            final Scriptable scope = getEnclosingWindow().getScriptableObject();
+            final Object script = javaScriptEngine.compile(this, scope, scriptCode, url.toExternalForm(), 1);
             if (script != null && cache.cacheIfPossible(request, response, script)) {
                 // no cleanup if the response is stored inside the cache
                 return script;
@@ -1197,9 +1163,7 @@ public class HtmlPage extends SgmlPage {
     public void setTitleText(final String message) {
         HtmlTitle titleElement = getTitleElement();
         if (titleElement == null) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("No title element, creating one");
-            }
+            LOG.debug("No title element, creating one");
             final HtmlHead head = (HtmlHead) getFirstChildElement(getDocumentElement(), HtmlHead.class);
             if (head == null) {
                 // perhaps should we create head too?
@@ -1284,7 +1248,7 @@ public class HtmlPage extends SgmlPage {
         final WebWindow window = getEnclosingWindow();
         if (window.getScriptableObject() instanceof Window) {
             final Event event;
-            if (eventType.equals(Event.TYPE_BEFORE_UNLOAD)) {
+            if (Event.TYPE_BEFORE_UNLOAD.equals(eventType)) {
                 event = new BeforeUnloadEvent(this, eventType);
             }
             else {
@@ -1309,9 +1273,7 @@ public class HtmlPage extends SgmlPage {
                 jsNode = window.getScriptableObject();
             }
 
-            final HtmlUnitContextFactory cf = ((JavaScriptEngine) getWebClient().getJavaScriptEngine())
-                                                    .getContextFactory();
-            cf.callSecured(cx -> jsNode.fireEvent(event), this);
+            ((JavaScriptEngine) getWebClient().getJavaScriptEngine()).callSecured(cx -> jsNode.fireEvent(event), this);
 
             if (!isOnbeforeunloadAccepted(this, event)) {
                 return false;
@@ -1377,10 +1339,8 @@ public class HtmlPage extends SgmlPage {
             if (beforeUnloadEvent.isBeforeUnloadMessageSet()) {
                 final OnbeforeunloadHandler handler = getWebClient().getOnbeforeunloadHandler();
                 if (handler == null) {
-                    if (LOG.isWarnEnabled()) {
-                        LOG.warn("document.onbeforeunload() returned a string in event.returnValue,"
-                                + " but no onbeforeunload handler installed.");
-                    }
+                    LOG.warn("document.onbeforeunload() returned a string in event.returnValue,"
+                            + " but no onbeforeunload handler installed.");
                 }
                 else {
                     final String message = JavaScriptEngine.toString(beforeUnloadEvent.getReturnValue());
@@ -1512,14 +1472,19 @@ public class HtmlPage extends SgmlPage {
             return;
         }
         final DomElement doc = getDocumentElement();
-        final List<HtmlElement> elements = new ArrayList<>(doc.getElementsByTagName("script"));
-        for (final HtmlElement e : elements) {
-            if (e instanceof HtmlScript) {
-                final HtmlScript script = (HtmlScript) e;
+        final List<HtmlScript> scripts = new ArrayList<>();
+
+        // don't call getElementsByTagName() here because it creates a live collection
+        for (final HtmlElement elem : doc.getHtmlElementDescendants()) {
+            if ("script".equals(elem.getLocalName()) && (elem instanceof HtmlScript)) {
+                final HtmlScript script = (HtmlScript) elem;
                 if (script.isDeferred() && ATTRIBUTE_NOT_DEFINED != script.getSrcAttribute()) {
-                    ScriptElementSupport.executeScriptIfNeeded(script, true, true);
+                    scripts.add(script);
                 }
             }
+        }
+        for (final HtmlScript script : scripts) {
+            ScriptElementSupport.executeScriptIfNeeded(script, true, true);
         }
     }
 
@@ -1527,7 +1492,8 @@ public class HtmlPage extends SgmlPage {
      * Deregister frames that are no longer in use.
      */
     public void deregisterFramesIfNeeded() {
-        for (final WebWindow window : getFrames()) {
+        for (final BaseFrameElement frameElement : frameElements_) {
+            final WebWindow window = frameElement.getEnclosedWindow();
             getWebClient().deregisterWebWindow(window);
             final Page page = window.getEnclosedPage();
             if (page != null && page.isHtmlPage()) {
@@ -1539,12 +1505,16 @@ public class HtmlPage extends SgmlPage {
     }
 
     /**
-     * Returns a list containing all the frames (from frame and iframe tags) in this page.
+     * Returns a list containing all the frames (from frame and iframe tags) in this page
+     * in document order.
      * @return a list of {@link FrameWindow}
      */
     public List<FrameWindow> getFrames() {
-        final List<FrameWindow> list = new ArrayList<>(frameElements_.size());
-        for (final BaseFrameElement frameElement : frameElements_) {
+        final List<BaseFrameElement> frameElements = new ArrayList<>(frameElements_);
+        Collections.sort(frameElements, DOCUMENT_POSITION_COMPERATOR);
+
+        final List<FrameWindow> list = new ArrayList<>(frameElements.size());
+        for (final BaseFrameElement frameElement : frameElements) {
             list.add(frameElement.getEnclosedWindow());
         }
         return list;
@@ -1557,9 +1527,10 @@ public class HtmlPage extends SgmlPage {
      * @exception ElementNotFoundException If no frame exist in this page with the specified name.
      */
     public FrameWindow getFrameByName(final String name) throws ElementNotFoundException {
-        for (final FrameWindow frame : getFrames()) {
-            if (frame.getName().equals(name)) {
-                return frame;
+        for (final BaseFrameElement frameElement : frameElements_) {
+            final FrameWindow fw = frameElement.getEnclosedWindow();
+            if (fw.getName().equals(name)) {
+                return fw;
             }
         }
 
@@ -1704,9 +1675,9 @@ public class HtmlPage extends SgmlPage {
      */
     public List<DomElement> getElementsById(final String elementId) {
         if (elementId != null) {
-            final SortedSet<DomElement> elements = idMap_.get(elementId);
+            final MappedElementIndexEntry elements = idMap_.get(elementId);
             if (elements != null) {
-                return new ArrayList<>(elements);
+                return new ArrayList<>(elements.elements());
             }
         }
         return Collections.emptyList();
@@ -1724,7 +1695,7 @@ public class HtmlPage extends SgmlPage {
     @SuppressWarnings("unchecked")
     public <E extends DomElement> E getElementByName(final String name) throws ElementNotFoundException {
         if (name != null) {
-            final SortedSet<DomElement> elements = nameMap_.get(name);
+            final MappedElementIndexEntry elements = nameMap_.get(name);
             if (elements != null) {
                 return (E) elements.first();
             }
@@ -1742,9 +1713,9 @@ public class HtmlPage extends SgmlPage {
      */
     public List<DomElement> getElementsByName(final String name) {
         if (name != null) {
-            final SortedSet<DomElement> elements = nameMap_.get(name);
+            final MappedElementIndexEntry elements = nameMap_.get(name);
             if (elements != null) {
-                return new ArrayList<>(elements);
+                return new ArrayList<>(elements.elements());
             }
         }
         return Collections.emptyList();
@@ -1761,14 +1732,14 @@ public class HtmlPage extends SgmlPage {
         if (idAndOrName == null) {
             return Collections.emptyList();
         }
-        final Collection<DomElement> list1 = idMap_.get(idAndOrName);
-        final Collection<DomElement> list2 = nameMap_.get(idAndOrName);
+        final MappedElementIndexEntry list1 = idMap_.get(idAndOrName);
+        final MappedElementIndexEntry list2 = nameMap_.get(idAndOrName);
         final List<DomElement> list = new ArrayList<>();
         if (list1 != null) {
-            list.addAll(list1);
+            list.addAll(list1.elements());
         }
         if (list2 != null) {
-            for (final DomElement elt : list2) {
+            for (final DomElement elt : list2.elements()) {
                 if (!list.contains(elt)) {
                     list.add(elt);
                 }
@@ -1789,10 +1760,15 @@ public class HtmlPage extends SgmlPage {
             if (node instanceof BaseFrameElement) {
                 frameElements_.add((BaseFrameElement) node);
             }
-            for (final HtmlElement child : node.getHtmlElementDescendants()) {
+
+            if (node.getFirstChild() != null) {
+                for (final Iterator<HtmlElement> iterator = node.new DescendantHtmlElementsIterator();
+                            iterator.hasNext();) {
+                final HtmlElement child = iterator.next();
                 if (child instanceof BaseFrameElement) {
                     frameElements_.add((BaseFrameElement) child);
                 }
+            }
             }
 
             if ("base".equals(node.getNodeName())) {
@@ -1829,14 +1805,6 @@ public class HtmlPage extends SgmlPage {
     /**
      * Adds an element to the ID and name maps, if necessary.
      * @param element the element to be added to the ID and name maps
-     */
-    void addMappedElement(final DomElement element) {
-        addMappedElement(element, false);
-    }
-
-    /**
-     * Adds an element to the ID and name maps, if necessary.
-     * @param element the element to be added to the ID and name maps
      * @param recurse indicates if children must be added too
      */
     void addMappedElement(final DomElement element, final boolean recurse) {
@@ -1846,14 +1814,14 @@ public class HtmlPage extends SgmlPage {
         }
     }
 
-    private void addElement(final Map<String, SortedSet<DomElement>> map, final DomElement element,
+    private void addElement(final Map<String, MappedElementIndexEntry> map, final DomElement element,
             final String attribute, final boolean recurse) {
         final String value = element.getAttribute(attribute);
 
         if (ATTRIBUTE_NOT_DEFINED != value) {
-            SortedSet<DomElement> elements = map.get(value);
+            MappedElementIndexEntry elements = map.get(value);
             if (elements == null) {
-                elements = new TreeSet<>(documentPositionComparator);
+                elements = new MappedElementIndexEntry();
                 elements.add(element);
                 map.put(value, elements);
             }
@@ -1861,25 +1829,23 @@ public class HtmlPage extends SgmlPage {
                 elements.add(element);
             }
             // START: Redmine #549
-            if("id".equals(attribute) && elements.size() > 1)
+            if("id".equals(attribute) && elements.elements().size() > 1)
             {
                 notifyIncorrectness(this + ": ID '" + value + "' is used by multiple elements");
             }
             // END: Redmine #549
         }
         if (recurse) {
-            for (final DomElement child : element.getChildElements()) {
-                addElement(map, child, attribute, true);
+            // poor man's approach - we don't use getChildElements()
+            // to avoid a bunch of object constructions
+            DomNode nextChild = element.getFirstChild();
+            while (nextChild != null) {
+                if (nextChild instanceof DomElement) {
+                    addElement(map, (DomElement) nextChild, attribute, true);
+                }
+                nextChild = nextChild.getNextSibling();
             }
         }
-    }
-
-    /**
-     * Removes an element from the ID and name maps, if necessary.
-     * @param element the element to be removed from the ID and name maps
-     */
-    void removeMappedElement(final HtmlElement element) {
-        removeMappedElement(element, false, false);
     }
 
     /**
@@ -1895,16 +1861,18 @@ public class HtmlPage extends SgmlPage {
         }
     }
 
-    private void removeElement(final Map<String, SortedSet<DomElement>> map, final DomElement element,
+    private void removeElement(final Map<String, MappedElementIndexEntry> map, final DomElement element,
             final String attribute, final boolean recurse) {
         final String value = element.getAttribute(attribute);
 
         if (ATTRIBUTE_NOT_DEFINED != value) {
-            final SortedSet<DomElement> elements = map.remove(value);
-            if (elements != null && (elements.size() != 1 || !elements.contains(element))) {
+            final MappedElementIndexEntry elements = map.remove(value);
+            if (elements != null) {
                 elements.remove(element);
+                if (!elements.elements_.isEmpty()) {
                 map.put(value, elements);
             }
+        }
         }
         if (recurse) {
             for (final DomElement child : element.getChildElements()) {
@@ -1925,7 +1893,7 @@ public class HtmlPage extends SgmlPage {
     }
 
     private void calculateBase() {
-        final List<HtmlElement> baseElements = getDocumentElement().getElementsByTagName("base");
+        final List<HtmlElement> baseElements = getDocumentElement().getStaticElementsByTagName("base");
 
         base_ = null;
         for (final HtmlElement baseElement : baseElements) {
@@ -1946,15 +1914,14 @@ public class HtmlPage extends SgmlPage {
      *         {@link WebClientOptions#setThrowExceptionOnFailingStatusCode(boolean)} is set to {@code true}
      */
     void loadFrames() throws FailingHttpStatusCodeException {
-        for (final FrameWindow w : getFrames()) {
-            final BaseFrameElement frame = w.getFrameElement();
+        for (final BaseFrameElement frameElement : new ArrayList<>(frameElements_)) {
             // test if the frame should really be loaded:
             // if a script has already changed its content, it should be skipped
             // use == and not equals(...) to identify initial content (versus URL set to "about:blank")
-            if (frame.getEnclosedWindow() != null
-                    && UrlUtils.URL_ABOUT_BLANK == frame.getEnclosedPage().getUrl()
-                    && !frame.isContentLoaded()) {
-                frame.loadInnerPage();
+            if (frameElement.getEnclosedWindow() != null
+                    && UrlUtils.URL_ABOUT_BLANK == frameElement.getEnclosedPage().getUrl()
+                    && !frameElement.isContentLoaded()) {
+                frameElement.loadInnerPage();
             }
         }
     }
@@ -1991,11 +1958,10 @@ public class HtmlPage extends SgmlPage {
         if (getDocumentElement() == null) {
             return Collections.emptyList(); // weird case, for instance if document.documentElement has been removed
         }
-        final String nameLC = httpEquiv.toLowerCase(Locale.ROOT);
-        final List<HtmlMeta> tags = getDocumentElement().getElementsByTagNameImpl("meta");
+        final List<HtmlMeta> tags = getDocumentElement().getStaticElementsByTagName("meta");
         final List<HtmlMeta> foundTags = new ArrayList<>();
         for (final HtmlMeta htmlMeta : tags) {
-            if (nameLC.equals(htmlMeta.getHttpEquivAttribute().toLowerCase(Locale.ROOT))) {
+            if (httpEquiv.equalsIgnoreCase(htmlMeta.getHttpEquivAttribute())) {
                 foundTags.add(htmlMeta);
             }
         }
@@ -2040,7 +2006,7 @@ public class HtmlPage extends SgmlPage {
             result.selectionRanges_ = new ArrayList<>(3);
             // the original one is synchronized so we should do that here too, shouldn't we?
             result.afterLoadActions_ = Collections.synchronizedList(new ArrayList<>());
-            result.frameElements_ = new TreeSet<>(documentPositionComparator);
+            result.frameElements_ = new ArrayList<>();
             for (DomNode child = getFirstChild(); child != null; child = child.getNextSibling()) {
                 result.appendChild(child.cloneNode(true));
             }
@@ -2500,23 +2466,11 @@ public class HtmlPage extends SgmlPage {
         elementWithFocus_ = null;
 
         if (!windowActivated) {
-            if (hasFeature(EVENT_FOCUS_IN_FOCUS_OUT_BLUR)) {
-                if (oldFocusedElement != null) {
-                    oldFocusedElement.fireEvent(Event.TYPE_FOCUS_OUT);
-                }
-
-                if (newElement != null) {
-                    newElement.fireEvent(Event.TYPE_FOCUS_IN);
-                }
-            }
-
             if (oldFocusedElement != null) {
                 oldFocusedElement.removeFocus();
                 oldFocusedElement.fireEvent(Event.TYPE_BLUR);
 
-                if (hasFeature(EVENT_FOCUS_FOCUS_IN_BLUR_OUT)) {
-                    oldFocusedElement.fireEvent(Event.TYPE_FOCUS_OUT);
-                }
+                oldFocusedElement.fireEvent(Event.TYPE_FOCUS_OUT);
             }
         }
 
@@ -2524,19 +2478,11 @@ public class HtmlPage extends SgmlPage {
 
         // use newElement in the code below because element elementWithFocus_
         // might be changed by another thread
-        if (newElement instanceof SelectableTextInput
-                && hasFeature(PAGE_SELECTION_RANGE_FROM_SELECTABLE_TEXT_INPUT)) {
-            final SelectableTextInput sti = (SelectableTextInput) newElement;
-            setSelectionRange(new SimpleRange(newElement, sti.getSelectionStart(), newElement, sti.getSelectionEnd()));
-        }
-
         if (newElement != null) {
             newElement.focus();
             newElement.fireEvent(Event.TYPE_FOCUS);
 
-            if (hasFeature(EVENT_FOCUS_FOCUS_IN_BLUR_OUT)) {
-                newElement.fireEvent(Event.TYPE_FOCUS_IN);
-            }
+            newElement.fireEvent(Event.TYPE_FOCUS_IN);
         }
 
         // If a page reload happened as a result of the focus change then obviously this
@@ -2584,8 +2530,7 @@ public class HtmlPage extends SgmlPage {
     /**
      * <p><span style="color:red">INTERNAL API - SUBJECT TO CHANGE AT ANY TIME - USE AT YOUR OWN RISK.</span></p>
      *
-     * <p>Returns the page's current selection ranges. Note that some browsers, like IE, only allow
-     * a single selection at a time.</p>
+     * <p>Returns the page's current selection ranges.</p>
      *
      * @return the page's current selection ranges
      */
@@ -2711,8 +2656,7 @@ public class HtmlPage extends SgmlPage {
      */
     public ComputedCssStyleDeclaration getStyleFromCache(final DomElement element,
             final String normalizedPseudo) {
-        final ComputedCssStyleDeclaration styleFromCache = getCssPropertiesCache().get(element, normalizedPseudo);
-        return styleFromCache;
+        return getCssPropertiesCache().get(element, normalizedPseudo);
     }
 
     /**
@@ -2805,7 +2749,11 @@ public class HtmlPage extends SgmlPage {
      */
     private class DomHtmlAttributeChangeListenerImpl implements DomChangeListener, HtmlAttributeChangeListener {
 
+        /**
+         * Ctor.
+         */
         DomHtmlAttributeChangeListenerImpl() {
+            super();
         }
 
         /**
@@ -2878,7 +2826,11 @@ public class HtmlPage extends SgmlPage {
         private transient WeakHashMap<DomElement, Map<String, ComputedCssStyleDeclaration>>
                     computedStyles_ = new WeakHashMap<>();
 
+        /**
+         * Ctor.
+         */
         ComputedStylesCache() {
+            super();
         }
 
         public synchronized ComputedCssStyleDeclaration get(final DomElement element,
@@ -2952,6 +2904,56 @@ public class HtmlPage extends SgmlPage {
         private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
             in.defaultReadObject();
             computedStyles_ = new WeakHashMap<>();
+        }
+    }
+
+    private static final class MappedElementIndexEntry implements Serializable {
+        private ArrayList<DomElement> elements_;
+        private boolean sorted_;
+
+        MappedElementIndexEntry() {
+            // we do not expect to many elements having the same id/name
+            elements_ = new ArrayList<>(2);
+            sorted_ = false;
+        }
+
+        void add(final DomElement element) {
+            elements_.add(element);
+            sorted_ = false;
+        }
+
+        DomElement first() {
+            if (elements_.size() == 0) {
+                return null;
+            }
+
+            if (sorted_) {
+                return elements_.get(0);
+            }
+
+            Collections.sort(elements_, DOCUMENT_POSITION_COMPERATOR);
+            sorted_ = true;
+
+            return elements_.get(0);
+        }
+
+        List<DomElement> elements() {
+            if (sorted_ || elements_.size() == 0) {
+                return elements_;
+            }
+
+            Collections.sort(elements_, DOCUMENT_POSITION_COMPERATOR);
+            sorted_ = true;
+
+            return elements_;
+        }
+
+        boolean remove(final DomElement element) {
+            if (elements_.size() == 0) {
+                return false;
+            }
+
+            return elements_.remove(element);
         }
     }
 }

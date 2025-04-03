@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,11 +27,10 @@ import java.util.Map;
 
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -113,11 +112,6 @@ public class CookieManager4Test extends WebDriverTestCase {
     public void clearCookies() throws Exception {
         shutDownAll();
 
-        // [IE] real IE waits for the page to load until infinity
-        if (useRealBrowser() && getBrowserVersion().isIE()) {
-            Assert.fail("Blocks real IE");
-        }
-
         getMockWebConnection().setDefaultResponse("<html><head></head><body></body></html>");
         startWebServer(getMockWebConnection(), null);
         final WebDriver driver = getWebDriver();
@@ -168,12 +162,7 @@ public class CookieManager4Test extends WebDriverTestCase {
                       "c1=1; path=/; domain=.htmlunit.org; sameSite=None",
                       "c2=2; path=/; domain=.htmlunit.org; sameSite=None",
                       "c3=3; path=/; domain=.host1.htmlunit.org; sameSite=None",
-                      "c4=4; path=/; domain=.host1.htmlunit.org; sameSite=None"},
-            IE = {"c1=1; c2=2; c3=3; c4=4",
-                  "c1=1; path=/; domain=.htmlunit.org",
-                  "c2=2; path=/; domain=.htmlunit.org",
-                  "c3=3; path=/; domain=.host1.htmlunit.org",
-                  "c4=4; path=/; domain=.host1.htmlunit.org"})
+                      "c4=4; path=/; domain=.host1.htmlunit.org; sameSite=None"})
     @HtmlUnitNYI(CHROME = {"c1=1; c2=2; c3=3; c4=4",
                            "c1=1; path=/; domain=.htmlunit.org",
                            "c2=2; path=/; domain=.htmlunit.org",
@@ -234,8 +223,7 @@ public class CookieManager4Test extends WebDriverTestCase {
                   "c2=2; path=/; domain=.htmlunit.org; sameSite=None"},
             FF_ESR = {"c1=1; c2=2",
                       "c1=1; path=/; domain=.htmlunit.org; sameSite=None",
-                      "c2=2; path=/; domain=.htmlunit.org; sameSite=None"},
-            IE = {"c1=1; c2=2", "c1=1; path=/; domain=.htmlunit.org", "c2=2; path=/; domain=.htmlunit.org"})
+                      "c2=2; path=/; domain=.htmlunit.org; sameSite=None"})
     @HtmlUnitNYI(CHROME = {"c1=1; c2=2", "c1=1; path=/; domain=.htmlunit.org", "c2=2; path=/; domain=.htmlunit.org"},
             EDGE = {"c1=1; c2=2", "c1=1; path=/; domain=.htmlunit.org", "c2=2; path=/; domain=.htmlunit.org"},
             FF = {"c1=1; c2=2", "c1=1; path=/; domain=.htmlunit.org", "c2=2; path=/; domain=.htmlunit.org"},
@@ -278,8 +266,7 @@ public class CookieManager4Test extends WebDriverTestCase {
                   "c2=2; path=/; domain=.htmlunit.org; sameSite=None"},
             FF_ESR = {"c1=1; c2=2",
                       "c1=1; path=/; domain=.htmlunit.org; sameSite=None",
-                      "c2=2; path=/; domain=.htmlunit.org; sameSite=None"},
-            IE = {"c1=1; c2=2", "c1=1; path=/; domain=.htmlunit.org", "c2=2; path=/; domain=.htmlunit.org"})
+                      "c2=2; path=/; domain=.htmlunit.org; sameSite=None"})
     @HtmlUnitNYI(CHROME = {"c1=1; c2=2", "c1=1; path=/; domain=.htmlunit.org", "c2=2; path=/; domain=.htmlunit.org"},
             EDGE = {"c1=1; c2=2", "c1=1; path=/; domain=.htmlunit.org", "c2=2; path=/; domain=.htmlunit.org"},
             FF = {"c1=1; c2=2", "c1=1; path=/; domain=.htmlunit.org", "c2=2; path=/; domain=.htmlunit.org"},
@@ -322,8 +309,7 @@ public class CookieManager4Test extends WebDriverTestCase {
                   "c11=11; path=/; domain=htmlunit; sameSite=None"},
             FF_ESR = {"c11=11; c12=12",
                       "c12=12; path=/; domain=htmlunit; sameSite=None",
-                      "c11=11; path=/; domain=htmlunit; sameSite=None"},
-            IE = {"c11=11; c12=12", "c12=12; path=/; domain=htmlunit", "c11=11; path=/; domain=htmlunit"})
+                      "c11=11; path=/; domain=htmlunit; sameSite=None"})
     @HtmlUnitNYI(CHROME = {"c12=12", "c12=12; path=/; domain=htmlunit", "c11=11; path=/; domain=htmlunit"},
             EDGE = {"c12=12", "c12=12; path=/; domain=htmlunit", "c11=11; path=/; domain=htmlunit"},
             FF = {"c11=11; c12=12", "c12=12; path=/; domain=htmlunit", "c11=11; path=/; domain=htmlunit"},
@@ -371,9 +357,7 @@ public class CookieManager4Test extends WebDriverTestCase {
             FF_ESR = {"c1=1; path=/; domain=.htmlunit.org; sameSite=None",
                       "c2=2; path=/; domain=.htmlunit.org; sameSite=None",
                       "c3=3; path=/; domain=.host1.htmlunit.org; sameSite=None",
-                      "c4=4; path=/; domain=.host1.htmlunit.org; sameSite=None"},
-            IE = {"c1=1; path=/; domain=.htmlunit.org", "c2=2; path=/; domain=.htmlunit.org",
-                  "c3=3; path=/; domain=.host1.htmlunit.org", "c4=4; path=/; domain=.host1.htmlunit.org"})
+                      "c4=4; path=/; domain=.host1.htmlunit.org; sameSite=None"})
     @HtmlUnitNYI(CHROME = {"c1=1; path=/; domain=.htmlunit.org", "c2=2; path=/; domain=.htmlunit.org",
                            "c3=3; path=/; domain=.host1.htmlunit.org", "c4=4; path=/; domain=.host1.htmlunit.org"},
             EDGE = {"c1=1; path=/; domain=.htmlunit.org", "c2=2; path=/; domain=.htmlunit.org",
@@ -424,8 +408,7 @@ public class CookieManager4Test extends WebDriverTestCase {
             FF = {"c1=1; path=/; domain=.htmlunit.org; sameSite=None",
                   "c2=2; path=/; domain=.htmlunit.org; sameSite=None"},
             FF_ESR = {"c1=1; path=/; domain=.htmlunit.org; sameSite=None",
-                      "c2=2; path=/; domain=.htmlunit.org; sameSite=None"},
-            IE = {"c1=1; path=/; domain=.htmlunit.org", "c2=2; path=/; domain=.htmlunit.org"})
+                      "c2=2; path=/; domain=.htmlunit.org; sameSite=None"})
     @HtmlUnitNYI(CHROME = {"c1=1; path=/; domain=.htmlunit.org", "c2=2; path=/; domain=.htmlunit.org"},
             EDGE = {"c1=1; path=/; domain=.htmlunit.org", "c2=2; path=/; domain=.htmlunit.org"},
             FF = {"c1=1; path=/; domain=.htmlunit.org", "c2=2; path=/; domain=.htmlunit.org"},
@@ -470,8 +453,7 @@ public class CookieManager4Test extends WebDriverTestCase {
             FF = {"c1=1; path=/; domain=.htmlunit.org; sameSite=None",
                   "c2=2; path=/; domain=.htmlunit.org; sameSite=None"},
             FF_ESR = {"c1=1; path=/; domain=.htmlunit.org; sameSite=None",
-                      "c2=2; path=/; domain=.htmlunit.org; sameSite=None"},
-            IE = {"c1=1; path=/; domain=.htmlunit.org", "c2=2; path=/; domain=.htmlunit.org"})
+                      "c2=2; path=/; domain=.htmlunit.org; sameSite=None"})
     @HtmlUnitNYI(CHROME = {"c1=1; path=/; domain=.htmlunit.org", "c2=2; path=/; domain=.htmlunit.org"},
             EDGE = {"c1=1; path=/; domain=.htmlunit.org", "c2=2; path=/; domain=.htmlunit.org"},
             FF = {"c1=1; path=/; domain=.htmlunit.org", "c2=2; path=/; domain=.htmlunit.org"},
@@ -519,8 +501,7 @@ public class CookieManager4Test extends WebDriverTestCase {
                   "c11=11; path=/; domain=htmlunit; sameSite=None"},
             FF_ESR = {"2",
                       "c12=12; path=/; domain=htmlunit; sameSite=None",
-                      "c11=11; path=/; domain=htmlunit; sameSite=None"},
-            IE = {"2", "c12=12; path=/; domain=htmlunit", "c11=11; path=/; domain=htmlunit"})
+                      "c11=11; path=/; domain=htmlunit; sameSite=None"})
     @HtmlUnitNYI(CHROME = {"1", "c12=12; path=/; domain=htmlunit"},
             EDGE = {"1", "c12=12; path=/; domain=htmlunit"},
             FF = {"2", "c12=12; path=/; domain=htmlunit", "c11=11; path=/; domain=htmlunit"},
@@ -1169,5 +1150,57 @@ public class CookieManager4Test extends WebDriverTestCase {
             assertEquals("", mgr.getCookie("c4").getSameSite());
             assertEquals("unknown", mgr.getCookie("c5").getSameSite());
         }
+    }
+
+    /**
+     * Test for issue #270.
+     * @throws Exception in case of error
+     */
+    @Test
+    @Alerts("JDSessionID=1234567890")
+    public void issue270() throws Exception {
+        final List<NameValuePair> responseHeader1 = new ArrayList<>();
+        responseHeader1.add(new NameValuePair("Set-Cookie", "first=1; path=/c"));
+
+        final String html = "<html>\n"
+            + "<head></head>\n"
+            + "<body><script>\n"
+
+            + "function setCookie(name, value, expires, path, domain, secure) {\n"
+            + "  var curCookie = name + '=' + escape(value) +\n"
+            + "    ((expires) ? '; expires=' + expires.toGMTString() : '') +\n"
+            + "    ((path) ? '; path=' + path : '') +\n"
+            + "    ((domain) ? '; domain=' + domain : '') +\n"
+            + "    ((secure) ? '; secure' : '');\n"
+
+            + "  document.cookie = curCookie;\n"
+            + "}\n"
+
+            + "var now = new Date();\n"
+            + "now.setTime(now.getTime() + 60 * 60 * 1000);\n"
+            + "setCookie('JDSessionID', '1234567890', now, '/', 'htmlunit.org');\n"
+
+//             + "alert('cookies: ' + document.cookie);\n"
+
+            + "</script></body>\n"
+            + "</html>";
+
+        final URL firstUrl = new URL(URL_HOST1);
+        getMockWebConnection().setResponse(firstUrl, html);
+        loadPage2(html, firstUrl);
+
+        loadPage2(HTML_ALERT_COOKIE, firstUrl);
+        verifyTitle2(getWebDriver(), getExpectedAlerts());
+    }
+
+    @Override
+    protected final WebDriver getWebDriver() {
+        final WebDriver driver = super.getWebDriver();
+        if (driver instanceof HtmlUnitDriver) {
+            // set timeout to fail fast when the url not mapped
+            ((HtmlUnitDriver) driver).getWebClient().getOptions().setTimeout(1000);
+        }
+
+        return driver;
     }
 }

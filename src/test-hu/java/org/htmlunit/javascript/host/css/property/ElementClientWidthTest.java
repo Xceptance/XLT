@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@ package org.htmlunit.javascript.host.css.property;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -308,8 +308,7 @@ public class ElementClientWidthTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = "-16",
             EDGE = "-16",
             FF = "-16",
-            FF_ESR = "-16",
-            IE = "-16")
+            FF_ESR = "-16")
     public void blockquote() throws Exception {
         loadPageVerifyTitle2(test("blockquote"));
     }
@@ -355,13 +354,11 @@ public class ElementClientWidthTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "12",
             FF = "8",
-            FF_ESR = "8",
-            IE = "20")
+            FF_ESR = "8")
     @HtmlUnitNYI(CHROME = "10",
             EDGE = "10",
             FF = "10",
-            FF_ESR = "10",
-            IE = "10")
+            FF_ESR = "10")
     public void button() throws Exception {
         loadPageVerifyTitle2(test("button"));
     }
@@ -449,8 +446,7 @@ public class ElementClientWidthTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "-16",
-            IE = "0")
+    @Alerts("-16")
     public void details() throws Exception {
         loadPageVerifyTitle2(test("details"));
     }
@@ -476,8 +472,7 @@ public class ElementClientWidthTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = "-16",
             EDGE = "-16",
             FF = "-16",
-            FF_ESR = "-16",
-            IE = "-16")
+            FF_ESR = "-16")
     public void dd() throws Exception {
         loadPageVerifyTitle2(test("dd"));
     }
@@ -554,9 +549,7 @@ public class ElementClientWidthTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "0",
-            IE = "16")
-    @HtmlUnitNYI(IE = "0")
+    @Alerts("0")
     public void embed() throws Exception {
         loadPageVerifyTitle2(test("embed"));
     }
@@ -578,13 +571,11 @@ public class ElementClientWidthTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "-24",
-            IE = "-22")
+    @Alerts("-24")
     @HtmlUnitNYI(CHROME = "-16",
             EDGE = "-16",
             FF = "-16",
-            FF_ESR = "-16",
-            IE = "-16")
+            FF_ESR = "-16")
     public void fieldset() throws Exception {
         loadPageVerifyTitle2(test("fieldset"));
     }
@@ -610,8 +601,7 @@ public class ElementClientWidthTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = "-16",
             EDGE = "-16",
             FF = "-16",
-            FF_ESR = "-16",
-            IE = "-16")
+            FF_ESR = "-16")
     public void figure() throws Exception {
         loadPageVerifyTitle2(test("figure"));
     }
@@ -765,13 +755,11 @@ public class ElementClientWidthTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "-18",
-            IE = "0")
+    @Alerts("-18")
     @HtmlUnitNYI(CHROME = "-16",
             EDGE = "-16",
             FF = "-16",
-            FF_ESR = "-16",
-            IE = "-16")
+            FF_ESR = "-16")
     public void hr() throws Exception {
         loadPageVerifyTitle2(test("hr"));
     }
@@ -797,8 +785,7 @@ public class ElementClientWidthTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = "0",
             EDGE = "0",
             FF = "0",
-            FF_ESR = "0",
-            IE = "0")
+            FF_ESR = "0")
     public void iframe() throws Exception {
         loadPageVerifyTitle2(test("iframe"));
     }
@@ -820,8 +807,7 @@ public class ElementClientWidthTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "0",
-            IE = "28")
+    @Alerts("0")
     public void image() throws Exception {
         loadPageVerifyTitle2(test("image"));
     }
@@ -832,8 +818,7 @@ public class ElementClientWidthTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "0",
-            IE = "28")
+    @Alerts("0")
     public void img() throws Exception {
         loadPageVerifyTitle2(test("img"));
     }
@@ -855,9 +840,7 @@ public class ElementClientWidthTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "0",
-            IE = "143")
-    @HtmlUnitNYI(IE = "0")
+    @Alerts("0")
     public void isindex() throws Exception {
         loadPageVerifyTitle2(test("isindex"));
     }
@@ -921,9 +904,7 @@ public class ElementClientWidthTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "-16",
-            IE = "8")
-    @HtmlUnitNYI(IE = "0")
+    @Alerts("-16")
     public void legend() throws Exception {
         loadPageVerifyTitle2(test("legend"));
     }
@@ -934,9 +915,7 @@ public class ElementClientWidthTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "-16",
-            IE = "0")
-    @HtmlUnitNYI(IE = "-16")
+    @Alerts("-16")
     public void listing() throws Exception {
         loadPageVerifyTitle2(test("listing"));
     }
@@ -951,8 +930,7 @@ public class ElementClientWidthTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = "0",
             EDGE = "0",
             FF = "0",
-            FF_ESR = "0",
-            IE = "0")
+            FF_ESR = "0")
     public void li() throws Exception {
         loadPageVerifyTitle2(test("li"));
     }
@@ -974,8 +952,7 @@ public class ElementClientWidthTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "-16",
-            IE = "0")
+    @Alerts("-16")
     public void main() throws Exception {
         loadPageVerifyTitle2(test("main"));
     }
@@ -997,13 +974,11 @@ public class ElementClientWidthTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "-16",
-            IE = "0")
+    @Alerts("-16")
     @HtmlUnitNYI(CHROME = "0",
             EDGE = "0",
             FF = "0",
-            FF_ESR = "0",
-            IE = "-16")
+            FF_ESR = "0")
     public void marquee() throws Exception {
         loadPageVerifyTitle2(test("marquee"));
     }
@@ -1058,8 +1033,7 @@ public class ElementClientWidthTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "80",
-            IE = "0")
+    @Alerts("80")
     @HtmlUnitNYI(CHROME = "0",
             EDGE = "0",
             FF = "0",
@@ -1074,9 +1048,7 @@ public class ElementClientWidthTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "0",
-            FF = "-16",
-            FF_ESR = "-16")
+    @Alerts("0")
     public void multicol() throws Exception {
         loadPageVerifyTitle2(test("multicol"));
     }
@@ -1188,8 +1160,7 @@ public class ElementClientWidthTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "-16",
-            IE = "0")
+    @Alerts("-16")
     public void optgroup() throws Exception {
         loadPageVerifyTitle2(test("optgroup"));
     }
@@ -1200,8 +1171,7 @@ public class ElementClientWidthTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "-16",
-            IE = "0")
+    @Alerts("-16")
     public void option() throws Exception {
         loadPageVerifyTitle2(test("option"));
     }
@@ -1267,13 +1237,11 @@ public class ElementClientWidthTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "160",
-            IE = "280")
+    @Alerts("160")
     @HtmlUnitNYI(CHROME = "0",
             EDGE = "0",
             FF = "0",
-            FF_ESR = "0",
-            IE = "0")
+            FF_ESR = "0")
     public void progress() throws Exception {
         loadPageVerifyTitle2(test("progress"));
     }
@@ -1386,13 +1354,11 @@ public class ElementClientWidthTest extends WebDriverTestCase {
     @Alerts(CHROME = "22",
             EDGE = "20",
             FF = "26",
-            FF_ESR = "26",
-            IE = "23")
+            FF_ESR = "26")
     @HtmlUnitNYI(CHROME = "0",
             EDGE = "0",
             FF = "0",
-            FF_ESR = "0",
-            IE = "0")
+            FF_ESR = "0")
     public void select() throws Exception {
         loadPageVerifyTitle2(test("select"));
     }
@@ -1489,8 +1455,7 @@ public class ElementClientWidthTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "-16",
-            IE = "0")
+    @Alerts("-16")
     public void summary() throws Exception {
         loadPageVerifyTitle2(test("summary"));
     }
@@ -1512,8 +1477,7 @@ public class ElementClientWidthTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "300",
-            IE = "-16")
+    @Alerts("300")
     @HtmlUnitNYI(CHROME = "-16",
             EDGE = "-16",
             FF = "-16",
@@ -1528,9 +1492,7 @@ public class ElementClientWidthTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "0",
-            IE = "2")
-    @HtmlUnitNYI(IE = "0")
+    @Alerts("0")
     public void table() throws Exception {
         loadPageVerifyTitle2(test("table"));
     }
@@ -1620,14 +1582,12 @@ public class ElementClientWidthTest extends WebDriverTestCase {
     @Test
     @Alerts(CHROME = "168",
             EDGE = "166",
-            FF = "161",
-            FF_ESR = "161",
-            IE = "164")
+            FF = "164",
+            FF_ESR = "161")
     @HtmlUnitNYI(CHROME = "100",
             EDGE = "100",
             FF = "100",
-            FF_ESR = "100",
-            IE = "100")
+            FF_ESR = "100")
     public void textarea() throws Exception {
         loadPageVerifyTitle2(test("textarea"));
     }
@@ -1743,8 +1703,7 @@ public class ElementClientWidthTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = "0",
             EDGE = "0",
             FF = "0",
-            FF_ESR = "0",
-            IE = "0")
+            FF_ESR = "0")
     public void video() throws Exception {
         loadPageVerifyTitle2(test("video"));
     }
@@ -1766,9 +1725,7 @@ public class ElementClientWidthTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "-16",
-            IE = "0")
-    @HtmlUnitNYI(IE = "-16")
+    @Alerts("-16")
     public void xmp() throws Exception {
         loadPageVerifyTitle2(test("xmp"));
     }
@@ -1780,9 +1737,8 @@ public class ElementClientWidthTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "173",
-            FF = "154",
-            FF_ESR = "154",
-            IE = "143")
+            FF = "161",
+            FF_ESR = "154")
     public void input() throws Exception {
         loadPageVerifyTitle2(test("input"));
     }
@@ -1795,13 +1751,11 @@ public class ElementClientWidthTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "12",
             FF = "8",
-            FF_ESR = "8",
-            IE = "20")
+            FF_ESR = "8")
     @HtmlUnitNYI(CHROME = "10",
             EDGE = "10",
             FF = "10",
-            FF_ESR = "10",
-            IE = "10")
+            FF_ESR = "10")
     public void inputButton() throws Exception {
         loadPageVerifyTitle2(testInput("button"));
     }
@@ -1813,7 +1767,7 @@ public class ElementClientWidthTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "13",
-            FF = "10",
+            FF = "14",
             FF_ESR = "10")
     public void inputCheckbox() throws Exception {
         loadPageVerifyTitle2(testInput("checkbox"));
@@ -1826,14 +1780,12 @@ public class ElementClientWidthTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "253",
-            FF = "230",
-            FF_ESR = "230",
-            IE = "228")
+            FF = "231",
+            FF_ESR = "230")
     @HtmlUnitNYI(CHROME = "10",
             EDGE = "10",
             FF = "10",
-            FF_ESR = "10",
-            IE = "10")
+            FF_ESR = "10")
     public void inputFile() throws Exception {
         loadPageVerifyTitle2(testInput("file"));
     }
@@ -1856,10 +1808,8 @@ public class ElementClientWidthTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "173",
-            FF = "154",
-            FF_ESR = "154",
-            IE = "145")
-    @HtmlUnitNYI(IE = "143")
+            FF = "161",
+            FF_ESR = "154")
     public void inputPassword() throws Exception {
         loadPageVerifyTitle2(testInput("password"));
     }
@@ -1871,7 +1821,7 @@ public class ElementClientWidthTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "13",
-            FF = "10",
+            FF = "14",
             FF_ESR = "10")
     public void inputRadio() throws Exception {
         loadPageVerifyTitle2(testInput("radio"));
@@ -1885,8 +1835,7 @@ public class ElementClientWidthTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "47",
             FF = "40",
-            FF_ESR = "40",
-            IE = "55")
+            FF_ESR = "40")
     @HtmlUnitNYI(CHROME = "55",
             EDGE = "55",
             FF = "55",
@@ -1903,9 +1852,8 @@ public class ElementClientWidthTest extends WebDriverTestCase {
     @Test
     @Alerts(CHROME = "173",
             EDGE = "173",
-            FF = "154",
-            FF_ESR = "154",
-            IE = "143")
+            FF = "161",
+            FF_ESR = "154")
     public void inputSelect() throws Exception {
         loadPageVerifyTitle2(testInput("select"));
     }
@@ -1917,14 +1865,12 @@ public class ElementClientWidthTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "54",
-            FF = "86",
-            FF_ESR = "86",
-            IE = "101")
+            FF = "88",
+            FF_ESR = "86")
     @HtmlUnitNYI(CHROME = "118",
             EDGE = "118",
             FF = "118",
-            FF_ESR = "118",
-            IE = "118")
+            FF_ESR = "118")
     public void inputSubmit() throws Exception {
         loadPageVerifyTitle2(testInput("submit"));
     }
@@ -1936,9 +1882,8 @@ public class ElementClientWidthTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "173",
-            FF = "154",
-            FF_ESR = "154",
-            IE = "143")
+            FF = "161",
+            FF_ESR = "154")
     public void inputText() throws Exception {
         loadPageVerifyTitle2(testInput("text"));
     }

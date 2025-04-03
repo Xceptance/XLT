@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,9 @@
  */
 package org.htmlunit.html;
 
-import static org.htmlunit.BrowserVersionFeatures.RESETINPUT_DEFAULT_VALUE_IF_VALUE_NOT_DEFINED;
-
 import java.io.IOException;
 import java.util.Map;
 
-import org.htmlunit.BrowserVersion;
 import org.htmlunit.SgmlPage;
 
 /**
@@ -50,13 +47,6 @@ public class HtmlResetInput extends HtmlInput implements LabelableElement {
     HtmlResetInput(final String qualifiedName, final SgmlPage page,
             final Map<String, DomAttr> attributes) {
         super(qualifiedName, page, attributes);
-
-        if (getAttributeDirect(VALUE_ATTRIBUTE) == ATTRIBUTE_NOT_DEFINED) {
-            final BrowserVersion browserVersion = page.getWebClient().getBrowserVersion();
-            if (browserVersion.hasFeature(RESETINPUT_DEFAULT_VALUE_IF_VALUE_NOT_DEFINED)) {
-                setValue(DEFAULT_VALUE);
-            }
-        }
     }
 
     /**
@@ -99,14 +89,6 @@ public class HtmlResetInput extends HtmlInput implements LabelableElement {
     @Override
     public void reset() {
         // Empty.
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected boolean propagateClickStateUpdateToParent() {
-        return true;
     }
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,23 +14,17 @@
  */
 package org.htmlunit.javascript.host.file;
 
-import static org.htmlunit.BrowserVersionFeatures.JS_FILEREADER_CONTENT_TYPE;
-import static org.htmlunit.BrowserVersionFeatures.JS_FILEREADER_EMPTY_NULL;
-
 import java.io.IOException;
-import java.net.URLConnection;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.charset.UnsupportedCharsetException;
-import java.nio.file.Files;
+import java.util.Base64;
 import java.util.Locale;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.Charsets;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.htmlunit.BrowserVersion;
 import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.ScriptableObject;
 import org.htmlunit.corejs.javascript.typedarrays.NativeArrayBuffer;
@@ -73,12 +67,6 @@ public class FileReader extends EventTarget {
     private Object result_;
 
     /**
-     * Creates an instance.
-     */
-    public FileReader() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @Override
@@ -118,47 +106,14 @@ public class FileReader extends EventTarget {
         result_ = DataURLConnection.DATA_PREFIX;
 
         final byte[] bytes = ((Blob) object).getBytes();
-        final String value = new String(Base64.encodeBase64(bytes), StandardCharsets.US_ASCII);
-        final BrowserVersion browserVersion = getBrowserVersion();
+        final String value = new String(Base64.getEncoder().encode(bytes), StandardCharsets.US_ASCII);
 
         String contentType = ((Blob) object).getType();
-        if (StringUtils.isEmpty(contentType) && !browserVersion.hasFeature(JS_FILEREADER_EMPTY_NULL)) {
+        if (StringUtils.isEmpty(contentType)) {
             contentType = MimeType.APPLICATION_OCTET_STREAM;
         }
 
-        if (object instanceof File) {
-            final java.io.File file = ((File) object).getFile();
-            if (value.isEmpty()) {
-                contentType = URLConnection.guessContentTypeFromName(file.getName());
-            }
-            else {
-                contentType = Files.probeContentType(file.toPath());
-                // this is a bit weak, on linux we get different results
-                // e.g. 'application/octet-stream' for a file with random bits
-                // instead of null on windows
-            }
-        }
-
-        if (browserVersion.hasFeature(JS_FILEREADER_EMPTY_NULL)) {
-            if (value.isEmpty()) {
-                result_ = "null";
-            }
-            else {
-                if (contentType != null) {
-                    result_ += contentType;
-                }
-                result_ += ";base64," + value;
-            }
-        }
-        else {
-            final boolean includeConentType = browserVersion.hasFeature(JS_FILEREADER_CONTENT_TYPE);
-            if (!value.isEmpty() || includeConentType) {
-                if (contentType == null) {
-                    contentType = MimeType.APPLICATION_OCTET_STREAM;
-                }
-                result_ += contentType + ";base64," + value;
-            }
-        }
+        result_ += contentType + ";base64," + value;
         readyState_ = DONE;
 
         final Event event = new Event(this, Event.TYPE_LOAD);

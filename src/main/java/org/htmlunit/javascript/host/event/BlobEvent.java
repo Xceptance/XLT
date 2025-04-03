@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  */
 package org.htmlunit.javascript.host.event;
 
-import static org.htmlunit.BrowserVersionFeatures.JS_BLOB_EVENT_REQUIRES_DATA;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
@@ -40,12 +39,6 @@ public class BlobEvent extends Event {
     private Blob data_;
 
     /**
-     * Creates an instance.
-     */
-    public BlobEvent() {
-    }
-
-    /**
      * JavaScript constructor.
      *
      * @param type the event type
@@ -59,21 +52,15 @@ public class BlobEvent extends Event {
         if (details != null && !JavaScriptEngine.isUndefined(details)) {
             final Object dataObj = details.get("data", details);
             if (NOT_FOUND == dataObj) {
-                if (getBrowserVersion().hasFeature(JS_BLOB_EVENT_REQUIRES_DATA)) {
-                    throw JavaScriptEngine.typeError("BlobEvent data is required.");
-                }
-            }
-            else {
-                if (!(dataObj instanceof Blob)) {
-                    throw JavaScriptEngine.typeError("BlobEvent data has to be a Blob.");
-                }
-                data_ = (Blob) dataObj;
-            }
-        }
-        else {
-            if (getBrowserVersion().hasFeature(JS_BLOB_EVENT_REQUIRES_DATA)) {
                 throw JavaScriptEngine.typeError("BlobEvent data is required.");
             }
+            if (!(dataObj instanceof Blob)) {
+                throw JavaScriptEngine.typeError("BlobEvent data has to be a Blob.");
+            }
+            data_ = (Blob) dataObj;
+        }
+        else {
+            throw JavaScriptEngine.typeError("BlobEvent data is required.");
         }
     }
 

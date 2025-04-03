@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,8 +31,6 @@
 //import com.sun.org.apache.xerces.internal.dom.DeferredDocumentImpl;
 //import com.sun.org.apache.xerces.internal.dom.DeferredNode;
 //
-//import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-//
 ///**
 // * <span style="color:red">INTERNAL API - SUBJECT TO CHANGE AT ANY TIME - USE AT YOUR OWN RISK.</span><br>
 // *
@@ -47,7 +45,6 @@
 //    /**
 //     * Ctor.
 //     */
-//    @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT")
 //    public XmlUtilsSunXercesHelper() {
 //        // Force eager loading of classes in order to flush out any linkage errors early
 //        Objects.hash(DeferredDocumentImpl.class, DeferredNode.class);
