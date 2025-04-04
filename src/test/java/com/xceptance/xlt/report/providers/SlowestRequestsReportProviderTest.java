@@ -449,7 +449,7 @@ public class SlowestRequestsReportProviderTest
 
         /**
          * Test that processing the same requests results in the same report, regardless of the processing order.
-         * (Processing order only matters if two requests have the same runtime, bucket name and start time)
+         * (Processing order only matters if two requests have the same runtime and bucket name)
          */
         @Test
         public void resultIndependentOfProcessingOrder()
@@ -603,7 +603,7 @@ public class SlowestRequestsReportProviderTest
     }
 
     /**
-     * This subclass includes tests about handling requests with duplicate runtime and name. The test is parameterized
+     * This subclass includes tests about handling requests with duplicate runtime and name. The tests are parameterized
      * to run the same tests with two different settings for the requests per bucket and requests total properties. For
      * these particular test cases the result should be the same in both cases.
      */
@@ -639,78 +639,34 @@ public class SlowestRequestsReportProviderTest
         }
 
         /**
-         * Test that requests with the same runtime and bucket name are sorted by request start time.
-         */
-        @Test
-        public void sameRuntime_OrderedByStartTime()
-        {
-            // add first request
-            reportProvider.processDataRecord(createRequestData("bucket1", 5_000, null, 5));
-            List<SlowRequestReport> reports = getSlowestRequestReports();
-            Assert.assertEquals(1, reports.size());
-            Assert.assertEquals(5, reports.get(0).time.getTime());
-
-            // new request has later start time
-            reportProvider.processDataRecord(createRequestData("bucket1", 5_000, null, 6));
-            reports = getSlowestRequestReports();
-            Assert.assertEquals(2, reports.size());
-            Assert.assertEquals(5, reports.get(0).time.getTime());
-            Assert.assertEquals(6, reports.get(1).time.getTime());
-
-            // new request has earlier start time
-            reportProvider.processDataRecord(createRequestData("bucket1", 5_000, null, 3));
-            reports = getSlowestRequestReports();
-            Assert.assertEquals(3, reports.size());
-            Assert.assertEquals(3, reports.get(0).time.getTime());
-            Assert.assertEquals(5, reports.get(1).time.getTime());
-            Assert.assertEquals(6, reports.get(2).time.getTime());
-
-            // new request has later start time and isn't in report due to bucket/total limit
-            reportProvider.processDataRecord(createRequestData("bucket1", 5_000, null, 7));
-            reports = getSlowestRequestReports();
-            Assert.assertEquals(3, reports.size());
-            Assert.assertEquals(3, reports.get(0).time.getTime());
-            Assert.assertEquals(5, reports.get(1).time.getTime());
-            Assert.assertEquals(6, reports.get(2).time.getTime());
-
-            // new request has earlier start time; last request is removed due to bucket/total limit
-            reportProvider.processDataRecord(createRequestData("bucket1", 5_000, null, 4));
-            reports = getSlowestRequestReports();
-            Assert.assertEquals(3, reports.size());
-            Assert.assertEquals(3, reports.get(0).time.getTime());
-            Assert.assertEquals(4, reports.get(1).time.getTime());
-            Assert.assertEquals(5, reports.get(2).time.getTime());
-        }
-
-        /**
-         * Test that requests with the same runtime, name and start time are sorted by processing order.
+         * Test that requests with the same runtime and name are sorted by processing order.
          */
         @Test
         public void sameRuntime_OrderedByProcessingOrder()
         {
             // add first request
-            reportProvider.processDataRecord(createRequestData("bucket1", 5_000, "request1", 5));
+            reportProvider.processDataRecord(createRequestData("bucket1", 5_000, "request1"));
             List<SlowRequestReport> reports = getSlowestRequestReports();
             Assert.assertEquals(1, reports.size());
             Assert.assertEquals("request1", reports.get(0).requestId);
 
-            // new request with same runtime, name and start time is appended at the end because it was processed later
-            reportProvider.processDataRecord(createRequestData("bucket1", 5_000, "request2", 5));
+            // new request with same runtime and name is appended at the end because it was processed later
+            reportProvider.processDataRecord(createRequestData("bucket1", 5_000, "request2"));
             reports = getSlowestRequestReports();
             Assert.assertEquals(2, reports.size());
             Assert.assertEquals("request1", reports.get(0).requestId);
             Assert.assertEquals("request2", reports.get(1).requestId);
 
-            // another new request with same runtime, name and start time is appended
-            reportProvider.processDataRecord(createRequestData("bucket1", 5_000, "request3", 5));
+            // another new request with same runtime and name is appended
+            reportProvider.processDataRecord(createRequestData("bucket1", 5_000, "request3"));
             reports = getSlowestRequestReports();
             Assert.assertEquals(3, reports.size());
             Assert.assertEquals("request1", reports.get(0).requestId);
             Assert.assertEquals("request2", reports.get(1).requestId);
             Assert.assertEquals("request3", reports.get(2).requestId);
 
-            // new request with same runtime, name and start time is appended but not in the report due to the bucket/total limit
-            reportProvider.processDataRecord(createRequestData("bucket1", 5_000, "request4", 5));
+            // new request with same runtime and name is appended but not in the report due to the bucket/total limit
+            reportProvider.processDataRecord(createRequestData("bucket1", 5_000, "request4"));
             reports = getSlowestRequestReports();
             Assert.assertEquals(3, reports.size());
             Assert.assertEquals("request1", reports.get(0).requestId);
@@ -718,7 +674,7 @@ public class SlowestRequestsReportProviderTest
             Assert.assertEquals("request3", reports.get(2).requestId);
 
             // request with slower runtime is added above previous requests
-            reportProvider.processDataRecord(createRequestData("bucket1", 6_000, "request5", 5));
+            reportProvider.processDataRecord(createRequestData("bucket1", 6_000, "request5"));
             reports = getSlowestRequestReports();
             Assert.assertEquals(3, reports.size());
             Assert.assertEquals("request5", reports.get(0).requestId);
@@ -726,7 +682,7 @@ public class SlowestRequestsReportProviderTest
             Assert.assertEquals("request2", reports.get(2).requestId);
 
             // another request with the slower runtime is appended after the previous one due to processing order
-            reportProvider.processDataRecord(createRequestData("bucket1", 6_000, "request6", 5));
+            reportProvider.processDataRecord(createRequestData("bucket1", 6_000, "request6"));
             reports = getSlowestRequestReports();
             Assert.assertEquals(3, reports.size());
             Assert.assertEquals("request5", reports.get(0).requestId);
@@ -734,7 +690,7 @@ public class SlowestRequestsReportProviderTest
             Assert.assertEquals("request1", reports.get(2).requestId);
 
             // another request with the slower runtime is appended
-            reportProvider.processDataRecord(createRequestData("bucket1", 6_000, "request7", 5));
+            reportProvider.processDataRecord(createRequestData("bucket1", 6_000, "request7"));
             reports = getSlowestRequestReports();
             Assert.assertEquals(3, reports.size());
             Assert.assertEquals("request5", reports.get(0).requestId);
@@ -748,7 +704,7 @@ public class SlowestRequestsReportProviderTest
      */
     private static RequestData createRequestData(final String name, final int runtime)
     {
-        return createRequestData(name, runtime, name + ":" + runtime, 0);
+        return createRequestData(name, runtime, name + ":" + runtime);
     }
 
     /**
@@ -756,19 +712,10 @@ public class SlowestRequestsReportProviderTest
      */
     private static RequestData createRequestData(final String name, final int runtime, final String requestId)
     {
-        return createRequestData(name, runtime, requestId, 0);
-    }
-
-    /**
-     * Create request test data with name, runtime, requestId and start time.
-     */
-    private static RequestData createRequestData(final String name, final int runtime, final String requestId, final long time)
-    {
-        RequestData data = new RequestData();
+        final RequestData data = new RequestData();
         data.setName(name);
         data.setRunTime(runtime);
         data.setRequestId(requestId);
-        data.setTime(time);
 
         return data;
     }

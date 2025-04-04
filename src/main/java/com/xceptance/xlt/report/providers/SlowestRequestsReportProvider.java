@@ -83,7 +83,9 @@ public class SlowestRequestsReportProvider extends AbstractReportProvider
                 }
                 else
                 {
-                    // if request total is reached, check if request is at least as slow as fastest stored request
+                    // if request total is reached, only add requests that are at least as slow as the fastest stored
+                    // request; requests with the same runtime as the fastest stored request will be added and sorted
+                    // based on the TreeSet's comparator
                     if (request.runtime >= slowestRequests.last().runtime)
                     {
                         // add request (which automatically sorts the set); then remove last request after sorting
@@ -131,8 +133,9 @@ public class SlowestRequestsReportProvider extends AbstractReportProvider
                 }
                 else
                 {
-                    // if bucket is full, check if request is at least as slow as fastest stored request
-                    if (runtime >= requests.last().runtime)
+                    // if bucket is full, only add requests that are slower than the fastest stored request; requests
+                    // with the exact same runtime as the fastest stored request are skipped
+                    if (runtime > requests.last().runtime)
                     {
                         // add the request; the request set is sorted automatically
                         requests.add(new SlowRequestReport((RequestData) data, processingOrder));

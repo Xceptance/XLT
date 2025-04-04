@@ -143,7 +143,7 @@ public class SlowRequestReport
     private long processingOrder;
 
     /**
-     * General comparator for slow requests. Compares requests by runtime, bucket name, start time and processing order.
+     * General comparator for slow requests. Compares requests by runtime, bucket name and processing order.
      */
     @XStreamOmitField
     public static final Comparator<SlowRequestReport> COMPARATOR = (o1, o2) -> {
@@ -157,14 +157,9 @@ public class SlowRequestReport
 
             if (result == 0)
             {
-                // compare which request started first
-                result = o1.time.compareTo(o2.time);
-
-                if (result == 0)
-                {
-                    // compare which request was processed first to break ties
-                    result = Long.compare(o1.processingOrder, o2.processingOrder);
-                }
+                // compare which request was processed first to guarantee that requests with the same runtime and name
+                // aren't considered duplicates when put into a TreeSet
+                return Long.compare(o1.processingOrder, o2.processingOrder);
             }
         }
 
@@ -172,8 +167,8 @@ public class SlowRequestReport
     };
 
     /**
-     * Comparator for slow requests within the same bucket. Compares requests by runtime, start time and processing
-     * order. Comparing by (bucket) name is not necessary.
+     * Comparator for slow requests within the same bucket. Compares requests by runtime and processing order. Comparing
+     * by (bucket) name is not necessary.
      */
     @XStreamOmitField
     public static final Comparator<SlowRequestReport> BUCKET_COMPARATOR = (o1, o2) -> {
@@ -182,14 +177,9 @@ public class SlowRequestReport
 
         if (result == 0)
         {
-            // compare which request started first
-            result = o1.time.compareTo(o2.time);
-
-            if (result == 0)
-            {
-                // compare which request was processed first to break ties
-                result = Long.compare(o1.processingOrder, o2.processingOrder);
-            }
+            // compare which request was processed first to guarantee that requests with the same runtime aren't
+            // considered duplicates when put into a TreeSet
+            return Long.compare(o1.processingOrder, o2.processingOrder);
         }
 
         return result;
