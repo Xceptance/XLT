@@ -72,9 +72,9 @@ public class SlowestRequestsReportProvider extends AbstractReportProvider
         final TreeSet<SlowRequestReport> slowestRequests = new TreeSet<>(SlowRequestReport.COMPARATOR);
 
         // iterate over all stored requests of all buckets to determine the slowest requests overall
-        for (final String bucketName : slowestRequestsByBucket.keySet())
+        for (final TreeSet<SlowRequestReport> bucketRequests : slowestRequestsByBucket.values())
         {
-            for (final SlowRequestReport request : slowestRequestsByBucket.get(bucketName))
+            for (final SlowRequestReport request : bucketRequests)
             {
                 if (slowestRequests.size() < requestsTotal)
                 {

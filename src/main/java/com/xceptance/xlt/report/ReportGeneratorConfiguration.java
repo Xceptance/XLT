@@ -480,8 +480,8 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
         slowestRequestsPerBucket = getIntProperty(PROP_SLOWEST_REQUESTS_PER_BUCKET, 20);
         slowestRequestsTotal = getIntProperty(PROP_SLOWEST_REQUESTS_TOTAL, 500);
-        slowestRequestsMinRuntime = getIntProperty(PROP_SLOWEST_REQUESTS_MIN_RUNTIME, 3000);
-        slowestRequestsMaxRuntime = getIntProperty(PROP_SLOWEST_REQUESTS_MAX_RUNTIME, 100000000);
+        slowestRequestsMinRuntime = getIntProperty(PROP_SLOWEST_REQUESTS_MIN_RUNTIME, 3_000);
+        slowestRequestsMaxRuntime = getIntProperty(PROP_SLOWEST_REQUESTS_MAX_RUNTIME, 600_000);
 
         // load the transformation configuration
         outputFileNames = new ArrayList<>();

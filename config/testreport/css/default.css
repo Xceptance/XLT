@@ -1501,25 +1501,19 @@ table * {
 /*
  * Background colors for table inside cluetip override report table styling
  */
-#loadtestreport table tr td, #loadtestreport table tr:hover td
+#loadtestreport table tr td .cluetip-data table tr:nth-child(even) td
 {
-    div.cluetip-data table
-    {
-        tr:nth-child(even) td
-        {
-            background-color: #f9f9fc !important;
-        }
+    background-color: #f9f9fc !important;
+}
 
-        tr:nth-child(odd) td
-        {
-            background-color: #e8e8e8 !important;
-        }
+#loadtestreport table tr td .cluetip-data table tr:nth-child(odd) td
+{
+    background-color: #e8e8e8 !important;
+}
 
-        tr td:first-child
-        {
-            background-color: #CED9E5 !important;
-        }
-    }
+#loadtestreport table tr td .cluetip-data table tr td:first-child
+{
+    background-color: #CED9E5 !important;
 }
 
 /*
