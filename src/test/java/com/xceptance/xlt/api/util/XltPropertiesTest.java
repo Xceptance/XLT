@@ -20,6 +20,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
@@ -55,7 +56,7 @@ public class XltPropertiesTest
     /**
      * Setup the base source
      */
-    public void setup(String home, String config) throws FileSystemException
+    public void setup(final String home, final String config) throws FileSystemException
     {
         homeDir = getResourceFile(home);
         configDir = getResourceFile(config);
@@ -70,7 +71,7 @@ public class XltPropertiesTest
     /**
      * Get a FileObject for the resource with the given name
      */
-    private FileObject getResourceFile(String resourceName) throws FileSystemException
+    private FileObject getResourceFile(final String resourceName) throws FileSystemException
     {
         var path = getClass().getResource(resourceName).getFile();
         return VFS.getManager().toFileObject(new File(path));
@@ -705,47 +706,163 @@ public class XltPropertiesTest
     }
 
     /**
-     * Get config and data dir from XltPropertiesImpl object that falls back on execution context
-     */
-    @Test
-    public void getConfigAndDataDirs_FallbackToExecutionContext() throws FileSystemException
-    {
-        setup("propertytest_hp", "propertytest_hp/config");
-
-        var p = new XltPropertiesImpl(null, null, true, false);
-
-        assertEquals(configDir.getPath(), p.getConfigDirectory());
-        assertEquals(configDir.getPath().resolve(XltConstants.DATA_DIR_NAME), p.getDataDirectory());
-    }
-
-    /**
-     * Get config and data dir set in the constructor
+     * Get config and data directory from XltPropertiesImpl object where the directories are set in the constructor
      */
     @Test
     public void getConfigAndDataDirs_SetDirsInConstructor() throws FileSystemException
     {
+        // Set home and config dir in execution context
         setup("propertytest_hp", "propertytest_hp/config");
 
-        FileObject home = getResourceFile("propertytest_notestfallback");
-        FileObject config = getResourceFile("propertytest_notestfallback/config");
+        // Provide different home and config dirs to XltPropertiesImpl constructor
+        final FileObject homeOverride = getResourceFile("propertytest_notestfallback");
+        final FileObject configOverride = getResourceFile("propertytest_notestfallback/config");
+        var p = new XltPropertiesImpl(homeOverride, configOverride, true, false);
 
-        var p = new XltPropertiesImpl(home, config, true, false);
-
-        assertEquals(config.getPath(), p.getConfigDirectory());
-        assertEquals(config.getPath().resolve(XltConstants.DATA_DIR_NAME), p.getDataDirectory());
+        // Getter return values are based on the directories set in the constructor
+        assertEquals(configOverride.getPath(), p.getConfigDirectory());
+        assertEquals(homeOverride.getPath().resolve(XltConstants.DEFAULT_DATA_DIR_PATH), p.getDataDirectory());
     }
 
     /**
-     * Get default config and data dir from XltPropertiesImpl object created with empty properties
+     * Get config and data directories from XltPropertiesImpl object that uses the directories from the execution
+     * context
      */
     @Test
-    public void getConfigAndDataDirs_EmptyProperties() throws FileSystemException
+    public void getConfigAndDataDirs_UseDirsFromExecutionContext() throws FileSystemException
+    {
+        // Set home and config dir in execution context
+        setup("propertytest_hp", "propertytest_hp/config");
+
+        // Don't provide home and config dirs to XltPropertiesImpl constructor
+        var p = new XltPropertiesImpl(null, null, true, false);
+
+        // Getter return values are based on the directories from the execution context
+        assertEquals(configDir.getPath(), p.getConfigDirectory());
+        assertEquals(homeDir.getPath().resolve(XltConstants.DEFAULT_DATA_DIR_PATH), p.getDataDirectory());
+    }
+
+    /**
+     * Get config and data directories from XltPropertiesImpl objects created before and after updating the execution
+     * context directories
+     */
+    @Test
+    public void getConfigAndDataDirs_UpdateDirsInExecutionContext() throws FileSystemException
+    {
+        // Create instance of XltProperties with directories from execution context and remember the directories
+        setup("propertytest_hp", "propertytest_hp/config");
+        final FileObject homeDir1 = XltExecutionContext.getCurrent().getTestSuiteHomeDir();
+        final FileObject configDir1 = XltExecutionContext.getCurrent().getTestSuiteConfigDir();
+        var p1 = new XltPropertiesImpl(null, null, true, false);
+
+        // Update execution context and create a second instance
+        setup("propertytest_notestfallback", "propertytest_notestfallback/config");
+        var p2 = new XltPropertiesImpl(null, null, true, false);
+
+        // Getter return values are based on the home and config directories set during object creation
+        assertEquals(configDir1.getPath(), p1.getConfigDirectory());
+        assertEquals(homeDir1.getPath().resolve(XltConstants.DEFAULT_DATA_DIR_PATH), p1.getDataDirectory());
+        assertEquals(configDir.getPath(), p2.getConfigDirectory());
+        assertEquals(homeDir.getPath().resolve(XltConstants.DEFAULT_DATA_DIR_PATH), p2.getDataDirectory());
+    }
+
+    /**
+     * Get config and data directories from XltPropertiesImpl object with empty properties
+     */
+    @Test
+    public void getConfigAndDataDirs_InstanceWithoutProperties() throws FileSystemException
     {
         setup("propertytest_hp", "propertytest_hp/config");
 
+        // Create instance of XltPropertiesImpl using the constructor with empty properties
         var p = new XltPropertiesImpl();
 
+        // Getter return values are based on the directories from the execution context
         assertEquals(configDir.getPath(), p.getConfigDirectory());
-        assertEquals(configDir.getPath().resolve(XltConstants.DATA_DIR_NAME), p.getDataDirectory());
+        assertEquals(homeDir.getPath().resolve(XltConstants.DEFAULT_DATA_DIR_PATH), p.getDataDirectory());
+    }
+
+    /**
+     * Get config and data directories when relative data directory path is set in the properties
+     */
+    @Test
+    public void getConfigAndDataDirs_RelativeDataDirFromProperty() throws FileSystemException
+    {
+        setup("propertytest_hp", "propertytest_hp/config");
+        var p = new XltPropertiesImpl(null, null, true, false);
+
+        // Data directory is overridden with relative path in properties
+        final String relativePath = "datadir";
+        p.setProperty(XltConstants.PROP_DATA_DIRECTORY, relativePath);
+
+        // Getter for data directory returns the relative path inside the provided home directory
+        assertEquals(configDir.getPath(), p.getConfigDirectory());
+        assertEquals(homeDir.getPath().resolve(relativePath), p.getDataDirectory());
+    }
+
+    /**
+     * Get config and data directories when absolute data directory path is set in the properties
+     */
+    @Test
+    public void getConfigAndDataDirs_AbsoluteDataDirFromProperty() throws FileSystemException
+    {
+        setup("propertytest_hp", "propertytest_hp/config");
+        var p = new XltPropertiesImpl(null, null, true, false);
+
+        // Data directory is overridden with absolute directory in properties
+        final Path absolutePath = getResourceFile("propertytest_dirinclude").getPath().toAbsolutePath();
+        p.setProperty(XltConstants.PROP_DATA_DIRECTORY, absolutePath.toString());
+
+        // Getter for data directory returns the absolute directory
+        assertEquals(configDir.getPath(), p.getConfigDirectory());
+        assertEquals(absolutePath, p.getDataDirectory());
+    }
+
+    /**
+     * Get config and data directories when empty data directory path is set in the properties
+     */
+    @Test
+    public void getConfigAndDataDirs_EmptyDataDirFromProperty() throws FileSystemException
+    {
+        setup("propertytest_hp", "propertytest_hp/config");
+        var p = new XltPropertiesImpl(null, null, true, false);
+
+        // Data directory is overridden with empty value
+        p.setProperty(XltConstants.PROP_DATA_DIRECTORY, "");
+
+        // Getter for data directory returns the default data directory
+        assertEquals(configDir.getPath(), p.getConfigDirectory());
+        assertEquals(homeDir.getPath().resolve(XltConstants.DEFAULT_DATA_DIR_PATH), p.getDataDirectory());
+    }
+
+    /**
+     * Get config and data directories after updating data directory path in properties
+     */
+    @Test
+    public void getConfigAndDataDirs_UpdateDataDirInProperty() throws FileSystemException
+    {
+        setup("propertytest_hp", "propertytest_hp/config");
+        var p = new XltPropertiesImpl(null, null, true, false);
+
+        // Property isn't set initially; data dir is default data dir path in home dir
+        assertEquals(configDir.getPath(), p.getConfigDirectory());
+        assertEquals(homeDir.getPath().resolve(XltConstants.DEFAULT_DATA_DIR_PATH), p.getDataDirectory());
+
+        // Set absolute path in property; data dir is set to the absolute path
+        final Path absolutePath = getResourceFile("propertytest_dirinclude/config").getPath().toAbsolutePath();
+        p.setProperty(XltConstants.PROP_DATA_DIRECTORY, absolutePath.toString());
+        assertEquals(configDir.getPath(), p.getConfigDirectory());
+        assertEquals(absolutePath, p.getDataDirectory());
+
+        // Set relative path in property; data dir is set to relative path in home dir
+        final String relativePath = "datadir/subdir";
+        p.setProperty(XltConstants.PROP_DATA_DIRECTORY, relativePath);
+        assertEquals(configDir.getPath(), p.getConfigDirectory());
+        assertEquals(homeDir.getPath().resolve(relativePath), p.getDataDirectory());
+
+        // Remove property; data dir is default data dir path in home dir again
+        p.removeProperty(XltConstants.PROP_DATA_DIRECTORY);
+        assertEquals(configDir.getPath(), p.getConfigDirectory());
+        assertEquals(homeDir.getPath().resolve(XltConstants.DEFAULT_DATA_DIR_PATH), p.getDataDirectory());
     }
 }

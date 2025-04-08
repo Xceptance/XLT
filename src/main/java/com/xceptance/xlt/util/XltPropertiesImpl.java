@@ -17,6 +17,7 @@ package com.xceptance.xlt.util;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -29,6 +30,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileSystemException;
 
@@ -90,14 +92,14 @@ public class XltPropertiesImpl extends XltProperties
     private String version;
 
     /**
+     * The home directory.
+     */
+    private Path homeDirectory;
+
+    /**
      * The config directory.
      */
     private Path configDirectory;
-
-    /**
-     * The data directory.
-     */
-    private Path dataDirectory;
 
     // ********************************************************************
     /**
@@ -232,8 +234,8 @@ public class XltPropertiesImpl extends XltProperties
      */
     public XltPropertiesImpl(final Optional<Properties> properties)
     {
+        this.homeDirectory = XltExecutionContext.getCurrent().getTestSuiteHomeDir().getPath();
         this.configDirectory = XltExecutionContext.getCurrent().getTestSuiteConfigDir().getPath();
-        this.dataDirectory = this.configDirectory.resolve(XltConstants.DATA_DIR_NAME);
 
         // get version and start time
         this.devMode = (System.getenv("XLT_HOME") == null && System.getProperty(XltConstants.XLT_PACKAGE_PATH + ".home") == null);
@@ -261,8 +263,8 @@ public class XltPropertiesImpl extends XltProperties
         var cd = configDirectory == null ? XltExecutionContext.getCurrent().getTestSuiteConfigDir() : configDirectory;
         loadProperties(hd, cd, ignoreMissingIncludes, staySilent);
 
+        this.homeDirectory = hd.getPath();
         this.configDirectory = cd.getPath();
-        this.dataDirectory = this.configDirectory.resolve(XltConstants.DATA_DIR_NAME);
 
         // get version and start time
         version = ProductInformation.getProductInformation().getVersion();
@@ -489,8 +491,8 @@ public class XltPropertiesImpl extends XltProperties
      * @param ignoreMissingIncludes
      *            shall we ignore missing includes?
      * @return an updated list
-     *
-     * @exception PropertiesConfigurationException if something is wrong, will also write an error log entry
+     * @exception PropertiesConfigurationException
+     *                if something is wrong, will also write an error log entry
      */
     private List<PropertyIncludeResult> verifyFiles(final List<PropertyIncludeResult> files, final boolean ignoreMissing,
                                                     final boolean ignoreMissingIncludes)
@@ -1074,7 +1076,15 @@ public class XltPropertiesImpl extends XltProperties
     @Override
     public Path getDataDirectory()
     {
-        return dataDirectory;
+        final String propDir = getProperty(XltConstants.PROP_DATA_DIRECTORY);
+        final Path path = Paths.get(StringUtils.isBlank(propDir) ? XltConstants.DEFAULT_DATA_DIR_PATH : propDir);
+
+        if (!path.isAbsolute())
+        {
+            return homeDirectory.resolve(path);
+        }
+
+        return path;
     }
 
     /**
@@ -1221,8 +1231,8 @@ public class XltPropertiesImpl extends XltProperties
      *
      * @param fallbackToProjectProperties
      *            whether to fall back to project properties file in case no test properties file is referenced
-     * @return virtual file object of referenced test properties file (or project properties if no test properties file is
-     *         referenced and project properties should not be used as fall-back) or {@code null}
+     * @return virtual file object of referenced test properties file (or project properties if no test properties file
+     *         is referenced and project properties should not be used as fall-back) or {@code null}
      */
     public FileObject getTestPropertyFile(final boolean fallbackToProjectProperties)
     {

@@ -41,8 +41,9 @@ import com.xceptance.xlt.common.XltConstants;
  * This class does a basic processing of comment lines, for example header lines that describe the data. All lines that
  * start with the configured line comment marker are filtered out.
  * <p>
- * The specified data file is searched for in the XLT data directory, which is "[testsuite]/config/data" by default. You
- * may change this directory by setting the XLT property "com.xceptance.xlt.data.directory" to an appropriate value.
+ * The specified data file is searched for in the XLT data directory, which is
+ * {@value XltConstants#DEFAULT_DATA_DIR_PATH} in the test suite's home directory by default. You may change this
+ * directory by setting the XLT property {@value XltConstants#PROP_DATA_DIRECTORY} to an appropriate value.
  * <p>
  * Note: Be careful when creating instances of this class, as each instance loads the respective data file into memory.
  * Typically, data providers can/should be shared among test users, so you should have to create just one instance. A
@@ -181,9 +182,7 @@ public class DataProvider
         this.lineCommentMarker = lineCommentMarker;
 
         // load the data
-        final String dataDirectory = XltProperties.getInstance().getProperty(XltConstants.XLT_PACKAGE_PATH + ".data.directory",
-                                                                             "config" + File.separatorChar + "data");
-        final File file = new File(dataDirectory, fileName);
+        final File file = new File(XltProperties.getInstance().getDataDirectory().toFile(), fileName);
 
         dataRows = loadData(file, encoding);
     }
