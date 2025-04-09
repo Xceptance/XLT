@@ -261,17 +261,17 @@ public class OtelMetricsReporter implements MetricsReporter
 
     private static List<Double> transactionRuntimeBuckets()
     {
-        return List.of(5d, 10d, 15d, 30d, 60d, 120d);
+        return List.of(5d, 10d, 15d, 30d, 60d);
     }
 
     private static List<Double> actionRuntimeBuckets()
     {
-        return List.of(5d, 10d, 15d, 30d, 45d, 60d, 90d);
+        return List.of(5d, 10d, 15d, 30d);
     }
 
     private static List<Double> requestRuntimeBuckets()
     {
-        return List.of(0.1d, 0.2d, 0.5d, 1d, 3d, 5d, 10d, 15d, 30d);
+        return List.of(0.5d, 1d, 3d, 5d);
     }
 
     private static List<Double> customTimerRuntimeBuckets()
