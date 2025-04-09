@@ -21,7 +21,6 @@ import java.util.Properties;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.xceptance.common.util.ProductInformation;
-import com.xceptance.xlt.mastercontroller.TestCaseLoadProfileConfiguration;
 
 /**
  * Represents the configuration values used during the test run.
@@ -33,6 +32,11 @@ public class ConfigurationReport
      * The plain properties.
      */
     public Properties properties = new Properties();
+
+    /**
+     * The report generator properties.
+     */
+    public ReportGeneratorConfigurationReport reportGeneratorConfiguration;
 
     /**
      * The version information
