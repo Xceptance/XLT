@@ -29,7 +29,7 @@
         </sigsetup>
         -->
         <!-- Run sigtest directly so we can pass parameters not supported yet by the Ant task. -->
-        <java classname="com.sun.tdk.signaturetest.Setup" resultproperty="setup.exitcode">
+        <java classname="com.sun.tdk.signaturetest.Setup" resultproperty="setup.exitcode" fork="yes">
             <classpath refid="classpath" />
             <arg value="-ApiVersion" />
             <arg value="${version}" />
@@ -58,7 +58,7 @@
         </sigtest>
         -->
         <!-- Run sigtest directly so we can pass parameters not supported yet by the Ant task. -->
-        <java classname="com.sun.tdk.signaturetest.SignatureTest" resultproperty="apicheck.exitcode">
+        <java classname="com.sun.tdk.signaturetest.SignatureTest" resultproperty="apicheck.exitcode" fork="yes">
             <classpath refid="classpath" />
             <arg value="-ApiVersion" />
             <arg value="${version}" />
