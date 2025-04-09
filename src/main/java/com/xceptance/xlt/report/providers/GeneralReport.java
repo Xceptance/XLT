@@ -52,9 +52,4 @@ public class GeneralReport
      * The total run time of the test.
      */
     public int duration;
-
-    /**
-     * Infos about the slowest requests.
-     */
-    public List<SlowRequestReport> slowestRequests;
 }

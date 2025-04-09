@@ -63,8 +63,6 @@ public class GeneralReportProvider extends AbstractReportProvider
 
     private int minMaxValueSetSize;
 
-    private SlowestRequestsTracker slowestRequestsTracker;
-
     /**
      * {@inheritDoc}
      */
@@ -177,11 +175,6 @@ public class GeneralReportProvider extends AbstractReportProvider
         report.bytesSent = totalBytesSent;
         report.bytesReceived = totalBytesReceived;
 
-        if (slowestRequestsTracker != null)
-        {
-            report.slowestRequests = slowestRequestsTracker.getSlowestRequests();
-        }
-
         return report;
     }
 
@@ -208,11 +201,6 @@ public class GeneralReportProvider extends AbstractReportProvider
             requestsValueSet.addOrUpdateValue(endTime, 1);
 
             requestRunTimeValueSet.addOrUpdateValue(endTime, runTime);
-
-            if (slowestRequestsTracker != null)
-            {
-                slowestRequestsTracker.update(reqData);
-            }
         }
         else if (data instanceof TransactionData)
         {
@@ -327,11 +315,5 @@ public class GeneralReportProvider extends AbstractReportProvider
         // setup run time value set
         minMaxValueSetSize = getConfiguration().getChartWidth();
         requestRunTimeValueSet = new IntMinMaxValueSet(minMaxValueSetSize);
-
-        // for now: track slowest requests only if the magic property is set
-        if (config.getProperties().getProperty("monitoring.trackSlowestRequests") != null)
-        {
-            slowestRequestsTracker = new SlowestRequestsTracker(10);
-        }
     }
 }
