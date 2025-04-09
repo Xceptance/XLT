@@ -434,7 +434,7 @@
         <dependency>
             <groupId>net.bytebuddy</groupId>
             <artifactId>byte-buddy</artifactId>
-            <version>1.15.7</version>
+            <version>1.15.11</version>
         </dependency>
         <!-- guava is used by Selenium, Google Compute and Checkstyle. Ensure that the highest version wins. -->
         <dependency>
@@ -474,7 +474,7 @@
         <dependency>
             <groupId>org.glassfish.tyrus</groupId>
             <artifactId>tyrus-container-grizzly-server</artifactId>
-            <version>1.20</version>
+            <version>1.21</version>
         </dependency>
         <!-- https://github.com/aggregateknowledge/java-hll -->
         <dependency>
