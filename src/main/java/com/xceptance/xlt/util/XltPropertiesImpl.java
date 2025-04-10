@@ -16,6 +16,8 @@
 package com.xceptance.xlt.util;
 
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -28,6 +30,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileSystemException;
 
@@ -88,6 +91,16 @@ public class XltPropertiesImpl extends XltProperties
      */
     private String version;
 
+    /**
+     * The home directory.
+     */
+    private Path homeDirectory;
+
+    /**
+     * The config directory.
+     */
+    private Path configDirectory;
+
     // ********************************************************************
     /**
      * Global flag that controls whether or not additional request information should be collected and dumped to CSV.
@@ -114,7 +127,7 @@ public class XltPropertiesImpl extends XltProperties
      * set at XltExecutionContext. This method uses a thread-local gate to detect and avoid recursive attempts to create
      * an instance.
      *
-     * @param ignoreMissingIncludes
+     * @param ignoreMissing
      *            whether or not missing include property files should be ignored
      * @param staySilent
      *            shall we complain about missing things or stay silent, useful for startup
@@ -221,6 +234,9 @@ public class XltPropertiesImpl extends XltProperties
      */
     public XltPropertiesImpl(final Optional<Properties> properties)
     {
+        this.homeDirectory = XltExecutionContext.getCurrent().getTestSuiteHomeDir().getPath();
+        this.configDirectory = XltExecutionContext.getCurrent().getTestSuiteConfigDir().getPath();
+
         // get version and start time
         this.devMode = (System.getenv("XLT_HOME") == null && System.getProperty(XltConstants.XLT_PACKAGE_PATH + ".home") == null);
         this.version = ProductInformation.getProductInformation().getVersion();
@@ -246,6 +262,9 @@ public class XltPropertiesImpl extends XltProperties
         var hd = homeDirectory == null ? XltExecutionContext.getCurrent().getTestSuiteHomeDir() : homeDirectory;
         var cd = configDirectory == null ? XltExecutionContext.getCurrent().getTestSuiteConfigDir() : configDirectory;
         loadProperties(hd, cd, ignoreMissingIncludes, staySilent);
+
+        this.homeDirectory = hd.getPath();
+        this.configDirectory = cd.getPath();
 
         // get version and start time
         version = ProductInformation.getProductInformation().getVersion();
@@ -472,9 +491,8 @@ public class XltPropertiesImpl extends XltProperties
      * @param ignoreMissingIncludes
      *            shall we ignore missing includes?
      * @return an updated list
-     * @exception will
-     *                raise {@link PropertiesConfigurationException} if something is wrong, will also write an error log
-     *                entry
+     * @exception PropertiesConfigurationException
+     *                if something is wrong, will also write an error log entry
      */
     private List<PropertyIncludeResult> verifyFiles(final List<PropertyIncludeResult> files, final boolean ignoreMissing,
                                                     final boolean ignoreMissingIncludes)
@@ -697,10 +715,10 @@ public class XltPropertiesImpl extends XltProperties
     }
 
     /**
-     * Convenience method. Calls {@link #getPropertiesForKey(String, Properties)} with the member properties of this
-     * instance.
+     * Convenience method. Calls {@link PropertiesUtils#getPropertiesForKey(String, Properties)} with the member
+     * properties of this instance.
      *
-     * @see #getPropertiesForKey(String, Properties)
+     * @see PropertiesUtils#getPropertiesForKey(String, Properties)
      */
     @Override
     public Map<String, String> getPropertiesForKey(final String domainKey)
@@ -802,7 +820,7 @@ public class XltPropertiesImpl extends XltProperties
 
     /**
      * Part of the previous code, put here to make it reusable
-     * 
+     *
      * @param nonPrefixedKey
      * @param bareKey
      * @return
@@ -1040,6 +1058,36 @@ public class XltPropertiesImpl extends XltProperties
     }
 
     /**
+     * Returns the test suite's config directory.
+     *
+     * @return the config directory path
+     */
+    @Override
+    public Path getConfigDirectory()
+    {
+        return configDirectory;
+    }
+
+    /**
+     * Returns the test suite's data directory.
+     *
+     * @return the data directory path
+     */
+    @Override
+    public Path getDataDirectory()
+    {
+        final String propDir = getProperty(XltConstants.PROP_DATA_DIRECTORY);
+        final Path path = Paths.get(StringUtils.isBlank(propDir) ? XltConstants.DEFAULT_DATA_DIR_PATH : propDir);
+
+        if (!path.isAbsolute())
+        {
+            return homeDirectory.resolve(path);
+        }
+
+        return path;
+    }
+
+    /**
      * Removes the property with the given key from the internal properties store.
      *
      * @param key
@@ -1183,8 +1231,8 @@ public class XltPropertiesImpl extends XltProperties
      *
      * @param fallbackToProjectProperties
      *            whether to fall back to project properties file in case no test properties file is referenced
-     * @return virtual file object of referenced test properties file (or project properties if no test properties file is
-     *         referenced and project properties should not be used as fall-back) or {@code null}
+     * @return virtual file object of referenced test properties file (or project properties if no test properties file
+     *         is referenced and project properties should not be used as fall-back) or {@code null}
      */
     public FileObject getTestPropertyFile(final boolean fallbackToProjectProperties)
     {

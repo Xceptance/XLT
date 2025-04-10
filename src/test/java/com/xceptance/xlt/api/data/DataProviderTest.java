@@ -23,6 +23,7 @@ import java.nio.file.NoSuchFileException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.xceptance.xlt.common.XltConstants;
 import org.apache.commons.io.FileUtils;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -108,7 +109,7 @@ public class DataProviderTest
         utf8Lines.add(UTF8STRING);
         FileUtils.writeLines(utf8Data, "UTF-8", utf8Lines);
 
-        XltProperties.getInstance().setProperty("com.xceptance.xlt.data.directory", dataDir.getAbsolutePath());
+        XltProperties.getInstance().setProperty(XltConstants.PROP_DATA_DIRECTORY, dataDir.getAbsolutePath());
     }
 
     /**

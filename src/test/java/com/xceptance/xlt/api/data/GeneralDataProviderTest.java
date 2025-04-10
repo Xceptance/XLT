@@ -19,6 +19,7 @@ import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 
+import com.xceptance.xlt.common.XltConstants;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -46,11 +47,6 @@ public class GeneralDataProviderTest extends AbstractXLTTestCase
     private static final char EXCLAMATION_MARK = '!';
 
     /**
-     * Property name for XLT data directory.
-     */
-    protected static final String DATA_DIR_PROP = "com.xceptance.xlt.data.directory";
-
-    /**
      * Data provider test instance.
      */
     protected GeneralDataProvider provider = null;
@@ -65,11 +61,11 @@ public class GeneralDataProviderTest extends AbstractXLTTestCase
     public static void classIntro()
     {
         // get value of property 'DATA_DIR_PROP'
-        final String dataDir = XltProperties.getInstance().getProperty(DATA_DIR_PROP);
+        final String dataDir = XltProperties.getInstance().getProperty(XltConstants.PROP_DATA_DIRECTORY);
         // fail if property is not set correctly
         if (dataDir == null || 0 == dataDir.length())
         {
-            Assert.fail("No data directory defined! Please define the " + "property '" + DATA_DIR_PROP + "' in 'test.properties'.");
+            Assert.fail("No data directory defined! Please define the " + "property '" + XltConstants.PROP_DATA_DIRECTORY + "' in 'test.properties'.");
         }
 
         XltLogger.runTimeLogger.info("XLT data directory: " + dataDir);
