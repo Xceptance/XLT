@@ -600,6 +600,12 @@
             <artifactId>pmd-ant</artifactId>
             <version>7.12.0</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>net.sf.saxon</groupId>
+                    <artifactId>Saxon-HE</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>net.sourceforge.pmd</groupId>
