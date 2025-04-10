@@ -150,7 +150,7 @@
             <dependency>
                 <groupId>software.amazon.awssdk</groupId>
                 <artifactId>bom</artifactId>
-                <version>2.31.17</version>
+                <version>2.31.18</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -452,7 +452,7 @@
         <dependency>
             <groupId>org.freemarker</groupId>
             <artifactId>freemarker</artifactId>
-            <version>2.3.32</version>
+            <version>2.3.34</version>
         </dependency>
         <dependency>
             <groupId>org.pegdown</groupId>
@@ -598,22 +598,18 @@
         <dependency>
             <groupId>net.sourceforge.pmd</groupId>
             <artifactId>pmd-ant</artifactId>
-            <version>7.10.0</version>
+            <version>7.12.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>net.sourceforge.pmd</groupId>
             <artifactId>pmd-java</artifactId>
-            <version>7.10.0</version>
+            <version>7.12.0</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
-                    <groupId>net.sourceforge.saxon</groupId>
-                    <artifactId>saxon</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>net.sourceforge.saxon</groupId>
-                    <artifactId>saxon-dom</artifactId>
+                    <groupId>net.sf.saxon</groupId>
+                    <artifactId>Saxon-HE</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -722,7 +718,7 @@
         <dependency>
             <groupId>com.puppycrawl.tools</groupId>
             <artifactId>checkstyle</artifactId>
-            <version>10.21.2</version>
+            <version>10.23.0</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
