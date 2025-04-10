@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,8 +13,6 @@
  * limitations under the License.
  */
 package org.htmlunit.svg;
-
-import static org.htmlunit.BrowserVersionFeatures.SVG_UNKNOWN_ARE_DOM;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -81,17 +79,8 @@ public class SvgElementFactory implements ElementFactory {
      * {@inheritDoc}
      */
     @Override
-    public DomElement createElementNS(final SgmlPage page, final String namespaceURI, final String qualifiedName,
-            final Attributes attributes) {
-        return createElementNS(page, namespaceURI, qualifiedName, attributes, false);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public DomElement createElementNS(final SgmlPage page, final String namespaceURI, String qualifiedNameLC,
-            final Attributes attributes, final boolean checkBrowserCompatibility) {
+            final Attributes attributes) {
 
         final Map<String, DomAttr> attributeMap = toMap(page, attributes);
         qualifiedNameLC = StringUtils.toRootLowerCase(qualifiedNameLC);
@@ -112,12 +101,7 @@ public class SvgElementFactory implements ElementFactory {
             }
         }
         if (element == null) {
-            if (page.getWebClient().getBrowserVersion().hasFeature(SVG_UNKNOWN_ARE_DOM)) {
-                element = new DomElement(namespaceURI, qualifiedNameLC, page, attributeMap);
-            }
-            else {
-                element = new SvgElement(namespaceURI, qualifiedNameLC, page, attributeMap);
-            }
+            element = new SvgElement(namespaceURI, qualifiedNameLC, page, attributeMap);
         }
         return element;
     }

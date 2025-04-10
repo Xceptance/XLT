@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,11 +13,6 @@
  * limitations under the License.
  */
 package org.htmlunit.javascript.host.css;
-
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import org.htmlunit.WebWindow;
 import org.htmlunit.css.CssStyleSheet;
@@ -43,13 +38,14 @@ public class MediaQueryList extends EventTarget {
      * Default constructor.
      */
     public MediaQueryList() {
+        super();
     }
 
     /**
      * JavaScript constructor.
      */
     @Override
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
         super.jsConstructor();
     }
@@ -60,6 +56,7 @@ public class MediaQueryList extends EventTarget {
      * @param mediaQueryString the media query string
      */
     public MediaQueryList(final String mediaQueryString) {
+        super();
         media_ = mediaQueryString;
     }
 

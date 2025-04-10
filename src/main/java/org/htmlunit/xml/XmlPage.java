@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 package org.htmlunit.xml;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.htmlunit.BrowserVersionFeatures.JS_XML;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -32,6 +31,7 @@ import org.htmlunit.WebResponse;
 import org.htmlunit.WebWindow;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.DomProcessingInstruction;
+import org.htmlunit.util.MimeType;
 import org.htmlunit.util.XmlUtils;
 import org.w3c.dom.Attr;
 import org.w3c.dom.DOMConfiguration;
@@ -124,8 +124,7 @@ public class XmlPage extends SgmlPage {
             }
             catch (final SAXException e) {
                 if (LOG.isWarnEnabled()) {
-                    LOG.warn("Failed parsing XML document " + webResponse.getWebRequest().getUrl()
-                            + ": " + e.getMessage());
+                    LOG.warn("Failed parsing XML document '" + webResponse.getWebRequest().getUrl() + "'", e);
                 }
                 if (!ignoreSAXException) {
                     throw new IOException(e.getMessage());
@@ -135,17 +134,16 @@ public class XmlPage extends SgmlPage {
         catch (final ParserConfigurationException e) {
             if (LOG.isWarnEnabled()) {
                 if (null == webResponse) {
-                    LOG.warn("Failed parsing XML empty document: " + e.getMessage());
+                    LOG.warn("Failed parsing XML empty document: " + e.getMessage(), e);
                 }
                 else {
-                    LOG.warn("Failed parsing XML empty document " + webResponse.getWebRequest().getUrl()
-                        + ": " + e.getMessage());
+                    LOG.warn("Failed parsing XML empty document '" + webResponse.getWebRequest().getUrl() + "'", e);
                 }
             }
         }
 
         final Map<Integer, List<String>> attributesOrderMap;
-        if (node_ != null && getWebClient().getBrowserVersion().hasFeature(JS_XML)) {
+        if (node_ != null) {
             attributesOrderMap = XmlUtils.getAttributesOrderMap(node_.getOwnerDocument());
         }
         else {
@@ -379,7 +377,7 @@ public class XmlPage extends SgmlPage {
      */
     @Override
     public String getContentType() {
-        return "application/xml";
+        return MimeType.APPLICATION_XML;
     }
 
     /**

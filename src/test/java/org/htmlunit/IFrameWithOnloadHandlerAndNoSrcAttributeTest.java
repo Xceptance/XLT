@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,18 +35,6 @@ public class IFrameWithOnloadHandlerAndNoSrcAttributeTest
     public void firefox_plain() throws Exception
     {
         test(BrowserVersion.FIREFOX, "_plain.html", true);
-    }
-
-    @Test
-    public void ie_jquery() throws Exception
-    {
-        test(BrowserVersion.INTERNET_EXPLORER, "_jquery.html", true);
-    }
-
-    @Test
-    public void ie_plain() throws Exception
-    {
-        test(BrowserVersion.INTERNET_EXPLORER, "_plain.html", true);
     }
 
     private void test(final BrowserVersion browserVersion, final String ext, final boolean handlerShouldHaveBeenCalled) throws Exception

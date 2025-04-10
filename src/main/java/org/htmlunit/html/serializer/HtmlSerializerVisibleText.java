@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,6 @@ import org.htmlunit.html.DomComment;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.html.DomText;
-import org.htmlunit.html.HtmlApplet;
 import org.htmlunit.html.HtmlBody;
 import org.htmlunit.html.HtmlBreak;
 import org.htmlunit.html.HtmlCheckBoxInput;
@@ -58,6 +57,7 @@ import org.htmlunit.html.HtmlTextArea;
 import org.htmlunit.html.HtmlTitle;
 import org.htmlunit.html.HtmlUnorderedList;
 import org.htmlunit.html.TableRowGroup;
+import org.htmlunit.html.serializer.HtmlSerializerVisibleText.HtmlSerializerTextBuilder.Mode;
 
 /**
  * Special serializer to generate the output we need
@@ -110,10 +110,6 @@ public class HtmlSerializerVisibleText {
         }
         else if (node instanceof DomComment) {
             appendComment(builder, (DomComment) node, mode);
-        }
-        else if (node instanceof HtmlApplet
-                && node.getPage().getWebClient().getOptions().isAppletEnabled()) {
-            appendApplet(builder, (HtmlApplet) node, mode);
         }
         else if (node instanceof HtmlBreak) {
             appendBreak(builder, (HtmlBreak) node, mode);
@@ -644,18 +640,6 @@ public class HtmlSerializerVisibleText {
     }
 
     /**
-     * Process {@link HtmlApplet}.
-     *
-     * @param builder the StringBuilder to add to
-     * @param htmlApplet the target to process
-     * @param mode the {@link Mode} to use for processing
-     */
-    protected void appendApplet(final HtmlSerializerTextBuilder builder,
-            final HtmlApplet htmlApplet, final Mode mode) {
-        // nothing to do
-    }
-
-    /**
      * Process {@link HtmlBreak}.
      *
      * @param builder the StringBuilder to add to
@@ -757,35 +741,38 @@ public class HtmlSerializerVisibleText {
         return defaultMode;
     }
 
-    /** Mode. */
-    protected enum Mode {
-        /**
-         * The mode for the pre tag.
-         */
-        PRE,
-
-        /**
-         * Sequences of white space are collapsed. Newline characters
-         * in the source are handled the same as other white space.
-         * Lines are broken as necessary to fill line boxes.
-         */
-        WHITE_SPACE_NORMAL,
-
-        /**
-         * Sequences of white space are preserved. Lines are only broken
-         * at newline characters in the source and at <br> elements.
-         */
-        WHITE_SPACE_PRE,
-
-        /**
-         * Sequences of white space are collapsed. Lines are broken
-         * at newline characters, at <br>, and as necessary
-         * to fill line boxes.
-         */
-        WHITE_SPACE_PRE_LINE
-    }
-
+    /**
+     * Helper to compose the text for the serializer based on several modes.
+     */
     protected static class HtmlSerializerTextBuilder {
+        /** Mode. */
+        protected enum Mode {
+            /**
+             * The mode for the pre tag.
+             */
+            PRE,
+
+            /**
+             * Sequences of white space are collapsed. Newline characters
+             * in the source are handled the same as other white space.
+             * Lines are broken as necessary to fill line boxes.
+             */
+            WHITE_SPACE_NORMAL,
+
+            /**
+             * Sequences of white space are preserved. Lines are only broken
+             * at newline characters in the source and at <br> elements.
+             */
+            WHITE_SPACE_PRE,
+
+            /**
+             * Sequences of white space are collapsed. Lines are broken
+             * at newline characters, at <br>, and as necessary
+             * to fill line boxes.
+             */
+            WHITE_SPACE_PRE_LINE
+        }
+
         private enum State {
             DEFAULT,
             EMPTY,
@@ -802,14 +789,26 @@ public class HtmlSerializerVisibleText {
         private boolean contentAdded_;
         private boolean ignoreHtmlBreaks_;
 
+        /**
+         * Ctor.
+         */
         public HtmlSerializerTextBuilder() {
             builder_ = new StringBuilder();
             state_ = State.EMPTY;
             trimRightPos_ = 0;
         }
 
-        // see https://drafts.csswg.org/css-text-3/#white-space
+        /**
+         * Append the provided content.
+         * see https://drafts.csswg.org/css-text-3/#white-space
+         *
+         * @param content the content to add
+         * @param mode the {@link Mode}
+         */
         public void append(final String content, final Mode mode) {
+            if (content == null) {
+                return;
+            }
             int length = content.length();
             if (length == 0) {
                 return;
@@ -932,6 +931,9 @@ public class HtmlSerializerVisibleText {
             }
         }
 
+        /**
+         * Append a block separator.
+         */
         public void appendBlockSeparator() {
             switch (state_) {
                 case EMPTY:
@@ -977,6 +979,11 @@ public class HtmlSerializerVisibleText {
             }
         }
 
+        /**
+         * Append a break.
+         *
+         * @param mode the {@link Mode}
+         */
         public void appendBreak(final Mode mode) {
             if (ignoreHtmlBreaks_) {
                 return;
@@ -989,12 +996,20 @@ public class HtmlSerializerVisibleText {
             trimRightPos_ = builder_.length();
         }
 
+        /**
+         * Append a blank.
+         */
         public void appendBlank() {
             builder_.append(' ');
             state_ = State.BLANK_AT_END;
             trimRightPos_ = builder_.length();
         }
 
+        /**
+         * Remove all trailing whitespace from the end.
+         *
+         * @param mode the {@link Mode}
+         */
         public void trimRight(final Mode mode) {
             if (mode == Mode.PRE) {
                 switch (state_) {
@@ -1017,22 +1032,37 @@ public class HtmlSerializerVisibleText {
             }
         }
 
+        /**
+         * @return true if some content was already added
+         */
         public boolean wasContentAdded() {
             return contentAdded_;
         }
 
+        /**
+         * Resets the contentAdded state to false.
+         */
         public void resetContentAdded() {
             contentAdded_ = false;
         }
 
+        /**
+         * Ignore the following html breaks in the content to be added.
+         */
         public void ignoreHtmlBreaks() {
             ignoreHtmlBreaks_ = true;
         }
 
+        /**
+         * Prozess the following html breaks in the content to be added.
+         */
         public void processHtmlBreaks() {
             ignoreHtmlBreaks_ = false;
         }
 
+        /**
+         * @return the constructed text.
+         */
         public String getText() {
             return builder_.substring(0, trimRightPos_);
         }

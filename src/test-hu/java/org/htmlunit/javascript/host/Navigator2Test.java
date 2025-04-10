@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 package org.htmlunit.javascript.host;
 
 import org.htmlunit.SimpleWebTestCase;
-import org.htmlunit.WebClient;
 import org.htmlunit.junit.BrowserRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -66,9 +65,6 @@ public class Navigator2Test extends SimpleWebTestCase {
     @Test
     public void javaEnabled() throws Exception {
         attribute("javaEnabled()", "false");
-        final WebClient webClient = getWebClient();
-        webClient.getOptions().setAppletEnabled(true);
-        attribute("javaEnabled()", "true");
     }
 
     /**

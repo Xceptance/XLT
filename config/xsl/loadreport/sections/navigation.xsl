@@ -18,7 +18,11 @@
             </li>
             <li><a href="transactions.html">Transactions</a></li>
             <li><a href="actions.html">Actions</a></li>
-            <li><a href="requests.html">Requests</a></li>
+            <li><a href="requests.html">Requests</a>
+                <ul>
+                    <li><a href="slowest-requests.html">Slowest Requests</a></li>
+                </ul>
+            </li>
             <li><a href="network.html">Network</a>
                 <ul>
                     <li><a href="network.html#network">Network</a></li>

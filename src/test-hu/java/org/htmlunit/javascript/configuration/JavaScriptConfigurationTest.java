@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -94,7 +94,7 @@ public class JavaScriptConfigurationTest extends SimpleWebTestCase {
      */
     @Test
     public void memoryLeak() throws Exception {
-        final RandomStringGenerator generator = new RandomStringGenerator.Builder().withinRange('a', 'z').build();
+        final RandomStringGenerator generator = new RandomStringGenerator.Builder().withinRange('a', 'z').get();
 
         long count = 0;
         while (count++ < 3000) {
@@ -135,12 +135,19 @@ public class JavaScriptConfigurationTest extends SimpleWebTestCase {
                 try {
                     klass = Class.forName(className);
                 }
-                catch (final Throwable t) {
+                catch (final Throwable e) {
                     continue;
                 }
                 if ("org.htmlunit.javascript.host.intl".equals(klass.getPackage().getName())
-                        || "Reflect".equals(klass.getSimpleName())
-                        || "DedicatedWorkerGlobalScope".equals(klass.getSimpleName())) {
+
+                        // Worker
+                        || "WorkerGlobalScope".equals(klass.getSimpleName())
+                        || "DedicatedWorkerGlobalScope".equals(klass.getSimpleName())
+                        || "WorkerLocation".equals(klass.getSimpleName())
+                        || "WorkerNavigator".equals(klass.getSimpleName())
+
+                        // ProxyConfig
+                        || "ProxyAutoConfig".equals(klass.getSimpleName())) {
                     continue;
                 }
                 if (klass.getAnnotation(JsxClasses.class) != null) {
@@ -307,7 +314,7 @@ public class JavaScriptConfigurationTest extends SimpleWebTestCase {
         test(browserVersion);
     }
 
-    private void test(final BrowserVersion browserVersion) throws IOException {
+    private static void test(final BrowserVersion browserVersion) throws IOException {
         try (WebClient webClient = new WebClient(browserVersion)) {
             final MockWebConnection conn = new MockWebConnection();
             conn.setDefaultResponse("<html><body onload='document.body.firstChild'></body></html>");

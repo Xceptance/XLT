@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package org.htmlunit.xml;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.javascript.host.xml.XMLDocumentTest;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.util.MimeType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -58,8 +58,7 @@ public class XmlPage2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT =  { "true", "14"},
-            IE = {"true", "15"})
+    @Alerts({ "true", "14"})
     public void createElement() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -91,7 +90,7 @@ public class XmlPage2Test extends WebDriverTestCase {
             + "    var doc = document.implementation.createDocument('', '', null);\n"
             + "    try {\n"
             + "      log(doc.createElementNS('myNS', 'ppp:eee'));\n"
-            + "    } catch(e) {log('exception')}\n"
+            + "    } catch(e) {logEx(e)}\n"
             + "  }\n"
             + "</script></head><body onload='test()'>\n"
             + "</body></html>";

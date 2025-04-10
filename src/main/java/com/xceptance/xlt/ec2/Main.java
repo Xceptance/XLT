@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,22 +40,23 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 
-import com.amazonaws.AmazonClientException;
-import com.amazonaws.services.ec2.model.AvailabilityZone;
-import com.amazonaws.services.ec2.model.DescribeTagsRequest;
-import com.amazonaws.services.ec2.model.DescribeTagsResult;
-import com.amazonaws.services.ec2.model.Filter;
-import com.amazonaws.services.ec2.model.Image;
-import com.amazonaws.services.ec2.model.Instance;
-import com.amazonaws.services.ec2.model.InstanceType;
-import com.amazonaws.services.ec2.model.KeyPairInfo;
-import com.amazonaws.services.ec2.model.Region;
-import com.amazonaws.services.ec2.model.ResourceType;
-import com.amazonaws.services.ec2.model.SecurityGroup;
-import com.amazonaws.services.ec2.model.Subnet;
-import com.amazonaws.services.ec2.model.Tag;
-import com.amazonaws.services.ec2.model.TagDescription;
-import com.amazonaws.services.ec2.model.Vpc;
+import software.amazon.awssdk.core.exception.SdkException;
+import software.amazon.awssdk.services.ec2.model.AvailabilityZone;
+import software.amazon.awssdk.services.ec2.model.DescribeTagsRequest;
+import software.amazon.awssdk.services.ec2.model.DescribeTagsResponse;
+import software.amazon.awssdk.services.ec2.model.Filter;
+import software.amazon.awssdk.services.ec2.model.Image;
+import software.amazon.awssdk.services.ec2.model.Instance;
+import software.amazon.awssdk.services.ec2.model.InstanceStateName;
+import software.amazon.awssdk.services.ec2.model.InstanceType;
+import software.amazon.awssdk.services.ec2.model.KeyPairInfo;
+import software.amazon.awssdk.services.ec2.model.Region;
+import software.amazon.awssdk.services.ec2.model.ResourceType;
+import software.amazon.awssdk.services.ec2.model.SecurityGroup;
+import software.amazon.awssdk.services.ec2.model.Subnet;
+import software.amazon.awssdk.services.ec2.model.Tag;
+import software.amazon.awssdk.services.ec2.model.TagDescription;
+import software.amazon.awssdk.services.ec2.model.Vpc;
 import com.google.common.collect.Sets;
 import com.xceptance.common.util.ConsoleUiUtils;
 import com.xceptance.common.util.ProcessExitCodes;
@@ -151,15 +152,15 @@ public class Main extends AbstractEC2Client
      */
     private static final String[] INSTANCE_TYPES =
         {
-            InstanceType.C4Large.toString(), InstanceType.C4Xlarge.toString(), InstanceType.C42xlarge.toString(),
-            InstanceType.C44xlarge.toString(), InstanceType.C48xlarge.toString(), InstanceType.C5Large.toString(),
-            InstanceType.C5Xlarge.toString(), InstanceType.C52xlarge.toString(), InstanceType.C54xlarge.toString(),
-            InstanceType.C59xlarge.toString(), InstanceType.C518xlarge.toString(), InstanceType.M4Large.toString(),
-            InstanceType.M4Xlarge.toString(), InstanceType.M42xlarge.toString(), InstanceType.M44xlarge.toString(),
-            InstanceType.M5Large.toString(), InstanceType.M5Xlarge.toString(), InstanceType.M52xlarge.toString(),
-            InstanceType.M54xlarge.toString(), InstanceType.R4Large.toString(), InstanceType.R4Xlarge.toString(),
-            InstanceType.R42xlarge.toString(), InstanceType.R44xlarge.toString(), InstanceType.R5Large.toString(),
-            InstanceType.R5Xlarge.toString(), InstanceType.R52xlarge.toString(), InstanceType.R54xlarge.toString(),
+            InstanceType.C4_LARGE.toString(), InstanceType.C4_XLARGE.toString(), InstanceType.C4_2_XLARGE.toString(),
+            InstanceType.C4_4_XLARGE.toString(), InstanceType.C4_8_XLARGE.toString(), InstanceType.C5_LARGE.toString(),
+            InstanceType.C5_XLARGE.toString(), InstanceType.C5_2_XLARGE.toString(), InstanceType.C5_4_XLARGE.toString(),
+            InstanceType.C5_9_XLARGE.toString(), InstanceType.C5_18_XLARGE.toString(), InstanceType.M4_LARGE.toString(),
+            InstanceType.M4_XLARGE.toString(), InstanceType.M4_2_XLARGE.toString(), InstanceType.M4_4_XLARGE.toString(),
+            InstanceType.M5_LARGE.toString(), InstanceType.M5_XLARGE.toString(), InstanceType.M5_2_XLARGE.toString(),
+            InstanceType.M5_4_XLARGE.toString(), InstanceType.R4_LARGE.toString(), InstanceType.R4_XLARGE.toString(),
+            InstanceType.R4_2_XLARGE.toString(), InstanceType.R4_4_XLARGE.toString(), InstanceType.R5_LARGE.toString(),
+            InstanceType.R5_XLARGE.toString(), InstanceType.R5_2_XLARGE.toString(), InstanceType.R5_4_XLARGE.toString(),
         };
 
     /**
@@ -185,36 +186,6 @@ public class Main extends AbstractEC2Client
         {
             "run", "terminate", "list", "show details", "quit"
         };
-
-    /**
-     * The "pending" state constant.
-     */
-    private static final String STATE_PENDING = "pending";
-
-    /**
-     * The "running" state constant. (Instance state)
-     */
-    private static final String STATE_RUNNING = "running";
-
-    /**
-     * The "stopping" state constant.
-     */
-    private static final String STATE_STOPPING = "stopping";
-
-    /**
-     * The "stopped" state constant.
-     */
-    private static final String STATE_STOPPED = "stopped";
-
-    /**
-     * The "shutting-down" state constant.
-     */
-    private static final String STATE_SHUTTING_DOWN = "shutting-down";
-
-    /**
-     * The "terminated" state constant.
-     */
-    private static final String STATE_TERMINATED = "terminated";
 
     /**
      * The time to wait for instances to eventually exist after they have been created.
@@ -356,7 +327,7 @@ public class Main extends AbstractEC2Client
             {
                 // keep a single line
                 final TagDescription tag = tags.get(0);
-                sb.append(indentStr).append(tag.getKey()).append("=").append(tag.getValue()).append("\n");
+                sb.append(indentStr).append(tag.key()).append("=").append(tag.value()).append("\n");
             }
             else
             {
@@ -364,7 +335,7 @@ public class Main extends AbstractEC2Client
                 // list all tags, 1 per line
                 for (final TagDescription tag : tags)
                 {
-                    sb.append(indent2Str).append(tag.getKey()).append("=").append(tag.getValue()).append('\n');
+                    sb.append(indent2Str).append(tag.key()).append("=").append(tag.value()).append('\n');
                 }
             }
             sb.append('\n').append(indentStr);
@@ -385,7 +356,7 @@ public class Main extends AbstractEC2Client
         if (regions.size() == 1)
         {
             final Region singleRegion = regions.get(0);
-            System.out.printf("%s ... ", singleRegion.getRegionName());
+            System.out.printf("%s ... ", singleRegion.regionName());
 
             try
             {
@@ -405,7 +376,7 @@ public class Main extends AbstractEC2Client
 
             for (final Region region : regions)
             {
-                System.out.printf("\n%s%s ... ", indentStr, region.getRegionName());
+                System.out.printf("\n%s%s ... ", indentStr, region.regionName());
 
                 try
                 {
@@ -495,7 +466,7 @@ public class Main extends AbstractEC2Client
 
         for (final Region region : regions)
         {
-            final String regionName = region.getRegionName();
+            final String regionName = region.regionName();
 
             try
             {
@@ -503,8 +474,8 @@ public class Main extends AbstractEC2Client
 
                 for (final Instance instance : getInstances(region, tags))
                 {
-                    final String state = instance.getState().getName();
-                    if (state.equals(STATE_RUNNING))
+                    final InstanceStateName state = instance.state().name();
+                    if (state == InstanceStateName.RUNNING)
                     {
                         runningInstanceCount++;
 
@@ -515,7 +486,7 @@ public class Main extends AbstractEC2Client
 
                         agentControllerLines.add(agentControllerLine);
                     }
-                    else if (state.equals(STATE_PENDING))
+                    else if (state == InstanceStateName.PENDING)
                     {
                         pendingInstanceCount++;
                     }
@@ -523,7 +494,7 @@ public class Main extends AbstractEC2Client
 
                 System.out.println("OK.");
             }
-            catch (final AmazonClientException e)
+            catch (final SdkException e)
             {
                 System.out.println("Failed: " + e.getMessage());
             }
@@ -553,15 +524,15 @@ public class Main extends AbstractEC2Client
     private String getAddress(final Instance instance)
     {
         // 1st: public DNS
-        String address = instance.getPublicDnsName();
+        String address = instance.publicDnsName();
         if (StringUtils.isBlank(address))
         {
             // 2nd: public IP
-            address = instance.getPublicIpAddress();
+            address = instance.publicIpAddress();
             if (StringUtils.isBlank(address))
             {
                 // 3rd: private IP
-                address = instance.getPrivateIpAddress();
+                address = instance.privateIpAddress();
                 if (StringUtils.isBlank(address))
                 {
                     // DNS name/IP address might not be available yet (#2795)
@@ -606,14 +577,17 @@ public class Main extends AbstractEC2Client
 
         for (final Region region : regions)
         {
-            final DescribeTagsRequest describeTagsRequest = new DescribeTagsRequest().withFilters(new Filter().withName("resource-type")
-                                                                                                              .withValues(ResourceType.Instance.toString()));
-            final DescribeTagsResult describeTagsResult = getClient(region).describeTags(describeTagsRequest);
+            final DescribeTagsRequest describeTagsRequest = DescribeTagsRequest.builder()
+                                                                               .filters(Filter.builder().name("resource-type")
+                                                                                              .values(ResourceType.INSTANCE.toString())
+                                                                                              .build())
+                                                                               .build();
+            final DescribeTagsResponse describeTagsResponse = getClient(region).describeTags(describeTagsRequest);
 
-            for (final TagDescription tagDescription : describeTagsResult.getTags())
+            for (final TagDescription tagDescription : describeTagsResponse.tags())
             {
 
-                final String tagDisplayName = tagDescription.getKey() + "=" + tagDescription.getValue();
+                final String tagDisplayName = tagDescription.key() + "=" + tagDescription.value();
                 tags.put(tagDisplayName, tagDescription);
             }
         }
@@ -752,8 +726,7 @@ public class Main extends AbstractEC2Client
      */
     private String queryHostData()
     {
-        final String hostDataRaw = ConsoleUiUtils.readLine("\nEnter host data (mark line break with '\\n')");
-        return hostDataRaw.replaceAll("\\\\n", "\n");
+        return ConsoleUiUtils.readLine("\nEnter host data (mark line break with '\\n')");
     }
 
     private String getUserData(final CommandLine commandLine)
@@ -813,8 +786,7 @@ public class Main extends AbstractEC2Client
      */
     private String queryUserData()
     {
-        final String userDataRaw = ConsoleUiUtils.readLine("\nEnter user data (mark line break with '\\n')");
-        return userDataRaw.replaceAll("\\\\n", "\n");
+        return ConsoleUiUtils.readLine("\nEnter user data (mark line break with '\\n')");
     }
 
     /**
@@ -842,7 +814,7 @@ public class Main extends AbstractEC2Client
         }
 
         final Image image = selectImage(region);
-        final String instanceType = selectInstanceType(region.getRegionName());
+        final String instanceType = selectInstanceType(region.regionName());
         final int instanceCount = readInstanceCount();
         final String name = readInstanceName();
         final Collection<String> securityGroupIds = getSecurityGroupIDs(commandLine, region);
@@ -864,61 +836,20 @@ public class Main extends AbstractEC2Client
 
         final StringBuilder sb = new StringBuilder();
         sb.append("\nConfiguration:\n");
-        sb.append("  AMI               : ").append(image.getImageId()).append(" - ").append(image.getDescription()).append("\n");
-        sb.append("  Region            : ").append(region.getRegionName()).append("\n");
-        sb.append("  Availability zone : ").append(availabilityZone != null ? availabilityZone.getZoneName() : "<unspecified>")
-          .append("\n");
+        sb.append("  AMI               : ").append(image.imageId()).append(" - ").append(describeImage(image)).append("\n");
+        sb.append("  Region            : ").append(region.regionName()).append("\n");
+        sb.append("  Availability zone : ").append(availabilityZone != null ? availabilityZone.zoneName() : "<unspecified>").append("\n");
         sb.append("  VPC               : ").append(getVpcDisplayName(vsp.vpc)).append("\n");
         sb.append("  Subnet            : ").append(getSubnetDisplayName(vsp.subnet)).append("\n");
         sb.append("  Type              : ").append(instanceType).append("\n");
         sb.append("  Count             : ").append(instanceCount).append("\n");
         sb.append("  Name              : ").append(name).append("\n");
         sb.append("  Key-pair          : ").append(StringUtils.isBlank(keyPairName) ? "<none>" : keyPairName).append("\n");
-        sb.append("  Password          : ").append(password).append("\n");
-        sb.append("  Host data         : ");
-        if (StringUtils.isBlank(hostData))
-        {
-            sb.append("<none>\n");
-        }
-        else
-        {
-            boolean firstHostDataLine = true;
-            for (final String hostDataLine : hostData.split("\\n"))
-            {
-                if (firstHostDataLine)
-                {
-                    firstHostDataLine = false;
-                }
-                else
-                {
-                    sb.append("                      ");
-                }
-                sb.append(hostDataLine).append("\n");
-            }
-        }
+        sb.append("  Password          : ").append(StringUtils.isBlank(password) ? "<none>" : password).append("\n");
+        sb.append("  Host data         : ").append(StringUtils.isBlank(hostData) ? "<none>" : hostData).append("\n");
         if (showUserData)
         {
-            sb.append("  User data         : ");
-            if (StringUtils.isBlank(userData))
-            {
-                sb.append("<none>\n");
-            }
-            else
-            {
-                boolean firstUserDataLine = true;
-                for (final String userDataLine : userData.split("\\n"))
-                {
-                    if (firstUserDataLine)
-                    {
-                        firstUserDataLine = false;
-                    }
-                    else
-                    {
-                        sb.append("                      ");
-                    }
-                    sb.append(userDataLine).append("\n");
-                }
-            }
+            sb.append("  User data         : ").append(StringUtils.isBlank(userData) ? "<none>" : userData).append("\n");
         }
         sb.append("\n");
         sb.append("Do you want to run the instance(s) with the above configuration?");
@@ -929,11 +860,11 @@ public class Main extends AbstractEC2Client
             boolean instancesStarted = false;
             final String warnMsg = "\n\n  WARNING: Despite of the previous error, some instances might have been started nevertheless." +
                                    "\n           Please check their status. Also note that some of them might not be tagged with any name.";
-            final String errMsg = "Failed to start " + instanceCount + " instances in region '" + region.getRegionName() + "'";
+            final String errMsg = "Failed to start " + instanceCount + " instances in region '" + region.regionName() + "'";
 
             try
             {
-                System.out.println("\nStarting instances in region '" + region.getRegionName() + "'");
+                System.out.println("\nStarting instances in region '" + region.regionName() + "'");
                 System.out.printf(" - creating instances     ... ");
 
                 final List<Instance> instances = runInstances(region, vsp.subnet, image, instanceType, instanceCount, securityGroupIds,
@@ -1008,13 +939,13 @@ public class Main extends AbstractEC2Client
         }
 
         // collect all distinct VPC-IDs
-        final List<String> vpcIds = allSubnets.stream().map(net -> net.getVpcId()).distinct().collect(Collectors.toList());
+        final List<String> vpcIds = allSubnets.stream().map(net -> net.vpcId()).distinct().collect(Collectors.toList());
 
         // retrieve and select VPC for given region and VPC-IDs
         final Vpc vpc = selectVpc(region, vpcIds);
-        final String vpcId = vpc.getVpcId();
+        final String vpcId = vpc.vpcId();
         // filter out all those subnets that do not belong to the selected VPC
-        final List<Subnet> vpcSubnets = allSubnets.stream().filter(net -> vpcId.equals(net.getVpcId())).collect(Collectors.toList());
+        final List<Subnet> vpcSubnets = allSubnets.stream().filter(net -> vpcId.equals(net.vpcId())).collect(Collectors.toList());
         final Subnet subnet = selectSubnet(vpcSubnets);
 
         return new VpcSubnetPair(vpc, subnet);
@@ -1060,7 +991,7 @@ public class Main extends AbstractEC2Client
             if (StringUtils.isBlank(keyPairName))
             {
                 // key configured?
-                keyPairName = awsConfiguration.getSshKey(region.getRegionName());
+                keyPairName = awsConfiguration.getSshKey(region.regionName());
                 if (StringUtils.isBlank(keyPairName))
                 {
                     // query user
@@ -1069,8 +1000,7 @@ public class Main extends AbstractEC2Client
                 else if (!doesKeyPairExist(keyPairName, region))
                 {
                     // inform user
-                    System.out.printf("\nThe configured key-pair '%s' does not exist for region '%s'.", keyPairName,
-                                      region.getRegionName());
+                    System.out.printf("\nThe configured key-pair '%s' does not exist for region '%s'.", keyPairName, region.regionName());
 
                     // query correct key pair name from user
                     keyPairName = getKeypairNameFromUser(region);
@@ -1079,7 +1009,7 @@ public class Main extends AbstractEC2Client
             else if (!doesKeyPairExist(keyPairName, region))
             {
                 // inform user
-                System.out.printf("\nThe key-pair '%s' does not exist for region '%s'.", keyPairName, region.getRegionName());
+                System.out.printf("\nThe key-pair '%s' does not exist for region '%s'.", keyPairName, region.regionName());
 
                 // query correct key pair name from user
                 keyPairName = getKeypairNameFromUser(region);
@@ -1110,7 +1040,7 @@ public class Main extends AbstractEC2Client
     {
         // query user
         final KeyPairInfo keyPairInfo = selectKeyPair(region);
-        return keyPairInfo != null ? keyPairInfo.getKeyName() : null;
+        return keyPairInfo != null ? keyPairInfo.keyName() : null;
     }
 
     /**
@@ -1127,7 +1057,7 @@ public class Main extends AbstractEC2Client
     {
         for (final KeyPairInfo keyPairInfo : getKeyPairs(region))
         {
-            if (keyPairInfo.getKeyName().equals(keyPairName))
+            if (keyPairInfo.keyName().equals(keyPairName))
             {
                 return true;
             }
@@ -1178,10 +1108,9 @@ public class Main extends AbstractEC2Client
         final List<String> displayNames = new ArrayList<String>();
         for (final SecurityGroup securityGroup : securityGroups)
         {
-            if (StringUtils.isBlank(securityGroup.getVpcId()))
+            if (StringUtils.isBlank(securityGroup.vpcId()))
             {
-                displayNames.add(securityGroup.getGroupName() + " - " + securityGroup.getDescription() + " (" + securityGroup.getGroupId() +
-                                 ")");
+                displayNames.add(securityGroup.groupName() + " - " + securityGroup.description() + " (" + securityGroup.groupId() + ")");
             }
         }
 
@@ -1193,7 +1122,7 @@ public class Main extends AbstractEC2Client
         final Collection<String> groupIDs = new HashSet<String>();
         for (final SecurityGroup selectedGroup : selectedGroups)
         {
-            groupIDs.add(selectedGroup.getGroupId());
+            groupIDs.add(selectedGroup.groupId());
         }
 
         return groupIDs;
@@ -1233,7 +1162,7 @@ public class Main extends AbstractEC2Client
 
         for (final AvailabilityZone availabilityZone : availabilityZones)
         {
-            displayNames.add(availabilityZone.getZoneName());
+            displayNames.add(availabilityZone.zoneName());
         }
 
         // add "unspecified" (to indicate that the target zone does not matter) to the top of the list
@@ -1256,17 +1185,17 @@ public class Main extends AbstractEC2Client
         final List<String> displayNames = new ArrayList<String>();
         final List<Image> images = getImages(region);
 
-        final Optional<Image> imageWithLongestId = images.stream().max((i1, i2) -> Integer.compare(i1.getImageId().length(),
-                                                                                                   i2.getImageId().length()));
-        final int maxIdLength = imageWithLongestId.isPresent() ? imageWithLongestId.get().getImageId().length() : 21; // ami-<17-digit
-                                                                                                                      // hex>
+        final Optional<Image> imageWithLongestId = images.stream()
+                                                         .max((i1, i2) -> Integer.compare(i1.imageId().length(), i2.imageId().length()));
+        final int maxIdLength = imageWithLongestId.isPresent() ? imageWithLongestId.get().imageId().length() : 21; // ami-<17-digit
+                                                                                                                   // hex>
 
         // sort images first
         Collections.sort(images, (i1, i2) -> describeImage(i1).compareTo(describeImage(i2)));
 
         for (final Image image : images)
         {
-            displayNames.add(StringUtils.rightPad(image.getImageId(), maxIdLength) + " - " + describeImage(image));
+            displayNames.add(StringUtils.rightPad(image.imageId(), maxIdLength) + " - " + describeImage(image));
         }
 
         return ConsoleUiUtils.selectItem("\nSelect the machine image to use for the new EC2 instances:", displayNames, images);
@@ -1285,7 +1214,7 @@ public class Main extends AbstractEC2Client
 
         for (final KeyPairInfo keyPairInfo : keyPairInfos)
         {
-            displayNames.add(keyPairInfo.getKeyName());
+            displayNames.add(keyPairInfo.keyName());
         }
 
         // add "none" (to indicate that the key pair does not matter) to the top of the list
@@ -1349,7 +1278,7 @@ public class Main extends AbstractEC2Client
      */
     private String getFriendlyRegionName(final Region region)
     {
-        final String regionName = region.getRegionName();
+        final String regionName = region.regionName();
 
         String friendlyRegionName = FRIENDLY_REGION_NAMES.get(regionName);
         if (friendlyRegionName == null)
@@ -1394,7 +1323,7 @@ public class Main extends AbstractEC2Client
      */
     private String getInstances(final Region region, final List<TagDescription> tags, final String lineOffset,
                                 final boolean runningPendingOnly)
-        throws AmazonClientException
+        throws SdkException
     {
         final StringBuilder output = new StringBuilder();
 
@@ -1406,20 +1335,20 @@ public class Main extends AbstractEC2Client
         final Map<String, Image> imagesById = new HashMap<>();
         for (final Instance instance : getInstances(region, tags))
         {
-            final String state = instance.getState().getName();
-            if (state.equals(STATE_TERMINATED) || state.equals(STATE_SHUTTING_DOWN))
+            final InstanceStateName state = instance.state().name();
+            if (state == InstanceStateName.TERMINATED || state == InstanceStateName.SHUTTING_DOWN)
             {
                 continue;
             }
-            if (state.equals(STATE_RUNNING))
+            if (state == InstanceStateName.RUNNING)
             {
                 runningInstanceCount++;
             }
-            else if (state.equals(STATE_PENDING))
+            else if (state == InstanceStateName.PENDING)
             {
                 pendingInstanceCount++;
             }
-            else if (state.equals(STATE_STOPPED) || state.equals(STATE_STOPPING))
+            else if (state == InstanceStateName.STOPPED || state == InstanceStateName.STOPPING)
             {
                 if (runningPendingOnly)
                 {
@@ -1429,7 +1358,7 @@ public class Main extends AbstractEC2Client
                 stoppedInstanceCount++;
             }
 
-            final String imageId = instance.getImageId();
+            final String imageId = instance.imageId();
             Image image = imagesById.get(imageId);
             if (image == null)
             {
@@ -1478,7 +1407,7 @@ public class Main extends AbstractEC2Client
     /**
      * Parses the given arguments and starts the ec2_admin in non-interactive mode.
      *
-     * @param args
+     * @param commandLine
      */
     private void startNonInteractiveMode(final CommandLine commandLine)
     {
@@ -1619,7 +1548,7 @@ public class Main extends AbstractEC2Client
         /*
          * start instances
          */
-        final String nameOfRegion = region.getRegionName();
+        final String nameOfRegion = region.regionName();
         System.out.printf("\nStarting instances in region '%s' ... ", nameOfRegion);
         final List<String> agentControllerConnectionProperties = new ArrayList<String>();
         try
@@ -1643,7 +1572,7 @@ public class Main extends AbstractEC2Client
                 final Instance instance = instances.get(i);
                 final long remainingTimeout = deadline - System.currentTimeMillis();
 
-                final Instance startedInstance = waitForInstanceState(region, instance, STATE_RUNNING, remainingTimeout);
+                final Instance startedInstance = waitForInstanceState(region, instance, InstanceStateName.RUNNING, remainingTimeout);
 
                 // OK, it's running. Now it's worth to remember it.
                 agentControllerConnectionProperties.add(String.format(AGENT_CONTROLLER_LINE_FORMAT, i + 1, nameOfRegion,
@@ -1709,16 +1638,16 @@ public class Main extends AbstractEC2Client
 
         // get tag description
         final List<TagDescription> tagDescriptions = new ArrayList<TagDescription>();
-        final DescribeTagsResult describeTagsResult = getClient(region).describeTags(new DescribeTagsRequest());
+        final DescribeTagsResponse describeTagsResponse = getClient(region).describeTags(DescribeTagsRequest.builder().build());
 
         // find specified tag description
-        for (final TagDescription tagDescription : describeTagsResult.getTags())
+        for (final TagDescription tagDescription : describeTagsResponse.tags())
         {
             // it's an instance description
-            if (tagDescription.getResourceType().equals(ResourceType.Instance.toString()))
+            if (tagDescription.resourceType() == ResourceType.INSTANCE)
             {
                 // and value of tag description is equal to specified tag name
-                if (tagDescription.getValue().equals(nameTag))
+                if (tagDescription.value().equals(nameTag))
                 {
                     // remember it
                     tagDescriptions.add(tagDescription);
@@ -1824,8 +1753,8 @@ public class Main extends AbstractEC2Client
      */
     private String describeImage(final Image image)
     {
-        return StringUtils.defaultIfBlank(getNameTagValue(image.getTags()).orElse(null),
-                                          StringUtils.defaultIfBlank(image.getDescription(), "(no description)"));
+        return StringUtils.defaultIfBlank(getNameTagValue(image.tags()).orElse(null),
+                                          StringUtils.defaultIfBlank(image.description(), "(no description)"));
     }
 
     private String buildUserData(final String password, final String hostData, String userData)
@@ -1834,8 +1763,8 @@ public class Main extends AbstractEC2Client
         {
             JSONObject userDataObj = new JSONObject();
 
-            userDataObj.put("acPassword", password);
-            userDataObj.put("hostData", hostData);
+            userDataObj.put("acPassword", StringUtils.isNotBlank(password) ? password : "");
+            userDataObj.put("hostData", StringUtils.isNotBlank(hostData) ? hostData.replaceAll("\\\\n", "\n") : "");
 
             return userDataObj.toString();
         }
@@ -1880,8 +1809,8 @@ public class Main extends AbstractEC2Client
      */
     private String getVpcDisplayName(final Vpc vpc)
     {
-        final StringBuilder sb = new StringBuilder(vpc.getVpcId());
-        final Optional<String> nameTag = getNameTagValue(vpc.getTags());
+        final StringBuilder sb = new StringBuilder(vpc.vpcId());
+        final Optional<String> nameTag = getNameTagValue(vpc.tags());
         if (nameTag.isPresent())
         {
             sb.append(" | ").append(nameTag.get());
@@ -1903,15 +1832,15 @@ public class Main extends AbstractEC2Client
      */
     private String getSubnetDisplayName(final Subnet subnet)
     {
-        final StringBuilder sb = new StringBuilder(subnet.getSubnetId());
-        sb.append(" (").append(subnet.getAvailabilityZone()).append(")");
-        final Optional<String> nameTag = getNameTagValue(subnet.getTags());
+        final StringBuilder sb = new StringBuilder(subnet.subnetId());
+        sb.append(" (").append(subnet.availabilityZone()).append(")");
+        final Optional<String> nameTag = getNameTagValue(subnet.tags());
         if (nameTag.isPresent())
         {
             sb.append(" | ").append(nameTag.get());
         }
-        sb.append(" [").append(subnet.getCidrBlock()).append("]");
-        if (subnet.isDefaultForAz())
+        sb.append(" [").append(subnet.cidrBlock()).append("]");
+        if (subnet.defaultForAz())
         {
             sb.append(" *default*");
         }
@@ -1930,7 +1859,7 @@ public class Main extends AbstractEC2Client
     {
         if (tags != null)
         {
-            return tags.stream().filter(t -> "Name".equals(t.getKey())).findFirst().map(t -> t.getValue());
+            return tags.stream().filter(t -> "Name".equals(t.key())).findFirst().map(t -> t.value());
         }
         return Optional.empty();
     }

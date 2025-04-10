@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ package org.htmlunit.javascript.host.dom;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -52,7 +52,7 @@ public class DocumentFragmentTest extends WebDriverTestCase {
             + "    var d = document.createElement('div');\n"
             + "    frag.appendChild(d);\n"
             + "    log(window.getComputedStyle(d, null));\n"
-            + "  } catch (e) { log('exception'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "</script>\n"
             + "</body>\n"
             + "</html>";
@@ -160,8 +160,7 @@ public class DocumentFragmentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"0", "null", "null", "1", "myDiv", "myDiv"},
-            IE = {"undefined", "undefined", "undefined"})
+    @Alerts({"0", "null", "null", "1", "myDiv", "myDiv"})
     public void firstElementChild() throws Exception {
         final String html
             = "<html><head>\n"
@@ -199,8 +198,7 @@ public class DocumentFragmentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"0", "null", "null", "0", "null", "null", "1", "myDiv", "myDiv"},
-            IE = {"undefined", "undefined", "undefined"})
+    @Alerts({"0", "null", "null", "0", "null", "null", "1", "myDiv", "myDiv"})
     public void firstElementChildTextNode() throws Exception {
         final String html
             = "<html><head>\n"
@@ -308,8 +306,7 @@ public class DocumentFragmentTest extends WebDriverTestCase {
      * @throws Exception on test failure
      */
     @Test
-    @Alerts(DEFAULT = {"false", "true", "false", "true", "false", "true", "true", "false"},
-            IE = "-")
+    @Alerts({"false", "true", "false", "true", "false", "true", "true", "false"})
     public void getRootNode() throws Exception {
         final String content = "<html>\n"
             + "<head>\n"
@@ -333,6 +330,434 @@ public class DocumentFragmentTest extends WebDriverTestCase {
             + "      log(fragment === fragment.getRootNode());\n"
             + "      log(document === div.getRootNode());\n"
             + "      log(fragment === div.getRootNode());\n"
+            + "    }\n"
+            + "  </script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>bla\n"
+            + "</body>\n"
+            + "</html>";
+
+        loadPageVerifyTitle2(content);
+    }
+
+    /**
+     * @throws Exception on test failure
+     */
+    @Test
+    @Alerts("0")
+    public void ctor() throws Exception {
+        final String content = "<html>\n"
+            + "<head>\n"
+            + "  <script>\n"
+            + LOG_TITLE_FUNCTION
+            + "    function test() {\n"
+            + "      var fragment = new DocumentFragment();\n"
+            + "      log(fragment.querySelectorAll('p').length);\n"
+            + "    }\n"
+            + "  </script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>bla\n"
+            + "</body>\n"
+            + "</html>";
+
+        loadPageVerifyTitle2(content);
+    }
+
+    /**
+     * @throws Exception on test failure
+     */
+    @Test
+    @Alerts({"1", "[object HTMLDivElement]"})
+    public void append() throws Exception {
+        final String content = "<html>\n"
+            + "<head>\n"
+            + "  <script>\n"
+            + LOG_TITLE_FUNCTION
+            + "    function test() {\n"
+            + "      let fragment = new DocumentFragment();\n"
+            + "      let div = document.createElement('div');\n"
+            + "      fragment.append(div);"
+            + "      log(fragment.children.length);\n"
+            + "      log(fragment.children[0]);\n"
+            + "    }\n"
+            + "  </script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>bla\n"
+            + "</body>\n"
+            + "</html>";
+
+        loadPageVerifyTitle2(content);
+    }
+
+    /**
+     * @throws Exception on test failure
+     */
+    @Test
+    @Alerts("0")
+    public void appendNoParam() throws Exception {
+        final String content = "<html>\n"
+            + "<head>\n"
+            + "  <script>\n"
+            + LOG_TITLE_FUNCTION
+            + "    function test() {\n"
+            + "      let fragment = new DocumentFragment();\n"
+            + "      fragment.append();"
+            + "      log(fragment.children.length);\n"
+            + "    }\n"
+            + "  </script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>bla\n"
+            + "</body>\n"
+            + "</html>";
+
+        loadPageVerifyTitle2(content);
+    }
+
+    /**
+     * @throws Exception on test failure
+     */
+    @Test
+    @Alerts({"1", "[object Text]", "abcd",
+             "2", "[object Text]", "1234"})
+    public void appendText() throws Exception {
+        final String content = "<html>\n"
+            + "<head>\n"
+            + "  <script>\n"
+            + LOG_TITLE_FUNCTION
+            + "    function test() {\n"
+            + "      let fragment = new DocumentFragment();\n"
+            + "      fragment.append('abcd');"
+            + "      log(fragment.childNodes.length);\n"
+            + "      log(fragment.childNodes[0]);\n"
+            + "      log(fragment.childNodes[0].textContent);\n"
+
+            + "      let txt = document.createTextNode('1234');\n"
+            + "      fragment.append(txt);"
+            + "      log(fragment.childNodes.length);\n"
+            + "      log(fragment.childNodes[1]);\n"
+            + "      log(fragment.childNodes[1].textContent);\n"
+            + "    }\n"
+            + "  </script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>bla\n"
+            + "</body>\n"
+            + "</html>";
+
+        loadPageVerifyTitle2(content);
+    }
+
+    /**
+     * @throws Exception on test failure
+     */
+    @Test
+    @Alerts({"1", "[object HTMLDivElement]",
+             "2", "[object Text]", "abcd",
+             "3", "[object HTMLDivElement]",
+             "4", "[object Text]", "1234",
+             "5", "[object HTMLDivElement]"})
+    public void appendMixed() throws Exception {
+        final String content = "<html>\n"
+            + "<head>\n"
+            + "  <script>\n"
+            + LOG_TITLE_FUNCTION
+            + "    function test() {\n"
+            + "      let fragment = new DocumentFragment();\n"
+
+            + "      let div = document.createElement('div');\n"
+            + "      fragment.append(div);"
+            + "      log(fragment.childNodes.length);\n"
+            + "      log(fragment.childNodes[0]);\n"
+
+            + "      fragment.append('abcd');"
+            + "      log(fragment.childNodes.length);\n"
+            + "      log(fragment.childNodes[1]);\n"
+            + "      log(fragment.childNodes[1].textContent);\n"
+
+            + "      div = document.createElement('div');\n"
+            + "      fragment.append(div);"
+            + "      log(fragment.childNodes.length);\n"
+            + "      log(fragment.childNodes[2]);\n"
+
+            + "      let txt = document.createTextNode('1234');\n"
+            + "      fragment.append(txt);"
+            + "      log(fragment.childNodes.length);\n"
+            + "      log(fragment.childNodes[3]);\n"
+            + "      log(fragment.childNodes[3].textContent);\n"
+
+            + "      div = document.createElement('div');\n"
+            + "      fragment.append(div);"
+            + "      log(fragment.childNodes.length);\n"
+            + "      log(fragment.childNodes[4]);\n"
+            + "    }\n"
+            + "  </script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>bla\n"
+            + "</body>\n"
+            + "</html>";
+
+        loadPageVerifyTitle2(content);
+    }
+
+    /**
+     * @throws Exception on test failure
+     */
+    @Test
+    @Alerts({"1", "[object HTMLDivElement]"})
+    public void prepend() throws Exception {
+        final String content = "<html>\n"
+            + "<head>\n"
+            + "  <script>\n"
+            + LOG_TITLE_FUNCTION
+            + "    function test() {\n"
+            + "      let fragment = new DocumentFragment();\n"
+            + "      let div = document.createElement('div');\n"
+            + "      fragment.prepend(div);"
+            + "      log(fragment.children.length);\n"
+            + "      log(fragment.children[0]);\n"
+            + "    }\n"
+            + "  </script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>bla\n"
+            + "</body>\n"
+            + "</html>";
+
+        loadPageVerifyTitle2(content);
+    }
+
+    /**
+     * @throws Exception on test failure
+     */
+    @Test
+    @Alerts("0")
+    public void prependNoParam() throws Exception {
+        final String content = "<html>\n"
+            + "<head>\n"
+            + "  <script>\n"
+            + LOG_TITLE_FUNCTION
+            + "    function test() {\n"
+            + "      let fragment = new DocumentFragment();\n"
+            + "      fragment.prepend();"
+            + "      log(fragment.children.length);\n"
+            + "    }\n"
+            + "  </script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>bla\n"
+            + "</body>\n"
+            + "</html>";
+
+        loadPageVerifyTitle2(content);
+    }
+
+    /**
+     * @throws Exception on test failure
+     */
+    @Test
+    @Alerts({"1", "[object Text]", "abcd",
+             "2", "[object Text]", "1234"})
+    public void prependText() throws Exception {
+        final String content = "<html>\n"
+            + "<head>\n"
+            + "  <script>\n"
+            + LOG_TITLE_FUNCTION
+            + "    function test() {\n"
+            + "      let fragment = new DocumentFragment();\n"
+            + "      fragment.prepend('abcd');"
+            + "      log(fragment.childNodes.length);\n"
+            + "      log(fragment.childNodes[0]);\n"
+            + "      log(fragment.childNodes[0].textContent);\n"
+
+            + "      let txt = document.createTextNode('1234');\n"
+            + "      fragment.prepend(txt);"
+            + "      log(fragment.childNodes.length);\n"
+            + "      log(fragment.childNodes[0]);\n"
+            + "      log(fragment.childNodes[0].textContent);\n"
+            + "    }\n"
+            + "  </script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>bla\n"
+            + "</body>\n"
+            + "</html>";
+
+        loadPageVerifyTitle2(content);
+    }
+
+    /**
+     * @throws Exception on test failure
+     */
+    @Test
+    @Alerts({"1", "[object HTMLDivElement]",
+             "2", "[object Text]", "abcd",
+             "3", "[object HTMLDivElement]",
+             "4", "[object Text]", "1234",
+             "5", "[object HTMLDivElement]"})
+    public void prependMixed() throws Exception {
+        final String content = "<html>\n"
+            + "<head>\n"
+            + "  <script>\n"
+            + LOG_TITLE_FUNCTION
+            + "    function test() {\n"
+            + "      let fragment = new DocumentFragment();\n"
+
+            + "      let div = document.createElement('div');\n"
+            + "      fragment.prepend(div);"
+            + "      log(fragment.childNodes.length);\n"
+            + "      log(fragment.childNodes[0]);\n"
+
+            + "      fragment.prepend('abcd');"
+            + "      log(fragment.childNodes.length);\n"
+            + "      log(fragment.childNodes[0]);\n"
+            + "      log(fragment.childNodes[0].textContent);\n"
+
+            + "      div = document.createElement('div');\n"
+            + "      fragment.prepend(div);"
+            + "      log(fragment.childNodes.length);\n"
+            + "      log(fragment.childNodes[0]);\n"
+
+            + "      let txt = document.createTextNode('1234');\n"
+            + "      fragment.prepend(txt);"
+            + "      log(fragment.childNodes.length);\n"
+            + "      log(fragment.childNodes[0]);\n"
+            + "      log(fragment.childNodes[0].textContent);\n"
+
+            + "      div = document.createElement('div');\n"
+            + "      fragment.prepend(div);"
+            + "      log(fragment.childNodes.length);\n"
+            + "      log(fragment.childNodes[0]);\n"
+            + "    }\n"
+            + "  </script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>bla\n"
+            + "</body>\n"
+            + "</html>";
+
+        loadPageVerifyTitle2(content);
+    }
+
+    /**
+     * @throws Exception on test failure
+     */
+    @Test
+    @Alerts({"1", "[object HTMLDivElement]"})
+    public void replaceChildren() throws Exception {
+        final String content = "<html>\n"
+            + "<head>\n"
+            + "  <script>\n"
+            + LOG_TITLE_FUNCTION
+            + "    function test() {\n"
+            + "      let fragment = new DocumentFragment();\n"
+            + "      let div = document.createElement('div');\n"
+            + "      fragment.replaceChildren(div);"
+            + "      log(fragment.children.length);\n"
+            + "      log(fragment.children[0]);\n"
+            + "    }\n"
+            + "  </script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>bla\n"
+            + "</body>\n"
+            + "</html>";
+
+        loadPageVerifyTitle2(content);
+    }
+
+    /**
+     * @throws Exception on test failure
+     */
+    @Test
+    @Alerts("0")
+    public void replaceChildrenNoParam() throws Exception {
+        final String content = "<html>\n"
+            + "<head>\n"
+            + "  <script>\n"
+            + LOG_TITLE_FUNCTION
+            + "    function test() {\n"
+            + "      let fragment = new DocumentFragment();\n"
+            + "      fragment.replaceChildren();"
+            + "      log(fragment.children.length);\n"
+            + "    }\n"
+            + "  </script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>bla\n"
+            + "</body>\n"
+            + "</html>";
+
+        loadPageVerifyTitle2(content);
+    }
+
+    /**
+     * @throws Exception on test failure
+     */
+    @Test
+    @Alerts({"1", "[object Text]", "abcd",
+             "1", "[object Text]", "1234"})
+    public void replaceChildrenText() throws Exception {
+        final String content = "<html>\n"
+            + "<head>\n"
+            + "  <script>\n"
+            + LOG_TITLE_FUNCTION
+            + "    function test() {\n"
+            + "      let fragment = new DocumentFragment();\n"
+            + "      fragment.replaceChildren('abcd');"
+            + "      log(fragment.childNodes.length);\n"
+            + "      log(fragment.childNodes[0]);\n"
+            + "      log(fragment.childNodes[0].textContent);\n"
+
+            + "      let txt = document.createTextNode('1234');\n"
+            + "      fragment.replaceChildren(txt);"
+            + "      log(fragment.childNodes.length);\n"
+            + "      log(fragment.childNodes[0]);\n"
+            + "      log(fragment.childNodes[0].textContent);\n"
+            + "    }\n"
+            + "  </script>\n"
+            + "</head>\n"
+            + "<body onload='test()'>bla\n"
+            + "</body>\n"
+            + "</html>";
+
+        loadPageVerifyTitle2(content);
+    }
+
+    /**
+     * @throws Exception on test failure
+     */
+    @Test
+    @Alerts({"1", "[object HTMLDivElement]",
+             "1", "[object Text]", "abcd",
+             "1", "[object HTMLDivElement]",
+             "1", "[object Text]", "1234",
+             "1", "[object HTMLDivElement]"})
+    public void replaceChildrenMixed() throws Exception {
+        final String content = "<html>\n"
+            + "<head>\n"
+            + "  <script>\n"
+            + LOG_TITLE_FUNCTION
+            + "    function test() {\n"
+            + "      let fragment = new DocumentFragment();\n"
+
+            + "      let div = document.createElement('div');\n"
+            + "      fragment.replaceChildren(div);"
+            + "      log(fragment.childNodes.length);\n"
+            + "      log(fragment.childNodes[0]);\n"
+
+            + "      fragment.replaceChildren('abcd');"
+            + "      log(fragment.childNodes.length);\n"
+            + "      log(fragment.childNodes[0]);\n"
+            + "      log(fragment.childNodes[0].textContent);\n"
+
+            + "      div = document.createElement('div');\n"
+            + "      fragment.replaceChildren(div);"
+            + "      log(fragment.childNodes.length);\n"
+            + "      log(fragment.childNodes[0]);\n"
+
+            + "      let txt = document.createTextNode('1234');\n"
+            + "      fragment.replaceChildren(txt);"
+            + "      log(fragment.childNodes.length);\n"
+            + "      log(fragment.childNodes[0]);\n"
+            + "      log(fragment.childNodes[0].textContent);\n"
+
+            + "      div = document.createElement('div');\n"
+            + "      fragment.replaceChildren(div);"
+            + "      log(fragment.childNodes.length);\n"
+            + "      log(fragment.childNodes[0]);\n"
             + "    }\n"
             + "  </script>\n"
             + "</head>\n"

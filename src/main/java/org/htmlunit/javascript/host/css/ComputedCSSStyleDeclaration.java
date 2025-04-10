@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package org.htmlunit.javascript.host.css;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
-import org.htmlunit.corejs.javascript.ES6Iterator;
+import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.css.ComputedCssStyleDeclaration;
 import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
@@ -48,6 +48,7 @@ public class ComputedCSSStyleDeclaration extends CSSStyleDeclaration {
      * Creates an instance.
      */
     public ComputedCSSStyleDeclaration() {
+        super();
     }
 
     /**
@@ -55,6 +56,7 @@ public class ComputedCSSStyleDeclaration extends CSSStyleDeclaration {
      */
     @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 
     /**
@@ -79,7 +81,7 @@ public class ComputedCSSStyleDeclaration extends CSSStyleDeclaration {
      */
     @Override
     @JsxSymbol(value = {FF, FF_ESR}, symbolName = "iterator")
-    public ES6Iterator values() {
+    public Scriptable values() {
         return super.values();
     }
 
@@ -91,14 +93,6 @@ public class ComputedCSSStyleDeclaration extends CSSStyleDeclaration {
     @Override
     protected void setStyleAttribute(final String name, final String newValue) {
         // Empty.
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getAccelerator() {
-        return getCssStyleDeclaration().getAccelerator();
     }
 
     /**
@@ -522,7 +516,7 @@ public class ComputedCSSStyleDeclaration extends CSSStyleDeclaration {
      * {@inheritDoc}
      */
     @Override
-    public Object getZIndex() {
+    public String getZIndex() {
         return getCssStyleDeclaration().getZIndex();
     }
 

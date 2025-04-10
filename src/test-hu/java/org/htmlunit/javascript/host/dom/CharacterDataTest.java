@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ package org.htmlunit.javascript.host.dom;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -143,27 +143,27 @@ public class CharacterDataTest extends WebDriverTestCase {
             + "  try {\n"
             + "    text1.deleteData(5, 11);\n"
             + "    log(text1.data);\n"
-            + "  } catch (e) { log('exception') }\n"
+            + "  } catch(e) { logEx(e) }\n"
 
             + "  try {\n"
             + "    text1.deleteData(4, 5);\n"
             + "    log(text1.data);\n"
-            + "  } catch (e) { log('exception') }\n"
+            + "  } catch(e) { logEx(e) }\n"
 
             + "  try {\n"
             + "    text1.deleteData(1, 0);\n"
             + "    log(text1.data);\n"
-            + "  } catch (e) { log('exception') }\n"
+            + "  } catch(e) { logEx(e) }\n"
 
             + "  try {\n"
             + "    text1.deleteData(0, 2);\n"
             + "    log(text1.data);\n"
-            + "  } catch (e) { log('exception') }\n"
+            + "  } catch(e) { logEx(e) }\n"
 
             + "  try {\n"
             + "    text1.deleteData(0, 2);\n"
             + "    log(text1.data);\n"
-            + "  } catch (e) { log('exception') }\n"
+            + "  } catch(e) { logEx(e) }\n"
             + "}\n"
             + "</script></head><body onload='doTest()'>\n"
             + "<div id='div1'>Some Not So New Text</div></body></html>";
@@ -176,8 +176,7 @@ public class CharacterDataTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"", "", "", ""},
-            IE = {"", "", "", "exception"})
+    @Alerts({"", "", "", ""})
     public void deleteDataEmptyImput() throws Exception {
         final String html
             = "<html><head>\n"
@@ -190,22 +189,22 @@ public class CharacterDataTest extends WebDriverTestCase {
             + "  try {\n"
             + "    text1.deleteData(0, 1);\n"
             + "    log(text1.data);\n"
-            + "  } catch (e) { log('exception') }\n"
+            + "  } catch(e) { logEx(e) }\n"
 
             + "  try {\n"
             + "    text1.deleteData(0, 0);\n"
             + "    log(text1.data);\n"
-            + "  } catch (e) { log('exception') }\n"
+            + "  } catch(e) { logEx(e) }\n"
 
             + "  try {\n"
             + "    text1.deleteData(0, 1);\n"
             + "    log(text1.data);\n"
-            + "  } catch (e) { log('exception') }\n"
+            + "  } catch(e) { logEx(e) }\n"
 
             + "  try {\n"
             + "    text1.deleteData(0, -1);\n"
             + "    log(text1.data);\n"
-            + "  } catch (e) { log('exception') }\n"
+            + "  } catch(e) { logEx(e) }\n"
             + "}\n"
             + "</script></head><body onload='doTest()'>\n"
             + "<div id='div1'>-</div></body></html>";
@@ -217,8 +216,8 @@ public class CharacterDataTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"exception", "exception", "exception", "exception"},
-            IE = {"exception", "exception", "abcde", "exception"})
+    @Alerts({"IndexSizeError/DOMException", "IndexSizeError/DOMException",
+             "IndexSizeError/DOMException", "IndexSizeError/DOMException"})
     public void deleteDataInvalidStart() throws Exception {
         final String html
             = "<html><head>\n"
@@ -230,22 +229,22 @@ public class CharacterDataTest extends WebDriverTestCase {
             + "  try {\n"
             + "    text1.deleteData(-1, 4);\n"
             + "    log(text1.data);\n"
-            + "  } catch (e) { log('exception') }\n"
+            + "  } catch(e) { logEx(e) }\n"
 
             + "  try {\n"
             + "    text1.deleteData(20, 4);\n"
             + "    log(text1.data);\n"
-            + "  } catch (e) { log('exception') }\n"
+            + "  } catch(e) { logEx(e) }\n"
 
             + "  try {\n"
             + "    text1.deleteData(20, 0);\n"
             + "    log(text1.data);\n"
-            + "  } catch (e) { log('exception') }\n"
+            + "  } catch(e) { logEx(e) }\n"
 
             + "  try {\n"
             + "    text1.deleteData(20, -18);\n"
             + "    log(text1.data);\n"
-            + "  } catch (e) { log('exception') }\n"
+            + "  } catch(e) { logEx(e) }\n"
             + "}\n"
             + "</script></head><body onload='doTest()'>\n"
             + "<div id='div1'>abcde</div></body></html>";
@@ -257,8 +256,7 @@ public class CharacterDataTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"Some Not So New Te", "Some ", "So"},
-            IE = {"exception", "exception", "exception"})
+    @Alerts({"Some Not So New Te", "Some ", "So"})
     public void deleteDataNegativeCount() throws Exception {
         final String html
             = "<html><head>\n"
@@ -270,17 +268,17 @@ public class CharacterDataTest extends WebDriverTestCase {
             + "  try {\n"
             + "    text1.deleteData(18, -15);\n"
             + "    log(text1.data);\n"
-            + "  } catch (e) { log('exception') }\n"
+            + "  } catch(e) { logEx(e) }\n"
 
             + "  try {\n"
             + "    text1.deleteData(5, -4);\n"
             + "    log(text1.data);\n"
-            + "  } catch (e) { log('exception') }\n"
+            + "  } catch(e) { logEx(e) }\n"
 
             + "  try {\n"
             + "    text1.deleteData(2, -4);\n"
             + "    log(text1.data);\n"
-            + "  } catch (e) { log('exception') }\n"
+            + "  } catch(e) { logEx(e) }\n"
             + "}\n"
             + "</script></head><body onload='doTest()'>\n"
             + "<div id='div1'>Some Not So New Text</div></body></html>";

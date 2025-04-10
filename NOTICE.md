@@ -1,7 +1,7 @@
 XLT
 ===
 
-Copyright 2005-2023 Xceptance Software Technologies GmbH (https://www.xceptance.com/)
+Copyright 2005-2025 Xceptance Software Technologies GmbH (https://www.xceptance.com/)
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

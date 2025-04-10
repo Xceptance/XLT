@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,7 @@ import java.net.URL;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.util.MimeType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -36,6 +35,26 @@ import org.openqa.selenium.WebDriver;
  */
 @RunWith(BrowserRunner.class)
 public class CSSImportRuleTest extends WebDriverTestCase {
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts("TypeError")
+    public void ctor() throws Exception {
+        final String html
+            = "<html><body>\n"
+            + LOG_TEXTAREA
+            + "<script>\n"
+            + LOG_TEXTAREA_FUNCTION
+            + "try {\n"
+            + "  var rule = new CSSImportRule();\n"
+            + "  log(rule);\n"
+            + "} catch(e) { logEx(e); }\n"
+            + "</script></body></html>";
+
+        loadPageVerifyTextArea2(html);
+    }
 
     /**
      * @throws Exception if an error occurs
@@ -70,8 +89,7 @@ public class CSSImportRuleTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "@import url(\"imp.css\");",
-            IE = "@import url( imp.css );")
+    @Alerts("@import url(\"imp.css\");")
     public void cssText() throws Exception {
         final String html
             = "<html><body>\n"
@@ -99,8 +117,7 @@ public class CSSImportRuleTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "@import url(\"imp.css\");",
-            IE = "@import url( imp.css );")
+    @Alerts("@import url(\"imp.css\");")
     public void cssTextSet() throws Exception {
         final String html
             = "<html><body>\n"
@@ -117,7 +134,7 @@ public class CSSImportRuleTest extends WebDriverTestCase {
             + "    rule.cssText = '@import \"imp2.css\";';\n"
             + "    log(rule.cssText);\n"
             + "  } catch(e) {\n"
-            + "    log('exception');\n"
+            + "    logEx(e);\n"
             + "  }\n"
             + "</script>\n"
 
@@ -178,7 +195,7 @@ public class CSSImportRuleTest extends WebDriverTestCase {
             + "    rule.parentRule = rule;\n"
             + "    log(rule.parentRule);\n"
             + "  } catch(e) {\n"
-            + "    log('exception');\n"
+            + "    logEx(e);\n"
             + "  }\n"
             + "</script>\n"
 
@@ -239,7 +256,7 @@ public class CSSImportRuleTest extends WebDriverTestCase {
             + "    rule.parentStyleSheet = null;\n"
             + "    log(rule.parentStyleSheet);\n"
             + "  } catch(e) {\n"
-            + "    log('exception');\n"
+            + "    logEx(e);\n"
             + "  }\n"
             + "</script>\n"
 
@@ -252,8 +269,7 @@ public class CSSImportRuleTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"imp.css", "@import url(\"imp.css\");"},
-            IE = {"imp.css", "@import url( imp.css );"})
+    @Alerts({"imp.css", "@import url(\"imp.css\");"})
     public void hrefSimpleRelative() throws Exception {
         final String html
             = "<html><body>\n"
@@ -282,8 +298,7 @@ public class CSSImportRuleTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"§§URL§§imp.css", "@import url(\"§§URL§§imp.css\");"},
-            IE = {"§§URL§§imp.css", "@import url( §§URL§§imp.css );"})
+    @Alerts({"§§URL§§imp.css", "@import url(\"§§URL§§imp.css\");"})
     public void hrefSimpleAbsolute() throws Exception {
         final String html
             = "<html><body>\n"
@@ -313,8 +328,7 @@ public class CSSImportRuleTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"imp.css", "@import url(\"imp.css\");"},
-            IE = {"imp.css", "@import url( imp.css );"})
+    @Alerts({"imp.css", "@import url(\"imp.css\");"})
     public void hrefUrlRelative() throws Exception {
         final String html
             = "<html><body>\n"
@@ -343,8 +357,7 @@ public class CSSImportRuleTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"§§URL§§imp.css", "@import url(\"§§URL§§imp.css\");"},
-            IE = {"§§URL§§imp.css", "@import url( §§URL§§imp.css );"})
+    @Alerts({"§§URL§§imp.css", "@import url(\"§§URL§§imp.css\");"})
     public void hrefUrlAbsolute() throws Exception {
         final String html
             = "<html><body>\n"
@@ -374,9 +387,7 @@ public class CSSImportRuleTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"[object MediaList]", "", "0", "", "@import url(\"imp.css\");"},
-            IE = {"[object MediaList]", "all", "0", "all", "@import url( imp.css ) all;"})
-    @HtmlUnitNYI(IE = {"[object MediaList]", "all", "0", "", "@import url( imp.css );"})
+    @Alerts({"[object MediaList]", "", "0", "", "@import url(\"imp.css\");"})
     public void mediaNone() throws Exception {
         final String html
             = "<html><body>\n"
@@ -412,8 +423,7 @@ public class CSSImportRuleTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"[object MediaList]", "all", "1", "all", "all", "@import url(\"imp.css\") all;"},
-            IE = {"[object MediaList]", "all", "1", "all", "all", "@import url( imp.css ) all;"})
+    @Alerts({"[object MediaList]", "all", "1", "all", "all", "@import url(\"imp.css\") all;"})
     public void mediaAll() throws Exception {
         final String html
             = "<html><body>\n"
@@ -449,8 +459,7 @@ public class CSSImportRuleTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"[object MediaList]", "screen", "1", "screen", "screen", "@import url(\"imp.css\") screen;"},
-            IE = {"[object MediaList]", "screen", "1", "screen", "screen", "@import url( imp.css ) screen;"})
+    @Alerts({"[object MediaList]", "screen", "1", "screen", "screen", "@import url(\"imp.css\") screen;"})
     public void media() throws Exception {
         final String html
             = "<html><body>\n"
@@ -486,16 +495,9 @@ public class CSSImportRuleTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"2", "only screen and (color)", "print and (max-width: 12cm) and (min-width: 30em)",
-                       "only screen and (color), print and (max-width: 12cm) and (min-width: 30em)",
-                       "@import url(\"imp.css\") only screen and (color), "
-                               + "print and (max-width: 12cm) and (min-width: 30em);"},
-            IE = {"2", "only screen and (color)", "print and (max-width:12cm) and (min-width:30em)",
-                  "only screen and (color), print and (max-width:12cm) and (min-width:30em)",
-                  "@import url( imp.css ) only screen and (color), print and (max-width:12cm) and (min-width:30em);"})
-    @HtmlUnitNYI(IE = {"2", "only screen and (color)", "print and (max-width: 12cm) and (min-width: 30em)",
-                       "only screen and (color), print and (max-width: 12cm) and (min-width: 30em)",
-                       "@import url( imp.css ) only screen and (color), "
+    @Alerts({"2", "only screen and (color)", "print and (max-width: 12cm) and (min-width: 30em)",
+             "only screen and (color), print and (max-width: 12cm) and (min-width: 30em)",
+             "@import url(\"imp.css\") only screen and (color), "
                                + "print and (max-width: 12cm) and (min-width: 30em);"})
     public void mediaQuery() throws Exception {
         final String html
@@ -659,9 +661,7 @@ public class CSSImportRuleTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"[object CSSImportRule]", "§§URL§§second/", "", "0", "[object CSSStyleSheet]"},
-            IE = {"[object CSSImportRule]", "§§URL§§second/",
-                "all", "0", "[object CSSStyleSheet]"})
+    @Alerts({"[object CSSImportRule]", "§§URL§§second/", "", "0", "[object CSSStyleSheet]"})
     public void getImportFromCssRulesCollection_absolute() throws Exception {
         expandExpectedAlertsVariables(URL_FIRST);
         getImportFromCssRulesCollection(URL_FIRST, URL_SECOND.toExternalForm(), URL_SECOND);
@@ -672,8 +672,7 @@ public class CSSImportRuleTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"[object CSSImportRule]", "foo.css", "", "0", "[object CSSStyleSheet]"},
-            IE = {"[object CSSImportRule]", "foo.css", "all", "0", "[object CSSStyleSheet]"})
+    @Alerts({"[object CSSImportRule]", "foo.css", "", "0", "[object CSSStyleSheet]"})
     public void getImportFromCssRulesCollection_relative() throws Exception {
         final URL urlPage = new URL(URL_FIRST, "/dir1/dir2/foo.html");
         final URL urlCss = new URL(URL_FIRST, "/dir1/dir2/foo.css");
@@ -800,9 +799,6 @@ public class CSSImportRuleTest extends WebDriverTestCase {
     @Test
     @Alerts({"true", "true", "true"})
     public void circularImportedStylesheetsComplexCase() throws Exception {
-        // TODO [IE]SINGLE-VS-BULK test runs when executed as single but breaks as bulk
-        shutDownRealIE();
-
         final String html = "<html><head>\n"
             + "<link rel='stylesheet' type='text/css' href='dir1/dir2/file1.css'></link>\n"
             + "<body>\n"
@@ -855,9 +851,6 @@ public class CSSImportRuleTest extends WebDriverTestCase {
     @Test
     @Alerts("42px")
     public void importedStylesheetsLoadedAccordingToMediaType() throws Exception {
-        // TODO [IE]SINGLE-VS-BULK test runs when executed as single but breaks as bulk
-        shutDownRealIE();
-
         final String html
             = "<html><head>\n"
             + "  <style>\n"

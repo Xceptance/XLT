@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ import static org.htmlunit.junit.BrowserVersionClassRunner.NO_ALERTS_DEFINED;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,8 +29,8 @@ import org.htmlunit.WebRequest;
 import org.htmlunit.WebResponse;
 import org.htmlunit.WebResponseData;
 import org.htmlunit.WebServerTestCase;
+import org.htmlunit.http.HttpStatus;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.util.NameValuePair;
 import org.htmlunit.util.WebConnectionWrapper;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -52,25 +51,14 @@ import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 @RunWith(BrowserRunner.class)
 public abstract class JQueryTestBase extends WebDriverTestCase {
 
-    private static Method MethodGetWebClient_;
-
-    static {
-        try {
-            MethodGetWebClient_ = HtmlUnitDriver.class.getDeclaredMethod("getWebClient");
-            MethodGetWebClient_.setAccessible(true);
-        }
-        catch (final Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private static final class OnlyLocalConnectionWrapper extends WebConnectionWrapper {
-        private static final WebResponseData responseData =
-                new WebResponseData("not found".getBytes(StandardCharsets.US_ASCII), 404, "Not Found",
-                        new ArrayList<NameValuePair>());
+    protected static final class OnlyLocalConnectionWrapper extends WebConnectionWrapper {
+        private static final WebResponseData RESPONSE_DATA =
+                new WebResponseData("not found".getBytes(StandardCharsets.US_ASCII),
+                        HttpStatus.NOT_FOUND_404, HttpStatus.NOT_FOUND_404_MSG,
+                        new ArrayList<>());
 
 
-        private OnlyLocalConnectionWrapper(final WebClient webClient) {
+        protected OnlyLocalConnectionWrapper(final WebClient webClient) {
             super(webClient);
         }
 
@@ -83,7 +71,7 @@ public abstract class JQueryTestBase extends WebDriverTestCase {
             }
 
 
-            return new WebResponse(responseData, request, 0);
+            return new WebResponse(RESPONSE_DATA, request, 0);
         }
     }
 
@@ -113,8 +101,7 @@ public abstract class JQueryTestBase extends WebDriverTestCase {
             final WebDriver webDriver = getWebDriver();
 
             if (webDriver instanceof HtmlUnitDriver) {
-                final WebClient webClient = (WebClient) MethodGetWebClient_.invoke(webDriver);
-
+                final WebClient webClient = ((HtmlUnitDriver) webDriver).getWebClient();
                 new OnlyLocalConnectionWrapper(webClient);
             }
 

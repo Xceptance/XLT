@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,23 +14,11 @@
  */
 package org.htmlunit.javascript.host.html;
 
-import static org.htmlunit.BrowserVersionFeatures.JS_TABLE_CELL_HEIGHT_DOES_NOT_RETURN_NEGATIVE_VALUES;
-import static org.htmlunit.BrowserVersionFeatures.JS_TABLE_CELL_OFFSET_INCLUDES_BORDER;
-import static org.htmlunit.BrowserVersionFeatures.JS_TABLE_CELL_WIDTH_DOES_NOT_RETURN_NEGATIVE_VALUES;
 import static org.htmlunit.BrowserVersionFeatures.JS_TABLE_SPAN_SET_ZERO_IF_INVALID;
-import static org.htmlunit.BrowserVersionFeatures.JS_TABLE_SPAN_THROWS_EXCEPTION_IF_INVALID;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
-
-import java.util.List;
 
 import org.htmlunit.css.ComputedCssStyleDeclaration;
 import org.htmlunit.css.StyleAttributes;
 import org.htmlunit.html.DomNode;
-import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.HtmlTableCell;
 import org.htmlunit.html.HtmlTableRow;
 import org.htmlunit.javascript.JavaScriptEngine;
@@ -49,21 +37,16 @@ import org.htmlunit.javascript.host.event.MouseEvent;
  * @author Daniel Gredler
  * @author Ronald Brill
  * @author Frank Danek
+ * @author Lai Quang Duong
  */
 @JsxClass(domClass = HtmlTableCell.class)
 public class HTMLTableCellElement extends HTMLTableComponent {
 
     /**
-     * Creates an instance.
-     */
-    public HTMLTableCellElement() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @Override
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
         super.jsConstructor();
     }
@@ -82,8 +65,7 @@ public class HTMLTableCellElement extends HTMLTableComponent {
             return 0;
         }
         final ComputedCssStyleDeclaration style = getWindow().getWebWindow().getComputedStyle(getDomNodeOrDie(), null);
-        final boolean includeBorder = getBrowserVersion().hasFeature(JS_TABLE_CELL_OFFSET_INCLUDES_BORDER);
-        return style.getCalculatedHeight(includeBorder, true);
+        return style.getCalculatedHeight(false, true);
     }
 
     /**
@@ -105,13 +87,8 @@ public class HTMLTableCellElement extends HTMLTableComponent {
         if ("collapse".equals(style.getStyleAttribute(StyleAttributes.Definition.BORDER_COLLAPSE, true))) {
             final HtmlTableRow row = getRow();
             if (row != null) {
-                final HtmlElement thiz = getDomNodeOrDie();
-                final List<HtmlTableCell> cells = row.getCells();
-                final boolean ie = getBrowserVersion().hasFeature(JS_TABLE_CELL_OFFSET_INCLUDES_BORDER);
-                final boolean leftmost = cells.indexOf(thiz) == 0;
-                final boolean rightmost = cells.indexOf(thiz) == cells.size() - 1;
-                w -= (ie && leftmost ? 0 : 0.5) * style.getBorderLeftValue();
-                w -= (ie && rightmost ? 0 : 0.5) * style.getBorderRightValue();
+                w -= 0.5 * style.getBorderLeftValue();
+                w -= 0.5 * style.getBorderRightValue();
             }
         }
 
@@ -195,13 +172,7 @@ public class HTMLTableCellElement extends HTMLTableComponent {
      */
     @JsxGetter
     public int getColSpan() {
-        final String s = getDomNodeOrDie().getAttribute("colSpan");
-        try {
-            return Integer.parseInt(s);
-        }
-        catch (final NumberFormatException e) {
-            return 1;
-        }
+        return ((HtmlTableCell) getDomNodeOrDie()).getColumnSpan();
     }
 
     /**
@@ -218,9 +189,6 @@ public class HTMLTableCellElement extends HTMLTableComponent {
             getDomNodeOrDie().setAttribute("colSpan", Integer.toString(i));
         }
         catch (final NumberFormatException e) {
-            if (getBrowserVersion().hasFeature(JS_TABLE_SPAN_THROWS_EXCEPTION_IF_INVALID)) {
-                throw JavaScriptEngine.throwAsScriptRuntimeEx(e);
-            }
             getDomNodeOrDie().setAttribute("colSpan", "1");
         }
     }
@@ -231,13 +199,7 @@ public class HTMLTableCellElement extends HTMLTableComponent {
      */
     @JsxGetter
     public int getRowSpan() {
-        final String s = getDomNodeOrDie().getAttribute("rowSpan");
-        try {
-            return Integer.parseInt(s);
-        }
-        catch (final NumberFormatException e) {
-            return 1;
-        }
+        return ((HtmlTableCell) getDomNodeOrDie()).getRowSpan();
     }
 
     /**
@@ -258,9 +220,6 @@ public class HTMLTableCellElement extends HTMLTableComponent {
             getDomNodeOrDie().setAttribute("rowSpan", Integer.toString(i));
         }
         catch (final NumberFormatException e) {
-            if (getBrowserVersion().hasFeature(JS_TABLE_SPAN_THROWS_EXCEPTION_IF_INVALID)) {
-                throw JavaScriptEngine.throwAsScriptRuntimeEx(e);
-            }
             if (getBrowserVersion().hasFeature(JS_TABLE_SPAN_SET_ZERO_IF_INVALID)) {
                 getDomNodeOrDie().setAttribute("rowSpan", "0");
             }
@@ -313,9 +272,7 @@ public class HTMLTableCellElement extends HTMLTableComponent {
      */
     @JsxGetter(propertyName = "width")
     public String getWidth_js() {
-        final boolean ie = getBrowserVersion().hasFeature(JS_TABLE_CELL_WIDTH_DOES_NOT_RETURN_NEGATIVE_VALUES);
-        final Boolean returnNegativeValues = ie ? Boolean.TRUE : null;
-        return getWidthOrHeight("width", returnNegativeValues);
+        return getWidthOrHeight("width", null);
     }
 
     /**
@@ -324,8 +281,7 @@ public class HTMLTableCellElement extends HTMLTableComponent {
      */
     @JsxSetter(propertyName = "width")
     public void setWidth_js(final String width) {
-        setWidthOrHeight("width", width,
-                !getBrowserVersion().hasFeature(JS_TABLE_CELL_WIDTH_DOES_NOT_RETURN_NEGATIVE_VALUES));
+        setWidthOrHeight("width", width, true);
     }
 
     /**
@@ -334,9 +290,7 @@ public class HTMLTableCellElement extends HTMLTableComponent {
      */
     @JsxGetter(propertyName = "height")
     public String getHeight_js() {
-        final boolean ie = getBrowserVersion().hasFeature(JS_TABLE_CELL_HEIGHT_DOES_NOT_RETURN_NEGATIVE_VALUES);
-        final Boolean returnNegativeValues = ie ? Boolean.TRUE : null;
-        return getWidthOrHeight("height", returnNegativeValues);
+        return getWidthOrHeight("height", null);
     }
 
     /**
@@ -345,8 +299,7 @@ public class HTMLTableCellElement extends HTMLTableComponent {
      */
     @JsxSetter(propertyName = "height")
     public void setHeight_js(final String height) {
-        setWidthOrHeight("height", height,
-                !getBrowserVersion().hasFeature(JS_TABLE_CELL_HEIGHT_DOES_NOT_RETURN_NEGATIVE_VALUES));
+        setWidthOrHeight("height", height, true);
     }
 
     /**
@@ -357,60 +310,6 @@ public class HTMLTableCellElement extends HTMLTableComponent {
     public void setOuterHTML(final Object value) {
         throw JavaScriptEngine.reportRuntimeError("outerHTML is read-only for tag '"
                         + getDomNodeOrDie().getTagName() + "'");
-    }
-
-    /**
-     * Gets the {@code borderColor} attribute.
-     * @return the attribute
-     */
-    @JsxGetter(IE)
-    public String getBorderColor() {
-        return getDomNodeOrDie().getAttribute("borderColor");
-    }
-
-    /**
-     * Sets the {@code borderColor} attribute.
-     * @param borderColor the new attribute
-     */
-    @JsxSetter(IE)
-    public void setBorderColor(final String borderColor) {
-        setColorAttribute("borderColor", borderColor);
-    }
-
-    /**
-     * Gets the {@code borderColor} attribute.
-     * @return the attribute
-     */
-    @JsxGetter(IE)
-    public String getBorderColorDark() {
-        return "";
-    }
-
-    /**
-     * Sets the {@code borderColor} attribute.
-     * @param borderColor the new attribute
-     */
-    @JsxSetter(IE)
-    public void setBorderColorDark(final String borderColor) {
-        // ignore
-    }
-
-    /**
-     * Gets the {@code borderColor} attribute.
-     * @return the attribute
-     */
-    @JsxGetter(IE)
-    public String getBorderColorLight() {
-        return "";
-    }
-
-    /**
-     * Sets the {@code borderColor} attribute.
-     * @param borderColor the new attribute
-     */
-    @JsxSetter(IE)
-    public void setBorderColorLight(final String borderColor) {
-        // ignore
     }
 
     /**

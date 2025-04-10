@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,9 @@
  */
 package org.htmlunit.html;
 
-import java.util.Arrays;
-
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.util.MimeType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -543,62 +540,56 @@ public class HtmlRadioButtonInput2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("foo,change,")
+    @Alerts({"foo", "change"})
     public void onchangeFires() throws Exception {
         final String html =
             HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><title>foo</title>\n"
             + "<script>\n"
-            + "  function debug(string) {\n"
-            + "    document.getElementById('myTextarea').value += string + ',';\n"
-            + "  }\n"
+            + LOG_TEXTAREA_FUNCTION
             + "</script>\n"
             + "</head><body>\n"
             + "<form>\n"
             + "<input type='radio' name='radioGroup' id='radio'"
-            + " onchange='debug(\"foo\");debug(event.type);'>Check me</input>\n"
+            + " onchange='log(\"foo\");log(event.type);'>Check me</input>\n"
             + "</form>\n"
-            + "<textarea id='myTextarea'></textarea>\n"
+            + LOG_TEXTAREA
             + "</body></html>";
 
         final WebDriver driver = loadPage2(html);
         driver.findElement(By.id("radio")).click();
 
-        assertEquals(Arrays.asList(getExpectedAlerts()).toString(),
-                '[' + driver.findElement(By.id("myTextarea")).getAttribute("value") + ']');
+        verifyTextArea2(driver, getExpectedAlerts());
     }
 
     /**
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("foo,change,boo,blur,")
+    @Alerts({"foo", "change", "boo", "blur"})
     public void onchangeFires2() throws Exception {
         final String html =
             HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><title>foo</title>\n"
             + "<script>\n"
-            + "  function debug(string) {\n"
-            + "    document.getElementById('myTextarea').value += string + ',';\n"
-            + "  }\n"
+            + LOG_TEXTAREA_FUNCTION
             + "</script>\n"
             + "</head><body>\n"
             + "<form>\n"
             + "<input type='radio' name='radioGroup' id='radio1'"
-            + " onChange='debug(\"foo\");debug(event.type);'"
-            + " onBlur='debug(\"boo\");debug(event.type);'"
+                        + " onChange='log(\"foo\");log(event.type);'"
+                        + " onBlur='log(\"boo\");log(event.type);'"
             + ">Check Me</input>\n"
             + "<input type='radio' name='radioGroup' id='radio2'>Or Check Me</input>\n"
             + "</form>\n"
-            + "<textarea id='myTextarea'></textarea>\n"
+            + LOG_TEXTAREA
             + "</body></html>";
 
         final WebDriver driver = loadPage2(html);
         driver.findElement(By.id("radio1")).click();
         driver.findElement(By.id("radio2")).click();
 
-        assertEquals(Arrays.asList(getExpectedAlerts()).toString(),
-                '[' + driver.findElement(By.id("myTextarea")).getAttribute("value") + ']');
+        verifyTextArea2(driver, getExpectedAlerts());
     }
 
     /**
@@ -1215,9 +1206,7 @@ public class HtmlRadioButtonInput2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"true", "false", "true", "false", "true"},
-            IE = {"true", "false", "true", "true", "true"})
-    @HtmlUnitNYI(IE = {"true", "false", "true", "false", "true"})
+    @Alerts({"true", "false", "true", "false", "true"})
     public void willValidate() throws Exception {
         final String html =
                 "<html><head>\n"
@@ -1249,12 +1238,9 @@ public class HtmlRadioButtonInput2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true"},
-            IE = {"true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true"})
+    @Alerts({"true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true"})
     public void validationEmpty() throws Exception {
         validation("<input type='radio' id='e1'>\n", "");
     }
@@ -1263,12 +1249,9 @@ public class HtmlRadioButtonInput2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"false",
-                       "false-true-false-false-false-false-false-false-false-false-false",
-                       "true"},
-            IE = {"false",
-                  "undefined-true-false-false-false-false-false-undefined-false-false-false",
-                  "true"})
+    @Alerts({"false",
+             "false-true-false-false-false-false-false-false-false-false-false",
+             "true"})
     public void validationCustomValidity() throws Exception {
         validation("<input type='radio' id='e1'>\n", "elem.setCustomValidity('Invalid');");
     }
@@ -1277,12 +1260,9 @@ public class HtmlRadioButtonInput2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"false",
-                       "false-true-false-false-false-false-false-false-false-false-false",
-                       "true"},
-            IE = {"false",
-                  "undefined-true-false-false-false-false-false-undefined-false-false-false",
-                  "true"})
+    @Alerts({"false",
+             "false-true-false-false-false-false-false-false-false-false-false",
+             "true"})
     public void validationBlankCustomValidity() throws Exception {
         validation("<input type='radio' id='e1'>\n", "elem.setCustomValidity(' ');\n");
     }
@@ -1291,12 +1271,9 @@ public class HtmlRadioButtonInput2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true"},
-            IE = {"true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true"})
+    @Alerts({"true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true"})
     public void validationResetCustomValidity() throws Exception {
         validation("<input type='radio' id='e1'>\n",
                 "elem.setCustomValidity('Invalid');elem.setCustomValidity('');");
@@ -1306,15 +1283,9 @@ public class HtmlRadioButtonInput2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true"},
-            IE = {"false",
-                  "undefined-false-false-false-false-false-false-undefined-false-false-true",
-                  "true"})
-    @HtmlUnitNYI(IE = {"true",
-                       "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                       "true"})
+    @Alerts({"true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true"})
     public void validationRequired() throws Exception {
         validation("<input type='radio' id='e1' required>\n", "");
     }
@@ -1323,12 +1294,9 @@ public class HtmlRadioButtonInput2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"false",
-                       "false-false-false-false-false-false-false-false-false-false-true",
-                       "true"},
-            IE = {"false",
-                  "undefined-false-false-false-false-false-false-undefined-false-false-true",
-                  "true"})
+    @Alerts({"false",
+             "false-false-false-false-false-false-false-false-false-false-true",
+             "true"})
     public void validationRequiredWithName() throws Exception {
         validation("<input type='radio' id='e1' name='r1' required>\n", "");
     }
@@ -1337,12 +1305,9 @@ public class HtmlRadioButtonInput2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true"},
-            IE = {"true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true"})
+    @Alerts({"true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true"})
     public void validationRequiredChecked() throws Exception {
         validation("<input type='radio' id='e1' required checked>\n", "");
     }
@@ -1351,12 +1316,9 @@ public class HtmlRadioButtonInput2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true"},
-            IE = {"true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true"})
+    @Alerts({"true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true"})
     public void validationRequiredCheckedWithName() throws Exception {
         validation("<input type='radio' id='e1' name='r1' required checked>\n", "");
     }
@@ -1365,12 +1327,9 @@ public class HtmlRadioButtonInput2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true"},
-            IE = {"true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true"})
+    @Alerts({"true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true"})
     public void validationRequiredClicked() throws Exception {
         validation("<input type='radio' id='e1' required>\n", "elem.click();");
     }
@@ -1379,12 +1338,9 @@ public class HtmlRadioButtonInput2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true"},
-            IE = {"true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true"})
+    @Alerts({"true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true"})
     public void validationRequiredClickedWithName() throws Exception {
         validation("<input type='radio' id='e1' name='r1' required>\n", "elem.click();");
     }
@@ -1393,12 +1349,9 @@ public class HtmlRadioButtonInput2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true"},
-            IE = {"true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true"})
+    @Alerts({"true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true"})
     public void validationRequiredClickUncheck() throws Exception {
         validation("<input type='radio' id='e1' name='test' required checked>\n"
                 + "<input type='radio' id='e2' name='test'>\n", "document.getElementById('e2').click();");
@@ -1408,12 +1361,9 @@ public class HtmlRadioButtonInput2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true"},
-            IE = {"true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true"})
+    @Alerts({"true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true"})
     public void validationRequiredClickUncheck2() throws Exception {
         validation("<input type='radio' id='e1' name='test' required>\n"
                 + "<input type='radio' id='e2' name='test'>\n", "document.getElementById('e2').click();");
@@ -1423,12 +1373,9 @@ public class HtmlRadioButtonInput2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true"},
-            IE = {"true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true"})
+    @Alerts({"true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true"})
     public void validationRequiredOther() throws Exception {
         validation("<input type='radio' id='e1' name='test' required>\n"
                 + "<input type='radio' id='e2' name='test' checked>\n", "");

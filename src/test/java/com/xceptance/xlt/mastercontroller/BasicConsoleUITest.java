@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,20 +17,12 @@ package com.xceptance.xlt.mastercontroller;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.powermock.api.mockito.PowerMockito.mock;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.mockito.Mockito;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(
-    {
-        BasicConsoleUI.class
-    })
 public class BasicConsoleUITest
 {
     /**
@@ -41,7 +33,7 @@ public class BasicConsoleUITest
      */
     private static BasicConsoleUI createNewTestObject()
     {
-        MasterController masterControllerMock = mock(MasterController.class);
+        MasterController masterControllerMock = Mockito.mock(MasterController.class);
 
         return new BasicConsoleUI(masterControllerMock)
         {

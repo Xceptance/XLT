@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ package org.htmlunit.javascript.host.dom;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -46,7 +46,7 @@ public class NodeFilterTest extends WebDriverTestCase {
             + "    for (var i = 0; i < properties.length; i++) {\n"
             + "      log(NodeFilter[properties[i]]);\n"
             + "    }\n"
-            + "  } catch(e) { log('exception');}\n"
+            + "  } catch(e) { logEx(e);}\n"
             + "</script></head>\n"
             + "<body></body></html>";
 
@@ -64,7 +64,7 @@ public class NodeFilterTest extends WebDriverTestCase {
             + LOG_TITLE_FUNCTION
             + "  try {\n"
             + "    log(NodeFilter.SHOW_ALL);\n"
-            + "  } catch(e) { log('exception');}\n"
+            + "  } catch(e) { logEx(e);}\n"
             + "</script></head>\n"
             + "<body></body></html>";
 

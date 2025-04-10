@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,11 @@
  */
 package org.htmlunit.javascript.host;
 
-import static org.htmlunit.BrowserVersionFeatures.JS_IS_SEARCH_PROVIDER_INSTALLED_ZERO;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
-import org.htmlunit.corejs.javascript.Undefined;
 import org.htmlunit.javascript.HtmlUnitScriptable;
+import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
@@ -37,24 +35,11 @@ import org.htmlunit.javascript.configuration.JsxFunction;
 public class External extends HtmlUnitScriptable {
 
     /**
-     * The constructor.
-     */
-    public External() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @JsxConstructor
     public void jsConstructor() {
-    }
-
-    /**
-     * Empty implementation.
-     */
-    @JsxFunction(value = IE, functionName = "AutoCompleteSaveForm")
-    public void autoCompleteSaveForm() {
-        // dummy
+        // nothing to do
     }
 
     /**
@@ -71,9 +56,6 @@ public class External extends HtmlUnitScriptable {
      */
     @JsxFunction(functionName = "IsSearchProviderInstalled")
     public Object isSearchProviderInstalled() {
-        if (getBrowserVersion().hasFeature(JS_IS_SEARCH_PROVIDER_INSTALLED_ZERO)) {
-            return 0;
-        }
-        return Undefined.instance;
+        return JavaScriptEngine.UNDEFINED;
     }
 }

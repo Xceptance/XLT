@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,11 @@
  */
 package org.htmlunit.javascript.host.crypto;
 
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.CHROME;
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.EDGE;
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.FF;
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.FF_ESR;
-
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.NotYetImplemented;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -41,8 +36,7 @@ public class SubtleCryptoTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"function", "error"},
-            IE = {"object", "error"})
+    @Alerts({"function", "TypeError"})
     public void ctor() throws Exception {
         final String html
             = "<html>\n"
@@ -54,7 +48,7 @@ public class SubtleCryptoTest extends WebDriverTestCase {
             + "      try {\n"
             + "        log(typeof SubtleCrypto);\n"
             + "        new SubtleCrypto();\n"
-            + "      } catch(e) { log('error'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
             + "    }\n"
             + "  </script>\n"
             + "</head>\n"
@@ -71,8 +65,7 @@ public class SubtleCryptoTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "TypeError true",
-            IE = {})
+    @Alerts("TypeError true")
     @HtmlUnitNYI(CHROME = "TypeError false",
             EDGE = "TypeError false",
             FF = "TypeError false",
@@ -103,14 +96,13 @@ public class SubtleCryptoTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object Crypto]", "public", "true", "verify",
-                       "name RSASSA-PKCS1-v1_5", "hash [object Object]", "modulusLength 2048",
-                       "publicExponent 1,0,1",
-                       "private", "false", "sign",
-                       "name RSASSA-PKCS1-v1_5", "hash [object Object]", "modulusLength 2048",
-                       "publicExponent 1,0,1"},
-            IE = "undefined")
-    @NotYetImplemented({CHROME, EDGE, FF, FF_ESR})
+    @Alerts({"[object Crypto]", "public", "true", "verify",
+             "name RSASSA-PKCS1-v1_5", "hash [object Object]", "modulusLength 2048",
+             "publicExponent 1,0,1",
+             "private", "false", "sign",
+             "name RSASSA-PKCS1-v1_5", "hash [object Object]", "modulusLength 2048",
+             "publicExponent 1,0,1"})
+    @NotYetImplemented
     public void rsassa() throws Exception {
         final String html
             = "<html><head><script>\n"

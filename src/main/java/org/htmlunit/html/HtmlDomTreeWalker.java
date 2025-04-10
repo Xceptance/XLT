@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,8 @@
  * limitations under the License.
  */
 package org.htmlunit.html;
+
+import java.io.Serializable;
 
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
@@ -30,7 +32,7 @@ import org.w3c.dom.traversal.NodeFilter;
  * @author Ahmed Ashour
  * @author Ronald Brill
  */
-public class HtmlDomTreeWalker {
+public class HtmlDomTreeWalker implements Serializable {
 
     private final DomNode root_;
     private DomNode currentNode_;
@@ -108,6 +110,7 @@ public class HtmlDomTreeWalker {
     /**
      * @see org.w3c.dom.traversal.TreeWalker#setCurrentNode(Node)
      * @param currentNode the current node
+     * @throws DOMException if the current node provides is null
      */
     public void setCurrentNode(final Node currentNode) throws DOMException {
         if (currentNode == null) {

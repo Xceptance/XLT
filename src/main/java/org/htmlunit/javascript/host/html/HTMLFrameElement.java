@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,18 +14,10 @@
  */
 package org.htmlunit.javascript.host.html;
 
-import static org.htmlunit.BrowserVersionFeatures.JS_FRAME_CONTENT_DOCUMENT_ACCESS_DENIED_THROWS;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
-
 import org.htmlunit.html.BaseFrameElement;
 import org.htmlunit.html.FrameWindow;
 import org.htmlunit.html.FrameWindow.PageDenied;
 import org.htmlunit.html.HtmlFrame;
-import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxGetter;
@@ -46,16 +38,10 @@ import org.htmlunit.javascript.host.WindowProxy;
 public class HTMLFrameElement extends HTMLElement {
 
     /**
-     * Creates an instance.
-     */
-    public HTMLFrameElement() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @Override
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
         super.jsConstructor();
     }
@@ -87,9 +73,6 @@ public class HTMLFrameElement extends HTMLElement {
     public DocumentProxy getContentDocument() {
         final FrameWindow frameWindow = getFrame().getEnclosedWindow();
         if (PageDenied.NONE != frameWindow.getPageDenied()) {
-            if (getBrowserVersion().hasFeature(JS_FRAME_CONTENT_DOCUMENT_ACCESS_DENIED_THROWS)) {
-                throw JavaScriptEngine.reportRuntimeError("Error access denied");
-            }
             return null;
         }
         return ((Window) frameWindow.getScriptableObject()).getDocument_js();
@@ -128,24 +111,6 @@ public class HTMLFrameElement extends HTMLElement {
 
     private BaseFrameElement getFrame() {
         return (BaseFrameElement) getDomNodeOrDie();
-    }
-
-    /**
-     * Gets the {@code border} attribute.
-     * @return the {@code border} attribute
-     */
-    @JsxGetter(IE)
-    public String getBorder() {
-        return getDomNodeOrDie().getAttributeDirect("border");
-    }
-
-    /**
-     * Sets the {@code border} attribute.
-     * @param border the {@code border} attribute
-     */
-    @JsxSetter(IE)
-    public void setBorder(final String border) {
-        getDomNodeOrDie().setAttribute("border", border);
     }
 
     /**

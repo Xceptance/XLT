@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,6 @@
  */
 package org.htmlunit.javascript.host.xml;
 
-import static org.htmlunit.BrowserVersionFeatures.JS_XML_SERIALIZER_BLANK_BEFORE_SELF_CLOSING;
-import static org.htmlunit.BrowserVersionFeatures.JS_XML_SERIALIZER_HTML_DOCUMENT_FRAGMENT_ALWAYS_EMPTY;
-import static org.htmlunit.BrowserVersionFeatures.JS_XML_SERIALIZER_ROOT_CDATA_AS_ESCAPED_TEXT;
-
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -29,11 +25,9 @@ import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.host.Element;
-import org.htmlunit.javascript.host.dom.CDATASection;
 import org.htmlunit.javascript.host.dom.Document;
 import org.htmlunit.javascript.host.dom.DocumentFragment;
 import org.htmlunit.javascript.host.dom.Node;
-import org.htmlunit.javascript.host.html.HTMLDocument;
 import org.htmlunit.util.StringUtils;
 import org.w3c.dom.NamedNodeMap;
 
@@ -52,9 +46,8 @@ public class XMLSerializer extends HtmlUnitScriptable {
     // output of empty tags are not allowed for these HTML tags
     private static final Set<String> NON_EMPTY_TAGS = new HashSet<>(Arrays.asList(
             HtmlAbbreviated.TAG_NAME, HtmlAcronym.TAG_NAME,
-            HtmlAnchor.TAG_NAME, HtmlApplet.TAG_NAME, HtmlAddress.TAG_NAME, HtmlAudio.TAG_NAME,
-            HtmlBackgroundSound.TAG_NAME,
-            HtmlBidirectionalOverride.TAG_NAME, HtmlBig.TAG_NAME, HtmlBlink.TAG_NAME,
+            HtmlAnchor.TAG_NAME, HtmlAddress.TAG_NAME, HtmlAudio.TAG_NAME,
+            HtmlBidirectionalOverride.TAG_NAME, HtmlBig.TAG_NAME,
             HtmlBlockQuote.TAG_NAME, HtmlBody.TAG_NAME, HtmlBold.TAG_NAME,
             HtmlButton.TAG_NAME, HtmlCanvas.TAG_NAME, HtmlCaption.TAG_NAME,
             HtmlCenter.TAG_NAME, HtmlCitation.TAG_NAME, HtmlCode.TAG_NAME,
@@ -70,11 +63,11 @@ public class XMLSerializer extends HtmlUnitScriptable {
             HtmlHeading4.TAG_NAME, HtmlHeading5.TAG_NAME,
             HtmlHeading6.TAG_NAME, HtmlHead.TAG_NAME,
             HtmlHtml.TAG_NAME, HtmlInlineFrame.TAG_NAME,
-            HtmlInsertedText.TAG_NAME, HtmlIsIndex.TAG_NAME,
+            HtmlInsertedText.TAG_NAME,
             HtmlItalic.TAG_NAME, HtmlKeyboard.TAG_NAME, HtmlLabel.TAG_NAME,
             HtmlLegend.TAG_NAME, HtmlListing.TAG_NAME, HtmlListItem.TAG_NAME,
             HtmlMap.TAG_NAME, HtmlMarquee.TAG_NAME,
-            HtmlMenu.TAG_NAME, HtmlMultiColumn.TAG_NAME,
+            HtmlMenu.TAG_NAME,
             HtmlNoBreak.TAG_NAME, HtmlNoEmbed.TAG_NAME, HtmlNoFrames.TAG_NAME,
             HtmlNoScript.TAG_NAME, HtmlObject.TAG_NAME, HtmlOrderedList.TAG_NAME,
             HtmlOptionGroup.TAG_NAME, HtmlOption.TAG_NAME, HtmlParagraph.TAG_NAME,
@@ -93,16 +86,11 @@ public class XMLSerializer extends HtmlUnitScriptable {
     ));
 
     /**
-     * Default constructor.
-     */
-    public XMLSerializer() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 
     /**
@@ -117,11 +105,6 @@ public class XMLSerializer extends HtmlUnitScriptable {
         }
 
         if (root instanceof DocumentFragment) {
-            if (root.getOwnerDocument() instanceof HTMLDocument
-                && getBrowserVersion().hasFeature(JS_XML_SERIALIZER_HTML_DOCUMENT_FRAGMENT_ALWAYS_EMPTY)) {
-                return "";
-            }
-
             Node node = root.getFirstChild();
             if (node == null) {
                 return "";
@@ -154,14 +137,6 @@ public class XMLSerializer extends HtmlUnitScriptable {
             return builder.toString();
         }
 
-        if (root instanceof CDATASection
-            && getBrowserVersion().hasFeature(JS_XML_SERIALIZER_ROOT_CDATA_AS_ESCAPED_TEXT)) {
-            final DomCDataSection domCData = (DomCDataSection) root.getDomNodeOrDie();
-            final String data = domCData.getData();
-            if (org.apache.commons.lang3.StringUtils.isNotBlank(data)) {
-                return StringUtils.escapeXmlChars(data);
-            }
-        }
         return root.getDomNodeOrDie().asXml();
     }
 
@@ -194,8 +169,8 @@ public class XMLSerializer extends HtmlUnitScriptable {
         final NamedNodeMap attributesMap = node.getAttributes();
         for (int i = 0; i < attributesMap.getLength(); i++) {
             final DomAttr attrib = (DomAttr) attributesMap.item(i);
-            builder.append(' ').append(attrib.getQualifiedName()).append('=')
-                .append('"').append(attrib.getValue()).append('"');
+            builder.append(' ').append(attrib.getQualifiedName())
+                   .append("=\"").append(attrib.getValue()).append('"');
         }
         boolean startTagClosed = false;
         for (final DomNode child : node.getChildren()) {
@@ -229,12 +204,7 @@ public class XMLSerializer extends HtmlUnitScriptable {
                 builder.append("></").append(nodeName).append('>');
             }
             else {
-                builder.append(optionalPrefix);
-                if (builder.charAt(builder.length() - 1) != ' '
-                    && getBrowserVersion().hasFeature(JS_XML_SERIALIZER_BLANK_BEFORE_SELF_CLOSING)) {
-                    builder.append(' ');
-                }
-                builder.append("/>");
+                builder.append(optionalPrefix).append("/>");
             }
         }
         else {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package org.htmlunit.javascript.host.event;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
@@ -51,8 +51,7 @@ public class HashChangeEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object HashChangeEvent]", "hashchange", "false", "false", "false", "", ""},
-            IE = "exception")
+    @Alerts({"[object HashChangeEvent]", "hashchange", "false", "false", "false", "", ""})
     public void create_ctor() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"
@@ -61,7 +60,7 @@ public class HashChangeEventTest extends WebDriverTestCase {
             + "    try {\n"
             + "      var event = new HashChangeEvent('hashchange');\n"
             + "      dump(event);\n"
-            + "    } catch (e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + DUMP_EVENT_FUNCTION
             + "</script></head><body onload='test()'>\n"
@@ -74,8 +73,7 @@ public class HashChangeEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object HashChangeEvent]", "hashchange", "true", "false", "false", "null", "§§URL§§#1"},
-            IE = "exception")
+    @Alerts({"[object HashChangeEvent]", "hashchange", "true", "false", "false", "null", "§§URL§§#1"})
     public void create_ctorWithDetails() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"
@@ -88,7 +86,7 @@ public class HashChangeEventTest extends WebDriverTestCase {
             + "        'newURL': '" + URL_FIRST + "#1'\n"
             + "      });\n"
             + "      dump(event);\n"
-            + "    } catch (e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + DUMP_EVENT_FUNCTION
             + "</script></head><body onload='test()'>\n"
@@ -102,8 +100,7 @@ public class HashChangeEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object HashChangeEvent]", "", "false", "false", "false", "", ""},
-            IE = "exception")
+    @Alerts({"[object HashChangeEvent]", "", "false", "false", "false", "", ""})
     public void create_createEvent() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"
@@ -112,7 +109,7 @@ public class HashChangeEventTest extends WebDriverTestCase {
             + "    try {\n"
             + "      var event = document.createEvent('HashChangeEvent');\n"
             + "      dump(event);\n"
-            + "    } catch (e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + DUMP_EVENT_FUNCTION
             + "</script></head><body onload='test()'>\n"
@@ -125,11 +122,7 @@ public class HashChangeEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object HashChangeEvent]", "[object HashChangeEvent]",
-                       "hashchange", "true", "false", "false", "§§URL§§", "§§URL§§#1"},
-            CHROME = {"[object HashChangeEvent]", "missing initHashChangeEvent"},
-            EDGE = {"[object HashChangeEvent]", "missing initHashChangeEvent"},
-            IE = "exception createEvent")
+    @Alerts({"[object HashChangeEvent]", "missing initHashChangeEvent"})
     public void initHashChangeEvent() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"
@@ -138,7 +131,7 @@ public class HashChangeEventTest extends WebDriverTestCase {
             + "    try {\n"
             + "      var event = document.createEvent('HashChangeEvent');\n"
             + "      log(event);\n"
-            + "    } catch (e) { log('exception createEvent'); return; }\n"
+            + "    } catch(e) { log('exception createEvent'); logEx(e); return; }\n"
 
             + "    if (!event.initHashChangeEvent) {log('missing initHashChangeEvent'); return;}\n"
 
@@ -146,7 +139,7 @@ public class HashChangeEventTest extends WebDriverTestCase {
             + "      event.initHashChangeEvent('hashchange', true, false, '" + URL_FIRST + "', '"
             + URL_FIRST + "#1');\n"
             + "      dump(event);\n"
-            + "    } catch (e) { log('exception initHashChangeEvent') }\n"
+            + "    } catch(e) { log('exception initHashChangeEvent'); logEx(e); }\n"
             + "  }\n"
             + DUMP_EVENT_FUNCTION
             + "</script></head><body onload='test()'>\n"
@@ -160,9 +153,7 @@ public class HashChangeEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "exception",
-            FF = {"[object HashChangeEvent]", "hashchange", "true", "false", "false", "§§URL§§", "§§URL§§#1"},
-            FF_ESR = {"[object HashChangeEvent]", "hashchange", "true", "false", "false", "§§URL§§", "§§URL§§#1"})
+    @Alerts("TypeError")
     public void dispatchEvent() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"
@@ -173,7 +164,7 @@ public class HashChangeEventTest extends WebDriverTestCase {
             + "      event.initHashChangeEvent('hashchange', true, false, '" + URL_FIRST + "', '"
             + URL_FIRST + "#1');\n"
             + "      dispatchEvent(event);\n"
-            + "    } catch (e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + DUMP_EVENT_FUNCTION
             + "  window.onhashchange = dump;\n"
@@ -188,8 +179,7 @@ public class HashChangeEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object Event]", "hashchange", "true", "false", "false", "undefined", "undefined"},
-            IE = {"[object Event]", "hashchange", "true", "false", "undefined", "undefined", "undefined"})
+    @Alerts({"[object Event]", "hashchange", "true", "false", "false", "undefined", "undefined"})
     public void dispatchEvent_event() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"
@@ -199,7 +189,7 @@ public class HashChangeEventTest extends WebDriverTestCase {
             + "      var event = document.createEvent('Event');\n"
             + "      event.initEvent('hashchange', true, false);\n"
             + "      dispatchEvent(event);\n"
-            + "    } catch (e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + DUMP_EVENT_FUNCTION
             + "  window.onhashchange = dump;\n"
@@ -231,8 +221,7 @@ public class HashChangeEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object HashChangeEvent]", "hashchange", "false", "false", "false", "§§URL§§", "§§URL§§#1"},
-            IE = {"[object Event]", "hashchange", "false", "false", "undefined", "undefined", "undefined"})
+    @Alerts({"[object HashChangeEvent]", "hashchange", "false", "false", "false", "§§URL§§", "§§URL§§#1"})
     public void onHashChange() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -362,14 +362,14 @@ public class MasterControllerMain
         {
             ui = new FireAndForgetUI(masterController, sequentialMode, generateReport, noResults,
                                      config.getAgentControllerInitialResponseTimeout(), resultAmount);
-            masterController.setTestComment(commandLine.getOptionValue(XltConstants.COMMANDLINE_OPTION_COMMENT, null));
+            masterController.setTestComment(commandLine.getOptionValue(XltConstants.COMMANDLINE_OPTION_COMMENT, (String) null));
         }
         else if (commandsMode)
         {
             final String commandList = commandLine.getOptionValue(OPTION_COMMANDS);
 
             ui = new NonInteractiveUI(masterController, commandList, config.getAgentControllerInitialResponseTimeout(), resultAmount);
-            masterController.setTestComment(commandLine.getOptionValue(XltConstants.COMMANDLINE_OPTION_COMMENT, null));
+            masterController.setTestComment(commandLine.getOptionValue(XltConstants.COMMANDLINE_OPTION_COMMENT, (String) null));
         }
         else
         {

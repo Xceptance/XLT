@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 package org.htmlunit.javascript;
 
 import static org.htmlunit.BrowserVersionFeatures.JS_NATIVE_FUNCTION_TOSTRING_COMPACT;
-import static org.htmlunit.BrowserVersionFeatures.JS_NATIVE_FUNCTION_TOSTRING_NEW_LINE;
 import static org.htmlunit.BrowserVersionFeatures.JS_NATIVE_FUNCTION_TOSTRING_NL;
 
 import org.htmlunit.BrowserVersion;
@@ -33,7 +32,7 @@ import org.htmlunit.corejs.javascript.ScriptableObject;
  * @author Ronald Brill
  * @author Ahmed Ashour
  */
-public class NativeFunctionToStringFunction extends FunctionWrapper {
+public final class NativeFunctionToStringFunction {
 
     /**
      * Install the wrapper in place of the native toString function on Function's prototype.
@@ -41,14 +40,7 @@ public class NativeFunctionToStringFunction extends FunctionWrapper {
      * @param browserVersion the simulated browser
      */
     public static void installFix(final Scriptable window, final BrowserVersion browserVersion) {
-        if (browserVersion.hasFeature(JS_NATIVE_FUNCTION_TOSTRING_NEW_LINE)) {
-            final ScriptableObject fnPrototype =
-                    (ScriptableObject) ScriptableObject.getClassPrototype(window, "Function");
-            final Function originalToString = (Function) ScriptableObject.getProperty(fnPrototype, "toString");
-            final Function newToString = new NativeFunctionToStringFunction(originalToString);
-            ScriptableObject.putProperty(fnPrototype, "toString", newToString);
-        }
-        else if (browserVersion.hasFeature(JS_NATIVE_FUNCTION_TOSTRING_COMPACT)) {
+        if (browserVersion.hasFeature(JS_NATIVE_FUNCTION_TOSTRING_COMPACT)) {
             final ScriptableObject fnPrototype =
                     (ScriptableObject) ScriptableObject.getClassPrototype(window, "Function");
             final Function originalToString = (Function) ScriptableObject.getProperty(fnPrototype, "toString");
@@ -64,22 +56,8 @@ public class NativeFunctionToStringFunction extends FunctionWrapper {
         }
     }
 
-    NativeFunctionToStringFunction(final Function wrapped) {
-        super(wrapped);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Object call(final Context cx, final Scriptable scope, final Scriptable thisObj, final Object[] args) {
-        final String s = (String) super.call(cx, scope, thisObj, args);
-
-        if (thisObj instanceof BaseFunction && s.contains("[native code]")) {
-            final String functionName = ((BaseFunction) thisObj).getFunctionName();
-            return "\nfunction " + functionName + "() {\n    [native code]\n}\n";
-        }
-        return s.replace("function anonymous() {", "function anonymous() {\n");
+    private NativeFunctionToStringFunction() {
+        super();
     }
 
     static class NativeFunctionToStringFunctionChrome extends FunctionWrapper {
@@ -95,7 +73,7 @@ public class NativeFunctionToStringFunction extends FunctionWrapper {
         public Object call(final Context cx, final Scriptable scope, final Scriptable thisObj, final Object[] args) {
             final String s = (String) super.call(cx, scope, thisObj, args);
 
-            if (thisObj instanceof BaseFunction && s.contains("[native code]")) {
+            if (thisObj instanceof BaseFunction && s.contains("[native code")) {
                 final String functionName = ((BaseFunction) thisObj).getFunctionName();
                 return "function " + functionName + "() { [native code] }";
             }
@@ -115,6 +93,11 @@ public class NativeFunctionToStringFunction extends FunctionWrapper {
         @Override
         public Object call(final Context cx, final Scriptable scope, final Scriptable thisObj, final Object[] args) {
             final String s = (String) super.call(cx, scope, thisObj, args);
+
+            if (thisObj instanceof BaseFunction && s.contains("[native code")) {
+                final String functionName = ((BaseFunction) thisObj).getFunctionName();
+                return "function " + functionName + "() {\n    [native code]\n}";
+            }
             return s.replace("function anonymous() {", "function anonymous(\n) {\n");
         }
     }

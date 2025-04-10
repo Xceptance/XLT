@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,7 @@ package org.htmlunit.javascript.host;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.BuggyWebDriver;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -35,8 +34,7 @@ public class ExternalTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"external defined", "no AutoCompleteSaveForm"},
-            IE = {"external defined", "AutoCompleteSaveForm defined"})
+    @Alerts({"external defined", "no AutoCompleteSaveForm"})
     public void autoCompleteSaveForm() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -100,13 +98,7 @@ public class ExternalTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"IsSearchProviderInstalled defined", "IsSearchProviderInstalled: 0"},
-            FF = {"IsSearchProviderInstalled defined", "IsSearchProviderInstalled: undefined"},
-            FF_ESR = {"IsSearchProviderInstalled defined", "IsSearchProviderInstalled: undefined"})
-    // fail with missing permission
-    @BuggyWebDriver(IE = {"IsSearchProviderInstalled defined", "exception"},
-                    CHROME = {"IsSearchProviderInstalled defined", "IsSearchProviderInstalled: undefined"},
-                    EDGE = {"IsSearchProviderInstalled defined", "IsSearchProviderInstalled: undefined"})
+    @Alerts({"IsSearchProviderInstalled defined", "IsSearchProviderInstalled: undefined"})
     public void isSearchProviderInstalled() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -118,7 +110,7 @@ public class ExternalTest extends WebDriverTestCase {
             + "      try {\n"
             + "        var res = window.external.IsSearchProviderInstalled('http://htmlunit.sourceforge.net');\n"
             + "        log('IsSearchProviderInstalled: ' + res);\n"
-            + "      } catch(e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
             + "    } else {\n"
             + "      log('no IsSearchProviderInstalled');\n"
             + "    }\n"

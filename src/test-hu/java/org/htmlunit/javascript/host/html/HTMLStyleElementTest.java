@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ import java.nio.charset.StandardCharsets;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.util.MimeType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -350,7 +350,9 @@ public class HTMLStyleElementTest extends WebDriverTestCase {
             + "    ]]>\n"
             + "  </style>\n"
             + "  <script>\n"
-            + LOG_TITLE_FUNCTION
+
+            // do not use LOG_TITLE_FUNCTION here
+            + "    function log(msg) { window.document.title += msg + '\\u00a7'; }\n"
             + "    function doTest() {\n"
             + "      var div = document.getElementById('one');\n"
             + "      log(window.getComputedStyle(div, null).color);\n"
@@ -399,7 +401,9 @@ public class HTMLStyleElementTest extends WebDriverTestCase {
             + "    ]]>\n"
             + "  </style>\n"
             + "  <script>\n"
-            + LOG_TITLE_FUNCTION
+
+            // do not use LOG_TITLE_FUNCTION here
+            + "    function log(msg) { window.document.title += msg + '\\u00a7'; }\n"
             + "    function doTest() {\n"
             + "      var div = document.getElementById('one');\n"
             + "      log(window.getComputedStyle(div, null).color);\n"
@@ -465,5 +469,89 @@ public class HTMLStyleElementTest extends WebDriverTestCase {
             getWebClient().getOptions().setThrowExceptionOnScriptError(false);
         }
         loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"#id { color: red }", ":before { content: \"</> HtmlUnit\" }"})
+    public void innerHtml1() throws Exception {
+        final String html =
+            "<html>\n"
+            + "  <head>\n"
+            + "    <style>#id { color: red }</style>\n"
+            + "    <script>\n"
+            + LOG_TEXTAREA_FUNCTION
+            + "      function test() {\n"
+            + "        var style = document.getElementsByTagName('style')[0];\n"
+            + "        log(style.innerHTML);\n"
+            + "        style.innerHTML = ':before { content: \"</> HtmlUnit\" }';\n"
+            + "        log(style.innerHTML);\n"
+            + "      }\n"
+            + "    </script>\n"
+            + "  </head>\n"
+            + "  <body onload='test()'>\n"
+            + LOG_TEXTAREA
+            + "  </body>\n"
+            + "</html>";
+
+        loadPageVerifyTextArea2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"#id { color: red }", ":before { content: \"<span>Html</span>Unit\" }"})
+    public void innerHtmlTag() throws Exception {
+        final String html =
+            "<html>\n"
+            + "  <head>\n"
+            + "    <style>#id { color: red }</style>\n"
+            + "    <script>\n"
+            + LOG_TEXTAREA_FUNCTION
+            + "      function test() {\n"
+            + "        var style = document.getElementsByTagName('style')[0];\n"
+            + "        log(style.innerHTML);\n"
+            + "        style.innerHTML = ':before { content: \"<span>Html</span>Unit\" }';\n"
+            + "        log(style.innerHTML);\n"
+            + "      }\n"
+            + "    </script>\n"
+            + "  </head>\n"
+            + "  <body onload='test()'>\n"
+            + LOG_TEXTAREA
+            + "  </body>\n"
+            + "</html>";
+
+        loadPageVerifyTextArea2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"", ":before { content: \"&lt;/> HtmlUnit\" }"})
+    public void innerHtmlEscaping() throws Exception {
+        final String html =
+            "<html>\n"
+            + "  <head>\n"
+            + "    <style></style>\n"
+            + "    <script>\n"
+            + LOG_TEXTAREA_FUNCTION
+            + "      function test() {\n"
+            + "        var style = document.getElementsByTagName('style')[0];\n"
+            + "        log(style.innerHTML);\n"
+            + "        style.innerHTML = ':before { content: \"&lt;/> HtmlUnit\" }';\n"
+            + "        log(style.innerHTML);\n"
+            + "      }\n"
+            + "    </script>\n"
+            + "  </head>\n"
+            + "  <body onload='test()'>\n"
+            + LOG_TEXTAREA
+            + "  </body>\n"
+            + "</html>";
+
+        loadPageVerifyTextArea2(html);
     }
 }

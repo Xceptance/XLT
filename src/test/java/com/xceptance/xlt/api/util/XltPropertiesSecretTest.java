@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,38 +27,35 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.vfs2.FileObject;
-import org.apache.commons.vfs2.impl.DefaultFileSystemManager;
-import org.apache.commons.vfs2.provider.ram.RamFileProvider;
+import org.apache.commons.vfs2.VFS;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
 
 import com.xceptance.xlt.common.XltConstants;
 import com.xceptance.xlt.engine.SessionImpl;
 import com.xceptance.xlt.engine.XltEngine;
 import com.xceptance.xlt.util.XltPropertiesImpl;
+import org.junit.rules.TemporaryFolder;
 
 /**
  * Test cases specifically concerned with the loading of secret properties
  */
 public class XltPropertiesSecretTest
 {
-    protected DefaultFileSystemManager FS;
+    @Rule
+    public TemporaryFolder tempFolder = new TemporaryFolder();
+
     protected FileObject home;
     protected FileObject config;
 
     @Before
     public void setup() throws IOException
     {
-        FS = new DefaultFileSystemManager();
-        FS.addProvider("ram", new RamFileProvider());
-        FS.init();
-        FS.createVirtualFileSystem("ram://");
-
-        home = FS.resolveFile("ram://home");
-        home.createFolder();
+        home = VFS.getManager().resolveFile(tempFolder.newFolder("home").getAbsolutePath());
         config = home.resolveFile("config");
         config.createFolder();
 
@@ -73,8 +70,6 @@ public class XltPropertiesSecretTest
     @After
     public void teardown() throws IOException
     {
-        FS.close();
-
         // remove all properties starting with secret. from system
         var keys = System.getProperties().keySet().stream()
             .filter(k -> (k instanceof String))

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,12 +34,6 @@ public class _1600_OpacityValueTest
     public void ff45() throws Exception
     {
         test(new WebClient(BrowserVersion.FIREFOX), "0.55");
-    }
-
-    @Test
-    public void ie() throws Exception
-    {
-        test(new WebClient(BrowserVersion.INTERNET_EXPLORER), "0.55");
     }
 
     @Test

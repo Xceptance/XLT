@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,13 @@
  */
 package org.htmlunit.javascript.host;
 
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-
 import java.net.URL;
 
 import org.htmlunit.Page;
 import org.htmlunit.WebWindow;
+import org.htmlunit.corejs.javascript.Function;
+import org.htmlunit.javascript.AbstractJavaScriptEngine;
 import org.htmlunit.javascript.HtmlUnitContextFactory;
-import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.PostponedAction;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
@@ -44,29 +40,31 @@ import org.htmlunit.javascript.host.event.MessageEvent;
 @JsxClass
 public class MessagePort extends EventTarget {
 
-    private MessagePort port1_;
+    private MessagePort port_;
 
     /**
      * Default constructor.
      */
     public MessagePort() {
+        super();
     }
 
     /**
      * JavaScript constructor.
      */
     @Override
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
         super.jsConstructor();
     }
 
     /**
-     * Constructors {@code port2} with the specified {@code port1}.
-     * @param port1 the port1
+     * Ctor with the specified {@code port}.
+     * @param port the port
      */
-    public MessagePort(final MessagePort port1) {
-        port1_ = port1;
+    public MessagePort(final MessagePort port) {
+        super();
+        port_ = port;
     }
 
     /**
@@ -74,7 +72,7 @@ public class MessagePort extends EventTarget {
      * @return the value of the window's {@code onmessage} property
      */
     @JsxGetter
-    public Object getOnmessage() {
+    public Function getOnmessage() {
         return getHandlerForJavaScript(Event.TYPE_MESSAGE);
     }
 
@@ -87,7 +85,7 @@ public class MessagePort extends EventTarget {
         setHandlerForJavaScript(Event.TYPE_MESSAGE, onmessage);
     }
 
-    private Object getHandlerForJavaScript(final String eventName) {
+    private Function getHandlerForJavaScript(final String eventName) {
         return getEventListenersContainer().getEventHandler(eventName);
     }
 
@@ -103,7 +101,7 @@ public class MessagePort extends EventTarget {
      */
     @JsxFunction
     public void postMessage(final String message, final Object transfer) {
-        if (port1_ != null) {
+        if (port_ != null) {
             final Window w = getWindow();
             final WebWindow webWindow = w.getWebWindow();
             final Page page = webWindow.getEnclosedPage();
@@ -111,15 +109,15 @@ public class MessagePort extends EventTarget {
             final MessageEvent event = new MessageEvent();
             final String origin = currentURL.getProtocol() + "://" + currentURL.getHost() + ':' + currentURL.getPort();
             event.initMessageEvent(Event.TYPE_MESSAGE, false, false, message, origin, "", w, transfer);
-            event.setParentScope(port1_);
+            event.setParentScope(port_);
             event.setPrototype(getPrototype(event.getClass()));
 
-            final JavaScriptEngine jsEngine = (JavaScriptEngine) webWindow.getWebClient().getJavaScriptEngine();
+            final AbstractJavaScriptEngine<?> jsEngine = webWindow.getWebClient().getJavaScriptEngine();
             final PostponedAction action = new PostponedAction(page, "MessagePort.postMessage") {
                 @Override
                 public void execute() {
                     final HtmlUnitContextFactory cf = jsEngine.getContextFactory();
-                    cf.call(cx -> port1_.dispatchEvent(event));
+                    cf.call(cx -> port_.dispatchEvent(event));
                 }
             };
             jsEngine.addPostponedAction(action);

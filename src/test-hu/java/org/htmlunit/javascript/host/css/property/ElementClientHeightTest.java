@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@ package org.htmlunit.javascript.host.css.property;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -173,7 +173,6 @@ public class ElementClientHeightTest extends WebDriverTestCase {
      */
     @Test
     @Alerts("0")
-    @HtmlUnitNYI(IE = "18")
     public void applet() throws Exception {
         loadPageVerifyTitle2(test("applet"));
     }
@@ -309,8 +308,7 @@ public class ElementClientHeightTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = "18",
             EDGE = "18",
             FF = "18",
-            FF_ESR = "18",
-            IE = "18")
+            FF_ESR = "18")
     public void blockquote() throws Exception {
         loadPageVerifyTitle2(test("blockquote"));
     }
@@ -321,16 +319,14 @@ public class ElementClientHeightTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = "630",
+    @Alerts(CHROME = "621",
             EDGE = "630",
-            FF = "677",
-            FF_ESR = "677",
-            IE = "682")
+            FF = "675",
+            FF_ESR = "677")
     @HtmlUnitNYI(CHROME = "605",
             EDGE = "605",
             FF = "605",
-            FF_ESR = "605",
-            IE = "605")
+            FF_ESR = "605")
     public void body() throws Exception {
         loadPageVerifyTitle2(test("body"));
     }
@@ -367,13 +363,11 @@ public class ElementClientHeightTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "2",
-            IE = "6")
+    @Alerts("2")
     @HtmlUnitNYI(CHROME = "20",
             EDGE = "20",
             FF = "20",
-            FF_ESR = "20",
-            IE = "20")
+            FF_ESR = "20")
     public void button() throws Exception {
         loadPageVerifyTitle2(test("button"));
     }
@@ -463,8 +457,7 @@ public class ElementClientHeightTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "18",
             FF = "19",
-            FF_ESR = "19",
-            IE = "0")
+            FF_ESR = "19")
     @HtmlUnitNYI(FF = "18",
             FF_ESR = "18")
     public void details() throws Exception {
@@ -503,8 +496,7 @@ public class ElementClientHeightTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = "18",
             EDGE = "18",
             FF = "18",
-            FF_ESR = "18",
-            IE = "18")
+            FF_ESR = "18")
     public void del() throws Exception {
         loadPageVerifyTitle2(test("del"));
     }
@@ -530,8 +522,7 @@ public class ElementClientHeightTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = "18",
             EDGE = "18",
             FF = "18",
-            FF_ESR = "18",
-            IE = "18")
+            FF_ESR = "18")
     public void dir() throws Exception {
         loadPageVerifyTitle2(test("dir"));
     }
@@ -557,8 +548,7 @@ public class ElementClientHeightTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = "18",
             EDGE = "18",
             FF = "18",
-            FF_ESR = "18",
-            IE = "18")
+            FF_ESR = "18")
     public void dl() throws Exception {
         loadPageVerifyTitle2(test("dl"));
     }
@@ -580,9 +570,7 @@ public class ElementClientHeightTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "0",
-            IE = "16")
-    @HtmlUnitNYI(IE = "0")
+    @Alerts("0")
     public void embed() throws Exception {
         loadPageVerifyTitle2(test("embed"));
     }
@@ -604,13 +592,11 @@ public class ElementClientHeightTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "35",
-            IE = "16")
+    @Alerts("35")
     @HtmlUnitNYI(CHROME = "18",
             EDGE = "18",
             FF = "18",
-            FF_ESR = "18",
-            IE = "18")
+            FF_ESR = "18")
     public void fieldset() throws Exception {
         loadPageVerifyTitle2(test("fieldset"));
     }
@@ -647,8 +633,7 @@ public class ElementClientHeightTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = "18",
             EDGE = "18",
             FF = "18",
-            FF_ESR = "18",
-            IE = "18")
+            FF_ESR = "18")
     public void font() throws Exception {
         loadPageVerifyTitle2(test("font"));
     }
@@ -681,16 +666,14 @@ public class ElementClientHeightTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = "674",
+    @Alerts(CHROME = "621",
             EDGE = "630",
-            FF = "677",
-            FF_ESR = "677",
-            IE = "682")
+            FF = "675",
+            FF_ESR = "677")
     @HtmlUnitNYI(CHROME = "0",
             EDGE = "0",
             FF = "0",
-            FF_ESR = "0",
-            IE = "0")
+            FF_ESR = "0")
     public void frame() throws Exception {
         loadPageVerifyTitle2(test("frame"));
     }
@@ -701,16 +684,14 @@ public class ElementClientHeightTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = "630",
+    @Alerts(CHROME = "621",
             EDGE = "630",
-            FF = "677",
-            FF_ESR = "677",
-            IE = "682")
+            FF = "675",
+            FF_ESR = "677")
     @HtmlUnitNYI(CHROME = "18",
             EDGE = "18",
             FF = "18",
-            FF_ESR = "18",
-            IE = "18")
+            FF_ESR = "18")
     public void frameset() throws Exception {
         loadPageVerifyTitle2(test("frameset"));
     }
@@ -820,16 +801,14 @@ public class ElementClientHeightTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(CHROME = "630",
+    @Alerts(CHROME = "621",
             EDGE = "630",
             FF = "8",
-            FF_ESR = "8",
-            IE = "682")
+            FF_ESR = "8")
     @HtmlUnitNYI(CHROME = "605",
             EDGE = "605",
             FF = "605",
-            FF_ESR = "605",
-            IE = "605")
+            FF_ESR = "605")
     public void html() throws Exception {
         loadPageVerifyTitle2(test("html"));
     }
@@ -844,8 +823,7 @@ public class ElementClientHeightTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = "18",
             EDGE = "18",
             FF = "18",
-            FF_ESR = "18",
-            IE = "18")
+            FF_ESR = "18")
     public void iframe() throws Exception {
         loadPageVerifyTitle2(test("iframe"));
     }
@@ -860,8 +838,7 @@ public class ElementClientHeightTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = "18",
             EDGE = "18",
             FF = "18",
-            FF_ESR = "18",
-            IE = "18")
+            FF_ESR = "18")
     public void q() throws Exception {
         loadPageVerifyTitle2(test("q"));
     }
@@ -872,8 +849,7 @@ public class ElementClientHeightTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "0",
-            IE = "30")
+    @Alerts("0")
     public void image() throws Exception {
         loadPageVerifyTitle2(test("image"));
     }
@@ -884,8 +860,7 @@ public class ElementClientHeightTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "0",
-            IE = "30")
+    @Alerts("0")
     public void img() throws Exception {
         loadPageVerifyTitle2(test("img"));
     }
@@ -900,8 +875,7 @@ public class ElementClientHeightTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = "18",
             EDGE = "18",
             FF = "18",
-            FF_ESR = "18",
-            IE = "18")
+            FF_ESR = "18")
     public void ins() throws Exception {
         loadPageVerifyTitle2(test("ins"));
     }
@@ -912,13 +886,11 @@ public class ElementClientHeightTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "0",
-            IE = "19")
+    @Alerts("0")
     @HtmlUnitNYI(CHROME = "18",
             EDGE = "18",
             FF = "18",
-            FF_ESR = "18",
-            IE = "0")
+            FF_ESR = "18")
     public void isindex() throws Exception {
         loadPageVerifyTitle2(test("isindex"));
     }
@@ -964,8 +936,7 @@ public class ElementClientHeightTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = "18",
             EDGE = "18",
             FF = "18",
-            FF_ESR = "18",
-            IE = "18")
+            FF_ESR = "18")
     public void label() throws Exception {
         loadPageVerifyTitle2(test("label"));
     }
@@ -1002,8 +973,7 @@ public class ElementClientHeightTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = "18",
             EDGE = "18",
             FF = "18",
-            FF_ESR = "18",
-            IE = "18")
+            FF_ESR = "18")
     public void listing() throws Exception {
         loadPageVerifyTitle2(test("listing"));
     }
@@ -1020,8 +990,7 @@ public class ElementClientHeightTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = "0",
             EDGE = "0",
             FF = "0",
-            FF_ESR = "0",
-            IE = "0")
+            FF_ESR = "0")
     public void li() throws Exception {
         loadPageVerifyTitle2(test("li"));
     }
@@ -1058,8 +1027,7 @@ public class ElementClientHeightTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = "18",
             EDGE = "18",
             FF = "18",
-            FF_ESR = "18",
-            IE = "18")
+            FF_ESR = "18")
     public void map() throws Exception {
         loadPageVerifyTitle2(test("map"));
     }
@@ -1074,8 +1042,7 @@ public class ElementClientHeightTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = "18",
             EDGE = "18",
             FF = "18",
-            FF_ESR = "18",
-            IE = "18")
+            FF_ESR = "18")
     public void marquee() throws Exception {
         loadPageVerifyTitle2(test("marquee"));
     }
@@ -1101,8 +1068,7 @@ public class ElementClientHeightTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = "18",
             EDGE = "18",
             FF = "18",
-            FF_ESR = "18",
-            IE = "18")
+            FF_ESR = "18")
     public void menu() throws Exception {
         loadPageVerifyTitle2(test("menu"));
     }
@@ -1135,8 +1101,7 @@ public class ElementClientHeightTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "16",
-            IE = "0")
+    @Alerts("16")
     @HtmlUnitNYI(CHROME = "18",
             EDGE = "18",
             FF = "18",
@@ -1185,7 +1150,6 @@ public class ElementClientHeightTest extends WebDriverTestCase {
      */
     @Test
     @Alerts("0")
-    @HtmlUnitNYI(IE = "18")
     public void nextid() throws Exception {
         loadPageVerifyTitle2(test("nextid"));
     }
@@ -1231,10 +1195,7 @@ public class ElementClientHeightTest extends WebDriverTestCase {
     @Test
     @Alerts("0")
     @HtmlUnitNYI(CHROME = "18",
-            EDGE = "18",
-            FF = "0",
-            FF_ESR = "0",
-            IE = "0")
+            EDGE = "18")
     public void noscript() throws Exception {
         loadPageVerifyTitle2(test("noscript"));
     }
@@ -1249,8 +1210,7 @@ public class ElementClientHeightTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = "18",
             EDGE = "18",
             FF = "18",
-            FF_ESR = "18",
-            IE = "18")
+            FF_ESR = "18")
     public void object() throws Exception {
         loadPageVerifyTitle2(test("object"));
     }
@@ -1265,8 +1225,7 @@ public class ElementClientHeightTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = "18",
             EDGE = "18",
             FF = "18",
-            FF_ESR = "18",
-            IE = "18")
+            FF_ESR = "18")
     public void ol() throws Exception {
         loadPageVerifyTitle2(test("ol"));
     }
@@ -1279,12 +1238,9 @@ public class ElementClientHeightTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "20",
             FF = "18",
-            FF_ESR = "0",
-            IE = "0")
+            FF_ESR = "18")
     @HtmlUnitNYI(CHROME = "18",
-            EDGE = "18",
-            FF_ESR = "18",
-            IE = "18")
+            EDGE = "18")
     public void optgroup() throws Exception {
         loadPageVerifyTitle2(test("optgroup"));
     }
@@ -1295,8 +1251,7 @@ public class ElementClientHeightTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "20",
-            IE = "0")
+    @Alerts("20")
     @HtmlUnitNYI(CHROME = "0",
             EDGE = "0",
             FF = "0",
@@ -1348,8 +1303,7 @@ public class ElementClientHeightTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = "18",
             EDGE = "18",
             FF = "18",
-            FF_ESR = "18",
-            IE = "18")
+            FF_ESR = "18")
     public void plaintext() throws Exception {
         loadPageVerifyTitle2(test("plaintext"));
     }
@@ -1364,8 +1318,7 @@ public class ElementClientHeightTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = "18",
             EDGE = "18",
             FF = "18",
-            FF_ESR = "18",
-            IE = "18")
+            FF_ESR = "18")
     public void pre() throws Exception {
         loadPageVerifyTitle2(test("pre"));
     }
@@ -1376,13 +1329,11 @@ public class ElementClientHeightTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "16",
-            IE = "10")
+    @Alerts("16")
     @HtmlUnitNYI(CHROME = "18",
             EDGE = "18",
             FF = "18",
-            FF_ESR = "18",
-            IE = "18")
+            FF_ESR = "18")
     public void progress() throws Exception {
         loadPageVerifyTitle2(test("progress"));
     }
@@ -1502,8 +1453,7 @@ public class ElementClientHeightTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = "20",
             EDGE = "20",
             FF = "20",
-            FF_ESR = "20",
-            IE = "20")
+            FF_ESR = "20")
     public void select() throws Exception {
         loadPageVerifyTitle2(test("select"));
     }
@@ -1622,13 +1572,11 @@ public class ElementClientHeightTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "150",
-            IE = "666")
+    @Alerts("150")
     @HtmlUnitNYI(CHROME = "18",
             EDGE = "18",
             FF = "18",
-            FF_ESR = "18",
-            IE = "18")
+            FF_ESR = "18")
     public void svg() throws Exception {
         loadPageVerifyTitle2(test("svg"));
     }
@@ -1640,7 +1588,6 @@ public class ElementClientHeightTest extends WebDriverTestCase {
      */
     @Test
     @Alerts("0")
-    @HtmlUnitNYI(IE = "0")
     public void table() throws Exception {
         loadPageVerifyTitle2(test("table"));
     }
@@ -1728,14 +1675,11 @@ public class ElementClientHeightTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "34",
-            FF = "51",
-            FF_ESR = "51")
+    @Alerts("34")
     @HtmlUnitNYI(CHROME = "18",
             EDGE = "18",
             FF = "18",
-            FF_ESR = "18",
-            IE = "18")
+            FF_ESR = "18")
     public void textarea() throws Exception {
         loadPageVerifyTitle2(test("textarea"));
     }
@@ -1829,8 +1773,7 @@ public class ElementClientHeightTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = "18",
             EDGE = "18",
             FF = "18",
-            FF_ESR = "18",
-            IE = "18")
+            FF_ESR = "18")
     public void ul() throws Exception {
         loadPageVerifyTitle2(test("ul"));
     }
@@ -1856,8 +1799,7 @@ public class ElementClientHeightTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = "18",
             EDGE = "18",
             FF = "18",
-            FF_ESR = "18",
-            IE = "18")
+            FF_ESR = "18")
     public void video() throws Exception {
         loadPageVerifyTitle2(test("video"));
     }
@@ -1879,13 +1821,11 @@ public class ElementClientHeightTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "15",
-            IE = "0")
+    @Alerts("15")
     @HtmlUnitNYI(CHROME = "18",
             EDGE = "18",
             FF = "18",
-            FF_ESR = "18",
-            IE = "18")
+            FF_ESR = "18")
     public void xmp() throws Exception {
         loadPageVerifyTitle2(test("xmp"));
     }
@@ -1898,9 +1838,7 @@ public class ElementClientHeightTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "17",
             FF = "18",
-            FF_ESR = "18",
-            IE = "19")
-    @HtmlUnitNYI(IE = "20")
+            FF_ESR = "18")
     public void input() throws Exception {
         loadPageVerifyTitle2(test("input"));
     }
@@ -1913,9 +1851,7 @@ public class ElementClientHeightTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "17",
             FF = "18",
-            FF_ESR = "18",
-            IE = "21")
-    @HtmlUnitNYI(IE = "20")
+            FF_ESR = "18")
     public void inputButton() throws Exception {
         loadPageVerifyTitle2(testInput("button"));
     }
@@ -1927,7 +1863,7 @@ public class ElementClientHeightTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "13",
-            FF = "10",
+            FF = "14",
             FF_ESR = "10")
     public void inputCheckbox() throws Exception {
         loadPageVerifyTitle2(testInput("checkbox"));
@@ -1941,13 +1877,11 @@ public class ElementClientHeightTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "21",
             FF = "22",
-            FF_ESR = "22",
-            IE = "19")
+            FF_ESR = "22")
     @HtmlUnitNYI(CHROME = "17",
             EDGE = "17",
             FF = "18",
-            FF_ESR = "18",
-            IE = "20")
+            FF_ESR = "18")
     public void inputFile() throws Exception {
         loadPageVerifyTitle2(testInput("file"));
     }
@@ -1971,8 +1905,7 @@ public class ElementClientHeightTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "17",
             FF = "18",
-            FF_ESR = "18",
-            IE = "20")
+            FF_ESR = "18")
     public void inputPassword() throws Exception {
         loadPageVerifyTitle2(testInput("password"));
     }
@@ -1984,7 +1917,7 @@ public class ElementClientHeightTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = "13",
-            FF = "10",
+            FF = "14",
             FF_ESR = "10")
     public void inputRadio() throws Exception {
         loadPageVerifyTitle2(testInput("radio"));
@@ -1998,9 +1931,7 @@ public class ElementClientHeightTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "17",
             FF = "18",
-            FF_ESR = "18",
-            IE = "21")
-    @HtmlUnitNYI(IE = "20")
+            FF_ESR = "18")
     public void inputReset() throws Exception {
         loadPageVerifyTitle2(testInput("reset"));
     }
@@ -2013,9 +1944,7 @@ public class ElementClientHeightTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "17",
             FF = "18",
-            FF_ESR = "18",
-            IE = "19")
-    @HtmlUnitNYI(IE = "20")
+            FF_ESR = "18")
     public void inputSelect() throws Exception {
         loadPageVerifyTitle2(testInput("select"));
     }
@@ -2028,9 +1957,7 @@ public class ElementClientHeightTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "17",
             FF = "18",
-            FF_ESR = "18",
-            IE = "21")
-    @HtmlUnitNYI(IE = "20")
+            FF_ESR = "18")
     public void inputSubmit() throws Exception {
         loadPageVerifyTitle2(testInput("submit"));
     }
@@ -2043,9 +1970,7 @@ public class ElementClientHeightTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "17",
             FF = "18",
-            FF_ESR = "18",
-            IE = "19")
-    @HtmlUnitNYI(IE = "20")
+            FF_ESR = "18")
     public void inputText() throws Exception {
         loadPageVerifyTitle2(testInput("text"));
     }

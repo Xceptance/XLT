@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ package org.htmlunit.html;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
@@ -44,16 +44,26 @@ public class HtmlSearchInputTest extends WebDriverTestCase {
 
         final WebDriver webDriver = loadPage2(html);
         final WebElement input = webDriver.findElement(By.id("t"));
+
         input.sendKeys("abc");
-        assertEquals("abc", input.getAttribute("value"));
+        assertNull(input.getDomAttribute("value"));
+        assertEquals("abc", input.getDomProperty("value"));
+
         input.sendKeys(Keys.BACK_SPACE);
-        assertEquals("ab", input.getAttribute("value"));
+        assertNull(input.getDomAttribute("value"));
+        assertEquals("ab", input.getDomProperty("value"));
+
         input.sendKeys(Keys.BACK_SPACE);
-        assertEquals("a", input.getAttribute("value"));
+        assertNull(input.getDomAttribute("value"));
+        assertEquals("a", input.getDomProperty("value"));
+
         input.sendKeys(Keys.BACK_SPACE);
-        assertEquals("", input.getAttribute("value"));
+        assertNull(input.getDomAttribute("value"));
+        assertEquals("", input.getDomProperty("value"));
+
         input.sendKeys(Keys.BACK_SPACE);
-        assertEquals("", input.getAttribute("value"));
+        assertNull(input.getDomAttribute("value"));
+        assertEquals("", input.getDomProperty("value"));
     }
 
     @Test
@@ -72,7 +82,7 @@ public class HtmlSearchInputTest extends WebDriverTestCase {
             + "      input.type = 'search';\n"
             + "      input = input.cloneNode(false);\n"
             + "      log(input.value + '-' + input.defaultValue + '-' + input.getAttribute('value'));\n"
-            + "    } catch(e)  { log('exception'); }\n"
+            + "    } catch(e)  { logEx(e); }\n"
 
             + "    var builder = document.createElement('div');\n"
             + "    builder.innerHTML = '<input type=\"search\">';\n"
@@ -121,7 +131,7 @@ public class HtmlSearchInputTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("")
+    @Alerts({"1234567", ""})
     public void clearInput() throws Exception {
         final String htmlContent
                 = "<html>\n"
@@ -135,8 +145,12 @@ public class HtmlSearchInputTest extends WebDriverTestCase {
         final WebDriver driver = loadPage2(htmlContent);
         final WebElement element = driver.findElement(By.id("tester"));
 
+        assertEquals(getExpectedAlerts()[0], element.getDomAttribute("value"));
+        assertEquals(getExpectedAlerts()[0], element.getDomProperty("value"));
+
         element.clear();
-        assertEquals(getExpectedAlerts()[0], element.getAttribute("value"));
+        assertEquals(getExpectedAlerts()[0], element.getDomAttribute("value"));
+        assertEquals(getExpectedAlerts()[1], element.getDomProperty("value"));
     }
 
     /**
@@ -153,8 +167,10 @@ public class HtmlSearchInputTest extends WebDriverTestCase {
         final WebDriver driver = loadPage2(htmlContent);
 
         final WebElement input = driver.findElement(By.id("foo"));
+
         input.sendKeys("hello");
-        assertEquals("hello", input.getAttribute("value"));
+        assertNull(input.getDomAttribute("value"));
+        assertEquals("hello", input.getDomProperty("value"));
     }
 
     /**
@@ -187,16 +203,12 @@ public class HtmlSearchInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"0987654321!",
-                       "false",
-                       "false-false-true-false-false-false-false-false-false-false-false",
-                       "true",
-                       "§§URL§§", "1"},
-            IE = {"0987654321!",
-                  "false",
-                  "undefined-false-true-false-false-false-false-undefined-false-false-false",
-                  "true",
-                  "§§URL§§", "1"})
+    @Alerts({"0987654321!",
+             "0987654321!",
+             "false",
+             "false-false-true-false-false-false-false-false-false-false-false",
+             "true",
+             "§§URL§§", "1"})
     public void patternValidationInvalid() throws Exception {
         validation("<input type='search' pattern='[0-9a-zA-Z]{10,40}' id='e1' value='0987654321!' name='k'>\n",
                     "", null);
@@ -206,16 +218,12 @@ public class HtmlSearchInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"68746d6c756e69742072756c657a21",
-                       "true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true",
-                       "§§URL§§?k=68746d6c756e69742072756c657a21", "2"},
-            IE = {"68746d6c756e69742072756c657a21",
-                  "true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true",
-                  "§§URL§§?k=68746d6c756e69742072756c657a21", "2"})
+    @Alerts({"68746d6c756e69742072756c657a21",
+             "68746d6c756e69742072756c657a21",
+             "true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true",
+             "§§URL§§?k=68746d6c756e69742072756c657a21", "2"})
     public void patternValidationValid() throws Exception {
         validation("<input type='search' pattern='[0-9a-zA-Z]{10,40}' "
                 + "id='e1' value='68746d6c756e69742072756c657a21' name='k'>\n", "", null);
@@ -225,16 +233,12 @@ public class HtmlSearchInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"",
-                       "true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true",
-                       "§§URL§§?k=", "2"},
-            IE = {"",
-                  "true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true",
-                  "§§URL§§?k=", "2"})
+    @Alerts({"",
+             "",
+             "true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true",
+             "§§URL§§?k=", "2"})
     public void patternValidationEmpty() throws Exception {
         validation("<input type='search' pattern='[0-9a-zA-Z]{10,40}' id='e1' value='' name='k'>\n", "", null);
     }
@@ -243,16 +247,12 @@ public class HtmlSearchInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {" ",
-                       "false",
-                       "false-false-true-false-false-false-false-false-false-false-false",
-                       "true",
-                       "§§URL§§", "1"},
-            IE = {" ",
-                  "false",
-                  "undefined-false-true-false-false-false-false-undefined-false-false-false",
-                  "true",
-                  "§§URL§§", "1"})
+    @Alerts({" ",
+             " ",
+             "false",
+             "false-false-true-false-false-false-false-false-false-false-false",
+             "true",
+             "§§URL§§", "1"})
     public void patternValidationBlank() throws Exception {
         validation("<input type='search' pattern='[0-9a-zA-Z]{10,40}' id='e1' value=' ' name='k'>\n", "", null);
     }
@@ -261,16 +261,12 @@ public class HtmlSearchInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"  \t",
-                       "false",
-                       "false-false-true-false-false-false-false-false-false-false-false",
-                       "true",
-                       "§§URL§§", "1"},
-            IE = {"  \t",
-                  "false",
-                  "undefined-false-true-false-false-false-false-undefined-false-false-false",
-                  "true",
-                  "§§URL§§", "1"})
+    @Alerts({"  \t",
+             "  \t",
+             "false",
+             "false-false-true-false-false-false-false-false-false-false-false",
+             "true",
+             "§§URL§§", "1"})
     public void patternValidationWhitespace() throws Exception {
         validation("<input type='search' pattern='[0-9a-zA-Z]{10,40}' id='e1' value='  \t' name='k'>\n", "", null);
     }
@@ -279,16 +275,12 @@ public class HtmlSearchInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {" 210 ",
-                       "true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true",
-                       "§§URL§§?k=+210+", "2"},
-            IE = {" 210 ",
-                  "true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true",
-                  "§§URL§§?k=+210+", "2"})
+    @Alerts({" 210 ",
+             " 210 ",
+             "true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true",
+             "§§URL§§?k=+210+", "2"})
     public void patternValidationTrimInitial() throws Exception {
         validation("<input type='search' pattern='[ 012]{3,10}' id='e1' name='k' value=' 210 '>\n", "", null);
     }
@@ -297,16 +289,12 @@ public class HtmlSearchInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {" 210 ",
-                       "true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true",
-                       "§§URL§§?k=+210+", "2"},
-            IE = {" 210 ",
-                  "true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true",
-                  "§§URL§§?k=+210+", "2"})
+    @Alerts({"null",
+             " 210 ",
+             "true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true",
+             "§§URL§§?k=+210+", "2"})
     public void patternValidationTrimType() throws Exception {
         validation("<input type='search' pattern='[ 012]{3,10}' id='e1' name='k'>\n", "", " 210 ");
     }
@@ -315,16 +303,12 @@ public class HtmlSearchInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"abcd",
-                       "false",
-                       "false-false-false-false-false-false-false-true-false-false-false",
-                       "true",
-                       "§§URL§§", "1"},
-            IE = {"abcd",
-                  "true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true",
-                  "§§URL§§?k=abcd", "2"})
+    @Alerts({"null",
+             "abcd",
+             "false",
+             "false-false-false-false-false-false-false-true-false-false-false",
+             "true",
+             "§§URL§§", "1"})
     public void minLengthValidationInvalid() throws Exception {
         validation("<input type='search' minlength='5' id='e1' name='k'>\n", "", "abcd");
     }
@@ -333,16 +317,12 @@ public class HtmlSearchInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"1234",
-                       "true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true",
-                       "§§URL§§?k=1234", "2"},
-            IE = {"1234",
-                  "true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true",
-                  "§§URL§§?k=1234", "2"})
+    @Alerts({"1234",
+             "1234",
+             "true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true",
+             "§§URL§§?k=1234", "2"})
     public void minLengthValidationInvalidInitial() throws Exception {
         validation("<input type='search' minlength='20' id='e1' name='k' value='1234'>\n", "", null);
     }
@@ -351,16 +331,12 @@ public class HtmlSearchInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"",
-                       "true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true",
-                       "§§URL§§?k=", "2"},
-            IE = {"",
-                  "true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true",
-                  "§§URL§§?k=", "2"})
+    @Alerts({"null",
+             "",
+             "true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true",
+             "§§URL§§?k=", "2"})
     public void minLengthValidationInvalidNoInitial() throws Exception {
         validation("<input type='search' minlength='5' id='e1' name='k'>\n", "", null);
     }
@@ -369,16 +345,12 @@ public class HtmlSearchInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"abcdefghi",
-                       "true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true",
-                       "§§URL§§?k=abcdefghi", "2"},
-            IE = {"abcdefghi",
-                  "true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true",
-                  "§§URL§§?k=abcdefghi", "2"})
+    @Alerts({"null",
+             "abcdefghi",
+             "true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true",
+             "§§URL§§?k=abcdefghi", "2"})
     public void minLengthValidationValid() throws Exception {
         validation("<input type='search' minlength='5' id='e1' name='k'>\n", "", "abcdefghi");
     }
@@ -387,16 +359,12 @@ public class HtmlSearchInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"abcd",
-                       "true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true",
-                       "§§URL§§?k=abcd", "2"},
-            IE = {"abcd",
-                  "true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true",
-                  "§§URL§§?k=abcd", "2"})
+    @Alerts({"null",
+             "abcd",
+             "true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true",
+             "§§URL§§?k=abcd", "2"})
     public void maxLengthValidationValid() throws Exception {
         validation("<input type='search' maxlength='5' id='e1' name='k'>\n", "", "abcd");
     }
@@ -405,16 +373,12 @@ public class HtmlSearchInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"abcde",
-                       "true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true",
-                       "§§URL§§?k=abcde", "2"},
-            IE = {"abcde",
-                  "true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true",
-                  "§§URL§§?k=abcde", "2"})
+    @Alerts({"null",
+             "abcde",
+             "true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true",
+             "§§URL§§?k=abcde", "2"})
     public void maxLengthValidationInvalid() throws Exception {
         validation("<input type='search' maxlength='5' id='e1' name='k'>\n", "", "abcdefghi");
     }
@@ -423,16 +387,12 @@ public class HtmlSearchInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"abcdefghi",
-                       "true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true",
-                       "§§URL§§?k=abcdefghi", "2"},
-            IE = {"abcdefghi",
-                  "true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true",
-                  "§§URL§§?k=abcdefghi", "2"})
+    @Alerts({"abcdefghi",
+             "abcdefghi",
+             "true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true",
+             "§§URL§§?k=abcdefghi", "2"})
     public void maxLengthValidationInvalidInitial() throws Exception {
         validation("<input type='search' maxlength='5' id='e1' value='abcdefghi' name='k'>\n", "", null);
     }
@@ -473,16 +433,12 @@ public class HtmlSearchInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"",
-                       "true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true",
-                       "§§URL§§?k=", "2"},
-            IE = {"",
-                  "true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true",
-                  "§§URL§§?k=", "2"})
+    @Alerts({"null",
+             "",
+             "true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true",
+             "§§URL§§?k=", "2"})
     public void validationEmpty() throws Exception {
         validation("<input type='search' id='e1' name='k'>\n", "", null);
     }
@@ -491,16 +447,12 @@ public class HtmlSearchInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"",
-                       "false",
-                       "false-true-false-false-false-false-false-false-false-false-false",
-                       "true",
-                       "§§URL§§", "1"},
-            IE = {"",
-                  "false",
-                  "undefined-true-false-false-false-false-false-undefined-false-false-false",
-                  "true",
-                  "§§URL§§", "1"})
+    @Alerts({"null",
+             "",
+             "false",
+             "false-true-false-false-false-false-false-false-false-false-false",
+             "true",
+             "§§URL§§", "1"})
     public void validationCustomValidity() throws Exception {
         validation("<input type='search' id='e1' name='k'>\n", "elem.setCustomValidity('Invalid');", null);
     }
@@ -509,16 +461,12 @@ public class HtmlSearchInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"",
-                       "false",
-                       "false-true-false-false-false-false-false-false-false-false-false",
-                       "true",
-                       "§§URL§§", "1"},
-            IE = {"",
-                  "false",
-                  "undefined-true-false-false-false-false-false-undefined-false-false-false",
-                  "true",
-                  "§§URL§§", "1"})
+    @Alerts({"null",
+             "",
+             "false",
+             "false-true-false-false-false-false-false-false-false-false-false",
+             "true",
+             "§§URL§§", "1"})
     public void validationBlankCustomValidity() throws Exception {
         validation("<input type='search' id='e1' name='k'>\n", "elem.setCustomValidity(' ');\n", null);
     }
@@ -527,16 +475,12 @@ public class HtmlSearchInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"",
-                       "true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true",
-                       "§§URL§§?k=", "2"},
-            IE = {"",
-                  "true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true",
-                  "§§URL§§?k=", "2"})
+    @Alerts({"null",
+             "",
+             "true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true",
+             "§§URL§§?k=", "2"})
     public void validationResetCustomValidity() throws Exception {
         validation("<input type='search' id='e1' name='k'>\n",
                 "elem.setCustomValidity('Invalid');elem.setCustomValidity('');", null);
@@ -546,16 +490,12 @@ public class HtmlSearchInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"",
-                       "false",
-                       "false-false-false-false-false-false-false-false-false-false-true",
-                       "true",
-                       "§§URL§§", "1"},
-            IE = {"",
-                  "false",
-                  "undefined-false-false-false-false-false-false-undefined-false-false-true",
-                  "true",
-                  "§§URL§§", "1"})
+    @Alerts({"null",
+             "",
+             "false",
+             "false-false-false-false-false-false-false-false-false-false-true",
+             "true",
+             "§§URL§§", "1"})
     public void validationRequired() throws Exception {
         validation("<input type='search' id='e1' name='k' required>\n", "", null);
     }
@@ -564,16 +504,12 @@ public class HtmlSearchInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"",
-                       "true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true",
-                       "§§URL§§?k=one", "2"},
-            IE = {"",
-                  "true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true",
-                  "§§URL§§?k=one", "2"})
+    @Alerts({"null",
+             "",
+             "true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true",
+             "§§URL§§?k=one", "2"})
     public void validationRequiredValueSet() throws Exception {
         validation("<input type='search' id='e1' name='k' required>\n", "elem.value='one';", null);
     }
@@ -582,16 +518,12 @@ public class HtmlSearchInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"",
-                       "false",
-                       "false-false-true-false-false-false-false-false-false-false-false",
-                       "true",
-                       "§§URL§§", "1"},
-            IE = {"",
-                  "false",
-                  "undefined-false-true-false-false-false-false-undefined-false-false-false",
-                  "true",
-                  "§§URL§§", "1"})
+    @Alerts({"null",
+             "",
+             "false",
+             "false-false-true-false-false-false-false-false-false-false-false",
+             "true",
+             "§§URL§§", "1"})
     public void validationPattern() throws Exception {
         validation("<input type='search' id='e1' name='k' pattern='abc'>\n", "elem.value='one';", null);
     }
@@ -645,13 +577,14 @@ public class HtmlSearchInputTest extends WebDriverTestCase {
         if (sendKeys != null) {
             foo.sendKeys(sendKeys);
         }
-        assertEquals(getExpectedAlerts()[0], foo.getAttribute("value"));
+        assertEquals(getExpectedAlerts()[0], "" + foo.getDomAttribute("value"));
+        assertEquals(getExpectedAlerts()[1], foo.getDomProperty("value"));
 
         driver.findElement(By.id("myTest")).click();
-        verifyTitle2(driver, getExpectedAlerts()[1], getExpectedAlerts()[2], getExpectedAlerts()[3]);
+        verifyTitle2(driver, getExpectedAlerts()[2], getExpectedAlerts()[3], getExpectedAlerts()[4]);
 
         driver.findElement(By.id("myButton")).click();
-        assertEquals(getExpectedAlerts()[4], getMockWebConnection().getLastWebRequest().getUrl());
-        assertEquals(Integer.parseInt(getExpectedAlerts()[5]), getMockWebConnection().getRequestCount());
+        assertEquals(getExpectedAlerts()[5], getMockWebConnection().getLastWebRequest().getUrl());
+        assertEquals(Integer.parseInt(getExpectedAlerts()[6]), getMockWebConnection().getRequestCount());
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,12 +13,6 @@
  * limitations under the License.
  */
 package org.htmlunit.javascript.host.event;
-
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -47,23 +41,17 @@ import org.htmlunit.javascript.host.dom.Document;
  * @author Ronald Brill
  * @author Atsushi Nakagawa
  */
-@JsxClass({CHROME, EDGE, FF, FF_ESR})
-@JsxClass(isJSObject = false, value = IE)
+@JsxClass
 public class EventTarget extends HtmlUnitScriptable {
 
     private EventListenersContainer eventListenersContainer_;
-
-    /**
-     * Default constructor.
-     */
-    public EventTarget() {
-    }
 
     /**
      * JavaScript constructor.
      */
     @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 
     /**
@@ -216,7 +204,7 @@ public class EventTarget extends HtmlUnitScriptable {
                     try {
                         element.click(event.isShiftKey(), event.isCtrlKey(), event.isAltKey(), false, true, true, true);
                     }
-                    catch (final IOException e) {
+                    catch (final IOException ignored) {
                         // ignore for now
                     }
                 }
@@ -270,7 +258,7 @@ public class EventTarget extends HtmlUnitScriptable {
 
         ScriptResult result = null;
         final DomNode domNode = getDomNodeOrNull();
-        if (event.getType().equals(MouseEvent.TYPE_CLICK) && (domNode instanceof DomElement)) {
+        if (MouseEvent.TYPE_CLICK.equals(event.getType()) && (domNode instanceof DomElement)) {
             try {
                 ((DomElement) domNode).click(event, event.isShiftKey(), event.isCtrlKey(), event.isAltKey(), true);
             }
