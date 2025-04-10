@@ -362,14 +362,14 @@ public class MasterControllerMain
         {
             ui = new FireAndForgetUI(masterController, sequentialMode, generateReport, noResults,
                                      config.getAgentControllerInitialResponseTimeout(), resultAmount);
-            masterController.setTestComment(commandLine.getOptionValue(XltConstants.COMMANDLINE_OPTION_COMMENT, null));
+            masterController.setTestComment(commandLine.getOptionValue(XltConstants.COMMANDLINE_OPTION_COMMENT, (String) null));
         }
         else if (commandsMode)
         {
             final String commandList = commandLine.getOptionValue(OPTION_COMMANDS);
 
             ui = new NonInteractiveUI(masterController, commandList, config.getAgentControllerInitialResponseTimeout(), resultAmount);
-            masterController.setTestComment(commandLine.getOptionValue(XltConstants.COMMANDLINE_OPTION_COMMENT, null));
+            masterController.setTestComment(commandLine.getOptionValue(XltConstants.COMMANDLINE_OPTION_COMMENT, (String) null));
         }
         else
         {
