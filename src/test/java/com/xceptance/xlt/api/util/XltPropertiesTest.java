@@ -34,6 +34,7 @@ import org.apache.commons.vfs2.FileSystemException;
 import org.apache.commons.vfs2.VFS;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -50,8 +51,27 @@ import com.xceptance.xlt.util.XltPropertiesImpl;
  */
 public class XltPropertiesTest
 {
+    private static FileObject origHome;
+    private static FileObject origConfig;
+
     private FileObject homeDir;
     private FileObject configDir;
+
+    @BeforeClass
+    public static void beforeClass()
+    {
+        // Remember original directories from execution context to restore them after the tests
+        origHome = XltExecutionContext.getCurrent().getTestSuiteHomeDir();
+        origConfig = XltExecutionContext.getCurrent().getTestSuiteConfigDir();
+    }
+
+    @After
+    public void after()
+    {
+        // Restore directories in execution context to their original values
+        XltExecutionContext.getCurrent().setTestSuiteHomeDir(origHome);
+        XltExecutionContext.getCurrent().setTestSuiteConfigDir(origConfig);
+    }
 
     /**
      * Setup the base source
