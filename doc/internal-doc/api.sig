@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 8.6.0
+#Version 9.0.0
 
 CLSS public abstract com.xceptance.xlt.api.actions.AbstractAction
 cons protected init(com.xceptance.xlt.api.actions.AbstractAction,java.lang.String)
@@ -2175,6 +2175,7 @@ meth public abstract char charAt(int)
 meth public abstract int length()
 meth public abstract java.lang.CharSequence subSequence(int,int)
 meth public abstract java.lang.String toString()
+meth public boolean isEmpty()
 meth public java.util.stream.IntStream chars()
 meth public java.util.stream.IntStream codePoints()
 meth public static int compare(java.lang.CharSequence,java.lang.CharSequence)
@@ -2197,6 +2198,7 @@ cons public init(java.lang.String)
 cons public init(java.lang.String,java.lang.Throwable)
 cons public init(java.lang.Throwable)
 supr java.lang.Throwable
+hfds serialVersionUID
 
 CLSS public java.lang.IllegalStateException
 cons public init()
@@ -2204,6 +2206,7 @@ cons public init(java.lang.String)
 cons public init(java.lang.String,java.lang.Throwable)
 cons public init(java.lang.Throwable)
 supr java.lang.RuntimeException
+hfds serialVersionUID
 
 CLSS public abstract interface java.lang.Iterable<%0 extends java.lang.Object>
 meth public abstract java.util.Iterator<{java.lang.Iterable%0}> iterator()
@@ -2214,7 +2217,7 @@ CLSS public java.lang.Object
 cons public init()
 meth protected java.lang.Object clone() throws java.lang.CloneNotSupportedException
 meth protected void finalize() throws java.lang.Throwable
- anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="9")
+ anno 0 java.lang.Deprecated(boolean forRemoval=true, java.lang.String since="9")
 meth public boolean equals(java.lang.Object)
 meth public final java.lang.Class<?> getClass()
 meth public final void notify()
@@ -2232,6 +2235,7 @@ cons public init(java.lang.String)
 cons public init(java.lang.String,java.lang.Throwable)
 cons public init(java.lang.Throwable)
 supr java.lang.Exception
+hfds serialVersionUID
 
 CLSS public java.lang.Throwable
 cons protected init(java.lang.String,java.lang.Throwable,boolean,boolean)
@@ -2254,6 +2258,8 @@ meth public void printStackTrace(java.io.PrintStream)
 meth public void printStackTrace(java.io.PrintWriter)
 meth public void setStackTrace(java.lang.StackTraceElement[])
 supr java.lang.Object
+hfds CAUSE_CAPTION,EMPTY_THROWABLE_ARRAY,NULL_CAUSE_MESSAGE,SELF_SUPPRESSION_MESSAGE,SUPPRESSED_CAPTION,SUPPRESSED_SENTINEL,UNASSIGNED_STACK,backtrace,cause,depth,detailMessage,serialVersionUID,stackTrace,suppressedExceptions
+hcls PrintStreamOrWriter,SentinelHolder,WrappedPrintStream,WrappedPrintWriter
 
 CLSS public abstract interface java.lang.annotation.Annotation
 meth public abstract boolean equals(java.lang.Object)
@@ -2311,7 +2317,7 @@ meth public java.util.stream.Stream<{java.util.Collection%0}> parallelStream()
 meth public java.util.stream.Stream<{java.util.Collection%0}> stream()
 
 CLSS public abstract interface java.util.List<%0 extends java.lang.Object>
-intf java.util.Collection<{java.util.List%0}>
+intf java.util.SequencedCollection<{java.util.List%0}>
 meth public !varargs static <%0 extends java.lang.Object> java.util.List<{%%0}> of({%%0}[])
  anno 0 java.lang.SafeVarargs()
 meth public abstract <%0 extends java.lang.Object> {%%0}[] toArray({%%0}[])
@@ -2339,6 +2345,7 @@ meth public abstract void clear()
 meth public abstract {java.util.List%0} get(int)
 meth public abstract {java.util.List%0} remove(int)
 meth public abstract {java.util.List%0} set(int,{java.util.List%0})
+meth public java.util.List<{java.util.List%0}> reversed()
 meth public java.util.Spliterator<{java.util.List%0}> spliterator()
 meth public static <%0 extends java.lang.Object> java.util.List<{%%0}> copyOf(java.util.Collection<? extends {%%0}>)
 meth public static <%0 extends java.lang.Object> java.util.List<{%%0}> of()
@@ -2352,8 +2359,24 @@ meth public static <%0 extends java.lang.Object> java.util.List<{%%0}> of({%%0},
 meth public static <%0 extends java.lang.Object> java.util.List<{%%0}> of({%%0},{%%0},{%%0},{%%0},{%%0},{%%0},{%%0},{%%0})
 meth public static <%0 extends java.lang.Object> java.util.List<{%%0}> of({%%0},{%%0},{%%0},{%%0},{%%0},{%%0},{%%0},{%%0},{%%0})
 meth public static <%0 extends java.lang.Object> java.util.List<{%%0}> of({%%0},{%%0},{%%0},{%%0},{%%0},{%%0},{%%0},{%%0},{%%0},{%%0})
+meth public void addFirst({java.util.List%0})
+meth public void addLast({java.util.List%0})
 meth public void replaceAll(java.util.function.UnaryOperator<{java.util.List%0}>)
 meth public void sort(java.util.Comparator<? super {java.util.List%0}>)
+meth public {java.util.List%0} getFirst()
+meth public {java.util.List%0} getLast()
+meth public {java.util.List%0} removeFirst()
+meth public {java.util.List%0} removeLast()
+
+CLSS public abstract interface java.util.SequencedCollection<%0 extends java.lang.Object>
+intf java.util.Collection<{java.util.SequencedCollection%0}>
+meth public abstract java.util.SequencedCollection<{java.util.SequencedCollection%0}> reversed()
+meth public void addFirst({java.util.SequencedCollection%0})
+meth public void addLast({java.util.SequencedCollection%0})
+meth public {java.util.SequencedCollection%0} getFirst()
+meth public {java.util.SequencedCollection%0} getLast()
+meth public {java.util.SequencedCollection%0} removeFirst()
+meth public {java.util.SequencedCollection%0} removeLast()
 
 CLSS public abstract interface !annotation org.jspecify.annotations.NullMarked
  anno 0 java.lang.annotation.Documented()
