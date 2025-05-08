@@ -31,4 +31,9 @@ public class PropertiesIOException extends RuntimeException
     {
         super(msg);
     }
+
+    public PropertiesIOException(String message, Throwable cause)
+    {
+        super(message, cause);
+    }
 }

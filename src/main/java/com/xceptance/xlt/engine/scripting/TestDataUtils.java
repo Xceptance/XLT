@@ -39,6 +39,7 @@ import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
+import com.xceptance.common.io.Utf8Reader;
 import com.xceptance.common.util.CsvUtils;
 import com.xceptance.xlt.engine.XltExecutionContext;
 
@@ -264,7 +265,7 @@ public final class TestDataUtils
         try
         {
             final Properties props = new Properties();
-            props.load(new InputStreamReader(is, "UTF-8"));
+            props.load(new Utf8Reader(is));
 
             for (final Map.Entry<Object, Object> entry : props.entrySet())
             {
