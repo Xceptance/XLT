@@ -6,7 +6,7 @@
 
     <groupId>com.xceptance</groupId>
     <artifactId>xlt</artifactId>
-    <version>8.6.0</version>
+    <version>9.0.0</version>
     <packaging>jar</packaging>
 
     <name>XLT</name>
@@ -143,21 +143,21 @@
             <dependency>
                 <groupId>com.fasterxml.jackson</groupId>
                 <artifactId>jackson-bom</artifactId>
-                <version>2.17.2</version>
+                <version>2.18.3</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
             <dependency>
                 <groupId>software.amazon.awssdk</groupId>
                 <artifactId>bom</artifactId>
-                <version>2.27.21</version>
+                <version>2.31.18</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
             <dependency>
                 <groupId>com.google.cloud</groupId>
                 <artifactId>libraries-bom</artifactId>
-                <version>26.54.0</version>
+                <version>26.59.0</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -283,12 +283,12 @@
         <dependency>
             <groupId>commons-cli</groupId>
             <artifactId>commons-cli</artifactId>
-            <version>1.5.0</version>
+            <version>1.9.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-configuration2</artifactId>
-            <version>2.10.1</version>
+            <version>2.11.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -309,7 +309,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-vfs2</artifactId>
-            <version>2.9.0</version>
+            <version>2.10.0</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.apache.hadoop</groupId>
@@ -320,7 +320,7 @@
         <dependency>
             <groupId>dnsjava</groupId>
             <artifactId>dnsjava</artifactId>
-            <version>3.6.0</version>
+            <version>3.6.3</version>
         </dependency>
         <dependency>
             <groupId>com.caucho</groupId>
@@ -346,12 +346,12 @@
             <!-- optional dependency of dnsjava, but XLT requires it -->
             <groupId>net.java.dev.jna</groupId>
             <artifactId>jna-platform</artifactId>
-            <version>5.13.0</version>
+            <version>5.17.0</version>
         </dependency>
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
-            <version>20231013</version>
+            <version>20250107</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -434,7 +434,7 @@
         <dependency>
             <groupId>net.bytebuddy</groupId>
             <artifactId>byte-buddy</artifactId>
-            <version>1.15.7</version>
+            <version>1.15.11</version>
         </dependency>
         <!-- guava is used by Selenium, Google Compute and Checkstyle. Ensure that the highest version wins. -->
         <dependency>
@@ -452,7 +452,7 @@
         <dependency>
             <groupId>org.freemarker</groupId>
             <artifactId>freemarker</artifactId>
-            <version>2.3.32</version>
+            <version>2.3.34</version>
         </dependency>
         <dependency>
             <groupId>org.pegdown</groupId>
@@ -474,7 +474,7 @@
         <dependency>
             <groupId>org.glassfish.tyrus</groupId>
             <artifactId>tyrus-container-grizzly-server</artifactId>
-            <version>1.20</version>
+            <version>1.21</version>
         </dependency>
         <!-- https://github.com/aggregateknowledge/java-hll -->
         <dependency>
@@ -491,12 +491,12 @@
         <dependency>
             <groupId>com.sun.xml.bind</groupId>
             <artifactId>jaxb-core</artifactId>
-            <version>4.0.1</version>
+            <version>4.0.5</version>
         </dependency>
         <dependency>
             <groupId>com.sun.xml.bind</groupId>
             <artifactId>jaxb-impl</artifactId>
-            <version>4.0.1</version>
+            <version>4.0.5</version>
         </dependency>
         <dependency>
             <groupId>me.tongfei</groupId>
@@ -513,12 +513,12 @@
         <dependency>
             <groupId>org.jline</groupId>
             <artifactId>jline</artifactId>
-            <version>3.23.0</version>
+            <version>3.29.0</version>
         </dependency>
         <dependency>
             <groupId>dev.harrel</groupId>
             <artifactId>json-schema</artifactId>
-            <version>1.5.2</version>
+            <version>1.8.1</version>
         </dependency>
         <dependency>
             <groupId>net.sf.saxon</groupId>
@@ -551,7 +551,7 @@
         <dependency>
             <groupId>org.apache.ant</groupId>
             <artifactId>ant</artifactId>
-            <version>1.10.13</version>
+            <version>1.10.15</version>
             <scope>provided</scope>
             <exclusions>
                 <exclusion>
@@ -598,22 +598,24 @@
         <dependency>
             <groupId>net.sourceforge.pmd</groupId>
             <artifactId>pmd-ant</artifactId>
-            <version>7.10.0</version>
+            <version>7.12.0</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>net.sf.saxon</groupId>
+                    <artifactId>Saxon-HE</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>net.sourceforge.pmd</groupId>
             <artifactId>pmd-java</artifactId>
-            <version>7.10.0</version>
+            <version>7.12.0</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
-                    <groupId>net.sourceforge.saxon</groupId>
-                    <artifactId>saxon</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>net.sourceforge.saxon</groupId>
-                    <artifactId>saxon-dom</artifactId>
+                    <groupId>net.sf.saxon</groupId>
+                    <artifactId>Saxon-HE</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -800,7 +802,7 @@
         <dependency>
             <groupId>com.github.marschall</groupId>
             <artifactId>memoryfilesystem</artifactId>
-            <version>2.3.0</version>
+            <version>2.8.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>

@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.xceptance.xlt.common.XltConstants;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -133,7 +134,7 @@ public class ExclusiveDataProviderTest
         utf8Lines.add(UTF8STRING4);
         FileUtils.writeLines(utf8Data, "UTF-8", utf8Lines);
 
-        XltProperties.getInstance().setProperty("com.xceptance.xlt.data.directory", dataDir.getAbsolutePath());
+        XltProperties.getInstance().setProperty(XltConstants.PROP_DATA_DIRECTORY, dataDir.getAbsolutePath());
 
         SessionImpl.getCurrent().setAgentNumber(1);
         SessionImpl.getCurrent().setTotalAgentCount(3);
