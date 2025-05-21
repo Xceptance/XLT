@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Callable;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -104,8 +103,8 @@ public class Metrics
             if (otelEnabled)
             {
                 create("otel",
-                       () -> new OtelMetricsReporter(OpenTelemetryFactory.create(props, Metrics::defaultOtelProps)))
-                                                                                                                    .ifPresent(reporters::add);
+                       () -> new OtelMetricsReporter(OpenTelemetryFactory.create(props,
+                                                                                 (otelProps) -> Metrics.defaultOtelProps(otelProps)))).ifPresent(reporters::add);
             }
         }
         else
@@ -131,15 +130,21 @@ public class Metrics
     {
         // add some default settings if not already present
         otelProps.putIfAbsent("otel.sdk.disabled", String.valueOf(false));
-        otelProps.putIfAbsent("otel.logs.exporter", "otlp");
         otelProps.putIfAbsent("otel.exporter.otlp.endpoint", "http://localhost:4318");
         otelProps.putIfAbsent("otel.exporter.otlp.protocol", "http/protobuf");
+
+        otelProps.putIfAbsent("otel.logs.exporter", "otlp");
         otelProps.putIfAbsent("otel.blrp.schedule.delay", String.valueOf(2000));
+
+        otelProps.putIfAbsent("otel.metrics.exporter", "otlp");
+        otelProps.putIfAbsent("otel.metric.export.interval", String.valueOf(5000));
+
         /*
          * Default settings same as in OpenTelemetry SDK (no need to set them)
          */
         // otelProps.putIfAbsent("otel.blrp.max.queue.size", String.valueOf(2048));
         // otelProps.putIfAbsent("otel.blrp.max.export.batch.size", String.valueOf(512));
+        // otelProps.putIfAbsent("otel.blrp.export.timeout", String.valueOf(30000));
     }
 
     private static Optional<MetricsReporter> create(final String str, final Callable<MetricsReporter> reporterSupplier)
@@ -148,9 +153,9 @@ public class Metrics
         {
             return Optional.ofNullable(reporterSupplier.call());
         }
-        catch (final Exception e)
+        catch (final Throwable t)
         {
-            log.error("Failed to start metrics reporter '{}'", str, e);
+            log.error("Failed to start metrics reporter '{}'", str, t);
         }
 
         return Optional.empty();
