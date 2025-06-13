@@ -68,26 +68,6 @@
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-gpg-plugin</artifactId>
-                <version>3.0.1</version>
-                <configuration>
-                    <gpgArguments>
-                        <arg>--pinentry-mode</arg>
-                        <arg>loopback</arg>
-                    </gpgArguments>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.sonatype.central</groupId>
-                <artifactId>central-publishing-maven-plugin</artifactId>
-                <version>0.7.0</version>
-                <extensions>true</extensions>
-                <configuration>
-                    <publishingServerId>central</publishingServerId>
-                </configuration>
-            </plugin>
             <!-- Adds or updates the license header in source files. -->
             <!-- Usage: mvn license:format -->
             <plugin>
@@ -135,6 +115,72 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <!-- Build profile solely used to publish existing artifacts (built with ANT) to Maven Central  -->
+        <profile>
+            <id>central</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>build-helper-maven-plugin</artifactId>
+                        <version>3.6.1</version>
+                        <configuration>
+                            <artifacts>
+                              <artifact>
+                                <file>${project.artifactId}-${project.version}-javadoc.jar</file>
+                                <classifier>javadoc</classifier>
+                              </artifact>
+                              <artifact>
+                                <file>${project.artifactId}-${project.version}-sources.jar</file>
+                                <classifier>sources</classifier>
+                              </artifact>
+                              <artifact>
+                                <file>${project.artifactId}-${project.version}.zip</file>
+                                <type>zip</type>
+                              </artifact>
+                            </artifacts>
+                        </configuration>
+                        <executions>
+                          <execution>
+                            <id>attach-artifacts</id>
+                            <phase>package</phase>
+                            <goals>
+                              <goal>attach-artifact</goal>
+                            </goals>
+                          </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>3.2.7</version>
+                        <executions>
+                          <execution>
+                            <id>sign-artifacts</id>
+                            <phase>verify</phase>
+                            <goals>
+                              <goal>sign</goal>
+                            </goals>
+                          </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
+                        <version>0.7.0</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <publishingServerId>central</publishingServerId>
+                            <autoPublish>true</autoPublish>
+                            <waitUntil>published</waitUntil>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
     <dependencyManagement>
         <dependencies>
