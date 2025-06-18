@@ -198,6 +198,8 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     private static final String PROP_SLOWEST_REQUESTS_MIN_RUNTIME = PROP_PREFIX + "slowestRequests.minRuntime";
 
     private static final String PROP_SLOWEST_REQUESTS_MAX_RUNTIME = PROP_PREFIX + "slowestRequests.maxRuntime";
+    
+    private static final String PROP_CUSTOM_DATA_COLLECT_IN_ONE_FILE = PROP_PREFIX + "customDataLogs.collect";
 
     private final float chartsCompressionFactor;
 
@@ -230,6 +232,8 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     private final int slowestRequestsMinRuntime;
 
     private final int slowestRequestsMaxRuntime;
+    
+    private final boolean collectCustomDataInOneFile;
 
     private final List<String> styleSheetFileNames;
 
@@ -482,6 +486,8 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
         slowestRequestsTotal = getIntProperty(PROP_SLOWEST_REQUESTS_TOTAL, 500);
         slowestRequestsMinRuntime = getIntProperty(PROP_SLOWEST_REQUESTS_MIN_RUNTIME, 3_000);
         slowestRequestsMaxRuntime = getIntProperty(PROP_SLOWEST_REQUESTS_MAX_RUNTIME, 600_000);
+        
+        collectCustomDataInOneFile = getBooleanProperty(PROP_CUSTOM_DATA_COLLECT_IN_ONE_FILE, true);
 
         // load the transformation configuration
         outputFileNames = new ArrayList<>();
@@ -802,6 +808,11 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     public int getSlowestRequestsMaxRuntime()
     {
         return slowestRequestsMaxRuntime;
+    }
+    
+    public boolean getCollectCustomDataInOneFile()
+    {
+        return collectCustomDataInOneFile;
     }
 
     public List<String> getStyleSheetFileNames()

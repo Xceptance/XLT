@@ -18,15 +18,12 @@ package com.xceptance.xlt.report.providers;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.nio.file.attribute.FileAttribute;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -34,30 +31,25 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.vfs2.FileObject;
-import org.apache.commons.vfs2.FileSystemManager;
 import org.apache.commons.vfs2.FileType;
-import org.apache.commons.vfs2.VFS;
 
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.report.AbstractReportProvider;
 import com.xceptance.xlt.api.util.XltLogger;
 import com.xceptance.xlt.common.XltConstants;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration;
-import com.xceptance.xlt.util.XltPropertiesImpl;
 
 /**
  * Report provider generating a report fragment about the custom data logs collected during the test run
  */
 public class CustomLogsReportProvider extends AbstractReportProvider
 {
-
     private static final String CUSTOM_DATA = "custom_data_logs";
-
-    private static final String CUSTOM_DATA_COLLECT_IN_ONE_FILE = "com.xceptance.xlt.reportgenerator.customDataLogs.collect";
     
     private Map<String, ZipOutputStream> foundScopes = new HashMap<String, ZipOutputStream>();
     
     private Map<String, Path> foundScopeFiles = new HashMap<String, Path>();
+    private Map<String, String> foundScopeHeaders = new HashMap<String, String>();
     
     private String baseDir;
     private Path targetDir = null;
@@ -76,29 +68,16 @@ public class CustomLogsReportProvider extends AbstractReportProvider
         baseDir = results.getName().getBaseName();
         targetDir = Paths.get(getConfiguration().getReportDirectory() + File.separator + CUSTOM_DATA);
         
-        // get property value whether or not to keep the original directory structure for recorded custom data
+        // get property value whether or not to aggregate all recorded custom data logs into one data file per scope
+        // (or else to keep the original directory structure for recorded custom data)
         // (default: true = collect all data in one file per scope)
-        
-        final XltPropertiesImpl props;
-        try
-        {
-
-            final FileSystemManager fsMgr = VFS.getManager();
-            props = new XltPropertiesImpl(fsMgr.resolveFile(getConfiguration().getReportDirectory().getAbsolutePath()),
-                                          fsMgr.resolveFile(new File(getConfiguration().getReportDirectory(), XltConstants.CONFIG_DIR_NAME).getAbsolutePath()), false, true);
-            // collectCustomDataInOneFile = props.getProperty(CUSTOM_DATA_COLLECT_IN_ONE_FILE, true);
-            // TODO why is this not working?!
-
-        }
-        catch (Exception e)
-        {
-            XltLogger.runTimeLogger.warn("Exception on reading the properties in CustomLogsReportProvider: " + e.getMessage());
-            // just use default then
-        }
+        collectCustomDataInOneFile = ((ReportGeneratorConfiguration) getConfiguration()).getCollectCustomDataInOneFile();
+        // TODO why is this not working?!
         System.out.println("COLLECT CUSTOM DATA: " + collectCustomDataInOneFile); //TODO remove
         
         try
         {
+            // now traverse the results directory, find all logged data and add it to the report directory as zip
             findLogs(results, null);
         }
         catch (IOException e)
@@ -110,7 +89,7 @@ public class CustomLogsReportProvider extends AbstractReportProvider
             finishZipStreams(); // this closes the ZipOutputStreams, so this MUST be done
         }
 
-        // add the link/size info for found scopes
+        // add the link/size info for found scopes to the report
         Set<String> scopes = getResult();
         
         for (String scope : scopes)
@@ -157,9 +136,12 @@ public class CustomLogsReportProvider extends AbstractReportProvider
 
     /**
      * Recursive method to walk the directory tree searching for custom log files. 
-     * Found files are directly put into a zip archive for the corresponding custom data scope in the report.
+     * Found files are aggregated to one single log file for the corresponding custom data scope
+     * and later zipped for download (default), or directly put into a zip archive (which contains
+     * log files and folder structure just as recorded) for the corresponding custom data scope in 
+     * the report (if property com.xceptance.xlt.reportgenerator.customDataLogs.collect = false).
      * @param file the directory or file to start from
-     * @param collectCustomDataInOneFile (default: true) save all collected custom data for a scope in one single result file
+     * @param currentPath the file path we traversed up to this point
      * @throws IOException
      */
     private void findLogs (FileObject file, String currentPath) throws IOException
@@ -200,8 +182,18 @@ public class CustomLogsReportProvider extends AbstractReportProvider
         return;
     }
 
+    /**
+     * Directly puts a found custom data log file into the zip archive for the corresponding custom data scope
+     * (which contains log files and folder structure just as recorded) for the corresponding custom data scope in 
+     * the report (if property com.xceptance.xlt.reportgenerator.customDataLogs.collect = false).
+     * @param file
+     * @param currentPath
+     * @param filename
+     * @param scopeName
+     * @throws IOException
+     */
     private void copyCustomDataFileToZip(FileObject file, String currentPath, final String filename, final String scopeName)
-        throws FileNotFoundException, IOException
+        throws IOException
     {
         // if scope has already been used, there is a stream for it
         ZipOutputStream scopeStream = foundScopes.get(scopeName);
@@ -215,13 +207,19 @@ public class CustomLogsReportProvider extends AbstractReportProvider
         
         // add zip entry, copy current log file for scope   
         scopeStream.putNextEntry(new ZipEntry(makePath(currentPath, filename)));
-        writeDataToZip(file, scopeStream);
+        Files.copy(file.getPath(), scopeStream);
         scopeStream.closeEntry();
     }
 
+    /**
+     * Adds the contents of a custom data log file to the aggregated single log file for the corresponding
+     * custom data scope, which will be later zipped for download (see finishZipStreams).
+     * @param file
+     * @param scopeName
+     */
     private void aggregateDataForScope(FileObject file, final String scopeName)
     {
-        Path scopePath = getPathForScope(scopeName, file.getName().getExtension());
+        Path scopePath = targetDir.resolve(scopeName + "." + file.getName().getExtension()).toAbsolutePath().normalize();
         
         try
         {
@@ -239,9 +237,28 @@ public class CustomLogsReportProvider extends AbstractReportProvider
         {
             try (BufferedReader reader = Files.newBufferedReader(file.getPath()))
             {
-                //TODO cut header lines from subsequent files (if there is a header)
                 String line;
-                while ((line = reader.readLine()) != null) {
+                boolean first = true;
+                while ((line = reader.readLine()) != null) 
+                {
+                    if (first)
+                    {
+                        // check if the file uses a header
+                        first = false;
+                        if (foundScopeHeaders.get(scopeName) == null)
+                        {
+                            // if scope was not processed yet, just save the first line
+                            foundScopeHeaders.put(scopeName, line);
+                        }
+                        else
+                        {
+                            // if first line of other files for same scope looked equal, this is probably the header
+                            // in this case, the header line of following file should be ignored
+                            // TODO this may be wrong in case there is no header and the first line of data is equal
+                            if (foundScopeHeaders.get(scopeName).equals(line))
+                                continue;
+                        }
+                    }
                     scopeWriter.write(line);
                     scopeWriter.newLine();
                 }
@@ -255,12 +272,13 @@ public class CustomLogsReportProvider extends AbstractReportProvider
         foundScopeFiles.put(scopeName, scopePath);
     }
 
-    private Path getPathForScope(String scopeName, String extension)
-    {
-        return targetDir.resolve(scopeName + "." + extension).toAbsolutePath().normalize();
-        
-    }
-
+    /**
+     * Create a valid path for the current custom data log file that may be used in the directory structure of the 
+     * zip file (in case custom data logs are not aggregated into one single data file).
+     * @param currentPath
+     * @param currentFileName
+     * @return
+     */
     private String makePath(String currentPath, String currentFileName)
     {
         if (currentPath != null)
@@ -274,27 +292,10 @@ public class CustomLogsReportProvider extends AbstractReportProvider
         return currentFileName;
     }
 
-    private void writeDataToZip(FileObject file, ZipOutputStream scopeStream) throws IOException
-    {
-        //final boolean isCompressed = "gz".equalsIgnoreCase(file.getName().getExtension());
-        
-        InputStream in = /*isCompressed ? 
-            new GZIPInputStream(file.getContent().getInputStream(), 1024 * 16) :*/ //is my data EVER zipped? not right now, but maybe in the future?
-            file.getContent().getInputStream();
-        byte[] buffer = new byte[1024];
-
-        int len;
-        while ((len = in.read(buffer)) > 0) 
-        {
-            scopeStream.write(buffer, 0, len);
-        }
-        //TODO see DataReaderThread for how to count lines while reading for additional info
-        
-        in.close();
-    }
     
     /**
-     * Close all output streams that have been opened during file search for copying the found data to the report.
+     * In case we collect all custom logs into one aggregated data file per scope: zip this file.
+     * Else: close all zip output streams that have been opened during file search for copying the found data to the report.
      */
     private void finishZipStreams()
     {
@@ -308,7 +309,6 @@ public class CustomLogsReportProvider extends AbstractReportProvider
 
                    // Create a new zip entry for the aggregated file
                    // The entry name in the zip will be just the file's name
-                   System.out.println("DEBUG: zipEntry " + foundScopeFiles.get(scopeName).getFileName().toString());
                    ZipEntry zipEntry = new ZipEntry(foundScopeFiles.get(scopeName).getFileName().toString());
                    zos.putNextEntry(zipEntry);
 
@@ -317,6 +317,11 @@ public class CustomLogsReportProvider extends AbstractReportProvider
 
                    // Close the current zip entry
                    zos.closeEntry();
+                   
+                   //remove original aggregation file
+                   Files.deleteIfExists(foundScopeFiles.get(scopeName));
+                   
+                   foundScopes.put(scopeName, null); //keyset is used to add found data to report
                 }
                 catch (IOException e)
                 {
