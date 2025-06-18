@@ -293,7 +293,12 @@ public class CustomLogsReportProvider extends AbstractReportProvider
         return currentFileName;
     }
 
-    //TODO if this is not needed any more, remove
+    /**
+     * Writes contents of a file (that might be inside a zip archive) to a {@link ZipOutputStream}.
+     * @param file the file to copy to the zip archive
+     * @param scopeStream the {@link ZipOutputStream} that the file contents are written to
+     * @throws IOException
+     */
     private void writeDataToZip(FileObject file, ZipOutputStream scopeStream) throws IOException
     {
         //final boolean isCompressed = "gz".equalsIgnoreCase(file.getName().getExtension());
@@ -308,7 +313,7 @@ public class CustomLogsReportProvider extends AbstractReportProvider
         {
             scopeStream.write(buffer, 0, len);
         }
-        //TODO see DataReaderThread for how to count lines while reading for additional info
+        //TODO see aggregateDataForScope for how to count lines while reading for additional info
         
         in.close();
     }
