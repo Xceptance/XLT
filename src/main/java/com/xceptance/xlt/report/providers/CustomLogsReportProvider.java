@@ -20,6 +20,9 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -72,8 +75,6 @@ public class CustomLogsReportProvider extends AbstractReportProvider
         // (or else to keep the original directory structure for recorded custom data)
         // (default: true = collect all data in one file per scope)
         collectCustomDataInOneFile = ((ReportGeneratorConfiguration) getConfiguration()).getCollectCustomDataInOneFile();
-        // TODO why is this not working?!
-        System.out.println("COLLECT CUSTOM DATA: " + collectCustomDataInOneFile); //TODO remove
         
         try
         {
@@ -207,13 +208,13 @@ public class CustomLogsReportProvider extends AbstractReportProvider
         
         // add zip entry, copy current log file for scope   
         scopeStream.putNextEntry(new ZipEntry(makePath(currentPath, filename)));
-        Files.copy(file.getPath(), scopeStream);
+        writeDataToZip(file, scopeStream);
         scopeStream.closeEntry();
     }
 
     /**
      * Adds the contents of a custom data log file to the aggregated single log file for the corresponding
-     * custom data scope, which will be later zipped for download (see finishZipStreams).
+     * custom data scope, which will be later zipped for download (see {@link #finishZipStreams()}).
      * @param file
      * @param scopeName
      */
@@ -235,7 +236,7 @@ public class CustomLogsReportProvider extends AbstractReportProvider
         
         try (BufferedWriter scopeWriter = Files.newBufferedWriter(scopePath, StandardOpenOption.APPEND))
         {
-            try (BufferedReader reader = Files.newBufferedReader(file.getPath()))
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getContent().getInputStream(), StandardCharsets.UTF_8)))
             {
                 String line;
                 boolean first = true;
@@ -292,6 +293,25 @@ public class CustomLogsReportProvider extends AbstractReportProvider
         return currentFileName;
     }
 
+    //TODO if this is not needed any more, remove
+    private void writeDataToZip(FileObject file, ZipOutputStream scopeStream) throws IOException
+    {
+        //final boolean isCompressed = "gz".equalsIgnoreCase(file.getName().getExtension());
+        
+        InputStream in = /*isCompressed ? 
+            new GZIPInputStream(file.getContent().getInputStream(), 1024 * 16) :*/ //is my data EVER zipped? not right now, but maybe in the future?
+            file.getContent().getInputStream();
+        byte[] buffer = new byte[1024];
+
+        int len;
+        while ((len = in.read(buffer)) > 0) 
+        {
+            scopeStream.write(buffer, 0, len);
+        }
+        //TODO see DataReaderThread for how to count lines while reading for additional info
+        
+        in.close();
+    }
     
     /**
      * In case we collect all custom logs into one aggregated data file per scope: zip this file.
