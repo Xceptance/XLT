@@ -220,7 +220,12 @@ public class CustomLogsReportProvider extends AbstractReportProvider
      */
     private void aggregateDataForScope(FileObject file, final String scopeName)
     {
-        Path scopePath = targetDir.resolve(scopeName + "." + file.getName().getExtension()).toAbsolutePath().normalize();
+        Path scopePath = foundScopeFiles.get(scopeName);
+        if (scopePath == null)
+        {
+            scopePath = targetDir.resolve(scopeName + "." + file.getName().getExtension()).toAbsolutePath().normalize();
+            foundScopeFiles.put(scopeName, scopePath);
+        }
         
         try
         {
@@ -270,7 +275,6 @@ public class CustomLogsReportProvider extends AbstractReportProvider
             XltLogger.runTimeLogger.error("Error reading or writing file: " + e.getMessage() + e.getClass());
             // Continue processing other files even if one fails
         }
-        foundScopeFiles.put(scopeName, scopePath);
     }
 
     /**
