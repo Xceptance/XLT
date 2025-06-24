@@ -105,9 +105,9 @@ public class MasterControllerMain
         final boolean autoMode = commandLine.hasOption(OPTION_AUTO) || fafMode || sequentialMode;
         final boolean commandsMode = commandLine.hasOption(OPTION_COMMANDS);
 
-        // restrict relaxed connections to 'auto' mode
+        // restrict relaxed connections to 'auto' or commands mode
         final boolean isAgentControllerConnectionRelaxed = config.isAgentControllerConnectionRelaxed() &&
-                                                           commandLine.hasOption(OPTION_AUTO);
+                                                           (commandLine.hasOption(OPTION_AUTO) || commandsMode);
 
         // restrict results override to non-sequential 'auto' mode or commands mode
         if ((autoMode && !sequentialMode || commandsMode) && commandLine.hasOption(OPTION_RESULT_OVERRIDE))
