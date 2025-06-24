@@ -27,7 +27,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.zip.ZipEntry;
@@ -51,7 +53,7 @@ public class CustomLogsReportProvider extends AbstractReportProvider
     
     private Map<String, ZipOutputStream> foundScopes = new HashMap<String, ZipOutputStream>();
     
-    private Map<String, Path> foundScopeFiles = new HashMap<String, Path>();
+    private Map<String, List<Path>> foundScopeFiles = new HashMap<String, List<Path>>();
     private Map<String, String> foundScopeHeaders = new HashMap<String, String>();
     
     private String baseDir;
@@ -176,7 +178,7 @@ public class CustomLogsReportProvider extends AbstractReportProvider
                 }
                 else
                 {
-                    copyCustomDataFileToZip(file, currentPath, filename, scopeName);
+                    copyCustomDataFileToZip(file, currentPath, filename.substring(XltConstants.CUSTOM_LOG_PREFIX.length()), scopeName);
                 }
             }
         }
@@ -208,6 +210,7 @@ public class CustomLogsReportProvider extends AbstractReportProvider
         
         // add zip entry, copy current log file for scope   
         scopeStream.putNextEntry(new ZipEntry(makePath(currentPath, filename)));
+        System.out.println("zip entry for " + filename); //TODO remove
         writeDataToZip(file, scopeStream);
         scopeStream.closeEntry();
     }
@@ -220,11 +223,23 @@ public class CustomLogsReportProvider extends AbstractReportProvider
      */
     private void aggregateDataForScope(FileObject file, final String scopeName)
     {
-        Path scopePath = foundScopeFiles.get(scopeName);
-        if (scopePath == null)
+        // every file type is aggregated seperately, e.g. users.csv and users.log
+        // aggregated files with same scope (see example above) are then zipped into one archive users.zip for download
+
+        String scopeFile = scopeName + "." + file.getName().getExtension();
+        List<Path> scopePaths = foundScopeFiles.get(scopeName);
+        if (scopePaths == null)
         {
-            scopePath = targetDir.resolve(scopeName + "." + file.getName().getExtension()).toAbsolutePath().normalize();
-            foundScopeFiles.put(scopeName, scopePath);
+            scopePaths = new ArrayList<Path>();
+            foundScopeFiles.put(scopeName, scopePaths);
+            System.out.println("Added list for scope " + scopeName); //TODO remove
+        }
+        Path scopePath = targetDir.resolve(scopeFile).toAbsolutePath().normalize();
+        if (!scopePaths.contains(scopePath))
+        {
+            System.out.println("Added path for scope " + scopeName + ": " + scopePath); //TODO remove
+            scopePaths.add(scopePath);
+            //foundScopeFiles.put(scopeFile, scopePaths);
         }
         
         try
@@ -331,24 +346,30 @@ public class CustomLogsReportProvider extends AbstractReportProvider
         if (collectCustomDataInOneFile)
         {
             // in that case we only have collected data files yet, so we need to zip them now
+            // every file type is aggregated seperately, e.g. users.csv and users.log
+            // aggregated files with same scope (see example above) are then zipped into one archive users.zip for download
             for (String scopeName : foundScopeFiles.keySet())
             {
                 try (FileOutputStream fos = new FileOutputStream(targetDir.toString() + File.separator + scopeName + ".zip");
-                    ZipOutputStream zos = new ZipOutputStream(fos)) {
+                    ZipOutputStream zos = new ZipOutputStream(fos)) 
+                {
 
                    // Create a new zip entry for the aggregated file
                    // The entry name in the zip will be just the file's name
-                   ZipEntry zipEntry = new ZipEntry(foundScopeFiles.get(scopeName).getFileName().toString());
-                   zos.putNextEntry(zipEntry);
-
-                   // Read the bytes from the aggregated file and write them to the zip output stream
-                   Files.copy(foundScopeFiles.get(scopeName), zos);
-
-                   // Close the current zip entry
-                   zos.closeEntry();
-                   
-                   //remove original aggregation file
-                   Files.deleteIfExists(foundScopeFiles.get(scopeName));
+                   for (Path fileForScope : foundScopeFiles.get(scopeName))
+                   {
+                       ZipEntry zipEntry = new ZipEntry(fileForScope.getFileName().toString());
+                       zos.putNextEntry(zipEntry);
+    
+                       // Read the bytes from the aggregated file and write them to the zip output stream
+                       Files.copy(fileForScope, zos);
+    
+                       // Close the current zip entry
+                       zos.closeEntry();
+                       
+                       //remove original aggregation file
+                       Files.deleteIfExists(fileForScope);
+                   }
                    
                    foundScopes.put(scopeName, null); //keyset is used to add found data to report
                 }
