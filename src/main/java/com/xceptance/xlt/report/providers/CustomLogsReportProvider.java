@@ -49,6 +49,10 @@ import com.xceptance.xlt.report.ReportGeneratorConfiguration;
  */
 public class CustomLogsReportProvider extends AbstractReportProvider
 {
+    // XLT will mark custom user data files that is using a header with an extra comment row so it's predictable
+    // at report creation, we will remove this extra row (in both aggregated files and grouped archive files)
+    public static final String CUSTOM_DATA_HEADER_MARKER = "# Header inserted by XLT ====================";
+    
     private static final String CUSTOM_DATA = "custom_data_logs";
     
     private Map<String, ZipOutputStream> foundScopes = new HashMap<String, ZipOutputStream>();
@@ -320,21 +324,27 @@ public class CustomLogsReportProvider extends AbstractReportProvider
      */
     private void writeDataToZip(FileObject file, ZipOutputStream scopeStream) throws IOException
     {
-        //final boolean isCompressed = "gz".equalsIgnoreCase(file.getName().getExtension());
-        
-        InputStream in = /*isCompressed ? 
-            new GZIPInputStream(file.getContent().getInputStream(), 1024 * 16) :*/ //is my data EVER zipped? not right now, but maybe in the future?
-            file.getContent().getInputStream();
-        byte[] buffer = new byte[1024];
-
-        int len;
-        while ((len = in.read(buffer)) > 0) 
+        // InputStream in = /*isCompressed ? 
+        //    new GZIPInputStream(file.getContent().getInputStream(), 1024 * 16) :*/ //is my data EVER zipped? not right now, but maybe in the future?
+        //    file.getContent().getInputStream();
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getContent().getInputStream(), StandardCharsets.UTF_8)))
         {
-            scopeStream.write(buffer, 0, len);
+            //final boolean isCompressed = "gz".equalsIgnoreCase(file.getName().getExtension());
+            String line;
+            boolean first = true;
+            while ((line = reader.readLine()) != null) 
+            {
+                if (first)
+                {
+                    // check if the file uses a header
+                    first = false;
+                    if (CUSTOM_DATA_HEADER_MARKER.equals(line))
+                        continue;
+                }
+                scopeStream.write((line + System.lineSeparator()).getBytes("UTF-8"));
+                //TODO count lines while reading for additional info?
+            }
         }
-        //TODO see aggregateDataForScope for how to count lines while reading for additional info
-        
-        in.close();
     }
     
     /**
