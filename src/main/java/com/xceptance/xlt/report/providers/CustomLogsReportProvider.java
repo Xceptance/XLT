@@ -20,7 +20,6 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -58,7 +57,6 @@ public class CustomLogsReportProvider extends AbstractReportProvider
     private Map<String, ZipOutputStream> foundScopes = new HashMap<String, ZipOutputStream>();
     
     private Map<String, List<Path>> foundScopeFiles = new HashMap<String, List<Path>>();
-    private Map<String, String> foundScopeHeaders = new HashMap<String, String>();
     
     private String baseDir;
     private Path targetDir = null;
@@ -214,7 +212,6 @@ public class CustomLogsReportProvider extends AbstractReportProvider
         
         // add zip entry, copy current log file for scope   
         scopeStream.putNextEntry(new ZipEntry(makePath(currentPath, filename)));
-        System.out.println("zip entry for " + filename); //TODO remove
         writeDataToZip(file, scopeStream);
         scopeStream.closeEntry();
     }
@@ -236,14 +233,11 @@ public class CustomLogsReportProvider extends AbstractReportProvider
         {
             scopePaths = new ArrayList<Path>();
             foundScopeFiles.put(scopeName, scopePaths);
-            System.out.println("Added list for scope " + scopeName); //TODO remove
         }
         Path scopePath = targetDir.resolve(scopeFile).toAbsolutePath().normalize();
         if (!scopePaths.contains(scopePath))
         {
-            System.out.println("Added path for scope " + scopeName + ": " + scopePath); //TODO remove
             scopePaths.add(scopePath);
-            //foundScopeFiles.put(scopeFile, scopePaths);
         }
         
         try
@@ -268,20 +262,17 @@ public class CustomLogsReportProvider extends AbstractReportProvider
                 {
                     if (first)
                     {
-                        // check if the file uses a header
                         first = false;
-                        if (foundScopeHeaders.get(scopeName) == null)
+                        // check if the file uses a header
+                        if (CUSTOM_DATA_HEADER_MARKER.equals(line))
                         {
-                            // if scope was not processed yet, just save the first line
-                            foundScopeHeaders.put(scopeName, line);
-                        }
-                        else
-                        {
-                            // if first line of other files for same scope looked equal, this is probably the header
-                            // in this case, the header line of following file should be ignored
-                            // TODO this may be wrong in case there is no header and the first line of data is equal
-                            if (foundScopeHeaders.get(scopeName).equals(line))
+                            // do not write the XLT specific header marker to the target file, 
+                            // continue to actual header line
+                            line = reader.readLine();
+                            // if aggregated file already exists (has content): ignore header
+                            if (Files.size(scopePath) > 0)
                                 continue;
+                            // otherwise write header line
                         }
                     }
                     scopeWriter.write(line);
@@ -336,8 +327,8 @@ public class CustomLogsReportProvider extends AbstractReportProvider
             {
                 if (first)
                 {
-                    // check if the file uses a header
                     first = false;
+                    // check if the file uses a header: if yes, don't write the XLT-specific marker to the target file
                     if (CUSTOM_DATA_HEADER_MARKER.equals(line))
                         continue;
                 }
