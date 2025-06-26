@@ -622,9 +622,6 @@ public class TestLoadProfileConfiguration extends AbstractConfiguration
             throw e;
         }
 
-        // complete the function
-        loadFunction = LoadFunctionUtils.completeLoadFunctionIfNecessary(loadFunction);
-
         return loadFunction;
     }
 
@@ -696,9 +693,6 @@ public class TestLoadProfileConfiguration extends AbstractConfiguration
 
             throw e;
         }
-
-        // complete the function
-        loadFunction = LoadFunctionUtils.completeLoadFunctionIfNecessary(loadFunction);
 
         return loadFunction;
     }
