@@ -1,7 +1,7 @@
 (function($){
 
     function navigate(target) {
-        if (target != null) {
+        if (target) {
             // does it contain a #
             var pos = target.lastIndexOf("#");
 
