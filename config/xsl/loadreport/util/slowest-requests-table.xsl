@@ -199,6 +199,8 @@
         <xsl:choose>
             <xsl:when test="$showRequestInfo or $showResponseInfo">
                 <a>
+                    <xsl:attribute name="href"/>
+                    <xsl:attribute name="onclick">return false;</xsl:attribute>
                     <xsl:attribute name="data-rel">#request-details-<xsl:value-of select="$gid"/></xsl:attribute>
                     <xsl:attribute name="class">cluetip</xsl:attribute>
                     <xsl:value-of select="$name"/>
@@ -286,6 +288,8 @@
             <xsl:choose>
                 <xsl:when test="$ipAddressCount &gt; 1">
                     <a>
+                        <xsl:attribute name="href"/>
+                        <xsl:attribute name="onclick">return false;</xsl:attribute>
                         <xsl:attribute name="data-rel">#reported-ip-list-<xsl:value-of select="$gid"/></xsl:attribute>
                         <xsl:attribute name="class">cluetip</xsl:attribute>
                         <xsl:value-of select="$ipAddressCount"/> IP Addresses
