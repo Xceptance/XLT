@@ -36,6 +36,12 @@ import com.xceptance.xlt.common.XltConstants;
 public final class UrlUtils
 {
     /**
+     * RegEx pattern matching an IPv6 address in square brackets, optionally followed by a port. The pattern doesn't
+     * verify that the IPv6 address or the port have the valid format, so "[]:" or "[Z]:Z" will match as well.
+     */
+    private final static Pattern IPV6_HOST_PORT_PATTERN = Pattern.compile("^(\\[.*\\])(?::(.*))?$");
+
+    /**
      * Default constructor. Declared private to prevent external instantiation.
      */
     private UrlUtils()
@@ -152,7 +158,7 @@ public final class UrlUtils
         hostPort = parts[1];
 
         // check if the host is in IPv6 format
-        final Matcher ipv6Matcher = Pattern.compile("^(\\[.*\\])(?::(\\d+))?$").matcher(hostPort);
+        final Matcher ipv6Matcher = IPV6_HOST_PORT_PATTERN.matcher(hostPort);
         if (ipv6Matcher.matches())
         {
             host = ipv6Matcher.group(1);
