@@ -684,7 +684,7 @@
             <groupId>commons-fileupload</groupId>
             <artifactId>commons-fileupload</artifactId>
             <scope>test</scope>
-            <version>1.5</version>
+            <version>1.6.0</version>
             <exclusions>
                 <exclusion>
                     <groupId>commons-io</groupId>
