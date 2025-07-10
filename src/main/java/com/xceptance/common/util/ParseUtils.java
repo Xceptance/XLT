@@ -15,14 +15,17 @@
  */
 package com.xceptance.common.util;
 
+import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.ParseException;
+import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.google.common.net.InetAddresses;
 import com.xceptance.common.lang.StringUtils;
 
 /**
@@ -346,6 +349,35 @@ public final class ParseUtils
         {
             // if the String doesn't start with '+' or '-', parse the entire String and return an absolute value
             return new AbsoluteOrRelativeNumber<>(false, function.apply(trimmedString));
+        }
+    }
+
+    /**
+     * Parses a String containing a comma-separated list of IP addresses and returns them as an array of
+     * {@link InetAddress}.
+     *
+     * @param s
+     *            string to parse
+     * @return an array containing the parsed IP addresses as {@link InetAddress}
+     * @throws ParseException
+     *             if any of the comma-separated values isn't a valid IP address
+     */
+    public static InetAddress[] parseIpAddresses(final String s) throws ParseException
+    {
+        if (org.apache.commons.lang3.StringUtils.isBlank(s))
+        {
+            return new InetAddress[0];
+        }
+
+        try
+        {
+            // split the IPs with limit "-1", so empty entries aren't just ignored and still count as errors
+            // (e.g. the input "192.0.2.100," should return ["192.0.2.100", ""] instead of just ["192.0.2.100"])
+            return Arrays.stream(StringUtils.split(s, ",", -1)).map(i -> InetAddresses.forString(i.trim())).toArray(InetAddress[]::new);
+        }
+        catch (final IllegalArgumentException e)
+        {
+            throw new ParseException(e.getMessage(), 0);
         }
     }
 

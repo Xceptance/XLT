@@ -15,18 +15,24 @@
  */
 package com.xceptance.common.util;
 
+import java.net.InetAddress;
 import java.net.URI;
 import java.net.URL;
 import java.text.ParseException;
 
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import com.xceptance.xlt.util.JUnitParamsUtil;
 
 /**
  * Tests the implementation of {@link ParseUtils}.
  * 
  * @author Hartmut Arlt (Xceptance Software Technologies GmbH)
  */
+@RunWith(JUnitParamsRunner.class)
 public class ParseUtilsTest
 {
 
@@ -616,5 +622,112 @@ public class ParseUtilsTest
     public void parseAbsoluteOrRelative_invalidValue() throws ParseException
     {
         ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseTimePeriod, "++1h");
+    }
+
+    @Test
+    @Parameters(value =
+        {
+            "192.0.2.100                            | 192.0.2.100", //
+            "2001:db8:1111:2222:aaaa:bbbb:1a2b:cd34 | 2001:db8:1111:2222:aaaa:bbbb:1a2b:cd34", //
+            "2001:dB8:1111:2222:aaaa:BBBB:1a2B:Cd34 | 2001:db8:1111:2222:aaaa:bbbb:1a2b:cd34", //
+            "2001:db8:1:22:333:a:bb:ccc             | 2001:db8:1:22:333:a:bb:ccc", //
+            "2001:dB8::1:0                          | 2001:db8:0:0:0:0:1:0" //
+        })
+    public void parseIpAddresses_SingleIp_DifferentIpFormats(final String ip, final String expectedResult) throws ParseException
+    {
+        final InetAddress[] addresses = ParseUtils.parseIpAddresses(ip);
+        Assert.assertNotNull(addresses);
+        Assert.assertEquals(1, addresses.length);
+        Assert.assertEquals(expectedResult, addresses[0].getHostAddress());
+    }
+
+    public void parseIpAddresses_SingleIp_ExtraWhitespaces() throws ParseException
+    {
+        final String ip = "192.0.2.100";
+        final InetAddress[] addresses = ParseUtils.parseIpAddresses(String.format(" %s \t ", ip));
+        Assert.assertNotNull(addresses);
+        Assert.assertEquals(1, addresses.length);
+        Assert.assertEquals(ip, addresses[0].getHostAddress());
+    }
+
+    @Test
+    @Parameters(value =
+        {
+            "192.0.2.100 | 2001:db8:1:22:a:bb:1a2b:cd34 | 2001:db8:0:0:0:0:1:0 | 203.0.113.200",  // unique IPs
+            "192.0.2.100 | 2001:db8:0:0:0:0:1:0         | 2001:db8:0:0:0:0:1:0 | 192.0.2.100",    // duplicate IPs
+        })
+    public void parseIpAddresses_MultipleIps(final String ip1, final String ip2, final String ip3, final String ip4) throws ParseException
+    {
+        final InetAddress[] addresses = ParseUtils.parseIpAddresses(String.join(",", ip1, ip2, ip3, ip4));
+        Assert.assertNotNull(addresses);
+        Assert.assertEquals(4, addresses.length);
+        Assert.assertEquals(ip1, addresses[0].getHostAddress());
+        Assert.assertEquals(ip2, addresses[1].getHostAddress());
+        Assert.assertEquals(ip3, addresses[2].getHostAddress());
+        Assert.assertEquals(ip4, addresses[3].getHostAddress());
+    }
+
+    @Test
+    public void parseIpAddresses_MultipleIps_ExtraWhitespaces() throws ParseException
+    {
+        final String ip1 = "192.0.2.100";
+        final String ip2 = "2001:db8:1:22:a:bb:1a2b:cd34";
+        final String ip3 = "2001:db8:0:0:0:0:1:0";
+        final String ip4 = "203.0.113.200";
+
+        final InetAddress[] addresses = ParseUtils.parseIpAddresses(String.format(" \t %s \t , \t %s  ,  %s \t ,  %s  ", ip1, ip2, ip3,
+                                                                                  ip4));
+        Assert.assertNotNull(addresses);
+        Assert.assertEquals(4, addresses.length);
+        Assert.assertEquals(ip1, addresses[0].getHostAddress());
+        Assert.assertEquals(ip2, addresses[1].getHostAddress());
+        Assert.assertEquals(ip3, addresses[2].getHostAddress());
+        Assert.assertEquals(ip4, addresses[3].getHostAddress());
+    }
+
+    @Test
+    @Parameters(source = JUnitParamsUtil.EmptyStringOrNullParamProvider.class)
+    public void parseIpAddresses_EmptyStringOrNull(final String emptyStringOrNull) throws ParseException
+    {
+        final InetAddress[] addresses = ParseUtils.parseIpAddresses(emptyStringOrNull);
+        Assert.assertNotNull(addresses);
+        Assert.assertEquals(0, addresses.length);
+    }
+
+    @Test(expected = ParseException.class)
+    @Parameters(source = InvalidIpOverrideParamProvider.class)
+    public void parseIpAddresses_InvalidIp(final String invalidIp) throws ParseException
+    {
+        ParseUtils.parseIpAddresses(invalidIp);
+    }
+
+    /**
+     * Test parameter provider class for different invalid IP override Strings.
+     */
+    public static class InvalidIpOverrideParamProvider
+    {
+        @SuppressWarnings("unused")
+        public static Object[] provideInvalidIpOverrideParams()
+        {
+            return JUnitParamsUtil.wrapEachParam(new Object[]
+                                                     {
+                                                         "example.org",                    // hostname instead of IP
+                                                         "192.0.2.256",                    // IPv4 address: invalid value
+                                                         "192.0. 2.100",                   // IPv4 address: contains whitespace
+                                                         "2001:db8:1:2:3:4:5:g",           // IPv6 address: invalid value
+                                                         "2001:db8:: 1:0",                 // IPv6 address: contains whitespace
+                                                         "[2001:db8::1:0]",                // IPv6 address: value in brackets
+                                                         "192.0.2.100,192.0.2.256",        // one valid, one invalid address
+                                                         "192.0.2.100;192.0.2.101",        // invalid separator
+                                                         "192.0.2.100,,192.0.2.101",       // no IP between separators
+                                                         "192.0.2.100, \t ,192.0.2.101",   // whitespaces between separators
+                                                         "192.0.2.100,",                   // extra separator at the end
+                                                         "192.0.2.100, \t ",               // extra separator and whitespaces at the end
+                                                         ",192.0.2.100",                   // extra separator in the beginning
+                                                         " \t ,192.0.2.100",               // extra separator and whitespaces in the beginning
+                                                         ",",                              // only one separator
+                                                         ",,,,,,,,,,"                      // only multiple separators
+                                                     });
+        }
     }
 }
