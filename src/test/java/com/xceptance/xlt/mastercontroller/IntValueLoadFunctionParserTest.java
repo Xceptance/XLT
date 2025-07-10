@@ -252,7 +252,7 @@ public class IntValueLoadFunctionParserTest
     }
 
     @Test
-    public void testParseLoadFunction_firstPairHasRelativeTimeAndLoadFactor() throws ParseException
+    public void testParseLoadFunction_firstPairHasRelativeTimeAndValue() throws ParseException
     {
         // first pair has relative time and value, so the default starting point is added at the start of the function
         final String loadFunctionProperty = "+15m/+2 16m/4";
@@ -435,14 +435,14 @@ public class IntValueLoadFunctionParserTest
     }
 
     @Test(expected = ParseException.class)
-    public void testParseLoadFunction_incomplete_missingLoadFactor() throws ParseException
+    public void testParseLoadFunction_incomplete_missingValue() throws ParseException
     {
         final String loadFunctionProperty = " 1h / ";
         new IntValueLoadFunctionParser().parse(loadFunctionProperty);
     }
 
     @Test(expected = ParseException.class)
-    public void testParseLoadFunction_incomplete_missingTimeAndLoadFactor() throws ParseException
+    public void testParseLoadFunction_incomplete_missingTimeAndValue() throws ParseException
     {
         final String loadFunctionProperty = " 1h / 3;/";
         new IntValueLoadFunctionParser().parse(loadFunctionProperty);
