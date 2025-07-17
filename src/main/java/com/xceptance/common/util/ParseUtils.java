@@ -353,32 +353,43 @@ public final class ParseUtils
     }
 
     /**
-     * Parses a String containing a comma-separated list of IP addresses and returns them as an array of
-     * {@link InetAddress}.
+     * Parses a String containing a list of IP addresses (delimited by commas, semicolons, spaces or tabs) and returns
+     * them as an array of {@link InetAddress}.
      *
      * @param s
      *            string to parse
      * @return an array containing the parsed IP addresses as {@link InetAddress}
      * @throws ParseException
-     *             if any of the comma-separated values isn't a valid IP address
+     *             if any of the parsed values isn't a valid IP address
      */
     public static InetAddress[] parseIpAddresses(final String s) throws ParseException
     {
-        if (org.apache.commons.lang3.StringUtils.isBlank(s))
-        {
-            return new InetAddress[0];
-        }
-
         try
         {
-            // split the IPs with limit "-1", so empty entries aren't just ignored and still count as errors
-            // (e.g. the input "192.0.2.100," should return ["192.0.2.100", ""] instead of just ["192.0.2.100"])
-            return Arrays.stream(StringUtils.split(s, ",", -1)).map(i -> InetAddresses.forString(i.trim())).toArray(InetAddress[]::new);
+            return Arrays.stream(parseDelimitedString(s)).map(InetAddresses::forString).toArray(InetAddress[]::new);
         }
         catch (final IllegalArgumentException e)
         {
             throw new ParseException(e.getMessage(), 0);
         }
+    }
+
+    /**
+     * Parses a String containing a list of values delimited by commas, semicolons, spaces or tabs, and returns the
+     * values in an array. Blank values in the list are not included in the result.
+     *
+     * @param s
+     *            String containing values separated by commas, semicolons, spaces or tabs
+     * @return an array containing the values as Strings (blank values are ignored)
+     */
+    public static String[] parseDelimitedString(final String s)
+    {
+        if (s == null)
+        {
+            return new String[0];
+        }
+
+        return org.apache.commons.lang3.StringUtils.split(s, ",; \t");
     }
 
     /**

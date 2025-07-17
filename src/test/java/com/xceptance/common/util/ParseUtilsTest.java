@@ -25,7 +25,7 @@ import junitparams.Parameters;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import com.xceptance.xlt.util.JUnitParamsUtil;
+import util.JUnitParamsUtils;
 
 /**
  * Tests the implementation of {@link ParseUtils}.
@@ -668,28 +668,38 @@ public class ParseUtilsTest
     }
 
     @Test
-    public void parseIpAddresses_MultipleIps_ExtraWhitespaces() throws ParseException
+    @Parameters(method = "provideValidDelimiterCombinations")
+    public void parseIpAddresses_MultipleIps_DifferentDelimiters(final String leadingDelimiter, final String delimiter1,
+                                                                 final String delimiter2, final String trailingDelimiter)
+        throws ParseException
     {
         final String ip1 = "192.0.2.100";
         final String ip2 = "2001:db8:1:22:a:bb:1a2b:cd34";
-        final String ip3 = "2001:db8:0:0:0:0:1:0";
-        final String ip4 = "203.0.113.200";
+        final String ip3 = "203.0.113.200";
+        final String ipString = String.join("", leadingDelimiter, ip1, delimiter1, ip2, delimiter2, ip3, trailingDelimiter);
 
-        final InetAddress[] addresses = ParseUtils.parseIpAddresses(String.format(" \t %s \t , \t %s  ,  %s \t ,  %s  ", ip1, ip2, ip3,
-                                                                                  ip4));
+        final InetAddress[] addresses = ParseUtils.parseIpAddresses(ipString);
         Assert.assertNotNull(addresses);
-        Assert.assertEquals(4, addresses.length);
+        Assert.assertEquals(3, addresses.length);
         Assert.assertEquals(ip1, addresses[0].getHostAddress());
         Assert.assertEquals(ip2, addresses[1].getHostAddress());
         Assert.assertEquals(ip3, addresses[2].getHostAddress());
-        Assert.assertEquals(ip4, addresses[3].getHostAddress());
     }
 
     @Test
-    @Parameters(source = JUnitParamsUtil.EmptyStringOrNullParamProvider.class)
-    public void parseIpAddresses_EmptyStringOrNull(final String emptyStringOrNull) throws ParseException
+    @Parameters(method = "provideValidDelimiters")
+    public void parseIpAddresses_OnlyDelimiters(final String delimiterString) throws ParseException
     {
-        final InetAddress[] addresses = ParseUtils.parseIpAddresses(emptyStringOrNull);
+        final InetAddress[] addresses = ParseUtils.parseIpAddresses(delimiterString);
+        Assert.assertNotNull(addresses);
+        Assert.assertEquals(0, addresses.length);
+    }
+
+    @Test
+    @Parameters(source = JUnitParamsUtils.BlankStringOrNullParamProvider.class)
+    public void parseIpAddresses_BlankStringOrNull(final String blankStringOrNull) throws ParseException
+    {
+        final InetAddress[] addresses = ParseUtils.parseIpAddresses(blankStringOrNull);
         Assert.assertNotNull(addresses);
         Assert.assertEquals(0, addresses.length);
     }
@@ -701,6 +711,102 @@ public class ParseUtilsTest
         ParseUtils.parseIpAddresses(invalidIp);
     }
 
+    @Test
+    public void parseDelimitedString_SingleValue()
+    {
+        final String value = "abc";
+
+        final String[] parsedValues = ParseUtils.parseDelimitedString(value);
+        Assert.assertNotNull(parsedValues);
+        Assert.assertEquals(1, parsedValues.length);
+        Assert.assertEquals(value, parsedValues[0]);
+    }
+
+    @Test
+    @Parameters(method = "provideValidDelimiterCombinations")
+    public void parseDelimitedString_MultipleValues_DifferentDelimiters(final String leadingDelimiter, final String delimiter1,
+                                                                        final String delimiter2, final String trailingDelimiter)
+    {
+        // test that values containing non-delimiter special characters are parsed as expected
+        final String value1 = "abc";
+        final String value2 = "xyz.:-_~/|@123";
+        final String value3 = "+-*#=!?§$%&{}[]()<>";
+        final String stringToParse = String.join("", leadingDelimiter, value1, delimiter1, value2, delimiter2, value3, trailingDelimiter);
+
+        final String[] parsedValues = ParseUtils.parseDelimitedString(stringToParse);
+        Assert.assertNotNull(parsedValues);
+        Assert.assertEquals(3, parsedValues.length);
+        Assert.assertEquals(value1, parsedValues[0]);
+        Assert.assertEquals(value2, parsedValues[1]);
+        Assert.assertEquals(value3, parsedValues[2]);
+    }
+
+    @Test
+    @Parameters(method = "provideValidDelimiters")
+    public void parseDelimitedString_OnlyDelimiters(final String delimiterString)
+    {
+        final String[] parsedValues = ParseUtils.parseDelimitedString(delimiterString);
+        Assert.assertNotNull(parsedValues);
+        Assert.assertEquals(0, parsedValues.length);
+    }
+
+    @Test
+    @Parameters(source = JUnitParamsUtils.BlankStringOrNullParamProvider.class)
+    public void parseDelimitedString_BlankStringOrNull(final String blankStringOrNull)
+    {
+        final String[] parsedValues = ParseUtils.parseDelimitedString(blankStringOrNull);
+        Assert.assertNotNull(parsedValues);
+        Assert.assertEquals(0, parsedValues.length);
+    }
+
+    /**
+     * Test parameter provider method. Returns Strings containing only valid delimiter characters.
+     */
+    @SuppressWarnings("unused")
+    private Object[] provideValidDelimiters()
+    {
+        return JUnitParamsUtils.wrapEachParam(new Object[]
+            {
+                " ",                // single space
+                "  ",               // multiple spaces
+                "\t",               // single tab
+                "\t\t",             // multiple tabs
+                ",",                // single comma
+                ",,",               // multiple commas
+                ";",                // single semicolon
+                ";;",               // multiple semicolons
+                " \t,;",            // one of each delimiter
+                "\t,,;\t\t  ;; , "  // random combination of delimiters
+            });
+    }
+
+    /**
+     * Test parameter provider method. Returns different combinations of valid delimiter Strings. Each parameter set
+     * contains four values that are intended to be interpreted as a leading delimiter, two delimiters between values
+     * and a trailing delimiter.
+     */
+    @SuppressWarnings("unused")
+    private Object[] provideValidDelimiterCombinations()
+    {
+        return new Object[]
+            {
+                JUnitParamsUtils.wrapParams("", " ", " ", ""),                   // space-delimited
+                JUnitParamsUtils.wrapParams("", "\t", "\t", ""),                 // tab-delimited
+                JUnitParamsUtils.wrapParams("", ",", ",", ""),                   // comma-delimited
+                JUnitParamsUtils.wrapParams("", ";", ";", ""),                   // semicolon-delimited
+                JUnitParamsUtils.wrapParams(" ", " ", " ", " "),                 // leading & trailing space
+                JUnitParamsUtils.wrapParams("\t", "\t", "\t", "\t"),             // leading & trailing tab
+                JUnitParamsUtils.wrapParams(",", ",", ",", ","),                 // leading & trailing comma
+                JUnitParamsUtils.wrapParams(";", ";", ";", ";"),                 // leading & trailing semicolon
+                JUnitParamsUtils.wrapParams(" ", ",", ";", "\t"),                // mixed delimiters 1
+                JUnitParamsUtils.wrapParams(",", ";", " ", ";"),                 // mixed delimiters 2
+                JUnitParamsUtils.wrapParams("\t, ", " ,\t", "\t; ", " ;\t"),     // whitespaces around delimiters
+                JUnitParamsUtils.wrapParams(" \t\t ", "   ", " \t\t ", "   "),   // multiple whitespace delimiters
+                JUnitParamsUtils.wrapParams(";;", ",,", ";;", ",,"),             // multiple non-whitespace delimiters
+                JUnitParamsUtils.wrapParams(" ,, \t;,;", " , ; ", " ;; \t,,, ", " ;;\t;, "), // random combination
+            };
+    }
+
     /**
      * Test parameter provider class for different invalid IP override Strings.
      */
@@ -709,25 +815,17 @@ public class ParseUtilsTest
         @SuppressWarnings("unused")
         public static Object[] provideInvalidIpOverrideParams()
         {
-            return JUnitParamsUtil.wrapEachParam(new Object[]
-                                                     {
-                                                         "example.org",                    // hostname instead of IP
-                                                         "192.0.2.256",                    // IPv4 address: invalid value
-                                                         "192.0. 2.100",                   // IPv4 address: contains whitespace
-                                                         "2001:db8:1:2:3:4:5:g",           // IPv6 address: invalid value
-                                                         "2001:db8:: 1:0",                 // IPv6 address: contains whitespace
-                                                         "[2001:db8::1:0]",                // IPv6 address: value in brackets
-                                                         "192.0.2.100,192.0.2.256",        // one valid, one invalid address
-                                                         "192.0.2.100;192.0.2.101",        // invalid separator
-                                                         "192.0.2.100,,192.0.2.101",       // no IP between separators
-                                                         "192.0.2.100, \t ,192.0.2.101",   // whitespaces between separators
-                                                         "192.0.2.100,",                   // extra separator at the end
-                                                         "192.0.2.100, \t ",               // extra separator and whitespaces at the end
-                                                         ",192.0.2.100",                   // extra separator in the beginning
-                                                         " \t ,192.0.2.100",               // extra separator and whitespaces in the beginning
-                                                         ",",                              // only one separator
-                                                         ",,,,,,,,,,"                      // only multiple separators
-                                                     });
+            return JUnitParamsUtils.wrapEachParam(new Object[]
+                {
+                    "example.org",              // hostname instead of IP
+                    "192.0.2.256",              // IPv4 address: invalid value
+                    "192.0. 2.100",             // IPv4 address: contains whitespace
+                    "2001:db8:1:2:3:4:5:g",     // IPv6 address: invalid value
+                    "2001:db8:: 1:0",           // IPv6 address: contains whitespace
+                    "[2001:db8::1:0]",          // IPv6 address: value in brackets
+                    "192.0.2.100,192.0.2.256",  // one valid, one invalid address
+                    "192.0.2.100|192.0.2.101"   // invalid delimiter
+                });
         }
     }
 }

@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.xceptance.xlt.util;
+package util;
 
 import org.junit.Assert;
 import org.junit.Test;
 
-public class JUnitParamsUtilTest
+public class JUnitParamsUtilsTest
 {
     @Test
     public void wrapParams_SingleParam()
@@ -27,7 +27,7 @@ public class JUnitParamsUtilTest
         Assert.assertArrayEquals(new Object[]
             {
                 param
-            }, JUnitParamsUtil.wrapParams(param));
+            }, JUnitParamsUtils.wrapParams(param));
     }
 
     @Test
@@ -38,7 +38,7 @@ public class JUnitParamsUtilTest
         Assert.assertArrayEquals(new Object[]
             {
                 param1, param2
-            }, JUnitParamsUtil.wrapParams(param1, param2));
+            }, JUnitParamsUtils.wrapParams(param1, param2));
     }
 
     @Test
@@ -48,7 +48,7 @@ public class JUnitParamsUtilTest
             {
                 " abc,123 "
             };
-        final Object[][] wrappedParams = JUnitParamsUtil.wrapEachParam(params);
+        final Object[][] wrappedParams = JUnitParamsUtils.wrapEachParam(params);
 
         Assert.assertEquals(1, wrappedParams.length);
         Assert.assertEquals(1, wrappedParams[0].length);
@@ -62,7 +62,7 @@ public class JUnitParamsUtilTest
             {
                 " abc,123 ", "xyz|"
             };
-        final Object[][] wrappedParams = JUnitParamsUtil.wrapEachParam(params);
+        final Object[][] wrappedParams = JUnitParamsUtils.wrapEachParam(params);
 
         Assert.assertEquals(2, wrappedParams.length);
         Assert.assertEquals(1, wrappedParams[0].length);

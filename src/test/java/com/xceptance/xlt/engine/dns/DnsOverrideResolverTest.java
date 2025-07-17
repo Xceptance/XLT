@@ -28,7 +28,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
-import com.xceptance.xlt.util.JUnitParamsUtil;
+import util.JUnitParamsUtils;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -91,8 +91,8 @@ public class DnsOverrideResolverTest
     }
 
     @Test
-    @Parameters(source = JUnitParamsUtil.EmptyStringParamProvider.class)
-    public void resolve_EmptyOverride(final String emptyString) throws UnknownHostException
+    @Parameters(source = JUnitParamsUtils.BlankStringParamProvider.class)
+    public void resolve_BlankOverride(final String blankString) throws UnknownHostException
     {
         final String hostname = "example.org";
         final InetAddress[] fallbackAddresses =
@@ -100,7 +100,7 @@ public class DnsOverrideResolverTest
                 InetAddresses.forString("192.0.2.255")
             };
 
-        setOverrideProperty(hostname, emptyString);
+        setOverrideProperty(hostname, blankString);
         Mockito.doReturn(fallbackAddresses).when(fallbackResolver).resolve(hostname);
 
         // overrides with empty IP String are ignored, so host name is resolved using the fallback resolver
@@ -165,8 +165,8 @@ public class DnsOverrideResolverTest
         final String ip2c = "2001:db8:0:0:0:0:1:0";
 
         setOverrideProperty(hostname1, String.join(",", ip1a, ip1b));
-        // add a few extra whitespaces to the second override to see this is read correctly as well
-        setOverrideProperty(hostname2, String.format(" \t %s \t , \t %s , %s \t ", ip2a, ip2b, ip2c));
+        // add a few extra delimiters to the second override to verify this is read correctly as well
+        setOverrideProperty(hostname2, String.format(" ,; \t %s , ;\t; %s ,,, %s \t, ;; ", ip2a, ip2b, ip2c));
 
         final DnsOverrideResolver resolver = new DnsOverrideResolver(fallbackResolver);
 
@@ -227,9 +227,9 @@ public class DnsOverrideResolverTest
 
     @Test
     @Parameters(source = ParseUtilsTest.InvalidIpOverrideParamProvider.class)
-    public void resolve_OverridesWithInvalidIpAddresses(final String ip) throws UnknownHostException
+    public void resolve_OverridesWithInvalidIpAddresses(final String invalidIpString) throws UnknownHostException
     {
-        setOverrideProperty("example.org", ip);
+        setOverrideProperty("example.org", invalidIpString);
 
         Assert.assertThrows(XltException.class, () -> new DnsOverrideResolver(fallbackResolver));
 
@@ -318,7 +318,7 @@ public class DnsOverrideResolverTest
         final String ip2c = "2001:db8:0:0:0:0:1:0";
 
         setOverrideProperty(hostname1, String.join(",", ip1a, ip1b));
-        setOverrideProperty(hostname2, String.format(" \t %s \t , \t %s , %s \t ", ip2a, ip2b, ip2c));
+        setOverrideProperty(hostname2, String.format(" ,; \t %s , ;\t; %s ,,, %s \t, ;; ", ip2a, ip2b, ip2c));
 
         final Map<String, InetAddress[]> overrides = DnsOverrideResolver.readHostNameOverrides();
         Assert.assertNotNull(overrides);

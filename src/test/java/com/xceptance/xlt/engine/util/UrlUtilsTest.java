@@ -29,7 +29,7 @@ import org.junit.Test;
 
 import com.xceptance.xlt.common.XltConstants;
 import org.junit.runner.RunWith;
-import com.xceptance.xlt.util.JUnitParamsUtil;
+import util.JUnitParamsUtils;
 
 /**
  * Tests the implementation of utility class {@link UrlUtils}.
@@ -549,18 +549,18 @@ public class UrlUtilsTest
     {
         return new Object[]
             {
-                JUnitParamsUtil.wrapParams("example.org", "", ""), //
-                JUnitParamsUtil.wrapParams("example.org", " ", ""), //
-                JUnitParamsUtil.wrapParams("example.org", "", "/abc"), //
-                JUnitParamsUtil.wrapParams("example.org", " ", "/abc"), //
-                JUnitParamsUtil.wrapParams("192.0.2.100", "", ""), //
-                JUnitParamsUtil.wrapParams("192.0.2.100", " ", ""), //
-                JUnitParamsUtil.wrapParams("192.0.2.100", "", "/abc"), //
-                JUnitParamsUtil.wrapParams("192.0.2.100", " ", "/abc"), //
-                JUnitParamsUtil.wrapParams("[2001:db8:1111:2222:aaaa:BBBB:1a2b:cd34]", "", ""), //
-                JUnitParamsUtil.wrapParams("[2001:db8:1111:2222:aaaa:BBBB:1a2b:cd34]", " ", ""), //
-                JUnitParamsUtil.wrapParams("[2001:db8:1111:2222:aaaa:BBBB:1a2b:cd34]", "", "/abc"), //
-                JUnitParamsUtil.wrapParams("[2001:db8:1111:2222:aaaa:BBBB:1a2b:cd34]", " ", "/abc"), //
+                JUnitParamsUtils.wrapParams("example.org", "", ""), //
+                JUnitParamsUtils.wrapParams("example.org", " ", ""), //
+                JUnitParamsUtils.wrapParams("example.org", "", "/abc"), //
+                JUnitParamsUtils.wrapParams("example.org", " ", "/abc"), //
+                JUnitParamsUtils.wrapParams("192.0.2.100", "", ""), //
+                JUnitParamsUtils.wrapParams("192.0.2.100", " ", ""), //
+                JUnitParamsUtils.wrapParams("192.0.2.100", "", "/abc"), //
+                JUnitParamsUtils.wrapParams("192.0.2.100", " ", "/abc"), //
+                JUnitParamsUtils.wrapParams("[2001:db8:1111:2222:aaaa:BBBB:1a2b:cd34]", "", ""), //
+                JUnitParamsUtils.wrapParams("[2001:db8:1111:2222:aaaa:BBBB:1a2b:cd34]", " ", ""), //
+                JUnitParamsUtils.wrapParams("[2001:db8:1111:2222:aaaa:BBBB:1a2b:cd34]", "", "/abc"), //
+                JUnitParamsUtils.wrapParams("[2001:db8:1111:2222:aaaa:BBBB:1a2b:cd34]", " ", "/abc"), //
             };
     }
 
@@ -571,7 +571,7 @@ public class UrlUtilsTest
     @SuppressWarnings("unused")
     private Object[] provideUrlsWithInvalidPort()
     {
-        return JUnitParamsUtil.wrapEachParam(new Object[]
+        return JUnitParamsUtils.wrapEachParam(new Object[]
             {
                 "example.org:123 ", //
                 "example.org: 123", //

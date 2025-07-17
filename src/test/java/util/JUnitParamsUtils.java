@@ -13,22 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.xceptance.xlt.util;
+package util;
 
 import java.util.Arrays;
 
 /**
  * Util class to assist in running tests with JUnitParams. Contains helper methods and common test parameter providers.
  */
-public class JUnitParamsUtil
+public class JUnitParamsUtils
 {
     /**
-     * Test parameter provider class for different empty String parameters.
+     * Test parameter provider class for different blank String parameters.
      */
-    public static class EmptyStringParamProvider
+    public static class BlankStringParamProvider
     {
         @SuppressWarnings("unused")
-        public static Object[] provideEmptyStringParams()
+        public static Object[] provideBlankStringParams()
         {
             return wrapEachParam(new Object[]
                 {
@@ -40,9 +40,10 @@ public class JUnitParamsUtil
     }
 
     /**
-     * Test parameter provider class for different empty String parameters as well as "null".
+     * Test parameter provider class for different blank String parameters as well as "null". Extends
+     * {@link BlankStringParamProvider} and returns the blank Strings provided by that class.
      */
-    public static class EmptyStringOrNullParamProvider extends EmptyStringParamProvider
+    public static class BlankStringOrNullParamProvider extends BlankStringParamProvider
     {
         @SuppressWarnings("unused")
         public static Object[] provideNullParam()
@@ -101,6 +102,6 @@ public class JUnitParamsUtil
      */
     public static Object[][] wrapEachParam(final Object[] params)
     {
-        return Arrays.stream(params).map(JUnitParamsUtil::wrapParams).toArray(Object[][]::new);
+        return Arrays.stream(params).map(JUnitParamsUtils::wrapParams).toArray(Object[][]::new);
     }
 }
