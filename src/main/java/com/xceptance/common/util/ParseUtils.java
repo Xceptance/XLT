@@ -15,14 +15,17 @@
  */
 package com.xceptance.common.util;
 
+import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.ParseException;
+import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.google.common.net.InetAddresses;
 import com.xceptance.common.lang.StringUtils;
 
 /**
@@ -347,6 +350,46 @@ public final class ParseUtils
             // if the String doesn't start with '+' or '-', parse the entire String and return an absolute value
             return new AbsoluteOrRelativeNumber<>(false, function.apply(trimmedString));
         }
+    }
+
+    /**
+     * Parses a String containing a list of IP addresses (delimited by commas, semicolons, spaces or tabs) and returns
+     * them as an array of {@link InetAddress}.
+     *
+     * @param s
+     *            string to parse
+     * @return an array containing the parsed IP addresses as {@link InetAddress}
+     * @throws ParseException
+     *             if any of the parsed values isn't a valid IP address
+     */
+    public static InetAddress[] parseIpAddresses(final String s) throws ParseException
+    {
+        try
+        {
+            return Arrays.stream(parseDelimitedString(s)).map(InetAddresses::forString).toArray(InetAddress[]::new);
+        }
+        catch (final IllegalArgumentException e)
+        {
+            throw new ParseException(e.getMessage(), 0);
+        }
+    }
+
+    /**
+     * Parses a String containing a list of values delimited by commas, semicolons, spaces or tabs, and returns the
+     * values in an array. Blank values in the list are not included in the result.
+     *
+     * @param s
+     *            String containing values separated by commas, semicolons, spaces or tabs
+     * @return an array containing the values as Strings (blank values are ignored)
+     */
+    public static String[] parseDelimitedString(final String s)
+    {
+        if (s == null)
+        {
+            return new String[0];
+        }
+
+        return org.apache.commons.lang3.StringUtils.split(s, ",; \t");
     }
 
     /**
