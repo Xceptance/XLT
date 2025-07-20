@@ -17,7 +17,6 @@ package com.xceptance.xlt.report;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Executors;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
@@ -26,7 +25,6 @@ import org.apache.commons.logging.LogFactory;
 
 import com.xceptance.xlt.api.report.PostProcessedDataContainer;
 import com.xceptance.xlt.api.report.ReportProvider;
-import com.xceptance.xlt.api.util.XltLogger;
 
 /**
  * Processes parsed data records. Processing means passing a data record to all configured report providers. Since data
@@ -104,41 +102,46 @@ class StatisticsProcessor
         {
             return;
         }
-        
-        final List<Thread> virtualThreads = new ArrayList<>();
-        for (final ReportProvider provider : this.reportProviders)
-        {
-            final Thread virtualThread = Thread.ofVirtual().start(() -> 
-            {
-                provider.lock();
-                try
-                {
-                    provider.processAll(dataContainer);
-                }
-                catch (final Throwable t)
-                {
-                    LOG.error("Failed to process data record, discarding full chunk", t);
-                }
-                finally
-                {
-                    provider.unlock();
-                }                
-            });
-            
-            virtualThreads.add(virtualThread);
-        }
 
-        // wait for completion of all virtual threads
-        for (Thread thread : virtualThreads) 
+        // get your own list
+        final List<ReportProvider> providerList = new ArrayList<>(reportProviders);
+
+        // run as long as we have not all data put into the report providers
+        while (providerList.isEmpty() == false)
         {
+            ReportProvider provider = null;
+
+            for (int i = 0; i < providerList.size(); i++)
+            {
+                final boolean wasLocked = providerList.get(i).lock();
+                if (wasLocked)
+                {
+                    provider = providerList.remove(i);
+                    break;
+                }
+            }
+
+            if (provider == null)
+            {
+                // nothing found, try again
+                continue;
+            }
+
+            // we have one, we can process the data
             try
             {
-                thread.join();
+                provider.processAll(dataContainer);
             }
-            catch (InterruptedException e)
+            catch (final Throwable t)
             {
-                // that should not happen, but we have to check anyway
-                XltLogger.reportLogger.error("Interrupted while waiting for report provider thread to finish", e);
+                LOG.error("Failed to process data record, discarding full chunk", t);
+            }
+            finally
+            {
+                provider.unlock();
+
+                // be fair to others and give them a chance
+                Thread.yield();
             }
         }
 
