@@ -87,6 +87,11 @@ public class RequestProcessingRule
     private final int continueOnNoMatchAtId;
 
     /**
+     * Our reusable StringBuilder to build the new name.
+     */
+    private final StringBuilder newNameBuilder = new StringBuilder();
+    
+    /**
      * Constructor.
      *
      * @param newName
@@ -426,8 +431,8 @@ public class RequestProcessingRule
         if (newNamePlaceholders.length > 0)
         {
             // rename the request
-            final StringBuilder result = new StringBuilder(newName.length() + 20);
-            result.append(newName);
+            newNameBuilder.setLength(0);
+            newNameBuilder.append(newName);
 
             // search as long as there are placeholders in the name
             for (final PlaceholderPosition placeholder : newNamePlaceholders)
@@ -438,11 +443,11 @@ public class RequestProcessingRule
                 final CharSequence replacement = requestFilter.getReplacementText(requestData, placeholder.capturingGroupIndex);
 
                 // replace the placeholder with the real values
-                result.insert(placeholder.start, replacement);
+                newNameBuilder.insert(placeholder.start, replacement);
             }
 
             // set the final name
-            requestData.setName(result.toString());
+            requestData.setName(newNameBuilder.toString());
         }
         else
         {
