@@ -16,7 +16,6 @@
 package com.xceptance.xlt.report.mergerules;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -343,7 +342,7 @@ public class RequestProcessingRule
 
         
         // to avoid calculations later, we revert the positions
-        Collections.reverse(positions);
+        // Collections.reverse(positions);
         
         // get us an efficient array for later
         return positions;
@@ -365,7 +364,8 @@ public class RequestProcessingRule
         int displacement = 0;
         
         // we already reversed the positions, so do it the other way around
-        for (int i = positions.size() - 1; i >= 0; i--)
+        // for (int i = positions.size() - 1; i >= 0; i--)
+        for (int i = 0; i < positions.size(); i++)
         {
             final PlaceholderPosition pos = positions.get(i);
             if (!pos.used)
@@ -430,6 +430,7 @@ public class RequestProcessingRule
             result.append(newName);
 
             // search as long as there are placeholders in the name
+            int displacement = 0;
             for (final PlaceholderPosition placeholder : newNamePlaceholders)
             {
                 final AbstractRequestFilter requestFilter = placeholder.requestFilter;
@@ -438,7 +439,8 @@ public class RequestProcessingRule
                 final CharSequence replacement = requestFilter.getReplacementText(requestData, placeholder.capturingGroupIndex);
 
                 // replace the placeholder with the real values
-                result.insert(placeholder.start, replacement);
+                result.insert(placeholder.start + displacement, replacement);
+                displacement += replacement.length();
             }
 
             // set the final name
