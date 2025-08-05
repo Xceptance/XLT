@@ -426,7 +426,7 @@ public class RequestProcessingRule
         if (newNamePlaceholders.length > 0)
         {
             // rename the request
-            final StringBuilder result = new StringBuilder(newName.length() + 20);
+            final StringBuilder result = new StringBuilder(50);
             result.append(newName);
 
             // search as long as there are placeholders in the name
