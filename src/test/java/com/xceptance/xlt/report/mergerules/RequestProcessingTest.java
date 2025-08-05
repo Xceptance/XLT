@@ -16,20 +16,43 @@
 package com.xceptance.xlt.report.mergerules;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 
-import org.junit.Assert;
+import java.util.List;
+
 import org.junit.Test;
 
 import com.xceptance.xlt.api.engine.RequestData;
-import com.xceptance.xlt.api.util.XltCharBuffer;
+import com.xceptance.xlt.report.mergerules.RequestProcessingRule.AgentNameExcludePattern;
+import com.xceptance.xlt.report.mergerules.RequestProcessingRule.AgentNamePattern;
+import com.xceptance.xlt.report.mergerules.RequestProcessingRule.ContentTypeExcludePattern;
+import com.xceptance.xlt.report.mergerules.RequestProcessingRule.ContentTypePattern;
+import com.xceptance.xlt.report.mergerules.RequestProcessingRule.ContinueOnMatchAtId;
+import com.xceptance.xlt.report.mergerules.RequestProcessingRule.ContinueOnNoMatchAtId;
+import com.xceptance.xlt.report.mergerules.RequestProcessingRule.DropOnMatch;
+import com.xceptance.xlt.report.mergerules.RequestProcessingRule.HttpMethodExcludePattern;
+import com.xceptance.xlt.report.mergerules.RequestProcessingRule.HttpMethodPattern;
+import com.xceptance.xlt.report.mergerules.RequestProcessingRule.NewName;
+import com.xceptance.xlt.report.mergerules.RequestProcessingRule.RequestNameExcludePattern;
+import com.xceptance.xlt.report.mergerules.RequestProcessingRule.RequestNamePattern;
+import com.xceptance.xlt.report.mergerules.RequestProcessingRule.RunTimeRanges;
+import com.xceptance.xlt.report.mergerules.RequestProcessingRule.StatusCodeExcludePattern;
+import com.xceptance.xlt.report.mergerules.RequestProcessingRule.StatusCodePattern;
+import com.xceptance.xlt.report.mergerules.RequestProcessingRule.StopOnMatch;
+import com.xceptance.xlt.report.mergerules.RequestProcessingRule.TransactionNameExcludePattern;
+import com.xceptance.xlt.report.mergerules.RequestProcessingRule.TransactionNamePattern;
+import com.xceptance.xlt.report.mergerules.RequestProcessingRule.UrlExcludePattern;
+import com.xceptance.xlt.report.mergerules.RequestProcessingRule.UrlPattern;
 
 /**
- * Tests the request renaming magic implemented by {@link RequestProcessingRule}.
+ * Tests the request renaming magic implemented by {@link RequestProcessingRule}
+ * and processing several rules including skip by {@link DataParserThread}. .
  *
  * @author Hartmut Arlt (Xceptance Software Technologies GmbH)
  * @author Rene Schwietzke (Xceptance GmbH)
  */
-public class RequestProcessingRuleTest
+public class RequestProcessingTest
 {
     /*
      * For simplicity the following tests use content type pattern only since all pattern-based request filters share
@@ -37,178 +60,326 @@ public class RequestProcessingRuleTest
      */
 
     @Test
-    public void testPatternIncludeOnly() throws Exception
+    public void testContinueOnMatch() throws Exception
     {
-        final RequestProcessingRule rule = new RequestProcessingRule("fooBar ({c:0})",
-                                                                     "", "", "text/html", "", "", "", "", "", true,
-                                                                     "", "", "", "", "", "", "", false);
+        final var rule = new RequestProcessingRule(42, 
+                                                   new NewName("fooBar"),
+                                                   new RequestNamePattern("request"), 
+                                                   new UrlPattern(""),
+                                                   new ContentTypePattern(""), 
+                                                   new StatusCodePattern(""), 
+                                                   new AgentNamePattern(""),   
+                                                   new TransactionNamePattern(""), 
+                                                   new HttpMethodPattern(""),  
+                                                   new RunTimeRanges(""),
+                                                   new StopOnMatch(false), 
+                                                   new RequestNameExcludePattern(""), 
+                                                   new UrlExcludePattern(""),
+                                                   new ContentTypeExcludePattern(""), 
+                                                   new StatusCodeExcludePattern(""),
+                                                   new AgentNameExcludePattern(""), 
+                                                   new TransactionNameExcludePattern(""),
+                                                   new HttpMethodExcludePattern(""), 
+                                                   new ContinueOnMatchAtId(99), 
+                                                   new ContinueOnNoMatchAtId(42),         
+                                                   new DropOnMatch(false)); 
 
-        final String name = "baz";
-        final RequestData data = new RequestData(name);
-        data.setContentType("image/jpeg");
-
-        // no match
-        Assert.assertEquals(RequestProcessingRule.ReturnState.CONTINUE, rule.process(data));
-        // unchanged
-        Assert.assertEquals(name, data.getName());
-
-        data.setContentType("text/html");
-
-        // match and stop requested on match
-        Assert.assertEquals(RequestProcessingRule.ReturnState.STOP, rule.process(data));
-        // changed
-        Assert.assertEquals("fooBar (text/html)", data.getName());
+        final var data = new RequestData("request");
+        assertEquals(99, rule.process(data));
+        assertEquals("fooBar", data.getName());
     }
 
     @Test
-    public void testPatternExcludeOnly_StopOnMatch() throws Exception
+    public void testContinueOnNoMatch() throws Exception
     {
-        final RequestProcessingRule rule = new RequestProcessingRule("fooBar ({c:0})",
-                                                                     "", "", "", "", "", "", "", "", true,
-                                                                     "", "", "text/html", "", "", "", "", false);
+        final var rule = new RequestProcessingRule(42, 
+                                                   new NewName("fooBar"),
+                                                   new RequestNamePattern("request"), 
+                                                   new UrlPattern(""),
+                                                   new ContentTypePattern(""), 
+                                                   new StatusCodePattern(""), 
+                                                   new AgentNamePattern(""),   
+                                                   new TransactionNamePattern(""), 
+                                                   new HttpMethodPattern(""),  
+                                                   new RunTimeRanges(""),
+                                                   new StopOnMatch(false), 
+                                                   new RequestNameExcludePattern(""), 
+                                                   new UrlExcludePattern(""),
+                                                   new ContentTypeExcludePattern(""), 
+                                                   new StatusCodeExcludePattern(""),
+                                                   new AgentNameExcludePattern(""), 
+                                                   new TransactionNameExcludePattern(""),
+                                                   new HttpMethodExcludePattern(""), 
+                                                   new ContinueOnMatchAtId(42), 
+                                                   new ContinueOnNoMatchAtId(77),         
+                                                   new DropOnMatch(false)); 
 
+        final var data = new RequestData("not-matching");
+        assertEquals(77, rule.process(data));
+        assertEquals("not-matching", data.getName());
+    }
+
+
+    @Test
+    public void testPatternIncludeOnly_NoMatch() throws Exception
+    {
+        final var rule = new RequestProcessingRule(0, 
+                                                   new NewName("fooBar ({c:0})"),
+                                                   new RequestNamePattern(""), 
+                                                   new UrlPattern(""),
+                                                   new ContentTypePattern("text/html"), 
+                                                   new StatusCodePattern(""), 
+                                                   new AgentNamePattern(""),   
+                                                   new TransactionNamePattern(""), 
+                                                   new HttpMethodPattern(""),  
+                                                   new RunTimeRanges(""),
+                                                   new StopOnMatch(true), 
+                                                   new RequestNameExcludePattern(""), 
+                                                   new UrlExcludePattern(""),
+                                                   new ContentTypeExcludePattern(""), 
+                                                   new StatusCodeExcludePattern(""),
+                                                   new AgentNameExcludePattern(""), 
+                                                   new TransactionNameExcludePattern(""),
+                                                   new HttpMethodExcludePattern(""), 
+                                                   new ContinueOnMatchAtId(0), 
+                                                   new ContinueOnNoMatchAtId(0),         
+                                                   new DropOnMatch(false)); 
+
+        final var name = "original";
+        final var data = new RequestData(name);
+        data.setContentType("image/jpeg");
+
+        // return own id because we told it so
+        assertEquals(0, rule.process(data));
+        // no match, unchanged
+        assertEquals(name, data.getName());
+    }
+
+    @Test
+    public void testPatternIncludeOnly_MatchAndStop() throws Exception
+    {
+        final var rule = new RequestProcessingRule(0, 
+                                                   new NewName("fooBar ({c:0})"),
+                                                   new RequestNamePattern(""), 
+                                                   new UrlPattern(""),
+                                                   new ContentTypePattern("text/html"), 
+                                                   new StatusCodePattern(""), 
+                                                   new AgentNamePattern(""),   
+                                                   new TransactionNamePattern(""), 
+                                                   new HttpMethodPattern(""),  
+                                                   new RunTimeRanges(""),
+                                                   new StopOnMatch(true), 
+                                                   new RequestNameExcludePattern(""), 
+                                                   new UrlExcludePattern(""),
+                                                   new ContentTypeExcludePattern(""), 
+                                                   new StatusCodeExcludePattern(""),
+                                                   new AgentNameExcludePattern(""), 
+                                                   new TransactionNameExcludePattern(""),
+                                                   new HttpMethodExcludePattern(""), 
+                                                   new ContinueOnMatchAtId(0), 
+                                                   new ContinueOnNoMatchAtId(0),         
+                                                   new DropOnMatch(false)); 
+
+        final var name = "original";
+        final var data = new RequestData(name);
+        data.setContentType("text/html");
+
+        assertEquals(RequestProcessingRule.STOP, rule.process(data));
+        assertEquals("fooBar (text/html)", data.getName());
+    }
+
+    @Test
+    public void testPatternIncludeOnly_MatchAndDontStop() throws Exception
+    {
+        final var rule = new RequestProcessingRule(0, 
+                                                   new NewName("fooBar ({c:0})"),
+                                                   new RequestNamePattern(""), 
+                                                   new UrlPattern(""),
+                                                   new ContentTypePattern("text/html"), 
+                                                   new StatusCodePattern(""), 
+                                                   new AgentNamePattern(""),   
+                                                   new TransactionNamePattern(""), 
+                                                   new HttpMethodPattern(""),  
+                                                   new RunTimeRanges(""),
+                                                   new StopOnMatch(false), 
+                                                   new RequestNameExcludePattern(""), 
+                                                   new UrlExcludePattern(""),
+                                                   new ContentTypeExcludePattern(""), 
+                                                   new StatusCodeExcludePattern(""),
+                                                   new AgentNameExcludePattern(""), 
+                                                   new TransactionNameExcludePattern(""),
+                                                   new HttpMethodExcludePattern(""), 
+                                                   new ContinueOnMatchAtId(0), 
+                                                   new ContinueOnNoMatchAtId(0),         
+                                                   new DropOnMatch(false)); 
+
+        final var name = "original";
+        final var data = new RequestData(name);
+        data.setContentType("text/html");
+
+        assertEquals(0, rule.process(data));
+        assertEquals("fooBar (text/html)", data.getName());
+    }
+
+    @Test
+    public void testPatternExcludeOnly_StopOnMatch_EmptyInclude() throws Exception
+    {
+        final var rule = new RequestProcessingRule(0, 
+                                                   new NewName("fooBar ({c:0})"),
+                                                   new RequestNamePattern(""), 
+                                                   new UrlPattern(""),
+                                                   new ContentTypePattern(""), 
+                                                   new StatusCodePattern(""), 
+                                                   new AgentNamePattern(""),   
+                                                   new TransactionNamePattern(""), 
+                                                   new HttpMethodPattern(""),  
+                                                   new RunTimeRanges(""),
+                                                   new StopOnMatch(true), 
+                                                   new RequestNameExcludePattern(""), 
+                                                   new UrlExcludePattern(""),
+                                                   new ContentTypeExcludePattern("text/html"), 
+                                                   new StatusCodeExcludePattern(""),
+                                                   new AgentNameExcludePattern(""), 
+                                                   new TransactionNameExcludePattern(""),
+                                                   new HttpMethodExcludePattern(""), 
+                                                   new ContinueOnMatchAtId(0), 
+                                                   new ContinueOnNoMatchAtId(0),         
+                                                   new DropOnMatch(false)); 
         final String name = "baz";
         final RequestData data = new RequestData(name);
         data.setContentType("image/jpeg");
 
         // exclude does not match, hence all matches; hence we stop
-        Assert.assertEquals(RequestProcessingRule.ReturnState.STOP, rule.process(data));
-        Assert.assertEquals("fooBar (image/jpeg)", data.getName());
+        assertEquals(RequestProcessingRule.STOP, rule.process(data));
+        assertEquals("fooBar (image/jpeg)", data.getName());
 
         data.setName(name);
         data.setContentType("text/html");
 
-        // exlude matches, hence the rules does not apply
-        Assert.assertEquals(RequestProcessingRule.ReturnState.CONTINUE, rule.process(data));
-        Assert.assertEquals(name, data.getName());
+        // exclude matches, hence the rules does not apply
+        assertEquals(0, rule.process(data));
+        assertEquals(name, data.getName());
     }
 
     @Test
-    public void testPatternExcludeOnly_NoStopOnMatch() throws Exception
+    public void testPatternBoth_StopOnMatch() throws Exception
     {
-        final RequestProcessingRule rule = new RequestProcessingRule("fooBar ({c:0})",
-                                                                     "", "", "", "", "", "", "", "", false,
-                                                                     "", "", "text/html", "", "", "", "", false);
-
+        final var rule = new RequestProcessingRule(0, 
+                                                   new NewName("fooBar ({c:0})"),
+                                                   new RequestNamePattern(""),
+                                                   new UrlPattern(""),
+                                                   new ContentTypePattern("text/jpeg"), 
+                                                   new StatusCodePattern(""), 
+                                                   new AgentNamePattern(""),   
+                                                   new TransactionNamePattern(""), 
+                                                   new HttpMethodPattern(""),  
+                                                   new RunTimeRanges(""),
+                                                   new StopOnMatch(true), 
+                                                   new RequestNameExcludePattern(""), 
+                                                   new UrlExcludePattern(""),
+                                                   new ContentTypeExcludePattern("text/html"), 
+                                                   new StatusCodeExcludePattern(""),
+                                                   new AgentNameExcludePattern(""), 
+                                                   new TransactionNameExcludePattern(""),
+                                                   new HttpMethodExcludePattern(""), 
+                                                   new ContinueOnMatchAtId(0), 
+                                                   new ContinueOnNoMatchAtId(0),         
+                                                   new DropOnMatch(false)); 
         final String name = "baz";
         final RequestData data = new RequestData(name);
-        data.setContentType("image/jpeg");
+        data.setContentType("text/jpeg");
 
-        // exclude does not match, hence all matches; hence we continue
-        Assert.assertEquals(RequestProcessingRule.ReturnState.CONTINUE, rule.process(data));
-        Assert.assertEquals("fooBar (image/jpeg)", data.getName());
+        // exclude does not match, hence all matches; hence we stop
+        assertEquals(RequestProcessingRule.STOP, rule.process(data));
+        assertEquals("fooBar (text/jpeg)", data.getName());
 
         data.setName(name);
         data.setContentType("text/html");
 
-        // exlude matches, hence the rule does not apply
-        Assert.assertEquals(RequestProcessingRule.ReturnState.CONTINUE, rule.process(data));
-        Assert.assertEquals(name, data.getName());
+        // exclude matches, hence the rules does not apply
+        assertEquals(0, rule.process(data));
+        assertEquals(name, data.getName());
+    }
+
+    @Test
+    public void testPatternBoth_BothMatch() throws Exception
+    {
+        final var rule = new RequestProcessingRule(0, 
+                                                   new NewName("fooBar ({c:0})"),
+                                                   new RequestNamePattern(""),
+                                                   new UrlPattern(""),
+                                                   new ContentTypePattern("text/"), 
+                                                   new StatusCodePattern(""), 
+                                                   new AgentNamePattern(""),   
+                                                   new TransactionNamePattern(""), 
+                                                   new HttpMethodPattern(""),  
+                                                   new RunTimeRanges(""),
+                                                   new StopOnMatch(false), 
+                                                   new RequestNameExcludePattern(""), 
+                                                   new UrlExcludePattern(""),
+                                                   new ContentTypeExcludePattern("text/html"), 
+                                                   new StatusCodeExcludePattern(""),
+                                                   new AgentNameExcludePattern(""), 
+                                                   new TransactionNameExcludePattern(""),
+                                                   new HttpMethodExcludePattern(""), 
+                                                   new ContinueOnMatchAtId(0), 
+                                                   new ContinueOnNoMatchAtId(0),         
+                                                   new DropOnMatch(false)); 
+        final String name = "baz";
+        final RequestData data = new RequestData(name);
+        data.setContentType("text/html");
+
+        // both match, we continue and don't rename
+        assertEquals(0, rule.process(data));
+        assertEquals(name, data.getName());
     }
 
 
-    @Test
-    public void testPatternIncludeExclude() throws Exception
-    {
-        final RequestProcessingRule rule = new RequestProcessingRule("fooBar ({c:0})", "", "", "html", "", "", "", "", "", true,
-                                                                     "", "", "xhtml", "", "", "", "", false);
 
+    @Test
+    public void testPatternBoth_NoneMatch() throws Exception
+    {
+        final var rule = new RequestProcessingRule(0, 
+                                                   new NewName("fooBar ({c:0})"),
+                                                   new RequestNamePattern(""),
+                                                   new UrlPattern(""),
+                                                   new ContentTypePattern("html"), 
+                                                   new StatusCodePattern(""), 
+                                                   new AgentNamePattern(""),   
+                                                   new TransactionNamePattern(""), 
+                                                   new HttpMethodPattern(""),  
+                                                   new RunTimeRanges(""),
+                                                   new StopOnMatch(true), 
+                                                   new RequestNameExcludePattern(""), 
+                                                   new UrlExcludePattern(""),
+                                                   new ContentTypeExcludePattern("xhtml"), 
+                                                   new StatusCodeExcludePattern(""),
+                                                   new AgentNameExcludePattern(""), 
+                                                   new TransactionNameExcludePattern(""),
+                                                   new HttpMethodExcludePattern(""), 
+                                                   new ContinueOnMatchAtId(0), 
+                                                   new ContinueOnNoMatchAtId(0),         
+                                                   new DropOnMatch(false)); 
         final String name = "baz";
         final RequestData data = new RequestData(name);
         data.setContentType("image/jpeg");
 
         // include fails, exclude fails, just process normally
-        Assert.assertEquals(RequestProcessingRule.ReturnState.CONTINUE, rule.process(data));
-        Assert.assertEquals(name, data.getName());
+        assertEquals(0, rule.process(data));
+        assertEquals(name, data.getName());
 
         // include matches, stop applies
         data.setContentType("text/html");
-        Assert.assertEquals(RequestProcessingRule.ReturnState.STOP, rule.process(data));
-        Assert.assertEquals("fooBar (html)", data.getName());
+        assertEquals(RequestProcessingRule.STOP, rule.process(data));
+        assertEquals("fooBar (html)", data.getName());
 
         // reset
         data.setName(name);
         data.setContentType("text/xhtml");
         // include does match, exclude does match -> NOT MATCH
-        Assert.assertEquals(RequestProcessingRule.ReturnState.CONTINUE, rule.process(data));
-        Assert.assertEquals(name, data.getName()); // no change
+        assertEquals(0, rule.process(data));
+        assertEquals(name, data.getName()); // no change
     }
-
-    /**
-     * <pre>
-     * ################################################################################
-     * #
-     * # Project-Specific Report Generator Settings
-     * #
-     * # When creating the report, all requests with the same name will go into the
-     * # same bucket. This initial bucketing can be customized by renaming requests.
-     * # Via renaming you can either create fewer, but more general buckets or more,
-     * # but more specific buckets. Alternatively, you may also choose to delete
-     * # certain requests altogether.
-     * #
-     * # This process is controlled by "request processing rules" (formerly known as
-     * # "request merge rules"). A rule knows how to select all requests of interest
-     * # and how to process them.
-     * #
-     * # You may specify one or more rules as outlined below:
-     * #
-     * #   com.xceptance.xlt.reportgenerator.requestMergeRules.<num>.<param> = <value>
-     * #
-     * # The rules are sorted numerically based on <num> and are applied in ascending
-     * # order.
-     * #
-     * # The supported values for "<param>" are:
-     * #
-     * #   newName .................. The new request name (required, unless
-     * #                              dropOnMatch is true).
-     * #
-     * #   namePattern [n] .......... Reg-ex defining a matching request name
-     * #   transactionPattern [t] ... Reg-ex defining a matching transaction name
-     * #   agentPattern [a] ......... Reg-ex defining a matching agent name
-     * #   contentTypePattern [c] ... Reg-ex defining a matching response content type
-     * #   statusCodePattern [s] .... Reg-ex defining a matching status code
-     * #   urlPattern [u] ........... Reg-ex defining a matching request URL
-     * #   httpMethodPattern [m] .... Reg-ex defining a matching HTTP method
-     * #   runTimeRanges [r] ........ List of run time segment boundaries
-     * #
-     * #   stopOnMatch .............. Whether or not to process the next rule even if
-     * #                              the current rule applied (defaults to true).
-     * #
-     * #   dropOnMatch .............. Whether or not to discard a matching request
-     * #                              instead of renaming it (defaults to false). If
-     * #                              the rule applied, request processing will stop.
-     * #
-     * # At least one of namePattern, transactionPattern, agentPattern,
-     * # contentTypePattern, statusCodePattern, urlPattern, httpMethodpattern or
-     * # runTimeRanges must be specified. If more than one pattern is given, all given
-     * # patterns must match.
-     * #
-     * # Note that newName may contain placeholders, which are replaced with the
-     * # specified capturing group from the respective pattern. The placeholder
-     * # format is as follows: {<category>:<capturingGroupIndex>}, where <category> is
-     * # the type code of the respective pattern (given in brackets above) and
-     * # <capturingGroupIndex> denotes the respective capturing group in the selected
-     * # pattern (does not apply to runTimeRanges).
-     * #
-     * # Excluding instead of Including
-     * #
-     * #   com.xceptance.xlt.reportgenerator.requestMergeRules.<num>.<param>.exclude = <value>
-     * #
-     * # All requests that match the exclude pattern will not be selected. For example,
-     * # to create a bucket for all non-JavaScript resources, you would setup a rule like that.
-     * #
-     * #   com.xceptance.xlt.reportgenerator.requestMergeRules.1.newName = {n:0} NonJS
-     * #   com.xceptance.xlt.reportgenerator.requestMergeRules.1.namePattern = .+
-     * #   com.xceptance.xlt.reportgenerator.requestMergeRules.1.contentTypePattern.exclude = javascript
-     * #   com.xceptance.xlt.reportgenerator.requestMergeRules.1.stopOnMatch = false
-     * #
-     * # Please note that an include pattern as well as an exclude pattern can be specified for
-     * # a pattern type at the same time. In this case, a request is selected if and only if it
-     * # matches the include pattern, but does not match the exclude pattern.
-     * #
-     * ################################################################################
-     * </pre>
-     */
 
     /**
      * All empty. Stop false. Empty rules means, that everything matches.
@@ -216,28 +387,31 @@ public class RequestProcessingRuleTest
     @Test
     public void testRules_allEmpty_stopFalse() throws Exception
     {
-        final RequestProcessingRule rule = new RequestProcessingRule("New", // newName
-                                                                     "", // requestNamePattern
-                                                                     "", // urlPattern
-                                                                     "", // contentTypePattern
-                                                                     "", // statusCodePattern
-                                                                     "", // agentNamePattern
-                                                                     "", // transactionNamePattern
-                                                                     "", // httpMethodPattern
-                                                                     "", // responseTimeRanges
-                                                                     false, // stopOnMatch
-                                                                     "", // requestNameExcludePattern
-                                                                     "", // urlExcludePattern
-                                                                     "", // contentTypeExcludePattern
-                                                                     "", // statusCodeExcludePattern
-                                                                     "", // agentNameExcludePattern
-                                                                     "", // transactionNameExcludePattern
-                                                                     "", // httpMethodExcludePattern
-                                                                     false); // dropOnMatch
+        final var rule = new RequestProcessingRule(0, 
+                                                   new NewName("New"),
+                                                   new RequestNamePattern(""),
+                                                   new UrlPattern(""),
+                                                   new ContentTypePattern(""), 
+                                                   new StatusCodePattern(""), 
+                                                   new AgentNamePattern(""),   
+                                                   new TransactionNamePattern(""), 
+                                                   new HttpMethodPattern(""),  
+                                                   new RunTimeRanges(""),
+                                                   new StopOnMatch(false), 
+                                                   new RequestNameExcludePattern(""), 
+                                                   new UrlExcludePattern(""),
+                                                   new ContentTypeExcludePattern(""), 
+                                                   new StatusCodeExcludePattern(""),
+                                                   new AgentNameExcludePattern(""), 
+                                                   new TransactionNameExcludePattern(""),
+                                                   new HttpMethodExcludePattern(""), 
+                                                   new ContinueOnMatchAtId(0), 
+                                                   new ContinueOnNoMatchAtId(0),         
+                                                   new DropOnMatch(false)); 
 
         final RequestData data = new RequestData("Old");
-        Assert.assertEquals(RequestProcessingRule.ReturnState.CONTINUE, rule.process(data));
-        Assert.assertEquals("New", data.getName());
+        assertEquals(0, rule.process(data));
+        assertEquals("New", data.getName());
     }
 
     /**
@@ -246,133 +420,116 @@ public class RequestProcessingRuleTest
     @Test
     public void allEmpty_butApply_Stop() throws Exception
     {
-        final RequestProcessingRule rule = new RequestProcessingRule("New", // newName
-                                                                     "", // requestNamePattern
-                                                                     "", // urlPattern
-                                                                     "", // contentTypePattern
-                                                                     "", // statusCodePattern
-                                                                     "", // agentNamePattern
-                                                                     "", // transactionNamePattern
-                                                                     "", // httpMethodPattern
-                                                                     "", // responseTimeRanges
-                                                                     true, // stopOnMatch
-                                                                     "", // requestNameExcludePattern
-                                                                     "", // urlExcludePattern
-                                                                     "", // contentTypeExcludePattern
-                                                                     "", // statusCodeExcludePattern
-                                                                     "", // agentNameExcludePattern
-                                                                     "", // transactionNameExcludePattern
-                                                                     "", // httpMethodExcludePattern
-                                                                     false); // dropOnMatch
+        final var rule = new RequestProcessingRule(0, 
+                                                   new NewName("New"),
+                                                   new RequestNamePattern(""),
+                                                   new UrlPattern(""),
+                                                   new ContentTypePattern(""), 
+                                                   new StatusCodePattern(""), 
+                                                   new AgentNamePattern(""),   
+                                                   new TransactionNamePattern(""), 
+                                                   new HttpMethodPattern(""),  
+                                                   new RunTimeRanges(""),
+                                                   new StopOnMatch(true), 
+                                                   new RequestNameExcludePattern(""), 
+                                                   new UrlExcludePattern(""),
+                                                   new ContentTypeExcludePattern(""), 
+                                                   new StatusCodeExcludePattern(""),
+                                                   new AgentNameExcludePattern(""), 
+                                                   new TransactionNameExcludePattern(""),
+                                                   new HttpMethodExcludePattern(""), 
+                                                   new ContinueOnMatchAtId(0), 
+                                                   new ContinueOnNoMatchAtId(0),         
+                                                   new DropOnMatch(false)); 
         // match, change, stop
         final RequestData data = new RequestData("Old");
-        Assert.assertEquals(RequestProcessingRule.ReturnState.STOP, rule.process(data));
-        Assert.assertEquals("New", data.getName());
-    }
+        assertEquals(RequestProcessingRule.STOP, rule.process(data));
+        assertEquals("New", data.getName());
 
-    /**
-     * All empty but data has something set. Stop
-     */
-    @Test
-    public void allEmpty_butApply_Stop_DataSet() throws Exception
-    {
-        final RequestProcessingRule rule = new RequestProcessingRule("New", // newName
-                                                                     "", // requestNamePattern
-                                                                     "", // urlPattern
-                                                                     "", // contentTypePattern
-                                                                     "", // statusCodePattern
-                                                                     "", // agentNamePattern
-                                                                     "", // transactionNamePattern
-                                                                     "", // httpMethodPattern
-                                                                     "", // responseTimeRanges
-                                                                     true, // stopOnMatch
-                                                                     "", // requestNameExcludePattern
-                                                                     "", // urlExcludePattern
-                                                                     "", // contentTypeExcludePattern
-                                                                     "", // statusCodeExcludePattern
-                                                                     "", // agentNameExcludePattern
-                                                                     "", // transactionNameExcludePattern
-                                                                     "", // httpMethodExcludePattern
-                                                                     false); // dropOnMatch
-
-        final RequestData data = new RequestData("Old");
-        data.setAgentName("Agent-007");
-        data.setHttpMethod("GET");
-        data.setUrl("https://www.foo.bar/all");
+        final RequestData data2 = new RequestData("Old");
+        data2.setAgentName("Agent-007");
+        data2.setHttpMethod("GET");
+        data2.setUrl("https://www.foo.bar/all");
 
         // match, change, STOP
-        Assert.assertEquals(RequestProcessingRule.ReturnState.STOP, rule.process(data));
-        Assert.assertEquals("New", data.getName());
+        assertEquals(RequestProcessingRule.STOP, rule.process(data2));
+        assertEquals("New", data2.getName());
     }
 
     /**
-     * Some data set, all empty, drop is set and is fired
+     * Some data set, all empty, drop and stop are set and fired, drop prevails
      */
     @Test
-    public void allAllEmpty_butApply_Drop1() throws Exception
+    public void allRulesEmpty_StopAndDrop() throws Exception
     {
-        final RequestProcessingRule rule = new RequestProcessingRule("New", // newName
-                                                                     "", // requestNamePattern
-                                                                     "", // urlPattern
-                                                                     "", // contentTypePattern
-                                                                     "", // statusCodePattern
-                                                                     "", // agentNamePattern
-                                                                     "", // transactionNamePattern
-                                                                     "", // httpMethodPattern
-                                                                     "", // responseTimeRanges
-                                                                     true, // stopOnMatch
-                                                                     "", // requestNameExcludePattern
-                                                                     "", // urlExcludePattern
-                                                                     "", // contentTypeExcludePattern
-                                                                     "", // statusCodeExcludePattern
-                                                                     "", // agentNameExcludePattern
-                                                                     "", // transactionNameExcludePattern
-                                                                     "", // httpMethodExcludePattern
-                                                                     true); // dropOnMatch
+        final var rule = new RequestProcessingRule(0, 
+                                                   new NewName("New"),
+                                                   new RequestNamePattern(""),
+                                                   new UrlPattern(""),
+                                                   new ContentTypePattern(""), 
+                                                   new StatusCodePattern(""), 
+                                                   new AgentNamePattern(""),   
+                                                   new TransactionNamePattern(""), 
+                                                   new HttpMethodPattern(""),  
+                                                   new RunTimeRanges(""),
+                                                   new StopOnMatch(true), 
+                                                   new RequestNameExcludePattern(""), 
+                                                   new UrlExcludePattern(""),
+                                                   new ContentTypeExcludePattern(""), 
+                                                   new StatusCodeExcludePattern(""),
+                                                   new AgentNameExcludePattern(""), 
+                                                   new TransactionNameExcludePattern(""),
+                                                   new HttpMethodExcludePattern(""), 
+                                                   new ContinueOnMatchAtId(0), 
+                                                   new ContinueOnNoMatchAtId(0),         
+                                                   new DropOnMatch(true)); 
 
         final RequestData data = new RequestData("Old");
         data.setAgentName("Agent-007");
         data.setHttpMethod("GET");
         data.setUrl("https://www.foo.bar/all");
 
-        // match, change, drop
-        Assert.assertEquals(RequestProcessingRule.ReturnState.DROP, rule.process(data));
-        Assert.assertEquals("Old", data.getName());
+        // match, no change, drop
+        assertEquals(RequestProcessingRule.DROP, rule.process(data));
+        // did not change anything, because we dropped it
+        assertEquals("Old", data.getName());
     }
 
     /**
-     * Some data set, all empty, continue
+     * Some data set, all empty, continue, no drop or stop set
      */
     @Test
-    public void allAllEmpty_butApply_Continue() throws Exception
+    public void allEmpty_NoStop_NoDrop() throws Exception
     {
-        final RequestProcessingRule rule = new RequestProcessingRule("New", // newName
-                                                                     "", // requestNamePattern
-                                                                     "", // urlPattern
-                                                                     "", // contentTypePattern
-                                                                     "", // statusCodePattern
-                                                                     "", // agentNamePattern
-                                                                     "", // transactionNamePattern
-                                                                     "", // httpMethodPattern
-                                                                     "", // responseTimeRanges
-                                                                     false, // stopOnMatch
-                                                                     "", // requestNameExcludePattern
-                                                                     "", // urlExcludePattern
-                                                                     "", // contentTypeExcludePattern
-                                                                     "", // statusCodeExcludePattern
-                                                                     "", // agentNameExcludePattern
-                                                                     "", // transactionNameExcludePattern
-                                                                     "", // httpMethodExcludePattern
-                                                                     false); // dropOnMatch
+        final var rule = new RequestProcessingRule(0, 
+                                                   new NewName("New"),
+                                                   new RequestNamePattern(""),
+                                                   new UrlPattern(""),
+                                                   new ContentTypePattern(""), 
+                                                   new StatusCodePattern(""), 
+                                                   new AgentNamePattern(""),   
+                                                   new TransactionNamePattern(""), 
+                                                   new HttpMethodPattern(""),  
+                                                   new RunTimeRanges(""),
+                                                   new StopOnMatch(false), 
+                                                   new RequestNameExcludePattern(""), 
+                                                   new UrlExcludePattern(""),
+                                                   new ContentTypeExcludePattern(""), 
+                                                   new StatusCodeExcludePattern(""),
+                                                   new AgentNameExcludePattern(""), 
+                                                   new TransactionNameExcludePattern(""),
+                                                   new HttpMethodExcludePattern(""), 
+                                                   new ContinueOnMatchAtId(0), 
+                                                   new ContinueOnNoMatchAtId(0),         
+                                                   new DropOnMatch(false)); 
 
         final RequestData data = new RequestData("Old");
         data.setAgentName("Agent-007");
         data.setHttpMethod("GET");
-        data.setUrl(XltCharBuffer.valueOf("https://www.foo.bar/all"));
 
-        // match, change, drop
-        Assert.assertEquals(RequestProcessingRule.ReturnState.CONTINUE, rule.process(data));
-        Assert.assertEquals("New", data.getName());
+        // match, change, continue
+        assertEquals(0, rule.process(data));
+        assertEquals("New", data.getName());
     }
 
     /**
@@ -381,24 +538,27 @@ public class RequestProcessingRuleTest
     @Test
     public void allAllEmpty_butApply_Drop2() throws Exception
     {
-        final RequestProcessingRule rule = new RequestProcessingRule("New", // newName
-                                                                     "", // requestNamePattern
-                                                                     "", // urlPattern
-                                                                     "", // contentTypePattern
-                                                                     "", // statusCodePattern
-                                                                     "", // agentNamePattern
-                                                                     "", // transactionNamePattern
-                                                                     "", // httpMethodPattern
-                                                                     "", // responseTimeRanges
-                                                                     false, // stopOnMatch
-                                                                     "", // requestNameExcludePattern
-                                                                     "", // urlExcludePattern
-                                                                     "", // contentTypeExcludePattern
-                                                                     "", // statusCodeExcludePattern
-                                                                     "", // agentNameExcludePattern
-                                                                     "", // transactionNameExcludePattern
-                                                                     "", // httpMethodExcludePattern
-                                                                     true); // dropOnMatch
+        final var rule = new RequestProcessingRule(0, 
+                                                   new NewName("New"),
+                                                   new RequestNamePattern(""),
+                                                   new UrlPattern(""),
+                                                   new ContentTypePattern(""), 
+                                                   new StatusCodePattern(""), 
+                                                   new AgentNamePattern(""),   
+                                                   new TransactionNamePattern(""), 
+                                                   new HttpMethodPattern(""),  
+                                                   new RunTimeRanges(""),
+                                                   new StopOnMatch(false), 
+                                                   new RequestNameExcludePattern(""), 
+                                                   new UrlExcludePattern(""),
+                                                   new ContentTypeExcludePattern(""), 
+                                                   new StatusCodeExcludePattern(""),
+                                                   new AgentNameExcludePattern(""), 
+                                                   new TransactionNameExcludePattern(""),
+                                                   new HttpMethodExcludePattern(""), 
+                                                   new ContinueOnMatchAtId(0), 
+                                                   new ContinueOnNoMatchAtId(0),         
+                                                   new DropOnMatch(true)); 
 
         final RequestData data = new RequestData("Old");
         data.setAgentName("Agent-007");
@@ -406,8 +566,8 @@ public class RequestProcessingRuleTest
         data.setUrl("https://www.foo.bar/all");
 
         // match, change, drop
-        Assert.assertEquals(RequestProcessingRule.ReturnState.DROP, rule.process(data));
-        Assert.assertEquals("Old", data.getName());
+        assertEquals(RequestProcessingRule.DROP, rule.process(data));
+        assertEquals("Old", data.getName());
     }
 
     /**
@@ -416,27 +576,29 @@ public class RequestProcessingRuleTest
     @Test
     public void testAllIncludePatternsSetAndMatch() throws Exception
     {
-        final RequestProcessingRule rule = new RequestProcessingRule("New", // newName
-                                                                     "request", // requestNamePattern
-                                                                     "url", // urlPattern
-                                                                     "content", // contentTypePattern
-                                                                     "200", // statusCodePattern
-                                                                     "agent", // agentNamePattern
-                                                                     "transaction", // transactionNamePattern
-                                                                     "method", // httpMethodPattern
-                                                                     "1000, 2000", // responseTimeRanges
-                                                                     true, // stopOnMatch
-                                                                     "", // requestNameExcludePattern
-                                                                     "", // urlExcludePattern
-                                                                     "", // contentTypeExcludePattern
-                                                                     "", // statusCodeExcludePattern
-                                                                     "", // agentNameExcludePattern
-                                                                     "", // transactionNameExcludePattern
-                                                                     "", // httpMethodExcludePattern
-                                                                     false); // dropOnMatch
+        final var rule = new RequestProcessingRule(0, 
+                                                   new NewName("New"),
+                                                   new RequestNamePattern("request"),
+                                                   new UrlPattern("url"),
+                                                   new ContentTypePattern("content"), 
+                                                   new StatusCodePattern("200"), 
+                                                   new AgentNamePattern("agent"),   
+                                                   new TransactionNamePattern("transaction"), 
+                                                   new HttpMethodPattern("method"),  
+                                                   new RunTimeRanges("1000,2000"),
+                                                   new StopOnMatch(true), 
+                                                   new RequestNameExcludePattern(""), 
+                                                   new UrlExcludePattern(""),
+                                                   new ContentTypeExcludePattern(""), 
+                                                   new StatusCodeExcludePattern(""),
+                                                   new AgentNameExcludePattern(""), 
+                                                   new TransactionNameExcludePattern(""),
+                                                   new HttpMethodExcludePattern(""), 
+                                                   new ContinueOnMatchAtId(0), 
+                                                   new ContinueOnNoMatchAtId(0),         
+                                                   new DropOnMatch(false));         
 
         final RequestData data = new RequestData("request");
-        // data.setName("request");
         data.setUrl("url");
         data.setContentType("content");
         data.setResponseCode(200);
@@ -445,8 +607,8 @@ public class RequestProcessingRuleTest
         data.setHttpMethod("method");
         data.setRunTime(999);
 
-        Assert.assertEquals(RequestProcessingRule.ReturnState.STOP, rule.process(data));
-        Assert.assertEquals("New", data.getName());
+        assertEquals(RequestProcessingRule.STOP, rule.process(data));
+        assertEquals("New", data.getName());
     }
 
     /**
@@ -455,27 +617,29 @@ public class RequestProcessingRuleTest
     @Test
     public void testAllIncludePatternsSetAndMatch_CaptureAll() throws Exception
     {
-        final RequestProcessingRule rule = new RequestProcessingRule("{n:0}-{u:0}-{c:0}-{s:0}-{a:0}-{t:0}-{m:0}-{r:0}", // newName
-                                                                     "request", // requestNamePattern
-                                                                     "url", // urlPattern
-                                                                     "content", // contentTypePattern
-                                                                     "200", // statusCodePattern
-                                                                     "agent", // agentNamePattern
-                                                                     "transaction", // transactionNamePattern
-                                                                     "method", // httpMethodPattern
-                                                                     "1000, 2000", // responseTimeRanges
-                                                                     true, // stopOnMatch
-                                                                     "", // requestNameExcludePattern
-                                                                     "", // urlExcludePattern
-                                                                     "", // contentTypeExcludePattern
-                                                                     "", // statusCodeExcludePattern
-                                                                     "", // agentNameExcludePattern
-                                                                     "", // transactionNameExcludePattern
-                                                                     "", // httpMethodExcludePattern
-                                                                     false); // dropOnMatch
+        final var rule = new RequestProcessingRule(0, 
+                                                   new NewName("{n:0}-{u:0}-{c:0}-{s:0}-{a:0}-{t:0}-{m:0}-{r:0}"),
+                                                   new RequestNamePattern("request"),
+                                                   new UrlPattern("url"),
+                                                   new ContentTypePattern("content"), 
+                                                   new StatusCodePattern("200"), 
+                                                   new AgentNamePattern("agent"),   
+                                                   new TransactionNamePattern("transaction"), 
+                                                   new HttpMethodPattern("method"),  
+                                                   new RunTimeRanges("1000,2000"),
+                                                   new StopOnMatch(true), 
+                                                   new RequestNameExcludePattern(""), 
+                                                   new UrlExcludePattern(""),
+                                                   new ContentTypeExcludePattern(""), 
+                                                   new StatusCodeExcludePattern(""),
+                                                   new AgentNameExcludePattern(""), 
+                                                   new TransactionNameExcludePattern(""),
+                                                   new HttpMethodExcludePattern(""), 
+                                                   new ContinueOnMatchAtId(0), 
+                                                   new ContinueOnNoMatchAtId(0),         
+                                                   new DropOnMatch(false));         
 
         final RequestData data = new RequestData("request");
-        // data.setName("request");
         data.setUrl("url");
         data.setContentType("content");
         data.setResponseCode(200);
@@ -484,8 +648,8 @@ public class RequestProcessingRuleTest
         data.setHttpMethod("method");
         data.setRunTime(500);
 
-        Assert.assertEquals(RequestProcessingRule.ReturnState.STOP, rule.process(data));
-        Assert.assertEquals("request-url-content-200-agent-transaction-method-0..999", data.getName());
+        assertEquals(RequestProcessingRule.STOP, rule.process(data));
+        assertEquals("request-url-content-200-agent-transaction-method-0..999", data.getName());
     }
 
     /**
@@ -494,27 +658,29 @@ public class RequestProcessingRuleTest
     @Test
     public void testAllIncludePatternsSetAndMatch_CaptureAll_NoPosAttribute() throws Exception
     {
-        final RequestProcessingRule rule = new RequestProcessingRule("{n}-{u}-{c}-{s}-{a}-{t}-{m}-{r}", // newName
-                                                                     "request", // requestNamePattern
-                                                                     "url", // urlPattern
-                                                                     "content", // contentTypePattern
-                                                                     "200", // statusCodePattern
-                                                                     "agent", // agentNamePattern
-                                                                     "transaction", // transactionNamePattern
-                                                                     "method", // httpMethodPattern
-                                                                     "1000, 2000", // responseTimeRanges
-                                                                     true, // stopOnMatch
-                                                                     "", // requestNameExcludePattern
-                                                                     "", // urlExcludePattern
-                                                                     "", // contentTypeExcludePattern
-                                                                     "", // statusCodeExcludePattern
-                                                                     "", // agentNameExcludePattern
-                                                                     "", // transactionNameExcludePattern
-                                                                     "", // httpMethodExcludePattern
-                                                                     false); // dropOnMatch
+        final var rule = new RequestProcessingRule(0, 
+                                                   new NewName("{n}-{u}-{c}-{s}-{a}-{t}-{m}-{r}"),
+                                                   new RequestNamePattern("request"),
+                                                   new UrlPattern("url"),
+                                                   new ContentTypePattern("content"), 
+                                                   new StatusCodePattern("200"), 
+                                                   new AgentNamePattern("agent"),   
+                                                   new TransactionNamePattern("transaction"), 
+                                                   new HttpMethodPattern("method"),  
+                                                   new RunTimeRanges("1000,2000"),
+                                                   new StopOnMatch(true), 
+                                                   new RequestNameExcludePattern(""), 
+                                                   new UrlExcludePattern(""),
+                                                   new ContentTypeExcludePattern(""), 
+                                                   new StatusCodeExcludePattern(""),
+                                                   new AgentNameExcludePattern(""), 
+                                                   new TransactionNameExcludePattern(""),
+                                                   new HttpMethodExcludePattern(""), 
+                                                   new ContinueOnMatchAtId(0), 
+                                                   new ContinueOnNoMatchAtId(0),         
+                                                   new DropOnMatch(false)); 
 
         final RequestData data = new RequestData("request");
-        // data.setName("request");
         data.setUrl("url");
         data.setContentType("content");
         data.setResponseCode(200);
@@ -523,19 +689,37 @@ public class RequestProcessingRuleTest
         data.setHttpMethod("method");
         data.setRunTime(500);
 
-        Assert.assertEquals(RequestProcessingRule.ReturnState.STOP, rule.process(data));
-        Assert.assertEquals("request-url-content-200-agent-transaction-method-0..999", data.getName());
+        assertEquals(RequestProcessingRule.STOP, rule.process(data));
+        assertEquals("request-url-content-200-agent-transaction-method-0..999", data.getName());
     }
 
     /**
-     * All include patterns used and match
+     * All exclude patterns used and don't match
      */
     @Test
     public void testAllExcludePatternsSetAndMatch() throws Exception
     {
-        final RequestProcessingRule rule = new RequestProcessingRule("New", // newName
-                                                                     "", "", "", "", "", "", "", "", true, // stopOnMatch
-                                                                     "not-request", "not-url", "not-content", "404", "not-agent", "not-transaction", "not-method", false);
+        final var rule = new RequestProcessingRule(0, 
+                                                   new NewName("New"),
+                                                   new RequestNamePattern(""),
+                                                   new UrlPattern(""),
+                                                   new ContentTypePattern(""), 
+                                                   new StatusCodePattern(""), 
+                                                   new AgentNamePattern(""),   
+                                                   new TransactionNamePattern(""), 
+                                                   new HttpMethodPattern(""),  
+                                                   new RunTimeRanges(""),
+                                                   new StopOnMatch(true), 
+                                                   new RequestNameExcludePattern("not-request"), 
+                                                   new UrlExcludePattern("not-url"),
+                                                   new ContentTypeExcludePattern("not-content"), 
+                                                   new StatusCodeExcludePattern("404"),
+                                                   new AgentNameExcludePattern("not-agent"), 
+                                                   new TransactionNameExcludePattern("not-transaction"),
+                                                   new HttpMethodExcludePattern("not-method"), 
+                                                   new ContinueOnMatchAtId(0), 
+                                                   new ContinueOnNoMatchAtId(0),         
+                                                   new DropOnMatch(false)); 
 
         final RequestData data = new RequestData("request");
         data.setUrl("url");
@@ -546,8 +730,8 @@ public class RequestProcessingRuleTest
         data.setHttpMethod("method");
         data.setRunTime(999);
 
-        Assert.assertEquals(RequestProcessingRule.ReturnState.STOP, rule.process(data));
-        Assert.assertEquals("New", data.getName());
+        assertEquals(RequestProcessingRule.STOP, rule.process(data));
+        assertEquals("New", data.getName());
     }
 
     /**
@@ -556,13 +740,29 @@ public class RequestProcessingRuleTest
     @Test
     public void testAllExcludePatternsSetAndMatch_CaptureAll() throws Exception
     {
-        final RequestProcessingRule rule = new RequestProcessingRule("{n:0}{u:0}{c:0}{s:0}{a:0}{t:0}{m:0}{r:0}", // newName
-                                                                     "", "", "", "", "", "", "", "1000", true, // stopOnMatch
-                                                                     "not-request", "not-url", "not-content", "404", "not-agent",
-                                                                     "not-transaction", "not-method", false);
+        final var rule = new RequestProcessingRule(0, 
+                                                   new NewName("{n:0}{u:0}{c:0}{s:0}{a:0}{t:0}{m:0}{r:0}"),
+                                                   new RequestNamePattern(""),
+                                                   new UrlPattern(""),
+                                                   new ContentTypePattern(""), 
+                                                   new StatusCodePattern(""), 
+                                                   new AgentNamePattern(""),   
+                                                   new TransactionNamePattern(""), 
+                                                   new HttpMethodPattern(""),  
+                                                   new RunTimeRanges("1000"),
+                                                   new StopOnMatch(true), 
+                                                   new RequestNameExcludePattern("not-request"), 
+                                                   new UrlExcludePattern("not-url"),
+                                                   new ContentTypeExcludePattern("not-content"), 
+                                                   new StatusCodeExcludePattern("404"),
+                                                   new AgentNameExcludePattern("not-agent"), 
+                                                   new TransactionNameExcludePattern("not-transaction"),
+                                                   new HttpMethodExcludePattern("not-method"), 
+                                                   new ContinueOnMatchAtId(0), 
+                                                   new ContinueOnNoMatchAtId(0),         
+                                                   new DropOnMatch(false));         
 
         final RequestData data = new RequestData("request");
-        // data.setName("request");
         data.setUrl("url");
         data.setContentType("content");
         data.setResponseCode(200);
@@ -571,8 +771,8 @@ public class RequestProcessingRuleTest
         data.setHttpMethod("method");
         data.setRunTime(500);
 
-        Assert.assertEquals(RequestProcessingRule.ReturnState.STOP, rule.process(data));
-        Assert.assertEquals("requesturlcontent200agenttransactionmethod0..999", data.getName());
+        assertEquals(RequestProcessingRule.STOP, rule.process(data));
+        assertEquals("requesturlcontent200agenttransactionmethod0..999", data.getName());
     }
 
     /**
@@ -582,13 +782,29 @@ public class RequestProcessingRuleTest
     @Test
     public void testAllExcludePatternsSetAndExcludeMatch_CaptureAll() throws Exception
     {
-        final RequestProcessingRule rule = new RequestProcessingRule("{n:0}{u:0}{c:0}{s:0}{a:0}{t:0}{m:0}{r:0}", // newName
-                                                                     "", "", "", "", "", "", "", "1000", true, // stopOnMatch
-                                                                     "not-request", "not-url", "not-content", "not-200", "not-agent",
-                                                                     "not-transaction", "not-method", false);
+        final var rule = new RequestProcessingRule(0, 
+                                                   new NewName("{n:0}{u:0}{c:0}{s:0}{a:0}{t:0}{m:0}{r:0}-any"),
+                                                   new RequestNamePattern(""),
+                                                   new UrlPattern(""),
+                                                   new ContentTypePattern(""), 
+                                                   new StatusCodePattern(""), 
+                                                   new AgentNamePattern(""),   
+                                                   new TransactionNamePattern(""), 
+                                                   new HttpMethodPattern(""),  
+                                                   new RunTimeRanges("1000"),
+                                                   new StopOnMatch(true), 
+                                                   new RequestNameExcludePattern("not-request"), 
+                                                   new UrlExcludePattern("not-url"),
+                                                   new ContentTypeExcludePattern("not-content"), 
+                                                   new StatusCodeExcludePattern("not-200"),
+                                                   new AgentNameExcludePattern("not-agent"), 
+                                                   new TransactionNameExcludePattern("not-transaction"),
+                                                   new HttpMethodExcludePattern("not-method"), 
+                                                   new ContinueOnMatchAtId(0), 
+                                                   new ContinueOnNoMatchAtId(0),         
+                                                   new DropOnMatch(false));          
 
         final RequestData data = new RequestData("not-request");
-        // data.setName("request");
         data.setUrl("not-url");
         data.setContentType("not-content");
         data.setResponseCode(200);
@@ -597,8 +813,8 @@ public class RequestProcessingRuleTest
         data.setHttpMethod("not-method");
         data.setRunTime(500);
 
-        Assert.assertEquals(RequestProcessingRule.ReturnState.CONTINUE, rule.process(data));
-        Assert.assertEquals("not-request", data.getName());
+        assertEquals(0, rule.process(data));
+        assertEquals("not-request", data.getName());
     }
 
     /**
@@ -607,29 +823,32 @@ public class RequestProcessingRuleTest
     @Test
     public void testNamePattern() throws Exception
     {
-        final RequestProcessingRule rule = new RequestProcessingRule("{n:2}-{n:0}-{n:1}", // newName
-                                                                     "re(q)ue(st)", // requestNamePattern
-                                                                     "", // urlPattern
-                                                                     "", // contentTypePattern
-                                                                     "", // statusCodePattern
-                                                                     "", // agentNamePattern
-                                                                     "", // transactionNamePattern
-                                                                     "", // httpMethodPattern
-                                                                     "", // responseTimeRanges
-                                                                     true, // stopOnMatch
-                                                                     "", // requestNameExcludePattern
-                                                                     "", // urlExcludePattern
-                                                                     "", // contentTypeExcludePattern
-                                                                     "", // statusCodeExcludePattern
-                                                                     "", // agentNameExcludePattern
-                                                                     "", // transactionNameExcludePattern
-                                                                     "", // httpMethodExcludePattern
-                                                                     false); // dropOnMatch
+        final var rule = new RequestProcessingRule(0, 
+                                                   new NewName("{n:2}-{n:0}-{n:1}"),
+                                                   new RequestNamePattern("re(q)ue(st)"),
+                                                   new UrlPattern(""),
+                                                   new ContentTypePattern(""), 
+                                                   new StatusCodePattern(""), 
+                                                   new AgentNamePattern(""),   
+                                                   new TransactionNamePattern(""), 
+                                                   new HttpMethodPattern(""),  
+                                                   new RunTimeRanges("1000"),
+                                                   new StopOnMatch(true), 
+                                                   new RequestNameExcludePattern(""), 
+                                                   new UrlExcludePattern(""), 
+                                                   new ContentTypeExcludePattern(""), 
+                                                   new StatusCodeExcludePattern(""), 
+                                                   new AgentNameExcludePattern(""), 
+                                                   new TransactionNameExcludePattern(""), 
+                                                   new HttpMethodExcludePattern(""), 
+                                                   new ContinueOnMatchAtId(0), 
+                                                   new ContinueOnNoMatchAtId(0),         
+                                                   new DropOnMatch(false)); 
 
         final RequestData data = new RequestData("request");
 
-        Assert.assertEquals(RequestProcessingRule.ReturnState.STOP, rule.process(data));
-        Assert.assertEquals("st-request-q", data.getName());
+        assertEquals(RequestProcessingRule.STOP, rule.process(data));
+        assertEquals("st-request-q", data.getName());
     }
 
     /**
@@ -638,67 +857,31 @@ public class RequestProcessingRuleTest
     @Test(expected = InvalidRequestProcessingRuleException.class)
     public void testNamePattern_IndexDoesNotExist() throws Exception
     {
-        final RequestProcessingRule rule = new RequestProcessingRule("{n:2}-{n:0}-{n:10}", // newName
-                                                                     "re(q)ue(st)", // requestNamePattern
-                                                                     "", // urlPattern
-                                                                     "", // contentTypePattern
-                                                                     "", // statusCodePattern
-                                                                     "", // agentNamePattern
-                                                                     "", // transactionNamePattern
-                                                                     "", // httpMethodPattern
-                                                                     "", // responseTimeRanges
-                                                                     true, // stopOnMatch
-                                                                     "", // requestNameExcludePattern
-                                                                     "", // urlExcludePattern
-                                                                     "", // contentTypeExcludePattern
-                                                                     "", // statusCodeExcludePattern
-                                                                     "", // agentNameExcludePattern
-                                                                     "", // transactionNameExcludePattern
-                                                                     "", // httpMethodExcludePattern
-                                                                     false); // dropOnMatch
-
+        final var rule = new RequestProcessingRule(0, 
+                                                   new NewName("{n:2}-{n:0}-{n:10}"),
+                                                   new RequestNamePattern("re(q)ue(st)"),
+                                                   new UrlPattern(""),
+                                                   new ContentTypePattern(""), 
+                                                   new StatusCodePattern(""), 
+                                                   new AgentNamePattern(""),   
+                                                   new TransactionNamePattern(""), 
+                                                   new HttpMethodPattern(""),  
+                                                   new RunTimeRanges("1000"),
+                                                   new StopOnMatch(true), 
+                                                   new RequestNameExcludePattern(""), 
+                                                   new UrlExcludePattern(""), 
+                                                   new ContentTypeExcludePattern(""), 
+                                                   new StatusCodeExcludePattern(""), 
+                                                   new AgentNameExcludePattern(""), 
+                                                   new TransactionNameExcludePattern(""), 
+                                                   new HttpMethodExcludePattern(""), 
+                                                   new ContinueOnMatchAtId(0), 
+                                                   new ContinueOnNoMatchAtId(0),         
+                                                   new DropOnMatch(false)); 
         // match
         final RequestData data = new RequestData("request");
-        Assert.assertEquals(RequestProcessingRule.ReturnState.STOP, rule.process(data));
-        Assert.assertEquals("st-request-q", data.getName());
-    }
-
-    /**
-     * namePattern [n] .......... reg-ex defining a matching request name Index does not exist
-     */
-    @Test
-    public void testNamePattern_Normal() throws Exception
-    {
-        final RequestProcessingRule rule = new RequestProcessingRule("{n:2}-{n:0}-{n:1}", // newName
-                                                                     "^re(q)ue(st)", // requestNamePattern
-                                                                     "", // urlPattern
-                                                                     "", // contentTypePattern
-                                                                     "", // statusCodePattern
-                                                                     "", // agentNamePattern
-                                                                     "", // transactionNamePattern
-                                                                     "", // httpMethodPattern
-                                                                     "", // responseTimeRanges
-                                                                     true, // stopOnMatch
-                                                                     "", // requestNameExcludePattern
-                                                                     "", // urlExcludePattern
-                                                                     "", // contentTypeExcludePattern
-                                                                     "", // statusCodeExcludePattern
-                                                                     "", // agentNameExcludePattern
-                                                                     "", // transactionNameExcludePattern
-                                                                     "", // httpMethodExcludePattern
-                                                                     false); // dropOnMatch
-
-        // match
-        final RequestData data1 = new RequestData("request");
-
-        Assert.assertEquals(RequestProcessingRule.ReturnState.STOP, rule.process(data1));
-        Assert.assertEquals("st-request-q", data1.getName());
-
-        // do not match
-        final RequestData data2 = new RequestData("noperequest");
-
-        Assert.assertEquals(RequestProcessingRule.ReturnState.CONTINUE, rule.process(data2));
-        Assert.assertEquals("noperequest", data2.getName());
+        assertEquals(RequestProcessingRule.STOP, rule.process(data));
+        assertEquals("st-request-q", data.getName());
     }
 
     /**
@@ -707,38 +890,40 @@ public class RequestProcessingRuleTest
     @Test
     public void testTransactionPattern_Normal() throws Exception
     {
-        final RequestProcessingRule rule = new RequestProcessingRule("{n:0}-{t:1} {t:0}", // newName
-                                                                     "request", // requestNamePattern
-                                                                     "", // urlPattern
-                                                                     "", // contentTypePattern
-                                                                     "", // statusCodePattern
-                                                                     "", // agentNamePattern
-                                                                     "T.*bar-([0-9])", // transactionNamePattern
-                                                                     "", // httpMethodPattern
-                                                                     "", // responseTimeRanges
-                                                                     true, // stopOnMatch
-                                                                     "", // requestNameExcludePattern
-                                                                     "", // urlExcludePattern
-                                                                     "", // contentTypeExcludePattern
-                                                                     "", // statusCodeExcludePattern
-                                                                     "", // agentNameExcludePattern
-                                                                     "", // transactionNameExcludePattern
-                                                                     "", // httpMethodExcludePattern
-                                                                     false); // dropOnMatch
-
+        final var rule = new RequestProcessingRule(0, 
+                                                   new NewName("{n:0}-{t:1} {t:0}"),
+                                                   new RequestNamePattern("request"),
+                                                   new UrlPattern(""),
+                                                   new ContentTypePattern(""), 
+                                                   new StatusCodePattern(""), 
+                                                   new AgentNamePattern(""),   
+                                                   new TransactionNamePattern("T.*bar-([0-9])"), 
+                                                   new HttpMethodPattern(""),  
+                                                   new RunTimeRanges(""),
+                                                   new StopOnMatch(true), 
+                                                   new RequestNameExcludePattern(""), 
+                                                   new UrlExcludePattern(""), 
+                                                   new ContentTypeExcludePattern(""), 
+                                                   new StatusCodeExcludePattern(""), 
+                                                   new AgentNameExcludePattern(""), 
+                                                   new TransactionNameExcludePattern(""), 
+                                                   new HttpMethodExcludePattern(""), 
+                                                   new ContinueOnMatchAtId(0), 
+                                                   new ContinueOnNoMatchAtId(0),         
+                                                   new DropOnMatch(false)); 
         // match
         final RequestData data = new RequestData("request");
         data.setTransactionName("TFoobar-2");
 
-        Assert.assertEquals(RequestProcessingRule.ReturnState.STOP, rule.process(data));
-        Assert.assertEquals("request-2 TFoobar-2", data.getName());
+        assertEquals(RequestProcessingRule.STOP, rule.process(data));
+        assertEquals("request-2 TFoobar-2", data.getName());
 
         // do not match
         final RequestData data2 = new RequestData("request");
         data2.setTransactionName("TLateStuff");
 
-        Assert.assertEquals(RequestProcessingRule.ReturnState.CONTINUE, rule.process(data2));
-        Assert.assertEquals("request", data2.getName());
+        assertEquals(0, rule.process(data2));
+        assertEquals("request", data2.getName());
     }
 
     /**
@@ -747,38 +932,41 @@ public class RequestProcessingRuleTest
     @Test
     public void testAgentPattern_Normal() throws Exception
     {
-        final RequestProcessingRule rule = new RequestProcessingRule("{n:0}-{a:1} {a:0}", // newName
-                                                                     "request", // requestNamePattern
-                                                                     "", // urlPattern
-                                                                     "", // contentTypePattern
-                                                                     "", // statusCodePattern
-                                                                     "A.*bar-([0-9])", // agentNamePattern
-                                                                     "", // transactionNamePattern
-                                                                     "", // httpMethodPattern
-                                                                     "", // responseTimeRanges
-                                                                     true, // stopOnMatch
-                                                                     "", // requestNameExcludePattern
-                                                                     "", // urlExcludePattern
-                                                                     "", // contentTypeExcludePattern
-                                                                     "", // statusCodeExcludePattern
-                                                                     "", // agentNameExcludePattern
-                                                                     "", // transactionNameExcludePattern
-                                                                     "", // httpMethodExcludePattern
-                                                                     false); // dropOnMatch
+        final var rule = new RequestProcessingRule(0, 
+                                                   new NewName("{n:0}-{a:1} {a:0}"),
+                                                   new RequestNamePattern("request"),
+                                                   new UrlPattern(""),
+                                                   new ContentTypePattern(""), 
+                                                   new StatusCodePattern(""), 
+                                                   new AgentNamePattern("A.*bar-([0-9])"),   
+                                                   new TransactionNamePattern(""), 
+                                                   new HttpMethodPattern(""),  
+                                                   new RunTimeRanges(""),
+                                                   new StopOnMatch(true), 
+                                                   new RequestNameExcludePattern(""), 
+                                                   new UrlExcludePattern(""), 
+                                                   new ContentTypeExcludePattern(""), 
+                                                   new StatusCodeExcludePattern(""), 
+                                                   new AgentNameExcludePattern(""), 
+                                                   new TransactionNameExcludePattern(""), 
+                                                   new HttpMethodExcludePattern(""), 
+                                                   new ContinueOnMatchAtId(0), 
+                                                   new ContinueOnNoMatchAtId(0),         
+                                                   new DropOnMatch(false)); 
 
         // match
         final RequestData data = new RequestData("request");
         data.setAgentName("AFoobar-2");
 
-        Assert.assertEquals(RequestProcessingRule.ReturnState.STOP, rule.process(data));
-        Assert.assertEquals("request-2 AFoobar-2", data.getName());
+        assertEquals(RequestProcessingRule.STOP, rule.process(data));
+        assertEquals("request-2 AFoobar-2", data.getName());
 
         // do not match
         final RequestData data2 = new RequestData("request");
         data2.setAgentName("TLateStuff");
 
-        assertEquals(RequestProcessingRule.ReturnState.CONTINUE, rule.process(data2));
-        Assert.assertEquals("request", data2.getName());
+        assertEquals(0, rule.process(data2));
+        assertEquals("request", data2.getName());
     }
 
     /**
@@ -787,38 +975,41 @@ public class RequestProcessingRuleTest
     @Test
     public void testContentPattern_Normal() throws Exception
     {
-        final RequestProcessingRule rule = new RequestProcessingRule("{n:0}-{c:1} {c:0}", // newName
-                                                                     "request", // requestNamePattern
-                                                                     "", // urlPattern
-                                                                     "image/([a-z]{3,4})$", // contentTypePattern
-                                                                     "", // statusCodePattern
-                                                                     "", // agentNamePattern
-                                                                     "", // transactionNamePattern
-                                                                     "", // httpMethodPattern
-                                                                     "", // responseTimeRanges
-                                                                     true, // stopOnMatch
-                                                                     "", // requestNameExcludePattern
-                                                                     "", // urlExcludePattern
-                                                                     "", // contentTypeExcludePattern
-                                                                     "", // statusCodeExcludePattern
-                                                                     "", // agentNameExcludePattern
-                                                                     "", // transactionNameExcludePattern
-                                                                     "", // httpMethodExcludePattern
-                                                                     false); // dropOnMatch
+        final var rule = new RequestProcessingRule(0, 
+                                                   new NewName("{n:0}-{c:1} {c:0}"),
+                                                   new RequestNamePattern("request"),
+                                                   new UrlPattern(""),
+                                                   new ContentTypePattern("image/([a-z]{3,4})$"), 
+                                                   new StatusCodePattern(""), 
+                                                   new AgentNamePattern(""),   
+                                                   new TransactionNamePattern(""), 
+                                                   new HttpMethodPattern(""),  
+                                                   new RunTimeRanges(""),
+                                                   new StopOnMatch(true), 
+                                                   new RequestNameExcludePattern(""), 
+                                                   new UrlExcludePattern(""), 
+                                                   new ContentTypeExcludePattern(""), 
+                                                   new StatusCodeExcludePattern(""), 
+                                                   new AgentNameExcludePattern(""), 
+                                                   new TransactionNameExcludePattern(""), 
+                                                   new HttpMethodExcludePattern(""), 
+                                                   new ContinueOnMatchAtId(0), 
+                                                   new ContinueOnNoMatchAtId(0),         
+                                                   new DropOnMatch(false)); 
 
         // match
         final RequestData data = new RequestData("request");
         data.setContentType("image/jpeg");
 
-        Assert.assertEquals(RequestProcessingRule.ReturnState.STOP, rule.process(data));
-        Assert.assertEquals("request-jpeg image/jpeg", data.getName());
+        assertEquals(RequestProcessingRule.STOP, rule.process(data));
+        assertEquals("request-jpeg image/jpeg", data.getName());
 
         // do not match
         final RequestData data2 = new RequestData("request");
         data2.setContentType("image/coffeelatte");
 
-        assertEquals(RequestProcessingRule.ReturnState.CONTINUE, rule.process(data2));
-        Assert.assertEquals("request", data2.getName());
+        assertEquals(0, rule.process(data2));
+        assertEquals("request", data2.getName());
     }
 
     /**
@@ -827,38 +1018,41 @@ public class RequestProcessingRuleTest
     @Test
     public void testStatusCodePattern_Normal() throws Exception
     {
-        final RequestProcessingRule rule = new RequestProcessingRule("{n:0}-{s:1} {s:0}", // newName
-                                                                     "request", // requestNamePattern
-                                                                     "", // urlPattern
-                                                                     "", // contentTypePattern
-                                                                     "(30[12])", // statusCodePattern
-                                                                     "", // agentNamePattern
-                                                                     "", // transactionNamePattern
-                                                                     "", // httpMethodPattern
-                                                                     "", // responseTimeRanges
-                                                                     true, // stopOnMatch
-                                                                     "", // requestNameExcludePattern
-                                                                     "", // urlExcludePattern
-                                                                     "", // contentTypeExcludePattern
-                                                                     "", // statusCodeExcludePattern
-                                                                     "", // agentNameExcludePattern
-                                                                     "", // transactionNameExcludePattern
-                                                                     "", // httpMethodExcludePattern
-                                                                     false); // dropOnMatch
+        final var rule = new RequestProcessingRule(0, 
+                                                   new NewName("{n:0}-{s:1} {s:0}"),
+                                                   new RequestNamePattern("request"),
+                                                   new UrlPattern(""),
+                                                   new ContentTypePattern(""), 
+                                                   new StatusCodePattern("(30[12])"), 
+                                                   new AgentNamePattern(""),   
+                                                   new TransactionNamePattern(""), 
+                                                   new HttpMethodPattern(""),  
+                                                   new RunTimeRanges(""),
+                                                   new StopOnMatch(true), 
+                                                   new RequestNameExcludePattern(""), 
+                                                   new UrlExcludePattern(""), 
+                                                   new ContentTypeExcludePattern(""), 
+                                                   new StatusCodeExcludePattern(""), 
+                                                   new AgentNameExcludePattern(""), 
+                                                   new TransactionNameExcludePattern(""), 
+                                                   new HttpMethodExcludePattern(""), 
+                                                   new ContinueOnMatchAtId(0), 
+                                                   new ContinueOnNoMatchAtId(0),         
+                                                   new DropOnMatch(false)); 
 
         // match
         final RequestData data = new RequestData("request");
         data.setResponseCode(302);
 
-        Assert.assertEquals(RequestProcessingRule.ReturnState.STOP, rule.process(data));
-        Assert.assertEquals("request-302 302", data.getName());
+        assertEquals(RequestProcessingRule.STOP, rule.process(data));
+        assertEquals("request-302 302", data.getName());
 
         // do not match
         final RequestData data2 = new RequestData("request");
         data2.setResponseCode(304);
 
-        assertEquals(RequestProcessingRule.ReturnState.CONTINUE, rule.process(data2));
-        Assert.assertEquals("request", data2.getName());
+        assertEquals(0, rule.process(data2));
+        assertEquals("request", data2.getName());
     }
 
     /**
@@ -867,37 +1061,39 @@ public class RequestProcessingRuleTest
     @Test
     public void testURLPattern_Normal() throws Exception
     {
-        final RequestProcessingRule rule = new RequestProcessingRule("{n:0}-{u:1} {u:0}", // newName
-                                                                     "request", // requestNamePattern
-                                                                     "https?://foobar.com/([^/]+)/", // urlPattern
-                                                                     "", // contentTypePattern
-                                                                     "", // statusCodePattern
-                                                                     "", // agentNamePattern
-                                                                     "", // transactionNamePattern
-                                                                     "", // httpMethodPattern
-                                                                     "", // responseTimeRanges
-                                                                     true, // stopOnMatch
-                                                                     "", // requestNameExcludePattern
-                                                                     "", // urlExcludePattern
-                                                                     "", // contentTypeExcludePattern
-                                                                     "", // statusCodeExcludePattern
-                                                                     "", // agentNameExcludePattern
-                                                                     "", // transactionNameExcludePattern
-                                                                     "", // httpMethodExcludePattern
-                                                                     false); // dropOnMatch
-
+        final var rule = new RequestProcessingRule(0, 
+                                                   new NewName("{n:0}-{u:1} {u:0}"),
+                                                   new RequestNamePattern("request"),
+                                                   new UrlPattern("https?://foobar.com/([^/]+)/"),
+                                                   new ContentTypePattern(""), 
+                                                   new StatusCodePattern(""), 
+                                                   new AgentNamePattern(""),   
+                                                   new TransactionNamePattern(""), 
+                                                   new HttpMethodPattern(""),  
+                                                   new RunTimeRanges(""),
+                                                   new StopOnMatch(true), 
+                                                   new RequestNameExcludePattern(""), 
+                                                   new UrlExcludePattern(""), 
+                                                   new ContentTypeExcludePattern(""), 
+                                                   new StatusCodeExcludePattern(""), 
+                                                   new AgentNameExcludePattern(""), 
+                                                   new TransactionNameExcludePattern(""), 
+                                                   new HttpMethodExcludePattern(""), 
+                                                   new ContinueOnMatchAtId(0), 
+                                                   new ContinueOnNoMatchAtId(0),         
+                                                   new DropOnMatch(false)); 
         // match
         final RequestData data = new RequestData("request");
         data.setUrl("https://foobar.com/tiger/");
-        Assert.assertEquals(RequestProcessingRule.ReturnState.STOP, rule.process(data));
-        Assert.assertEquals("request-tiger https://foobar.com/tiger/", data.getName());
+        assertEquals(RequestProcessingRule.STOP, rule.process(data));
+        assertEquals("request-tiger https://foobar.com/tiger/", data.getName());
 
         // do not match
         final RequestData data2 = new RequestData("request");
         data2.setUrl("https://foobar.de/tiger/");
 
-        assertEquals(RequestProcessingRule.ReturnState.CONTINUE, rule.process(data2));
-        Assert.assertEquals("request", data2.getName());
+        assertEquals(0, rule.process(data2));
+        assertEquals("request", data2.getName());
     }
 
     /**
@@ -906,38 +1102,41 @@ public class RequestProcessingRuleTest
     @Test
     public void testHttpMethodPattern_Normal() throws Exception
     {
-        final RequestProcessingRule rule = new RequestProcessingRule("{n:0} {m:1}", // newName
-                                                                     "request", // requestNamePattern
-                                                                     "", // urlPattern
-                                                                     "", // contentTypePattern
-                                                                     "", // statusCodePattern
-                                                                     "", // agentNamePattern
-                                                                     "", // transactionNamePattern
-                                                                     "(GET)", // httpMethodPattern
-                                                                     "", // responseTimeRanges
-                                                                     true, // stopOnMatch
-                                                                     "", // requestNameExcludePattern
-                                                                     "", // urlExcludePattern
-                                                                     "", // contentTypeExcludePattern
-                                                                     "", // statusCodeExcludePattern
-                                                                     "", // agentNameExcludePattern
-                                                                     "", // transactionNameExcludePattern
-                                                                     "", // httpMethodExcludePattern
-                                                                     false); // dropOnMatch
+        final var rule = new RequestProcessingRule(0, 
+                                                   new NewName("{n:0} {m:1}"),
+                                                   new RequestNamePattern("request"),
+                                                   new UrlPattern(""),
+                                                   new ContentTypePattern(""), 
+                                                   new StatusCodePattern(""), 
+                                                   new AgentNamePattern(""),   
+                                                   new TransactionNamePattern(""), 
+                                                   new HttpMethodPattern("(GET)"),  
+                                                   new RunTimeRanges(""),
+                                                   new StopOnMatch(true), 
+                                                   new RequestNameExcludePattern(""), 
+                                                   new UrlExcludePattern(""), 
+                                                   new ContentTypeExcludePattern(""), 
+                                                   new StatusCodeExcludePattern(""), 
+                                                   new AgentNameExcludePattern(""), 
+                                                   new TransactionNameExcludePattern(""), 
+                                                   new HttpMethodExcludePattern(""), 
+                                                   new ContinueOnMatchAtId(0), 
+                                                   new ContinueOnNoMatchAtId(0),         
+                                                   new DropOnMatch(false));         
 
         // match
         final RequestData data = new RequestData("request");
         data.setHttpMethod("GET");
 
-        Assert.assertEquals(RequestProcessingRule.ReturnState.STOP, rule.process(data));
-        Assert.assertEquals("request GET", data.getName());
+        assertEquals(RequestProcessingRule.STOP, rule.process(data));
+        assertEquals("request GET", data.getName());
 
         // do not match
         final RequestData data2 = new RequestData("request");
         data2.setHttpMethod("PUT");
 
-        Assert.assertEquals(RequestProcessingRule.ReturnState.CONTINUE, rule.process(data2));
-        Assert.assertEquals("request", data2.getName());
+        assertEquals(0, rule.process(data2));
+        assertEquals("request", data2.getName());
     }
 
     /**
@@ -947,8 +1146,8 @@ public class RequestProcessingRuleTest
     {
         final RequestData data = new RequestData("request");
         data.setRunTime(runtime);
-        Assert.assertEquals(RequestProcessingRule.ReturnState.STOP, rule.process(data));
-        Assert.assertEquals(expected, data.getName());
+        assertEquals(RequestProcessingRule.STOP, rule.process(data));
+        assertEquals(expected, data.getName());
     }
 
     /**
@@ -957,24 +1156,27 @@ public class RequestProcessingRuleTest
     @Test
     public void testResponseTimeRanges_Normal() throws Exception
     {
-        final RequestProcessingRule rule = new RequestProcessingRule("{n:0} [{r}]", // newName
-                                                                     "request", // requestNamePattern
-                                                                     "", // urlPattern
-                                                                     "", // contentTypePattern
-                                                                     "", // statusCodePattern
-                                                                     "", // agentNamePattern
-                                                                     "", // transactionNamePattern
-                                                                     "", // httpMethodPattern
-                                                                     "100, 3000, 5000", // responseTimeRanges
-                                                                     true, // stopOnMatch
-                                                                     "", // requestNameExcludePattern
-                                                                     "", // urlExcludePattern
-                                                                     "", // contentTypeExcludePattern
-                                                                     "", // statusCodeExcludePattern
-                                                                     "", // agentNameExcludePattern
-                                                                     "", // transactionNameExcludePattern
-                                                                     "", // httpMethodExcludePattern
-                                                                     false); // dropOnMatch
+        final var rule = new RequestProcessingRule(0, 
+                                                   new NewName("{n:0} [{r}]"),
+                                                   new RequestNamePattern("request"),
+                                                   new UrlPattern(""),
+                                                   new ContentTypePattern(""), 
+                                                   new StatusCodePattern(""), 
+                                                   new AgentNamePattern(""),   
+                                                   new TransactionNamePattern(""), 
+                                                   new HttpMethodPattern(""),  
+                                                   new RunTimeRanges("100, 3000, 5000"),
+                                                   new StopOnMatch(true), 
+                                                   new RequestNameExcludePattern(""), 
+                                                   new UrlExcludePattern(""), 
+                                                   new ContentTypeExcludePattern(""), 
+                                                   new StatusCodeExcludePattern(""), 
+                                                   new AgentNameExcludePattern(""), 
+                                                   new TransactionNameExcludePattern(""), 
+                                                   new HttpMethodExcludePattern(""), 
+                                                   new ContinueOnMatchAtId(0), 
+                                                   new ContinueOnNoMatchAtId(0),         
+                                                   new DropOnMatch(false));  
 
         responseTimeRanges(rule, 0, "request [0..99]");
 
@@ -1000,21 +1202,29 @@ public class RequestProcessingRuleTest
     @Test
     public void testComplexRegExp() throws Exception
     {
-        final RequestProcessingRule rule = new RequestProcessingRule("{n:1}-{u:1}-{c:1}-{s:1}-{a:1}-{t:2}{t:3}{t:1}-{m:1}-{r}", // newName
-                                                                     "r(.*)", // requestNamePattern
-                                                                     "([urlURL]{3})", // urlPattern
-                                                                     "^(.+)$", // contentTypePattern
-                                                                     "2([01])[0-9]", // statusCodePattern
-                                                                     "(a?)g?e?n?t?", // agentNamePattern
-                                                                     "((.+)(action))$", // transactionNamePattern
-                                                                     "^(.+)$", // httpMethodPattern
-                                                                     "1000, 2000", // responseTimeRanges
-                                                                     true, // stopOnMatch
-                                                                     "not-request", "not-url", "not-content", "404", "not-agent",
-                                                                     "not-transaction", "not-method", false);
+        final var rule = new RequestProcessingRule(0, 
+                                                   new NewName("{n:1}-{u:1}-{c:1}-{s:1}-{a:1}-{t:2}{t:3}{t:1}-{m:1}-{r}"),
+                                                   new RequestNamePattern("r(.*)"),
+                                                   new UrlPattern("([urlURL]{3})"),
+                                                   new ContentTypePattern("^(.+)$"), 
+                                                   new StatusCodePattern("2([01])[0-9]"), 
+                                                   new AgentNamePattern("(a?)g?e?n?t?"),   
+                                                   new TransactionNamePattern("((.+)(action))$"), 
+                                                   new HttpMethodPattern("^(.+)$"),  
+                                                   new RunTimeRanges("1000, 2000"),
+                                                   new StopOnMatch(true), 
+                                                   new RequestNameExcludePattern("not-request"), 
+                                                   new UrlExcludePattern("not-url"), 
+                                                   new ContentTypeExcludePattern("not-content"), 
+                                                   new StatusCodeExcludePattern("404"), 
+                                                   new AgentNameExcludePattern("not-agent"), 
+                                                   new TransactionNameExcludePattern("not-transaction"), 
+                                                   new HttpMethodExcludePattern("not-method"), 
+                                                   new ContinueOnMatchAtId(0), 
+                                                   new ContinueOnNoMatchAtId(0),         
+                                                   new DropOnMatch(false));  
 
         final RequestData data = new RequestData("request");
-        // data.setName("request");
         data.setUrl("url");
         data.setContentType("content");
         data.setResponseCode(200);
@@ -1023,8 +1233,8 @@ public class RequestProcessingRuleTest
         data.setHttpMethod("method");
         data.setRunTime(500);
 
-        Assert.assertEquals(RequestProcessingRule.ReturnState.STOP, rule.process(data));
-        Assert.assertEquals("equest-url-content-0-a-transactiontransaction-method-0..999", data.getName());
+        assertEquals(RequestProcessingRule.STOP, rule.process(data));
+        assertEquals("equest-url-content-0-a-transactiontransaction-method-0..999", data.getName());
     }
 
     /**
@@ -1035,21 +1245,29 @@ public class RequestProcessingRuleTest
     @Test
     public void testAllIncludeAndExclude_MatchIncludeNotExclude_CaptureAll() throws Exception
     {
-        final RequestProcessingRule rule = new RequestProcessingRule("{n:0}{u:0}{c:0}{s:0}{a:0}{t:0}-{m:0}-{r:0}", // newName
-                                                                     "request", // requestNamePattern
-                                                                     "url", // urlPattern
-                                                                     "content", // contentTypePattern
-                                                                     "200", // statusCodePattern
-                                                                     "agent", // agentNamePattern
-                                                                     "transaction", // transactionNamePattern
-                                                                     "method", // httpMethodPattern
-                                                                     "1000, 2000", // responseTimeRanges
-                                                                     true, // stopOnMatch
-                                                                     "not-request", "not-url", "not-content", "404", "not-agent",
-                                                                     "not-transaction", "not-method", false);
+        final var rule = new RequestProcessingRule(0, 
+                                                   new NewName("{n:0}{u:0}{c:0}{s:0}{a:0}{t:0}-{m:0}-{r:0}"),
+                                                   new RequestNamePattern("request"),
+                                                   new UrlPattern("url"),
+                                                   new ContentTypePattern("content"), 
+                                                   new StatusCodePattern("200"), 
+                                                   new AgentNamePattern("agent"),   
+                                                   new TransactionNamePattern("transaction"), 
+                                                   new HttpMethodPattern("method"),  
+                                                   new RunTimeRanges("1000, 2000"),
+                                                   new StopOnMatch(true), 
+                                                   new RequestNameExcludePattern("not-request"), 
+                                                   new UrlExcludePattern("not-url"), 
+                                                   new ContentTypeExcludePattern("not-content"), 
+                                                   new StatusCodeExcludePattern("404"), 
+                                                   new AgentNameExcludePattern("not-agent"), 
+                                                   new TransactionNameExcludePattern("not-transaction"), 
+                                                   new HttpMethodExcludePattern("not-method"), 
+                                                   new ContinueOnMatchAtId(0), 
+                                                   new ContinueOnNoMatchAtId(0),         
+                                                   new DropOnMatch(false));  
 
         final RequestData data = new RequestData("request");
-        // data.setName("request");
         data.setUrl("url");
         data.setContentType("content");
         data.setResponseCode(200);
@@ -1058,8 +1276,8 @@ public class RequestProcessingRuleTest
         data.setHttpMethod("method");
         data.setRunTime(500);
 
-        Assert.assertEquals(RequestProcessingRule.ReturnState.STOP, rule.process(data));
-        Assert.assertEquals("requesturlcontent200agenttransaction-method-0..999", data.getName());
+        assertEquals(RequestProcessingRule.STOP, rule.process(data));
+        assertEquals("requesturlcontent200agenttransaction-method-0..999", data.getName());
 
     }
 
@@ -1069,21 +1287,29 @@ public class RequestProcessingRuleTest
     @Test
     public void testAllIncludeAndExclude_MatchIncludeExclude_CaptureAll() throws Exception
     {
-        final RequestProcessingRule rule = new RequestProcessingRule("{n:0}{u:0}{c:0}{s:0}{a:0}{t:0}{m:0}{r:0}", // newName
-                                                                     "request", // requestNamePattern
-                                                                     "url", // urlPattern
-                                                                     "content", // contentTypePattern
-                                                                     "200", // statusCodePattern
-                                                                     "agent", // agentNamePattern
-                                                                     "transaction", // transactionNamePattern
-                                                                     "method", // httpMethodPattern
-                                                                     "1000, 2000", // responseTimeRanges
-                                                                     true, // stopOnMatch
-                                                                     "request", "url", "content", "200", "agent", "transaction", "method",
-                                                                     false);
+        final var rule = new RequestProcessingRule(0, 
+                                                   new NewName("{n:0}{u:0}{c:0}{s:0}{a:0}{t:0}{m:0}{r:0}"),
+                                                   new RequestNamePattern("request"),
+                                                   new UrlPattern("url"),
+                                                   new ContentTypePattern("content"), 
+                                                   new StatusCodePattern("200"), 
+                                                   new AgentNamePattern("agent"),   
+                                                   new TransactionNamePattern("transaction"), 
+                                                   new HttpMethodPattern("method"),  
+                                                   new RunTimeRanges("1000, 2000"),
+                                                   new StopOnMatch(true), 
+                                                   new RequestNameExcludePattern("request"), 
+                                                   new UrlExcludePattern("url"), 
+                                                   new ContentTypeExcludePattern("content"), 
+                                                   new StatusCodeExcludePattern("200"), 
+                                                   new AgentNameExcludePattern("agent"), 
+                                                   new TransactionNameExcludePattern("transaction"), 
+                                                   new HttpMethodExcludePattern("method"), 
+                                                   new ContinueOnMatchAtId(0), 
+                                                   new ContinueOnNoMatchAtId(0),         
+                                                   new DropOnMatch(false));  
 
         final RequestData data = new RequestData("request");
-        // data.setName("request");
         data.setUrl("url");
         data.setContentType("content");
         data.setResponseCode(200);
@@ -1092,8 +1318,8 @@ public class RequestProcessingRuleTest
         data.setHttpMethod("method");
         data.setRunTime(500);
 
-        assertEquals(RequestProcessingRule.ReturnState.CONTINUE, rule.process(data));
-        Assert.assertEquals("request", data.getName());
+        assertEquals(0, rule.process(data));
+        assertEquals("request", data.getName());
 
     }
 
@@ -1105,21 +1331,29 @@ public class RequestProcessingRuleTest
     @Test
     public void testAllIncludeAndExclude_MatchNotIncludeButExclude_CaptureAll() throws Exception
     {
-        final RequestProcessingRule rule = new RequestProcessingRule("{n:0}{u:0}{c:0}{s:0}{a:0}{t:0}{m:0}{r:0}", // newName
-                                                                     "request", // requestNamePattern
-                                                                     "url", // urlPattern
-                                                                     "content", // contentTypePattern
-                                                                     "200", // statusCodePattern
-                                                                     "agent", // agentNamePattern
-                                                                     "transaction", // transactionNamePattern
-                                                                     "method", // httpMethodPattern
-                                                                     "1000, 2000", // responseTimeRanges
-                                                                     true, // stopOnMatch
-                                                                     "not-request", "not-url", "not-content", "404", "not-agent",
-                                                                     "not-transaction", "not-method", false);
+        final var rule = new RequestProcessingRule(0, 
+                                                   new NewName("{n:0}{u:0}{c:0}{s:0}{a:0}{t:0}{m:0}{r:0}"),
+                                                   new RequestNamePattern("request"),
+                                                   new UrlPattern("url"),
+                                                   new ContentTypePattern("content"), 
+                                                   new StatusCodePattern("200"), 
+                                                   new AgentNamePattern("agent"),   
+                                                   new TransactionNamePattern("transaction"), 
+                                                   new HttpMethodPattern("method"),  
+                                                   new RunTimeRanges("1000, 2000"),
+                                                   new StopOnMatch(true), 
+                                                   new RequestNameExcludePattern("not-request"), 
+                                                   new UrlExcludePattern("not-url"), 
+                                                   new ContentTypeExcludePattern("not-content"), 
+                                                   new StatusCodeExcludePattern("404"), 
+                                                   new AgentNameExcludePattern("not-agent"), 
+                                                   new TransactionNameExcludePattern("not-transaction"), 
+                                                   new HttpMethodExcludePattern("not-method"), 
+                                                   new ContinueOnMatchAtId(0), 
+                                                   new ContinueOnNoMatchAtId(0),         
+                                                   new DropOnMatch(false)); 
 
         final RequestData data = new RequestData("not-request");
-        // data.setName("request");
         data.setUrl("not-url");
         data.setContentType("not-content");
         data.setResponseCode(404);
@@ -1128,10 +1362,41 @@ public class RequestProcessingRuleTest
         data.setHttpMethod("not-method");
         data.setRunTime(500);
 
-        assertEquals(RequestProcessingRule.ReturnState.CONTINUE, rule.process(data));
-        Assert.assertEquals("not-request", data.getName());
+        assertEquals(0, rule.process(data));
+        assertEquals("not-request", data.getName());
     }
 
+    @Test
+    public void allowMatchingHighGroupNumbers() throws Exception
+    {
+        final var rule = new RequestProcessingRule(0, 
+                                                   new NewName("{n:12}"),
+                                                   new RequestNamePattern("(1)(2)(3)(4)(5)(6)(7)(8)(9)(10)(11)(12)"),
+                                                   new UrlPattern(""),
+                                                   new ContentTypePattern(""), 
+                                                   new StatusCodePattern(""), 
+                                                   new AgentNamePattern(""),   
+                                                   new TransactionNamePattern(""), 
+                                                   new HttpMethodPattern(""),  
+                                                   new RunTimeRanges(""),
+                                                   new StopOnMatch(false), 
+                                                   new RequestNameExcludePattern(""), 
+                                                   new UrlExcludePattern(""), 
+                                                   new ContentTypeExcludePattern(""), 
+                                                   new StatusCodeExcludePattern(""), 
+                                                   new AgentNameExcludePattern(""), 
+                                                   new TransactionNameExcludePattern(""), 
+                                                   new HttpMethodExcludePattern(""), 
+                                                   new ContinueOnMatchAtId(0), 
+                                                   new ContinueOnNoMatchAtId(0),         
+                                                   new DropOnMatch(false)); 
+
+        final RequestData data = new RequestData("123456789101112");
+
+        assertEquals(0, rule.process(data));
+        assertEquals("12", data.getName());
+    }
+    
     /**
      * Include and exclude set. Match not Include but Exclude Please note that an include pattern as well as an exclude
      * pattern can be specified for a pattern type at the same time. In this case, a request is selected if and only if
@@ -1140,24 +1405,27 @@ public class RequestProcessingRuleTest
     @Test
     public void includeDataWithouPositionNumber() throws Exception
     {
-        final RequestProcessingRule rule = new RequestProcessingRule("{n}-{u}-{c}-{s}-{a}-{t}-{r}", // newName
-                                                                     "request", // requestNamePattern
-                                                                     "url", // urlPattern
-                                                                     "content", // contentTypePattern
-                                                                     "200", // statusCodePattern
-                                                                     "agent", // agentNamePattern
-                                                                     "transaction", // transactionNamePattern
-                                                                     "GET",
-                                                                     "300, 2000", // responseTimeRanges
-                                                                     false, // stopOnMatch
-                                                                     "", // requestNameExcludePattern
-                                                                     "", // urlExcludePattern
-                                                                     "", // contentTypeExcludePattern
-                                                                     "", // statusCodeExcludePattern
-                                                                     "", // agentNameExcludePattern
-                                                                     "", // transactionNameExcludePattern
-                                                                     "",
-                                                                     false); // dropOnMatch
+        final var rule = new RequestProcessingRule(0, 
+                                                   new NewName("{n}-{u}-{c}-{s}-{a}-{t}-{r}"),
+                                                   new RequestNamePattern("request"),
+                                                   new UrlPattern("url"),
+                                                   new ContentTypePattern("content"), 
+                                                   new StatusCodePattern("200"), 
+                                                   new AgentNamePattern("agent"),   
+                                                   new TransactionNamePattern("transaction"), 
+                                                   new HttpMethodPattern("GET"),  
+                                                   new RunTimeRanges("300, 2000"),
+                                                   new StopOnMatch(false), 
+                                                   new RequestNameExcludePattern(""), 
+                                                   new UrlExcludePattern(""), 
+                                                   new ContentTypeExcludePattern(""), 
+                                                   new StatusCodeExcludePattern(""), 
+                                                   new AgentNameExcludePattern(""), 
+                                                   new TransactionNameExcludePattern(""), 
+                                                   new HttpMethodExcludePattern(""), 
+                                                   new ContinueOnMatchAtId(0), 
+                                                   new ContinueOnNoMatchAtId(0),         
+                                                   new DropOnMatch(false)); 
 
         final RequestData data = new RequestData("request");
         data.setUrl("url");
@@ -1168,15 +1436,35 @@ public class RequestProcessingRuleTest
         data.setHttpMethod("GET");
         data.setRunTime(500);
 
-        assertEquals(RequestProcessingRule.ReturnState.CONTINUE, rule.process(data));
-        Assert.assertEquals("request-url-content-200-agent-transaction-300..1999", data.getName());
+        assertEquals(0, rule.process(data));
+        assertEquals("request-url-content-200-agent-transaction-300..1999", data.getName());
 
     }
 
     @Test(expected = InvalidRequestProcessingRuleException.class)
     public void testInvalidRegex() throws Exception
     {
-        new RequestProcessingRule("{n:1}", "([]-]", "", "", "", "", "", "", "", true, "", "", "", "", "", "", "", false);
+        new RequestProcessingRule(0, 
+                                  new NewName("{n:1}"),
+                                  new RequestNamePattern("([]-]"),
+                                  new UrlPattern(""),
+                                  new ContentTypePattern(""), 
+                                  new StatusCodePattern(""), 
+                                  new AgentNamePattern(""),   
+                                  new TransactionNamePattern(""), 
+                                  new HttpMethodPattern(""),  
+                                  new RunTimeRanges(""),
+                                  new StopOnMatch(true), 
+                                  new RequestNameExcludePattern(""), 
+                                  new UrlExcludePattern(""), 
+                                  new ContentTypeExcludePattern(""), 
+                                  new StatusCodeExcludePattern(""), 
+                                  new AgentNameExcludePattern(""), 
+                                  new TransactionNameExcludePattern(""), 
+                                  new HttpMethodExcludePattern(""), 
+                                  new ContinueOnMatchAtId(0), 
+                                  new ContinueOnNoMatchAtId(0),         
+                                  new DropOnMatch(false)); 
     }
 
     /**
@@ -1185,28 +1473,31 @@ public class RequestProcessingRuleTest
     @Test
     public void stopAndDrop() throws Exception
     {
-        final RequestProcessingRule rule = new RequestProcessingRule("", // newName
-                                                                     "", // requestNamePattern
-                                                                     "", // urlPattern
-                                                                     "", // contentTypePattern
-                                                                     "", // statusCodePattern
-                                                                     "", // agentNamePattern
-                                                                     "", // transactionNamePattern
-                                                                     "", // httpMethodPattern
-                                                                     "", // responseTimeRanges
-                                                                     true, // stopOnMatch
-                                                                     "", // requestNameExcludePattern
-                                                                     "", // urlExcludePattern
-                                                                     "", // contentTypeExcludePattern
-                                                                     "", // statusCodeExcludePattern
-                                                                     "", // agentNameExcludePattern
-                                                                     "", // transactionNameExcludePattern
-                                                                     "", // httpMethodExcludePattern
-                                                                     true); // dropOnMatch
+        final var rule = new RequestProcessingRule(0, 
+                                                   new NewName(""),
+                                                   new RequestNamePattern(""),
+                                                   new UrlPattern(""),
+                                                   new ContentTypePattern(""), 
+                                                   new StatusCodePattern(""), 
+                                                   new AgentNamePattern(""),   
+                                                   new TransactionNamePattern(""), 
+                                                   new HttpMethodPattern(""),  
+                                                   new RunTimeRanges(""),
+                                                   new StopOnMatch(true), 
+                                                   new RequestNameExcludePattern(""), 
+                                                   new UrlExcludePattern(""), 
+                                                   new ContentTypeExcludePattern(""), 
+                                                   new StatusCodeExcludePattern(""), 
+                                                   new AgentNameExcludePattern(""), 
+                                                   new TransactionNameExcludePattern(""), 
+                                                   new HttpMethodExcludePattern(""), 
+                                                   new ContinueOnMatchAtId(0), 
+                                                   new ContinueOnNoMatchAtId(0),         
+                                                   new DropOnMatch(true));         
 
         final RequestData data = new RequestData("Old");
 
-        Assert.assertEquals(RequestProcessingRule.ReturnState.DROP, rule.process(data));
+        assertEquals(RequestProcessingRule.DROP, rule.process(data));
     }
 
     /**
@@ -1217,52 +1508,58 @@ public class RequestProcessingRuleTest
     @Test
     public void canGiveNameDespiteDrop() throws Exception
     {
-        final RequestProcessingRule rule = new RequestProcessingRule("My new name", // newName
-                                                                     "", // requestNamePattern
-                                                                     "url", // urlPattern
-                                                                     "", // contentTypePattern
-                                                                     "", // statusCodePattern
-                                                                     "", // agentNamePattern
-                                                                     "", // transactionNamePattern
-                                                                     "", // httpMethodPattern
-                                                                     "", // responseTimeRanges
-                                                                     false, // stopOnMatch
-                                                                     "", // requestNameExcludePattern
-                                                                     "", // urlExcludePattern
-                                                                     "", // contentTypeExcludePattern
-                                                                     "", // statusCodeExcludePattern
-                                                                     "", // agentNameExcludePattern
-                                                                     "", // transactionNameExcludePattern
-                                                                     "", // httpMethodExcludePattern
-                                                                     true); // dropOnMatch
+        final var rule = new RequestProcessingRule(0, 
+                                                   new NewName("My new name"),
+                                                   new RequestNamePattern(""),
+                                                   new UrlPattern("url"),
+                                                   new ContentTypePattern(""), 
+                                                   new StatusCodePattern(""), 
+                                                   new AgentNamePattern(""),   
+                                                   new TransactionNamePattern(""), 
+                                                   new HttpMethodPattern(""),  
+                                                   new RunTimeRanges(""),
+                                                   new StopOnMatch(false), 
+                                                   new RequestNameExcludePattern(""), 
+                                                   new UrlExcludePattern(""), 
+                                                   new ContentTypeExcludePattern(""), 
+                                                   new StatusCodeExcludePattern(""), 
+                                                   new AgentNameExcludePattern(""), 
+                                                   new TransactionNameExcludePattern(""), 
+                                                   new HttpMethodExcludePattern(""), 
+                                                   new ContinueOnMatchAtId(0), 
+                                                   new ContinueOnNoMatchAtId(0),         
+                                                   new DropOnMatch(true));  
 
         final RequestData data = new RequestData("Old");
-        data.setUrl(XltCharBuffer.valueOf("url"));
+        data.setUrl("url");
 
-        Assert.assertEquals(RequestProcessingRule.ReturnState.DROP, rule.process(data));
+        assertEquals(RequestProcessingRule.DROP, rule.process(data));
     }
 
     @Test
     public void fullTextPlaceholders_emptyFilterPatterns() throws Exception
     {
-        final RequestProcessingRule rule = new RequestProcessingRule("{n} {u} {c} {s} {a} {t} {m} {r}", // newName
-                                                                     "", // requestNamePattern
-                                                                     "", // urlPattern
-                                                                     "", // contentTypePattern
-                                                                     "", // statusCodePattern
-                                                                     "", // agentNamePattern
-                                                                     "", // transactionNamePattern
-                                                                     "", // httpMethodPattern
-                                                                     "", // responseTimeRanges
-                                                                     false, // stopOnMatch
-                                                                     "", // requestNameExcludePattern
-                                                                     "", // urlExcludePattern
-                                                                     "", // contentTypeExcludePattern
-                                                                     "", // statusCodeExcludePattern
-                                                                     "", // agentNameExcludePattern
-                                                                     "", // transactionNameExcludePattern
-                                                                     "", // httpMethodExcludePattern
-                                                                     false); // dropOnMatch
+        final var rule = new RequestProcessingRule(1, 
+                                                   new NewName("{n} {u} {c} {s} {a} {t} {m} {r}"),
+                                                   new RequestNamePattern(""),
+                                                   new UrlPattern(""),
+                                                   new ContentTypePattern(""), 
+                                                   new StatusCodePattern(""), 
+                                                   new AgentNamePattern(""),   
+                                                   new TransactionNamePattern(""), 
+                                                   new HttpMethodPattern(""),  
+                                                   new RunTimeRanges(""),
+                                                   new StopOnMatch(false), 
+                                                   new RequestNameExcludePattern(""), 
+                                                   new UrlExcludePattern(""), 
+                                                   new ContentTypeExcludePattern(""), 
+                                                   new StatusCodeExcludePattern(""), 
+                                                   new AgentNameExcludePattern(""), 
+                                                   new TransactionNameExcludePattern(""), 
+                                                   new HttpMethodExcludePattern(""), 
+                                                   new ContinueOnMatchAtId(1), 
+                                                   new ContinueOnNoMatchAtId(1),         
+                                                   new DropOnMatch(false));  
 
         final RequestData data = new RequestData("name");
         data.setUrl("url");
@@ -1273,31 +1570,34 @@ public class RequestProcessingRuleTest
         data.setHttpMethod("method");
         data.setRunTime(500);
 
-        assertEquals(RequestProcessingRule.ReturnState.CONTINUE, rule.process(data));
-        Assert.assertEquals("name url content 200 agent transaction method >=0", data.getName());
+        assertEquals(1, rule.process(data));
+        assertEquals("name url content 200 agent transaction method >=0", data.getName());
     }
 
     @Test
     public void fullTextPlaceholders_nonEmptyFilterPatterns() throws Exception
     {
-        final RequestProcessingRule rule = new RequestProcessingRule("{n} {u} {c} {s} {a} {t} {m} {r}", // newName
-                                                                     "na", // requestNamePattern
-                                                                     "ur", // urlPattern
-                                                                     "co", // contentTypePattern
-                                                                     "20", // statusCodePattern
-                                                                     "ag", // agentNamePattern
-                                                                     "tr", // transactionNamePattern
-                                                                     "me", // httpMethodPattern
-                                                                     "", // responseTimeRanges
-                                                                     false, // stopOnMatch
-                                                                     "", // requestNameExcludePattern
-                                                                     "", // urlExcludePattern
-                                                                     "", // contentTypeExcludePattern
-                                                                     "", // statusCodeExcludePattern
-                                                                     "", // agentNameExcludePattern
-                                                                     "", // transactionNameExcludePattern
-                                                                     "", // httpMethodExcludePattern
-                                                                     false); // dropOnMatch
+        final var rule = new RequestProcessingRule(1, 
+                                                   new NewName("{n} {u} {c} {s} {a} {t} {m} {r}"),
+                                                   new RequestNamePattern("na"),
+                                                   new UrlPattern("ur"),
+                                                   new ContentTypePattern("co"), 
+                                                   new StatusCodePattern("20"), 
+                                                   new AgentNamePattern("ag"),   
+                                                   new TransactionNamePattern("tr"), 
+                                                   new HttpMethodPattern("me"),  
+                                                   new RunTimeRanges(""),
+                                                   new StopOnMatch(false), 
+                                                   new RequestNameExcludePattern(""), 
+                                                   new UrlExcludePattern(""), 
+                                                   new ContentTypeExcludePattern(""), 
+                                                   new StatusCodeExcludePattern(""), 
+                                                   new AgentNameExcludePattern(""), 
+                                                   new TransactionNameExcludePattern(""), 
+                                                   new HttpMethodExcludePattern(""), 
+                                                   new ContinueOnMatchAtId(1), 
+                                                   new ContinueOnNoMatchAtId(2),         
+                                                   new DropOnMatch(false));
 
         final RequestData data = new RequestData("name");
         data.setUrl("url");
@@ -1308,37 +1608,862 @@ public class RequestProcessingRuleTest
         data.setHttpMethod("method");
         data.setRunTime(500);
 
-        assertEquals(RequestProcessingRule.ReturnState.CONTINUE, rule.process(data));
-        Assert.assertEquals("name url content 200 agent transaction method >=0", data.getName());
+        assertEquals(1, rule.process(data));
+        assertEquals("name url content 200 agent transaction method >=0", data.getName());
     }
-
-    // TODO: #3252
-    // @Test(expected = InvalidRequestProcessingRuleException.class)
-    // public void validate_emptyFilterPatterns_invalidCapturingGroupIndex_0() throws Exception
-    // {
-    // // cannot refer to the group 0 in an empty pattern
-    // new RequestProcessingRule("{n:0}", "", "", "", "", "", "", "", false, "", "", "", "", "", "", false);
-    // }
 
     @Test(expected = InvalidRequestProcessingRuleException.class)
     public void validate_emptyFilterPatterns_invalidCapturingGroupIndex_1() throws Exception
     {
         // cannot refer to the group 1 in an empty pattern
-        new RequestProcessingRule("{n:1}", "", "", "", "", "", "", "", "", false, "", "", "", "", "", "", "", false);
+        new RequestProcessingRule(1, 
+                                  new NewName("{n:1}"),
+                                  new RequestNamePattern(""),
+                                  new UrlPattern(""),
+                                  new ContentTypePattern(""), 
+                                  new StatusCodePattern(""), 
+                                  new AgentNamePattern(""),   
+                                  new TransactionNamePattern(""), 
+                                  new HttpMethodPattern(""),  
+                                  new RunTimeRanges(""),
+                                  new StopOnMatch(false), 
+                                  new RequestNameExcludePattern(""), 
+                                  new UrlExcludePattern(""), 
+                                  new ContentTypeExcludePattern(""), 
+                                  new StatusCodeExcludePattern(""), 
+                                  new AgentNameExcludePattern(""), 
+                                  new TransactionNameExcludePattern(""), 
+                                  new HttpMethodExcludePattern(""), 
+                                  new ContinueOnMatchAtId(1), 
+                                  new ContinueOnNoMatchAtId(2),         
+                                  new DropOnMatch(false));
     }
 
     @Test
     public void validate_nonEmptyFilterPatterns_validCapturingGroupIndexes() throws Exception
     {
-        new RequestProcessingRule("{n}", "foo(bar)", "", "", "", "", "", "", "", false, "", "", "", "", "", "", "", false);
-        new RequestProcessingRule("{n:0}", "foo(bar)", "", "", "", "", "", "", "", false, "", "", "", "", "", "", "", false);
-        new RequestProcessingRule("{n:1}", "foo(bar)", "", "", "", "", "", "", "", false, "", "", "", "", "", "", "", false);
+        new RequestProcessingRule(1, 
+                                  new NewName("{n}"),
+                                  new RequestNamePattern("foo(bar)"),
+                                  new UrlPattern(""),
+                                  new ContentTypePattern(""), 
+                                  new StatusCodePattern(""), 
+                                  new AgentNamePattern(""),   
+                                  new TransactionNamePattern(""), 
+                                  new HttpMethodPattern(""),  
+                                  new RunTimeRanges(""),
+                                  new StopOnMatch(false), 
+                                  new RequestNameExcludePattern(""), 
+                                  new UrlExcludePattern(""), 
+                                  new ContentTypeExcludePattern(""), 
+                                  new StatusCodeExcludePattern(""), 
+                                  new AgentNameExcludePattern(""), 
+                                  new TransactionNameExcludePattern(""), 
+                                  new HttpMethodExcludePattern(""), 
+                                  new ContinueOnMatchAtId(1), 
+                                  new ContinueOnNoMatchAtId(2),         
+                                  new DropOnMatch(false));
+        new RequestProcessingRule(1, 
+                                  new NewName("{n:0}"),
+                                  new RequestNamePattern("foo(bar)"),
+                                  new UrlPattern(""),
+                                  new ContentTypePattern(""), 
+                                  new StatusCodePattern(""), 
+                                  new AgentNamePattern(""),   
+                                  new TransactionNamePattern(""), 
+                                  new HttpMethodPattern(""),  
+                                  new RunTimeRanges(""),
+                                  new StopOnMatch(false), 
+                                  new RequestNameExcludePattern(""), 
+                                  new UrlExcludePattern(""), 
+                                  new ContentTypeExcludePattern(""), 
+                                  new StatusCodeExcludePattern(""), 
+                                  new AgentNameExcludePattern(""), 
+                                  new TransactionNameExcludePattern(""), 
+                                  new HttpMethodExcludePattern(""), 
+                                  new ContinueOnMatchAtId(1), 
+                                  new ContinueOnNoMatchAtId(2),         
+                                  new DropOnMatch(false));
+        new RequestProcessingRule(1, 
+                                  new NewName("{n:1}"),
+                                  new RequestNamePattern("foo(bar)"),
+                                  new UrlPattern(""),
+                                  new ContentTypePattern(""), 
+                                  new StatusCodePattern(""), 
+                                  new AgentNamePattern(""),   
+                                  new TransactionNamePattern(""), 
+                                  new HttpMethodPattern(""),  
+                                  new RunTimeRanges(""),
+                                  new StopOnMatch(false), 
+                                  new RequestNameExcludePattern(""), 
+                                  new UrlExcludePattern(""), 
+                                  new ContentTypeExcludePattern(""), 
+                                  new StatusCodeExcludePattern(""), 
+                                  new AgentNameExcludePattern(""), 
+                                  new TransactionNameExcludePattern(""), 
+                                  new HttpMethodExcludePattern(""), 
+                                  new ContinueOnMatchAtId(1), 
+                                  new ContinueOnNoMatchAtId(2),         
+                                  new DropOnMatch(false));
     }
 
     @Test(expected = InvalidRequestProcessingRuleException.class)
     public void validate_nonEmptyFilterPatterns_invalidCapturingGroupIndex() throws Exception
     {
         // cannot refer to the group 2 in a pattern with just one group
-        new RequestProcessingRule("{n:2}", "foo(bar)", "", "", "", "", "", "", "", false, "", "", "", "", "", "", "", false);
+        new RequestProcessingRule(1, 
+                                  new NewName("{n:2}"),
+                                  new RequestNamePattern("foo(bar)"),
+                                  new UrlPattern(""),
+                                  new ContentTypePattern(""), 
+                                  new StatusCodePattern(""), 
+                                  new AgentNamePattern(""),   
+                                  new TransactionNamePattern(""), 
+                                  new HttpMethodPattern(""),  
+                                  new RunTimeRanges(""),
+                                  new StopOnMatch(false), 
+                                  new RequestNameExcludePattern(""), 
+                                  new UrlExcludePattern(""), 
+                                  new ContentTypeExcludePattern(""), 
+                                  new StatusCodeExcludePattern(""), 
+                                  new AgentNameExcludePattern(""), 
+                                  new TransactionNameExcludePattern(""), 
+                                  new HttpMethodExcludePattern(""), 
+                                  new ContinueOnMatchAtId(1), 
+                                  new ContinueOnNoMatchAtId(2),         
+                                  new DropOnMatch(false));        
+    }
+
+    /**
+     * Test that we process all rules when given and we don't want to skip anything
+     */
+    @Test
+    public void testProcessAllRules() throws Exception
+    {
+        final var rule1 = new RequestProcessingRule(1, 
+                                                    new NewName("1{n}"),
+                                                    new RequestNamePattern("request"),
+                                                    new UrlPattern(""),
+                                                    new ContentTypePattern(""), 
+                                                    new StatusCodePattern(""), 
+                                                    new AgentNamePattern(""),   
+                                                    new TransactionNamePattern(""), 
+                                                    new HttpMethodPattern(""),  
+                                                    new RunTimeRanges(""),
+                                                    new StopOnMatch(false), 
+                                                    new RequestNameExcludePattern(""), 
+                                                    new UrlExcludePattern(""), 
+                                                    new ContentTypeExcludePattern(""), 
+                                                    new StatusCodeExcludePattern(""), 
+                                                    new AgentNameExcludePattern(""), 
+                                                    new TransactionNameExcludePattern(""), 
+                                                    new HttpMethodExcludePattern(""), 
+                                                    new ContinueOnMatchAtId(1), 
+                                                    new ContinueOnNoMatchAtId(1),         
+                                                    new DropOnMatch(false));  
+        final var rule2 = new RequestProcessingRule(2, 
+                                                    new NewName("2{n}"),
+                                                    new RequestNamePattern("request"),
+                                                    new UrlPattern(""),
+                                                    new ContentTypePattern(""), 
+                                                    new StatusCodePattern(""), 
+                                                    new AgentNamePattern(""),   
+                                                    new TransactionNamePattern(""), 
+                                                    new HttpMethodPattern(""),  
+                                                    new RunTimeRanges(""),
+                                                    new StopOnMatch(false), 
+                                                    new RequestNameExcludePattern(""), 
+                                                    new UrlExcludePattern(""), 
+                                                    new ContentTypeExcludePattern(""), 
+                                                    new StatusCodeExcludePattern(""), 
+                                                    new AgentNameExcludePattern(""), 
+                                                    new TransactionNameExcludePattern(""), 
+                                                    new HttpMethodExcludePattern(""), 
+                                                    new ContinueOnMatchAtId(2), 
+                                                    new ContinueOnNoMatchAtId(2),         
+                                                    new DropOnMatch(false));  
+        final var rule3 = new RequestProcessingRule(3, 
+                                                    new NewName("3{n}"),
+                                                    new RequestNamePattern("request"),
+                                                    new UrlPattern(""),
+                                                    new ContentTypePattern(""), 
+                                                    new StatusCodePattern(""), 
+                                                    new AgentNamePattern(""),   
+                                                    new TransactionNamePattern(""), 
+                                                    new HttpMethodPattern(""),  
+                                                    new RunTimeRanges(""),
+                                                    new StopOnMatch(false), 
+                                                    new RequestNameExcludePattern(""), 
+                                                    new UrlExcludePattern(""), 
+                                                    new ContentTypeExcludePattern(""), 
+                                                    new StatusCodeExcludePattern(""), 
+                                                    new AgentNameExcludePattern(""), 
+                                                    new TransactionNameExcludePattern(""), 
+                                                    new HttpMethodExcludePattern(""), 
+                                                    new ContinueOnMatchAtId(3), 
+                                                    new ContinueOnNoMatchAtId(3),         
+                                                    new DropOnMatch(false));  
+        final var data = new RequestData("request");
+        final var rp = new RequestProcessing(List.of(rule1, rule2, rule3), false);
+        
+        var result = rp.postprocess(data);
+        assertEquals("321request", result.getName());
+    }
+
+    /**
+     * Test that we want to skip a rule and hit exactly the next.
+     */
+    @Test
+    public void testProcessRules_SkipAndHitExactly() throws Exception
+    {
+        final var rule1 = new RequestProcessingRule(100, 
+                                                    new NewName("1{n}"),
+                                                    new RequestNamePattern("request"),
+                                                    new UrlPattern(""),
+                                                    new ContentTypePattern(""), 
+                                                    new StatusCodePattern(""), 
+                                                    new AgentNamePattern(""),   
+                                                    new TransactionNamePattern(""), 
+                                                    new HttpMethodPattern(""),  
+                                                    new RunTimeRanges(""),
+                                                    new StopOnMatch(false), 
+                                                    new RequestNameExcludePattern(""), 
+                                                    new UrlExcludePattern(""), 
+                                                    new ContentTypeExcludePattern(""), 
+                                                    new StatusCodeExcludePattern(""), 
+                                                    new AgentNameExcludePattern(""), 
+                                                    new TransactionNameExcludePattern(""), 
+                                                    new HttpMethodExcludePattern(""), 
+                                                    new ContinueOnMatchAtId(300), 
+                                                    new ContinueOnNoMatchAtId(100),         
+                                                    new DropOnMatch(false));  
+        final var rule2 = new RequestProcessingRule(200, 
+                                                    new NewName("2{n}"),
+                                                    new RequestNamePattern("request"),
+                                                    new UrlPattern(""),
+                                                    new ContentTypePattern(""), 
+                                                    new StatusCodePattern(""), 
+                                                    new AgentNamePattern(""),   
+                                                    new TransactionNamePattern(""), 
+                                                    new HttpMethodPattern(""),  
+                                                    new RunTimeRanges(""),
+                                                    new StopOnMatch(false), 
+                                                    new RequestNameExcludePattern(""), 
+                                                    new UrlExcludePattern(""), 
+                                                    new ContentTypeExcludePattern(""), 
+                                                    new StatusCodeExcludePattern(""), 
+                                                    new AgentNameExcludePattern(""), 
+                                                    new TransactionNameExcludePattern(""), 
+                                                    new HttpMethodExcludePattern(""), 
+                                                    new ContinueOnMatchAtId(200), 
+                                                    new ContinueOnNoMatchAtId(200),         
+                                                    new DropOnMatch(false));  
+        final var rule3 = new RequestProcessingRule(300, 
+                                                    new NewName("3{n}"),
+                                                    new RequestNamePattern("request"),
+                                                    new UrlPattern(""),
+                                                    new ContentTypePattern(""), 
+                                                    new StatusCodePattern(""), 
+                                                    new AgentNamePattern(""),   
+                                                    new TransactionNamePattern(""), 
+                                                    new HttpMethodPattern(""),  
+                                                    new RunTimeRanges(""),
+                                                    new StopOnMatch(false), 
+                                                    new RequestNameExcludePattern(""), 
+                                                    new UrlExcludePattern(""), 
+                                                    new ContentTypeExcludePattern(""), 
+                                                    new StatusCodeExcludePattern(""), 
+                                                    new AgentNameExcludePattern(""), 
+                                                    new TransactionNameExcludePattern(""), 
+                                                    new HttpMethodExcludePattern(""), 
+                                                    new ContinueOnMatchAtId(300), 
+                                                    new ContinueOnNoMatchAtId(300),         
+                                                    new DropOnMatch(false));  
+        final var data = new RequestData("request");
+        final var rp = new RequestProcessing(List.of(rule1, rule2, rule3), false);
+        
+        var result = rp.postprocess(data);
+        assertEquals("31request", result.getName());
+    }
+    
+    /**
+     * Skip and end beyond the last rule
+     */
+    @Test
+    public void testProcessRules_SkipAndBeyondTheLast() throws Exception
+    {
+        final var rule1 = new RequestProcessingRule(100, 
+                                                    new NewName("1{n}"),
+                                                    new RequestNamePattern("request"),
+                                                    new UrlPattern(""),
+                                                    new ContentTypePattern(""), 
+                                                    new StatusCodePattern(""), 
+                                                    new AgentNamePattern(""),   
+                                                    new TransactionNamePattern(""), 
+                                                    new HttpMethodPattern(""),  
+                                                    new RunTimeRanges(""),
+                                                    new StopOnMatch(false), 
+                                                    new RequestNameExcludePattern(""), 
+                                                    new UrlExcludePattern(""), 
+                                                    new ContentTypeExcludePattern(""), 
+                                                    new StatusCodeExcludePattern(""), 
+                                                    new AgentNameExcludePattern(""), 
+                                                    new TransactionNameExcludePattern(""), 
+                                                    new HttpMethodExcludePattern(""), 
+                                                    new ContinueOnMatchAtId(100), 
+                                                    new ContinueOnNoMatchAtId(100),         
+                                                    new DropOnMatch(false));  
+        final var rule2 = new RequestProcessingRule(200, 
+                                                    new NewName("2{n}"),
+                                                    new RequestNamePattern("request"),
+                                                    new UrlPattern(""),
+                                                    new ContentTypePattern(""), 
+                                                    new StatusCodePattern(""), 
+                                                    new AgentNamePattern(""),   
+                                                    new TransactionNamePattern(""), 
+                                                    new HttpMethodPattern(""),  
+                                                    new RunTimeRanges(""),
+                                                    new StopOnMatch(false), 
+                                                    new RequestNameExcludePattern(""), 
+                                                    new UrlExcludePattern(""), 
+                                                    new ContentTypeExcludePattern(""), 
+                                                    new StatusCodeExcludePattern(""), 
+                                                    new AgentNameExcludePattern(""), 
+                                                    new TransactionNameExcludePattern(""), 
+                                                    new HttpMethodExcludePattern(""), 
+                                                    new ContinueOnMatchAtId(2000), 
+                                                    new ContinueOnNoMatchAtId(2000),         
+                                                    new DropOnMatch(false));  
+        final var rule3 = new RequestProcessingRule(300, 
+                                                    new NewName("3{n}"),
+                                                    new RequestNamePattern("request"),
+                                                    new UrlPattern(""),
+                                                    new ContentTypePattern(""), 
+                                                    new StatusCodePattern(""), 
+                                                    new AgentNamePattern(""),   
+                                                    new TransactionNamePattern(""), 
+                                                    new HttpMethodPattern(""),  
+                                                    new RunTimeRanges(""),
+                                                    new StopOnMatch(false), 
+                                                    new RequestNameExcludePattern(""), 
+                                                    new UrlExcludePattern(""), 
+                                                    new ContentTypeExcludePattern(""), 
+                                                    new StatusCodeExcludePattern(""), 
+                                                    new AgentNameExcludePattern(""), 
+                                                    new TransactionNameExcludePattern(""), 
+                                                    new HttpMethodExcludePattern(""), 
+                                                    new ContinueOnMatchAtId(300), 
+                                                    new ContinueOnNoMatchAtId(300),         
+                                                    new DropOnMatch(false));  
+        final var data = new RequestData("request");
+        final var rp = new RequestProcessing(List.of(rule1, rule2, rule3), false);
+        
+        var result = rp.postprocess(data);
+        assertEquals("21request", result.getName());
+    }
+
+    /**
+     * Skip and jump close to the next wanted
+     */
+    @Test
+    public void testProcessRules_SkipAndJumpClose() throws Exception
+    {
+        final var rule1 = new RequestProcessingRule(100, 
+                                                    new NewName("1{n}"),
+                                                    new RequestNamePattern("request"),
+                                                    new UrlPattern(""),
+                                                    new ContentTypePattern(""), 
+                                                    new StatusCodePattern(""), 
+                                                    new AgentNamePattern(""),   
+                                                    new TransactionNamePattern(""), 
+                                                    new HttpMethodPattern(""),  
+                                                    new RunTimeRanges(""),
+                                                    new StopOnMatch(false), 
+                                                    new RequestNameExcludePattern(""), 
+                                                    new UrlExcludePattern(""), 
+                                                    new ContentTypeExcludePattern(""), 
+                                                    new StatusCodeExcludePattern(""), 
+                                                    new AgentNameExcludePattern(""), 
+                                                    new TransactionNameExcludePattern(""), 
+                                                    new HttpMethodExcludePattern(""), 
+                                                    new ContinueOnMatchAtId(250), 
+                                                    new ContinueOnNoMatchAtId(100),         
+                                                    new DropOnMatch(false));  
+        final var rule2 = new RequestProcessingRule(200, 
+                                                    new NewName("2{n}"),
+                                                    new RequestNamePattern("request"),
+                                                    new UrlPattern(""),
+                                                    new ContentTypePattern(""), 
+                                                    new StatusCodePattern(""), 
+                                                    new AgentNamePattern(""),   
+                                                    new TransactionNamePattern(""), 
+                                                    new HttpMethodPattern(""),  
+                                                    new RunTimeRanges(""),
+                                                    new StopOnMatch(false), 
+                                                    new RequestNameExcludePattern(""), 
+                                                    new UrlExcludePattern(""), 
+                                                    new ContentTypeExcludePattern(""), 
+                                                    new StatusCodeExcludePattern(""), 
+                                                    new AgentNameExcludePattern(""), 
+                                                    new TransactionNameExcludePattern(""), 
+                                                    new HttpMethodExcludePattern(""), 
+                                                    new ContinueOnMatchAtId(200), 
+                                                    new ContinueOnNoMatchAtId(200),         
+                                                    new DropOnMatch(false));  
+        final var rule3 = new RequestProcessingRule(300, 
+                                                    new NewName("3{n}"),
+                                                    new RequestNamePattern("request"),
+                                                    new UrlPattern(""),
+                                                    new ContentTypePattern(""), 
+                                                    new StatusCodePattern(""), 
+                                                    new AgentNamePattern(""),   
+                                                    new TransactionNamePattern(""), 
+                                                    new HttpMethodPattern(""),  
+                                                    new RunTimeRanges(""),
+                                                    new StopOnMatch(false), 
+                                                    new RequestNameExcludePattern(""), 
+                                                    new UrlExcludePattern(""), 
+                                                    new ContentTypeExcludePattern(""), 
+                                                    new StatusCodeExcludePattern(""), 
+                                                    new AgentNameExcludePattern(""), 
+                                                    new TransactionNameExcludePattern(""), 
+                                                    new HttpMethodExcludePattern(""), 
+                                                    new ContinueOnMatchAtId(300), 
+                                                    new ContinueOnNoMatchAtId(300),         
+                                                    new DropOnMatch(false));  
+        final var data = new RequestData("request");
+        final var rp = new RequestProcessing(List.of(rule1, rule2, rule3), false);
+        
+        var result = rp.postprocess(data);
+        assertEquals("31request", result.getName());
+    }
+    
+    /**
+     * Skip when we don't match 
+     */
+    @Test
+    public void testProcessRules_SkipOnNoMatch() throws Exception
+    {
+        final var rule1 = new RequestProcessingRule(100, 
+                                                    new NewName("1{n}"),
+                                                    new RequestNamePattern("foobar"),
+                                                    new UrlPattern(""),
+                                                    new ContentTypePattern(""), 
+                                                    new StatusCodePattern(""), 
+                                                    new AgentNamePattern(""),   
+                                                    new TransactionNamePattern(""), 
+                                                    new HttpMethodPattern(""),  
+                                                    new RunTimeRanges(""),
+                                                    new StopOnMatch(false), 
+                                                    new RequestNameExcludePattern(""), 
+                                                    new UrlExcludePattern(""), 
+                                                    new ContentTypeExcludePattern(""), 
+                                                    new StatusCodeExcludePattern(""), 
+                                                    new AgentNameExcludePattern(""), 
+                                                    new TransactionNameExcludePattern(""), 
+                                                    new HttpMethodExcludePattern(""), 
+                                                    new ContinueOnMatchAtId(100), 
+                                                    new ContinueOnNoMatchAtId(250),         
+                                                    new DropOnMatch(false));  
+        final var rule2 = new RequestProcessingRule(200, 
+                                                    new NewName("2{n}"),
+                                                    new RequestNamePattern("request"),
+                                                    new UrlPattern(""),
+                                                    new ContentTypePattern(""), 
+                                                    new StatusCodePattern(""), 
+                                                    new AgentNamePattern(""),   
+                                                    new TransactionNamePattern(""), 
+                                                    new HttpMethodPattern(""),  
+                                                    new RunTimeRanges(""),
+                                                    new StopOnMatch(false), 
+                                                    new RequestNameExcludePattern(""), 
+                                                    new UrlExcludePattern(""), 
+                                                    new ContentTypeExcludePattern(""), 
+                                                    new StatusCodeExcludePattern(""), 
+                                                    new AgentNameExcludePattern(""), 
+                                                    new TransactionNameExcludePattern(""), 
+                                                    new HttpMethodExcludePattern(""), 
+                                                    new ContinueOnMatchAtId(200), 
+                                                    new ContinueOnNoMatchAtId(200),         
+                                                    new DropOnMatch(false));  
+        final var rule3 = new RequestProcessingRule(300, 
+                                                    new NewName("3{n}"),
+                                                    new RequestNamePattern("request"),
+                                                    new UrlPattern(""),
+                                                    new ContentTypePattern(""), 
+                                                    new StatusCodePattern(""), 
+                                                    new AgentNamePattern(""),   
+                                                    new TransactionNamePattern(""), 
+                                                    new HttpMethodPattern(""),  
+                                                    new RunTimeRanges(""),
+                                                    new StopOnMatch(false), 
+                                                    new RequestNameExcludePattern(""), 
+                                                    new UrlExcludePattern(""), 
+                                                    new ContentTypeExcludePattern(""), 
+                                                    new StatusCodeExcludePattern(""), 
+                                                    new AgentNameExcludePattern(""), 
+                                                    new TransactionNameExcludePattern(""), 
+                                                    new HttpMethodExcludePattern(""), 
+                                                    new ContinueOnMatchAtId(300), 
+                                                    new ContinueOnNoMatchAtId(300),         
+                                                    new DropOnMatch(false));  
+        final var data = new RequestData("request");
+        final var rp = new RequestProcessing(List.of(rule1, rule2, rule3), false);
+        
+        var result = rp.postprocess(data);
+        assertEquals("3request", result.getName());
+    }
+    
+    /**
+     * Check that we stop on the first match and don't continue to the next rules 
+     */
+    @Test
+    public void testProcessRules_StopOnMatch() throws Exception
+    {
+        final var rule1 = new RequestProcessingRule(100, 
+                                                    new NewName("1{n}"),
+                                                    new RequestNamePattern("request"),
+                                                    new UrlPattern(""),
+                                                    new ContentTypePattern(""), 
+                                                    new StatusCodePattern(""), 
+                                                    new AgentNamePattern(""),   
+                                                    new TransactionNamePattern(""), 
+                                                    new HttpMethodPattern(""),  
+                                                    new RunTimeRanges(""),
+                                                    new StopOnMatch(false), 
+                                                    new RequestNameExcludePattern(""), 
+                                                    new UrlExcludePattern(""), 
+                                                    new ContentTypeExcludePattern(""), 
+                                                    new StatusCodeExcludePattern(""), 
+                                                    new AgentNameExcludePattern(""), 
+                                                    new TransactionNameExcludePattern(""), 
+                                                    new HttpMethodExcludePattern(""), 
+                                                    new ContinueOnMatchAtId(100), 
+                                                    new ContinueOnNoMatchAtId(250),         
+                                                    new DropOnMatch(false));  
+        final var rule2 = new RequestProcessingRule(200, 
+                                                    new NewName("2{n}"),
+                                                    new RequestNamePattern("request"),
+                                                    new UrlPattern(""),
+                                                    new ContentTypePattern(""), 
+                                                    new StatusCodePattern(""), 
+                                                    new AgentNamePattern(""),   
+                                                    new TransactionNamePattern(""), 
+                                                    new HttpMethodPattern(""),  
+                                                    new RunTimeRanges(""),
+                                                    new StopOnMatch(true), 
+                                                    new RequestNameExcludePattern(""), 
+                                                    new UrlExcludePattern(""), 
+                                                    new ContentTypeExcludePattern(""), 
+                                                    new StatusCodeExcludePattern(""), 
+                                                    new AgentNameExcludePattern(""), 
+                                                    new TransactionNameExcludePattern(""), 
+                                                    new HttpMethodExcludePattern(""), 
+                                                    new ContinueOnMatchAtId(200), 
+                                                    new ContinueOnNoMatchAtId(200),         
+                                                    new DropOnMatch(false));  
+        final var rule3 = new RequestProcessingRule(300, 
+                                                    new NewName("3{n}"),
+                                                    new RequestNamePattern("request"),
+                                                    new UrlPattern(""),
+                                                    new ContentTypePattern(""), 
+                                                    new StatusCodePattern(""), 
+                                                    new AgentNamePattern(""),   
+                                                    new TransactionNamePattern(""), 
+                                                    new HttpMethodPattern(""),  
+                                                    new RunTimeRanges(""),
+                                                    new StopOnMatch(false), 
+                                                    new RequestNameExcludePattern(""), 
+                                                    new UrlExcludePattern(""), 
+                                                    new ContentTypeExcludePattern(""), 
+                                                    new StatusCodeExcludePattern(""), 
+                                                    new AgentNameExcludePattern(""), 
+                                                    new TransactionNameExcludePattern(""), 
+                                                    new HttpMethodExcludePattern(""), 
+                                                    new ContinueOnMatchAtId(300), 
+                                                    new ContinueOnNoMatchAtId(300),         
+                                                    new DropOnMatch(false));  
+        final var data = new RequestData("request");
+        final var rp = new RequestProcessing(List.of(rule1, rule2, rule3), false);
+        
+        var result = rp.postprocess(data);
+        assertEquals("21request", result.getName());
+    }
+    
+    /**
+     * Check that we correctly indicate that we want to drop a request
+     */
+    @Test
+    public void testProcessRules_DropOnMatch() throws Exception
+    {
+        final var rule1 = new RequestProcessingRule(100, 
+                                                    new NewName("1{n}"),
+                                                    new RequestNamePattern("request"),
+                                                    new UrlPattern(""),
+                                                    new ContentTypePattern(""), 
+                                                    new StatusCodePattern(""), 
+                                                    new AgentNamePattern(""),   
+                                                    new TransactionNamePattern(""), 
+                                                    new HttpMethodPattern(""),  
+                                                    new RunTimeRanges(""),
+                                                    new StopOnMatch(false), 
+                                                    new RequestNameExcludePattern(""), 
+                                                    new UrlExcludePattern(""), 
+                                                    new ContentTypeExcludePattern(""), 
+                                                    new StatusCodeExcludePattern(""), 
+                                                    new AgentNameExcludePattern(""), 
+                                                    new TransactionNameExcludePattern(""), 
+                                                    new HttpMethodExcludePattern(""), 
+                                                    new ContinueOnMatchAtId(100), 
+                                                    new ContinueOnNoMatchAtId(250),         
+                                                    new DropOnMatch(false));  
+        final var rule2 = new RequestProcessingRule(200, 
+                                                    new NewName("2{n}"),
+                                                    new RequestNamePattern("request"),
+                                                    new UrlPattern(""),
+                                                    new ContentTypePattern(""), 
+                                                    new StatusCodePattern(""), 
+                                                    new AgentNamePattern(""),   
+                                                    new TransactionNamePattern(""), 
+                                                    new HttpMethodPattern(""),  
+                                                    new RunTimeRanges(""),
+                                                    new StopOnMatch(false), 
+                                                    new RequestNameExcludePattern(""), 
+                                                    new UrlExcludePattern(""), 
+                                                    new ContentTypeExcludePattern(""), 
+                                                    new StatusCodeExcludePattern(""), 
+                                                    new AgentNameExcludePattern(""), 
+                                                    new TransactionNameExcludePattern(""), 
+                                                    new HttpMethodExcludePattern(""), 
+                                                    new ContinueOnMatchAtId(200), 
+                                                    new ContinueOnNoMatchAtId(200),         
+                                                    new DropOnMatch(true));  
+        final var rule3 = new RequestProcessingRule(300, 
+                                                    new NewName("3{n}"),
+                                                    new RequestNamePattern("request"),
+                                                    new UrlPattern(""),
+                                                    new ContentTypePattern(""), 
+                                                    new StatusCodePattern(""), 
+                                                    new AgentNamePattern(""),   
+                                                    new TransactionNamePattern(""), 
+                                                    new HttpMethodPattern(""),  
+                                                    new RunTimeRanges(""),
+                                                    new StopOnMatch(false), 
+                                                    new RequestNameExcludePattern(""), 
+                                                    new UrlExcludePattern(""), 
+                                                    new ContentTypeExcludePattern(""), 
+                                                    new StatusCodeExcludePattern(""), 
+                                                    new AgentNameExcludePattern(""), 
+                                                    new TransactionNameExcludePattern(""), 
+                                                    new HttpMethodExcludePattern(""), 
+                                                    new ContinueOnMatchAtId(300), 
+                                                    new ContinueOnNoMatchAtId(300),         
+                                                    new DropOnMatch(false));  
+        final var data = new RequestData("request");
+        final var rp = new RequestProcessing(List.of(rule1, rule2, rule3), false);
+        
+        var result = rp.postprocess(data);
+        assertNull(result);
+    }
+    
+    /**
+     * Check that we have the right order. This is meant ot aid programming issues and
+     * is not exposed to the end user.
+     * @throws InvalidRequestProcessingRuleException 
+     */
+    @Test
+    public void testProcessRules_incorrectOrder() throws Exception
+    {
+        final var rule1 = new RequestProcessingRule(100, 
+                                                    new NewName("1{n}"),
+                                                    new RequestNamePattern("request"),
+                                                    new UrlPattern(""),
+                                                    new ContentTypePattern(""), 
+                                                    new StatusCodePattern(""), 
+                                                    new AgentNamePattern(""),   
+                                                    new TransactionNamePattern(""), 
+                                                    new HttpMethodPattern(""),  
+                                                    new RunTimeRanges(""),
+                                                    new StopOnMatch(false), 
+                                                    new RequestNameExcludePattern(""), 
+                                                    new UrlExcludePattern(""), 
+                                                    new ContentTypeExcludePattern(""), 
+                                                    new StatusCodeExcludePattern(""), 
+                                                    new AgentNameExcludePattern(""), 
+                                                    new TransactionNameExcludePattern(""), 
+                                                    new HttpMethodExcludePattern(""), 
+                                                    new ContinueOnMatchAtId(100), 
+                                                    new ContinueOnNoMatchAtId(250),         
+                                                    new DropOnMatch(false));  
+        final var rule2 = new RequestProcessingRule(99, 
+                                                    new NewName("2{n}"),
+                                                    new RequestNamePattern("request"),
+                                                    new UrlPattern(""),
+                                                    new ContentTypePattern(""), 
+                                                    new StatusCodePattern(""), 
+                                                    new AgentNamePattern(""),   
+                                                    new TransactionNamePattern(""), 
+                                                    new HttpMethodPattern(""),  
+                                                    new RunTimeRanges(""),
+                                                    new StopOnMatch(false), 
+                                                    new RequestNameExcludePattern(""), 
+                                                    new UrlExcludePattern(""), 
+                                                    new ContentTypeExcludePattern(""), 
+                                                    new StatusCodeExcludePattern(""), 
+                                                    new AgentNameExcludePattern(""), 
+                                                    new TransactionNameExcludePattern(""), 
+                                                    new HttpMethodExcludePattern(""), 
+                                                    new ContinueOnMatchAtId(200), 
+                                                    new ContinueOnNoMatchAtId(200),         
+                                                    new DropOnMatch(true));  
+        var ex = assertThrows(IllegalArgumentException.class, () -> {
+            new RequestProcessing(List.of(rule1, rule2), false);
+        });
+        assertEquals("Request processing rules must be sorted by ID in ascending order.", ex.getMessage());
+    }
+    /**
+     * Check that we have the right order. This is meant ot aid programming issues and
+     * is not exposed to the end user.
+     * @throws InvalidRequestProcessingRuleException 
+     */
+    @Test
+    public void testProcessRules_incorrectOrderSameId() throws Exception
+    {
+        final var rule1 = new RequestProcessingRule(100, 
+                                                    new NewName("1{n}"),
+                                                    new RequestNamePattern("request"),
+                                                    new UrlPattern(""),
+                                                    new ContentTypePattern(""), 
+                                                    new StatusCodePattern(""), 
+                                                    new AgentNamePattern(""),   
+                                                    new TransactionNamePattern(""), 
+                                                    new HttpMethodPattern(""),  
+                                                    new RunTimeRanges(""),
+                                                    new StopOnMatch(false), 
+                                                    new RequestNameExcludePattern(""), 
+                                                    new UrlExcludePattern(""), 
+                                                    new ContentTypeExcludePattern(""), 
+                                                    new StatusCodeExcludePattern(""), 
+                                                    new AgentNameExcludePattern(""), 
+                                                    new TransactionNameExcludePattern(""), 
+                                                    new HttpMethodExcludePattern(""), 
+                                                    new ContinueOnMatchAtId(100), 
+                                                    new ContinueOnNoMatchAtId(250),         
+                                                    new DropOnMatch(false));  
+        final var rule2 = new RequestProcessingRule(100, 
+                                                    new NewName("2{n}"),
+                                                    new RequestNamePattern("request"),
+                                                    new UrlPattern(""),
+                                                    new ContentTypePattern(""), 
+                                                    new StatusCodePattern(""), 
+                                                    new AgentNamePattern(""),   
+                                                    new TransactionNamePattern(""), 
+                                                    new HttpMethodPattern(""),  
+                                                    new RunTimeRanges(""),
+                                                    new StopOnMatch(false), 
+                                                    new RequestNameExcludePattern(""), 
+                                                    new UrlExcludePattern(""), 
+                                                    new ContentTypeExcludePattern(""), 
+                                                    new StatusCodeExcludePattern(""), 
+                                                    new AgentNameExcludePattern(""), 
+                                                    new TransactionNameExcludePattern(""), 
+                                                    new HttpMethodExcludePattern(""), 
+                                                    new ContinueOnMatchAtId(200), 
+                                                    new ContinueOnNoMatchAtId(200),         
+                                                    new DropOnMatch(true));  
+        var ex = assertThrows(IllegalArgumentException.class, () -> {
+            new RequestProcessing(List.of(rule1, rule2), false);
+        });
+        assertEquals("Request processing rules must be sorted by ID in ascending order.", ex.getMessage());
+    }
+    
+    @Test
+    public void testInvalidContinueOnMatch() throws Exception
+    {
+        var ex = assertThrows(InvalidRequestProcessingRuleException.class, () -> {
+            new RequestProcessingRule(42, 
+                                      new NewName("fooBar"),
+                                      new RequestNamePattern("request"), 
+                                      new UrlPattern(""),
+                                      new ContentTypePattern(""), 
+                                      new StatusCodePattern(""), 
+                                      new AgentNamePattern(""),   
+                                      new TransactionNamePattern(""), 
+                                      new HttpMethodPattern(""),  
+                                      new RunTimeRanges(""),
+                                      new StopOnMatch(false), 
+                                      new RequestNameExcludePattern(""), 
+                                      new UrlExcludePattern(""),
+                                      new ContentTypeExcludePattern(""), 
+                                      new StatusCodeExcludePattern(""),
+                                      new AgentNameExcludePattern(""), 
+                                      new TransactionNameExcludePattern(""),
+                                      new HttpMethodExcludePattern(""), 
+                                      new ContinueOnMatchAtId(9), 
+                                      new ContinueOnNoMatchAtId(42),         
+                                      new DropOnMatch(false));
+        }); 
+        assertEquals("Continue on match rule ID (9) must be greater or same than the rule ID (42)", ex.getMessage());
+    }
+    
+    @Test
+    public void testInvalidContinueOnNoMatch() throws Exception
+    {
+        var ex = assertThrows(InvalidRequestProcessingRuleException.class, () -> {
+            new RequestProcessingRule(42, 
+                                      new NewName("fooBar"),
+                                      new RequestNamePattern("request"), 
+                                      new UrlPattern(""),
+                                      new ContentTypePattern(""), 
+                                      new StatusCodePattern(""), 
+                                      new AgentNamePattern(""),   
+                                      new TransactionNamePattern(""), 
+                                      new HttpMethodPattern(""),  
+                                      new RunTimeRanges(""),
+                                      new StopOnMatch(false), 
+                                      new RequestNameExcludePattern(""), 
+                                      new UrlExcludePattern(""),
+                                      new ContentTypeExcludePattern(""), 
+                                      new StatusCodeExcludePattern(""),
+                                      new AgentNameExcludePattern(""), 
+                                      new TransactionNameExcludePattern(""),
+                                      new HttpMethodExcludePattern(""), 
+                                      new ContinueOnMatchAtId(42), 
+                                      new ContinueOnNoMatchAtId(4),         
+                                      new DropOnMatch(false));
+        }); 
+        assertEquals("Continue on no match rule ID (4) must be greater or same than the rule ID (42)", ex.getMessage());
+    }
+    
+    /**
+     * Ensure that we see that the group index is not parseable
+     */
+    @Test
+    public void cannotParseGroupIndex() throws Exception
+    {
+        var ex = assertThrows(InvalidRequestProcessingRuleException.class, () -> {
+            new RequestProcessingRule(42, 
+                                      new NewName("{n:a}"),
+                                      new RequestNamePattern("request"), 
+                                      new UrlPattern(""),
+                                      new ContentTypePattern(""), 
+                                      new StatusCodePattern(""), 
+                                      new AgentNamePattern(""),   
+                                      new TransactionNamePattern(""), 
+                                      new HttpMethodPattern(""),  
+                                      new RunTimeRanges(""),
+                                      new StopOnMatch(false), 
+                                      new RequestNameExcludePattern(""), 
+                                      new UrlExcludePattern(""),
+                                      new ContentTypeExcludePattern(""), 
+                                      new StatusCodeExcludePattern(""),
+                                      new AgentNameExcludePattern(""), 
+                                      new TransactionNameExcludePattern(""),
+                                      new HttpMethodExcludePattern(""), 
+                                      new ContinueOnMatchAtId(42), 
+                                      new ContinueOnNoMatchAtId(42),         
+                                      new DropOnMatch(false));
+        }); 
+        assertEquals("Failed to parse the matching group index 'a' as integer", ex.getMessage());
     }
 }
