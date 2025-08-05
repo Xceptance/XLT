@@ -45,7 +45,7 @@ public class UrlRequestFilter extends AbstractPatternRequestFilter
     {
         // with the change to get split caches per thread, we can affort
         // a lookup here and also profit from "does not apply" look ups.
-        super("u", regex, exclude, 1000);
+        super("u", regex, exclude, 5000);
     }
 
     /**
