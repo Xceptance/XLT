@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.htmlunit.html.HtmlPage;
-import org.htmlunit.httpclient.HttpClientConverter;
+import org.htmlunit.http.HttpStatus;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
@@ -48,6 +48,7 @@ import org.junit.runner.RunWith;
  * @author Marc Guillemot
  * @author Ahmed Ashour
  * @author Ronald Brill
+ * @author Lai Quang Duong
  */
 @RunWith(BrowserRunner.class)
 public class WebResponseTest extends WebServerTestCase {
@@ -96,7 +97,8 @@ public class WebResponseTest extends WebServerTestCase {
         final WebClient client = getWebClient();
         client.setAlertHandler(new CollectingAlertHandler(collectedAlerts));
         final MockWebConnection conn = new MockWebConnection();
-        conn.setResponse(URL_FIRST, xml, HttpClientConverter.OK, "OK", "text/xml; charset=\"ISO-8859-1\"", null);
+        conn.setResponse(URL_FIRST, xml, HttpStatus.OK_200, HttpStatus.OK_200_MSG,
+                "text/xml; charset=\"ISO-8859-1\"", null);
         client.setWebConnection(conn);
         client.getPage(URL_FIRST);
     }
@@ -107,7 +109,7 @@ public class WebResponseTest extends WebServerTestCase {
      */
     @Test
     public void illegalCharset() throws Exception {
-        illegalCharset("text/html; text/html; charset=ISO-8859-1;", ISO_8859_1);
+        illegalCharset("text/html; text/html; charset=ISO-8859-1;", Charset.forName("windows-1252"));
         illegalCharset("text/html; charset=UTF-8; charset=UTF-8", UTF_8);
         illegalCharset("text/html; charset=#sda+s", ISO_8859_1);
         illegalCharset("text/html; charset=UnknownCharset", ISO_8859_1);

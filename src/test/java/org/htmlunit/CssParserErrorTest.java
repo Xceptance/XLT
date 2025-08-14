@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,8 @@
  */
 package org.htmlunit;
 
+import org.htmlunit.html.DomElement;
 import org.htmlunit.html.HtmlPage;
-import org.htmlunit.javascript.host.html.HTMLElement;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -33,8 +33,9 @@ public class CssParserErrorTest
             final HtmlPage htmlPage = webClient.getPage(getClass().getResource("CssParserErrorTest.html"));
 
             // check the style
-            final HTMLElement el = (HTMLElement) htmlPage.getElementById("theme1").getScriptableObject();
-            final String bgImgUrl = el.getCurrentStyle().getBackgroundImage();
+            final DomElement el = htmlPage.getElementById("theme1");
+            final String bgImgUrl = htmlPage.getEnclosingWindow().getComputedStyle(el, null).getBackgroundImage();
+
             Assert.assertEquals("Invalid background image URL: " + bgImgUrl, "url(\"1.jpg\")", bgImgUrl);
         }
     }

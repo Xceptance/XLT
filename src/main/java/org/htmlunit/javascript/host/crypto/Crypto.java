@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,6 @@
  */
 package org.htmlunit.javascript.host.crypto;
 
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-
 import java.security.SecureRandom;
 import java.util.Locale;
 
@@ -30,6 +25,7 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.host.Window;
+import org.htmlunit.javascript.host.dom.DOMException;
 
 /**
  * A JavaScript object for {@code Crypto}.
@@ -47,14 +43,15 @@ public class Crypto extends HtmlUnitScriptable {
      * Creates an instance.
      */
     public Crypto() {
+        super();
     }
 
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
-        throw JavaScriptEngine.reportRuntimeError("Illegal constructor.");
+        throw JavaScriptEngine.typeErrorIllegalConstructor();
     }
 
     /**
@@ -62,6 +59,7 @@ public class Crypto extends HtmlUnitScriptable {
      * @param window the owning window
      */
     public Crypto(final Window window) {
+        this();
         setParentScope(window);
         setPrototype(window.getPrototype(Crypto.class));
     }
@@ -78,10 +76,13 @@ public class Crypto extends HtmlUnitScriptable {
             throw JavaScriptEngine.typeError("Argument 1 of Crypto.getRandomValues is not an object.");
         }
         if (array.getByteLength() > 65_536) {
-            throw JavaScriptEngine.reportRuntimeError("Error: Failed to execute 'getRandomValues' on 'Crypto': "
-                    + "The ArrayBufferView's byte length "
-                    + "(" + array.getByteLength() + ") exceeds the number of bytes "
-                    + "of entropy available via this API (65536).");
+            throw JavaScriptEngine.asJavaScriptException(
+                    getWindow(),
+                    "Error: Failed to execute 'getRandomValues' on 'Crypto': "
+                            + "The ArrayBufferView's byte length "
+                            + "(" + array.getByteLength() + ") exceeds the number of bytes "
+                            + "of entropy available via this API (65536).",
+                    DOMException.QUOTA_EXCEEDED_ERR);
         }
 
         for (int i = 0; i < array.getByteLength() / array.getBytesPerElement(); i++) {
@@ -94,7 +95,7 @@ public class Crypto extends HtmlUnitScriptable {
      * Returns the {@code subtle} property.
      * @return the {@code stuble} property
      */
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxGetter
     public SubtleCrypto getSubtle() {
         final SubtleCrypto stuble = new SubtleCrypto();
         final Window window = getWindow();

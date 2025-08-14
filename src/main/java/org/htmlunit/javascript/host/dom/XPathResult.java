@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,11 +13,6 @@
  * limitations under the License.
  */
 package org.htmlunit.javascript.host.dom;
-
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import java.util.List;
 
@@ -38,7 +33,7 @@ import org.htmlunit.javascript.configuration.JsxGetter;
  * @author Chuck Dumont
  * @author Ronald Brill
  */
-@JsxClass({CHROME, EDGE, FF, FF_ESR})
+@JsxClass
 public class XPathResult extends HtmlUnitScriptable {
 
     /**
@@ -121,15 +116,9 @@ public class XPathResult extends HtmlUnitScriptable {
     /**
      * Creates an instance.
      */
-    public XPathResult() {
-    }
-
-    /**
-     * Creates an instance.
-     */
     @JsxConstructor
     public void jsConstructor() {
-        throw JavaScriptEngine.reportRuntimeError("Illegal constructor.");
+        throw JavaScriptEngine.typeErrorIllegalConstructor();
     }
 
     /**
@@ -297,7 +286,7 @@ public class XPathResult extends HtmlUnitScriptable {
             }
         }
 
-        return result_.size() > 0;
+        return !result_.isEmpty();
     }
 
     /**
@@ -313,7 +302,7 @@ public class XPathResult extends HtmlUnitScriptable {
     }
 
     private String asString() {
-        if (result_.size() < 1) {
+        if (result_.isEmpty()) {
             return "";
         }
 

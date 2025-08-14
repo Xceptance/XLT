@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,14 +71,14 @@ public class FrameworkMethodWithParameters extends FrameworkMethod {
                 try {
                     field.set(target, parameters_.get(index));
                 }
-                catch (final IllegalArgumentException iare) {
+                catch (final IllegalArgumentException ex) {
                     throw new Exception(testClass_.getName()
                             + ": Trying to set " + field.getName()
                             + " with the value " + parameters_.get(index)
                             + " that is not the right type ("
                             + parameters_.get(index).getClass().getSimpleName()
                             + " instead of " + field.getType().getSimpleName()
-                            + ").", iare);
+                            + ").", ex);
                 }
             }
         }

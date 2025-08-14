@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,7 @@
  */
 package org.htmlunit.javascript.host.html;
 
-import static org.htmlunit.BrowserVersionFeatures.JS_CLEAR_RESTRICT;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-
-import org.apache.commons.lang3.ArrayUtils;
 import org.htmlunit.html.HtmlBreak;
-import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxGetter;
@@ -37,20 +29,11 @@ import org.htmlunit.javascript.configuration.JsxSetter;
 @JsxClass(domClass = HtmlBreak.class)
 public class HTMLBRElement extends HTMLElement {
 
-    /** Valid values for the {@link #getClear() clear} property. */
-    private static final String[] VALID_CLEAR_VALUES = {"left", "right", "all", "none"};
-
-    /**
-     * Creates an instance.
-     */
-    public HTMLBRElement() {
-    }
-
     /**
      * JavaScript constructor.
      */
     @Override
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
         super.jsConstructor();
     }
@@ -61,11 +44,7 @@ public class HTMLBRElement extends HTMLElement {
      */
     @JsxGetter
     public String getClear() {
-        final String clear = getDomNodeOrDie().getAttributeDirect("clear");
-        if (getBrowserVersion().hasFeature(JS_CLEAR_RESTRICT) && !ArrayUtils.contains(VALID_CLEAR_VALUES, clear)) {
-            return "";
-        }
-        return clear;
+        return getDomNodeOrDie().getAttributeDirect("clear");
     }
 
     /**
@@ -74,9 +53,6 @@ public class HTMLBRElement extends HTMLElement {
      */
     @JsxSetter
     public void setClear(final String clear) {
-        if (getBrowserVersion().hasFeature(JS_CLEAR_RESTRICT) && !ArrayUtils.contains(VALID_CLEAR_VALUES, clear)) {
-            throw JavaScriptEngine.reportRuntimeError("Invalid clear property value: '" + clear + "'.");
-        }
         getDomNodeOrDie().setAttribute("clear", clear);
     }
 

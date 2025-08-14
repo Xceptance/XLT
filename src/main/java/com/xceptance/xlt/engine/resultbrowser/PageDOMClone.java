@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
-import org.htmlunit.BrowserVersionFeatures;
 import org.htmlunit.WebResponse;
 import org.htmlunit.WebWindow;
 import org.htmlunit.html.DomNode;
@@ -64,11 +63,6 @@ class PageDOMClone
     private final URL baseURL;
 
     /**
-     * Flag which indicates whether we have to fix URLs with missing slashes.
-     */
-    private final boolean handleMissingSlashes;
-
-    /**
      * Creates a new DOM clone for the given HTML page and DOM document.
      *
      * @param htmlPage
@@ -79,7 +73,6 @@ class PageDOMClone
     public PageDOMClone(final HtmlPage htmlPage, final Document document)
     {
         doc = document;
-        handleMissingSlashes = htmlPage.hasFeature(BrowserVersionFeatures.URL_MISSING_SLASHES);
         frames = new HashMap<Element, PageDOMClone>();
         response = htmlPage.getWebResponse();
         baseURL = URLCleaner.removeUserInfoIfNecessaryAsURL(determineBaseURL(htmlPage));
@@ -136,12 +129,9 @@ class PageDOMClone
     public URL getFullyQualifiedUrl(String relativeUrl)
     {
         // to handle http: and http:/ in FF (Bug 1714767)
-        if (handleMissingSlashes)
+        while (relativeUrl.startsWith("http:") && !relativeUrl.startsWith("http://"))
         {
-            while (relativeUrl.startsWith("http:") && !relativeUrl.startsWith("http://"))
-            {
-                relativeUrl = "http:/" + relativeUrl.substring(5);
-            }
+            relativeUrl = "http:/" + relativeUrl.substring(5);
         }
 
         return XltWebClient.makeUrlAbsolute(baseURL, relativeUrl);

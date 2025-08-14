@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -98,9 +98,21 @@ public class ParseUtilsTest
     }
 
     @Test(expected = ParseException.class)
-    public void testParseTime_InvalidFormat() throws Exception
+    public void testParseTime_InvalidFormat_01() throws Exception
     {
         ParseUtils.parseTimePeriod("0:05s");
+    }
+
+    @Test(expected = ParseException.class)
+    public void testParseTime_InvalidFormat_02() throws Exception
+    {
+        ParseUtils.parseTimePeriod("1:60");
+    }
+
+    @Test(expected = ParseException.class)
+    public void testParseTime_InvalidFormat_03() throws Exception
+    {
+        ParseUtils.parseTimePeriod("10h10");
     }
 
     @Test
@@ -448,4 +460,161 @@ public class ParseUtilsTest
         Assert.assertTrue(ParseUtils.parseLong("10,aa", 10) == 10);
     }
 
+    @Test
+    public void parseAbsoluteOrRelative_AbsoluteIntValue() throws ParseException
+    {
+        AbsoluteOrRelativeNumber<Integer> number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseInt, "0");
+        Assert.assertEquals(false, number.isRelativeNumber());
+        Assert.assertEquals(0, number.getValue().intValue());
+
+        number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseInt, "1");
+        Assert.assertEquals(false, number.isRelativeNumber());
+        Assert.assertEquals(1, number.getValue().intValue());
+
+        number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseInt, "123");
+        Assert.assertEquals(false, number.isRelativeNumber());
+        Assert.assertEquals(123, number.getValue().intValue());
+
+        number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseInt, String.valueOf(Integer.MAX_VALUE));
+        Assert.assertEquals(false, number.isRelativeNumber());
+        Assert.assertEquals(Integer.MAX_VALUE, number.getValue().intValue());
+    }
+
+    @Test
+    public void parseAbsoluteOrRelative_AbsoluteDoubleValue() throws ParseException
+    {
+        AbsoluteOrRelativeNumber<Double> number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseDouble, "0.0");
+        Assert.assertEquals(false, number.isRelativeNumber());
+        Assert.assertEquals(0.0, number.getValue().doubleValue(), 0.0);
+
+        number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseDouble, "1.2");
+        Assert.assertEquals(false, number.isRelativeNumber());
+        Assert.assertEquals(1.2, number.getValue().doubleValue(), 0.0);
+
+        number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseDouble, "123.567890");
+        Assert.assertEquals(false, number.isRelativeNumber());
+        Assert.assertEquals(123.567890, number.getValue().doubleValue(), 0.0);
+
+        number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseDouble, String.valueOf(Double.MAX_VALUE));
+        Assert.assertEquals(false, number.isRelativeNumber());
+        Assert.assertEquals(Double.MAX_VALUE, number.getValue().doubleValue(), 0.0);
+    }
+
+    @Test
+    public void parseAbsoluteOrRelative_RelativeIntValue() throws ParseException
+    {
+        AbsoluteOrRelativeNumber<Integer> number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseInt, "+0");
+        Assert.assertEquals(true, number.isRelativeNumber());
+        Assert.assertEquals(0, number.getValue().intValue());
+
+        number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseInt, "-0");
+        Assert.assertEquals(true, number.isRelativeNumber());
+        Assert.assertEquals(0, number.getValue().intValue());
+
+        number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseInt, "+1");
+        Assert.assertEquals(true, number.isRelativeNumber());
+        Assert.assertEquals(1, number.getValue().intValue());
+
+        number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseInt, "-1");
+        Assert.assertEquals(true, number.isRelativeNumber());
+        Assert.assertEquals(-1, number.getValue().intValue());
+
+        number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseInt, "+123");
+        Assert.assertEquals(true, number.isRelativeNumber());
+        Assert.assertEquals(123, number.getValue().intValue());
+
+        number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseInt, "-123");
+        Assert.assertEquals(true, number.isRelativeNumber());
+        Assert.assertEquals(-123, number.getValue().intValue());
+
+        number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseInt, "+" + Integer.MAX_VALUE);
+        Assert.assertEquals(true, number.isRelativeNumber());
+        Assert.assertEquals(Integer.MAX_VALUE, number.getValue().intValue());
+
+        number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseInt, "-" + Integer.MAX_VALUE);
+        Assert.assertEquals(true, number.isRelativeNumber());
+        Assert.assertEquals(-Integer.MAX_VALUE, number.getValue().intValue());
+    }
+
+    @Test
+    public void parseAbsoluteOrRelative_RelativeDoubleValue() throws ParseException
+    {
+        AbsoluteOrRelativeNumber<Double> number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseDouble, "+0.0");
+        Assert.assertEquals(true, number.isRelativeNumber());
+        Assert.assertEquals(0.0, number.getValue().doubleValue(), 0.0);
+
+        number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseDouble, "-0.0");
+        Assert.assertEquals(true, number.isRelativeNumber());
+        Assert.assertEquals(-0.0, number.getValue().doubleValue(), 0.0);
+
+        number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseDouble, "+1.2");
+        Assert.assertEquals(true, number.isRelativeNumber());
+        Assert.assertEquals(1.2, number.getValue().doubleValue(), 0.0);
+
+        number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseDouble, "-1.2");
+        Assert.assertEquals(true, number.isRelativeNumber());
+        Assert.assertEquals(-1.2, number.getValue().doubleValue(), 0.0);
+
+        number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseDouble, "+123.4567890");
+        Assert.assertEquals(true, number.isRelativeNumber());
+        Assert.assertEquals(123.4567890, number.getValue().doubleValue(), 0.0);
+
+        number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseDouble, "-123.4567890");
+        Assert.assertEquals(true, number.isRelativeNumber());
+        Assert.assertEquals(-123.4567890, number.getValue().doubleValue(), 0.0);
+
+        number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseDouble, "+" + Double.MAX_VALUE);
+        Assert.assertEquals(true, number.isRelativeNumber());
+        Assert.assertEquals(Double.MAX_VALUE, number.getValue().doubleValue(), 0.0);
+
+        number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseDouble, "-" + Double.MAX_VALUE);
+        Assert.assertEquals(true, number.isRelativeNumber());
+        Assert.assertEquals(-Double.MAX_VALUE, number.getValue().doubleValue(), 0.0);
+
+        number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseDouble, "+" + Double.MIN_VALUE);
+        Assert.assertEquals(true, number.isRelativeNumber());
+        Assert.assertEquals(Double.MIN_VALUE, number.getValue().doubleValue(), 0.0);
+
+        number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseDouble, "-" + Double.MIN_VALUE);
+        Assert.assertEquals(true, number.isRelativeNumber());
+        Assert.assertEquals(-Double.MIN_VALUE, number.getValue().doubleValue(), 0.0);
+    }
+
+    @Test
+    public void parseAbsoluteOrRelative_TimePeriod() throws ParseException
+    {
+        AbsoluteOrRelativeNumber<Integer> number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseTimePeriod, " 1h 10m ");
+        Assert.assertEquals(false, number.isRelativeNumber());
+        Assert.assertEquals(4200, number.getValue().intValue());
+
+        number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseTimePeriod, " + 1h 10m ");
+        Assert.assertEquals(true, number.isRelativeNumber());
+        Assert.assertEquals(4200, number.getValue().intValue());
+
+        number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseTimePeriod, " - 1h 10m ");
+        Assert.assertEquals(true, number.isRelativeNumber());
+        Assert.assertEquals(-4200, number.getValue().intValue());
+    }
+
+    @Test
+    public void parseAbsoluteOrRelative_extraWhitespaces() throws ParseException
+    {
+        AbsoluteOrRelativeNumber<Integer> number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseInt, " \t 123 \t ");
+        Assert.assertEquals(false, number.isRelativeNumber());
+        Assert.assertEquals(123, number.getValue().intValue());
+
+        number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseInt, "  \t  +  \t  123  \t  ");
+        Assert.assertEquals(true, number.isRelativeNumber());
+        Assert.assertEquals(123, number.getValue().intValue());
+
+        number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseInt, "  \t  -  \t  123  \t  ");
+        Assert.assertEquals(true, number.isRelativeNumber());
+        Assert.assertEquals(-123, number.getValue().intValue());
+    }
+
+    @Test(expected = ParseException.class)
+    public void parseAbsoluteOrRelative_invalidValue() throws ParseException
+    {
+        ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseTimePeriod, "++1h");
+    }
 }

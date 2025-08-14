@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,6 @@
  */
 package org.htmlunit.html;
 
-import static org.htmlunit.BrowserVersionFeatures.FORM_FORM_ATTRIBUTE_SUPPORTED;
-import static org.htmlunit.BrowserVersionFeatures.HTMLELEMENT_DETACH_ACTIVE_TRIGGERS_NO_KEYUP_EVENT;
 import static org.htmlunit.BrowserVersionFeatures.HTMLELEMENT_REMOVE_ACTIVE_TRIGGERS_BLUR_EVENT;
 import static org.htmlunit.BrowserVersionFeatures.KEYBOARD_EVENT_SPECIAL_KEYPRESS;
 
@@ -70,6 +68,7 @@ import org.w3c.dom.Text;
  * @author Ronald Brill
  * @author Frank Danek
  * @author Ronny Shapiro
+ * @author Lai Quang Duong
  */
 public abstract class HtmlElement extends DomElement {
 
@@ -144,6 +143,8 @@ public abstract class HtmlElement extends DomElement {
     protected static final String ATTRIBUTE_REQUIRED = "required";
     /** Constant 'checked'. */
     protected static final String ATTRIBUTE_CHECKED = "checked";
+    /** Constant 'hidden'. */
+    protected static final String ATTRIBUTE_HIDDEN = "hidden";
 
     /** The listeners which are to be notified of attribute changes. */
     private final List<HtmlAttributeChangeListener> attributeListeners_ = new ArrayList<>();
@@ -200,10 +201,11 @@ public abstract class HtmlElement extends DomElement {
         final String oldAttributeValue = getAttribute(qualifiedName);
         final HtmlPage htmlPage = (HtmlPage) getPage();
         final boolean mappedElement = isAttachedToPage()
-                    && HtmlPage.isMappedElement(htmlPage, qualifiedName);
+                && htmlPage != null
+                && (DomElement.NAME_ATTRIBUTE.equals(qualifiedName) || DomElement.ID_ATTRIBUTE.equals(qualifiedName));
         if (mappedElement) {
             // cast is save here because isMappedElement checks for HtmlPage
-            htmlPage.removeMappedElement(this);
+            htmlPage.removeMappedElement(this, false, false);
         }
 
         final HtmlAttributeChangeEvent event;
@@ -233,7 +235,7 @@ public abstract class HtmlElement extends DomElement {
      */
     protected static void notifyAttributeChangeListeners(final HtmlAttributeChangeEvent event,
             final HtmlElement element, final String oldAttributeValue, final boolean notifyMutationObservers) {
-        final List<HtmlAttributeChangeListener> listeners = element.attributeListeners_;
+        final List<HtmlAttributeChangeListener> listeners = new ArrayList<>(element.attributeListeners_);
         if (ATTRIBUTE_NOT_DEFINED == oldAttributeValue) {
             synchronized (listeners) {
                 for (final HtmlAttributeChangeListener listener : listeners) {
@@ -261,7 +263,7 @@ public abstract class HtmlElement extends DomElement {
     private void fireAttributeChangeImpl(final HtmlAttributeChangeEvent event,
             final HtmlPage htmlPage, final boolean mappedElement, final String oldAttributeValue) {
         if (mappedElement) {
-            htmlPage.addMappedElement(this);
+            htmlPage.addMappedElement(this, false);
         }
 
         if (ATTRIBUTE_NOT_DEFINED == oldAttributeValue) {
@@ -289,10 +291,10 @@ public abstract class HtmlElement extends DomElement {
         final String oldAttributeValue = getAttribute(qualifiedName);
         final HtmlPage htmlPage = (HtmlPage) getPage();
         final boolean mappedElement = isAttachedToPage()
-                    && HtmlPage.isMappedElement(htmlPage, qualifiedName);
+                && htmlPage != null
+                && (DomElement.NAME_ATTRIBUTE.equals(qualifiedName) || DomElement.ID_ATTRIBUTE.equals(qualifiedName));
         if (mappedElement) {
-            // cast is save here because isMappedElement checks for HtmlPage
-            htmlPage.removeMappedElement(this);
+            htmlPage.removeMappedElement(this, false, false);
         }
 
         final HtmlAttributeChangeEvent event;
@@ -323,14 +325,18 @@ public abstract class HtmlElement extends DomElement {
         }
 
         final HtmlPage htmlPage = getHtmlPageOrNull();
-        if (htmlPage != null) {
-            htmlPage.removeMappedElement(this);
+        final boolean mapped = htmlPage != null
+                && (DomElement.NAME_ATTRIBUTE.equals(attributeName) || DomElement.ID_ATTRIBUTE.equals(attributeName));
+        if (mapped) {
+            htmlPage.removeMappedElement(this, false, false);
         }
 
         super.removeAttribute(attributeName);
 
         if (htmlPage != null) {
-            htmlPage.addMappedElement(this);
+            if (mapped) {
+                htmlPage.addMappedElement(this, false);
+            }
 
             final HtmlAttributeChangeEvent event = new HtmlAttributeChangeEvent(this, attributeName, value);
             fireHtmlAttributeRemoved(event);
@@ -461,16 +467,13 @@ public abstract class HtmlElement extends DomElement {
      * @return the form which contains this element
      */
     public HtmlForm getEnclosingForm() {
-        final BrowserVersion browserVersion = getPage().getWebClient().getBrowserVersion();
-        if (browserVersion.hasFeature(FORM_FORM_ATTRIBUTE_SUPPORTED)) {
-            final String formId = getAttribute("form");
-            if (ATTRIBUTE_NOT_DEFINED != formId) {
-                final Element formById = getPage().getElementById(formId);
-                if (formById instanceof HtmlForm) {
-                    return (HtmlForm) formById;
-                }
-                return null;
+        final String formId = getAttribute("form");
+        if (ATTRIBUTE_NOT_DEFINED != formId) {
+            final Element formById = getPage().getElementById(formId);
+            if (formById instanceof HtmlForm) {
+                return (HtmlForm) formById;
             }
+            return null;
         }
 
         if (owningForm_ != null) {
@@ -584,13 +587,7 @@ public abstract class HtmlElement extends DomElement {
 
         HtmlElement eventSource = this;
         if (!isAttachedToPage()) {
-            final BrowserVersion browserVersion = page.getWebClient().getBrowserVersion();
-            if (browserVersion.hasFeature(HTMLELEMENT_DETACH_ACTIVE_TRIGGERS_NO_KEYUP_EVENT)) {
-                eventSource = null;
-            }
-            else {
-                eventSource = page.getBody();
-            }
+            eventSource = page.getBody();
         }
 
         if (eventSource != null) {
@@ -608,10 +605,12 @@ public abstract class HtmlElement extends DomElement {
 
         final HtmlForm form = getEnclosingForm();
         if (form != null && c == '\n' && isSubmittableByEnter()) {
-            final HtmlSubmitInput submit = form.getFirstByXPath(".//input[@type='submit']");
-            if (submit != null) {
-                return submit.click();
+            for (final DomElement descendant : form.getDomElementDescendants()) {
+                if (descendant instanceof HtmlSubmitInput) {
+                    return descendant.click();
+                }
             }
+
             form.submit((SubmittableElement) this);
             webClient.getJavaScriptEngine().processPostponedActions();
         }
@@ -854,7 +853,8 @@ public abstract class HtmlElement extends DomElement {
     protected boolean acceptChar(final char c) {
         // This range is this is private use area
         // see http://www.unicode.org/charts/PDF/UE000.pdf
-        return (c < '\uE000' || c > '\uF8FF') && (c == ' ' || !Character.isWhitespace(c));
+        return (c < '\uE000' || c > '\uF8FF')
+                && (c == ' ' || c == '\t' || c == '\u3000' || c == '\u2006' || !Character.isWhitespace(c));
     }
 
     /**
@@ -933,7 +933,7 @@ public abstract class HtmlElement extends DomElement {
      */
     public final HtmlElement appendChildIfNoneExists(final String tagName) {
         final HtmlElement child;
-        final List<HtmlElement> children = getElementsByTagName(tagName);
+        final List<HtmlElement> children = getStaticElementsByTagName(tagName);
         if (children.isEmpty()) {
             // Add a new child and return it.
             child = (HtmlElement) ((HtmlPage) getPage()).createElement(tagName);
@@ -953,7 +953,7 @@ public abstract class HtmlElement extends DomElement {
      * @param i the index of the child to remove
      */
     public final void removeChild(final String tagName, final int i) {
-        final List<HtmlElement> children = getElementsByTagName(tagName);
+        final List<HtmlElement> children = getStaticElementsByTagName(tagName);
         if (i >= 0 && i < children.size()) {
             children.get(i).remove();
         }
@@ -1220,7 +1220,34 @@ public abstract class HtmlElement extends DomElement {
      * @return true if the hidden attribute is set.
      */
     public boolean isHidden() {
-        return ATTRIBUTE_NOT_DEFINED != getAttributeDirect("hidden");
+        return ATTRIBUTE_NOT_DEFINED != getAttributeDirect(ATTRIBUTE_HIDDEN);
+    }
+
+    /**
+     * Sets the {@code hidden} property.
+     * @param hidden the {@code hidden} property
+     */
+    public void setHidden(final String hidden) {
+        if ("false".equalsIgnoreCase(hidden)) {
+            removeAttribute(ATTRIBUTE_HIDDEN);
+        }
+
+        if (StringUtils.isNotEmpty(hidden)) {
+            setAttribute(ATTRIBUTE_HIDDEN, "");
+        }
+    }
+
+    /**
+     * Sets the {@code hidden} property.
+     * @param hidden the {@code hidden} property
+     */
+    public void setHidden(final boolean hidden) {
+        if (hidden) {
+            setAttribute("hidden", "");
+            return;
+        }
+
+        removeAttribute("hidden");
     }
 
     /**

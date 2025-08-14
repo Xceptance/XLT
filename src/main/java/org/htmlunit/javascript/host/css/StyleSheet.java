@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,12 +13,6 @@
  * limitations under the License.
  */
 package org.htmlunit.javascript.host.css;
-
-import static org.htmlunit.BrowserVersionFeatures.STYLESHEET_HREF_EMPTY_IS_NULL;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -53,17 +47,20 @@ public class StyleSheet extends HtmlUnitScriptable {
      * Default constructor.
      */
     public StyleSheet() {
+        super();
         ownerNode_ = null;
     }
 
     /**
      * JavaScript constructor.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 
     public StyleSheet(final HTMLElement ownerNode) {
+        super();
         ownerNode_ = ownerNode;
     }
 
@@ -91,9 +88,6 @@ public class StyleSheet extends HtmlUnitScriptable {
                 // <link rel="stylesheet" type="text/css" href="..." />
                 final HtmlLink link = (HtmlLink) node;
                 final String href = link.getHrefAttribute();
-                if ("".equals(href) && getBrowserVersion().hasFeature(STYLESHEET_HREF_EMPTY_IS_NULL)) {
-                    return null;
-                }
                 // Expand relative URLs.
                 try {
                     final HtmlPage page = (HtmlPage) link.getPage();

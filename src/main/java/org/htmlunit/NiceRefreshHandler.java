@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ public class NiceRefreshHandler extends ImmediateRefreshHandler {
      * @param maxDelay the maximum refreshValue (in seconds) that should cause a refresh
      */
     public NiceRefreshHandler(final int maxDelay) {
+        super();
         if (maxDelay <= 0) {
             throw new IllegalArgumentException("Invalid maxDelay: " + maxDelay);
         }

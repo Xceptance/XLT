@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,6 @@
  */
 package org.htmlunit.javascript.host.css;
 
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
-
 import org.htmlunit.cssparser.dom.CSSMediaRuleImpl;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
@@ -33,14 +27,14 @@ import org.htmlunit.javascript.configuration.JsxGetter;
  * @author Frank Danek
  * @see <a href="https://developer.mozilla.org/en-US/docs/Web/API/CSSConditionRule">MDN doc</a>
  */
-@JsxClass({CHROME, EDGE, FF, FF_ESR})
-@JsxClass(isJSObject = false, value = IE)
+@JsxClass
 public class CSSConditionRule extends CSSGroupingRule {
 
     /**
      * Creates a new instance.
      */
     public CSSConditionRule() {
+        super();
     }
 
     /**
@@ -65,7 +59,7 @@ public class CSSConditionRule extends CSSGroupingRule {
      * Returns the text of the condition of the rule.
      * @return the text of the condition of the rule
      */
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxGetter
     public String getConditionText() {
         return getConditionRule().getMediaList().getMediaText();
     }

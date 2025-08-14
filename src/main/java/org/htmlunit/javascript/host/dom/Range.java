@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,10 @@
  */
 package org.htmlunit.javascript.host.dom;
 
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
-
 import java.util.HashSet;
 
 import org.apache.commons.logging.LogFactory;
 import org.htmlunit.SgmlPage;
-import org.htmlunit.corejs.javascript.Undefined;
 import org.htmlunit.html.DomDocumentFragment;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.html.impl.SimpleRange;
@@ -74,13 +67,14 @@ public class Range extends AbstractRange {
      * Creates an instance.
      */
     public Range() {
+        super();
     }
 
     /**
      * JavaScript constructor.
      */
     @Override
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
         super.jsConstructor();
     }
@@ -98,46 +92,6 @@ public class Range extends AbstractRange {
                 simpleRange.getEndContainer().getScriptableObject(),
                 simpleRange.getStartOffset(),
                 simpleRange.getEndOffset());
-    }
-
-    /**
-     * Gets the node within which the Range begins.
-     * @return <code>undefined</code> if not initialized
-     */
-    @JsxGetter(IE)
-    @Override
-    public Object getStartContainer() {
-        return super.getStartContainer();
-    }
-
-    /**
-     * Gets the node within which the Range ends.
-     * @return <code>undefined</code> if not initialized
-     */
-    @JsxGetter(IE)
-    @Override
-    public Object getEndContainer() {
-        return super.getEndContainer();
-    }
-
-    /**
-     * Gets the offset within the starting node of the Range.
-     * @return <code>0</code> if not initialized
-     */
-    @JsxGetter(IE)
-    @Override
-    public int getStartOffset() {
-        return super.getStartOffset();
-    }
-
-    /**
-     * Gets the offset within the end node of the Range.
-     * @return <code>0</code> if not initialized
-     */
-    @JsxGetter(IE)
-    @Override
-    public int getEndOffset() {
-        return super.getEndOffset();
     }
 
     /**
@@ -188,16 +142,6 @@ public class Range extends AbstractRange {
             i++;
         }
         return i;
-    }
-
-    /**
-     * Indicates if the range is collapsed.
-     * @return {@code true} if the range is collapsed
-     */
-    @JsxGetter(IE)
-    @Override
-    public boolean isCollapsed() {
-        return super.isCollapsed();
     }
 
     /**
@@ -299,7 +243,7 @@ public class Range extends AbstractRange {
             ancestor = ancestor.getParent();
         }
 
-        return Undefined.instance;
+        return JavaScriptEngine.UNDEFINED;
     }
 
     /**
@@ -348,7 +292,7 @@ public class Range extends AbstractRange {
      * equal to, or after the corresponding boundary-point of sourceRange.
      */
     @JsxFunction
-    public Object compareBoundaryPoints(final int how, final Range sourceRange) {
+    public int compareBoundaryPoints(final int how, final Range sourceRange) {
         final Node nodeForThis;
         final int offsetForThis;
         final int containingMoficator;
@@ -376,23 +320,24 @@ public class Range extends AbstractRange {
 
         if (nodeForThis == nodeForOther) {
             if (offsetForThis < offsetForOther) {
-                return Integer.valueOf(-1);
+                return -1;
             }
             else if (offsetForThis > offsetForOther) {
-                return Integer.valueOf(1);
+                return 1;
             }
-            return Integer.valueOf(0);
+            return 0;
         }
 
         final byte nodeComparision = (byte) nodeForThis.compareDocumentPosition(nodeForOther);
         if ((nodeComparision & Node.DOCUMENT_POSITION_CONTAINED_BY) != 0) {
-            return Integer.valueOf(-1 * containingMoficator);
+            return -1 * containingMoficator;
         }
         else if ((nodeComparision & Node.DOCUMENT_POSITION_PRECEDING) != 0) {
-            return Integer.valueOf(-1);
+            return -1;
         }
-        // TODO: handle other cases!
-        return Integer.valueOf(1);
+
+        // TODO: handle other cases
+        return 1;
     }
 
     /**
@@ -456,7 +401,7 @@ public class Range extends AbstractRange {
      * @return a clone of the range
      */
     @JsxFunction
-    public Object cloneRange() {
+    public Range cloneRange() {
         try {
             return new Range(getSimpleRange().cloneRange());
         }

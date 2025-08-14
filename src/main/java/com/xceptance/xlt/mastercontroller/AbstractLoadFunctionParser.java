@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,16 +20,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 
+import com.xceptance.common.util.AbsoluteOrRelativeNumber;
 import com.xceptance.common.util.ParseUtils;
 import com.xceptance.common.util.RegExUtils;
 
 /**
  * The base class for load function parsers. A load function is defined by a sequence of time/value pairs, separated by
  * whitespace, comma, or semicolon. A time/value pair consists of a time specification followed by a slash and a value.
- * Accepts any time format that is accepted by XLT in general.
+ * Accepts any time format that is accepted by XLT in general. Time and value can be provided in an absolute format
+ * (e.g. "1m/10") or a relative format (e.g. "+1m/-10") in relation to the previous value.
  * <p>
  * Examples:<br>
- * good: <code>0s/100, 30s/150, 30m10s/200, 1h/250</code><br>
+ * good: <code>0s/100, +30s/150, 30m10s/+200, +1h/-250</code><br>
  * bad: <code>0/100, 0:30 / 150; 30m 10 s/ 200    3600 /250</code>
  */
 public abstract class AbstractLoadFunctionParser
@@ -50,9 +52,10 @@ public abstract class AbstractLoadFunctionParser
     private static final String RE_FIELD_SEP = "[/\\s]+";
 
     /**
-     * Regex to match characters up to the next record separator.
+     * Regex to match characters up to the next record separator. Value might start with "+" or "-", optionally followed
+     * by whitespaces, before the remaining value is given (examples of valid values: "12", "-12", "+ 12").
      */
-    private static final String RE_VALUE = "[^,;\\s]+";
+    private static final String RE_VALUE = "([+-]\\s*)?[^,;\\s]+";
 
     /**
      * Parses the passed load function string into a sequence of time/value pairs.
@@ -74,7 +77,7 @@ public abstract class AbstractLoadFunctionParser
 
         final int l = loadFunction.length();
         int i = 0;
-        int time;
+        AbsoluteOrRelativeNumber<Integer> time;
 
         while (i < l)
         {
@@ -94,7 +97,7 @@ public abstract class AbstractLoadFunctionParser
             if (timeMatcher.find(i) && timeMatcher.start() == i)
             {
                 i = timeMatcher.end();
-                time = ParseUtils.parseTimePeriod(timeMatcher.group());
+                time = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseTimePeriod, timeMatcher.group());
             }
             else
             {
@@ -115,12 +118,24 @@ public abstract class AbstractLoadFunctionParser
             if (valueMatcher.find(i) && valueMatcher.start() == i)
             {
                 i = valueMatcher.end();
+                final AbsoluteOrRelativeNumber<Integer> value = ParseUtils.parseAbsoluteOrRelative(this::parseValue, valueMatcher.group());
 
-                final int value = parseValue(valueMatcher.group());
+                // for the first parsed pair, check if it's a valid starting point for the load function
+                if (pairs.isEmpty() && !LoadFunctionUtils.isValidStartingPoint(time, value))
+                {
+                    // if the first pair isn't a valid starting point, add the default starting point first
+                    pairs.add(new int[]
+                        {
+                            LoadFunctionUtils.START_TIME, LoadFunctionUtils.DEFAULT_INITIAL_LOAD_FACTOR
+                        });
+                }
 
+                // if time or value are relative, add them to the previous time or value
+                final int effectiveTime = time.isRelativeNumber() ? pairs.getLast()[0] + time.getValue() : time.getValue();
+                final int effectiveValue = value.isRelativeNumber() ? pairs.getLast()[1] + value.getValue() : value.getValue();
                 pairs.add(new int[]
                     {
-                        time, value
+                        effectiveTime, effectiveValue
                     });
             }
             else
@@ -149,7 +164,7 @@ public abstract class AbstractLoadFunctionParser
      *            the value string
      * @return the int value that corresponds to the value string
      * @throws ParseException
-     *             if the value cannot parsed properly
+     *             if the value cannot be parsed properly
      */
     abstract int parseValue(String s) throws ParseException;
 }

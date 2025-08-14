@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,12 @@ import com.xceptance.common.lang.StringUtils;
  */
 public final class ParseUtils
 {
+    @FunctionalInterface
+    public interface ParseFunctionWithException<T, R>
+    {
+        R apply(T a) throws ParseException;
+    }
+
     /**
      * Time base.
      */
@@ -287,6 +293,59 @@ public final class ParseUtils
         catch (final Exception e)
         {
             return defaultValue;
+        }
+    }
+
+    /**
+     * <p>
+     * Parses the given String as a relative (e.g. "-10" or "+10") or an absolute value (e.g. "10") and returns it. Use
+     * this in cases where both, relative and absolute values, are valid, and it's important to distinguish them (e.g.
+     * because "10" and "+10" should be interpreted in different ways).
+     * </p>
+     * <p>
+     * This method acts as a generic wrapper around any parser function that parses a String and returns a subtype of
+     * {@link Number}. It will determine if the value is relative (by checking if it starts with either "+" or "-"),
+     * then parse the value using the provided function.
+     * </p>
+     * E.g.:
+     * <ul>
+     * <li><code>parseAbsoluteOrRelative(ParseUtils::parseInt, "10") // returns object with isRelative=false, value=10</code></li>
+     * <li><code>parseAbsoluteOrRelative(ParseUtils::parseInt, "+10") // returns object with isRelative=true, value=10</code></li>
+     * <li><code>parseAbsoluteOrRelative(ParseUtils::parseInt, "-10") // returns object with isRelative=true, value=-10</code></li>
+     * <li><code>parseAbsoluteOrRelative(ParseUtils::parseDouble, "-1.2") // returns object with isRelative=true, value=-1.2</code></li>
+     * </ul>
+     *
+     * @param s
+     *            the String to parse
+     * @param function
+     *            the parser function to use on the value (after removing the '+' or '-' sign if it exists)
+     * @return an object containing the parsed value and a flag indicating if the value is relative
+     * @param <T>
+     *            any type extending {@link Number}. Note: Using custom implementations of "Number" might require
+     *            adjustments
+     * @throws ParseException
+     *             if parsing the input String with the given function fails
+     */
+    public static <T extends Number> AbsoluteOrRelativeNumber<T> parseAbsoluteOrRelative(final ParseFunctionWithException<String, T> function,
+                                                                                         final String s)
+        throws ParseException
+    {
+        final String trimmedString = s.trim();
+
+        // check if the value is relative or absolute (i.e. if it starts with a '+' or '-' sign, or not)
+        if (RegExUtils.isMatching(trimmedString, "^[+-]"))
+        {
+            final boolean isNegative = RegExUtils.isMatching(trimmedString, "^-");
+
+            // remove the '+' or '-' sign before parsing the value
+            final T value = function.apply(trimmedString.replaceFirst("^[+-]", ""));
+
+            return new AbsoluteOrRelativeNumber<>(true, isNegative ? NumberUtils.negateNumber(value) : value);
+        }
+        else
+        {
+            // if the String doesn't start with '+' or '-', parse the entire String and return an absolute value
+            return new AbsoluteOrRelativeNumber<>(false, function.apply(trimmedString));
         }
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,12 +13,6 @@
  * limitations under the License.
  */
 package org.htmlunit.javascript.host.html;
-
-import static org.htmlunit.BrowserVersionFeatures.JS_LABEL_FORM_OF_SELF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.HtmlForm;
@@ -39,16 +33,10 @@ import org.htmlunit.javascript.configuration.JsxSetter;
 public class HTMLLabelElement extends HTMLElement {
 
     /**
-     * Creates an instance.
-     */
-    public HTMLLabelElement() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @Override
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
         super.jsConstructor();
     }
@@ -75,7 +63,7 @@ public class HTMLLabelElement extends HTMLElement {
     /**
      * @return the HTMLElement labeled by the given label object
      */
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxGetter
     public HTMLElement getControl() {
         final HtmlLabel label = (HtmlLabel) getDomNodeOrDie();
         final HtmlElement labeledElement = label.getLabeledElement();
@@ -95,14 +83,6 @@ public class HTMLLabelElement extends HTMLElement {
     @JsxGetter
     @Override
     public HTMLFormElement getForm() {
-        if (getBrowserVersion().hasFeature(JS_LABEL_FORM_OF_SELF)) {
-            final HtmlForm form = getDomNodeOrDie().getEnclosingForm();
-            if (form == null) {
-                return null;
-            }
-            return (HTMLFormElement) getScriptableFor(form);
-        }
-
         final HtmlLabel label = (HtmlLabel) getDomNodeOrDie();
         final HtmlElement labeledElement = label.getLabeledElement();
 

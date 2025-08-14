@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,6 @@
  */
 package org.htmlunit;
 
-import static java.nio.charset.StandardCharsets.ISO_8859_1;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -25,18 +23,20 @@ import java.net.IDN;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.apache.http.auth.Credentials;
+import org.htmlunit.http.HttpUtils;
 import org.htmlunit.httpclient.HtmlUnitUsernamePasswordCredentials;
-import org.htmlunit.httpclient.HttpClientConverter;
 import org.htmlunit.util.NameValuePair;
 import org.htmlunit.util.UrlUtils;
 
@@ -53,6 +53,7 @@ import org.htmlunit.util.UrlUtils;
  * @author Joerg Werner
  * @author Michael Lueck
  * @author Lai Quang Duong
+ * @author Kristof Neirynck
  */
 public class WebRequest implements Serializable {
 
@@ -79,8 +80,12 @@ public class WebRequest implements Serializable {
     private Credentials urlCredentials_;
     private Credentials credentials_;
     private int timeout_;
-    private transient Charset charset_ = ISO_8859_1;
     private transient Set<HttpHint> httpHints_;
+
+    private transient Charset charset_ = StandardCharsets.ISO_8859_1;
+    // https://datatracker.ietf.org/doc/html/rfc6838#section-4.2.1
+    // private transient Charset defaultResponseContentCharset_ = StandardCharsets.UTF_8;
+    private transient Charset defaultResponseContentCharset_ = StandardCharsets.ISO_8859_1;
 
     /* These two are mutually exclusive; additionally, requestBody_ should only be set for POST requests. */
     private List<NameValuePair> requestParameters_ = Collections.emptyList();
@@ -173,7 +178,7 @@ public class WebRequest implements Serializable {
     public WebRequest(final URL url, final Charset charset, final URL refererUrl) {
         setUrl(url);
         setCharset(charset);
-        setRefererlHeader(refererUrl);
+        setRefererHeader(refererUrl);
     }
 
     /**
@@ -229,14 +234,16 @@ public class WebRequest implements Serializable {
         else if (path.contains("/.")) {
             url = buildUrlWithNewPath(url, removeDots(path));
         }
-        final String idn = IDN.toASCII(url.getHost());
-        if (!idn.equals(url.getHost())) {
-            try {
+
+        try {
+            final String idn = IDN.toASCII(url.getHost());
+            if (!idn.equals(url.getHost())) {
                 url = UrlUtils.getUrlWithNewHost(url, idn);
             }
-            catch (final Exception e) {
-                throw new RuntimeException("Cannot change hostname of URL: " + url.toExternalForm(), e);
-            }
+        }
+        catch (final Exception e) {
+            throw new IllegalArgumentException(
+                    "Cannot convert the hostname of URL: '" + url.toExternalForm() + "' to ASCII.", e);
         }
 
         try {
@@ -398,49 +405,60 @@ public class WebRequest implements Serializable {
     }
 
     /**
-     * Retrieves the request parameters in use. Similar to the servlet api this will
-     * work depending on the request type and check the url parameters and
-     * the body. The value is also normalized - null is converted to an empty string.
+     * <p>Retrieves the request parameters used. Similar to the servlet api function
+     * getParameterMap() this works depending on the request type and collects the
+     * url parameters and the body stuff.<br>
+     * The value is also normalized - null is converted to an empty string.</p>
+     * <p>In contrast to the servlet api this creates a separate KeyValuePair for every
+     * parameter. This means that pairs with the same name can be part of the list. The
+     * servlet api will return a string[] as value for the key in this case.<br>
+     * Additionally this method includes also the uploaded files for multipart post
+     * requests.</p>
+     *
      * @return the request parameters to use
      */
     public List<NameValuePair> getParameters() {
         // developer note:
-        // this has to be in sync with
-        // org.htmlunit.HttpWebConnection.makeHttpMethod(WebRequest, HttpClientBuilder)
+        // this has to be in sync with org.htmlunit.HttpWebConnection.makeHttpMethod(WebRequest, HttpClientBuilder)
 
-        if (HttpMethod.POST != getHttpMethod() && HttpMethod.PUT != getHttpMethod()
-                && HttpMethod.PATCH != getHttpMethod()) {
+        // developer note:
+        // the spring org.springframework.test.web.servlet.htmlunitHtmlUnitRequestBuilder uses
+        // this method and is sensitive to all the details of the current implementation.
 
-            if (!getRequestParameters().isEmpty()) {
-                return normalize(getRequestParameters());
+        final List<NameValuePair> allParameters = new ArrayList<>(
+                HttpUtils.parseUrlQuery(getUrl().getQuery(), getCharset()));
+
+        // the servlet api ignores these parameters but to make spring happy we include them
+        final HttpMethod httpMethod = getHttpMethod();
+        if (httpMethod == HttpMethod.POST
+            || httpMethod == HttpMethod.PUT
+            || httpMethod == HttpMethod.PATCH
+            || httpMethod == HttpMethod.DELETE
+            || httpMethod == HttpMethod.OPTIONS) {
+            if (FormEncodingType.URL_ENCODED == getEncodingType()
+                && httpMethod != HttpMethod.OPTIONS) {
+                // spring ignores URL_ENCODED parameters for OPTIONS requests
+                // getRequestParameters and getRequestBody are mutually exclusive
+                if (getRequestBody() == null) {
+                    allParameters.addAll(getRequestParameters());
+                }
+                else {
+                    allParameters.addAll(HttpUtils.parseUrlQuery(getRequestBody(), getCharset()));
+                }
             }
-
-            return normalize(HttpClientConverter.parseUrlQuery(getUrl().getQuery(), getCharset()));
-
-        }
-
-        if (getEncodingType() == FormEncodingType.URL_ENCODED && HttpMethod.POST == getHttpMethod()) {
-            if (getRequestBody() == null) {
-                return normalize(getRequestParameters());
+            else if (FormEncodingType.MULTIPART == getEncodingType()) {
+                if (httpMethod == HttpMethod.POST) {
+                    allParameters.addAll(getRequestParameters());
+                }
+                else {
+                    // for PUT, PATCH, DELETE and OPTIONS spring moves the parameters up to the query
+                    // it doesn't replace the query
+                    allParameters.addAll(0, getRequestParameters());
+                }
             }
-
-            return normalize(HttpClientConverter.parseUrlQuery(getRequestBody(), getCharset()));
         }
 
-        if (getEncodingType() == FormEncodingType.TEXT_PLAIN  && HttpMethod.POST == getHttpMethod()) {
-            if (getRequestBody() == null) {
-                return normalize(getRequestParameters());
-            }
-
-            return Collections.emptyList();
-        }
-
-        if (FormEncodingType.MULTIPART == getEncodingType()) {
-            return normalize(getRequestParameters());
-        }
-
-        // for instance a PUT or PATCH request
-        return Collections.emptyList();
+        return normalize(allParameters);
     }
 
     private static List<NameValuePair> normalize(final List<NameValuePair> pairs) {
@@ -510,18 +528,14 @@ public class WebRequest implements Serializable {
                        + "the two are mutually exclusive!";
             throw new RuntimeException(msg);
         }
-        // start XC: GH#211
-        /*
-        if (httpMethod_ != HttpMethod.POST && httpMethod_ != HttpMethod.PUT && httpMethod_ != HttpMethod.PATCH) {
-            final String msg = "The request body may only be set for POST, PUT or PATCH requests!";
+        if (httpMethod_ != HttpMethod.POST
+                && httpMethod_ != HttpMethod.PUT
+                && httpMethod_ != HttpMethod.PATCH
+                && httpMethod_ != HttpMethod.DELETE
+                && httpMethod_ != HttpMethod.OPTIONS) {
+            final String msg = "The request body may only be set for POST, PUT, PATCH, DELETE or OPTIONS requests!";
             throw new RuntimeException(msg);
         }
-        */
-        if (httpMethod_ != HttpMethod.POST && httpMethod_ != HttpMethod.PUT && httpMethod_ != HttpMethod.PATCH && httpMethod_ != HttpMethod.DELETE) {
-            final String msg = "The request body may only be set for POST, PUT, PATCH, or DELETE requests!";
-            throw new RuntimeException(msg);
-        }
-        // end XC: GH#211
         requestBody_ = requestBody;
     }
 
@@ -591,7 +605,7 @@ public class WebRequest implements Serializable {
      * Sets the referer HTTP header - only if the provided url is valid.
      * @param url the url for the referer HTTP header
      */
-    public void setRefererlHeader(final URL url) {
+    public void setRefererHeader(final URL url) {
         if (url == null || !url.getProtocol().startsWith("http")) {
             return;
         }
@@ -599,9 +613,20 @@ public class WebRequest implements Serializable {
         try {
             setAdditionalHeader(HttpHeader.REFERER, UrlUtils.getUrlWithoutRef(url).toExternalForm());
         }
-        catch (final MalformedURLException e) {
+        catch (final MalformedURLException ignored) {
             // bad luck us the whole url from the pager
         }
+    }
+
+    /**
+     * Sets the referer HTTP header - only if the provided url is valid.
+     * @param url the url for the referer HTTP header
+     *
+     * @deprecated as of version 4.5.0; use {@link #setRefererHeader(URL)} instead
+     */
+    @Deprecated
+    public void setRefererlHeader(final URL url) {
+        setRefererHeader(url);
     }
 
     /**
@@ -675,6 +700,23 @@ public class WebRequest implements Serializable {
         charset_ = charset;
     }
 
+    /**
+     * @return the default character set to use for the response when it does not specify one.
+     */
+    public Charset getDefaultResponseContentCharset() {
+        return defaultResponseContentCharset_;
+    }
+
+    /**
+     * Sets the default character set to use for the response when it does not specify one.
+     * <p>
+     * Unless set, the default is {@link java.nio.charset.StandardCharsets#UTF_8}.
+     * @param defaultResponseContentCharset the default character set of the response
+     */
+    public void setDefaultResponseContentCharset(final Charset defaultResponseContentCharset) {
+        this.defaultResponseContentCharset_ = Objects.requireNonNull(defaultResponseContentCharset);
+    }
+
     public boolean hasHint(final HttpHint hint) {
         if (httpHints_ == null) {
             return false;
@@ -684,7 +726,7 @@ public class WebRequest implements Serializable {
 
     public void addHint(final HttpHint hint) {
         if (httpHints_ == null) {
-            httpHints_ = new HashSet<>();
+            httpHints_ = EnumSet.noneOf(HttpHint.class);
         }
         httpHints_.add(hint);
     }
@@ -710,6 +752,7 @@ public class WebRequest implements Serializable {
     private void writeObject(final ObjectOutputStream oos) throws IOException {
         oos.defaultWriteObject();
         oos.writeObject(charset_ == null ? null : charset_.name());
+        oos.writeObject(defaultResponseContentCharset_ == null ? null : defaultResponseContentCharset_.name());
     }
 
     private void readObject(final ObjectInputStream ois) throws ClassNotFoundException, IOException {
@@ -717,6 +760,10 @@ public class WebRequest implements Serializable {
         final String charsetName = (String) ois.readObject();
         if (charsetName != null) {
             charset_ = Charset.forName(charsetName);
+        }
+        final String defaultResponseContentCharset = (String) ois.readObject();
+        if (defaultResponseContentCharset != null) {
+            defaultResponseContentCharset_ = Charset.forName(defaultResponseContentCharset);
         }
     }
 }

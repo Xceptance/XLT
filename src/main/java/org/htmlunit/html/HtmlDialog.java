@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,12 @@
  */
 package org.htmlunit.html;
 
-import static org.htmlunit.BrowserVersionFeatures.CSS_DIALOG_NONE;
-
 import java.util.Map;
 
 import org.htmlunit.SgmlPage;
 import org.htmlunit.WebClient;
+import org.htmlunit.javascript.AbstractJavaScriptEngine;
 import org.htmlunit.javascript.HtmlUnitContextFactory;
-import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.PostponedAction;
 import org.htmlunit.javascript.host.event.Event;
 import org.htmlunit.javascript.host.html.HTMLDialogElement;
@@ -59,10 +57,7 @@ public class HtmlDialog extends HtmlElement {
      */
     @Override
     public DisplayStyle getDefaultStyleDisplay() {
-        if (hasFeature(CSS_DIALOG_NONE)) {
-            return DisplayStyle.NONE;
-        }
-        return DisplayStyle.INLINE;
+        return DisplayStyle.NONE;
     }
 
     /**
@@ -128,7 +123,7 @@ public class HtmlDialog extends HtmlElement {
                 final HTMLDialogElement dialogElement = getScriptableObject();
                 final Event event = new Event(dialogElement, Event.TYPE_CLOSE);
 
-                final JavaScriptEngine jsEngine = (JavaScriptEngine) client.getJavaScriptEngine();
+                final AbstractJavaScriptEngine<?> jsEngine = client.getJavaScriptEngine();
                 final PostponedAction action = new PostponedAction(page, "Dialog.CloseEvent") {
                     @Override
                     public void execute() {

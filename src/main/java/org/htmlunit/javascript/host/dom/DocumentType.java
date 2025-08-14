@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,26 +14,15 @@
  */
 package org.htmlunit.javascript.host.dom;
 
-import static org.htmlunit.BrowserVersionFeatures.JS_DOCTYPE_ENTITIES_NULL;
-import static org.htmlunit.BrowserVersionFeatures.JS_DOCTYPE_NOTATIONS_NULL;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
-
-import org.apache.commons.lang3.StringUtils;
 import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.Scriptable;
-import org.htmlunit.corejs.javascript.Undefined;
 import org.htmlunit.html.DomDocumentType;
 import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
-import org.w3c.dom.NamedNodeMap;
 
 /**
  * A JavaScript object for {@code DocumentType}.
@@ -50,16 +39,10 @@ public class DocumentType extends Node {
     /**
      * Creates an instance.
      */
-    public DocumentType() {
-    }
-
-    /**
-     * Creates an instance.
-     */
     @Override
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
-        throw JavaScriptEngine.reportRuntimeError("Illegal constructor.");
+        throw JavaScriptEngine.typeErrorIllegalConstructor();
     }
 
     /**
@@ -98,58 +81,10 @@ public class DocumentType extends Node {
     }
 
     /**
-     * Returns the internal subset.
-     * @return the internal subset
-     */
-    @JsxGetter(IE)
-    public String getInternalSubset() {
-        final String subset = ((DomDocumentType) getDomNodeOrDie()).getInternalSubset();
-        if (StringUtils.isNotEmpty(subset)) {
-            return subset;
-        }
-
-        return null;
-    }
-
-    /**
-     * Returns entities.
-     * @return entities
-     */
-    @JsxGetter(IE)
-    public Object getEntities() {
-        final NamedNodeMap entities = ((DomDocumentType) getDomNodeOrDie()).getEntities();
-        if (null != entities) {
-            return entities;
-        }
-
-        if (getBrowserVersion().hasFeature(JS_DOCTYPE_ENTITIES_NULL)) {
-            return null;
-        }
-        return Undefined.instance;
-    }
-
-    /**
-     * Returns notations.
-     * @return notations
-     */
-    @JsxGetter(IE)
-    public Object getNotations() {
-        final NamedNodeMap notations = ((DomDocumentType) getDomNodeOrDie()).getNotations();
-        if (null != notations) {
-            return notations;
-        }
-
-        if (getBrowserVersion().hasFeature(JS_DOCTYPE_NOTATIONS_NULL)) {
-            return null;
-        }
-        return Undefined.instance;
-    }
-
-    /**
      * {@inheritDoc}
      */
     @Override
-    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
+    @JsxFunction
     public void remove() {
         super.remove();
     }
@@ -163,7 +98,7 @@ public class DocumentType extends Node {
      * @param args the arguments
      * @param function the function
      */
-    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
+    @JsxFunction
     public static void before(final Context context, final Scriptable scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         Node.before(context, thisObj, args, function);
@@ -178,7 +113,7 @@ public class DocumentType extends Node {
      * @param args the arguments
      * @param function the function
      */
-    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
+    @JsxFunction
     public static void after(final Context context, final Scriptable scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         Node.after(context, thisObj, args, function);
@@ -192,7 +127,7 @@ public class DocumentType extends Node {
      * @param args the arguments
      * @param function the function
      */
-    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
+    @JsxFunction
     public static void replaceWith(final Context context, final Scriptable scope,
             final Scriptable thisObj, final Object[] args, final Function function) {
         Node.replaceWith(context, thisObj, args, function);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,45 +30,47 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.client.HttpClient;
+import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.amazonaws.AmazonClientException;
-import com.amazonaws.AmazonServiceException;
-import com.amazonaws.ClientConfiguration;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.http.AmazonHttpClient;
-import com.amazonaws.services.ec2.AmazonEC2;
-import com.amazonaws.services.ec2.AmazonEC2Client;
-import com.amazonaws.services.ec2.model.AvailabilityZone;
-import com.amazonaws.services.ec2.model.CreateTagsRequest;
-import com.amazonaws.services.ec2.model.DescribeImagesRequest;
-import com.amazonaws.services.ec2.model.DescribeInstancesRequest;
-import com.amazonaws.services.ec2.model.DescribeInstancesResult;
-import com.amazonaws.services.ec2.model.DescribeKeyPairsResult;
-import com.amazonaws.services.ec2.model.DescribeRegionsRequest;
-import com.amazonaws.services.ec2.model.DescribeRegionsResult;
-import com.amazonaws.services.ec2.model.DescribeSubnetsRequest;
-import com.amazonaws.services.ec2.model.DescribeVpcsRequest;
-import com.amazonaws.services.ec2.model.Filter;
-import com.amazonaws.services.ec2.model.Image;
-import com.amazonaws.services.ec2.model.Instance;
-import com.amazonaws.services.ec2.model.KeyPairInfo;
-import com.amazonaws.services.ec2.model.Placement;
-import com.amazonaws.services.ec2.model.Region;
-import com.amazonaws.services.ec2.model.Reservation;
-import com.amazonaws.services.ec2.model.RunInstancesRequest;
-import com.amazonaws.services.ec2.model.RunInstancesResult;
-import com.amazonaws.services.ec2.model.SecurityGroup;
-import com.amazonaws.services.ec2.model.Subnet;
-import com.amazonaws.services.ec2.model.Tag;
-import com.amazonaws.services.ec2.model.TagDescription;
-import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
-import com.amazonaws.services.ec2.model.Vpc;
-import com.amazonaws.util.Base64;
-import com.xceptance.common.lang.ReflectionUtils;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.AwsSessionCredentials;
+import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.awscore.exception.AwsServiceException;
+import software.amazon.awssdk.core.exception.SdkException;
+import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
+import software.amazon.awssdk.http.urlconnection.ProxyConfiguration;
+import software.amazon.awssdk.services.ec2.Ec2Client;
+import software.amazon.awssdk.services.ec2.model.AvailabilityZone;
+import software.amazon.awssdk.services.ec2.model.CreateTagsRequest;
+import software.amazon.awssdk.services.ec2.model.DescribeImagesRequest;
+import software.amazon.awssdk.services.ec2.model.DescribeInstancesRequest;
+import software.amazon.awssdk.services.ec2.model.DescribeInstancesResponse;
+import software.amazon.awssdk.services.ec2.model.DescribeKeyPairsResponse;
+import software.amazon.awssdk.services.ec2.model.DescribeRegionsRequest;
+import software.amazon.awssdk.services.ec2.model.DescribeRegionsResponse;
+import software.amazon.awssdk.services.ec2.model.DescribeSubnetsRequest;
+import software.amazon.awssdk.services.ec2.model.DescribeVpcsRequest;
+import software.amazon.awssdk.services.ec2.model.Filter;
+import software.amazon.awssdk.services.ec2.model.Image;
+import software.amazon.awssdk.services.ec2.model.Instance;
+import software.amazon.awssdk.services.ec2.model.InstanceStateName;
+import software.amazon.awssdk.services.ec2.model.KeyPairInfo;
+import software.amazon.awssdk.services.ec2.model.Placement;
+import software.amazon.awssdk.services.ec2.model.Region;
+import software.amazon.awssdk.services.ec2.model.Reservation;
+import software.amazon.awssdk.services.ec2.model.RunInstancesRequest;
+import software.amazon.awssdk.services.ec2.model.RunInstancesResponse;
+import software.amazon.awssdk.services.ec2.model.SecurityGroup;
+import software.amazon.awssdk.services.ec2.model.Subnet;
+import software.amazon.awssdk.services.ec2.model.Tag;
+import software.amazon.awssdk.services.ec2.model.TagDescription;
+import software.amazon.awssdk.services.ec2.model.TerminateInstancesRequest;
+import software.amazon.awssdk.services.ec2.model.Vpc;
+import software.amazon.awssdk.utils.BinaryUtils;
 import com.xceptance.common.util.ProcessExitCodes;
 import com.xceptance.xlt.engine.TimeoutException;
 
@@ -82,14 +84,17 @@ abstract public class AbstractEC2Client
     /**
      * The default region to use when requesting a client.
      */
-    private static final String DEFAULT_REGION = "us-east-1";
+    private static final String DEFAULT_REGION = software.amazon.awssdk.regions.Region.US_EAST_1.id();
 
     /**
      * Internal cache used when requesting a client for a given region.
      */
-    private final HashMap<String, AmazonEC2> clientsByRegion = new HashMap<>();
+    private final HashMap<String, Ec2Client> clientsByRegion = new HashMap<>();
 
-    private final ClientConfiguration clientConfig;
+    /**
+     * The proxy configuration.
+     */
+    private final ProxyConfiguration proxyConfig;
 
     /**
      * The AWS configuration.
@@ -97,18 +102,11 @@ abstract public class AbstractEC2Client
     protected final AwsConfiguration awsConfiguration;
 
     /**
-     * The "running" state constant. (Instance state)
+     * The AWS credentials provider.
      */
-    public static final String STATE_RUNNING = "running";
-
-    /**
-     * The "available" state constant. (Image state)
-     */
-    public static final String STATE_AVAILABLE = "available";
+    private final AwsCredentialsProvider credentialsProvider;
 
     private static final long INSTANCE_STATE_POLLING_INTERVAL = 1000;
-
-    private static final long IMAGE_STATE_POLLING_INTERVAL = 1000;
 
     /**
      * The log facility.
@@ -117,23 +115,29 @@ abstract public class AbstractEC2Client
 
     public AbstractEC2Client() throws Exception
     {
-        this(null, null);
-    }
-
-    public AbstractEC2Client(final String accessKey, final String secretKey) throws Exception
-    {
         // create the AWS EC2 client
         try
         {
-            awsConfiguration = new AwsConfiguration(accessKey, secretKey);
+            awsConfiguration = new AwsConfiguration();
 
-            clientConfig = new ClientConfiguration();
-            clientConfig.setProtocol(awsConfiguration.getProtocol());
-            clientConfig.setProxyHost(awsConfiguration.getProxyHost());
-            clientConfig.setProxyPort(awsConfiguration.getProxyPort());
-            clientConfig.setProxyUsername(awsConfiguration.getProxyUserName());
-            clientConfig.setProxyPassword(awsConfiguration.getProxyPassword());
+            if (awsConfiguration.getProxyHost() != null)
+            {
+                ProxyConfiguration.Builder proxyConfigBuilder = ProxyConfiguration.builder();
+                proxyConfigBuilder.endpoint(new URIBuilder().setScheme(awsConfiguration.getProtocol())
+                                                            .setHost(awsConfiguration.getProxyHost())
+                                                            .setPort(awsConfiguration.getProxyPort()).build());
+                proxyConfigBuilder.username(awsConfiguration.getProxyUserName());
+                proxyConfigBuilder.password(awsConfiguration.getProxyPassword());
+                proxyConfigBuilder.useSystemPropertyValues(Boolean.FALSE);
+                proxyConfigBuilder.useEnvironmentVariablesValues(Boolean.FALSE);
+                proxyConfig = proxyConfigBuilder.build();
+            }
+            else
+            {
+                proxyConfig = null;
+            }
 
+            credentialsProvider = getCredentialsProvider(awsConfiguration);
         }
         catch (final Exception e)
         {
@@ -143,20 +147,59 @@ abstract public class AbstractEC2Client
         }
     }
 
-    protected AmazonEC2 getClient(final Region region)
+    /**
+     * Get credentials provider. Uses the credentials from the given AwsConfiguration if possible. Otherwise, uses the
+     * default credential provider chain.
+     *
+     * @param awsConfiguration
+     *            the AwsConfiguration
+     * @return the credentials provider
+     */
+    private AwsCredentialsProvider getCredentialsProvider(final AwsConfiguration awsConfiguration) throws Exception
     {
-        return clientForRegion(region == null ? DEFAULT_REGION : region.getRegionName());
+        final String accessKey = awsConfiguration.getAccessKey();
+        final String secretKey = awsConfiguration.getSecretKey();
+        final String sessionToken = awsConfiguration.getSessionToken();
+
+        if (accessKey != null && secretKey != null)
+        {
+            if (sessionToken != null)
+            {
+                return StaticCredentialsProvider.create(AwsSessionCredentials.create(accessKey, secretKey, sessionToken));
+            }
+            else
+            {
+                return StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKey, secretKey));
+            }
+        }
+
+        if (accessKey == null && secretKey == null && sessionToken == null)
+        {
+            return DefaultCredentialsProvider.create();
+        }
+
+        throw new Exception("Invalid credential configuration in 'ec2_admin.properties'.");
     }
 
-    private AmazonEC2 clientForRegion(final String regionName)
+    protected Ec2Client getClient(final Region region)
     {
-        AmazonEC2 client = clientsByRegion.get(regionName);
+        return clientForRegion(region == null ? DEFAULT_REGION : region.regionName());
+    }
+
+    private Ec2Client clientForRegion(final String regionName)
+    {
+        Ec2Client client = clientsByRegion.get(regionName);
         if (client == null)
         {
-            client = AmazonEC2Client.builder().withClientConfiguration(clientConfig)
-                                    .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(awsConfiguration.getAccessKey(),
-                                                                                                              awsConfiguration.getSecretKey())))
-                                    .withRegion(regionName).build();
+            UrlConnectionHttpClient.Builder httpClientBuilder = UrlConnectionHttpClient.builder();
+            if (proxyConfig != null)
+            {
+                httpClientBuilder.proxyConfiguration(proxyConfig);
+            }
+
+            client = Ec2Client.builder().httpClientBuilder(httpClientBuilder).credentialsProvider(credentialsProvider)
+                              .region(software.amazon.awssdk.regions.Region.of(regionName)).build();
+
             clientsByRegion.put(regionName, client);
         }
 
@@ -178,11 +221,11 @@ abstract public class AbstractEC2Client
      * @throws Exception
      *             if instance doesn't have wanted state within given timeout.
      */
-    protected Instance waitForInstanceState(final Region region, final Instance instance, final String state, final long timeout)
+    protected Instance waitForInstanceState(final Region region, final Instance instance, final InstanceStateName state, final long timeout)
         throws Exception
     {
         final long deadline = System.currentTimeMillis() + timeout;
-        final String instanceId = instance.getInstanceId();
+        final String instanceId = instance.instanceId();
         while (System.currentTimeMillis() < deadline)
         {
             final Instance foundInstance = getInstance(region, instanceId, new ArrayList<TagDescription>(), state);
@@ -207,61 +250,7 @@ abstract public class AbstractEC2Client
         }
 
         throw new Exception("Instance didn't achieve state '" + state + "' within " + (timeout / 1000) + "s. Current state is '" +
-                            instance.getState().getName() + "'");
-    }
-
-    /**
-     * Looks up the specified image in given region and waits until it has the specified state.
-     *
-     * @param region
-     *            region to lookup the image in
-     * @param imageID
-     *            the image to lookup
-     * @param state
-     *            the state to wait for
-     * @param timeout
-     *            time within the image must get the specified state
-     * @return the current image object with wanted state
-     * @throws Exception
-     *             if the image didn't achieve the state within given time OR image wasn't found
-     */
-    protected Image waitForImageState(final Region region, final String imageID, final String state, final long timeout) throws Exception
-    {
-        Image image = null;
-
-        final long deadline = System.currentTimeMillis() + timeout;
-        while (System.currentTimeMillis() < deadline)
-        {
-            image = getImage(region, imageID);
-
-            // check sate
-            if (image != null && image.getState().equals(state))
-            {
-                return image;
-            }
-            else
-            {
-                // wait some time
-                try
-                {
-                    Thread.sleep(IMAGE_STATE_POLLING_INTERVAL);
-                }
-                catch (final Exception e)
-                {
-                    // ignore
-                }
-            }
-        }
-
-        if (image == null)
-        {
-            throw new Exception("Image '" + imageID + "' not found in region '" + region.getRegionName() + "'.");
-        }
-        else
-        {
-            throw new Exception("Image didn't achieve state '" + state + "' within " + (timeout / 1000) + "s. Current state is '" +
-                                image.getState() + "'");
-        }
+                            instance.state().name().toString() + "'");
     }
 
     /**
@@ -273,7 +262,7 @@ abstract public class AbstractEC2Client
      */
     protected List<AvailabilityZone> getAvailabilityZones(final Region region)
     {
-        return getClient(region).describeAvailabilityZones().getAvailabilityZones();
+        return new ArrayList<>(getClient(region).describeAvailabilityZones().availabilityZones());
     }
 
     /**
@@ -285,16 +274,16 @@ abstract public class AbstractEC2Client
      */
     protected List<SecurityGroup> getSecurityGroupIDs(final Region region)
     {
-        final List<SecurityGroup> secGroups = getClient(region).describeSecurityGroups().getSecurityGroups();
+        final List<SecurityGroup> secGroups = new ArrayList<>(getClient(region).describeSecurityGroups().securityGroups());
 
-        // sort the images by image description
+        // sort the security groups by group name
         Collections.sort(secGroups, new Comparator<SecurityGroup>()
         {
             @Override
             public int compare(final SecurityGroup i1, final SecurityGroup i2)
             {
-                final String d1 = StringUtils.defaultString(i1.getGroupName().toLowerCase());
-                final String d2 = StringUtils.defaultString(i2.getGroupName().toLowerCase());
+                final String d1 = StringUtils.defaultString(i1.groupName().toLowerCase());
+                final String d2 = StringUtils.defaultString(i2.groupName().toLowerCase());
                 return d1.compareTo(d2);
             }
         });
@@ -314,10 +303,11 @@ abstract public class AbstractEC2Client
      */
     protected List<Image> getImages(final Region region, final String... imageIds)
     {
-        final DescribeImagesRequest describeImagesRequest = new DescribeImagesRequest().withOwners("self", "614612213257")
-                                                                                       .withFilters(new Filter("architecture").withValues("x86_64"))
-                                                                                       .withImageIds(imageIds);
-        final List<Image> images = getClient(region).describeImages(describeImagesRequest).getImages();
+        final DescribeImagesRequest describeImagesRequest = DescribeImagesRequest.builder().owners("self", "614612213257")
+                                                                                 .filters(Filter.builder().name("architecture")
+                                                                                                .values("x86_64").build())
+                                                                                 .imageIds(imageIds).build();
+        final List<Image> images = new ArrayList<>(getClient(region).describeImages(describeImagesRequest).images());
 
         return images;
     }
@@ -331,17 +321,17 @@ abstract public class AbstractEC2Client
      */
     protected List<KeyPairInfo> getKeyPairs(final Region region)
     {
-        final DescribeKeyPairsResult describeKeyPairsResult = getClient(region).describeKeyPairs();
-        final List<KeyPairInfo> keyPairInfos = describeKeyPairsResult.getKeyPairs();
+        final DescribeKeyPairsResponse describeKeyPairsResponse = getClient(region).describeKeyPairs();
+        final List<KeyPairInfo> keyPairInfos = new ArrayList<>(describeKeyPairsResponse.keyPairs());
 
-        // sort the images by image description
+        // sort the key pairs by key name
         Collections.sort(keyPairInfos, new Comparator<KeyPairInfo>()
         {
             @Override
             public int compare(final KeyPairInfo i1, final KeyPairInfo i2)
             {
-                final String d1 = StringUtils.defaultString(i1.getKeyName());
-                final String d2 = StringUtils.defaultString(i2.getKeyName());
+                final String d1 = StringUtils.defaultString(i1.keyName());
+                final String d2 = StringUtils.defaultString(i2.keyName());
                 return d1.compareTo(d2);
             }
         });
@@ -364,7 +354,7 @@ abstract public class AbstractEC2Client
         Image image = null;
         for (final Image img : images)
         {
-            if (img.getImageId().equals(imageId))
+            if (img.imageId().equals(imageId))
             {
                 image = img;
                 break;
@@ -386,9 +376,9 @@ abstract public class AbstractEC2Client
     {
         final ArrayList<String> instanceIds = new ArrayList<String>();
 
-        for (final Instance instance : getInstances(region, tags, STATE_RUNNING))
+        for (final Instance instance : getInstances(region, tags, InstanceStateName.RUNNING))
         {
-            instanceIds.add(instance.getInstanceId());
+            instanceIds.add(instance.instanceId());
         }
 
         return instanceIds;
@@ -407,13 +397,14 @@ abstract public class AbstractEC2Client
      *            the instance state we want (may be <code>null</code>)
      * @return Found instance or <code>null</code> if no such instance was found
      */
-    protected Instance getInstance(final Region region, final String instanceID, final List<TagDescription> tags, final String state)
+    protected Instance getInstance(final Region region, final String instanceID, final List<TagDescription> tags,
+                                   final InstanceStateName state)
     {
         // lookup instance
         final List<Instance> instances = getInstances(region, new ArrayList<TagDescription>(), state);
         for (final Instance instance : instances)
         {
-            if (instance.getInstanceId().equals(instanceID))
+            if (instance.instanceId().equals(instanceID))
             {
                 return instance;
             }
@@ -433,39 +424,44 @@ abstract public class AbstractEC2Client
      *            the instance state we want (may be <code>null</code>)
      * @return the instances
      */
-    protected List<Instance> getInstances(final Region region, final List<TagDescription> tags, final String state)
+    protected List<Instance> getInstances(final Region region, final List<TagDescription> tags, final InstanceStateName state)
     {
         // build the tag filter list
         final Map<String, Filter> filters = new HashMap<String, Filter>();
 
+        final Map<String, List<String>> tagKeyValueMap = new HashMap<>();
+
         for (final TagDescription tag : tags)
         {
-            final String key = tag.getKey();
-            Filter filter = filters.get(key);
-            if (filter == null)
+            final String key = tag.key();
+            List<String> values = tagKeyValueMap.get(key);
+            if (values == null)
             {
-                filter = new Filter("tag:" + key);
-                filters.put(key, filter);
+                values = new ArrayList<>();
+                tagKeyValueMap.put(key, values);
             }
-            filter.withValues(tag.getValue());
+            values.add(tag.value());
+        }
+
+        for (final String key : tagKeyValueMap.keySet())
+        {
+            filters.put(key, Filter.builder().name("tag:" + key).values(tagKeyValueMap.get(key)).build());
         }
 
         if (state != null)
         {
-            final Filter stateFilter = new Filter("instance-state-name");
-            stateFilter.withValues(state);
+            final Filter stateFilter = Filter.builder().name("instance-state-name").values(state.toString()).build();
             filters.put("instance-state", stateFilter);
         }
 
         final List<Instance> instances = new ArrayList<Instance>();
 
-        final DescribeInstancesRequest describeInstancesRequest = new DescribeInstancesRequest();
-        describeInstancesRequest.setFilters(filters.values());
+        final DescribeInstancesRequest describeInstancesRequest = DescribeInstancesRequest.builder().filters(filters.values()).build();
 
-        final DescribeInstancesResult describeInstancesResult = getClient(region).describeInstances(describeInstancesRequest);
-        for (final Reservation reservation : describeInstancesResult.getReservations())
+        final DescribeInstancesResponse describeInstancesResponse = getClient(region).describeInstances(describeInstancesRequest);
+        for (final Reservation reservation : describeInstancesResponse.reservations())
         {
-            instances.addAll(reservation.getInstances());
+            instances.addAll(reservation.instances());
         }
 
         return instances;
@@ -495,17 +491,17 @@ abstract public class AbstractEC2Client
      */
     protected List<Region> getRegions(final String... regionNames)
     {
-        final DescribeRegionsRequest describeRegionsRequest = new DescribeRegionsRequest();
-        describeRegionsRequest.setRegionNames(Arrays.asList(regionNames));
-        describeRegionsRequest.setAllRegions(false);
+        final DescribeRegionsRequest.Builder describeRegionsRequestBuilder = DescribeRegionsRequest.builder();
+        describeRegionsRequestBuilder.regionNames(Arrays.asList(regionNames));
+        describeRegionsRequestBuilder.allRegions(false);
 
-        final DescribeRegionsResult describeRegionsResult = getClient(null).describeRegions(describeRegionsRequest);
-        final List<Region> regions = describeRegionsResult.getRegions();
+        final DescribeRegionsResponse describeRegionsResponse = getClient(null).describeRegions(describeRegionsRequestBuilder.build());
+        final List<Region> regions = new ArrayList<>(describeRegionsResponse.regions());
 
         // sort the regions by region name
         Collections.sort(regions, (r1, r2) -> {
-            final String s1 = StringUtils.defaultString(r1.getRegionName());
-            final String s2 = StringUtils.defaultString(r2.getRegionName());
+            final String s1 = StringUtils.defaultString(r1.regionName());
+            final String s2 = StringUtils.defaultString(r2.regionName());
             return s1.compareTo(s2);
         });
 
@@ -593,21 +589,19 @@ abstract public class AbstractEC2Client
      */
     protected List<Subnet> getSubnets(final Region region, final AvailabilityZone availabilityZone, final Vpc vpc)
     {
-        final DescribeSubnetsRequest req = new DescribeSubnetsRequest();
-
         final List<Filter> filters = new ArrayList<>();
         if (availabilityZone != null)
         {
-            filters.add(new Filter("availability-zone", Arrays.asList(availabilityZone.getZoneName())));
+            filters.add(Filter.builder().name("availability-zone").values(Arrays.asList(availabilityZone.zoneName())).build());
         }
         if (vpc != null)
         {
-            filters.add(new Filter("vpc-id", Arrays.asList(vpc.getVpcId())));
+            filters.add(Filter.builder().name("vpc-id").values(Arrays.asList(vpc.vpcId())).build());
         }
 
-        req.setFilters(filters);
+        final DescribeSubnetsRequest req = DescribeSubnetsRequest.builder().filters(filters).build();
 
-        return getClient(region).describeSubnets(req).getSubnets();
+        return new ArrayList<>(getClient(region).describeSubnets(req).subnets());
     }
 
     /**
@@ -621,12 +615,12 @@ abstract public class AbstractEC2Client
      */
     protected List<Vpc> getVpcs(final Region region, final List<String> vpcIds)
     {
-        final DescribeVpcsRequest vpcReq = new DescribeVpcsRequest();
+        final DescribeVpcsRequest.Builder vpcReqBuilder = DescribeVpcsRequest.builder();
         if (vpcIds != null && !vpcIds.isEmpty())
         {
-            vpcReq.withFilters(new Filter("vpc-id", vpcIds));
+            vpcReqBuilder.filters(Filter.builder().name("vpc-id").values(vpcIds).build());
         }
-        return getClient(region).describeVpcs(vpcReq).getVpcs();
+        return new ArrayList<>(getClient(region).describeVpcs(vpcReqBuilder.build()).vpcs());
     }
 
     /**
@@ -657,7 +651,7 @@ abstract public class AbstractEC2Client
                                           final Collection<String> securityGroupIds, final String keyPairName, final String userData)
         throws Exception
     {
-        final RunInstancesRequest runInstancesRequest = new RunInstancesRequest();
+        final RunInstancesRequest.Builder runInstancesRequestBuilder = RunInstancesRequest.builder();
 
         // check if specific subnet is desired
         if (subnet == null)
@@ -667,7 +661,7 @@ abstract public class AbstractEC2Client
             if (!subnets.isEmpty())
             {
                 // get the default subnet or (if not present) take the first one
-                subnet = subnets.parallelStream().filter(s -> s.isDefaultForAz()).findAny().orElse(subnets.get(0));
+                subnet = subnets.parallelStream().filter(s -> s.defaultForAz()).findAny().orElse(subnets.get(0));
             }
         }
 
@@ -677,31 +671,31 @@ abstract public class AbstractEC2Client
             throw new Exception("No subnet available to launch instances into");
         }
 
-        runInstancesRequest.setPlacement(new Placement(subnet.getAvailabilityZone()));
-        runInstancesRequest.setSubnetId(subnet.getSubnetId());
+        runInstancesRequestBuilder.placement(Placement.builder().availabilityZone(subnet.availabilityZone()).build());
+        runInstancesRequestBuilder.subnetId(subnet.subnetId());
 
-        runInstancesRequest.setImageId(image.getImageId());
-        runInstancesRequest.setInstanceType(instanceType);
-        runInstancesRequest.setMinCount(count);
-        runInstancesRequest.setMaxCount(count);
+        runInstancesRequestBuilder.imageId(image.imageId());
+        runInstancesRequestBuilder.instanceType(instanceType);
+        runInstancesRequestBuilder.minCount(count);
+        runInstancesRequestBuilder.maxCount(count);
 
         if (StringUtils.isNotBlank(userData))
         {
-            runInstancesRequest.setUserData(Base64.encodeAsString(userData.getBytes()));
+            runInstancesRequestBuilder.userData(BinaryUtils.toBase64(userData.getBytes()));
         }
 
         if (securityGroupIds != null)
         {
-            runInstancesRequest.setSecurityGroupIds(securityGroupIds);
+            runInstancesRequestBuilder.securityGroupIds(securityGroupIds);
         }
 
         if (StringUtils.isNotBlank(keyPairName))
         {
-            runInstancesRequest.setKeyName(keyPairName);
+            runInstancesRequestBuilder.keyName(keyPairName);
         }
 
-        final RunInstancesResult result = getClient(region).runInstances(runInstancesRequest);
-        final List<Instance> instances = result.getReservation().getInstances();
+        final RunInstancesResponse response = getClient(region).runInstances(runInstancesRequestBuilder.build());
+        final List<Instance> instances = new ArrayList<>(response.instances());
 
         return instances;
     }
@@ -721,15 +715,15 @@ abstract public class AbstractEC2Client
             try
             {
                 System.out.printf("Terminating %s instances in region '%s' ... ", (tags.isEmpty() ? "all" : "the selected"),
-                                  region.getRegionName());
+                                  region.regionName());
 
-                final TerminateInstancesRequest terminateInstancesRequest = new TerminateInstancesRequest();
-                terminateInstancesRequest.setInstanceIds(getRunningInstanceIds(region, tags));
-                getClient(region).terminateInstances(terminateInstancesRequest);
+                final TerminateInstancesRequest.Builder terminateInstancesRequestBuilder = TerminateInstancesRequest.builder();
+                terminateInstancesRequestBuilder.instanceIds(getRunningInstanceIds(region, tags));
+                getClient(region).terminateInstances(terminateInstancesRequestBuilder.build());
 
                 System.out.println("OK.");
             }
-            catch (final AmazonClientException e)
+            catch (final SdkException e)
             {
                 System.out.println("Failed: " + e.getMessage());
             }
@@ -746,10 +740,10 @@ abstract public class AbstractEC2Client
      */
     protected void terminateInstance(final Region region, final Instance instance)
     {
-        final TerminateInstancesRequest terminateInstancesRequest = new TerminateInstancesRequest();
-        terminateInstancesRequest.setInstanceIds(Arrays.asList(instance.getInstanceId()));
+        final TerminateInstancesRequest.Builder terminateInstancesRequestBuilder = TerminateInstancesRequest.builder();
+        terminateInstancesRequestBuilder.instanceIds(instance.instanceId());
 
-        getClient(region).terminateInstances(terminateInstancesRequest);
+        getClient(region).terminateInstances(terminateInstancesRequestBuilder.build());
     }
 
     /**
@@ -763,15 +757,15 @@ abstract public class AbstractEC2Client
     protected void setNameTag(final Region region, final List<String> ids, final String name)
     {
         final List<Tag> tags = new ArrayList<Tag>();
-        tags.add(new Tag().withKey("Name").withValue(name));
+        tags.add(Tag.builder().key("Name").value(name).build());
 
         // build tag request
-        final CreateTagsRequest createTagRequest = new CreateTagsRequest();
-        createTagRequest.setResources(ids);
-        createTagRequest.setTags(tags);
+        final CreateTagsRequest.Builder createTagRequestBuilder = CreateTagsRequest.builder();
+        createTagRequestBuilder.resources(ids);
+        createTagRequestBuilder.tags(tags);
 
         // set tag
-        getClient(region).createTags(createTagRequest);
+        getClient(region).createTags(createTagRequestBuilder.build());
     }
 
     /**
@@ -799,23 +793,23 @@ abstract public class AbstractEC2Client
 
         while (true)
         {
-            AmazonServiceException lastException = null;
+            AwsServiceException lastException = null;
 
             try
             {
                 // dummy request to describe the instances
-                final DescribeInstancesRequest describeInstancesRequest = new DescribeInstancesRequest();
-                describeInstancesRequest.setInstanceIds(instanceIds);
+                final DescribeInstancesRequest.Builder describeInstancesRequestBuilder = DescribeInstancesRequest.builder();
+                describeInstancesRequestBuilder.instanceIds(instanceIds);
 
-                getClient(region).describeInstances(describeInstancesRequest);
+                getClient(region).describeInstances(describeInstancesRequestBuilder.build());
 
                 // no exception, return immediately
                 return;
             }
-            catch (final AmazonServiceException e)
+            catch (final AwsServiceException e)
             {
                 // check if some instances were reported as non-existing
-                if ("InvalidInstanceID.NotFound".equals(e.getErrorCode()))
+                if ("InvalidInstanceID.NotFound".equals(e.awsErrorDetails().errorCode()))
                 {
                     // yes, continue waiting, but remember the exception
                     lastException = e;
@@ -856,31 +850,19 @@ abstract public class AbstractEC2Client
 
         for (final Instance instance : instances)
         {
-            instanceIds.add(instance.getInstanceId());
+            instanceIds.add(instance.instanceId());
         }
 
         return instanceIds;
     }
 
     /**
-     * Returns the underlying HTTP client used by this' AWS client.
-     *
-     * @return HTTP client
-     */
-    protected HttpClient getUnderlyingHttpClient()
-    {
-        final AmazonEC2Client awsClient = (AmazonEC2Client) getClient(null);
-        final AmazonHttpClient ahc = ReflectionUtils.readInstanceField(awsClient, "client");
-        return ReflectionUtils.readInstanceField(ahc, "httpClient");
-    }
-
-    /**
      * Shuts down the EC2 clients that were potentially created by {@link #getClient(Region)}.
-     * 
-     * @see AmazonEC2#shutdown()
+     *
+     * @see Ec2Client#close()
      */
     public void shutdown()
     {
-        clientsByRegion.values().forEach(AmazonEC2::shutdown);
+        clientsByRegion.values().forEach(Ec2Client::close);
     }
 }

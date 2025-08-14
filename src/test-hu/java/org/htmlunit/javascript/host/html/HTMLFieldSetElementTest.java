@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,9 @@
  */
 package org.htmlunit.javascript.host.html;
 
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
-
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -38,11 +34,8 @@ public class HTMLFieldSetElementTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "undefined", "undefined", "undefined", "undefined", "undefined",
-                       "undefined", "undefined", "undefined", "undefined", "undefined"},
-            IE = {"left", "right", "bottom", "middle",
-                  "top", "absBottom", "absMiddle", "baseline", "textTop", "", ""})
-    @HtmlUnitNYI(IE = {"left", "right", "", "", "", "", "", "", "", "", ""})
+    @Alerts({"undefined", "undefined", "undefined", "undefined", "undefined", "undefined",
+             "undefined", "undefined", "undefined", "undefined", "undefined"})
     public void getAlign() throws Exception {
         final String html
             = "<html><body>\n"
@@ -75,11 +68,8 @@ public class HTMLFieldSetElementTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"CenTer", "8", "foo", "left", "right",
-                       "bottom", "middle", "top", "absbottom", "absmiddle", "baseline", "texttop"},
-           IE = {"center", "error", "center", "error", "center", "left", "right",
-                 "bottom", "middle", "top", "absBottom", "absMiddle", "baseline", "textTop"})
-    @NotYetImplemented(IE)
+    @Alerts({"CenTer", "8", "foo", "left", "right",
+             "bottom", "middle", "top", "absbottom", "absmiddle", "baseline", "texttop"})
     public void setAlign() throws Exception {
         final String html
             = "<html><body>\n"
@@ -92,7 +82,7 @@ public class HTMLFieldSetElementTest extends WebDriverTestCase {
             + "  function setAlign(elem, value) {\n"
             + "    try {\n"
             + "      elem.align = value;\n"
-            + "    } catch (e) { log('error'); }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "    log(elem.align);\n"
             + "  }\n"
 
@@ -135,6 +125,70 @@ public class HTMLFieldSetElementTest extends WebDriverTestCase {
             + "  </script>"
             + "</body>"
             + "</html>";
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts({"false", "false", "false", "false", "false"})
+    public void willValidate() throws Exception {
+        final String html =
+                "<html><head>\n"
+                + "  <script>\n"
+                + LOG_TITLE_FUNCTION
+                + "    function test() {\n"
+                + "      log(document.getElementById('i1').willValidate);\n"
+                + "      log(document.getElementById('i2').willValidate);\n"
+                + "      log(document.getElementById('i3').willValidate);\n"
+                + "      log(document.getElementById('i4').willValidate);\n"
+                + "      log(document.getElementById('i5').willValidate);\n"
+                + "    }\n"
+                + "  </script>\n"
+                + "</head>\n"
+                + "<body onload='test()'>\n"
+                + "  <form>\n"
+                + "    <fieldset id='i1'>fs</fieldset>"
+                + "    <fieldset id='i2' disabled></fieldset>"
+                + "    <fieldset id='i3' hidden></fieldset>"
+                + "    <fieldset id='i4' readonly></fieldset>"
+                + "    <fieldset id='i5' style='display: none'></fieldset>"
+                + "  </form>\n"
+                + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts({"true", "false", "true", "true", "true"})
+    public void willValidateChild() throws Exception {
+        final String html =
+                "<html><head>\n"
+                + "  <script>\n"
+                + LOG_TITLE_FUNCTION
+                + "    function test() {\n"
+                + "      log(document.getElementById('i1').willValidate);\n"
+                + "      log(document.getElementById('i2').willValidate);\n"
+                + "      log(document.getElementById('i3').willValidate);\n"
+                + "      log(document.getElementById('i4').willValidate);\n"
+                + "      log(document.getElementById('i5').willValidate);\n"
+                + "    }\n"
+                + "  </script>\n"
+                + "</head>\n"
+                + "<body onload='test()'>\n"
+                + "  <form>\n"
+                + "    <fieldset><input id='i1'></fieldset>"
+                + "    <fieldset disabled><input id='i2'></fieldset>"
+                + "    <fieldset hidden><input id='i3'></fieldset>"
+                + "    <fieldset readonly><input id='i4'></fieldset>"
+                + "    <fieldset style='display: none'><input id='i5'></fieldset>"
+                + "  </form>\n"
+                + "</body></html>";
+
         loadPageVerifyTitle2(html);
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,7 @@ package org.htmlunit.javascript;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -115,8 +114,7 @@ public class NativeStringTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "3",
-            IE = {})
+    @Alerts("3")
     public void trimRight() throws Exception {
         final String html
             = "<!DOCTYPE html>\n"
@@ -138,8 +136,7 @@ public class NativeStringTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "4",
-            IE = {})
+    @Alerts("4")
     public void trimLeft() throws Exception {
         final String html
             = "<!DOCTYPE html>\n"
@@ -199,8 +196,7 @@ public class NativeStringTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"true", "true", "true", "false"},
-            IE = "startsWith not supported")
+    @Alerts({"true", "true", "true", "false"})
     public void startsWith() throws Exception {
         final String html
             = "<!DOCTYPE html>\n"
@@ -228,8 +224,7 @@ public class NativeStringTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"true", "true", "true", "false"},
-            IE = "endsWith not supported")
+    @Alerts({"true", "true", "true", "false"})
     public void endsWith() throws Exception {
         final String html
             = "<!DOCTYPE html>\n"
@@ -257,8 +252,7 @@ public class NativeStringTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"true", "true", "true", "true", "false"},
-            IE = "includes not supported")
+    @Alerts({"true", "true", "true", "true", "false"})
     public void includes() throws Exception {
         final String html
             = "<!DOCTYPE html>\n"
@@ -287,8 +281,7 @@ public class NativeStringTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"", "abc", "abcabc"},
-            IE = "repeat not supported")
+    @Alerts({"", "abc", "abcabc"})
     public void repeat() throws Exception {
         final String html
             = "<!DOCTYPE html>\n"
@@ -314,9 +307,7 @@ public class NativeStringTest extends WebDriverTestCase {
      * @throws Exception if something goes wrong
      */
     @Test
-    @Alerts(DEFAULT = {"\u0069\u0307", "\u0069"},
-            IE = {"\u0130", "\u0130"})
-    @HtmlUnitNYI(IE = {"\u0069\u0307", "\u0069"})
+    @Alerts({"\u0069\u0307", "\u0069"})
     public void toLocaleLowerCase() throws Exception {
         final String html
             = "<!DOCTYPE html>\n"
@@ -337,8 +328,7 @@ public class NativeStringTest extends WebDriverTestCase {
      * @throws Exception if something goes wrong
      */
     @Test
-    @Alerts(DEFAULT = {"Error", "true"},
-            IE = {})
+    @Alerts({"Error", "true"})
     public void includesRegExpMatch() throws Exception {
         final String html
             = "<!DOCTYPE html>\n"
@@ -350,7 +340,7 @@ public class NativeStringTest extends WebDriverTestCase {
             + "      var res = '';\n"
             + "      try {\n"
             + "        log('/./'.includes(regExp));\n"
-            + "      } catch (e) {\n"
+            + "      } catch(e) {\n"
             + "        log('Error');\n"
             + "      }\n"
             + "      regExp[Symbol.match] = false;\n"
@@ -368,8 +358,7 @@ public class NativeStringTest extends WebDriverTestCase {
      * @throws Exception if something goes wrong
      */
     @Test
-    @Alerts(DEFAULT = {"Error", "true"},
-            IE = {})
+    @Alerts({"TypeError", "true"})
     public void startsWithRegExpMatch() throws Exception {
         final String html
             = "<!DOCTYPE html>\n"
@@ -381,9 +370,7 @@ public class NativeStringTest extends WebDriverTestCase {
             + "      var res = '';\n"
             + "      try {\n"
             + "        log('/./'.startsWith(regExp));\n"
-            + "      } catch (e) {\n"
-            + "        log('Error');\n"
-            + "      }\n"
+            + "      } catch(e) { logEx(e); }\n"
             + "      regExp[Symbol.match] = false;\n"
             + "      log('/./'.startsWith(regExp));\n"
             + "    }\n"
@@ -399,8 +386,7 @@ public class NativeStringTest extends WebDriverTestCase {
      * @throws Exception if something goes wrong
      */
     @Test
-    @Alerts(DEFAULT = {"Error", "true"},
-            IE = {})
+    @Alerts({"TypeError", "true"})
     public void endsWithRegExpMatch() throws Exception {
         final String html
             = "<!DOCTYPE html>\n"
@@ -412,9 +398,7 @@ public class NativeStringTest extends WebDriverTestCase {
             + "      var res = '';\n"
             + "      try {\n"
             + "        log('/./'.endsWith(regExp));\n"
-            + "      } catch (e) {\n"
-            + "        log('Error');\n"
-            + "      }\n"
+            + "      } catch(e) { logEx(e); }\n"
             + "      regExp[Symbol.match] = false;\n"
             + "      log('/./'.endsWith(regExp));\n"
             + "    }\n"

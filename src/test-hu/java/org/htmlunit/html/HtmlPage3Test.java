@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,8 @@
 package org.htmlunit.html;
 
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.FF;
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.FF_ESR;
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
+import static org.htmlunit.junit.annotation.TestedBrowser.FF;
+import static org.htmlunit.junit.annotation.TestedBrowser.FF_ESR;
 
 import java.net.URL;
 import java.util.List;
@@ -26,10 +25,9 @@ import java.util.Map;
 import org.htmlunit.HttpHeader;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.NotYetImplemented;
 import org.htmlunit.util.MimeType;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
@@ -111,8 +109,7 @@ public class HtmlPage3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"windows-1252", "windows-1252", "windows-1252", "undefined"},
-            IE = {"ISO-8859-1", "iso-8859-1", "iso-8859-1", "windows-1252"})
+    @Alerts({"windows-1252", "windows-1252", "windows-1252", "undefined"})
     public void getPageEncoding() throws Exception {
         final String htmlContent = "<html><head>\n"
             + "  <meta http-equiv='Content-Type' content='text/html; charset=Shift_JIS'>\n"
@@ -198,10 +195,10 @@ public class HtmlPage3Test extends WebDriverTestCase {
 
         final WebElement form = driver.findElement(By.id("form1"));
         final WebElement input = form.findElement(By.name("textInput1"));
-        assertEquals("name", "textInput1", input.getAttribute("name"));
+        assertEquals("name", "textInput1", input.getDomAttribute("name"));
 
-        assertEquals("value", "textInput1", input.getAttribute("value"));
-        assertEquals("type", "text", input.getAttribute("type"));
+        assertEquals("value", "textInput1", input.getDomAttribute("value"));
+        assertEquals("type", "text", input.getDomAttribute("type"));
     }
 
     /**
@@ -223,11 +220,6 @@ public class HtmlPage3Test extends WebDriverTestCase {
             + "</script></head>\n"
             + "<body onload='test()'>\n"
             + "</body></html>";
-
-        // [IE] real IE waits for the page to load until infinity
-        if (useRealBrowser() && getBrowserVersion().isIE()) {
-            Assert.fail("Blocks real IE");
-        }
 
         loadPage2(html);
         verifyWindowName2(getWebDriver(), getExpectedAlerts());
@@ -479,7 +471,7 @@ public class HtmlPage3Test extends WebDriverTestCase {
     @Alerts(DEFAULT = "error",
             CHROME = "Something",
             EDGE = "Something")
-    @NotYetImplemented({IE, FF, FF_ESR})
+    @NotYetImplemented({FF, FF_ESR})
     public void shouldBeAbleToFindElementByXPathInXmlDocument() throws Exception {
         final String html = "<?xml version='1.0' encoding='UTF-8'?>\n"
             + "<html xmlns='http://www.w3.org/1999/xhtml'\n"
@@ -543,7 +535,7 @@ public class HtmlPage3Test extends WebDriverTestCase {
             + "  iframesrc += '    try {';\n"
             + "  iframesrc += '      var y = squared(5);';\n"
             + "  iframesrc += '      alert(y);';\n"
-            + "  iframesrc += '    } catch (e) {';\n"
+            + "  iframesrc += '    } catch(e) {';\n"
             + "  iframesrc += '      alert(\"error\");';\n"
             + "  iframesrc += '    }';\n"
             + "  iframesrc += '}';\n"
@@ -593,7 +585,7 @@ public class HtmlPage3Test extends WebDriverTestCase {
             + "  iframesrc += '    try {';\n"
             + "  iframesrc += '      var y = squared(5);';\n"
             + "  iframesrc += '      alert(y);';\n"
-            + "  iframesrc += '    } catch (e) {';\n"
+            + "  iframesrc += '    } catch(e) {';\n"
             + "  iframesrc += '      log(\"error\");';\n"
             + "  iframesrc += '    }';\n"
             + "  iframesrc += '}';\n"
@@ -644,5 +636,75 @@ public class HtmlPage3Test extends WebDriverTestCase {
             + "</head><body></body></html>";
 
         loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * Tests getElementById() of child element after appendChild(), removeChild(), then appendChild()
+     * of the parent element.
+     *
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("[object HTMLTableRowElement]")
+    public void getElementById_AfterAppendRemoveAppendChild() throws Exception {
+        final String content = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var table = document.createElement('table');\n"
+            + "    var tr = document.createElement('tr');\n"
+            + "    tr.id = 'myTR';\n"
+            + "    table.appendChild(tr);\n"
+            + "    document.body.appendChild(table);\n"
+            + "    document.body.removeChild(table);\n"
+            + "    document.body.appendChild(table);\n"
+            + "    log(document.getElementById('myTR'));\n"
+            + "  }\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "</body></html>";
+        loadPageVerifyTitle2(content);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("null")
+    public void getElementById_AfterAppendingToNewlyCreatedElement() throws Exception {
+        final String content = "<html><head>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  function test() {\n"
+            + "    var table = document.createElement('table');\n"
+            + "    var tr = document.createElement('tr');\n"
+            + "    tr.id = 'myTR';\n"
+            + "    table.appendChild(tr);\n"
+            + "    log(document.getElementById('myTR'));\n"
+            + "  }\n"
+            + "</script></head>\n"
+            + "<body onload='test()'>\n"
+            + "</body></html>";
+        loadPageVerifyTitle2(content);
+    }
+
+    /**
+     * When looking for the refresh meta tag don't get confused by stuff with a namespace.
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("works")
+    public void metaWithNamespace() throws Exception {
+        final String content =
+                "<html>\n"
+                + "<head>\n"
+                + "  <title>works\u00a7</title>\n"
+                + "</head>\n"
+                + "<body>\n"
+                + "  <overheidrg:meta xmlns:overheidrg='http://standaarden.overheid.nl/cvdr/terms/'>\n"
+                + "</body>\n"
+                + "</html>";
+
+        loadPageVerifyTitle2(content);
     }
 }

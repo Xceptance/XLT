@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,6 +46,8 @@ import org.htmlunit.javascript.host.event.Event;
  *
  * @author Daniel Gredler
  * @author Marc Guillemot
+ * @author Sven Strickroth
+ *
  * @see DebuggerImpl
  */
 public class DebugFrameImpl extends DebugFrameAdapter {
@@ -63,6 +65,7 @@ public class DebugFrameImpl extends DebugFrameAdapter {
      * @param functionOrScript the function or script to which this frame corresponds
      */
     public DebugFrameImpl(final DebuggableScript functionOrScript) {
+        super();
         functionOrScript_ = functionOrScript;
     }
 
@@ -141,22 +144,16 @@ public class DebugFrameImpl extends DebugFrameAdapter {
         if (LOG.isTraceEnabled()) {
             if (t instanceof JavaScriptException) {
                 final JavaScriptException e = (JavaScriptException) t;
-                if (LOG.isTraceEnabled()) {
-                    LOG.trace(getSourceName(cx) + ":" + getFirstLine(cx)
-                        + " Exception thrown: " + JavaScriptEngine.toString(e.details()));
-                }
+                LOG.trace(getSourceName(cx) + ":" + getFirstLine(cx)
+                    + " Exception thrown: " + e.details());
             }
             else if (t instanceof EcmaError) {
                 final EcmaError e = (EcmaError) t;
-                if (LOG.isTraceEnabled()) {
-                    LOG.trace(getSourceName(cx) + ":" + getFirstLine(cx)
-                        + " Exception thrown: " + JavaScriptEngine.toString(e.details()));
-                }
+                LOG.trace(getSourceName(cx) + ":" + getFirstLine(cx)
+                    + " Exception thrown: " + e.details());
             }
             else {
-                if (LOG.isTraceEnabled()) {
-                    LOG.trace(getSourceName(cx) + ":" + getFirstLine(cx) + " Exception thrown: " + t.getCause());
-                }
+                LOG.trace(getSourceName(cx) + ":" + getFirstLine(cx) + " Exception thrown: " + t.getCause());
             }
         }
     }

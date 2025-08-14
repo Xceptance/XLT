@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,7 +68,7 @@ public class HtmlMonthInput extends HtmlInput implements LabelableElement {
             }
             super.setValue(newValue);
         }
-        catch (final DateTimeParseException e) {
+        catch (final DateTimeParseException ignored) {
             // ignore
         }
     }
@@ -95,7 +95,7 @@ public class HtmlMonthInput extends HtmlInput implements LabelableElement {
                 final YearMonth minDate = YearMonth.parse(getMin(), FORMATTER_);
                 return minDate.equals(dateValue) || minDate.isBefore(dateValue);
             }
-            catch (final DateTimeParseException e) {
+            catch (final DateTimeParseException ignored) {
                 // ignore
             }
         }
@@ -116,7 +116,7 @@ public class HtmlMonthInput extends HtmlInput implements LabelableElement {
                 final YearMonth maxDate = YearMonth.parse(getMax(), FORMATTER_);
                 return maxDate.equals(dateValue) || maxDate.isAfter(dateValue);
             }
-            catch (final DateTimeParseException e) {
+            catch (final DateTimeParseException ignored) {
                 // ignore
             }
         }

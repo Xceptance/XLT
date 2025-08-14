@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,7 +56,8 @@ public class HttpWebConnectionInsecureSSLWithClientCertificateTest extends WebSe
     @Test
     public void insecureSSL_clientCertificates() throws Exception {
         final WebClient webClient = getWebClient();
-        webClient.getOptions().setSSLClientCertificate(getClass().getClassLoader().getResource("insecureSSL.pfx"),
+        webClient.getOptions().setSSLClientCertificateKeyStore(
+                getClass().getClassLoader().getResource("insecureSSL.pfx"),
                 "nopassword", "PKCS12");
         webClient.getOptions().setUseInsecureSSL(true);
 
@@ -89,7 +90,7 @@ public class HttpWebConnectionInsecureSSLWithClientCertificateTest extends WebSe
             certificateInputStream.read(certificateBytes);
 
             try (InputStream is = new ByteArrayInputStream(certificateBytes)) {
-                webClient.getOptions().setSSLClientCertificate(is, "nopassword", "PKCS12");
+                webClient.getOptions().setSSLClientCertificateKeyStore(is, "nopassword", "PKCS12");
                 webClient.getOptions().setUseInsecureSSL(true);
 
                 final URL https = new URL("https://localhost:" + PORT2 + "/");

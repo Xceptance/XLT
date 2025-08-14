@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import static org.junit.Assert.fail;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collections;
-import java.util.List;
 
 import org.htmlunit.FailingHttpStatusCodeException;
 import org.htmlunit.MockWebConnection;
@@ -29,7 +28,6 @@ import org.htmlunit.WebServerTestCase;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.junit.BrowserRunner;
 import org.htmlunit.util.MimeType;
-import org.htmlunit.util.NameValuePair;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -55,8 +53,7 @@ public class JavascriptErrorListenerTest extends WebServerTestCase {
         webClient.setJavaScriptErrorListener(null);
         final MockWebConnection webConnection = new MockWebConnection();
         final String errorContent = "<html><head><title>ERROR 500</title></head><body></body></html>";
-        final List<NameValuePair> emptyList = Collections.emptyList();
-        webConnection.setResponse(URL_SECOND, errorContent, 500, "BOOM", MimeType.TEXT_HTML, emptyList);
+        webConnection.setResponse(URL_SECOND, errorContent, 500, "BOOM", MimeType.TEXT_HTML, Collections.emptyList());
 
         // test script exception
         String content = "<html><head><title>Throw JavaScript Error</title>\n"

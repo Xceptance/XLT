@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,7 @@ package org.htmlunit.html;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -33,8 +32,7 @@ public final class HtmlInput3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"1234-abcd-abcd", "1234-1234-1234"},
-            IE = {"1234-abcd-abcd", "1234-abcd-abcd"})
+    @Alerts({"1234-abcd-abcd", "1234-1234-1234"})
     public void none_button() throws Exception {
         changeType("value='abcd'", "1234", "button");
     }
@@ -43,8 +41,7 @@ public final class HtmlInput3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"1234--null", "1234-1234-1234"},
-            IE = {"1234--null", "1234--null"})
+    @Alerts({"1234--null", "1234-1234-1234"})
     public void noneNoValueAttr_button() throws Exception {
         changeType("", "1234", "button");
     }
@@ -53,8 +50,7 @@ public final class HtmlInput3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"1234-abcd-abcd", "1234-1234-1234"},
-            IE = {"1234-abcd-abcd", "abcd-abcd-abcd"})
+    @Alerts({"1234-abcd-abcd", "1234-1234-1234"})
     public void none_checkbox() throws Exception {
         changeType("value='abcd'", "1234", "checkbox");
     }
@@ -63,8 +59,7 @@ public final class HtmlInput3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"1234--null", "1234-1234-1234"},
-            IE = {"1234--null", "on--null"})
+    @Alerts({"1234--null", "1234-1234-1234"})
     public void noneNoValueAttr_checkbox() throws Exception {
         changeType("", "1234", "checkbox");
     }
@@ -73,8 +68,7 @@ public final class HtmlInput3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"#aaaaaa-#ffffff-#ffffff", "#aaaaaa-#ffffff-#ffffff"},
-            IE = {"#aaaaaa-#ffffff-#ffffff", "error"})
+    @Alerts({"#aaaaaa-#ffffff-#ffffff", "#aaaaaa-#ffffff-#ffffff"})
     public void none_color() throws Exception {
         changeType("value='#ffffff'", "#aaaaaa", "color");
     }
@@ -83,8 +77,7 @@ public final class HtmlInput3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"#aaaaaa--null", "#aaaaaa--null"},
-            IE = {"#aaaaaa--null", "error"})
+    @Alerts({"#aaaaaa--null", "#aaaaaa--null"})
     public void noneNoValueAttr_color() throws Exception {
         changeType("", "#aaaaaa", "color");
     }
@@ -93,8 +86,7 @@ public final class HtmlInput3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"2019-07-11-2018-06-12-2018-06-12", "2019-07-11-2018-06-12-2018-06-12"},
-            IE = {"2019-07-11-2018-06-12-2018-06-12", "error"})
+    @Alerts({"2019-07-11-2018-06-12-2018-06-12", "2019-07-11-2018-06-12-2018-06-12"})
     public void none_date() throws Exception {
         changeType("value='2018-06-12'", "2019-07-11", "date");
     }
@@ -103,8 +95,7 @@ public final class HtmlInput3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"2019-07-11--null", "2019-07-11--null"},
-            IE = {"2019-07-11--null", "error"})
+    @Alerts({"2019-07-11--null", "2019-07-11--null"})
     public void noneNoValueAttr_date() throws Exception {
         changeType("", "2019-07-11", "date");
     }
@@ -113,9 +104,8 @@ public final class HtmlInput3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"2019-07-11T4:16-2018-06-12T19:30-2018-06-12T19:30",
-                       "-2018-06-12T19:30-2018-06-12T19:30"},
-            IE = {"2019-07-11T4:16-2018-06-12T19:30-2018-06-12T19:30", "error"})
+    @Alerts({"2019-07-11T4:16-2018-06-12T19:30-2018-06-12T19:30",
+             "-2018-06-12T19:30-2018-06-12T19:30"})
     public void none_datetimelocal() throws Exception {
         changeType("value='2018-06-12T19:30'", "2019-07-11T4:16", "datetime-local");
     }
@@ -124,9 +114,7 @@ public final class HtmlInput3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"2019-07-11T4:16--null",
-                       "--null"},
-            IE = {"2019-07-11T4:16--null", "error"})
+    @Alerts({"2019-07-11T4:16--null", "--null"})
     public void noneNoValueAttr_datetimelocal() throws Exception {
         changeType("", "2019-07-11T4:16", "datetime-local");
     }
@@ -153,8 +141,7 @@ public final class HtmlInput3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"1234-abcd-abcd", "1234-1234-1234"},
-            IE = {"1234-abcd-abcd", "1234-abcd-abcd"})
+    @Alerts({"1234-abcd-abcd", "1234-1234-1234"})
     public void none_hidden() throws Exception {
         changeType("value='abcd'", "1234", "hidden");
     }
@@ -163,8 +150,7 @@ public final class HtmlInput3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"1234--null", "1234-1234-1234"},
-            IE = {"1234--null", "1234--null"})
+    @Alerts({"1234--null", "1234-1234-1234"})
     public void noneNoValueAttr_hidden() throws Exception {
         changeType("", "1234", "hidden");
     }
@@ -173,8 +159,7 @@ public final class HtmlInput3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"1234-abcd-abcd", "1234-1234-1234"},
-            IE = {"1234-abcd-abcd", "abcd-abcd-abcd"})
+    @Alerts({"1234-abcd-abcd", "1234-1234-1234"})
     public void none_image() throws Exception {
         changeType("src='test.png' value='abcd'", "1234", "image");
     }
@@ -183,8 +168,7 @@ public final class HtmlInput3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"1234--null", "1234-1234-1234"},
-            IE = {"1234--null", "--null"})
+    @Alerts({"1234--null", "1234-1234-1234"})
     public void noneNoValueAttr_image() throws Exception {
         changeType("src='test.png'", "1234", "image");
     }
@@ -195,8 +179,7 @@ public final class HtmlInput3Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"12-7-7", "12-7-7"},
             CHROME = {"12-7-7", "-7-7"},
-            EDGE = {"12-7-7", "-7-7"},
-            IE = {"12-7-7", "error"})
+            EDGE = {"12-7-7", "-7-7"})
     public void none_month() throws Exception {
         changeType("value='7'", "12", "month");
     }
@@ -207,8 +190,7 @@ public final class HtmlInput3Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"12--null", "12--null"},
             CHROME = {"12--null", "--null"},
-            EDGE = {"12--null", "--null"},
-            IE = {"12--null", "error"})
+            EDGE = {"12--null", "--null"})
     public void noneNoValueAttr_month() throws Exception {
         changeType("", "12", "month");
     }
@@ -253,8 +235,7 @@ public final class HtmlInput3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"1234-abcd-abcd", "1234-1234-1234"},
-            IE = {"1234-abcd-abcd", "abcd-abcd-abcd"})
+    @Alerts({"1234-abcd-abcd", "1234-1234-1234"})
     public void none_radio() throws Exception {
         changeType("value='abcd'", "1234", "radio");
     }
@@ -263,8 +244,7 @@ public final class HtmlInput3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"1234--null", "1234-1234-1234"},
-            IE = {"1234--null", "on--null"})
+    @Alerts({"1234--null", "1234-1234-1234"})
     public void noneNoValueAttr_radio() throws Exception {
         changeType("", "1234", "radio");
     }
@@ -291,9 +271,7 @@ public final class HtmlInput3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"1234-abcd-abcd", "1234-1234-1234"},
-            IE = {"1234-abcd-abcd", "1234-abcd-abcd"})
-    @HtmlUnitNYI(IE = {"1234-abcd-abcd", "abcd-abcd-abcd"})
+    @Alerts({"1234-abcd-abcd", "1234-1234-1234"})
     public void none_reset() throws Exception {
         changeType("value='abcd'", "1234", "reset");
     }
@@ -302,8 +280,7 @@ public final class HtmlInput3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"1234--null", "1234-1234-1234"},
-            IE = {"1234--null", "Reset-Reset-Reset"})
+    @Alerts({"1234--null", "1234-1234-1234"})
     public void noneNoValueAttr_reset() throws Exception {
         changeType("", "1234", "reset");
     }
@@ -330,9 +307,7 @@ public final class HtmlInput3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"1234-abcd-abcd", "1234-1234-1234"},
-            IE = {"1234-abcd-abcd", "1234-abcd-abcd"})
-    @HtmlUnitNYI(IE = {"1234-abcd-abcd", "abcd-abcd-abcd"})
+    @Alerts({"1234-abcd-abcd", "1234-1234-1234"})
     public void none_submit() throws Exception {
         changeType("value='abcd'", "1234", "submit");
     }
@@ -341,8 +316,7 @@ public final class HtmlInput3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"1234--null", "1234-1234-1234"},
-            IE = {"1234--null", "Submit Query-Submit Query-Submit Query"})
+    @Alerts({"1234--null", "1234-1234-1234"})
     public void noneNoValueAttr_submit() throws Exception {
         changeType("", "1234", "submit");
     }
@@ -387,8 +361,7 @@ public final class HtmlInput3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"4:16-19:30-19:30", "-19:30-19:30"},
-            IE = {"4:16-19:30-19:30", "error"})
+    @Alerts({"4:16-19:30-19:30", "-19:30-19:30"})
     public void none_time() throws Exception {
         changeType("value='19:30'", "4:16", "time");
     }
@@ -397,8 +370,7 @@ public final class HtmlInput3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"4:16--null", "--null"},
-            IE = {"4:16--null", "error"})
+    @Alerts({"4:16--null", "--null"})
     public void noneNoValueAttr_time() throws Exception {
         changeType("", "4:16", "time");
     }
@@ -429,8 +401,7 @@ public final class HtmlInput3Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"24-42-42", "24-42-42"},
             CHROME = {"24-42-42", "-42-42"},
-            EDGE = {"24-42-42", "-42-42"},
-            IE = {"24-42-42", "error"})
+            EDGE = {"24-42-42", "-42-42"})
     public void none_week() throws Exception {
         changeType("value='42'", "24", "week");
     }
@@ -441,8 +412,7 @@ public final class HtmlInput3Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"24--null", "24--null"},
             CHROME = {"24--null", "--null"},
-            EDGE = {"24--null", "--null"},
-            IE = {"24--null", "error"})
+            EDGE = {"24--null", "--null"})
     public void noneNoValueAttr_week() throws Exception {
         changeType("", "24", "week");
     }
@@ -451,9 +421,8 @@ public final class HtmlInput3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"2020-04-7T1:13-2018-06-12T19:30-2018-06-12T19:30",
-                       "2020-04-7T1:13-2018-06-12T19:30-2018-06-12T19:30"},
-            IE = {"2020-04-7T1:13-2018-06-12T19:30-2018-06-12T19:30", "error"})
+    @Alerts({"2020-04-7T1:13-2018-06-12T19:30-2018-06-12T19:30",
+             "2020-04-7T1:13-2018-06-12T19:30-2018-06-12T19:30"})
     public void none_datetime() throws Exception {
         changeType("value='2018-06-12T19:30'", "2020-04-7T1:13", "datetime");
     }
@@ -462,9 +431,7 @@ public final class HtmlInput3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"2020-04-7T1:13--null",
-                       "2020-04-7T1:13--null"},
-            IE = {"2020-04-7T1:13--null", "error"})
+    @Alerts({"2020-04-7T1:13--null", "2020-04-7T1:13--null"})
     public void noneNoValueAttr_datetime() throws Exception {
         changeType("", "2020-04-7T1:13", "datetime");
     }
@@ -482,7 +449,7 @@ public final class HtmlInput3Test extends WebDriverTestCase {
                 + "    try {\n"
                 + "      input.type = '" + targetType + "';\n"
                 + "      log(input.value + '-' + input.defaultValue + '-' + input.getAttribute('value'));\n"
-                + "    } catch(e) { log('error'); }\n"
+                + "    } catch(e) { logEx(e); }\n"
                 + "  }\n"
                 + "</script>\n"
                 + "</head><body onload='test()'>\n"
@@ -498,8 +465,7 @@ public final class HtmlInput3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"1234--null", "1234-1234-1234"},
-            IE = {"1234--null", "1234--null"})
+    @Alerts({"1234--null", "1234-1234-1234"})
     public void detached_button() throws Exception {
         changeTypeDetached("1234", "button");
     }
@@ -508,8 +474,7 @@ public final class HtmlInput3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"1234--null", "1234-1234-1234"},
-            IE = {"1234--null", "on--null"})
+    @Alerts({"1234--null", "1234-1234-1234"})
     public void detached_checkbox() throws Exception {
         changeTypeDetached("1234", "checkbox");
     }
@@ -518,8 +483,7 @@ public final class HtmlInput3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"#aaaaaa--null", "#aaaaaa--null"},
-            IE = {"#aaaaaa--null", "error"})
+    @Alerts({"#aaaaaa--null", "#aaaaaa--null"})
     public void detached_color() throws Exception {
         changeTypeDetached("#aaaaaa", "color");
     }
@@ -528,8 +492,7 @@ public final class HtmlInput3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"2019-07-11--null", "2019-07-11--null"},
-            IE = {"2019-07-11--null", "error"})
+    @Alerts({"2019-07-11--null", "2019-07-11--null"})
     public void detached_date() throws Exception {
         changeTypeDetached("2019-07-11", "date");
     }
@@ -538,9 +501,7 @@ public final class HtmlInput3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"2019-07-11T4:16--null",
-                       "--null"},
-            IE = {"2019-07-11T4:16--null", "error"})
+    @Alerts({"2019-07-11T4:16--null", "--null"})
     public void detached_datetimelocal() throws Exception {
         changeTypeDetached("2019-07-11T4:16", "datetime-local");
     }
@@ -558,8 +519,7 @@ public final class HtmlInput3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"1234--null", "1234-1234-1234"},
-            IE = {"1234--null", "1234--null"})
+    @Alerts({"1234--null", "1234-1234-1234"})
     public void detached_hidden() throws Exception {
         changeTypeDetached("1234", "hidden");
     }
@@ -568,8 +528,7 @@ public final class HtmlInput3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"1234--null", "1234-1234-1234"},
-            IE = {"1234--null", "--null"})
+    @Alerts({"1234--null", "1234-1234-1234"})
     public void detached_image() throws Exception {
         changeTypeDetached("1234", "image");
     }
@@ -580,8 +539,7 @@ public final class HtmlInput3Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"12--null", "12--null"},
             CHROME = {"12--null", "--null"},
-            EDGE = {"12--null", "--null"},
-            IE = {"12--null", "error"})
+            EDGE = {"12--null", "--null"})
     public void detached_month() throws Exception {
         changeTypeDetached("12", "month");
     }
@@ -608,8 +566,7 @@ public final class HtmlInput3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"1234--null", "1234-1234-1234"},
-            IE = {"1234--null", "on--null"})
+    @Alerts({"1234--null", "1234-1234-1234"})
     public void detached_radio() throws Exception {
         changeTypeDetached("1234", "radio");
     }
@@ -627,8 +584,7 @@ public final class HtmlInput3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"1234--null", "1234-1234-1234"},
-            IE = {"1234--null", "Reset-Reset-Reset"})
+    @Alerts({"1234--null", "1234-1234-1234"})
     public void detached_reset() throws Exception {
         changeTypeDetached("1234", "reset");
     }
@@ -646,8 +602,7 @@ public final class HtmlInput3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"1234--null", "1234-1234-1234"},
-            IE = {"1234--null", "Submit Query-Submit Query-Submit Query"})
+    @Alerts({"1234--null", "1234-1234-1234"})
     public void detached_submit() throws Exception {
         changeTypeDetached("1234", "submit");
     }
@@ -674,8 +629,7 @@ public final class HtmlInput3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"4:16--null", "--null"},
-            IE = {"4:16--null", "error"})
+    @Alerts({"4:16--null", "--null"})
     public void detached_time() throws Exception {
         changeTypeDetached("4:16", "time");
     }
@@ -696,8 +650,7 @@ public final class HtmlInput3Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"24--null", "24--null"},
             CHROME = {"24--null", "--null"},
-            EDGE = {"24--null", "--null"},
-            IE = {"24--null", "error"})
+            EDGE = {"24--null", "--null"})
     public void detached_week() throws Exception {
         changeTypeDetached("24", "week");
     }
@@ -706,9 +659,7 @@ public final class HtmlInput3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"2020-04-7T1:13--null",
-                       "2020-04-7T1:13--null"},
-            IE = {"2020-04-7T1:13--null", "error"})
+    @Alerts({"2020-04-7T1:13--null", "2020-04-7T1:13--null"})
     public void detached_datetime() throws Exception {
         changeTypeDetached("2020-04-7T1:13", "datetime");
     }
@@ -726,7 +677,7 @@ public final class HtmlInput3Test extends WebDriverTestCase {
                 + "    try {\n"
                 + "      input.type = '" + targetType + "';\n"
                 + "      log(input.value + '-' + input.defaultValue + '-' + input.getAttribute('value'));\n"
-                + "    } catch(e) { log('error'); }\n"
+                + "    } catch(e) { logEx(e); }\n"
                 + "  }\n"
                 + "</script>\n"
                 + "</head><body onload='test()'>\n"

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,6 @@
  */
 package org.htmlunit.javascript.host.dom;
 
-import static org.htmlunit.BrowserVersionFeatures.HTMLCOLLECTION_NULL_IF_NOT_FOUND;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,12 +21,9 @@ import org.htmlunit.WebClient;
 import org.htmlunit.corejs.javascript.Callable;
 import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.ContextAction;
-import org.htmlunit.corejs.javascript.ES6Iterator;
 import org.htmlunit.corejs.javascript.Function;
-import org.htmlunit.corejs.javascript.NativeArrayIterator;
 import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.corejs.javascript.ScriptableObject;
-import org.htmlunit.corejs.javascript.Undefined;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.javascript.HtmlUnitContextFactory;
 import org.htmlunit.javascript.HtmlUnitScriptable;
@@ -64,13 +55,15 @@ public class NodeList extends AbstractList implements Callable {
      * Creates an instance.
      */
     public NodeList() {
+        super();
     }
 
     /**
      * JavaScript constructor.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 
     /**
@@ -98,6 +91,7 @@ public class NodeList extends AbstractList implements Callable {
      * @param parentScope the parent scope
      */
     NodeList(final ScriptableObject parentScope) {
+        super();
         setParentScope(parentScope);
         setPrototype(getPrototype(getClass()));
         setExternalArrayData(this);
@@ -121,42 +115,47 @@ public class NodeList extends AbstractList implements Callable {
 
     /**
      * Returns an Iterator allowing to go through all keys contained in this object.
-     * @return an {@link NativeArrayIterator}
+     * @return a NativeArrayIterator
      */
-    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
-    public ES6Iterator keys() {
-        return new NativeArrayIterator(getParentScope(), this, NativeArrayIterator.ARRAY_ITERATOR_TYPE.KEYS);
+    @JsxFunction
+    public Scriptable keys() {
+        return JavaScriptEngine.newArrayIteratorTypeKeys(getParentScope(), this);
     }
 
     /**
      * Returns an Iterator allowing to go through all keys contained in this object.
-     * @return an {@link NativeArrayIterator}
+     * @return a NativeArrayIterator
      */
-    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
-    @JsxSymbol(value = {CHROME, EDGE, FF, FF_ESR}, symbolName = "iterator")
-    public ES6Iterator values() {
-        return new NativeArrayIterator(getParentScope(), this, NativeArrayIterator.ARRAY_ITERATOR_TYPE.VALUES);
+    @JsxFunction
+    @JsxSymbol(symbolName = "iterator")
+    public Scriptable values() {
+        return JavaScriptEngine.newArrayIteratorTypeValues(getParentScope(), this);
     }
 
     /**
      * Returns an Iterator allowing to go through all key/value pairs contained in this object.
-     * @return an {@link NativeArrayIterator}
+     * @return a NativeArrayIterator
      */
-    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
-    public ES6Iterator entries() {
-        return new NativeArrayIterator(getParentScope(), this, NativeArrayIterator.ARRAY_ITERATOR_TYPE.ENTRIES);
+    @JsxFunction
+    public Scriptable entries() {
+        return JavaScriptEngine.newArrayIteratorTypeEntries(getParentScope(), this);
     }
 
     /**
      * Calls the {@code callback} given in parameter once for each value pair in the list, in insertion order.
      * @param callback function to execute for each element
      */
-    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
+    @JsxFunction
     public void forEach(final Object callback) {
+        if (!(callback instanceof Function)) {
+            throw JavaScriptEngine.typeError(
+                    "Foreach callback '" + JavaScriptEngine.toString(callback) + "' is not a function");
+        }
+
         final List<DomNode> nodes = getElements();
 
         final WebClient client = getWindow().getWebWindow().getWebClient();
-        final HtmlUnitContextFactory cf = ((JavaScriptEngine) client.getJavaScriptEngine()).getContextFactory();
+        final HtmlUnitContextFactory cf = client.getJavaScriptEngine().getContextFactory();
 
         final ContextAction<Object> contextAction = cx -> {
             final Function function = (Function) callback;
@@ -204,10 +203,7 @@ public class NodeList extends AbstractList implements Callable {
         }
         final Object object = getIt(args[0]);
         if (object == NOT_FOUND) {
-            if (getBrowserVersion().hasFeature(HTMLCOLLECTION_NULL_IF_NOT_FOUND)) {
-                return null;
-            }
-            return Undefined.instance;
+            return null;
         }
         return object;
     }

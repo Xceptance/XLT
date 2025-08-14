@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ package org.htmlunit.javascript.regexp.mozilla.js1_2;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -30,22 +30,22 @@ import org.junit.runner.RunWith;
 @RunWith(BrowserRunner.class)
 public class DigitTest extends WebDriverTestCase {
 
-    private static final String non_digits = "_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    private static final String NON_DIGITS = "_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
         + "\\f\\n\\r\\t\\v~`!@#$%^&*()-+={[}]|\\\\:;\\'<,>./? \"";
 
-    private static final String non_digits_expected = "_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    private static final String NON_DIGITS_EXPECTED = "_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
         + "\f\\n\\r\t\u000B~`!@#$%^&*()-+={[}]|\\:;\'<,>./? \"";
 
-    private static final String digits = "1234567890";
+    private static final String DIGITS = "1234567890";
 
     /**
      * Tests digits.match(new RegExp('\\d+')).
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(digits)
+    @Alerts(DIGITS)
     public void test1() throws Exception {
-        final String initialScript = "var digits = '" + digits + "'";
+        final String initialScript = "var digits = '" + DIGITS + "'";
         test(initialScript, "digits.match(new RegExp('\\\\d+'))");
     }
 
@@ -54,9 +54,9 @@ public class DigitTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(non_digits_expected)
+    @Alerts(NON_DIGITS_EXPECTED)
     public void test2() throws Exception {
-        final String initialScript = "var non_digits = '" + non_digits + "'";
+        final String initialScript = "var non_digits = '" + NON_DIGITS + "'";
         test(initialScript, "non_digits.match(new RegExp('\\\\D+'))");
     }
 
@@ -67,7 +67,7 @@ public class DigitTest extends WebDriverTestCase {
     @Test
     @Alerts("null")
     public void test3() throws Exception {
-        final String initialScript = "var non_digits = '" + non_digits + "'";
+        final String initialScript = "var non_digits = '" + NON_DIGITS + "'";
         test(initialScript, "non_digits.match(new RegExp('\\\\d'))");
     }
 
@@ -78,7 +78,7 @@ public class DigitTest extends WebDriverTestCase {
     @Test
     @Alerts("null")
     public void test4() throws Exception {
-        final String initialScript = "var digits = '" + digits + "'";
+        final String initialScript = "var digits = '" + DIGITS + "'";
         test(initialScript, "digits.match(new RegExp('\\\\D'))");
     }
 
@@ -87,9 +87,9 @@ public class DigitTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(digits)
+    @Alerts(DIGITS)
     public void test5() throws Exception {
-        final String initialScript = "var s = '" + non_digits + digits + "'";
+        final String initialScript = "var s = '" + NON_DIGITS + DIGITS + "'";
         test(initialScript, "s.match(new RegExp('\\\\d+'))");
     }
 
@@ -98,9 +98,9 @@ public class DigitTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(non_digits_expected)
+    @Alerts(NON_DIGITS_EXPECTED)
     public void test6() throws Exception {
-        final String initialScript = "var s = '" + digits + non_digits + "'";
+        final String initialScript = "var s = '" + DIGITS + NON_DIGITS + "'";
         test(initialScript, "s.match(new RegExp('\\\\D+'))");
     }
 
@@ -110,9 +110,9 @@ public class DigitTest extends WebDriverTestCase {
      */
     @Test
     public void test7() throws Exception {
-        for (int i = 0; i < digits.length(); i++) {
-            final String initialScript = "var s = 'ab" + digits.charAt(i) + "cd'";
-            setExpectedAlerts(String.valueOf(digits.charAt(i)));
+        for (int i = 0; i < DIGITS.length(); i++) {
+            final String initialScript = "var s = 'ab" + DIGITS.charAt(i) + "cd'";
+            setExpectedAlerts(String.valueOf(DIGITS.charAt(i)));
             test(initialScript, "s.match(new RegExp('\\\\d'))");
             test(initialScript, "s.match(/\\d/)");
         }
@@ -124,8 +124,8 @@ public class DigitTest extends WebDriverTestCase {
      */
     @Test
     public void test8() throws Exception {
-        for (int i = 0; i < non_digits.length() - 1; i++) {
-            final char ch = non_digits.charAt(i);
+        for (int i = 0; i < NON_DIGITS.length() - 1; i++) {
+            final char ch = NON_DIGITS.charAt(i);
             String expected = String.valueOf(ch);
             String input = expected;
             switch (ch) {
@@ -158,10 +158,8 @@ public class DigitTest extends WebDriverTestCase {
                     break;
 
                 case 'v':
-                    if (!getBrowserVersion().isIE()) {
-                        expected = "\u000B";
-                        input = "\\" + ch;
-                    }
+                    expected = "\u000B";
+                    input = "\\" + ch;
                     break;
 
                 default:

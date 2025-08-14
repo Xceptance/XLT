@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -191,6 +191,16 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
     private static final String PROP_REMOVE_INDEXES_FROM_REQUEST_NAMES = PROP_PREFIX + "requests.removeIndexes";
 
+    private static final String PROP_SLOWEST_REQUESTS_PER_BUCKET = PROP_PREFIX + "slowestRequests.requestsPerBucket";
+
+    private static final String PROP_SLOWEST_REQUESTS_TOTAL = PROP_PREFIX + "slowestRequests.totalRequests";
+
+    private static final String PROP_SLOWEST_REQUESTS_MIN_RUNTIME = PROP_PREFIX + "slowestRequests.minRuntime";
+
+    private static final String PROP_SLOWEST_REQUESTS_MAX_RUNTIME = PROP_PREFIX + "slowestRequests.maxRuntime";
+    
+    private static final String PROP_CUSTOM_DATA_AGGREGATE_FILE_CONTENTS = PROP_PREFIX + "customDataLogs.aggregateFileContents";
+
     private final float chartsCompressionFactor;
 
     private final int chartsHeight;
@@ -214,6 +224,16 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     private final double[] runtimePercentiles;
 
     private final List<RequestTableColorization> requestTableColorization;
+
+    private final int slowestRequestsPerBucket;
+
+    private final int slowestRequestsTotal;
+
+    private final int slowestRequestsMinRuntime;
+
+    private final int slowestRequestsMaxRuntime;
+    
+    private final boolean aggregateCustomData;
 
     private final List<String> styleSheetFileNames;
 
@@ -327,7 +347,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     /**
      * Creates a new ReportGeneratorConfiguration object.
      *
-     * @param overridePropertyFileName
+     * @param overridePropertyFile
      *            Property file that overrides the basic one. This parameter might be <code>null</code> or empty
      * @param commandLineProperties
      *            Properties set on command line. This parameter might be <code>null</code>.
@@ -461,6 +481,13 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
         runtimePercentiles = readRuntimePercentiles();
 
         requestTableColorization = readRequestTableColorization(runtimeIntervalBoundaries, runtimePercentiles);
+
+        slowestRequestsPerBucket = getIntProperty(PROP_SLOWEST_REQUESTS_PER_BUCKET, 20);
+        slowestRequestsTotal = getIntProperty(PROP_SLOWEST_REQUESTS_TOTAL, 500);
+        slowestRequestsMinRuntime = getIntProperty(PROP_SLOWEST_REQUESTS_MIN_RUNTIME, 3_000);
+        slowestRequestsMaxRuntime = getIntProperty(PROP_SLOWEST_REQUESTS_MAX_RUNTIME, 600_000);
+        
+        aggregateCustomData = getBooleanProperty(PROP_CUSTOM_DATA_AGGREGATE_FILE_CONTENTS, true);
 
         // load the transformation configuration
         outputFileNames = new ArrayList<>();
@@ -761,6 +788,31 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     public String getRequestTableColorizationDefaultGroupName()
     {
         return PROP_REQUESTS_TABLE_COLORIZE_DEFAULT;
+    }
+
+    public int getSlowestRequestsPerBucket()
+    {
+        return slowestRequestsPerBucket;
+    }
+
+    public int getSlowestRequestsTotal()
+    {
+        return slowestRequestsTotal;
+    }
+
+    public int getSlowestRequestsMinRuntime()
+    {
+        return slowestRequestsMinRuntime;
+    }
+
+    public int getSlowestRequestsMaxRuntime()
+    {
+        return slowestRequestsMaxRuntime;
+    }
+    
+    public boolean aggregateCustomData()
+    {
+        return aggregateCustomData;
     }
 
     public List<String> getStyleSheetFileNames()

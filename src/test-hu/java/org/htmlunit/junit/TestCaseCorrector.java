@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ import org.junit.runners.model.FrameworkMethod;
 
 /**
  * This is meant to automatically correct the test case to put either the real browser expectations,
- * or the {@link org.htmlunit.junit.BrowserRunner.NotYetImplemented} annotation for HtmlUnit.
+ * or the {@link org.htmlunit.junit.annotation.NotYetImplemented} annotation for HtmlUnit.
  *
  * @author Ahmed Ashour
  * @author Ronald Brill
@@ -216,7 +216,7 @@ final class TestCaseCorrector {
                 }
             }
             else {
-                final List<String> allBrowsers = new ArrayList<>(Arrays.asList("CHROME", "EDGE", "FF", "FF_ESR", "IE"));
+                final List<String> allBrowsers = new ArrayList<>(Arrays.asList("CHROME", "EDGE", "FF", "FF_ESR"));
                 for (final Iterator<String> it = allBrowsers.iterator(); it.hasNext();) {
                     if (it.next().equals(browserString)) {
                         it.remove();

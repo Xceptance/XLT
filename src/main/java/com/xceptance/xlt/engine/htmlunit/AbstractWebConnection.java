@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 package com.xceptance.xlt.engine.htmlunit;
-
-import static org.htmlunit.BrowserVersionFeatures.URL_AUTH_CREDENTIALS;
 
 import java.io.IOException;
 import java.net.URI;
@@ -155,7 +153,7 @@ public abstract class AbstractWebConnection<T, O, I> implements WebConnection
         // URLs; because of this we allow some Unicode chars in URLs. However, at this point we're
         // handing things over the HttpClient, and HttpClient will blow up if we leave these Unicode
         // chars in the URL.
-        final URL url = UrlUtils.encodeUrl(webRequest.getUrl(), false, charset);
+        final URL url = UrlUtils.encodeUrl(webRequest.getUrl(), charset);
         URI uri = url.toURI();
 
         // build the request
@@ -247,7 +245,7 @@ public abstract class AbstractWebConnection<T, O, I> implements WebConnection
 
         // if the used url contains credentials, we have to add this
         final Credentials requestUrlCredentials = webRequest.getUrlCredentials();
-        if (null != requestUrlCredentials && webClient.getBrowserVersion().hasFeature(URL_AUTH_CREDENTIALS))
+        if (null != requestUrlCredentials)
         {
             final URL requestUrl = webRequest.getUrl();
             final AuthScope authScope = new AuthScope(requestUrl.getHost(), requestUrl.getPort());

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import org.apache.commons.logging.LogFactory;
  *
  * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
  * @author Daniel Gredler
+ * @author Sven Strickroth
  */
 public class WaitingRefreshHandler implements RefreshHandler {
 
@@ -81,9 +82,7 @@ public class WaitingRefreshHandler implements RefreshHandler {
              * ignore it since this is the thread now doing the navigation. Eventually we should
              * refactor to force all navigation to happen back on the main thread.
              */
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Waiting thread was interrupted. Ignoring interruption to continue navigation.");
-            }
+            LOG.debug("Waiting thread was interrupted. Ignoring interruption to continue navigation.");
 
             // restore interrupted status
             Thread.currentThread().interrupt();

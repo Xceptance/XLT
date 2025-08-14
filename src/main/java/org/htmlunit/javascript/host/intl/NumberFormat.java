@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import org.htmlunit.BrowserVersion;
 import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.corejs.javascript.NativeArray;
-import org.htmlunit.corejs.javascript.ScriptRuntime;
 import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.javascript.HtmlUnitScriptable;
 import org.htmlunit.javascript.JavaScriptEngine;
@@ -49,7 +48,6 @@ public class NumberFormat extends HtmlUnitScriptable {
     private static final ConcurrentHashMap<String, String> EDGE_FORMATS_ = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<String, String> FF_FORMATS_ = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<String, String> FF_ESR_FORMATS_ = new ConcurrentHashMap<>();
-    private static final ConcurrentHashMap<String, String> IE_FORMATS_ = new ConcurrentHashMap<>();
 
     private transient NumberFormatHelper formatter_;
 
@@ -72,20 +70,10 @@ public class NumberFormat extends HtmlUnitScriptable {
         commonFormats.put("pt-PT", "\u00a0,");
         commonFormats.put("sq", "\u00a0,");
 
-        IE_FORMATS_.putAll(commonFormats);
-        IE_FORMATS_.put("ar-DZ", ",.");
-        IE_FORMATS_.put("ar-LY", ",.");
-        IE_FORMATS_.put("ar-MA", ",.");
-        IE_FORMATS_.put("ar-TN", ",.");
-        IE_FORMATS_.put("fr", "\u00a0,");
-        IE_FORMATS_.put("fr-BE", ".");
-        IE_FORMATS_.put("ban", ".,");
-
         commonFormats.put("ar-AE", ",.0");
         commonFormats.put("fr", "\u202f,");
         commonFormats.put("fr-CA", "\u00a0,");
 
-        FF_FORMATS_.putAll(commonFormats);
         FF_ESR_FORMATS_.putAll(commonFormats);
 
         commonFormats.put("ar", ",.0");
@@ -101,32 +89,36 @@ public class NumberFormat extends HtmlUnitScriptable {
         commonFormats.put("ar-SD", "\u066c\u066b\u0660");
         commonFormats.put("ar-SY", "\u066c\u066b\u0660");
         commonFormats.put("ar-YE", "\u066c\u066b\u0660");
+
+        FF_FORMATS_.putAll(commonFormats);
+
         commonFormats.put("be", ",.");
+        commonFormats.put("en-ZA", ",.");
         commonFormats.put("mk", ",.");
         commonFormats.put("is", ",.");
 
         CHROME_FORMATS_.putAll(commonFormats);
-        EDGE_FORMATS_.putAll(commonFormats);
-
         CHROME_FORMATS_.put("sq", ",.");
+
+        EDGE_FORMATS_.putAll(commonFormats);
     }
 
     /**
      * Default constructor.
      */
     public NumberFormat() {
+        super();
     }
 
     private NumberFormat(final String[] locales, final BrowserVersion browserVersion) {
+        super();
+
         final Map<String, String> formats;
         if (browserVersion.isChrome()) {
             formats = CHROME_FORMATS_;
         }
         else if (browserVersion.isEdge()) {
             formats = EDGE_FORMATS_;
-        }
-        else if (browserVersion.isIE()) {
-            formats = IE_FORMATS_;
         }
         else if (browserVersion.isFirefoxESR()) {
             formats = FF_ESR_FORMATS_;
@@ -157,7 +149,7 @@ public class NumberFormat extends HtmlUnitScriptable {
 
     private static String getPattern(final Map<String, String> formats, final String locale) {
         if ("no-NO-NY".equals(locale)) {
-            throw ScriptRuntime.rangeError("Invalid language tag: " + locale);
+            throw JavaScriptEngine.rangeError("Invalid language tag: " + locale);
         }
         String pattern = formats.get(locale);
         if (pattern == null && locale.indexOf('-') != -1) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import org.apache.commons.io.IOUtils;
 import org.htmlunit.MockWebConnection;
 import org.htmlunit.SimpleWebTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.util.NameValuePair;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -49,8 +49,7 @@ public class HtmlImageInput2Test extends SimpleWebTestCase {
     @Test
     @Alerts(DEFAULT = {"button.x#100", "button.y#200", "button#foo"},
             FF = {"button.x#100", "button.y#200"},
-            FF_ESR = {"button.x#100", "button.y#200"},
-            IE = {"button.x#100", "button.y#200"})
+            FF_ESR = {"button.x#100", "button.y#200"})
     public void click_WithPosition() throws Exception {
         final String html
             = "<html><head><title>foo</title></head><body>\n"
@@ -113,8 +112,7 @@ public class HtmlImageInput2Test extends SimpleWebTestCase {
                 getResourceAsStream("testfiles/tiny-jpg.img")) {
             final byte[] directBytes = IOUtils.toByteArray(is);
             final URL urlImage = new URL(URL_FIRST, "img.jpg");
-            final List<NameValuePair> emptyList = Collections.emptyList();
-            getMockWebConnection().setResponse(urlImage, directBytes, 200, "ok", "image/jpg", emptyList);
+            getMockWebConnection().setResponse(urlImage, directBytes, 200, "ok", "image/jpg", Collections.emptyList());
         }
 
         final String html = "<html><head>\n"

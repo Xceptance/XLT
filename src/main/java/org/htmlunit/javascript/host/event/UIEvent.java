@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,8 @@
  */
 package org.htmlunit.javascript.host.event;
 
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.corejs.javascript.ScriptableObject;
@@ -62,6 +59,7 @@ public class UIEvent extends Event {
      * Creates a new UI event instance.
      */
     public UIEvent() {
+        super();
     }
 
     /**
@@ -70,7 +68,7 @@ public class UIEvent extends Event {
      * @param type the event type
      * @param details the event details (optional)
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     @Override
     public void jsConstructor(final String type, final ScriptableObject details) {
         super.jsConstructor(type, details);
@@ -133,12 +131,12 @@ public class UIEvent extends Event {
      * @return the view from which the event was generated
      */
     @JsxGetter
-    public Object getView() {
+    public Window getView() {
         if (view_ == NO_VIEW) {
             return null;
         }
         if (view_ != null) {
-            return view_;
+            return (Window) view_;
         }
         return getWindow();
     }
@@ -152,7 +150,7 @@ public class UIEvent extends Event {
      * @param view the view to use for this event
      * @param detail the detail to set for the event
      */
-    @JsxFunction({CHROME, EDGE, FF, FF_ESR, IE})
+    @JsxFunction
     public void initUIEvent(
             final String type,
             final boolean bubbles,
@@ -168,7 +166,7 @@ public class UIEvent extends Event {
      * @return a number that indicates which button was pressed on the mouse,
      * or the numeric keyCode or the character code (charCode) of the key pressed on the keyboard
      */
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxGetter
     public int getWhich() {
         return 0;
     }

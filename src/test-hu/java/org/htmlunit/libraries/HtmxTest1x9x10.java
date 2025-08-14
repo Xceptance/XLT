@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,9 @@
 package org.htmlunit.libraries;
 
 import org.htmlunit.WebClient;
-import org.htmlunit.javascript.preprocessor.HtmxOneNineTenScriptPreProcessor;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.BuggyWebDriver;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -34,18 +33,9 @@ public class HtmxTest1x9x10 extends HtmxTest {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "passes:679failures:1",
-            FF = "passes:679failures:0",
-            FF_ESR = "passes:679failures:0",
-            IE = "not testable")
-    @HtmlUnitNYI(
-            CHROME = "passes:679failures:0",
-            EDGE = "passes:679failures:0")
+    @Alerts("passes:679failures:0")
+    @BuggyWebDriver(CHROME = "passes:679failures:1", EDGE = "passes:679failures:1")
     public void htmx() throws Exception {
-        // the test page runs in an endless loop in ie
-        if (getBrowserVersion().isIE()) {
-            return;
-        }
         htmx("htmx-1.9.10");
     }
 
@@ -53,7 +43,7 @@ public class HtmxTest1x9x10 extends HtmxTest {
     protected void setupWebClient(final WebClient webClient) {
         super.setupWebClient(webClient);
 
-        webClient.setScriptPreProcessor(new HtmxOneNineTenScriptPreProcessor());
+        // there is a script error in sse.js (line 32)
         webClient.getOptions().setThrowExceptionOnScriptError(false);
     }
 }

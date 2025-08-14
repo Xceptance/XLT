@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,14 +26,14 @@ import org.htmlunit.BrowserVersion;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.WebTestCase;
 import org.htmlunit.annotations.StandardsMode;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.AlertsStandards;
-import org.htmlunit.junit.BrowserRunner.BuggyWebDriver;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
-import org.htmlunit.junit.BrowserRunner.OS;
-import org.htmlunit.junit.BrowserRunner.TestedBrowser;
-import org.htmlunit.junit.BrowserRunner.Tries;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.AlertsStandards;
+import org.htmlunit.junit.annotation.BuggyWebDriver;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.NotYetImplemented;
+import org.htmlunit.junit.annotation.OS;
+import org.htmlunit.junit.annotation.TestedBrowser;
+import org.htmlunit.junit.annotation.Tries;
 import org.junit.Test;
 import org.junit.internal.runners.model.ReflectiveCallable;
 import org.junit.internal.runners.statements.Fail;
@@ -46,7 +46,7 @@ import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
 
 /**
- * The runner for test methods that run with a specific browser ({@link BrowserRunner.TestedBrowser}).
+ * The runner for test methods that run with a specific browser ({@link TestedBrowser}).
  *
  * @author Ahmed Ashour
  * @author Frank Danek
@@ -60,7 +60,7 @@ public class BrowserVersionClassRunner extends BlockJUnit4ClassRunner {
 
     private final BrowserVersion browserVersion_;
     private final boolean realBrowser_;
-    static final boolean maven_ = System.getProperty("htmlunit.maven") != null;
+    static final boolean MAVEN = System.getProperty("htmlunit.maven") != null;
 
     /**
      * Constructs a new instance.
@@ -85,10 +85,7 @@ public class BrowserVersionClassRunner extends BlockJUnit4ClassRunner {
                 expectedAlerts = alerts.value();
             }
             else {
-                if (browserVersion_ == BrowserVersion.INTERNET_EXPLORER) {
-                    expectedAlerts = firstDefined(alerts.IE(), alerts.DEFAULT());
-                }
-                else if (browserVersion_ == BrowserVersion.EDGE) {
+                if (browserVersion_ == BrowserVersion.EDGE) {
                     expectedAlerts = firstDefined(alerts.EDGE(), alerts.DEFAULT());
                 }
                 else if (browserVersion_ == BrowserVersion.FIREFOX_ESR) {
@@ -110,11 +107,7 @@ public class BrowserVersionClassRunner extends BlockJUnit4ClassRunner {
                     expectedAlerts = buggyWebDriver.value();
                 }
                 else {
-                    if (browserVersion_ == BrowserVersion.INTERNET_EXPLORER) {
-                        expectedAlerts = firstDefinedOrGiven(expectedAlerts,
-                                            buggyWebDriver.IE(), buggyWebDriver.DEFAULT());
-                    }
-                    else if (browserVersion_ == BrowserVersion.EDGE) {
+                    if (browserVersion_ == BrowserVersion.EDGE) {
                         expectedAlerts = firstDefinedOrGiven(expectedAlerts,
                                             buggyWebDriver.EDGE(), buggyWebDriver.DEFAULT());
                     }
@@ -136,10 +129,7 @@ public class BrowserVersionClassRunner extends BlockJUnit4ClassRunner {
         else {
             final HtmlUnitNYI htmlUnitNYI = method.getAnnotation(HtmlUnitNYI.class);
             if (htmlUnitNYI != null) {
-                if (browserVersion_ == BrowserVersion.INTERNET_EXPLORER) {
-                    expectedAlerts = firstDefinedOrGiven(expectedAlerts, htmlUnitNYI.IE());
-                }
-                else if (browserVersion_ == BrowserVersion.EDGE) {
+                if (browserVersion_ == BrowserVersion.EDGE) {
                     expectedAlerts = firstDefinedOrGiven(expectedAlerts, htmlUnitNYI.EDGE());
                 }
                 else if (browserVersion_ == BrowserVersion.FIREFOX_ESR) {
@@ -165,10 +155,7 @@ public class BrowserVersionClassRunner extends BlockJUnit4ClassRunner {
                 expectedAlerts = alerts.value();
             }
             else {
-                if (browserVersion_ == BrowserVersion.INTERNET_EXPLORER) {
-                    expectedAlerts = firstDefined(alerts.IE(), alerts.DEFAULT());
-                }
-                else if (browserVersion_ == BrowserVersion.EDGE) {
+                if (browserVersion_ == BrowserVersion.EDGE) {
                     expectedAlerts = firstDefined(alerts.EDGE(), alerts.DEFAULT());
                 }
                 else if (browserVersion_ == BrowserVersion.FIREFOX_ESR) {
@@ -248,7 +235,7 @@ public class BrowserVersionClassRunner extends BlockJUnit4ClassRunner {
         if (realBrowser_) {
             browserString = "Real " + browserString;
         }
-        if (!maven_) {
+        if (!MAVEN) {
             return String.format("%s [%s]", method.getName(), browserString);
         }
         String className = method.getMethod().getDeclaringClass().getName();
@@ -298,12 +285,6 @@ public class BrowserVersionClassRunner extends BlockJUnit4ClassRunner {
     private boolean isDefinedIn(final TestedBrowser[] browsers) {
         for (final TestedBrowser browser : browsers) {
             switch (browser) {
-                case IE:
-                    if (browserVersion_ == BrowserVersion.INTERNET_EXPLORER) {
-                        return true;
-                    }
-                    break;
-
                 case EDGE:
                     if (browserVersion_ == BrowserVersion.EDGE) {
                         return true;

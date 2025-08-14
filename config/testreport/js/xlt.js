@@ -1,31 +1,33 @@
 (function($){
 
     function navigate(target) {
-        // does it contain a #
-        var pos = target.lastIndexOf("#");
+        if (target) {
+            // does it contain a #
+            var pos = target.lastIndexOf("#");
 
-        if (pos >= 0) {
-            // is it the current document?
-            var targetDocument = target.slice(0, pos);
-            var targetHashText = target.slice(pos);
+            if (pos >= 0) {
+                // is it the current document?
+                var targetDocument = target.slice(0, pos);
+                var targetHashText = target.slice(pos);
 
-            var path = window.location.pathname.split( '/' );
-            var currentDocument = path[path.length - 1];
+                var path = window.location.pathname.split( '/' );
+                var currentDocument = path[path.length - 1];
 
-            var hashObj = splitHash(targetHashText);
-            targetHashText = hashObj.navigation;
+                var hashObj = splitHash(targetHashText);
+                targetHashText = hashObj.navigation;
 
-            if(targetHashText != undefined){
-                if (targetDocument == currentDocument || targetDocument == "") {
-                    // before we run it, check that this exists 
-                    if (targetHashText.length > 0) {
-                        // quote any "." in the hash, otherwise JQuery interprets the following chars as class 
-                        targetHashText = targetHashText.replace(/\./g, "\\.");
-                        $.scrollTo(targetHashText, 250, {easing:'swing', offset: {top: -35}}); 
-                        return false;
+                if(targetHashText != undefined){
+                    if (targetDocument == currentDocument || targetDocument == "") {
+                        // before we run it, check that this exists
+                        if (targetHashText.length > 0) {
+                            // quote any "." in the hash, otherwise JQuery interprets the following chars as class
+                            targetHashText = targetHashText.replace(/\./g, "\\.");
+                            $.scrollTo(targetHashText, 250, {easing:'swing', offset: {top: -35}});
+                            return false;
+                        }
                     }
                 }
-            }            
+            }
         }
 
         return true;
@@ -314,7 +316,7 @@
             return idx;
         }
 
-        var displayedRows = table.find('tbody > tr:not([style*="display: none"])');
+        var displayedRows = table.find('> tbody > tr:not([style*="display: none"])');
         var numberOfMatchingEntries = displayedRows.length;
 
         // totals cannot be calculated for diff or trend reports AND we need at least two rows
@@ -346,7 +348,7 @@
 
     function filter (input) {
         var $input       = $(input),
-            table        = $input.parents("table"), // get the target/foreground table
+            table        = $input.parents("table:not(.cluetip-table)"), // get the target/foreground table
             filterPhrase = $input.val();
 
         var filterFunc = function(value) { return doFilter(value, filterPhrase) };
@@ -386,7 +388,7 @@
         filterTable(table);
 
         // show the table footer only if no body rows have been filtered out
-        footerVisible = table.find('tbody tr:hidden').length == 0;
+        footerVisible = table.find('> tbody > tr:hidden').length == 0;
 
         showTableFooter(table, footerVisible);
 
@@ -586,7 +588,7 @@
         // #request-summary .section > div .content > div .data > table #TABLE_1 .table-autosort:0 table-autostripe table-stripeclass:odd > tbody > tr . > td .key > a
         (function setupUrlLists() {
             //mouseover handler on cluetip anchor to show tooltip on hover, does nothing on mouseout
-            $("#request-summary table td.key a.cluetip").hoverIntent({
+            $("table td a.cluetip").hoverIntent({
                 over: function(e) {
                     //clone and append the tooltip with the corresponding data-rel attribute to hovered element
                     var dataRel = $(this).attr('data-rel');
@@ -603,7 +605,7 @@
                 sensitivity: 1
             });
             //seperate mouseout handler on parent element of cluetip anchor to remove "is-active" class, does nothing on mouseover
-            $("#request-summary table td.key a.cluetip").parent().hoverIntent({
+            $("table td a.cluetip").parent().hoverIntent({
                 over: function() {},
                 out: function() {
                     $(this).children('.cluetip-data').removeClass("is-active");

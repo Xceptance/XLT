@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,11 @@
  */
 package org.htmlunit.html;
 
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.CHROME;
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.EDGE;
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.FF;
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.FF_ESR;
-
 import org.htmlunit.SimpleWebTestCase;
 import org.htmlunit.corejs.javascript.ScriptableObject;
 import org.htmlunit.javascript.host.html.HTMLElement;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.junit.annotation.NotYetImplemented;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,7 +34,7 @@ import org.junit.runner.RunWith;
 @RunWith(BrowserRunner.class)
 public class HtmlTableRowTest extends SimpleWebTestCase {
 
-    private static final String htmlContent = "<html><head><title>foo</title></head><body>\n"
+    private static final String HTML = "<html><head><title>foo</title></head><body>\n"
             + "<table id='table'><tr id='row'>\n"
             + "<td id='cell' width='20'><input type='text' id='foo'/></td>\n"
             + "</tr></table>\n"
@@ -59,7 +54,7 @@ public class HtmlTableRowTest extends SimpleWebTestCase {
      */
     @Before
     public void init() throws Exception {
-        page_ = loadPage(htmlContent);
+        page_ = loadPage(HTML);
 
         table_ = page_.getHtmlElementById("table");
         tbody_ = (HtmlTableBody) table_.getFirstChild();
@@ -233,7 +228,7 @@ public class HtmlTableRowTest extends SimpleWebTestCase {
      * Ensure that a script can set the disabled property on a DOM node.
      */
     @Test
-    @NotYetImplemented({CHROME, EDGE, FF, FF_ESR})
+    @NotYetImplemented
     public void cloneScriptCanSetDisabledOnCell() {
         final String cmd = "document.getElementById('cell').disabled = 'true'";
         page_.executeJavaScript(cmd);
@@ -270,7 +265,7 @@ public class HtmlTableRowTest extends SimpleWebTestCase {
      * that same attribute on the clone.
      */
     @Test
-    @NotYetImplemented({CHROME, EDGE, FF, FF_ESR})
+    @NotYetImplemented
     public void cloneScriptSetDisabledIndependentOfOriginal() {
         final String cmd = "document.getElementById('cell').disabled = 'true'";
         page_.executeJavaScript(cmd);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,10 @@
  */
 package org.htmlunit.javascript;
 
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.CHROME;
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.EDGE;
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
-
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -44,9 +40,9 @@ public class NativeArrayTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"1<>5", "5<>2", "1<>2", "5<>1", "2<>1", "1<>1", "5<>9"},
             CHROME = {"5<>1", "2<>5", "2<>5", "2<>1", "1<>2", "1<>1", "9<>2", "9<>5"},
-            EDGE = {"5<>1", "2<>5", "2<>5", "2<>1", "1<>2", "1<>1", "9<>2", "9<>5"},
-            IE = {"5<>1", "2<>5", "2<>1", "2<>5", "1<>5", "1<>2", "1<>1", "9<>5"})
-    @NotYetImplemented({CHROME, EDGE, IE})
+            EDGE = {"5<>1", "2<>5", "2<>5", "2<>1", "1<>2", "1<>1", "9<>2", "9<>5"})
+    @HtmlUnitNYI(FF = {"5<>1", "2<>5", "2<>5", "2<>1", "1<>2", "1<>1", "9<>2", "9<>5"},
+            FF_ESR = {"5<>1", "2<>5", "2<>5", "2<>1", "1<>2", "1<>1", "9<>2", "9<>5"})
     public void sortSteps() throws Exception {
         final String html
             = "<html><head><script>\n"
@@ -58,6 +54,132 @@ public class NativeArrayTest extends WebDriverTestCase {
             + "function doTest() {\n"
             + "  var t = [1, 5, 2, 1, 9];\n"
             + "  t.sort(compare);\n"
+            + "}\n"
+            + "</script></head><body onload='doTest()'>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * Test for sort callback returning bool instead of int.
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("1,1,2,5,9")
+    public void sortIntComperator() throws Exception {
+        final String html
+            = "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "function compare(x, y) {\n"
+            + "  return x - y;\n"
+            + "}\n"
+            + "function doTest() {\n"
+            + "  var t = [1, 5, 2, 1, 9];\n"
+            + "  t.sort(compare);\n"
+            + "  log(t);\n"
+            + "}\n"
+            + "</script></head><body onload='doTest()'>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * Test for sort callback returning bool instead of int.
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("1,1,2,5,9")
+    public void sortSmallDoublesComperator() throws Exception {
+        final String html
+            = "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "function compare(x, y) {\n"
+            + "  return (x - y) / 1001;\n"
+            + "}\n"
+            + "function doTest() {\n"
+            + "  var t = [1, 5, 2, 1, 9];\n"
+            + "  t.sort(compare);\n"
+            + "  log(t);\n"
+            + "}\n"
+            + "</script></head><body onload='doTest()'>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * Test for sort callback returning bool instead of int.
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = "1,5,2,1,9",
+            FF = "1,1,2,5,9",
+            FF_ESR = "1,1,2,5,9")
+    public void sortBoolComperator() throws Exception {
+        final String html
+            = "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "function compare(x, y) {\n"
+            + "  return x >= y;\n"
+            + "}\n"
+            + "function doTest() {\n"
+            + "  var t = ['1', '5', '2', '1', '9'];\n"
+            + "  t.sort(compare);\n"
+            + "  log(t);\n"
+            + "}\n"
+            + "</script></head><body onload='doTest()'>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * Test for sort callback..
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("1,1,2,5,9")
+    public void sortBool2IntComperator() throws Exception {
+        final String html
+            = "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "function compare(x, y) {\n"
+            + "  return (x >= y) === true ? 1 : -1;\n"
+            + "}\n"
+            + "function doTest() {\n"
+            + "  var t = ['1', '5', '2', '1', '9'];\n"
+            + "  t.sort(compare);\n"
+            + "  log(t);\n"
+            + "}\n"
+            + "</script></head><body onload='doTest()'>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * Test for sort callback..
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = "1,5,2,1,9",
+            FF = "9,1,2,5,1",
+            FF_ESR = "9,1,2,5,1")
+    @HtmlUnitNYI(FF = "1,5,2,1,9",
+            FF_ESR = "1,5,2,1,9")
+    public void sortInvalidComperator() throws Exception {
+        final String html
+            = "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "function compare(x, y) {\n"
+            + "  return 1;\n"
+            + "}\n"
+            + "function doTest() {\n"
+            + "  var t = ['1', '5', '2', '1', '9'];\n"
+            + "  t.sort(compare);\n"
+            + "  log(t);\n"
             + "}\n"
             + "</script></head><body onload='doTest()'>\n"
             + "</body></html>";
@@ -133,8 +255,7 @@ public class NativeArrayTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "function Array() { [native code] }",
-            IE = "function Array() { [native code] } ")
+    @Alerts("function Array() { [native code] }")
     public void constructorToString() throws Exception {
         final String html
             = "<html><head><script>\n"
@@ -200,8 +321,7 @@ public class NativeArrayTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"3", "a", "b", "c"},
-            IE = "not supported")
+    @Alerts({"3", "a", "b", "c"})
     public void fromString() throws Exception {
         final String html
             = "<html>\n"
@@ -229,8 +349,7 @@ public class NativeArrayTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"3", "a", "b", "c"},
-            IE = "not supported")
+    @Alerts({"3", "a", "b", "c"})
     public void fromArray() throws Exception {
         final String html
             = "<html>\n"
@@ -258,8 +377,7 @@ public class NativeArrayTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"3", "a", "b", "c"},
-            IE = "not supported")
+    @Alerts({"3", "a", "b", "c"})
     public void fromArrayIterator() throws Exception {
         final String html
             = "<html>\n"
@@ -288,8 +406,7 @@ public class NativeArrayTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"4", "T", "e", "s", "t"},
-            IE = "not supported")
+    @Alerts({"4", "T", "e", "s", "t"})
     public void fromStringIterator() throws Exception {
         final String html
             = "<html>\n"
@@ -317,8 +434,7 @@ public class NativeArrayTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"2", "abc", "[object Window]"},
-            IE = "not supported")
+    @Alerts({"2", "abc", "[object Window]"})
     public void fromSet() throws Exception {
         final String html
             = "<html>\n"
@@ -347,8 +463,7 @@ public class NativeArrayTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"3", "1,2", "3,4", "5,6"},
-            IE = "not supported")
+    @Alerts({"3", "1,2", "3,4", "5,6"})
     public void fromMap() throws Exception {
         final String html
             = "<html>\n"
@@ -377,8 +492,7 @@ public class NativeArrayTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"1", "by"},
-            IE = "not supported")
+    @Alerts({"1", "by"})
     public void fromUserDefinedIterable() throws Exception {
         final String html
             = "<html>\n"
@@ -420,8 +534,7 @@ public class NativeArrayTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "TypeError",
-            IE = "not supported")
+    @Alerts("TypeError")
     public void fromObject() throws Exception {
         final String html
             = "<html>\n"
@@ -452,8 +565,7 @@ public class NativeArrayTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "0",
-            IE = "not supported")
+    @Alerts("0")
     public void fromNativeObject() throws Exception {
         final String html
             = "<html>\n"
@@ -481,8 +593,7 @@ public class NativeArrayTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"1", "abc"},
-            IE = "not supported")
+    @Alerts({"1", "abc"})
     public void fromArguments() throws Exception {
         final String html
             = "<html>\n"
@@ -545,9 +656,7 @@ public class NativeArrayTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"function", "20"},
-            IE = "undefined")
-    @NotYetImplemented(IE)
+    @Alerts({"function", "20"})
     public void find() throws Exception {
         final String html
             = "<html>\n"
@@ -573,9 +682,7 @@ public class NativeArrayTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"function", "20"},
-            IE = "undefined")
-    @NotYetImplemented(IE)
+    @Alerts({"function", "20"})
     public void findPrototype() throws Exception {
         final String html
             = "<html>\n"
@@ -628,9 +735,7 @@ public class NativeArrayTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"function", "1"},
-            IE = "undefined")
-    @NotYetImplemented(IE)
+    @Alerts({"function", "1"})
     public void findIndex() throws Exception {
         final String html
             = "<html>\n"
@@ -656,9 +761,7 @@ public class NativeArrayTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"function", "1"},
-            IE = "undefined")
-    @NotYetImplemented(IE)
+    @Alerts({"function", "1"})
     public void findIndexPrototype() throws Exception {
         final String html
             = "<html>\n"
@@ -2079,8 +2182,7 @@ public class NativeArrayTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "3",
-            IE = "not supported")
+    @Alerts("3")
     public void of() throws Exception {
         final String html
             = "<html>\n"
@@ -2088,7 +2190,7 @@ public class NativeArrayTest extends WebDriverTestCase {
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "  if (Array.of) {\n"
-            + "    var arr = Array.of(1, 2, 3);;\n"
+            + "    var arr = Array.of(1, 2, 3);\n"
             + "    log(arr.length);\n"
             + "  } else {\n"
             + "    log('not supported');\n"

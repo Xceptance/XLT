@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@ package org.htmlunit.javascript.host.intl;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -34,9 +34,7 @@ public class NumberFormatTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"zh-CN", "latn", "standard", "auto", "decimal", "1", "0", "3", "auto"},
-            FF_ESR = {"zh-CN", "latn", "standard", "auto", "decimal", "1", "0", "3", "true"},
-            IE = {"zh-Hans-CN", "latn", "undefined", "undefined", "decimal", "1", "0", "3", "true"})
+    @Alerts({"zh-CN", "latn", "standard", "auto", "decimal", "1", "0", "3", "auto"})
     @HtmlUnitNYI(CHROME = {"undefined", "undefined", "undefined", "undefined", "undefined", "undefined", "undefined",
                            "undefined", "undefined"},
             EDGE = {"undefined", "undefined", "undefined", "undefined", "undefined", "undefined", "undefined",
@@ -44,9 +42,7 @@ public class NumberFormatTest extends WebDriverTestCase {
             FF = {"undefined", "undefined", "undefined", "undefined", "undefined", "undefined", "undefined",
                   "undefined", "undefined"},
             FF_ESR = {"undefined", "undefined", "undefined", "undefined", "undefined", "undefined", "undefined",
-                      "undefined", "undefined"},
-            IE = {"undefined", "undefined", "undefined", "undefined", "undefined", "undefined", "undefined",
-                  "undefined", "undefined"})
+                      "undefined", "undefined"})
     public void resolvedOptionsValues() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
                 + "<html><head>\n"

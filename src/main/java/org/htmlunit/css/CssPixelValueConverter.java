@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,8 +57,8 @@ public final class CssPixelValueConverter {
     }
 
     /**
-     * Returns the specified length CSS attribute value value as a pixel length value, as long as
-     * we're not emulating IE. If the specified CSS attribute value is a percentage, this method
+     * Returns the specified length CSS attribute value value as a pixel length value.
+     * If the specified CSS attribute value is a percentage, this method
      * uses the specified value object to recursively retrieve the base (parent) CSS attribute value.
      * @param element the element for which the CSS attribute value is to be retrieved
      * @param value the CSS attribute value which is to be retrieved

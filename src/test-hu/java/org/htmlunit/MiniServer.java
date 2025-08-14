@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,10 @@
 package org.htmlunit;
 
 import java.io.BufferedReader;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.BindException;
 import java.net.MalformedURLException;
@@ -25,6 +27,7 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.net.URL;
 import java.nio.CharBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -40,8 +43,9 @@ import org.htmlunit.util.NameValuePair;
  * @author Marc Guillemot
  * @author Frank Danek
  * @author Ronald Brill
+ * @author Sven Strickroth
  */
-public class MiniServer extends Thread {
+public class MiniServer extends Thread implements Closeable {
     private static final Log LOG = LogFactory.getLog(MiniServer.class);
 
     private final int port_;
@@ -49,6 +53,7 @@ public class MiniServer extends Thread {
     private final AtomicBoolean started_ = new AtomicBoolean(false);
     private final MockWebConnection mockWebConnection_;
     private volatile ServerSocket serverSocket_;
+    private String lastRequest_;
 
     private static final Set<URL> DROP_REQUESTS = new HashSet<>();
     private static final Set<URL> DROP_GET_REQUESTS = new HashSet<>();
@@ -88,8 +93,8 @@ public class MiniServer extends Thread {
                     try {
                         Thread.sleep(200);
                     }
-                    catch (final InterruptedException ie) {
-                        LOG.error(ie.getMessage(), ie);
+                    catch (final InterruptedException ex) {
+                        LOG.error(ex.getMessage(), ex);
                     }
                 }
             }
@@ -129,6 +134,23 @@ public class MiniServer extends Thread {
                         if (responseData == null) {
                             LOG.info("Closing impolitely in & output streams");
                             s.getOutputStream().close();
+                        }
+                        else if (responseData.getByteContent() != null) {
+                            try (OutputStream os = s.getOutputStream()) {
+                                os.write(("HTTP/1.0 " + responseData.getStatusCode() + " "
+                                        + responseData.getStatusMessage())
+                                        .getBytes(StandardCharsets.US_ASCII));
+                                os.write("\n".getBytes(StandardCharsets.US_ASCII));
+                                for (final NameValuePair header : responseData.getHeaders()) {
+                                    os.write((header.getName() + ": "
+                                                + header.getValue()).getBytes(StandardCharsets.US_ASCII));
+                                    os.write("\n".getBytes(StandardCharsets.US_ASCII));
+                                }
+                                os.write("\n".getBytes(StandardCharsets.US_ASCII));
+                                os.write(responseData.getByteContent(), 0, responseData.getByteContent().length);
+                                // bytes and no content length - don't attach anything
+                                os.flush();
+                            }
                         }
                         else {
                             try (PrintWriter pw = new PrintWriter(s.getOutputStream())) {
@@ -175,13 +197,12 @@ public class MiniServer extends Thread {
 
         final String requestedPath = request.substring(firstSpace + 1, secondSpace);
         if ("/favicon.ico".equals(requestedPath)) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Skipping /favicon.ico");
-            }
+            LOG.debug("Skipping /favicon.ico");
             return null;
         }
         try {
             final URL url = new URL("http://localhost:" + port_ + requestedPath);
+            lastRequest_ = request;
             return new WebRequest(url, submitMethod);
         }
         catch (final MalformedURLException e) {
@@ -190,18 +211,28 @@ public class MiniServer extends Thread {
         }
     }
 
+    public String getLastRequest() {
+        return lastRequest_;
+    }
+
     /**
      * ShutDown this server.
      * @throws InterruptedException in case of error
      * @throws IOException in case of error
      */
-    public void shutDown() throws InterruptedException, IOException {
+    @Override
+    public void close() throws IOException {
         shutdown_ = true;
         if (serverSocket_ != null) {
             serverSocket_.close();
         }
         interrupt();
-        join(5000);
+        try {
+            join(5000);
+        }
+        catch (final InterruptedException e) {
+            throw new IOException("MoniServer join() failed", e);
+        }
     }
 
     @Override

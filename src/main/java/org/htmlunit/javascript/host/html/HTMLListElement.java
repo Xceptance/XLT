@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,8 +13,6 @@
  * limitations under the License.
  */
 package org.htmlunit.javascript.host.html;
-
-import static org.htmlunit.BrowserVersionFeatures.JS_TYPE_ACCEPTS_ARBITRARY_VALUES;
 
 import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
@@ -59,18 +57,7 @@ public class HTMLListElement extends HTMLElement {
      * @return the value of the {@code type} property
      */
     protected String getType() {
-        final boolean acceptArbitraryValues = getBrowserVersion().hasFeature(JS_TYPE_ACCEPTS_ARBITRARY_VALUES);
-
-        final String type = getDomNodeOrDie().getAttributeDirect("type");
-        if (acceptArbitraryValues
-            || "1".equals(type)
-            || "a".equals(type)
-            || "A".equals(type)
-            || "i".equals(type)
-            || "I".equals(type)) {
-            return type;
-        }
-        return "";
+        return getDomNodeOrDie().getAttributeDirect("type");
     }
 
     /**
@@ -78,17 +65,6 @@ public class HTMLListElement extends HTMLElement {
      * @param type the value of the {@code type} property
      */
     protected void setType(final String type) {
-        final boolean acceptArbitraryValues = getBrowserVersion().hasFeature(JS_TYPE_ACCEPTS_ARBITRARY_VALUES);
-        if (acceptArbitraryValues
-                || "1".equals(type)
-                || "a".equals(type)
-                || "A".equals(type)
-                || "i".equals(type)
-                || "I".equals(type)) {
-            getDomNodeOrDie().setAttribute("type", type);
-            return;
-        }
-
-        throw JavaScriptEngine.reportRuntimeError("Cannot set the type property to invalid value: '" + type + "'");
+        getDomNodeOrDie().setAttribute("type", type);
     }
 }

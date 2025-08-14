@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,9 +24,9 @@ import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.google.api.services.compute.model.Instance;
-import com.google.api.services.compute.model.InstanceGroup;
-import com.google.api.services.compute.model.Region;
+import com.google.cloud.compute.v1.Instance;
+import com.google.cloud.compute.v1.InstanceGroup;
+import com.google.cloud.compute.v1.Region;
 import com.xceptance.common.util.ConsoleUiUtils;
 
 /**

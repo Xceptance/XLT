@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,6 @@
  */
 package org.htmlunit.javascript.host.html;
 
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
-
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.HtmlButton;
 import org.htmlunit.javascript.configuration.JsxClass;
@@ -28,7 +22,6 @@ import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.configuration.JsxSetter;
 import org.htmlunit.javascript.host.dom.NodeList;
-import org.htmlunit.javascript.host.dom.TextRange;
 
 /**
  * The JavaScript object that represents a {@link HtmlButton} (&lt;button type=...&gt;).
@@ -46,16 +39,10 @@ public class HTMLButtonElement extends HTMLElement {
     private NodeList labels_;
 
     /**
-     * Creates an instance.
-     */
-    public HTMLButtonElement() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @Override
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
         super.jsConstructor();
     }
@@ -84,21 +71,12 @@ public class HTMLButtonElement extends HTMLElement {
      * Returns the labels associated with the element.
      * @return the labels associated with the element
      */
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxGetter
     public NodeList getLabels() {
         if (labels_ == null) {
             labels_ = new LabelsNodeList(getDomNodeOrDie());
         }
         return labels_;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    @JsxFunction(IE)
-    public TextRange createTextRange() {
-        return super.createTextRange();
     }
 
     /**
@@ -123,7 +101,7 @@ public class HTMLButtonElement extends HTMLElement {
      * {@inheritDoc} Overridden to modify browser configurations.
      */
     @Override
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxGetter
     public boolean isDisabled() {
         return super.isDisabled();
     }
@@ -132,7 +110,7 @@ public class HTMLButtonElement extends HTMLElement {
      * {@inheritDoc} Overridden to modify browser configurations.
      */
     @Override
-    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxSetter
     public void setDisabled(final boolean disabled) {
         super.setDisabled(disabled);
     }
