@@ -1009,18 +1009,19 @@ public class MasterController
         }
 
         final Map<String, String> propertyMappings = new HashMap<>();
-        for (String testCaseName : testCaseClassMappings.keySet())
+        for (final String testCaseName : testCaseClassMappings.keySet())
         {
-            String propertyName = TestLoadProfileConfiguration.PROP_PREFIX_LOAD_TESTS + testCaseName +
-                                  TestLoadProfileConfiguration.PROP_SUFFIX_CLASS;
+            final String propertyName = TestLoadProfileConfiguration.PROP_PREFIX_LOAD_TESTS + testCaseName +
+                                        TestLoadProfileConfiguration.PROP_SUFFIX_CLASS;
             propertyMappings.put(propertyName, testCaseClassMappings.get(testCaseName));
         }
 
-        // Set mappings in project.properties
+        // Append mappings at the end of the project.properties
         final File projectPropertiesFile = new File(new File(workDir, XltConstants.CONFIG_DIR_NAME),
                                                     XltConstants.PROJECT_PROPERTY_FILENAME);
         final PropertyFileHandler propertyFileHandler = new PropertyFileHandler(projectPropertiesFile);
-        propertyFileHandler.setProperties(propertyMappings);
+        propertyFileHandler.appendProperties(propertyMappings,
+                                             "Inserted by XLT: Automatically derived Java class names for tests that have no explicit name/class mapping.");
 
         return workDir;
     }

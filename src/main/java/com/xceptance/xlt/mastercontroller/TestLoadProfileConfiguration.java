@@ -418,7 +418,7 @@ public class TestLoadProfileConfiguration extends AbstractConfiguration
             // check mandatory parameters
             if (className != null && className.isBlank())
             {
-                throw new XltException("Test class specified for test case '" + testCaseName + "', but the value is empty.");
+                throw new XltException("Test class specified for test case '" + testCaseName + "', but the value is blank.");
             }
 
             if (measurementPeriod == 0)

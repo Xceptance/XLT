@@ -14,7 +14,6 @@ import org.reflections.util.QueryBuilder;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -35,9 +34,9 @@ public class TestCaseMapper
      */
     private static final String[] CLASS_DIRECTORIES =
         {
-            "/patches/classes", "/classes", "/target/classes", "/target/test-classes", "/build/classes/java/main",
-            "/build/classes/kotlin/main", "/build/resources/main", "/build/classes/java/test", "/build/classes/kotlin/test",
-            "/build/resources/test", "/bin"
+            "patches/classes", "classes", "target/classes", "target/test-classes", "build/classes/java/main",
+            "build/classes/kotlin/main", "build/resources/main", "build/classes/java/test", "build/classes/kotlin/test",
+            "build/resources/test", "bin"
         };
 
     /**
@@ -46,7 +45,7 @@ public class TestCaseMapper
      */
     private static final String[] JAR_DIRECTORIES =
         {
-            "/patches/lib", "/lib", "/target/dependency", "/build/dependency"
+            "patches/lib", "lib", "target/dependency", "build/dependency"
         };
 
     private final Set<String> unmappedTestCaseNames;
@@ -142,7 +141,7 @@ public class TestCaseMapper
         {
             final File dir = new File(workDir, directoryPath);
 
-            if (dir.exists())
+            if (dir.isDirectory())
             {
                 filesToScan.add(dir);
             }
@@ -152,7 +151,7 @@ public class TestCaseMapper
         {
             final File dir = new File(workDir, directoryPath);
 
-            if (dir.exists())
+            if (dir.isDirectory())
             {
                 // add all ".jar" or ".JAR" files located directly in the directory
                 for (final File file : dir.listFiles())
@@ -251,9 +250,7 @@ public class TestCaseMapper
         {
             // classes are stored with a mapping to their parent classes using the Reflections library
             // since we want all classes regardless of parent we set the parent to "Object.class"
-            final List<Map.Entry<String, String>> entries = new ArrayList<>();
-            entries.add(entry(Object.class.getName(), classFile.getName()));
-            return entries;
+            return List.of(entry(Object.class.getName(), classFile.getName()));
         }
 
         @Override
