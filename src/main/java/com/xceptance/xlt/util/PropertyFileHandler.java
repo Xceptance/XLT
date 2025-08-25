@@ -101,6 +101,7 @@ public class PropertyFileHandler
      * <p>
      * Example of the resulting structure:
      * </p>
+     * 
      * <pre>{@code
      * ...
      * test.existingProp1 = value1

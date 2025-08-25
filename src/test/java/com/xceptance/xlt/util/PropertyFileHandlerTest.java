@@ -83,7 +83,6 @@ public class PropertyFileHandlerTest
         Assert.assertTrue(lines.contains("foo.test2 = value2"));
         Assert.assertTrue(lines.contains("foo.test1 = value1-2"));
 
-
         // overwrite duplicate properties
         propertyFileHandler.setProperty("foo.test1", "updatedValue1");
         lines = Files.readAllLines(propertyFile.toPath());

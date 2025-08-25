@@ -34,9 +34,17 @@ public class TestCaseMapper
      */
     private static final String[] CLASS_DIRECTORIES =
         {
-            "patches/classes", "classes", "target/classes", "target/test-classes", "build/classes/java/main",
-            "build/classes/kotlin/main", "build/resources/main", "build/classes/java/test", "build/classes/kotlin/test",
-            "build/resources/test", "bin"
+            "patches/classes", //
+            "classes", //
+            "target/classes", //
+            "target/test-classes", //
+            "build/classes/java/main", //
+            "build/classes/kotlin/main", //
+            "build/resources/main", //
+            "build/classes/java/test", //
+            "build/classes/kotlin/test", //
+            "build/resources/test", //
+            "bin" //
         };
 
     /**
@@ -45,7 +53,10 @@ public class TestCaseMapper
      */
     private static final String[] JAR_DIRECTORIES =
         {
-            "patches/lib", "lib", "target/dependency", "build/dependency"
+            "patches/lib", //
+            "lib", //
+            "target/dependency", //
+            "build/dependency" //
         };
 
     private final Set<String> unmappedTestCaseNames;
