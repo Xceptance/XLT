@@ -44,6 +44,7 @@ import com.xceptance.xlt.report.mergerules.RequestProcessingRule.TransactionName
 import com.xceptance.xlt.report.mergerules.RequestProcessingRule.TransactionNamePattern;
 import com.xceptance.xlt.report.mergerules.RequestProcessingRule.UrlExcludePattern;
 import com.xceptance.xlt.report.mergerules.RequestProcessingRule.UrlPattern;
+import com.xceptance.xlt.report.mergerules.RequestProcessingRule.UrlPrecheckText;
 
 /**
  * Tests the request renaming magic implemented by {@link RequestProcessingRule}
@@ -1096,6 +1097,83 @@ public class RequestProcessingTest
         assertEquals("request", data2.getName());
     }
 
+    /**
+     * Test an url pattern including a precheck speedup
+     */
+    @Test
+    public void testURLPattern_Normal_Prechecked() throws Exception
+    {
+        final var rule = new RequestProcessingRule(0, 
+                                                   new NewName("{u:1}"),
+                                                   new RequestNamePattern("request"),
+                                                   new UrlPattern("https://foobar.com/([^/]+)/"),
+                                                   new ContentTypePattern(""), 
+                                                   new StatusCodePattern(""), 
+                                                   new AgentNamePattern(""),   
+                                                   new TransactionNamePattern(""), 
+                                                   new HttpMethodPattern(""),  
+                                                   new RunTimeRanges(""),
+                                                   new StopOnMatch(true), 
+                                                   new RequestNameExcludePattern(""), 
+                                                   new UrlExcludePattern(""), 
+                                                   new ContentTypeExcludePattern(""), 
+                                                   new StatusCodeExcludePattern(""), 
+                                                   new AgentNameExcludePattern(""), 
+                                                   new TransactionNameExcludePattern(""), 
+                                                   new HttpMethodExcludePattern(""), 
+                                                   new ContinueOnMatchAtId(0), 
+                                                   new ContinueOnNoMatchAtId(0),         
+                                                   new DropOnMatch(false),
+                                                   new UrlPrecheckText("foobar")); 
+        // precheck match, url match
+        final RequestData data = new RequestData("request");
+        data.setUrl("https://foobar.com/tiger/");
+        assertEquals(RequestProcessingRule.STOP, rule.process(data));
+        assertEquals("tiger", data.getName());
+
+        // precheck match, url not match
+        final RequestData data2 = new RequestData("request");
+        data2.setUrl("https://foobar.online/tiger/");
+        assertEquals(0, rule.process(data2));
+        assertEquals("request", data2.getName());
+
+        final var rule2 = new RequestProcessingRule(0, 
+                                                   new NewName("{u:1}"),
+                                                   new RequestNamePattern("request"),
+                                                   new UrlPattern("https://foobar.com/([^/]+)/"),
+                                                   new ContentTypePattern(""), 
+                                                   new StatusCodePattern(""), 
+                                                   new AgentNamePattern(""),   
+                                                   new TransactionNamePattern(""), 
+                                                   new HttpMethodPattern(""),  
+                                                   new RunTimeRanges(""),
+                                                   new StopOnMatch(true), 
+                                                   new RequestNameExcludePattern(""), 
+                                                   new UrlExcludePattern(""), 
+                                                   new ContentTypeExcludePattern(""), 
+                                                   new StatusCodeExcludePattern(""), 
+                                                   new AgentNameExcludePattern(""), 
+                                                   new TransactionNameExcludePattern(""), 
+                                                   new HttpMethodExcludePattern(""), 
+                                                   new ContinueOnMatchAtId(0), 
+                                                   new ContinueOnNoMatchAtId(0),         
+                                                   new DropOnMatch(false),
+                                                   new UrlPrecheckText("xmas")); 
+        
+        // precheck not match, url would match
+        final RequestData data3 = new RequestData("request");
+        data3.setUrl("https://foobar.com/tiger/");
+        assertEquals(0, rule2.process(data3));
+        assertEquals("request", data3.getName());
+        
+        // precheck not match, url not match
+        final RequestData data4 = new RequestData("request");
+        data4.setUrl("https://myhost.com/tiger/");
+        assertEquals(0, rule2.process(data4));
+        assertEquals("request", data4.getName());
+    }
+
+    
     /**
      * # httpMethodPattern [m] ........... reg-ex defining a matching HTTP method
      */

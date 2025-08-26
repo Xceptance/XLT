@@ -15,22 +15,28 @@
  */
 package com.xceptance.xlt.report.mergerules;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.xceptance.xlt.api.engine.RequestData;
+import com.xceptance.xlt.api.util.XltCharBuffer;
+import com.xceptance.xlt.report.mergerules.RequestProcessingRule.UrlPrecheckText;
 
 /**
  * Filters requests based on their URLs.
  */
 public class UrlRequestFilter extends AbstractPatternRequestFilter
 {
+    private final XltCharBuffer urlPrecheckText;
+    
     /**
      * Constructor.
      *
      * @param regex
      *            the regular expression to identify matching requests
      */
-    public UrlRequestFilter(final String regex)
+    public UrlRequestFilter(final String regex, final UrlPrecheckText urlPrecheckText)
     {
-        this(regex, false);
+        this(regex, false, urlPrecheckText);
     }
 
     /**
@@ -41,11 +47,39 @@ public class UrlRequestFilter extends AbstractPatternRequestFilter
      * @param exclude
      *            whether or not this is an exclusion rule
      */
-    public UrlRequestFilter(final String regex, final boolean exclude)
+    public UrlRequestFilter(final String regex, final boolean exclude, final UrlPrecheckText urlPrecheckText)
     {
-        // with the change to get split caches per thread, we can affort
+        // with the change to get split caches per thread, we can afford to do
         // a lookup here and also profit from "does not apply" look ups.
         super("u", regex, exclude, 5000);
+        this.urlPrecheckText = StringUtils.isNotBlank(urlPrecheckText.value()) ? XltCharBuffer.valueOf(urlPrecheckText.value()) : null;
+    }
+
+    @Override
+    public Object appliesTo(final RequestData requestData)
+    {
+        // should we run a cheapish initial check first?
+        if (this.urlPrecheckText != null && !this.isExclude)
+        {
+            // do a simple lookup
+            final int pos = requestData.getUrl().indexOf(urlPrecheckText);
+            
+            // if we have a match
+            if (pos >= 0)
+            {
+                // do the real check to be sure
+                return super.appliesTo(requestData);
+            }
+            else
+            {
+                // precheck failed and we are not excluding, so this is a non-match
+                return null;
+            }
+        }           
+        else
+        {
+            return super.appliesTo(requestData);
+        }
     }
 
     /**
