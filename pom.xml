@@ -586,6 +586,17 @@
             <groupId>io.opentelemetry</groupId>
             <artifactId>opentelemetry-sdk-extension-autoconfigure</artifactId>
         </dependency>
+        <!-- javassist is used by Checkstyle, Powermock, and Reflections. Use latest version for Java 21 support. -->
+        <dependency>
+            <groupId>org.javassist</groupId>
+            <artifactId>javassist</artifactId>
+            <version>3.30.2-GA</version>
+        </dependency>
+        <dependency>
+            <groupId>org.reflections</groupId>
+            <artifactId>reflections</artifactId>
+            <version>0.10.2</version>
+        </dependency>
 
         <!-- ================= -->
         <!-- Test dependencies -->
@@ -853,13 +864,6 @@
             <groupId>net.sf.trove4j</groupId>
             <artifactId>trove4j</artifactId>
             <version>3.0.3</version>
-            <scope>test</scope>
-        </dependency>
-        <!-- javassist is used by Checkstyle and Powermock. Use latest version for Java 21 support. -->
-        <dependency>
-            <groupId>org.javassist</groupId>
-            <artifactId>javassist</artifactId>
-            <version>3.30.2-GA</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

@@ -38,9 +38,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.apache.commons.configuration2.PropertiesConfiguration;
-import org.apache.commons.configuration2.PropertiesConfiguration.JupIOFactory;
-import org.apache.commons.configuration2.io.FileHandler;
+import com.xceptance.xlt.util.PropertyFileHandler;
+import com.xceptance.xlt.util.TestCaseMapper;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.HiddenFileFilter;
@@ -712,6 +711,14 @@ public class MasterController
             // read load test profile if not already done so before during upload
             final File workDir = setUpWorkDir(FILE_FILTER);
             currentLoadProfile = getTestProfile(workDir);
+
+            final TestCaseMapper testCaseMapper = new TestCaseMapper(currentLoadProfile);
+            if (!testCaseMapper.getUnmappedTestCaseNames().isEmpty())
+            {
+                final Map<String, String> testCaseClassMappings = testCaseMapper.scanForTestCaseClassMappings(workDir);
+                overwriteTestCaseClassMappings(workDir, testCaseClassMappings, FILE_FILTER);
+                currentLoadProfile.setTestCaseClassMappings(testCaseClassMappings);
+            }
         }
 
         resetAgentStatuses();
@@ -881,13 +888,25 @@ public class MasterController
          * Optionally copy and manipulate the test suite.
          */
         LOG.info("Read target test suite");
-        final File workDir = setUpWorkDir(FILE_FILTER);
+        File workDir = setUpWorkDir(FILE_FILTER);
         progressPrepare.increaseCount();
 
         /*
          * Read the configuration files and build load profile.
          */
         currentLoadProfile = getTestProfile(workDir);
+
+        /*
+         * Auto-map test cases to test classes if no mapping was configured.
+         */
+        final TestCaseMapper testCaseMapper = new TestCaseMapper(currentLoadProfile);
+        if (!testCaseMapper.getUnmappedTestCaseNames().isEmpty())
+        {
+            final Map<String, String> autoMappings = testCaseMapper.scanForTestCaseClassMappings(workDir);
+            workDir = overwriteTestCaseClassMappings(workDir, autoMappings, FILE_FILTER);
+            currentLoadProfile.setTestCaseClassMappings(autoMappings);
+        }
+
         progressPrepare.increaseCount();
 
         if (currentLoadProfile.getActiveTestCaseNames().size() <= 0)
@@ -952,31 +971,87 @@ public class MasterController
         }
         else
         {
-            try
-            {
-                // create a new sub directory in the temp directory
-                workDir = File.createTempFile("xlt-", "", tempDirectory);
-                org.apache.commons.io.FileUtils.forceDelete(workDir);
-                org.apache.commons.io.FileUtils.forceMkdir(workDir);
+            workDir = copyAgentDirectoryToTemp(fileFilter);
 
-                // copy the test suite
-                org.apache.commons.io.FileUtils.copyDirectory(agentFilesDirectory, workDir, fileFilter);
-
-                // enter the test properties file into project.properties
-                final File projectPropertiesFile = new File(new File(workDir, "config"), "project.properties");
-                final PropertiesConfiguration config = new PropertiesConfiguration();
-                config.setIOFactory(new JupIOFactory()); // for better compatibility with java.util.Properties (GH#144)
-                final FileHandler fileHandler = new FileHandler(config);
-
-                fileHandler.load(projectPropertiesFile);
-                config.setProperty(XltConstants.TEST_PROPERTIES_FILE_PATH_PROPERTY, propertiesFileName);
-                fileHandler.save(projectPropertiesFile);
-            }
-            catch (final Exception e)
-            {
-                throw new RuntimeException("Failed to make a copy of the agent files", e);
-            }
+            // enter the test properties file into project.properties
+            final File projectPropertiesFile = new File(new File(workDir, XltConstants.CONFIG_DIR_NAME),
+                                                        XltConstants.PROJECT_PROPERTY_FILENAME);
+            final PropertyFileHandler propertyFileHandler = new PropertyFileHandler(projectPropertiesFile);
+            propertyFileHandler.setProperty(XltConstants.TEST_PROPERTIES_FILE_PATH_PROPERTY, propertiesFileName);
         }
+        return workDir;
+    }
+
+    /**
+     * Make a temp copy of the agent files directory if necessary and write the given test case and class mappings to
+     * the "project.properties".
+     *
+     * @param currentWorkDir
+     *            the current working directory
+     * @param testCaseClassMappings
+     *            the test case and class mappings to set in the properties
+     * @param fileFilter
+     *            file filter for testsuite
+     * @return the resulting working directory
+     */
+    private File overwriteTestCaseClassMappings(final File currentWorkDir, final Map<String, String> testCaseClassMappings,
+                                                final FileFilter fileFilter)
+    {
+        // If we didn't make a temp copy of the agent directory yet, we do so now
+        final File workDir;
+        if (currentWorkDir == agentFilesDirectory)
+        {
+            workDir = copyAgentDirectoryToTemp(fileFilter);
+        }
+        else
+        {
+            workDir = currentWorkDir;
+        }
+
+        final Map<String, String> propertyMappings = new HashMap<>();
+        for (final String testCaseName : testCaseClassMappings.keySet())
+        {
+            final String propertyName = TestLoadProfileConfiguration.PROP_PREFIX_LOAD_TESTS + testCaseName +
+                                        TestLoadProfileConfiguration.PROP_SUFFIX_CLASS;
+            propertyMappings.put(propertyName, testCaseClassMappings.get(testCaseName));
+        }
+
+        // Append mappings at the end of the project.properties
+        final File projectPropertiesFile = new File(new File(workDir, XltConstants.CONFIG_DIR_NAME),
+                                                    XltConstants.PROJECT_PROPERTY_FILENAME);
+        final PropertyFileHandler propertyFileHandler = new PropertyFileHandler(projectPropertiesFile);
+        propertyFileHandler.appendProperties(propertyMappings,
+                                             "Inserted by XLT: Automatically derived Java class names for tests that have no explicit name/class mapping.");
+
+        return workDir;
+    }
+
+    /**
+     * Copy contents of agent files directory to new temp directory.
+     *
+     * @param fileFilter
+     *            file filter for testsuite
+     * @return the resulting temp directory
+     */
+    private File copyAgentDirectoryToTemp(final FileFilter fileFilter)
+    {
+        final File workDir;
+
+        try
+        {
+            // create a new sub directory in the temp directory
+            workDir = File.createTempFile("xlt-", "", tempDirectory);
+            org.apache.commons.io.FileUtils.forceDelete(workDir);
+            org.apache.commons.io.FileUtils.forceMkdir(workDir);
+
+            // copy the test suite
+            org.apache.commons.io.FileUtils.copyDirectory(agentFilesDirectory, workDir, fileFilter);
+        }
+        catch (final Exception e)
+        {
+            throw new RuntimeException("Failed to make a copy of the agent files", e);
+        }
+
         return workDir;
     }
 
