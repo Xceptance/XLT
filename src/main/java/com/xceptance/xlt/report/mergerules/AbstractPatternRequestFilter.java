@@ -49,7 +49,7 @@ public abstract class AbstractPatternRequestFilter extends AbstractRequestFilter
     /**
      * Whether or not this is an exclusion rule.
      */
-    private final boolean isExclude;
+    final boolean isExclude;
 
     /**
      * Constructor.

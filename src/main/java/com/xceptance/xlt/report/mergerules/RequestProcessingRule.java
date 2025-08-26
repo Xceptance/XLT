@@ -105,6 +105,7 @@ public class RequestProcessingRule
      * @param agentNameExcludePattern
      * @param transactionNameExcludePattern
      * @param dropOnMatch
+     * @param urlPrecheckText
      * @throws InvalidRequestProcessingRuleException
      */
     public RequestProcessingRule(final int id,
@@ -128,6 +129,58 @@ public class RequestProcessingRule
                                  final ContinueOnMatchAtId continueOnMatchAtId, 
                                  final ContinueOnNoMatchAtId continueOnNoMatchAtId,
                                  final DropOnMatch dropOnMatch)
+                                     throws InvalidRequestProcessingRuleException
+    {
+        this(id, newName, requestNamePattern, urlPattern, contentTypePattern, statusCodePattern, agentNamePattern,
+             transactionNamePattern, httpMethodPattern, responseTimeRanges, stopOnMatch, requestNameExcludePattern,
+             urlExcludePattern, contentTypeExcludePattern, statusCodeExcludePattern, agentNameExcludePattern,
+             transactionNameExcludePattern, httpMethodExcludePattern, continueOnMatchAtId, continueOnNoMatchAtId,
+             dropOnMatch, new UrlPrecheckText(""));
+    }
+    
+    /**
+     * Constructor.
+     *
+     * @param newName
+     * @param requestNamePattern
+     * @param urlPattern
+     * @param contentTypePattern
+     * @param statusCodePattern
+     * @param agentNamePattern
+     * @param transactionNamePattern
+     * @param responseTimeRanges
+     * @param stopOnMatch
+     * @param requestNameExcludePattern
+     * @param urlExcludePattern
+     * @param contentTypeExcludePattern
+     * @param statusCodeExcludePattern
+     * @param agentNameExcludePattern
+     * @param transactionNameExcludePattern
+     * @param dropOnMatch
+     * @throws InvalidRequestProcessingRuleException
+     */
+    public RequestProcessingRule(final int id,
+                                 final NewName newName, 
+                                 final RequestNamePattern requestNamePattern, 
+                                 final UrlPattern urlPattern,
+                                 final ContentTypePattern contentTypePattern, 
+                                 final StatusCodePattern statusCodePattern, 
+                                 final AgentNamePattern agentNamePattern,    
+                                 final TransactionNamePattern transactionNamePattern, 
+                                 final HttpMethodPattern httpMethodPattern,  
+                                 final RunTimeRanges responseTimeRanges,
+                                 final StopOnMatch stopOnMatch, 
+                                 final RequestNameExcludePattern requestNameExcludePattern, 
+                                 final UrlExcludePattern urlExcludePattern,
+                                 final ContentTypeExcludePattern contentTypeExcludePattern, 
+                                 final StatusCodeExcludePattern statusCodeExcludePattern,
+                                 final AgentNameExcludePattern agentNameExcludePattern, 
+                                 final TransactionNameExcludePattern transactionNameExcludePattern,
+                                 final HttpMethodExcludePattern httpMethodExcludePattern, 
+                                 final ContinueOnMatchAtId continueOnMatchAtId, 
+                                 final ContinueOnNoMatchAtId continueOnNoMatchAtId,
+                                 final DropOnMatch dropOnMatch,
+                                 final UrlPrecheckText urlPrecheckText)
                                      throws InvalidRequestProcessingRuleException
     {
         this.id = id;
@@ -162,10 +215,10 @@ public class RequestProcessingRule
                 requestFilters.add(new RequestNameRequestFilter(requestNameExcludePattern.value, true));
             }
 
-            addIfTypeCodeInNewName(requestFilters, new UrlRequestFilter(urlPattern.value), tempPlaceHolderPositions, urlPattern.value);
+            addIfTypeCodeInNewName(requestFilters, new UrlRequestFilter(urlPattern.value, urlPrecheckText), tempPlaceHolderPositions, urlPattern.value);
             if (StringUtils.isNotBlank(urlExcludePattern.value))
             {
-                requestFilters.add(new UrlRequestFilter(urlExcludePattern.value, true));
+                requestFilters.add(new UrlRequestFilter(urlExcludePattern.value, true, urlPrecheckText));
             }
 
             addIfTypeCodeInNewName(requestFilters, new ContentTypeRequestFilter(contentTypePattern.value), tempPlaceHolderPositions, contentTypePattern.value);
@@ -590,4 +643,6 @@ public class RequestProcessingRule
     public static record DropOnMatch(boolean value) {}; 
     public static record ContinueOnMatchAtId(int value) {}; 
     public static record ContinueOnNoMatchAtId(int value) {}; 
+    
+    public static record UrlPrecheckText(String value) {};
 }

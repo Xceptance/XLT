@@ -67,6 +67,7 @@ import com.xceptance.xlt.report.mergerules.RequestProcessingRule.TransactionName
 import com.xceptance.xlt.report.mergerules.RequestProcessingRule.TransactionNamePattern;
 import com.xceptance.xlt.report.mergerules.RequestProcessingRule.UrlExcludePattern;
 import com.xceptance.xlt.report.mergerules.RequestProcessingRule.UrlPattern;
+import com.xceptance.xlt.report.mergerules.RequestProcessingRule.UrlPrecheckText;
 import com.xceptance.xlt.report.providers.RequestTableColorization;
 import com.xceptance.xlt.report.providers.RequestTableColorization.ColorizationRule;
 
@@ -1550,6 +1551,9 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
             final var httpMethodPattern = new HttpMethodPattern(getStringProperty(basePropertyName + ".methodPattern", ""));
             final var runTimeRanges = new RunTimeRanges(getStringProperty(basePropertyName + ".runTimeRanges", ""));
 
+            // performance check pattern
+            final var urlPrecheckText = new UrlPrecheckText(getStringProperty(basePropertyName + ".urlPrecheckText", ""));
+            
             // exclude patterns
             final var urlExcludePattern = new UrlExcludePattern(getStringProperty(basePropertyName + ".urlPattern.exclude", ""));
             final var contentTypeExcludePattern = new ContentTypeExcludePattern(getStringProperty(basePropertyName + ".contentTypePattern.exclude", ""));
@@ -1558,7 +1562,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
             final var agentNameExcludePattern = new AgentNameExcludePattern(getStringProperty(basePropertyName + ".agentPattern.exclude", ""));
             final var transactionNameExcludePattern = new TransactionNameExcludePattern(getStringProperty(basePropertyName + ".transactionPattern.exclude", ""));
             final var httpMethodExcludePattern = new HttpMethodExcludePattern(getStringProperty(basePropertyName + ".methodPattern.exclude", ""));
-
+            
             // ensure that either newName or dropOnMatch is set
             if (StringUtils.isNotBlank(newName.value()) == dropOnMatch.value())
             {
@@ -1589,7 +1593,8 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
                                                                                   httpMethodExcludePattern, 
                                                                                   continueOnMatchAtId,
                                                                                   continueOnNoMatchAtId,
-                                                                                  dropOnMatch);
+                                                                                  dropOnMatch,
+                                                                                  urlPrecheckText);
                 requestProcessingRules.add(mergeRule);
             }
             catch (final InvalidRequestProcessingRuleException imre)
