@@ -43,7 +43,7 @@ public class RequestProcessingRule
     /**
      * The pattern to find placeholders in the new name.
      */
-    private static final Pattern PLACEHOLDER_PATTERN = Pattern.compile("\\{([acmnrstu])(?::(.+?))?\\}");
+    private static final Pattern PLACEHOLDER_PATTERN = Pattern.compile("\\{([acmnrstu])(?::([0-9]+))?\\}");
 
     /**
      * The definition of the new name without any placeholders.
