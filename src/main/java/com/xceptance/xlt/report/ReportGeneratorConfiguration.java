@@ -520,16 +520,24 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     }
 
     /**
-     * Checks the given string for leading zero digits and remove
-     * them if needed.
+     * Checks the given string for leading zero digits.
      *
-     * @param s the string to be checked
-     * @return the sanitized string
+     * @param s
+     *            the string to be checked
      */
-    private String dealWithLeadingZeros(final String s)
+    private void checkForLeadingZeros(final String s)
     {
-        // remove leading zeros
-        return s.replaceFirst("^0+(?!$)", "");
+        if (s.length() > 1 && s.startsWith("0"))
+        {
+            final StringBuilder sb = new StringBuilder("Leading zeros are not allowed in request merge rule indices.\nPlease check your configuration and fix the following properties:");
+            for (final String prop : getPropertyKeysWithPrefix(PROP_REQUEST_MERGE_RULES_PREFIX + s + "."))
+            {
+                sb.append("\n\t").append(prop);
+            }
+            sb.append("\n");
+
+            throw new XltException(sb.toString());
+        }
     }
 
     /**
@@ -1524,8 +1532,8 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
         final Set<String> requestMergerNumberStrings = getPropertyKeyFragment(PROP_REQUEST_MERGE_RULES_PREFIX);
         for (final String s : requestMergerNumberStrings)
         {
-            final String newS = dealWithLeadingZeros(s);
-            requestMergerNumbers.add(Integer.parseInt(newS));
+            checkForLeadingZeros(s);
+            requestMergerNumbers.add(Integer.parseInt(s));
         }
 
         boolean invalidRulePresent = false;
