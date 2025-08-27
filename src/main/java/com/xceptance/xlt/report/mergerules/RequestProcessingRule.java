@@ -35,8 +35,8 @@ import com.xceptance.xlt.api.engine.RequestData;
 public class RequestProcessingRule
 {
     /**
-     * The return state for special handling, all >= 0 mean that we continue with a 
-     * certain rule, -1 means that we drop the request and -2 means that we stop processing.
+     * The return state for special handling, all >= 0 mean that we continue with a certain rule, -1 means that we drop
+     * the request and -2 means that we stop processing.
      */
     public static final int STOP = -2, DROP = -1;
 
@@ -67,7 +67,7 @@ public class RequestProcessingRule
     private final AbstractRequestFilter[] requestFilters;
 
     /**
-     * The list of place where to insert the data to form a new name
+     * The list of placeholders with info where to insert the data to form a new name.
      */
     private final PlaceholderPosition[] newNamePlaceholders;
 
@@ -128,7 +128,7 @@ public class RequestProcessingRule
                                  final ContinueOnMatchAtId continueOnMatchAtId, 
                                  final ContinueOnNoMatchAtId continueOnNoMatchAtId,
                                  final DropOnMatch dropOnMatch)
-                                     throws InvalidRequestProcessingRuleException
+        throws InvalidRequestProcessingRuleException
     {
         this.id = id;
         this.stopOnMatch = stopOnMatch.value;
@@ -210,13 +210,13 @@ public class RequestProcessingRule
         this.newNamePlaceholders = condensePlaceHolders(tempPlaceHolderPositions);
 
         resolveRequestFilter(this.newNamePlaceholders);
-        
+
         // Validate the entire rule.
         validateRule();
     }
 
     /**
-     * To speed things up, we match request filters to placeholder 
+     * To speed things up, we match request filters to placeholders.
      */
     private void resolveRequestFilter(final PlaceholderPosition[] positions)
     {
@@ -234,11 +234,12 @@ public class RequestProcessingRule
             }
         }
     }
-    
+
     /**
-     * We might have unused placeholders, we can remove them
+     * We might have unused placeholders, we can remove them.
      * 
-     * @param positions the list of placeholder positions
+     * @param positions
+     *            the list of placeholder positions
      * @return an array of placeholder positions that are truly used
      */
     private PlaceholderPosition[] condensePlaceHolders(final List<PlaceholderPosition> positions)
@@ -247,18 +248,20 @@ public class RequestProcessingRule
                         .filter(p -> p.used)
                         .toArray(PlaceholderPosition[]::new);
     }
-    
-    
+
     /**
      * Adds this filter to the filter rule list if the pattern is not empty and the results are later needed in the new
      * name, otherwise we just ignore it to save cyles. Important, we must keep it if it is not empty but also not
-     * needed in the new name. 
+     * needed in the new name.
      * 
-     * @param filters the list of filters to add to
-     * @param filter the filter to add
-     * @param placeHolderPositions the list of placeholder positions to check against
+     * @param filters
+     *            the list of filters to add to
+     * @param filter
+     *            the filter to add
+     * @param placeHolderPositions
+     *            the list of placeholder positions to check against
      */
-    private void addIfTypeCodeInNewName(final List<AbstractRequestFilter> filters, final AbstractRequestFilter filter, 
+    private void addIfTypeCodeInNewName(final List<AbstractRequestFilter> filters, final AbstractRequestFilter filter,
                                         final List<PlaceholderPosition> placeHolderPositions, final String pattern)
     {
         final String typeCode = filter.getTypeCode();
@@ -276,7 +279,7 @@ public class RequestProcessingRule
                 {
                     filters.add(filter);
                 }
-                
+
                 // mark position it, so we keep it
                 p.used = true;
                 alreadyAdded = true;
@@ -284,7 +287,7 @@ public class RequestProcessingRule
         }
 
         // in case we have not found the typecode to be used in the new name,
-        // we see if we still want to apply it as a filter, so we have to 
+        // we see if we still want to apply it as a filter, so we have to
         // keep it, otherwise we can skip it
         if (!alreadyAdded)
         {
@@ -293,7 +296,7 @@ public class RequestProcessingRule
                 // the pattern is not empty, add it, so we want to filter with it
                 filters.add(filter);
             }
-            
+
         }
         else
         {
@@ -303,18 +306,15 @@ public class RequestProcessingRule
 
     /**
      * Parses the position of the placeholders in the new name field of the rule.
-     * Composes a newName without the placeholders for later speed
      * 
      * @throws InvalidRequestProcessingRuleException
      */
     private List<PlaceholderPosition> parsePlaceholderPositions(final String nameWithPlaceholders)
         throws InvalidRequestProcessingRuleException
     {
-        final Matcher matcher = PLACEHOLDER_PATTERN.matcher(nameWithPlaceholders);
-
-        // use a list now and make it an array later
         final List<PlaceholderPosition> positions = new ArrayList<>();
 
+        final Matcher matcher = PLACEHOLDER_PATTERN.matcher(nameWithPlaceholders);
         while (matcher.find())
         {
             // determine the matching group index if any was present at all
@@ -329,8 +329,7 @@ public class RequestProcessingRule
                 }
                 catch (final NumberFormatException e)
                 {
-                    throw new InvalidRequestProcessingRuleException(
-                                                                    String.format("Failed to parse the matching group index '%s' as integer", 
+                    throw new InvalidRequestProcessingRuleException(String.format("Failed to parse the matching group index '%s' as integer",
                                                                                   matchingGroupIndexString));
                 }
             }
@@ -341,29 +340,27 @@ public class RequestProcessingRule
             positions.add(position);
         }
 
-        
-        // to avoid calculations later, we revert the positions
+        // to avoid calculations later, we reverse the positions
         Collections.reverse(positions);
-        
-        // get us an efficient array for later
+
         return positions;
     }
 
     /**
-     * Get us a new name that has not longer any placeholders in it, but rather the positions where
-     * to insert data.
+     * Get us a new name that has not longer any placeholders in it. Instead the placeholder positions get updated with
+     * information where to insert data in the new name.
      * 
-     * @param newName the current name with placeholders
-     * @param positions a set of already parsed placeholder positions 
-     * @return the new name clean of placeholders 
+     * @param newName
+     *            the current name with placeholders
+     * @param positions
+     *            a set of already parsed placeholder positions
+     * @return the new name clean of placeholders
      */
     public static String adjustNewName(final String nameWithPlaceholders, final List<PlaceholderPosition> positions)
     {
-        // create us a new name without the placeholders, so we can later easily just insert the replacements without
-        // removing or calculating the position
         final StringBuilder name = new StringBuilder(nameWithPlaceholders);
         int displacement = 0;
-        
+
         // we already reversed the positions, so do it the other way around
         for (int i = positions.size() - 1; i >= 0; i--)
         {
@@ -377,24 +374,25 @@ public class RequestProcessingRule
             // append the part before the placeholder
             name.delete(pos.start - displacement, pos.end - displacement);
 
-            // update the placeholder, it is now different from before because it does not 
+            // update the placeholder, it is now different from before because it does not
             // really reflect room anymore, rather a position
             positions.set(i, new PlaceholderPosition(pos.typeCode, pos.capturingGroupIndex, pos.start - displacement, pos.used));
-            
+
             // update the sum up shift so far
             displacement += pos.length;
         }
-        
+
         return name.toString();
     }
-    
+
     /**
      * Processes this request merge rule. As a consequence, the passed request data object will (or will not) get a new
      * name. This is a multi-threaded routine aka in use by several threads at the same time.
      *
      * @param requestData
      *            the request data object to process, will also be directly modified as result
-     * @return true if we want to stop, false otherwise
+     * @return the ID of the next processing rule or {@link #STOP} to stop further processing or {@link #DROP} to drop
+     *         the request
      */
     public int process(final RequestData requestData)
     {
