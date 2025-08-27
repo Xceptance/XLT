@@ -129,6 +129,8 @@ public class RequestData extends TimerData
      * The request URL.
      */
     private XltCharBuffer url;
+    
+    private String originalUrl;
 
     /**
      * The hash code of a url without fragment, needed downstream
@@ -319,6 +321,16 @@ public class RequestData extends TimerData
         return url;
     }
 
+    /**
+     * Returns the request's original URL.
+     *
+     * @return the original URL
+     */
+    public String getOriginalUrl()
+    {
+        return this.originalUrl;
+    }
+    
     /**
      * Returns the hashcode of the fragment free version of the url
      *
@@ -596,6 +608,7 @@ public class RequestData extends TimerData
     public void setUrl(final String url)
     {
         this.url = XltCharBuffer.valueOf(url);
+        this.originalUrl = url;
     }
 
     /**
@@ -625,6 +638,7 @@ public class RequestData extends TimerData
         }
 
         this.url = url;
+        this.originalUrl = url.toString();
     }
 
     /**
