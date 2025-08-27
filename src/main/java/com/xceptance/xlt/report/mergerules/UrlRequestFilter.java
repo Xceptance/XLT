@@ -26,7 +26,7 @@ import com.xceptance.xlt.report.mergerules.RequestProcessingRule.UrlPrecheckText
  */
 public class UrlRequestFilter extends AbstractPatternRequestFilter
 {
-    private final XltCharBuffer urlPrecheckText;
+    private final String urlPrecheckText;
     
     /**
      * Constructor.
@@ -52,7 +52,7 @@ public class UrlRequestFilter extends AbstractPatternRequestFilter
         // with the change to get split caches per thread, we can afford to do
         // a lookup here and also profit from "does not apply" look ups.
         super("u", regex, exclude, 5000);
-        this.urlPrecheckText = StringUtils.isNotBlank(urlPrecheckText.value()) ? XltCharBuffer.valueOf(urlPrecheckText.value()) : null;
+        this.urlPrecheckText = StringUtils.isNotBlank(urlPrecheckText.value()) ? urlPrecheckText.value() : null;
     }
 
     @Override
@@ -62,7 +62,7 @@ public class UrlRequestFilter extends AbstractPatternRequestFilter
         if (this.urlPrecheckText != null && !this.isExclude)
         {
             // do a simple lookup
-            final int pos = requestData.getUrl().indexOf(urlPrecheckText);
+            final int pos = requestData.getOriginalUrl().indexOf(urlPrecheckText);
             
             // if we have a match
             if (pos >= 0)
