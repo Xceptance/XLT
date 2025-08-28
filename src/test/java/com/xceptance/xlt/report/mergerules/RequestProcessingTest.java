@@ -1173,6 +1173,81 @@ public class RequestProcessingTest
         assertEquals("request", data4.getName());
     }
 
+    /**
+     * Test an url pattern including a precheck speedup as exclude
+     */
+    @Test
+    public void testURLPattern_Normal_Prechecked_Exclude() throws Exception
+    {
+        final var rule = new RequestProcessingRule(10, 
+                                                   new NewName("{n}"),
+                                                   new RequestNamePattern("request"),
+                                                   new UrlPattern(""),
+                                                   new ContentTypePattern(""), 
+                                                   new StatusCodePattern(""), 
+                                                   new AgentNamePattern(""),   
+                                                   new TransactionNamePattern(""), 
+                                                   new HttpMethodPattern(""),  
+                                                   new RunTimeRanges(""),
+                                                   new StopOnMatch(true), 
+                                                   new RequestNameExcludePattern(""), 
+                                                   new UrlExcludePattern("https://foobar.com/([^/]+)/"), 
+                                                   new ContentTypeExcludePattern(""), 
+                                                   new StatusCodeExcludePattern(""), 
+                                                   new AgentNameExcludePattern(""), 
+                                                   new TransactionNameExcludePattern(""), 
+                                                   new HttpMethodExcludePattern(""), 
+                                                   new ContinueOnMatchAtId(10), 
+                                                   new ContinueOnNoMatchAtId(10),         
+                                                   new DropOnMatch(false),
+                                                   new UrlPrecheckText("foobar")); 
+        // precheck match, url match
+        final RequestData data = new RequestData("request");
+        data.setUrl("https://foobar.com/tiger/");
+        assertEquals(10, rule.process(data));
+        assertEquals("request", data.getName());
+
+        // precheck match, url not match
+        final RequestData data2 = new RequestData("request");
+        data2.setUrl("https://foobar.online/tiger/");
+        assertEquals(RequestProcessingRule.STOP, rule.process(data2));
+        assertEquals("request", data2.getName());
+
+        final var rule2 = new RequestProcessingRule(0, 
+                                                   new NewName("{u:1}"),
+                                                   new RequestNamePattern("request"),
+                                                   new UrlPattern("https://foobar.com/([^/]+)/"),
+                                                   new ContentTypePattern(""), 
+                                                   new StatusCodePattern(""), 
+                                                   new AgentNamePattern(""),   
+                                                   new TransactionNamePattern(""), 
+                                                   new HttpMethodPattern(""),  
+                                                   new RunTimeRanges(""),
+                                                   new StopOnMatch(true), 
+                                                   new RequestNameExcludePattern(""), 
+                                                   new UrlExcludePattern(""), 
+                                                   new ContentTypeExcludePattern(""), 
+                                                   new StatusCodeExcludePattern(""), 
+                                                   new AgentNameExcludePattern(""), 
+                                                   new TransactionNameExcludePattern(""), 
+                                                   new HttpMethodExcludePattern(""), 
+                                                   new ContinueOnMatchAtId(0), 
+                                                   new ContinueOnNoMatchAtId(0),         
+                                                   new DropOnMatch(false),
+                                                   new UrlPrecheckText("xmas")); 
+        
+        // precheck not match, url would match
+        final RequestData data3 = new RequestData("request");
+        data3.setUrl("https://foobar.com/tiger/");
+        assertEquals(0, rule2.process(data3));
+        assertEquals("request", data3.getName());
+        
+        // precheck not match, url not match
+        final RequestData data4 = new RequestData("request");
+        data4.setUrl("https://myhost.com/tiger/");
+        assertEquals(0, rule2.process(data4));
+        assertEquals("request", data4.getName());
+    }
     
     /**
      * # httpMethodPattern [m] ........... reg-ex defining a matching HTTP method

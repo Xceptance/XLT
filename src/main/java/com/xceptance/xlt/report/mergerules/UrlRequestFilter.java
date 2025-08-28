@@ -66,7 +66,7 @@ public class UrlRequestFilter extends AbstractPatternRequestFilter
     public boolean appliesTo(final RequestData requestData)
     {
         // should we run a cheapish initial check first?
-        if (this.urlPrecheckText != null && !this.isExclude)
+        if (this.urlPrecheckText != null)
         {
             // do a simple lookup
             final int pos = requestData.getOriginalUrl().indexOf(urlPrecheckText);
@@ -79,8 +79,8 @@ public class UrlRequestFilter extends AbstractPatternRequestFilter
             }
             else
             {
-                // precheck failed and we are not excluding, so this is a non-match
-                return false;
+                // precheck failed so this is a non-match, turn it for exclude rules
+                return false ^ this.isExclude;
             }
         }           
         else
