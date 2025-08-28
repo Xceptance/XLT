@@ -47,6 +47,9 @@ import io.opentelemetry.api.logs.Severity;
 
 public class OtelMetricsReporter implements MetricsReporter
 {
+    /** The (fix and non-configurable) prefix used for OpenTelemetry instruments names managed by XLT. */
+    static final String INSTRUMENT_NAME_PREFIX = "xlt.";
+
     static final class LogRecordAttributes
     {
         static final AttributeKey<String> LOG_TYPE = AttributeKey.stringKey("xlt.log_type");
@@ -130,7 +133,7 @@ public class OtelMetricsReporter implements MetricsReporter
     @SuppressWarnings("unchecked")
     private <T> T getOrCreateInstrument(final String name, Function<String, T> instrumentCreator)
     {
-        final String nameSanitized = sanitizeInstrumentName(name);
+        final String nameSanitized = sanitizeInstrumentName(INSTRUMENT_NAME_PREFIX + name);
         T t = (T) instruments.get(nameSanitized);
         if (t == null)
         {
