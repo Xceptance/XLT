@@ -96,12 +96,12 @@ public class UrlRequestFilter extends AbstractPatternRequestFilter
         if (this.urlPrecheckText != null && !this.isExclude)
         {
             // do a simple lookup
-            final int pos = requestData.getUrl().indexOf(urlPrecheckText);
+            final var r = XltCharBuffer.contains(requestData.getUrl(), urlPrecheckText, urlPrecheckTextShiftTable);
             
             // if we have a match
-            if (pos >= 0)
+            if (r == true)
             {
-                // do the real check to be sure
+                // do the real check to be sure and get us the data
                 return super.appliesTo(requestData);
             }
             else
