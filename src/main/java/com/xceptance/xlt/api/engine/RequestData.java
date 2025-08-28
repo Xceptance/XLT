@@ -89,6 +89,7 @@ public class RequestData extends TimerData
      * The response code.
      */
     private int responseCode;
+    private XltCharBuffer responseCodeAsChars;
 
     /**
      * The time it took to send the request to the server.
@@ -556,6 +557,27 @@ public class RequestData extends TimerData
     }
 
     /**
+     * Sets the request's response code.
+     *
+     * @param responseCode
+     *            the response code
+     */
+    public void setResponseCodeAsChars(final XltCharBuffer responseCode)
+    {
+        this.responseCodeAsChars = responseCode;
+    }
+    
+    /**
+     * Get the request's response code as originally recorded.
+     *
+     * @return responseCode the response code as chars
+     */
+    public XltCharBuffer getResponseCodeAsChars()
+    {
+        return this.responseCodeAsChars;
+    }
+    
+    /**
      * Sets the time it took to send the request to the server.
      *
      * @param sendTime
@@ -797,6 +819,7 @@ public class RequestData extends TimerData
         setBytesSent(ParseNumbers.parseInt(values.get(5)));
         setBytesReceived(ParseNumbers.parseInt(values.get(6)));
         setResponseCode(ParseNumbers.parseInt(values.get(7)));
+        setResponseCodeAsChars(values.get(7));
 
         if (values.size() > 23)
         {

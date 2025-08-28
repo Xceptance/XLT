@@ -43,7 +43,7 @@ public class StatusCodeRequestFilter extends AbstractPatternRequestFilter
      */
     public StatusCodeRequestFilter(final String regex, final boolean exclude)
     {
-        super("s", regex, exclude, 150);
+        super("s", regex, exclude, 50);
     }
 
     /**
@@ -52,6 +52,6 @@ public class StatusCodeRequestFilter extends AbstractPatternRequestFilter
     @Override
     protected CharSequence getText(final RequestData requestData)
     {
-        return Integer.toString(requestData.getResponseCode());
+        return requestData.getResponseCodeAsChars();
     }
 }
