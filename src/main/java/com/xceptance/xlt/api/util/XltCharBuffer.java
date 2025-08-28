@@ -740,11 +740,21 @@ public class XltCharBuffer implements CharSequence, Comparable<XltCharBuffer>
                 return false;
             }
     
-            // now, we go the expensive route
-            return Arrays.equals(this.src, 
-                                 from, from + length, 
-                                 other.src, 
-                                 other.from, other.from + length);
+            int l = this.length;
+            for (int i = 0; i < l; i++) 
+            {
+                if (this.charAt(i) != other.charAt(i))
+                {
+                    return false;
+                }
+            }
+            return true;
+            
+//            // now, we go the expensive route
+//            return Arrays.equals(this.src, 
+//                                 from, from + length, 
+//                                 other.src, 
+//                                 other.from, other.from + length);
         }
         else
         {
