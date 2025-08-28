@@ -18,7 +18,6 @@ package com.xceptance.xlt.report.mergerules;
 import org.apache.commons.lang3.StringUtils;
 
 import com.xceptance.xlt.api.engine.RequestData;
-import com.xceptance.xlt.api.util.XltCharBuffer;
 import com.xceptance.xlt.report.mergerules.RequestProcessingRule.UrlPrecheckText;
 
 /**
@@ -26,8 +25,7 @@ import com.xceptance.xlt.report.mergerules.RequestProcessingRule.UrlPrecheckText
  */
 public class UrlRequestFilter extends AbstractPatternRequestFilter
 {
-    private final XltCharBuffer urlPrecheckText;
-    private final int[] urlPrecheckTextShiftTable;
+    private final String urlPrecheckText;
     
     /**
      * Constructor.
@@ -56,52 +54,27 @@ public class UrlRequestFilter extends AbstractPatternRequestFilter
 
         if (StringUtils.isNotBlank(urlPrecheckText.value()))
         {
-            this.urlPrecheckText = XltCharBuffer.valueOf(urlPrecheckText.value());
-            this.urlPrecheckTextShiftTable = XltCharBuffer.createShiftTable(this.urlPrecheckText);
+            this.urlPrecheckText = urlPrecheckText.value();
         }
         else
         {
             this.urlPrecheckText = null;
-            this.urlPrecheckTextShiftTable = null;
         }
     }
 
     @Override
     public boolean appliesTo(final RequestData requestData)
     {
-//        // should we run a cheapish initial check first?
-//        if (this.urlPrecheckText != null && !this.isExclude)
-//        {
-//            // do a simple lookup
-//            final int pos = requestData.getOriginalUrl().indexOf(urlPrecheckText);
-//            
-//            // if we have a match
-//            if (pos >= 0)
-//            {
-//                // do the real check to be sure
-//                return super.appliesTo(requestData);
-//            }
-//            else
-//            {
-//                // precheck failed and we are not excluding, so this is a non-match
-//                return null;
-//            }
-//        }           
-//        else
-//        {
-//            return super.appliesTo(requestData);
-//        }
-        
         // should we run a cheapish initial check first?
         if (this.urlPrecheckText != null && !this.isExclude)
         {
             // do a simple lookup
-            final var r = XltCharBuffer.contains(requestData.getUrl(), urlPrecheckText, urlPrecheckTextShiftTable);
+            final int pos = requestData.getOriginalUrl().indexOf(urlPrecheckText);
             
             // if we have a match
-            if (r == true)
+            if (pos >= 0)
             {
-                // do the real check to be sure and get us the data
+                // do the real check to be sure
                 return super.appliesTo(requestData);
             }
             else
@@ -114,6 +87,29 @@ public class UrlRequestFilter extends AbstractPatternRequestFilter
         {
             return super.appliesTo(requestData);
         }
+        
+//        // should we run a cheapish initial check first?
+//        if (this.urlPrecheckText != null && !this.isExclude)
+//        {
+//            // do a simple lookup
+//            final var r = XltCharBuffer.contains(requestData.getUrl(), urlPrecheckText, urlPrecheckTextShiftTable);
+//            
+//            // if we have a match
+//            if (r == true)
+//            {
+//                // do the real check to be sure and get us the data
+//                return super.appliesTo(requestData);
+//            }
+//            else
+//            {
+//                // precheck failed and we are not excluding, so this is a non-match
+//                return false;
+//            }
+//        }           
+//        else
+//        {
+//            return super.appliesTo(requestData);
+//        }
     }
 
     /**
