@@ -74,6 +74,7 @@ import com.xceptance.xlt.agentcontroller.TestUserStatus.State;
 import com.xceptance.xlt.common.XltConstants;
 import com.xceptance.xlt.util.AgentControllerSystemInfo;
 import com.xceptance.xlt.util.FileReplicationIndex;
+import com.xceptance.xlt.util.SecretPropertiesMask;
 import com.xceptance.xlt.util.StatusUtils;
 import com.xceptance.xlt.util.XltPropertiesImpl;
 
@@ -1179,39 +1180,14 @@ public class AgentControllerImpl implements AgentController
      */
     private static void maskFile(File inputFile, File outputFile) throws ConfigurationException, IOException
     {
-        PropertiesConfiguration config = new PropertiesConfiguration();
-        config.setIOFactory(new JupIOFactory()); // for better compatibility with java.util.Properties (GH#144)
-        try (final FileReader reader = new FileReader(inputFile))
-        {
-            config.read(reader);
-        }
-        config = mask(config, inputFile.getName().equals(XltConstants.SECRET_PROPERTIES_FILENAME));
         final StringWriter writer = new StringWriter();
-        config.write(writer);
+        try(final SecretPropertiesMask mask = new SecretPropertiesMask(new FileReader(inputFile),writer))
+        {
+            mask.maskProperties(inputFile.getName().equals(XltConstants.SECRET_PROPERTIES_FILENAME));
+        }
         FileUtils.writeStringToFile(outputFile, writer.toString(), StandardCharsets.ISO_8859_1);
     }
 
-    /**
-     * Mask secret properties in the given configuration
-     *
-     * @param config
-     *            The configuration to mask the secret props in
-     * @return A copy of the new config with the secret values replaced
-     */
-    private static PropertiesConfiguration mask(final PropertiesConfiguration config, boolean maskAll)
-    {
-        Iterator<String> keys = config.getKeys();
-        final PropertiesConfiguration output = (PropertiesConfiguration) config.clone();
-        while (keys.hasNext())
-        {
-            final String key = keys.next();
-            if (maskAll || key.startsWith(XltConstants.SECRET_PREFIX))
-            {
-                output.setProperty(key, XltConstants.MASK_PROPERTIES_HIDETEXT);
-            }
-        }
-        return output;
-    }
 
     /**
      * Adds the property files which are included by &quot;include&quot; properties to the argument stream. However all

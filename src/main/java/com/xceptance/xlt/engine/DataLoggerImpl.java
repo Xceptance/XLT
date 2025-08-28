@@ -27,6 +27,7 @@ import com.xceptance.xlt.api.engine.DataLogger;
 import com.xceptance.xlt.api.engine.Session;
 import com.xceptance.xlt.api.util.XltLogger;
 import com.xceptance.xlt.common.XltConstants;
+import com.xceptance.xlt.report.providers.CustomLogsReportProvider;
 
 public class DataLoggerImpl implements DataLogger
 {
@@ -75,6 +76,10 @@ public class DataLoggerImpl implements DataLogger
                 {
                     return;
                 }
+                
+                // write a marker line that tells the CustomLogsReportProvider that this file is using a header
+                writer.write(CustomLogsReportProvider.CUSTOM_DATA_HEADER_MARKER);
+                writer.write(System.lineSeparator());
    
                 // write the header line
                 StringBuilder s = new StringBuilder(header);

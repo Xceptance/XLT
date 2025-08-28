@@ -15,18 +15,24 @@
  */
 package com.xceptance.common.util;
 
+import java.net.InetAddress;
 import java.net.URI;
 import java.net.URL;
 import java.text.ParseException;
 
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import util.JUnitParamsUtils;
 
 /**
  * Tests the implementation of {@link ParseUtils}.
  * 
  * @author Hartmut Arlt (Xceptance Software Technologies GmbH)
  */
+@RunWith(JUnitParamsRunner.class)
 public class ParseUtilsTest
 {
 
@@ -98,9 +104,21 @@ public class ParseUtilsTest
     }
 
     @Test(expected = ParseException.class)
-    public void testParseTime_InvalidFormat() throws Exception
+    public void testParseTime_InvalidFormat_01() throws Exception
     {
         ParseUtils.parseTimePeriod("0:05s");
+    }
+
+    @Test(expected = ParseException.class)
+    public void testParseTime_InvalidFormat_02() throws Exception
+    {
+        ParseUtils.parseTimePeriod("1:60");
+    }
+
+    @Test(expected = ParseException.class)
+    public void testParseTime_InvalidFormat_03() throws Exception
+    {
+        ParseUtils.parseTimePeriod("10h10");
     }
 
     @Test
@@ -448,4 +466,385 @@ public class ParseUtilsTest
         Assert.assertTrue(ParseUtils.parseLong("10,aa", 10) == 10);
     }
 
+    @Test
+    public void parseAbsoluteOrRelative_AbsoluteIntValue() throws ParseException
+    {
+        AbsoluteOrRelativeNumber<Integer> number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseInt, "0");
+        Assert.assertEquals(false, number.isRelativeNumber());
+        Assert.assertEquals(0, number.getValue().intValue());
+
+        number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseInt, "1");
+        Assert.assertEquals(false, number.isRelativeNumber());
+        Assert.assertEquals(1, number.getValue().intValue());
+
+        number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseInt, "123");
+        Assert.assertEquals(false, number.isRelativeNumber());
+        Assert.assertEquals(123, number.getValue().intValue());
+
+        number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseInt, String.valueOf(Integer.MAX_VALUE));
+        Assert.assertEquals(false, number.isRelativeNumber());
+        Assert.assertEquals(Integer.MAX_VALUE, number.getValue().intValue());
+    }
+
+    @Test
+    public void parseAbsoluteOrRelative_AbsoluteDoubleValue() throws ParseException
+    {
+        AbsoluteOrRelativeNumber<Double> number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseDouble, "0.0");
+        Assert.assertEquals(false, number.isRelativeNumber());
+        Assert.assertEquals(0.0, number.getValue().doubleValue(), 0.0);
+
+        number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseDouble, "1.2");
+        Assert.assertEquals(false, number.isRelativeNumber());
+        Assert.assertEquals(1.2, number.getValue().doubleValue(), 0.0);
+
+        number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseDouble, "123.567890");
+        Assert.assertEquals(false, number.isRelativeNumber());
+        Assert.assertEquals(123.567890, number.getValue().doubleValue(), 0.0);
+
+        number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseDouble, String.valueOf(Double.MAX_VALUE));
+        Assert.assertEquals(false, number.isRelativeNumber());
+        Assert.assertEquals(Double.MAX_VALUE, number.getValue().doubleValue(), 0.0);
+    }
+
+    @Test
+    public void parseAbsoluteOrRelative_RelativeIntValue() throws ParseException
+    {
+        AbsoluteOrRelativeNumber<Integer> number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseInt, "+0");
+        Assert.assertEquals(true, number.isRelativeNumber());
+        Assert.assertEquals(0, number.getValue().intValue());
+
+        number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseInt, "-0");
+        Assert.assertEquals(true, number.isRelativeNumber());
+        Assert.assertEquals(0, number.getValue().intValue());
+
+        number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseInt, "+1");
+        Assert.assertEquals(true, number.isRelativeNumber());
+        Assert.assertEquals(1, number.getValue().intValue());
+
+        number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseInt, "-1");
+        Assert.assertEquals(true, number.isRelativeNumber());
+        Assert.assertEquals(-1, number.getValue().intValue());
+
+        number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseInt, "+123");
+        Assert.assertEquals(true, number.isRelativeNumber());
+        Assert.assertEquals(123, number.getValue().intValue());
+
+        number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseInt, "-123");
+        Assert.assertEquals(true, number.isRelativeNumber());
+        Assert.assertEquals(-123, number.getValue().intValue());
+
+        number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseInt, "+" + Integer.MAX_VALUE);
+        Assert.assertEquals(true, number.isRelativeNumber());
+        Assert.assertEquals(Integer.MAX_VALUE, number.getValue().intValue());
+
+        number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseInt, "-" + Integer.MAX_VALUE);
+        Assert.assertEquals(true, number.isRelativeNumber());
+        Assert.assertEquals(-Integer.MAX_VALUE, number.getValue().intValue());
+    }
+
+    @Test
+    public void parseAbsoluteOrRelative_RelativeDoubleValue() throws ParseException
+    {
+        AbsoluteOrRelativeNumber<Double> number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseDouble, "+0.0");
+        Assert.assertEquals(true, number.isRelativeNumber());
+        Assert.assertEquals(0.0, number.getValue().doubleValue(), 0.0);
+
+        number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseDouble, "-0.0");
+        Assert.assertEquals(true, number.isRelativeNumber());
+        Assert.assertEquals(-0.0, number.getValue().doubleValue(), 0.0);
+
+        number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseDouble, "+1.2");
+        Assert.assertEquals(true, number.isRelativeNumber());
+        Assert.assertEquals(1.2, number.getValue().doubleValue(), 0.0);
+
+        number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseDouble, "-1.2");
+        Assert.assertEquals(true, number.isRelativeNumber());
+        Assert.assertEquals(-1.2, number.getValue().doubleValue(), 0.0);
+
+        number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseDouble, "+123.4567890");
+        Assert.assertEquals(true, number.isRelativeNumber());
+        Assert.assertEquals(123.4567890, number.getValue().doubleValue(), 0.0);
+
+        number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseDouble, "-123.4567890");
+        Assert.assertEquals(true, number.isRelativeNumber());
+        Assert.assertEquals(-123.4567890, number.getValue().doubleValue(), 0.0);
+
+        number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseDouble, "+" + Double.MAX_VALUE);
+        Assert.assertEquals(true, number.isRelativeNumber());
+        Assert.assertEquals(Double.MAX_VALUE, number.getValue().doubleValue(), 0.0);
+
+        number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseDouble, "-" + Double.MAX_VALUE);
+        Assert.assertEquals(true, number.isRelativeNumber());
+        Assert.assertEquals(-Double.MAX_VALUE, number.getValue().doubleValue(), 0.0);
+
+        number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseDouble, "+" + Double.MIN_VALUE);
+        Assert.assertEquals(true, number.isRelativeNumber());
+        Assert.assertEquals(Double.MIN_VALUE, number.getValue().doubleValue(), 0.0);
+
+        number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseDouble, "-" + Double.MIN_VALUE);
+        Assert.assertEquals(true, number.isRelativeNumber());
+        Assert.assertEquals(-Double.MIN_VALUE, number.getValue().doubleValue(), 0.0);
+    }
+
+    @Test
+    public void parseAbsoluteOrRelative_TimePeriod() throws ParseException
+    {
+        AbsoluteOrRelativeNumber<Integer> number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseTimePeriod, " 1h 10m ");
+        Assert.assertEquals(false, number.isRelativeNumber());
+        Assert.assertEquals(4200, number.getValue().intValue());
+
+        number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseTimePeriod, " + 1h 10m ");
+        Assert.assertEquals(true, number.isRelativeNumber());
+        Assert.assertEquals(4200, number.getValue().intValue());
+
+        number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseTimePeriod, " - 1h 10m ");
+        Assert.assertEquals(true, number.isRelativeNumber());
+        Assert.assertEquals(-4200, number.getValue().intValue());
+    }
+
+    @Test
+    public void parseAbsoluteOrRelative_extraWhitespaces() throws ParseException
+    {
+        AbsoluteOrRelativeNumber<Integer> number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseInt, " \t 123 \t ");
+        Assert.assertEquals(false, number.isRelativeNumber());
+        Assert.assertEquals(123, number.getValue().intValue());
+
+        number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseInt, "  \t  +  \t  123  \t  ");
+        Assert.assertEquals(true, number.isRelativeNumber());
+        Assert.assertEquals(123, number.getValue().intValue());
+
+        number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseInt, "  \t  -  \t  123  \t  ");
+        Assert.assertEquals(true, number.isRelativeNumber());
+        Assert.assertEquals(-123, number.getValue().intValue());
+    }
+
+    @Test(expected = ParseException.class)
+    public void parseAbsoluteOrRelative_invalidValue() throws ParseException
+    {
+        ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseTimePeriod, "++1h");
+    }
+
+    @Test
+    @Parameters(value =
+        {
+            "192.0.2.100                            | 192.0.2.100", //
+            "2001:db8:1111:2222:aaaa:bbbb:1a2b:cd34 | 2001:db8:1111:2222:aaaa:bbbb:1a2b:cd34", //
+            "2001:dB8:1111:2222:aaaa:BBBB:1a2B:Cd34 | 2001:db8:1111:2222:aaaa:bbbb:1a2b:cd34", //
+            "2001:db8:1:22:333:a:bb:ccc             | 2001:db8:1:22:333:a:bb:ccc", //
+            "2001:dB8::1:0                          | 2001:db8:0:0:0:0:1:0" //
+    })
+    public void parseIpAddresses_SingleIp_DifferentIpFormats(final String ip, final String expectedResult) throws ParseException
+    {
+        final InetAddress[] addresses = ParseUtils.parseIpAddresses(ip);
+        Assert.assertNotNull(addresses);
+        Assert.assertEquals(1, addresses.length);
+        Assert.assertEquals(expectedResult, addresses[0].getHostAddress());
+    }
+
+    @Test
+    @Parameters(method = "provideValidDelimiters")
+    public void parseIpAddresses_SingleIp_LeadingAndTrailingDelimiters(final String delimiterString) throws ParseException
+    {
+        final String ip = "192.0.2.100";
+        // add leading and trailing delimiters to IP
+        final String ipString = String.join("", delimiterString, ip, delimiterString);
+
+        final InetAddress[] addresses = ParseUtils.parseIpAddresses(ipString);
+        Assert.assertNotNull(addresses);
+        Assert.assertEquals(1, addresses.length);
+        Assert.assertEquals(ip, addresses[0].getHostAddress());
+    }
+
+    @Test
+    @Parameters(value =
+        {
+            "192.0.2.100 | 2001:db8:1:22:a:bb:1a2b:cd34 | 2001:db8:0:0:0:0:1:0 | 203.0.113.200",  // unique IPs
+            "192.0.2.100 | 2001:db8:0:0:0:0:1:0         | 2001:db8:0:0:0:0:1:0 | 192.0.2.100",    // duplicate IPs
+    })
+    public void parseIpAddresses_MultipleIps(final String ip1, final String ip2, final String ip3, final String ip4) throws ParseException
+    {
+        final InetAddress[] addresses = ParseUtils.parseIpAddresses(String.join(",", ip1, ip2, ip3, ip4));
+        Assert.assertNotNull(addresses);
+        Assert.assertEquals(4, addresses.length);
+        Assert.assertEquals(ip1, addresses[0].getHostAddress());
+        Assert.assertEquals(ip2, addresses[1].getHostAddress());
+        Assert.assertEquals(ip3, addresses[2].getHostAddress());
+        Assert.assertEquals(ip4, addresses[3].getHostAddress());
+    }
+
+    @Test
+    @Parameters(method = "provideValidDelimiterCombinations")
+    public void parseIpAddresses_MultipleIps_DifferentDelimiters(final String leadingDelimiter, final String delimiter1,
+                                                                 final String delimiter2, final String trailingDelimiter)
+        throws ParseException
+    {
+        final String ip1 = "192.0.2.100";
+        final String ip2 = "2001:db8:1:22:a:bb:1a2b:cd34";
+        final String ip3 = "203.0.113.200";
+        final String ipString = String.join("", leadingDelimiter, ip1, delimiter1, ip2, delimiter2, ip3, trailingDelimiter);
+
+        final InetAddress[] addresses = ParseUtils.parseIpAddresses(ipString);
+        Assert.assertNotNull(addresses);
+        Assert.assertEquals(3, addresses.length);
+        Assert.assertEquals(ip1, addresses[0].getHostAddress());
+        Assert.assertEquals(ip2, addresses[1].getHostAddress());
+        Assert.assertEquals(ip3, addresses[2].getHostAddress());
+    }
+
+    @Test
+    @Parameters(method = "provideValidDelimiters")
+    public void parseIpAddresses_OnlyDelimiters(final String delimiterString) throws ParseException
+    {
+        final InetAddress[] addresses = ParseUtils.parseIpAddresses(delimiterString);
+        Assert.assertNotNull(addresses);
+        Assert.assertEquals(0, addresses.length);
+    }
+
+    @Test
+    @Parameters(source = JUnitParamsUtils.BlankStringOrNullParamProvider.class)
+    public void parseIpAddresses_BlankStringOrNull(final String blankStringOrNull) throws ParseException
+    {
+        final InetAddress[] addresses = ParseUtils.parseIpAddresses(blankStringOrNull);
+        Assert.assertNotNull(addresses);
+        Assert.assertEquals(0, addresses.length);
+    }
+
+    @Test(expected = ParseException.class)
+    @Parameters(source = InvalidIpOverrideParamProvider.class)
+    public void parseIpAddresses_InvalidIp(final String invalidIp) throws ParseException
+    {
+        ParseUtils.parseIpAddresses(invalidIp);
+    }
+
+    @Test
+    public void parseDelimitedString_SingleValue()
+    {
+        final String value = "abc";
+
+        final String[] parsedValues = ParseUtils.parseDelimitedString(value);
+        Assert.assertNotNull(parsedValues);
+        Assert.assertEquals(1, parsedValues.length);
+        Assert.assertEquals(value, parsedValues[0]);
+    }
+
+    @Test
+    @Parameters(method = "provideValidDelimiters")
+    public void parseDelimitedString_SingleValue_LeadingAndTrailingDelimiters(final String delimiterString)
+    {
+        final String value = "abc";
+        // add leading and trailing delimiters to value
+        final String stringToParse = String.join("", delimiterString, value, delimiterString);
+
+        final String[] parsedValues = ParseUtils.parseDelimitedString(stringToParse);
+        Assert.assertNotNull(parsedValues);
+        Assert.assertEquals(1, parsedValues.length);
+        Assert.assertEquals(value, parsedValues[0]);
+    }
+
+    @Test
+    @Parameters(method = "provideValidDelimiterCombinations")
+    public void parseDelimitedString_MultipleValues_DifferentDelimiters(final String leadingDelimiter, final String delimiter1,
+                                                                        final String delimiter2, final String trailingDelimiter)
+    {
+        // test that values containing non-delimiter special characters are parsed as expected
+        final String value1 = "abc";
+        final String value2 = "xyz.:-_~/|@123";
+        final String value3 = "+-*#=!?§$%&{}[]()<>";
+        final String stringToParse = String.join("", leadingDelimiter, value1, delimiter1, value2, delimiter2, value3, trailingDelimiter);
+
+        final String[] parsedValues = ParseUtils.parseDelimitedString(stringToParse);
+        Assert.assertNotNull(parsedValues);
+        Assert.assertEquals(3, parsedValues.length);
+        Assert.assertEquals(value1, parsedValues[0]);
+        Assert.assertEquals(value2, parsedValues[1]);
+        Assert.assertEquals(value3, parsedValues[2]);
+    }
+
+    @Test
+    @Parameters(method = "provideValidDelimiters")
+    public void parseDelimitedString_OnlyDelimiters(final String delimiterString)
+    {
+        final String[] parsedValues = ParseUtils.parseDelimitedString(delimiterString);
+        Assert.assertNotNull(parsedValues);
+        Assert.assertEquals(0, parsedValues.length);
+    }
+
+    @Test
+    @Parameters(source = JUnitParamsUtils.BlankStringOrNullParamProvider.class)
+    public void parseDelimitedString_BlankStringOrNull(final String blankStringOrNull)
+    {
+        final String[] parsedValues = ParseUtils.parseDelimitedString(blankStringOrNull);
+        Assert.assertNotNull(parsedValues);
+        Assert.assertEquals(0, parsedValues.length);
+    }
+
+    /**
+     * Test parameter provider method. Returns Strings containing only valid delimiter characters.
+     */
+    @SuppressWarnings("unused")
+    private Object[] provideValidDelimiters()
+    {
+        return JUnitParamsUtils.wrapEachParam(new Object[]
+            {
+                " ",                // single space
+                "  ",               // multiple spaces
+                "\t",               // single tab
+                "\t\t",             // multiple tabs
+                ",",                // single comma
+                ",,",               // multiple commas
+                ";",                // single semicolon
+                ";;",               // multiple semicolons
+                " \t,;",            // one of each delimiter
+                "\t,,;\t\t  ;; , "  // random combination of delimiters
+            });
+    }
+
+    /**
+     * Test parameter provider method. Returns different combinations of valid delimiter Strings. Each parameter set
+     * contains four values that are intended to be interpreted as a leading delimiter, two delimiters between values
+     * and a trailing delimiter.
+     */
+    @SuppressWarnings("unused")
+    private Object[] provideValidDelimiterCombinations()
+    {
+        return new Object[]
+            {
+                JUnitParamsUtils.wrapParams("", " ", " ", ""),                   // space-delimited
+                JUnitParamsUtils.wrapParams("", "\t", "\t", ""),                 // tab-delimited
+                JUnitParamsUtils.wrapParams("", ",", ",", ""),                   // comma-delimited
+                JUnitParamsUtils.wrapParams("", ";", ";", ""),                   // semicolon-delimited
+                JUnitParamsUtils.wrapParams(" ", " ", " ", " "),                 // leading & trailing space
+                JUnitParamsUtils.wrapParams("\t", "\t", "\t", "\t"),             // leading & trailing tab
+                JUnitParamsUtils.wrapParams(",", ",", ",", ","),                 // leading & trailing comma
+                JUnitParamsUtils.wrapParams(";", ";", ";", ";"),                 // leading & trailing semicolon
+                JUnitParamsUtils.wrapParams(" ", ",", ";", "\t"),                // mixed delimiters 1
+                JUnitParamsUtils.wrapParams(",", ";", " ", ";"),                 // mixed delimiters 2
+                JUnitParamsUtils.wrapParams("\t, ", " ,\t", "\t; ", " ;\t"),     // whitespaces around delimiters
+                JUnitParamsUtils.wrapParams(" \t\t ", "   ", " \t\t ", "   "),   // multiple whitespace delimiters
+                JUnitParamsUtils.wrapParams(";;", ",,", ";;", ",,"),             // multiple non-whitespace delimiters
+                JUnitParamsUtils.wrapParams(" ,, \t;,;", " , ; ", " ;; \t,,, ", " ;;\t;, "), // random combination
+            };
+    }
+
+    /**
+     * Test parameter provider class for different invalid IP override Strings.
+     */
+    public static class InvalidIpOverrideParamProvider
+    {
+        @SuppressWarnings("unused")
+        public static Object[] provideInvalidIpOverrideParams()
+        {
+            return JUnitParamsUtils.wrapEachParam(new Object[]
+                {
+                    "example.org",              // hostname instead of IP
+                    "192.0.2.256",              // IPv4 address: invalid value
+                    "192.0. 2.100",             // IPv4 address: contains whitespace
+                    "2001:db8:1:2:3:4:5:g",     // IPv6 address: invalid value
+                    "2001:db8:: 1:0",           // IPv6 address: contains whitespace
+                    "[2001:db8::1:0]",          // IPv6 address: value in brackets
+                    "192.0.2.100,192.0.2.256",  // one valid, one invalid address
+                    "192.0.2.100|192.0.2.101"   // invalid delimiter
+                });
+        }
+    }
 }

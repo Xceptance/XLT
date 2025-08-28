@@ -78,7 +78,7 @@ public class ResponseTimeRequestFilter extends AbstractRequestFilter
      * {@inheritDoc}
      */
     @Override
-    public String getReplacementText(final RequestData requestData, final int capturingGroupIndex, final Object filterState)
+    public String getReplacementText(final RequestData requestData, final int capturingGroupIndex)
     {
         final long responseTime = requestData.getRunTime();
 

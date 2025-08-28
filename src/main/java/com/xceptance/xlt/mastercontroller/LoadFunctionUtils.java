@@ -15,6 +15,8 @@
  */
 package com.xceptance.xlt.mastercontroller;
 
+import com.xceptance.common.util.AbsoluteOrRelativeNumber;
+
 import java.util.ArrayList;
 
 /**
@@ -22,6 +24,17 @@ import java.util.ArrayList;
  */
 public final class LoadFunctionUtils
 {
+    /**
+     * Start time of a load function.
+     */
+    public static final int START_TIME = 0;
+
+    /**
+     * Default initial load factor of a load function. Used if no load factor is specified at the start of the load
+     * function.
+     */
+    public static final int DEFAULT_INITIAL_LOAD_FACTOR = 1;
+
     /**
      * An hour has 3600 seconds.
      */
@@ -31,6 +44,14 @@ public final class LoadFunctionUtils
      * A minute has 60 seconds.
      */
     private static final long SECONDS_PER_MINUTE = 60;
+
+    static final String ERROR_NO_TIME_VALUE_PAIRS = "The function does not specify any time/value pairs.";
+
+    static final String ERROR_INVALID_START_TIME = "The first time value of the function must be '" + LoadFunctionUtils.START_TIME + "'.";
+
+    static final String ERROR_NEGATIVE_TIME_OR_VALUE = "Either effective time or effective load factor is negative. Make sure absolute values aren't negative, and relative values don't add up to negative results.";
+
+    static final String ERROR_INVALID_LOAD_FUNCTION_ORDER = "The time/value pairs must be sorted in ascending order. This also means that relative time values must not be negative.";
 
     /**
      * Default constructor. Declared private to prevent external instantiation.
@@ -66,7 +87,8 @@ public final class LoadFunctionUtils
 
     /**
      * Checks that the passed time/value pairs define a valid load function. A load function is valid if all its (ti,vi)
-     * pairs are sorted by ti in ascending order, and neither ti, nor vi is negative.
+     * pairs are sorted by ti in ascending order, neither ti nor vi is negative, and the first ti value is
+     * {@link LoadFunctionUtils#START_TIME}.
      * 
      * @param timeValuePairs
      *            the load function points
@@ -77,7 +99,12 @@ public final class LoadFunctionUtils
     {
         if (timeValuePairs.length == 0)
         {
-            throw new IllegalArgumentException("The function does not specify any time/value pairs.");
+            throw new IllegalArgumentException(ERROR_NO_TIME_VALUE_PAIRS);
+        }
+
+        if (timeValuePairs[0][0] != LoadFunctionUtils.START_TIME)
+        {
+            throw new IllegalArgumentException(ERROR_INVALID_START_TIME);
         }
 
         int lastT = 0;
@@ -88,49 +115,17 @@ public final class LoadFunctionUtils
 
             if (t < 0 || v < 0)
             {
-                throw new IllegalArgumentException("Either time or value is negative.");
+                throw new IllegalArgumentException(ERROR_NEGATIVE_TIME_OR_VALUE);
             }
 
             if (t < lastT)
             {
-                throw new IllegalArgumentException("The time/value pairs must be sorted in ascending order.");
+                throw new IllegalArgumentException(ERROR_INVALID_LOAD_FUNCTION_ORDER);
             }
             else
             {
                 lastT = t;
             }
-        }
-    }
-
-    /**
-     * Completes a potentially incomplete load function. A load function is incomplete if its first time/value pair has
-     * a time greater than 0. In this case, the load function is completed by adding an additional pair 0/1 at the
-     * beginning.
-     * 
-     * @param timeValuePairs
-     *            the load function
-     * @return the completed load function
-     */
-    public static int[][] completeLoadFunctionIfNecessary(final int[][] timeValuePairs)
-    {
-        final int firstTime = timeValuePairs[0][0];
-        if (firstTime > 0)
-        {
-            // add an additional pair 0/1 at the beginning
-            final int[][] completedTimeValuePairs = new int[timeValuePairs.length + 1][];
-
-            completedTimeValuePairs[0] = new int[]
-                {
-                    0, 1
-                };
-            System.arraycopy(timeValuePairs, 0, completedTimeValuePairs, 1, timeValuePairs.length);
-
-            return completedTimeValuePairs;
-        }
-        else
-        {
-            // the load function is complete -> leave it untouched
-            return timeValuePairs;
         }
     }
 
@@ -420,5 +415,20 @@ public final class LoadFunctionUtils
         }
 
         return result;
+    }
+
+    /**
+     * Check if the given absolute or relative time/value pair is a valid load function starting point. A valid starting
+     * point must have an absolute time value matching {@link LoadFunctionUtils#START_TIME} and an absolute load factor.
+     *
+     * @param time
+     *            the absolute or relative time
+     * @param value
+     *            the absolute or relative value
+     * @return "true" if the time/value pair is a valid starting point, "false" otherwise
+     */
+    public static boolean isValidStartingPoint(final AbsoluteOrRelativeNumber<Integer> time, final AbsoluteOrRelativeNumber<Integer> value)
+    {
+        return !time.isRelativeNumber() && time.getValue() == LoadFunctionUtils.START_TIME && !value.isRelativeNumber();
     }
 }

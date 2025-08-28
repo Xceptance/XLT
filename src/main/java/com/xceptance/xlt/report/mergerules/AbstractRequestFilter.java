@@ -33,6 +33,12 @@ public abstract class AbstractRequestFilter
     private final int typeCodeHashCode;
 
     /**
+     * The last state of the evaluation, so we don't have look anything up. All filters are already
+     * stateful, so we can do that. 
+     */
+    protected Object lastFilterState;
+    
+    /**
      * Constructor.
      *
      * @param typeCode
@@ -55,7 +61,7 @@ public abstract class AbstractRequestFilter
      *            the filter state object returned by {@link #appliesTo(RequestData)}
      * @return the replacement text
      */
-    public abstract CharSequence getReplacementText(RequestData requestData, int capturingGroupIndex, Object filterState);
+    public abstract CharSequence getReplacementText(RequestData requestData, int capturingGroupIndex);
 
     /**
      * Whether or not the passed request data object is accepted by this request filter.

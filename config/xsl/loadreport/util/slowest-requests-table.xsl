@@ -5,7 +5,7 @@
         <xsl:param name="slowestRequests"/>
         <xsl:param name="requests"/>
 
-        <table class="c-tab-content table-autosort:3 table-autosort-order:desc">
+        <table class="c-tab-content table-autosort:1 table-autosort-order:desc">
             <thead>
                 <tr>
                     <th rowspan="2" class="table-sortable:alphanumeric colgroup1" id="sortByName">
@@ -16,16 +16,16 @@
                             <button class="clear-input" type="clear" title="Click to clear">&#x2715;</button>
                         </form>
                     </th>
-                    <th colspan="2">Baseline [ms]</th>
-                    <th rowspan="2" class="table-sortable:numeric colgroup1" id="sortByRuntime" title="Request Runtime">Runtime [ms]</th>
+                    <th rowspan="2" class="table-sortable:numeric" id="sortByRuntime" title="Request Runtime">Runtime [ms]</th>
+                    <th colspan="2" class="colgroup1">Baseline [ms]</th>
                     <th colspan="2">Bandwidth [Bytes]</th>
                     <th colspan="7" class="colgroup1">Network Timing [ms]</th>
                     <th colspan="2">Request Details</th>
                     <th colspan="2" class="colgroup1">IP Addresses</th>
                 </tr>
                 <tr>
-                    <th class="table-sortable:numeric" id="sortByMean" title="Base Mean Runtime">Mean</th>
-                    <th class="table-sortable:numeric" id="sortByP95" title="Base P95 Runtime">P95</th>
+                    <th class="table-sortable:numeric colgroup1" id="sortByMean" title="Base Mean Runtime">Mean</th>
+                    <th class="table-sortable:numeric colgroup1" id="sortByP95" title="Base P95 Runtime">P95</th>
                     <th class="table-sortable:numeric" id="sortByBytesSent" title="Bytes Sent">Sent</th>
                     <th class="table-sortable:numeric" id="sortByBytesReceived" title="Bytes Received">Received</th>
                     <th class="table-sortable:numeric colgroup1" id="sortByDnsTime" title="DNS Time">DNS</th>
@@ -51,7 +51,7 @@
                                 <xsl:with-param name="class" select="'key colgroup1'"/>
                             </xsl:call-template>
                             <td/>
-                            <td/>
+                            <td class="colgroup1"/>
                             <td class="colgroup1"/>
                             <td/>
                             <td/>
@@ -93,13 +93,13 @@
                                     </xsl:call-template>
                                 </td>
                                 <td class="value number">
+                                    <xsl:value-of select="format-number(runtime, '#,##0')"/>
+                                </td>
+                                <td class="value number">
                                     <xsl:value-of select="format-number($mean, '#,##0')"/>
                                 </td>
                                 <td class="value number">
                                     <xsl:value-of select="format-number($p95, '#,##0')"/>
-                                </td>
-                                <td class="value number">
-                                    <xsl:value-of select="format-number(runtime, '#,##0')"/>
                                 </td>
                                 <td class="value number">
                                     <xsl:value-of select="format-number(bytesSent, '#,##0')"/>
@@ -152,7 +152,7 @@
                     <tfoot>
                         <td/>
                         <td/>
-                        <td/>
+                        <td class="colgroup1"/>
                         <td class="colgroup1"/>
                         <td/>
                         <td/>
@@ -199,6 +199,8 @@
         <xsl:choose>
             <xsl:when test="$showRequestInfo or $showResponseInfo">
                 <a>
+                    <xsl:attribute name="href"/>
+                    <xsl:attribute name="onclick">return false;</xsl:attribute>
                     <xsl:attribute name="data-rel">#request-details-<xsl:value-of select="$gid"/></xsl:attribute>
                     <xsl:attribute name="class">cluetip</xsl:attribute>
                     <xsl:value-of select="$name"/>
@@ -286,6 +288,8 @@
             <xsl:choose>
                 <xsl:when test="$ipAddressCount &gt; 1">
                     <a>
+                        <xsl:attribute name="href"/>
+                        <xsl:attribute name="onclick">return false;</xsl:attribute>
                         <xsl:attribute name="data-rel">#reported-ip-list-<xsl:value-of select="$gid"/></xsl:attribute>
                         <xsl:attribute name="class">cluetip</xsl:attribute>
                         <xsl:value-of select="$ipAddressCount"/> IP Addresses

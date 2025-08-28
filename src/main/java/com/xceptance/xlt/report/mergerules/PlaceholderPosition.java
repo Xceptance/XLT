@@ -16,32 +16,80 @@
 package com.xceptance.xlt.report.mergerules;
 
 /**
- * Container for placeholder information within a pattern. It is thread safe and can be shared.
+ * Container for placeholder information within a pattern.
  *
  * @author rschwietzke
  */
 public class PlaceholderPosition
 {
+    /**
+     * The type code of the placeholder.
+     */
     public final String typeCode;
 
-    public final int typeCodeHashCode;
+    /**
+     * The index of the capturing group in the pattern.
+     */
+    public final int capturingGroupIndex;
 
-    public final int index;
-
+    /**
+     * The start position of the placeholder in the pattern.
+     */
     public final int start;
 
+    /**
+     * The end position of the placeholder in the pattern.
+     */
     public final int end;
 
+    /**
+     * The length of the placeholder in the pattern.
+     */
     public final int length;
+    
+    /**
+     * Indicates whether the placeholder is marked as used.
+     */
+    public boolean used = false;
 
-    public PlaceholderPosition(final String typeCode, final int index, final int start, final int end, final int length)
+    /**
+     * The request filter associated with the placeholder, if any.
+     */
+    public AbstractRequestFilter requestFilter = null;
+    
+    /**
+     * Constructor to initialize all fields of the placeholder.
+     *
+     * @param typeCode The type code of the placeholder.
+     * @param capturingGroupIndex The index of the capturing group in the pattern.
+     * @param start The start position of the placeholder in the pattern.
+     * @param end The end position of the placeholder in the pattern.
+     * @param length The length of the placeholder in the pattern.
+     */
+    public PlaceholderPosition(final String typeCode, final int capturingGroupIndex, final int start, final int end, final int length)
     {
         this.typeCode = typeCode;
-        this.typeCodeHashCode = typeCode.hashCode();
-
-        this.index = index;
+        this.capturingGroupIndex = capturingGroupIndex;
         this.start = start;
         this.end = end;
         this.length = length;
+    }
+    
+    /**
+     * Constructor to initialize a placeholder with minimal information.
+     *
+     * @param typeCode The type code of the placeholder.
+     * @param capturingGroupIndex The index of the capturing group in the pattern.
+     * @param start The start position of the placeholder in the pattern.
+     * @param used Indicates whether the placeholder is marked as used.
+     */
+    public PlaceholderPosition(final String typeCode, final int capturingGroupIndex, final int start, final boolean used)
+    {
+        this.typeCode = typeCode;
+        this.capturingGroupIndex = capturingGroupIndex;
+        this.start = start;
+        this.end = start;
+        this.length = 0;
+        this.used = used;
     }
 }

@@ -46,7 +46,7 @@ import com.xceptance.xlt.engine.socket.SocketMonitor;
  */
 public class XltDnsResolver implements HostNameResolver
 {
-    private static final String PROP_PREFIX_DNS = "xlt.dns.";
+    static final String PROP_PREFIX_DNS = "xlt.dns.";
 
     static final String PROP_PREFIX_DNS_PROVIDERS = PROP_PREFIX_DNS + "providers.";
 
@@ -54,15 +54,15 @@ public class XltDnsResolver implements HostNameResolver
 
     private static final String PROP_SHUFFLE_ADDRESSES = PROP_PREFIX_DNS + "shuffleAddresses";
 
-    private static final String PROP_PICK_ONE_ADDRESS_RANDOMLY = PROP_PREFIX_DNS + "pickOneAddressRandomly";
+    static final String PROP_PICK_ONE_ADDRESS_RANDOMLY = PROP_PREFIX_DNS + "pickOneAddressRandomly";
 
-    private static final String PROP_CACHE_ADDRESSES = PROP_PREFIX_DNS + "cacheAddresses";
+    static final String PROP_CACHE_ADDRESSES = PROP_PREFIX_DNS + "cacheAddresses";
 
-    private static final String PROP_RECORD_ADDRESSES = PROP_PREFIX_DNS + "recordAddresses";
+    static final String PROP_RECORD_ADDRESSES = PROP_PREFIX_DNS + "recordAddresses";
 
-    private static final String PROP_IGNORE_IPV4_ADDRESSES = PROP_PREFIX_DNS + "ignoreIPv4Addresses";
+    static final String PROP_IGNORE_IPV4_ADDRESSES = PROP_PREFIX_DNS + "ignoreIPv4Addresses";
 
-    private static final String PROP_IGNORE_IPV6_ADDRESSES = PROP_PREFIX_DNS + "ignoreIPv6Addresses";
+    static final String PROP_IGNORE_IPV6_ADDRESSES = PROP_PREFIX_DNS + "ignoreIPv6Addresses";
 
     private static final Logger LOG = LoggerFactory.getLogger(XltDnsResolver.class);
 
@@ -109,7 +109,7 @@ public class XltDnsResolver implements HostNameResolver
     /**
      * The underlying host name resolver.
      */
-    private final HostNameResolver resolver;
+    private final DnsOverrideResolver resolver;
 
     /**
      * Creates a new instance and configures it according to the project configuration files.
@@ -135,7 +135,7 @@ public class XltDnsResolver implements HostNameResolver
         addressesByHostName = cacheAddresses ? new HashMap<>() : null;
 
         final String providerName = StringUtils.defaultIfBlank(props.getProperty(PROP_PROVIDER), PlatformHostNameResolver.PROVIDER_NAME);
-        resolver = createResolver(providerName);
+        resolver = new DnsOverrideResolver(createResolver(providerName));
     }
 
     /**
@@ -212,7 +212,7 @@ public class XltDnsResolver implements HostNameResolver
     /**
      * Performs the actual address resolution using the passed resolver and measures the resolution time.
      */
-    private InetAddress[] doResolve(final String host, final HostNameResolver resolver) throws UnknownHostException
+    InetAddress[] doResolve(final String host, final HostNameResolver resolver) throws UnknownHostException
     {
         final RequestExecutionContext requestExecutionContext = RequestExecutionContext.getCurrent();
         final SocketMonitor socketMonitor = requestExecutionContext.getSocketMonitor();

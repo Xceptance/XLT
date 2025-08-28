@@ -16,58 +16,228 @@
 package com.xceptance.xlt.engine.dns;
 
 import java.net.InetAddress;
-import java.util.Arrays;
-import java.util.Random;
+import java.net.UnknownHostException;
 
-import org.junit.Ignore;
-
-import com.xceptance.common.lang.ThreadUtils;
+import com.google.common.net.InetAddresses;
 import com.xceptance.xlt.engine.RequestExecutionContext;
-import com.xceptance.xlt.engine.socket.SocketMonitor;
+import com.xceptance.xlt.engine.XltEngine;
+import junitparams.JUnitParamsRunner;
+import org.hamcrest.MatcherAssert;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Test;
 
-@Ignore("Not a test case, but rather an analysis and debugging tool")
+import com.xceptance.xlt.api.util.XltProperties;
+import org.junit.runner.RunWith;
+import org.mockito.Mockito;
+
+import static org.hamcrest.CoreMatchers.anyOf;
+import static org.hamcrest.CoreMatchers.is;
+
+@RunWith(JUnitParamsRunner.class)
 public class XltDnsResolverTest
 {
-    public static void main(final String[] args)
+    @After
+    public void tearDown()
     {
-        final String name = "dwlp2.coachoutlet.com";
-        // final String name = "production-functional22-qa.demandware.net";
-        // String name = "www.youtube.com";
-
-        new Thread(() -> doIt(name)).start();
-        // new Thread(() -> doIt(name)).start();
-        // new Thread(() -> doIt(name)).start();
+        XltEngine.reset();
     }
 
-    private static void doIt(final String name)
+    @Test
+    public void resolve_WithOverride_RemoveIPv4Addresses() throws UnknownHostException
     {
-        ThreadUtils.sleep(new Random().nextInt(1000));
+        final String hostname = "example.org";
+        final String ip1 = "192.0.2.100";
+        final String ip2 = "2001:db8:1111:2222:aaaa:bbbb:1a2b:cd34";
+        final String ip3 = "2001:db8:0:0:0:0:1:0";
+        final String ip4 = "203.0.113.200";
 
-        final SocketMonitor socketMonitor = RequestExecutionContext.getCurrent().getSocketMonitor();
+        setOverrideProperty(hostname, String.join(",", ip1, ip2, ip3, ip4));
+        setXltProperty(XltDnsResolver.PROP_IGNORE_IPV4_ADDRESSES, "true");
 
-        final XltDnsResolver dns = new XltDnsResolver();
+        final InetAddress[] addresses = new XltDnsResolver().resolve(hostname);
+        Assert.assertNotNull(addresses);
+        Assert.assertEquals(2, addresses.length);
+        Assert.assertEquals(ip2, addresses[0].getHostAddress());
+        Assert.assertEquals(ip3, addresses[1].getHostAddress());
+    }
 
-        for (int i = 0; i < 500; i++)
-        {
-            InetAddress[] addresses = null;
+    @Test
+    public void resolve_WithOverride_RemoveIPv6Addresses() throws UnknownHostException
+    {
+        final String hostname = "example.org";
+        final String ip1 = "192.0.2.100";
+        final String ip2 = "2001:db8:1111:2222:aaaa:bbbb:1a2b:cd34";
+        final String ip3 = "2001:db8:0:0:0:0:1:0";
+        final String ip4 = "203.0.113.200";
 
-            try
+        setOverrideProperty(hostname, String.join(",", ip1, ip2, ip3, ip4));
+        setXltProperty(XltDnsResolver.PROP_IGNORE_IPV6_ADDRESSES, "true");
+
+        final InetAddress[] addresses = new XltDnsResolver().resolve(hostname);
+        Assert.assertNotNull(addresses);
+        Assert.assertEquals(2, addresses.length);
+        Assert.assertEquals(ip1, addresses[0].getHostAddress());
+        Assert.assertEquals(ip4, addresses[1].getHostAddress());
+    }
+
+    @Test(expected = UnknownHostException.class)
+    public void resolve_WithOverride_RemoveAllIpAddresses() throws UnknownHostException
+    {
+        final String hostname = "example.org";
+        final String ip1 = "192.0.2.100";
+        final String ip2 = "2001:db8:1:2:3:4:5:6";
+
+        setOverrideProperty(hostname, String.join(",", ip1, ip2));
+        setXltProperty(XltDnsResolver.PROP_IGNORE_IPV4_ADDRESSES, "true");
+        setXltProperty(XltDnsResolver.PROP_IGNORE_IPV6_ADDRESSES, "true");
+
+        new XltDnsResolver().resolve(hostname);
+    }
+
+    @Test
+    public void resolve_WithOverride_PickOneAddressRandomly() throws UnknownHostException
+    {
+        final String hostname = "example.org";
+        final String ip1 = "192.0.2.100";
+        final String ip2 = "2001:db8:1:2:3:4:5:6";
+        final String ip3 = "203.0.113.200";
+
+        setOverrideProperty(hostname, String.join(",", ip1, ip2, ip3));
+        setXltProperty(XltDnsResolver.PROP_PICK_ONE_ADDRESS_RANDOMLY, "true");
+
+        final InetAddress[] addresses = new XltDnsResolver().resolve(hostname);
+
+        Assert.assertNotNull(addresses);
+        Assert.assertEquals(1, addresses.length);
+        MatcherAssert.assertThat(addresses[0].getHostAddress(), anyOf(is(ip1), is(ip2), is(ip3)));
+    }
+
+    @Test
+    public void resolve_WithOverride_RecordAddresses() throws UnknownHostException
+    {
+        final String hostname = "example.org";
+        final String ip = "192.0.2.100";
+
+        setOverrideProperty(hostname, ip);
+        setXltProperty(XltDnsResolver.PROP_RECORD_ADDRESSES, "true");
+
+        final DnsMonitor dnsMonitor = RequestExecutionContext.getCurrent().getDnsMonitor();
+        Assert.assertEquals(0, dnsMonitor.getDnsInfo().getIpAddresses().length);
+
+        final InetAddress[] addresses = new XltDnsResolver().resolve(hostname);
+        Assert.assertNotNull(addresses);
+        Assert.assertEquals(1, addresses.length);
+        Assert.assertEquals(ip, addresses[0].getHostAddress());
+        Assert.assertArrayEquals(new String[]
             {
-                socketMonitor.reset();
+                ip
+            }, dnsMonitor.getDnsInfo().getIpAddresses());
+    }
 
-                addresses = dns.resolve(name);
-            }
-            catch (final Exception e)
-            {
-                e.printStackTrace();
-            }
-            finally
-            {
-                System.out.printf("%3d: %s - %d ms\n", i, Arrays.toString(addresses),
-                                  socketMonitor.getSocketStatistics().getDnsLookupTime());
-            }
+    @Test
+    public void resolve_WithOverride_DoNotRecordAddresses() throws UnknownHostException
+    {
+        final String hostname = "example.org";
+        final String ip = "192.0.2.100";
 
-            ThreadUtils.sleep(1000);
-        }
+        setOverrideProperty(hostname, ip);
+        setXltProperty(XltDnsResolver.PROP_RECORD_ADDRESSES, "false");
+
+        final DnsMonitor dnsMonitor = RequestExecutionContext.getCurrent().getDnsMonitor();
+        Assert.assertEquals(0, dnsMonitor.getDnsInfo().getIpAddresses().length);
+
+        final InetAddress[] addresses = new XltDnsResolver().resolve(hostname);
+        Assert.assertNotNull(addresses);
+        Assert.assertEquals(1, addresses.length);
+        Assert.assertEquals(ip, addresses[0].getHostAddress());
+        Assert.assertEquals(0, dnsMonitor.getDnsInfo().getIpAddresses().length);
+    }
+
+    @Test
+    public void resolve_CacheAddresses() throws UnknownHostException
+    {
+        final String hostname1 = "example.org";
+        final InetAddress[] addresses1 = new InetAddress[]
+            {
+                InetAddresses.forString("192.0.2.100")
+            };
+        final String hostname2 = "host.with-dash.test";
+        final InetAddress[] addresses2 = new InetAddress[]
+            {
+                InetAddresses.forString("2001:db8:1111:2222:aaaa:bbbb:1a2b:cd34")
+            };
+
+        setXltProperty(XltDnsResolver.PROP_CACHE_ADDRESSES, "true");
+
+        // mock the actual host name resolving
+        final XltDnsResolver resolver = Mockito.spy(new XltDnsResolver());
+        Mockito.doReturn(addresses1).when(resolver).doResolve(Mockito.eq(hostname1), Mockito.any());
+        Mockito.doReturn(addresses2).when(resolver).doResolve(Mockito.eq(hostname2), Mockito.any());
+
+        // resolve first host name; IP addresses are resolved normally
+        Assert.assertArrayEquals(addresses1, resolver.resolve(hostname1));
+        Mockito.verify(resolver, Mockito.times(1)).doResolve(Mockito.eq(hostname1), Mockito.any());
+        Mockito.verify(resolver, Mockito.never()).doResolve(Mockito.eq(hostname2), Mockito.any());
+        Mockito.verify(resolver, Mockito.times(1)).doResolve(Mockito.any(), Mockito.any());
+        Mockito.clearInvocations(resolver);
+
+        // resolve first host name again; IP addresses are returned from cache instead of resolving them again
+        Assert.assertArrayEquals(addresses1, resolver.resolve(hostname1));
+        Mockito.verify(resolver, Mockito.never()).doResolve(Mockito.any(), Mockito.any());
+
+        // resolve second host name; IP addresses are resolved normally
+        Assert.assertArrayEquals(addresses2, resolver.resolve(hostname2));
+        Mockito.verify(resolver, Mockito.never()).doResolve(Mockito.eq(hostname1), Mockito.any());
+        Mockito.verify(resolver, Mockito.times(1)).doResolve(Mockito.eq(hostname2), Mockito.any());
+        Mockito.verify(resolver, Mockito.times(1)).doResolve(Mockito.any(), Mockito.any());
+    }
+
+    @Test(expected = UnknownHostException.class)
+    public void resolve_NoAddressesFound() throws UnknownHostException
+    {
+        final String hostname = "example.org";
+
+        // mock the actual IP resolving
+        final XltDnsResolver resolver = Mockito.spy(new XltDnsResolver());
+        Mockito.doThrow(new UnknownHostException()).when(resolver).doResolve(Mockito.eq(hostname), Mockito.any());
+
+        resolver.resolve(hostname);
+    }
+
+    @Test
+    public void doResolve() throws UnknownHostException
+    {
+        final String hostname = "example.org";
+        final InetAddress[] addresses =
+            {
+                InetAddresses.forString("192.0.2.100")
+            };
+
+        final HostNameResolver mockResolver = Mockito.mock(HostNameResolver.class);
+        Mockito.doReturn(addresses).when(mockResolver).resolve(hostname);
+
+        Assert.assertArrayEquals(addresses, new XltDnsResolver().doResolve(hostname, mockResolver));
+    }
+
+    @Test(expected = UnknownHostException.class)
+    public void doResolve_NoAddressesFound() throws UnknownHostException
+    {
+        final String hostname = "example.org";
+
+        final HostNameResolver mockResolver = Mockito.mock(HostNameResolver.class);
+        Mockito.doThrow(new UnknownHostException()).when(mockResolver).resolve(hostname);
+
+        new XltDnsResolver().doResolve(hostname, mockResolver);
+    }
+
+    private void setXltProperty(final String key, final String value)
+    {
+        XltProperties.getInstance().setProperty(key, value);
+    }
+
+    private void setOverrideProperty(final String hostname, final String ipString)
+    {
+        setXltProperty(DnsOverrideResolver.PROP_DNS_OVERRIDE_PREFIX + "." + hostname, ipString);
     }
 }

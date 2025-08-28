@@ -20,23 +20,28 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.htmlunit.util.NameValuePair;
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.xceptance.xlt.common.XltConstants;
+import org.junit.runner.RunWith;
+import util.JUnitParamsUtils;
 
 /**
  * Tests the implementation of utility class {@link UrlUtils}.
  * 
  * @author Hartmut Arlt (Xceptance Software Technologies GmbH)
  */
+@RunWith(JUnitParamsRunner.class)
 public class UrlUtilsTest
 {
 
     @Test
-    public void testParseUrl_OnlyProto() throws Throwable
+    public void testParseUrl_OnlyProto()
     {
         final URLInfo info = UrlUtils.parseUrlString("http://");
         Assert.assertNotNull("Failed to parse url", info);
@@ -51,14 +56,15 @@ public class UrlUtilsTest
     }
 
     @Test
-    public void testParseUrl_ProtoHost() throws Throwable
+    @Parameters(method = "provideValidHosts")
+    public void testParseUrl_ProtoHost(final String host)
     {
-        final URLInfo info = UrlUtils.parseUrlString("http://foo.bar");
+        final URLInfo info = UrlUtils.parseUrlString(String.format("http://%s", host));
         Assert.assertNotNull("Failed to parse url", info);
 
         Assert.assertEquals("http", info.getProtocol());
         Assert.assertNull(info.getUserInfo());
-        Assert.assertEquals("foo.bar", info.getHost());
+        Assert.assertEquals(host, info.getHost());
         Assert.assertEquals(-1, info.getPort());
         Assert.assertEquals("", info.getPath());
         Assert.assertNull(info.getQuery());
@@ -66,14 +72,15 @@ public class UrlUtilsTest
     }
 
     @Test
-    public void testParseUrl_UserInfoHost() throws Throwable
+    @Parameters(method = "provideValidHosts")
+    public void testParseUrl_UserInfoHost(final String host)
     {
-        final URLInfo info = UrlUtils.parseUrlString("john:doe@foo.bar");
+        final URLInfo info = UrlUtils.parseUrlString(String.format("john:doe@%s", host));
         Assert.assertNotNull("Failed to parse url", info);
 
         Assert.assertNull(info.getProtocol());
         Assert.assertEquals("john:doe", info.getUserInfo());
-        Assert.assertEquals("foo.bar", info.getHost());
+        Assert.assertEquals(host, info.getHost());
         Assert.assertEquals(-1, info.getPort());
         Assert.assertEquals("", info.getPath());
         Assert.assertNull(info.getQuery());
@@ -81,7 +88,7 @@ public class UrlUtilsTest
     }
 
     @Test
-    public void testParseUrl_UserInfoOnly() throws Throwable
+    public void testParseUrl_UserInfoOnly()
     {
         final URLInfo info = UrlUtils.parseUrlString("john:doe@");
         Assert.assertNotNull("Failed to parse url", info);
@@ -96,14 +103,15 @@ public class UrlUtilsTest
     }
 
     @Test
-    public void testParseUrl_HostOnly() throws Throwable
+    @Parameters(method = "provideValidHosts")
+    public void testParseUrl_HostOnly(final String host)
     {
-        final URLInfo info = UrlUtils.parseUrlString("example.org");
+        final URLInfo info = UrlUtils.parseUrlString(host);
         Assert.assertNotNull("Failed to parse url", info);
 
         Assert.assertNull(info.getProtocol());
         Assert.assertNull(info.getUserInfo());
-        Assert.assertEquals("example.org", info.getHost());
+        Assert.assertEquals(host, info.getHost());
         Assert.assertEquals(-1, info.getPort());
         Assert.assertEquals("", info.getPath());
         Assert.assertNull(info.getQuery());
@@ -111,14 +119,15 @@ public class UrlUtilsTest
     }
 
     @Test
-    public void testParseUrl_HostPort() throws Throwable
+    @Parameters(method = "provideValidHosts")
+    public void testParseUrl_HostPort(final String host)
     {
-        final URLInfo info = UrlUtils.parseUrlString("example.org:999");
+        final URLInfo info = UrlUtils.parseUrlString(String.format("%s:999", host));
         Assert.assertNotNull("Failed to parse url", info);
 
         Assert.assertNull(info.getProtocol());
         Assert.assertNull(info.getUserInfo());
-        Assert.assertEquals("example.org", info.getHost());
+        Assert.assertEquals(host, info.getHost());
         Assert.assertEquals(999, info.getPort());
         Assert.assertEquals("", info.getPath());
         Assert.assertNull(info.getQuery());
@@ -126,7 +135,7 @@ public class UrlUtilsTest
     }
 
     @Test
-    public void testParseUrl_PathOnly() throws Throwable
+    public void testParseUrl_PathOnly()
     {
         final URLInfo info = UrlUtils.parseUrlString("/foo/bar");
         Assert.assertNotNull("Failed to parse url", info);
@@ -141,7 +150,7 @@ public class UrlUtilsTest
     }
 
     @Test
-    public void testParseUrl_PathQuery() throws Throwable
+    public void testParseUrl_PathQuery()
     {
         final URLInfo info = UrlUtils.parseUrlString("/foo/bar?baz=foo");
         Assert.assertNotNull("Failed to parse url", info);
@@ -156,7 +165,7 @@ public class UrlUtilsTest
     }
 
     @Test
-    public void testParseUrl_FragmentOnly() throws Throwable
+    public void testParseUrl_FragmentOnly()
     {
         final URLInfo info = UrlUtils.parseUrlString("#fooBar");
         Assert.assertNotNull("Failed to parse url", info);
@@ -171,14 +180,15 @@ public class UrlUtilsTest
     }
 
     @Test
-    public void testParseUrl_HostFragment() throws Throwable
+    @Parameters(method = "provideValidHosts")
+    public void testParseUrl_HostFragment(final String host)
     {
-        final URLInfo info = UrlUtils.parseUrlString("example.org#fooBar");
+        final URLInfo info = UrlUtils.parseUrlString(String.format("%s#fooBar", host));
         Assert.assertNotNull("Failed to parse url", info);
 
         Assert.assertNull(info.getProtocol());
         Assert.assertNull(info.getUserInfo());
-        Assert.assertEquals("example.org", info.getHost());
+        Assert.assertEquals(host, info.getHost());
         Assert.assertEquals(-1, info.getPort());
         Assert.assertEquals("", info.getPath());
         Assert.assertNull(info.getQuery());
@@ -186,7 +196,7 @@ public class UrlUtilsTest
     }
 
     @Test
-    public void testParseUrl_QueryFragment() throws Throwable
+    public void testParseUrl_QueryFragment()
     {
         final URLInfo info = UrlUtils.parseUrlString("?foo=bar#fooBar");
         Assert.assertNotNull("Failed to parse url", info);
@@ -201,7 +211,7 @@ public class UrlUtilsTest
     }
 
     @Test
-    public void testParseUrl_PathFragment() throws Throwable
+    public void testParseUrl_PathFragment()
     {
         final URLInfo info = UrlUtils.parseUrlString("/myPath/baz#fooBar");
         Assert.assertNotNull("Failed to parse url", info);
@@ -216,14 +226,15 @@ public class UrlUtilsTest
     }
 
     @Test
-    public void testParseUrl_CompleteUrl() throws Throwable
+    @Parameters(method = "provideValidHosts")
+    public void testParseUrl_CompleteUrl(final String host)
     {
-        final URLInfo info = UrlUtils.parseUrlString("http://john.doe:passwd@example.org:999/myPath/1/2?foo=bar#fooBar");
+        final URLInfo info = UrlUtils.parseUrlString(String.format("http://john.doe:passwd@%s:999/myPath/1/2?foo=bar#fooBar", host));
         Assert.assertNotNull("Failed to parse url", info);
 
         Assert.assertEquals("http", info.getProtocol());
         Assert.assertEquals("john.doe:passwd", info.getUserInfo());
-        Assert.assertEquals("example.org", info.getHost());
+        Assert.assertEquals(host, info.getHost());
         Assert.assertEquals(999, info.getPort());
         Assert.assertEquals("/myPath/1/2", info.getPath());
         Assert.assertEquals("foo=bar", info.getQuery());
@@ -231,14 +242,60 @@ public class UrlUtilsTest
     }
 
     @Test
-    public void testRewriteUrl_PathOnly() throws Throwable
+    @Parameters(value =
+        {
+            "",     // empty host
+            "[]"    // empty IPv6 host
+    })
+    public void testParseUrl_CompleteUrl_OnlyDelimiters(final String host)
     {
-        final URL url = UrlUtils.rewriteUrl("/myPath/1/2", URLInfo.builder().proto("http").host("example.org").build());
+        final URLInfo info = UrlUtils.parseUrlString(String.format("://@%s:/?#", host));
+        Assert.assertNotNull("Failed to parse url", info);
+
+        Assert.assertEquals("", info.getProtocol());
+        Assert.assertEquals("", info.getUserInfo());
+        Assert.assertEquals(host, info.getHost());
+        Assert.assertEquals(-1, info.getPort());
+        Assert.assertEquals("/", info.getPath());
+        Assert.assertEquals("", info.getQuery());
+        Assert.assertEquals("", info.getFragment());
+    }
+
+    @Test
+    @Parameters(method = "provideParametersForEmptyPortTest")
+    public void testParseUrl_PortEmpty(final String host, final String port, final String path)
+    {
+        // test different cases where the port delimiter is present but no port is given
+        // (e.g. "example.org:", "example.org: /abc")
+        final URLInfo info = UrlUtils.parseUrlString(String.format("%s:%s%s", host, port, path));
+        Assert.assertNotNull("Failed to parse url", info);
+
+        Assert.assertNull(info.getProtocol());
+        Assert.assertNull(info.getUserInfo());
+        Assert.assertEquals(host, info.getHost());
+        Assert.assertEquals(-1, info.getPort());
+        Assert.assertEquals(path, info.getPath());
+        Assert.assertNull(info.getQuery());
+        Assert.assertNull(info.getFragment());
+    }
+
+    @Test(expected = NumberFormatException.class)
+    @Parameters(method = "provideUrlsWithInvalidPort")
+    public void testParseUrl_PortCannotBeParsed(final String urlString)
+    {
+        UrlUtils.parseUrlString(urlString);
+    }
+
+    @Test
+    @Parameters(method = "provideValidHosts")
+    public void testRewriteUrl_PathOnly(final String host) throws Throwable
+    {
+        final URL url = UrlUtils.rewriteUrl("/myPath/1/2", URLInfo.builder().proto("http").host(host).build());
         Assert.assertNotNull(url);
 
         Assert.assertEquals("http", url.getProtocol());
         Assert.assertNull(url.getUserInfo());
-        Assert.assertEquals("example.org", url.getHost());
+        Assert.assertEquals(host, url.getHost());
         Assert.assertEquals("/myPath/1/2", url.getPath());
         Assert.assertNull(url.getQuery());
         Assert.assertNull(url.getRef());
@@ -246,14 +303,15 @@ public class UrlUtilsTest
     }
 
     @Test
-    public void testRewriteUrl_HostPath() throws Throwable
+    @Parameters(method = "provideValidHosts")
+    public void testRewriteUrl_HostPath(final String host) throws Throwable
     {
-        final URL url = UrlUtils.rewriteUrl("example.org/myPath/1/2", URLInfo.builder().proto("http").build());
+        final URL url = UrlUtils.rewriteUrl(String.format("%s/myPath/1/2", host), URLInfo.builder().proto("http").build());
         Assert.assertNotNull(url);
 
         Assert.assertEquals("http", url.getProtocol());
         Assert.assertNull(url.getUserInfo());
-        Assert.assertEquals("example.org", url.getHost());
+        Assert.assertEquals(host, url.getHost());
         Assert.assertEquals("/myPath/1/2", url.getPath());
         Assert.assertNull(url.getQuery());
         Assert.assertNull(url.getRef());
@@ -261,14 +319,15 @@ public class UrlUtilsTest
     }
 
     @Test
-    public void testRewriteUrl_HostPortPath() throws Throwable
+    @Parameters(method = "provideValidHosts")
+    public void testRewriteUrl_HostPortPath(final String host) throws Throwable
     {
-        final URL url = UrlUtils.rewriteUrl("example.org:999/myPath/1/2", URLInfo.builder().proto("http").build());
+        final URL url = UrlUtils.rewriteUrl(String.format("%s:999/myPath/1/2", host), URLInfo.builder().proto("http").build());
         Assert.assertNotNull(url);
 
         Assert.assertEquals("http", url.getProtocol());
         Assert.assertNull(url.getUserInfo());
-        Assert.assertEquals("example.org", url.getHost());
+        Assert.assertEquals(host, url.getHost());
         Assert.assertEquals("/myPath/1/2", url.getPath());
         Assert.assertNull(url.getQuery());
         Assert.assertNull(url.getRef());
@@ -276,14 +335,15 @@ public class UrlUtilsTest
     }
 
     @Test
-    public void testRewriteUrl_HostOnly() throws Throwable
+    @Parameters(method = "provideValidHosts")
+    public void testRewriteUrl_HostOnly(final String host) throws Throwable
     {
-        final URL url = UrlUtils.rewriteUrl("example.org", URLInfo.builder().proto("http").build());
+        final URL url = UrlUtils.rewriteUrl(host, URLInfo.builder().proto("http").build());
         Assert.assertNotNull(url);
 
         Assert.assertEquals("http", url.getProtocol());
         Assert.assertNull(url.getUserInfo());
-        Assert.assertEquals("example.org", url.getHost());
+        Assert.assertEquals(host, url.getHost());
         Assert.assertEquals("", url.getPath());
         Assert.assertNull(url.getQuery());
         Assert.assertNull(url.getRef());
@@ -291,7 +351,52 @@ public class UrlUtilsTest
     }
 
     @Test
-    public void testUrlEncodedParametersFromNameValuePairs() throws Throwable
+    @Parameters(value =
+        {
+            "example.org                                | foo.bar.test", //
+            "192.0.2.100                                | 203.0.113.200", //
+            "[2001:db8:1111:2222:aaaa:BBBB:1a2b:cd34]   | [2001:db8::1:0]", //
+            "192.0.2.100                                | [2001:db8:1111:2222:aaaa:BBBB:1a2b:cd34]", //
+            "[2001:db8:1111:2222:aaaa:BBBB:1a2b:cd34]   | 192.0.2.100" //
+    })
+    public void testRewriteUrl_RewriteCompleteUrl(final String initialHost, final String overrideHost) throws Throwable
+    {
+        final String initialUrlString = String.format("http://john.doe:passwd@%s:999/myPath/1/2?foo=bar#fooBar", initialHost);
+        final URLInfo urlOverride = URLInfo.builder().proto("https").userInfo("admin:pw").host(overrideHost).port(1111).path("/myPath/baz")
+                                           .query("abc=xyz").fragment("abcXyz").build();
+
+        final URL info = UrlUtils.rewriteUrl(initialUrlString, urlOverride);
+        Assert.assertNotNull("Failed to parse url", info);
+
+        Assert.assertEquals("https", info.getProtocol());
+        Assert.assertEquals("admin:pw", info.getUserInfo());
+        Assert.assertEquals(overrideHost, info.getHost());
+        Assert.assertEquals("/myPath/baz", info.getPath());
+        Assert.assertEquals("abc=xyz", info.getQuery());
+        Assert.assertEquals("abcXyz", info.getRef());
+        Assert.assertEquals(1111, info.getPort());
+    }
+
+    @Test
+    @Parameters(method = "provideValidHosts")
+    public void testRewriteUrl_EmptyOverride(final String host) throws Throwable
+    {
+        // override is empty, so the original URL should remain unchanged
+        final String initialUrlString = String.format("http://john.doe:passwd@%s:999/myPath/1/2?foo=bar#fooBar", host);
+        final URL info = UrlUtils.rewriteUrl(initialUrlString, URLInfo.builder().build());
+        Assert.assertNotNull("Failed to parse url", info);
+
+        Assert.assertEquals("http", info.getProtocol());
+        Assert.assertEquals("john.doe:passwd", info.getUserInfo());
+        Assert.assertEquals(host, info.getHost());
+        Assert.assertEquals("/myPath/1/2", info.getPath());
+        Assert.assertEquals("foo=bar", info.getQuery());
+        Assert.assertEquals("fooBar", info.getRef());
+        Assert.assertEquals(999, info.getPort());
+    }
+
+    @Test
+    public void testUrlEncodedParametersFromNameValuePairs()
     {
         List<NameValuePair> parameters = new ArrayList<>();
         parameters.add(new NameValuePair("", "noKey"));
@@ -324,9 +429,9 @@ public class UrlUtilsTest
             }
         }
     }
-   
+
     @Test
-    public void testParseUrl_Issue_2781() throws Throwable
+    public void testParseUrl_Issue_2781()
     {
         final URLInfo info = UrlUtils.parseUrlString("http://fonts.googleapis.com/css?family=Roboto:400,300,500,300italic|Inconsolata:400,700");
         Assert.assertNotNull("Failed to parse url", info);
@@ -341,7 +446,7 @@ public class UrlUtilsTest
     }
 
     @Test
-    public void testRemoveUserInfo_NullOrBlank() throws Throwable
+    public void testRemoveUserInfo_NullOrBlank()
     {
         final String message = "Blank or null input string should return null";
         Assert.assertNull(message, UrlUtils.removeUserInfo((String) null));
@@ -350,64 +455,142 @@ public class UrlUtilsTest
     }
 
     @Test
-    public void testRemoveUserInfo_NoUserInfo() throws Throwable
+    @Parameters(method = "provideValidHosts")
+    public void testRemoveUserInfo_NoUserInfo(final String host)
     {
-        Assert.assertEquals("https://anyserver.com:12345/some/path?foo=bar#fragment",
-                            UrlUtils.removeUserInfo("https://anyserver.com:12345/some/path?foo=bar#fragment"));
+        final String urlString = String.format("https://%s:12345/some/path?foo=bar#fragment", host);
+        Assert.assertEquals(urlString, UrlUtils.removeUserInfo(urlString));
     }
 
     @Test
-    public void testRemoveUserInfo_UserNameOnly() throws Throwable
+    @Parameters(method = "provideValidHosts")
+    public void testRemoveUserInfo_UserNameOnly(final String host)
     {
-        Assert.assertEquals("https://anyserver.com:12345/some/path?foo=bar#fragment",
-                            UrlUtils.removeUserInfo("https://johndoe@anyserver.com:12345/some/path?foo=bar#fragment"));
+        Assert.assertEquals(String.format("https://%s:12345/some/path?foo=bar#fragment", host),
+                            UrlUtils.removeUserInfo(String.format("https://johndoe@%s:12345/some/path?foo=bar#fragment", host)));
     }
 
     @Test
-    public void testRemoveUserInfo_EmptyPassword() throws Throwable
+    @Parameters(method = "provideValidHosts")
+    public void testRemoveUserInfo_EmptyPassword(final String host)
     {
-        Assert.assertEquals("https://anyserver.com:12345/some/path?foo=bar#fragment",
-                            UrlUtils.removeUserInfo("https://johndoe:@anyserver.com:12345/some/path?foo=bar#fragment"));
+        Assert.assertEquals(String.format("https://%s:12345/some/path?foo=bar#fragment", host),
+                            UrlUtils.removeUserInfo(String.format("https://johndoe:@%s:12345/some/path?foo=bar#fragment", host)));
     }
 
     @Test
-    public void testRemoveUserInfo_UserNameAndPassword() throws Throwable
+    @Parameters(method = "provideValidHosts")
+    public void testRemoveUserInfo_UserNameAndPassword(final String host)
     {
-        Assert.assertEquals("https://anyserver.com:12345/some/path?foo=bar#fragment",
-                            UrlUtils.removeUserInfo("https://johndoe:secret@anyserver.com:12345/some/path?foo=bar#fragment"));
+        Assert.assertEquals(String.format("https://%s:12345/some/path?foo=bar#fragment", host),
+                            UrlUtils.removeUserInfo(String.format("https://johndoe:secret@%s:12345/some/path?foo=bar#fragment", host)));
     }
+
     @Test
-    public void testRemoveUserInfo_URLNull() throws Throwable
+    public void testRemoveUserInfo_URLNull()
     {
         Assert.assertNull("Null input URL should return null", UrlUtils.removeUserInfo((URL) null));
     }
 
     @Test
-    public void testRemoveUserInfo_URLNoUserInfo() throws Throwable
+    @Parameters(method = "provideValidHosts")
+    public void testRemoveUserInfo_URLNoUserInfo(final String host) throws Throwable
     {
-        Assert.assertEquals("https://anyserver.com:12345/some/path?foo=bar#fragment",
-                            UrlUtils.removeUserInfo(new URL("https://anyserver.com:12345/some/path?foo=bar#fragment")));
+        final String urlString = String.format("https://%s:12345/some/path?foo=bar#fragment", host);
+        Assert.assertEquals(urlString, UrlUtils.removeUserInfo(new URL(urlString)));
     }
 
     @Test
-    public void testRemoveUserInfo_URLUserNameOnly() throws Throwable
+    @Parameters(method = "provideValidHosts")
+    public void testRemoveUserInfo_URLUserNameOnly(final String host) throws Throwable
     {
-        Assert.assertEquals("https://anyserver.com:12345/some/path?foo=bar#fragment",
-                            UrlUtils.removeUserInfo(new URL("https://johndoe@anyserver.com:12345/some/path?foo=bar#fragment")));
+        Assert.assertEquals(String.format("https://%s:12345/some/path?foo=bar#fragment", host),
+                            UrlUtils.removeUserInfo(new URL(String.format("https://johndoe@%s:12345/some/path?foo=bar#fragment", host))));
     }
 
     @Test
-    public void testRemoveUserInfo_URLEmptyPassword() throws Throwable
+    @Parameters(method = "provideValidHosts")
+    public void testRemoveUserInfo_URLEmptyPassword(final String host) throws Throwable
     {
-        Assert.assertEquals("https://anyserver.com:12345/some/path?foo=bar#fragment",
-                            UrlUtils.removeUserInfo(new URL("https://johndoe:@anyserver.com:12345/some/path?foo=bar#fragment")));
+        Assert.assertEquals(String.format("https://%s:12345/some/path?foo=bar#fragment", host),
+                            UrlUtils.removeUserInfo(new URL(String.format("https://johndoe:@%s:12345/some/path?foo=bar#fragment", host))));
     }
 
     @Test
-    public void testRemoveUserInfo_URLUserNameAndPassword() throws Throwable
+    @Parameters(method = "provideValidHosts")
+    public void testRemoveUserInfo_URLUserNameAndPassword(final String host) throws Throwable
     {
-        Assert.assertEquals("https://anyserver.com:12345/some/path?foo=bar#fragment",
-                            UrlUtils.removeUserInfo(new URL("https://johndoe:secret@anyserver.com:12345/some/path?foo=bar#fragment")));
+        Assert.assertEquals(String.format("https://%s:12345/some/path?foo=bar#fragment", host),
+                            UrlUtils.removeUserInfo(new URL(String.format("https://johndoe:secret@%s:12345/some/path?foo=bar#fragment",
+                                                                          host))));
     }
 
+    /**
+     * Test parameter provider method. Returns valid host names in different formats.
+     */
+    @SuppressWarnings("unused")
+    private Object[] provideValidHosts()
+    {
+        return new Object[]
+            {
+                "example.org", //
+                "192.0.2.100", //
+                "[2001:db8:1111:2222:aaaa:BBBB:1a2b:cd34]", //
+                "[2001:db8::1:0]" //
+            };
+    }
+
+    /**
+     * Test parameter provider method. Returns host, port and path combinations for testing URLs where the port value is
+     * missing (i.e. empty or whitespace-only).
+     */
+    @SuppressWarnings("unused")
+    private Object[] provideParametersForEmptyPortTest()
+    {
+        return new Object[]
+            {
+                JUnitParamsUtils.wrapParams("example.org", "", ""), //
+                JUnitParamsUtils.wrapParams("example.org", " ", ""), //
+                JUnitParamsUtils.wrapParams("example.org", "", "/abc"), //
+                JUnitParamsUtils.wrapParams("example.org", " ", "/abc"), //
+                JUnitParamsUtils.wrapParams("192.0.2.100", "", ""), //
+                JUnitParamsUtils.wrapParams("192.0.2.100", " ", ""), //
+                JUnitParamsUtils.wrapParams("192.0.2.100", "", "/abc"), //
+                JUnitParamsUtils.wrapParams("192.0.2.100", " ", "/abc"), //
+                JUnitParamsUtils.wrapParams("[2001:db8:1111:2222:aaaa:BBBB:1a2b:cd34]", "", ""), //
+                JUnitParamsUtils.wrapParams("[2001:db8:1111:2222:aaaa:BBBB:1a2b:cd34]", " ", ""), //
+                JUnitParamsUtils.wrapParams("[2001:db8:1111:2222:aaaa:BBBB:1a2b:cd34]", "", "/abc"), //
+                JUnitParamsUtils.wrapParams("[2001:db8:1111:2222:aaaa:BBBB:1a2b:cd34]", " ", "/abc"), //
+            };
+    }
+
+    /**
+     * Test parameter provider method. Returns host port combinations with a valid host but a port that cannot be
+     * parsed.
+     */
+    @SuppressWarnings("unused")
+    private Object[] provideUrlsWithInvalidPort()
+    {
+        return JUnitParamsUtils.wrapEachParam(new Object[]
+            {
+                "example.org:123 ", //
+                "example.org: 123", //
+                "example.org:abc", //
+                "example.org:abc999", //
+                "example.org:9:99", //
+                "example.org:999999999999", //
+                "192.0.2.100:123 ", //
+                "192.0.2.100: 123", //
+                "192.0.2.100:abc", //
+                "192.0.2.100:abc999", //
+                "192.0.2.100:9:99", //
+                "192.0.2.100:999999999999", //
+                "[2001:db8:1111:2222:aaaa:BBBB:1a2b:cd34]:123 ", //
+                "[2001:db8:1111:2222:aaaa:BBBB:1a2b:cd34]: 123", //
+                "[2001:db8:1111:2222:aaaa:BBBB:1a2b:cd34]:abc", //
+                "[2001:db8:1111:2222:aaaa:BBBB:1a2b:cd34]:abc999", //
+                "[2001:db8:1111:2222:aaaa:BBBB:1a2b:cd34]:9:99", //
+                "[2001:db8:1111:2222:aaaa:BBBB:1a2b:cd34]:999999999999" //
+            });
+    }
 }

@@ -15,6 +15,7 @@
  */
 package com.xceptance.xlt.mastercontroller;
 
+import com.xceptance.common.util.AbsoluteOrRelativeNumber;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -1056,10 +1057,12 @@ public class LoadFunctionUtilsTest
     // checkLoadFunction
     // ====================================
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test()
     public void testNoTimeValuePairIsDefined()
     {
-        LoadFunctionUtils.checkLoadFunction(new int[][] {});
+        final IllegalArgumentException exception = Assert.assertThrows(IllegalArgumentException.class,
+                                                                       () -> LoadFunctionUtils.checkLoadFunction(new int[][] {}));
+        Assert.assertEquals(LoadFunctionUtils.ERROR_NO_TIME_VALUE_PAIRS, exception.getMessage());
     }
 
     @Test(expected = ArrayIndexOutOfBoundsException.class)
@@ -1071,24 +1074,46 @@ public class LoadFunctionUtilsTest
             });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test()
+    public void testFirstTimeIsNoValidStartTime()
+    {
+        final int[][] loadFunction = new int[][]
+            {
+                {
+                    1, 2
+                }
+            };
+
+        final IllegalArgumentException exception = Assert.assertThrows(IllegalArgumentException.class,
+                                                                       () -> LoadFunctionUtils.checkLoadFunction(loadFunction));
+        Assert.assertEquals(LoadFunctionUtils.ERROR_INVALID_START_TIME, exception.getMessage());
+    }
+
+    @Test()
     public void testTimeIsNegative_01()
     {
-        LoadFunctionUtils.checkLoadFunction(new int[][]
+        final int[][] loadFunction = new int[][]
             {
+                {
+                    LoadFunctionUtils.START_TIME, 0
+                },
                 {
                     -5, 10
                 }
-            });
+            };
+
+        final IllegalArgumentException exception = Assert.assertThrows(IllegalArgumentException.class,
+                                                                       () -> LoadFunctionUtils.checkLoadFunction(loadFunction));
+        Assert.assertEquals(LoadFunctionUtils.ERROR_NEGATIVE_TIME_OR_VALUE, exception.getMessage());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test()
     public void testTimeIsNegative_02()
     {
-        LoadFunctionUtils.checkLoadFunction(new int[][]
+        final int[][] loadFunction = new int[][]
             {
                 {
-                    0, 10
+                    LoadFunctionUtils.START_TIME, 10
                 },
                 {
                     5, 20
@@ -1096,27 +1121,38 @@ public class LoadFunctionUtilsTest
                 {
                     -10, 30
                 }
-            });
+            };
+
+        final IllegalArgumentException exception = Assert.assertThrows(IllegalArgumentException.class,
+                                                                       () -> LoadFunctionUtils.checkLoadFunction(loadFunction));
+        Assert.assertEquals(LoadFunctionUtils.ERROR_NEGATIVE_TIME_OR_VALUE, exception.getMessage());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test()
     public void testValueIsNegative_01()
     {
-        LoadFunctionUtils.checkLoadFunction(new int[][]
+        final int[][] loadFunction = new int[][]
             {
+                {
+                    LoadFunctionUtils.START_TIME, 0
+                },
                 {
                     5, -10
                 }
-            });
+            };
+
+        final IllegalArgumentException exception = Assert.assertThrows(IllegalArgumentException.class,
+                                                                       () -> LoadFunctionUtils.checkLoadFunction(loadFunction));
+        Assert.assertEquals(LoadFunctionUtils.ERROR_NEGATIVE_TIME_OR_VALUE, exception.getMessage());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test()
     public void testValueIsNegative_02()
     {
-        LoadFunctionUtils.checkLoadFunction(new int[][]
+        final int[][] loadFunction = new int[][]
             {
                 {
-                    0, 10
+                    LoadFunctionUtils.START_TIME, 10
                 },
                 {
                     5, 20
@@ -1124,16 +1160,20 @@ public class LoadFunctionUtilsTest
                 {
                     10, -30
                 }
-            });
+            };
+
+        final IllegalArgumentException exception = Assert.assertThrows(IllegalArgumentException.class,
+                                                                       () -> LoadFunctionUtils.checkLoadFunction(loadFunction));
+        Assert.assertEquals(LoadFunctionUtils.ERROR_NEGATIVE_TIME_OR_VALUE, exception.getMessage());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test()
     public void testTimeNotInAscendingOrder()
     {
-        LoadFunctionUtils.checkLoadFunction(new int[][]
+        final int[][] loadFunction = new int[][]
             {
                 {
-                    0, 10
+                    LoadFunctionUtils.START_TIME, 10
                 },
                 {
                     10, 20
@@ -1141,7 +1181,11 @@ public class LoadFunctionUtilsTest
                 {
                     5, 30
                 }
-            });
+            };
+
+        final IllegalArgumentException exception = Assert.assertThrows(IllegalArgumentException.class,
+                                                                       () -> LoadFunctionUtils.checkLoadFunction(loadFunction));
+        Assert.assertEquals(LoadFunctionUtils.ERROR_INVALID_LOAD_FUNCTION_ORDER, exception.getMessage());
     }
 
     @Test
@@ -1159,123 +1203,6 @@ public class LoadFunctionUtilsTest
                     20, 30
                 }
             });
-    }
-
-    // ====================================
-    // completeLoadFunctionIfNecessary
-    // ====================================
-
-    @Test
-    public void testLoadFunctionIsComplete_01()
-    {
-        Assert.assertArrayEquals(new int[][]
-            {
-                {
-                    0, 5
-                }
-            }, LoadFunctionUtils.completeLoadFunctionIfNecessary(new int[][]
-            {
-                {
-                    0, 5
-                }
-            }));
-    }
-
-    @Test
-    public void testLoadFunctionIsComplete_02()
-    {
-        Assert.assertArrayEquals(new int[][]
-            {
-                {
-                    0, 5
-                },
-                {
-                    20, 20
-                }
-            }, LoadFunctionUtils.completeLoadFunctionIfNecessary(new int[][]
-            {
-                {
-                    0, 5
-                },
-                {
-                    20, 20
-                }
-            }));
-    }
-
-    @Test
-    public void testFunctionIsIncompleteAndFirstValueIsOne()
-    {
-        Assert.assertArrayEquals(new int[][]
-            {
-                {
-                    0, 1
-                },
-                {
-                    10, 1
-                },
-                {
-                    20, 20
-                }
-            }, LoadFunctionUtils.completeLoadFunctionIfNecessary(new int[][]
-            {
-                {
-                    10, 1
-                },
-                {
-                    20, 20
-                }
-            }));
-    }
-
-    @Test
-    public void testFunctionIsIncomplete_01()
-    {
-        Assert.assertArrayEquals(new int[][]
-            {
-                {
-                    0, 1
-                },
-                {
-                    10, 2
-                },
-                {
-                    20, 20
-                }
-            }, LoadFunctionUtils.completeLoadFunctionIfNecessary(new int[][]
-            {
-                {
-                    10, 2
-                },
-                {
-                    20, 20
-                }
-            }));
-    }
-
-    @Test
-    public void testFunctionIsIncomplete_02()
-    {
-        Assert.assertArrayEquals(new int[][]
-            {
-                {
-                    0, 1
-                },
-                {
-                    10, 0
-                },
-                {
-                    20, 20
-                }
-            }, LoadFunctionUtils.completeLoadFunctionIfNecessary(new int[][]
-            {
-                {
-                    10, 0
-                },
-                {
-                    20, 20
-                }
-            }));
     }
 
     // ====================================
@@ -1456,6 +1383,58 @@ public class LoadFunctionUtilsTest
                     20, 20
                 }
             }, result);
+    }
+
+    @Test
+    public void isValidStartingPoint_pointIsValid()
+    {
+        final AbsoluteOrRelativeNumber<Integer> validStartTime = new AbsoluteOrRelativeNumber<>(false, LoadFunctionUtils.START_TIME);
+
+        // points with the absolute time LoadFunctionUtils.START_TIME and an absolute value are valid starting points
+        Assert.assertTrue(LoadFunctionUtils.isValidStartingPoint(validStartTime, new AbsoluteOrRelativeNumber<>(false, 0)));
+        Assert.assertTrue(LoadFunctionUtils.isValidStartingPoint(validStartTime, new AbsoluteOrRelativeNumber<>(false, 1)));
+        Assert.assertTrue(LoadFunctionUtils.isValidStartingPoint(validStartTime, new AbsoluteOrRelativeNumber<>(false, 25)));
+        Assert.assertTrue(LoadFunctionUtils.isValidStartingPoint(validStartTime, new AbsoluteOrRelativeNumber<>(false, -1)));
+        Assert.assertTrue(LoadFunctionUtils.isValidStartingPoint(validStartTime, new AbsoluteOrRelativeNumber<>(false, -25)));
+    }
+
+    @Test
+    public void isValidStartingPoint_timeIsRelative()
+    {
+        final AbsoluteOrRelativeNumber<Integer> value = new AbsoluteOrRelativeNumber<>(false, 1);
+
+        // points with relative time aren't valid starting points
+        Assert.assertFalse(LoadFunctionUtils.isValidStartingPoint(new AbsoluteOrRelativeNumber<>(true, LoadFunctionUtils.START_TIME),
+                                                                  value));
+        Assert.assertFalse(LoadFunctionUtils.isValidStartingPoint(new AbsoluteOrRelativeNumber<>(true, 1), value));
+        Assert.assertFalse(LoadFunctionUtils.isValidStartingPoint(new AbsoluteOrRelativeNumber<>(true, 25), value));
+        Assert.assertFalse(LoadFunctionUtils.isValidStartingPoint(new AbsoluteOrRelativeNumber<>(true, -1), value));
+        Assert.assertFalse(LoadFunctionUtils.isValidStartingPoint(new AbsoluteOrRelativeNumber<>(true, -25), value));
+    }
+
+    @Test
+    public void isValidStartingPoint_timeValueNotValid()
+    {
+        final AbsoluteOrRelativeNumber<Integer> value = new AbsoluteOrRelativeNumber<>(false, 1);
+
+        // points with absolute time that doesn't equal LoadFunctionUtils.START_TIME aren't valid starting points
+        Assert.assertFalse(LoadFunctionUtils.isValidStartingPoint(new AbsoluteOrRelativeNumber<>(false, 1), value));
+        Assert.assertFalse(LoadFunctionUtils.isValidStartingPoint(new AbsoluteOrRelativeNumber<>(false, 25), value));
+        Assert.assertFalse(LoadFunctionUtils.isValidStartingPoint(new AbsoluteOrRelativeNumber<>(false, -1), value));
+        Assert.assertFalse(LoadFunctionUtils.isValidStartingPoint(new AbsoluteOrRelativeNumber<>(false, -25), value));
+    }
+
+    @Test
+    public void isValidStartingPoint_ValueIsRelative()
+    {
+        final AbsoluteOrRelativeNumber<Integer> validStartTime = new AbsoluteOrRelativeNumber<>(false, LoadFunctionUtils.START_TIME);
+
+        // points with relative value aren't valid starting points
+        Assert.assertFalse(LoadFunctionUtils.isValidStartingPoint(validStartTime, new AbsoluteOrRelativeNumber<>(true, 0)));
+        Assert.assertFalse(LoadFunctionUtils.isValidStartingPoint(validStartTime, new AbsoluteOrRelativeNumber<>(true, 1)));
+        Assert.assertFalse(LoadFunctionUtils.isValidStartingPoint(validStartTime, new AbsoluteOrRelativeNumber<>(true, 25)));
+        Assert.assertFalse(LoadFunctionUtils.isValidStartingPoint(validStartTime, new AbsoluteOrRelativeNumber<>(true, -1)));
+        Assert.assertFalse(LoadFunctionUtils.isValidStartingPoint(validStartTime, new AbsoluteOrRelativeNumber<>(true, -25)));
     }
 
     @SuppressWarnings("unused")

@@ -6,7 +6,7 @@
 
     <groupId>com.xceptance</groupId>
     <artifactId>xlt</artifactId>
-    <version>9.0.0</version>
+    <version>9.1.0</version>
     <packaging>jar</packaging>
 
     <name>XLT</name>
@@ -50,17 +50,6 @@
         <url>https://github.com/Xceptance/XLT/issues</url>
     </issueManagement>
 
-    <distributionManagement>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-        <repository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
-        </repository>
-    </distributionManagement>
-
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>21</maven.compiler.source>
@@ -79,17 +68,6 @@
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-gpg-plugin</artifactId>
-                <version>3.0.1</version>
-                <configuration>
-                    <gpgArguments>
-                        <arg>--pinentry-mode</arg>
-                        <arg>loopback</arg>
-                    </gpgArguments>
-                </configuration>
-            </plugin>
             <!-- Adds or updates the license header in source files. -->
             <!-- Usage: mvn license:format -->
             <plugin>
@@ -137,6 +115,72 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <!-- Build profile solely used to publish existing artifacts (built with ANT) to Maven Central  -->
+        <profile>
+            <id>central</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>build-helper-maven-plugin</artifactId>
+                        <version>3.6.1</version>
+                        <configuration>
+                            <artifacts>
+                              <artifact>
+                                <file>${project.artifactId}-${project.version}-javadoc.jar</file>
+                                <classifier>javadoc</classifier>
+                              </artifact>
+                              <artifact>
+                                <file>${project.artifactId}-${project.version}-sources.jar</file>
+                                <classifier>sources</classifier>
+                              </artifact>
+                              <artifact>
+                                <file>${project.artifactId}-${project.version}.zip</file>
+                                <type>zip</type>
+                              </artifact>
+                            </artifacts>
+                        </configuration>
+                        <executions>
+                          <execution>
+                            <id>attach-artifacts</id>
+                            <phase>package</phase>
+                            <goals>
+                              <goal>attach-artifact</goal>
+                            </goals>
+                          </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>3.2.7</version>
+                        <executions>
+                          <execution>
+                            <id>sign-artifacts</id>
+                            <phase>verify</phase>
+                            <goals>
+                              <goal>sign</goal>
+                            </goals>
+                          </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
+                        <version>0.7.0</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <publishingServerId>central</publishingServerId>
+                            <autoPublish>true</autoPublish>
+                            <waitUntil>published</waitUntil>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
     <dependencyManagement>
         <dependencies>
@@ -186,7 +230,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.17.0</version>
+            <version>3.18.0</version>
         </dependency>
         <dependency>
             <groupId>commons-logging</groupId>
@@ -542,6 +586,17 @@
             <groupId>io.opentelemetry</groupId>
             <artifactId>opentelemetry-sdk-extension-autoconfigure</artifactId>
         </dependency>
+        <!-- javassist is used by Checkstyle, Powermock, and Reflections. Use latest version for Java 21 support. -->
+        <dependency>
+            <groupId>org.javassist</groupId>
+            <artifactId>javassist</artifactId>
+            <version>3.30.2-GA</version>
+        </dependency>
+        <dependency>
+            <groupId>org.reflections</groupId>
+            <artifactId>reflections</artifactId>
+            <version>0.10.2</version>
+        </dependency>
 
         <!-- ================= -->
         <!-- Test dependencies -->
@@ -684,7 +739,7 @@
             <groupId>commons-fileupload</groupId>
             <artifactId>commons-fileupload</artifactId>
             <scope>test</scope>
-            <version>1.5</version>
+            <version>1.6.0</version>
             <exclusions>
                 <exclusion>
                     <groupId>commons-io</groupId>
@@ -809,13 +864,6 @@
             <groupId>net.sf.trove4j</groupId>
             <artifactId>trove4j</artifactId>
             <version>3.0.3</version>
-            <scope>test</scope>
-        </dependency>
-        <!-- javassist is used by Checkstyle and Powermock. Use latest version for Java 21 support. -->
-        <dependency>
-            <groupId>org.javassist</groupId>
-            <artifactId>javassist</artifactId>
-            <version>3.30.2-GA</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
