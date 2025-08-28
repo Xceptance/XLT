@@ -26,7 +26,8 @@ import com.xceptance.xlt.report.mergerules.RequestProcessingRule.UrlPrecheckText
  */
 public class UrlRequestFilter extends AbstractPatternRequestFilter
 {
-    private final String urlPrecheckText;
+    private final XltCharBuffer urlPrecheckText;
+    private final int[] urlPrecheckTextShiftTable;
     
     /**
      * Constructor.
@@ -52,17 +53,50 @@ public class UrlRequestFilter extends AbstractPatternRequestFilter
         // with the change to get split caches per thread, we can afford to do
         // a lookup here and also profit from "does not apply" look ups.
         super("u", regex, exclude, 5000);
-        this.urlPrecheckText = StringUtils.isNotBlank(urlPrecheckText.value()) ? urlPrecheckText.value() : null;
+
+        if (StringUtils.isNotBlank(urlPrecheckText.value()))
+        {
+            this.urlPrecheckText = XltCharBuffer.valueOf(urlPrecheckText.value());
+            this.urlPrecheckTextShiftTable = XltCharBuffer.createShiftTable(this.urlPrecheckText);
+        }
+        else
+        {
+            this.urlPrecheckText = null;
+            this.urlPrecheckTextShiftTable = null;
+        }
     }
 
     @Override
     public Object appliesTo(final RequestData requestData)
     {
+//        // should we run a cheapish initial check first?
+//        if (this.urlPrecheckText != null && !this.isExclude)
+//        {
+//            // do a simple lookup
+//            final int pos = requestData.getOriginalUrl().indexOf(urlPrecheckText);
+//            
+//            // if we have a match
+//            if (pos >= 0)
+//            {
+//                // do the real check to be sure
+//                return super.appliesTo(requestData);
+//            }
+//            else
+//            {
+//                // precheck failed and we are not excluding, so this is a non-match
+//                return null;
+//            }
+//        }           
+//        else
+//        {
+//            return super.appliesTo(requestData);
+//        }
+        
         // should we run a cheapish initial check first?
         if (this.urlPrecheckText != null && !this.isExclude)
         {
             // do a simple lookup
-            final int pos = requestData.getOriginalUrl().indexOf(urlPrecheckText);
+            final int pos = requestData.getUrl().indexOf(urlPrecheckText);
             
             // if we have a match
             if (pos >= 0)
