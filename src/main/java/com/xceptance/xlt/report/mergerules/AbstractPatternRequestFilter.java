@@ -21,7 +21,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.xceptance.common.collection.LRUFastHashMap;
+import com.xceptance.common.collection.LRUClockMap;
 import com.xceptance.common.lang.ThrowableUtils;
 import com.xceptance.common.util.RegExUtils;
 import com.xceptance.xlt.api.engine.RequestData;
@@ -34,7 +34,7 @@ public abstract class AbstractPatternRequestFilter extends AbstractRequestFilter
     /**
      * Cache the expensive stuff, we are a per thread instance. Can be empty!
      */
-    private final LRUFastHashMap<CharSequence, MatchResult> cache;
+    private final LRUClockMap<CharSequence, MatchResult> cache;
 
     /**
      * Just a place holder for a NULL
@@ -52,18 +52,10 @@ public abstract class AbstractPatternRequestFilter extends AbstractRequestFilter
     final boolean isExclude;
 
     /**
-     * Constructor.
-     *
-     * @param typeCode
-     *            the type code of this request filter
-     * @param regex
-     *            the regular expression to identify matching requests
+     * The last state of the evaluation, so we don't have look anything up. All filters are already
+     * stateful, so we can do that. 
      */
-    public AbstractPatternRequestFilter(final String typeCode, final String regex)
-    {
-        // default cache
-        this(typeCode, regex, false, 100);
-    }
+    protected MatchResult lastFilterState;
 
     /**
      * Constructor.
@@ -81,7 +73,11 @@ public abstract class AbstractPatternRequestFilter extends AbstractRequestFilter
 
         this.matcher = StringUtils.isBlank(regex) ? null : RegExUtils.getPattern(regex, 0).matcher("any");
         this.isExclude = exclude;
-        this.cache = cacheSize > 0 ? new LRUFastHashMap<>(cacheSize) : null;
+        if (cacheSize <= 0)
+        {
+            throw new IllegalArgumentException("Cache size larger than 0");
+        }
+        this.cache = new LRUClockMap<>(cacheSize);
     }
 
     /**
@@ -95,56 +91,52 @@ public abstract class AbstractPatternRequestFilter extends AbstractRequestFilter
      * {@inheritDoc}
      */
     @Override
-    public Object appliesTo(final RequestData requestData)
+    public boolean appliesTo(final RequestData requestData)
     {
-        if (matcher == null)
+        if (this.matcher == null)
         {
-            // empty is always fine, we just want to get the full text -> return a non-null dummy object
-            return this.lastFilterState = Boolean.TRUE;
+            // empty is always fine, we just want to get the full text
+            return true;
         }
 
         // get the data to match against
         final CharSequence text = getText(requestData);
 
-        // only cache if we want that, there are areas where caching does not make sense and wastes
-        // a lot of time
-        if (cache == null)
+        MatchResult result = this.cache.get(text);
+        if (result == null)
         {
-            // reuse our matcher and save memory
+            // not found, produce and cache, recycle the matcher
+            // cache only the result, not the matcher itself
             final Matcher m = this.matcher.reset(text);
 
-            // when we return the matcher, it will be evaluated instantly and
-            // hence is reuseable during the next call, this saves memory
-            // because a matcher is large
-            return this.lastFilterState = (m.find() ^ isExclude) ? m : null;
+            if (m.find() ^ isExclude)
+            {
+                // we don't cache the matcher but the result which is immutable
+                result = m.toMatchResult();
+                cache.put(text, result);
+
+                this.lastFilterState = result;
+                return true;
+            }
+            else
+            {
+                // remember the miss
+                cache.put(text, NULL);
+                this.lastFilterState = null;
+                return false;
+            }
+        }
+
+        // ok, we got one, just see if this is NULL or a match
+        if (result == NULL)
+        {
+            this.lastFilterState = null;
+            return false;
         }
         else
         {
-            MatchResult result = this.cache.get(text);
-            if (result == null)
-            {
-                // not found, produce and cache, recycle the matcher
-                // cache only the result, not the matcher itself
-                final Matcher m = this.matcher.reset(text);
-
-                if (m.find() ^ isExclude)
-                {
-                    // we don't cache the matcher but the result which is immutable
-                    result = m.toMatchResult();
-                    cache.put(text, result);
-
-                    return this.lastFilterState = result;
-                }
-                else
-                {
-                    // remember the miss
-                    cache.put(text, NULL);
-                    return this.lastFilterState = null;
-                }
-            }
-
-            // ok, we got one, just see if this is NULL or a match
-            return this.lastFilterState = result == NULL ? null : result;
+            this.lastFilterState = result;
+            return true;
         }
     }
 
@@ -161,7 +153,7 @@ public abstract class AbstractPatternRequestFilter extends AbstractRequestFilter
 
         try
         {
-            return ((MatchResult) this.lastFilterState).group(capturingGroupIndex);
+            return this.lastFilterState.group(capturingGroupIndex);
         }
         catch (final IndexOutOfBoundsException ioobe)
         {
