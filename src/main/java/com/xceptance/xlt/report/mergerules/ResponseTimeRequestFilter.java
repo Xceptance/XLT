@@ -69,9 +69,9 @@ public class ResponseTimeRequestFilter extends AbstractRequestFilter
      * {@inheritDoc}
      */
     @Override
-    public Object appliesTo(final RequestData requestData)
+    public boolean appliesTo(final RequestData requestData)
     {
-        return Boolean.TRUE;
+        return true;
     }
 
     /**

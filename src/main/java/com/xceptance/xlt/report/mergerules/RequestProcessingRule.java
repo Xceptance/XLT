@@ -459,7 +459,7 @@ public class RequestProcessingRule
             final AbstractRequestFilter filter = requestFilters[i];
             final var state = filter.appliesTo(requestData);
 
-            if (state == null)
+            if (state == false)
             {
                 // return early since one of the filters did *not* apply
 

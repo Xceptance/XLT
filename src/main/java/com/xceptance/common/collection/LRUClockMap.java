@@ -200,31 +200,8 @@ public class LRUClockMap<K, V>
 
     private int mixHash(int h) 
     {
-
-//        h = (h * 0x9e3779b9);
         h = h ^ (h >>> 16);
-//
-//        return h;
-//        
-//        h += (h << 13);
-//        h ^= (h >>> 12);
-//        h += (h << 3);
-//        h ^= (h >>> 17);
-//        h += (h << 5);
-//        h ^= (h >>> 10);
-
         return h;
-        
-//        return h;
-        
-//        return h ^ (h >>> 16); // simple hash mixing
-        
-//        h ^= (h >>> 16);
-//        h *= 0x85ebca6b; 
-//        h ^= (h >>> 13);
-//        h *= 0xc2b2ae35;
-//        h ^= (h >>> 16);
-//        return h;
     }
     
     public V put(final K key, final V value)
@@ -389,10 +366,19 @@ public class LRUClockMap<K, V>
     }
 
     /**
+     * Just tell us how big we are, not how many slots we have occupied.
+     * @return the size of the holding array
+     */
+    public int occupiedSpace()
+    {
+        return this.data.length;
+    }
+    
+    /**
      * Returns how many slots are really occupied, should always match
      * size but for testing, we expose that.
      * 
-     * @return the occupied slots
+     * @return the occupied slot count
      */
     public int trueSize()
     {
@@ -409,6 +395,8 @@ public class LRUClockMap<K, V>
     
     /**
      * Returns a list of all keys. This is mainly for testing purposes.
+     * This does not cause LRU effects. This is in order of the internal array,
+     * but without the free slots.
      *
      * @return a list of keys
      */
@@ -446,7 +434,7 @@ public class LRUClockMap<K, V>
      * @param x a long integer smaller than or equal to 2<sup>62</sup>.
      * @return the least power of two greater than or equal to the specified value.
      */
-    public static long nextPowerOfTwo(long x) 
+    private static long nextPowerOfTwo(long x) 
     {
         if ( x == 0 ) 
         {
@@ -469,7 +457,7 @@ public class LRUClockMap<K, V>
      * @return the minimum possible size for a backing array.
      * @throws IllegalArgumentException if the necessary size is larger than 2<sup>30</sup>.
      */
-    public static int arraySize( final int expected, final float f ) 
+    private static int arraySize( final int expected, final float f ) 
     {
         final long s = Math.max(2, nextPowerOfTwo((long)Math.ceil(expected / f)));
         if (s > (1 << 30)) 
@@ -501,7 +489,7 @@ public class LRUClockMap<K, V>
         return sj.toString();
     }
     
-    public class DebugWrapper<DK, DV> 
+    class DebugWrapper<DK, DV> 
     {
         public final DK key;
         public final DV value;
@@ -525,7 +513,7 @@ public class LRUClockMap<K, V>
         }
     }
     
-    public List<DebugWrapper<K, V>> getDebugData()
+    List<DebugWrapper<K, V>> getDebugData()
     {
         final var result = new ArrayList<DebugWrapper<K, V>>(this.data.length);
         for (int i = 0; i < this.data.length; i++)

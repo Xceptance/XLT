@@ -67,7 +67,7 @@ public class UrlRequestFilter extends AbstractPatternRequestFilter
     }
 
     @Override
-    public Object appliesTo(final RequestData requestData)
+    public boolean appliesTo(final RequestData requestData)
     {
 //        // should we run a cheapish initial check first?
 //        if (this.urlPrecheckText != null && !this.isExclude)
@@ -107,7 +107,7 @@ public class UrlRequestFilter extends AbstractPatternRequestFilter
             else
             {
                 // precheck failed and we are not excluding, so this is a non-match
-                return null;
+                return false;
             }
         }           
         else

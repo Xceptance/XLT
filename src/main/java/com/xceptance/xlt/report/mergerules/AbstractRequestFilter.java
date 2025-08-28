@@ -31,12 +31,6 @@ public abstract class AbstractRequestFilter
      * The hash of the string for faster comparison of the type code
      */
     private final int typeCodeHashCode;
-
-    /**
-     * The last state of the evaluation, so we don't have look anything up. All filters are already
-     * stateful, so we can do that. 
-     */
-    protected Object lastFilterState;
     
     /**
      * Constructor.
@@ -68,10 +62,9 @@ public abstract class AbstractRequestFilter
      *
      * @param requestData
      *            the request data object
-     * @return in case the filter accepted the passed request data: a state object representing the filter state (can be
-     *         a dummy object), otherwise: <code>null</code>
+     * @return true if a match, false otherwise
      */
-    public abstract Object appliesTo(RequestData requestData);
+    public abstract boolean appliesTo(RequestData requestData);
 
     /**
      * Returns the type code of this request filter.
