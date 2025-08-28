@@ -741,13 +741,26 @@ public class XltCharBuffer implements CharSequence, Comparable<XltCharBuffer>
             }
     
             int l = this.length;
-            for (int i = 0; i < l; i++) 
+            int i = 0;
+            for (; i < l - 1; i = i + 2) 
+            {
+                if (this.charAt(i) != other.charAt(i))
+                {
+                    return false;
+                }
+                if (this.charAt(i + 1) != other.charAt(i + 1))
+                {
+                    return false;
+                }
+            }
+            for (; i < l; i++) 
             {
                 if (this.charAt(i) != other.charAt(i))
                 {
                     return false;
                 }
             }
+            
             return true;
             
 //            // now, we go the expensive route
