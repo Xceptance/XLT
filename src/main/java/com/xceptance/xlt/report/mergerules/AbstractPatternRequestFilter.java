@@ -100,7 +100,7 @@ public abstract class AbstractPatternRequestFilter extends AbstractRequestFilter
         if (matcher == null)
         {
             // empty is always fine, we just want to get the full text -> return a non-null dummy object
-            return Boolean.TRUE;
+            return this.lastFilterState = Boolean.TRUE;
         }
 
         // get the data to match against
@@ -116,7 +116,7 @@ public abstract class AbstractPatternRequestFilter extends AbstractRequestFilter
             // when we return the matcher, it will be evaluated instantly and
             // hence is reuseable during the next call, this saves memory
             // because a matcher is large
-            return (m.find() ^ isExclude) ? m : null;
+            return this.lastFilterState = (m.find() ^ isExclude) ? m : null;
         }
         else
         {
@@ -133,18 +133,18 @@ public abstract class AbstractPatternRequestFilter extends AbstractRequestFilter
                     result = m.toMatchResult();
                     cache.put(text, result);
 
-                    return result;
+                    return this.lastFilterState = result;
                 }
                 else
                 {
                     // remember the miss
                     cache.put(text, NULL);
-                    return null;
+                    return this.lastFilterState = null;
                 }
             }
 
             // ok, we got one, just see if this is NULL or a match
-            return result == NULL ? null : result;
+            return this.lastFilterState = result == NULL ? null : result;
         }
     }
 
@@ -152,7 +152,7 @@ public abstract class AbstractPatternRequestFilter extends AbstractRequestFilter
      * {@inheritDoc}
      */
     @Override
-    public CharSequence getReplacementText(final RequestData requestData, final int capturingGroupIndex, final Object filterState)
+    public CharSequence getReplacementText(final RequestData requestData, final int capturingGroupIndex)
     {
         if (isExclude || matcher == null || capturingGroupIndex == -1)
         {
@@ -161,7 +161,7 @@ public abstract class AbstractPatternRequestFilter extends AbstractRequestFilter
 
         try
         {
-            return ((MatchResult) filterState).group(capturingGroupIndex);
+            return ((MatchResult) this.lastFilterState).group(capturingGroupIndex);
         }
         catch (final IndexOutOfBoundsException ioobe)
         {
