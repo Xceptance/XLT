@@ -130,7 +130,7 @@ public class RequestData extends TimerData
      * The request URL.
      */
     private XltCharBuffer url;
-    
+
     private String originalUrl;
 
     /**
@@ -331,7 +331,7 @@ public class RequestData extends TimerData
     {
         return this.originalUrl;
     }
-    
+
     /**
      * Returns the hashcode of the fragment free version of the url
      *
@@ -549,6 +549,7 @@ public class RequestData extends TimerData
         if (responseCode >= 0)
         {
             this.responseCode = responseCode;
+            this.responseCodeAsChars = XltCharBuffer.valueOf(Integer.toString(responseCode));
         }
         else
         {
@@ -562,11 +563,19 @@ public class RequestData extends TimerData
      * @param responseCode
      *            the response code
      */
-    public void setResponseCodeAsChars(final XltCharBuffer responseCode)
+    public void setResponseCode(final XltCharBuffer responseCode)
     {
-        this.responseCodeAsChars = responseCode;
+        if (responseCode.isEmpty())
+        {
+            this.responseCode = ParseNumbers.parseInt(responseCode);
+            this.responseCodeAsChars = responseCode;
+        }
+        else
+        {
+            throw new IllegalArgumentException("Response code must not be negative: " + responseCode + "'.");
+        }
     }
-    
+
     /**
      * Get the request's response code as originally recorded.
      *
@@ -576,7 +585,7 @@ public class RequestData extends TimerData
     {
         return this.responseCodeAsChars;
     }
-    
+
     /**
      * Sets the time it took to send the request to the server.
      *
@@ -818,8 +827,7 @@ public class RequestData extends TimerData
 
         setBytesSent(ParseNumbers.parseInt(values.get(5)));
         setBytesReceived(ParseNumbers.parseInt(values.get(6)));
-        setResponseCode(ParseNumbers.parseInt(values.get(7)));
-        setResponseCodeAsChars(values.get(7));
+        setResponseCode(values.get(7));
 
         if (values.size() > 23)
         {

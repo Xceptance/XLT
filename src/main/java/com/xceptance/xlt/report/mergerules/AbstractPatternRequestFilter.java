@@ -102,6 +102,12 @@ public abstract class AbstractPatternRequestFilter extends AbstractRequestFilter
         // get the data to match against
         final CharSequence text = getText(requestData);
 
+        if (text == null)
+        {
+            // empty is always fine
+            return true;
+        }
+        
         MatchResult result = this.cache.get(text);
         if (result == null)
         {
