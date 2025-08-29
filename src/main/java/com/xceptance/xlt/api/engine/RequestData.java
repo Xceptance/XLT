@@ -59,6 +59,11 @@ public class RequestData extends TimerData
      * The value to show if the host could not be determined from a URL.
      */
     public final static XltCharBuffer UNKNOWN_HOST = XltCharBuffer.valueOf("(unknown)");
+    
+    /**
+     * No response code available
+     */
+    public final static XltCharBuffer NO_RESPONSE_CODE = XltCharBuffer.valueOf("0");
 
     /**
      * The size of the response message in bytes.
@@ -565,7 +570,7 @@ public class RequestData extends TimerData
      */
     public void setResponseCode(final XltCharBuffer responseCode)
     {
-        if (responseCode.isEmpty())
+        if (!responseCode.isEmpty())
         {
             this.responseCode = ParseNumbers.parseInt(responseCode);
             this.responseCodeAsChars = responseCode;
