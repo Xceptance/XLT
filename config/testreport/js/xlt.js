@@ -40,7 +40,7 @@
     // the filter function, returns true if the value is to be shown
     function doFilter(value, filterPhrase) {
         // request table cells contain the URLs as well, so cut them off
-        value = value.trim().split('\n')[0];
+        value = value.trim().replace(/\s*[0-9,.]+ distinct URL.+$/s, "");
 
         // split filter phrase into filters
         var filters = filterPhrase.split('|');
