@@ -32,6 +32,10 @@ import okhttp3.HttpUrl;
  */
 class CookieJarImpl implements CookieJar
 {
+    static final String ERROR_MSG_DOMAIN = "Domain not set in cookie";
+
+    static final String ERROR_MSG_PATH = "Path not set or does not start with '/' in cookie";
+
     /**
      * HtmlUnit's cookie manager.
      */
@@ -95,24 +99,50 @@ class CookieJarImpl implements CookieJar
      *            the source cookie
      * @return the converted cookie
      */
-    private static okhttp3.Cookie toOkHttpCookie(final Cookie htmlUnitCookie)
+    static okhttp3.Cookie toOkHttpCookie(final Cookie htmlUnitCookie)
     {
         final Builder builder = new okhttp3.Cookie.Builder();
 
-        builder.name(htmlUnitCookie.getName()).value(htmlUnitCookie.getValue()).path(htmlUnitCookie.getPath())
-               .expiresAt(htmlUnitCookie.getExpires().getTime());
-
-        final String domain = htmlUnitCookie.getDomain();
-        if (domain.startsWith("."))
+        final String domain = StringUtils.defaultString(htmlUnitCookie.getDomain()).trim();
+        if (!domain.isEmpty())
         {
-            // "wildcard" domain, such as ".example.com"
-            // the cookie builder expects the domain to be passed without the leading dot
-            builder.domain(StringUtils.stripStart(domain, "."));
+            if (domain.startsWith("."))
+            {
+                // "wildcard" domain, such as ".example.com"
+                // the cookie builder expects the domain to be passed without the leading dot
+                builder.domain(StringUtils.stripStart(domain, "."));
+            }
+            else
+            {
+                // "host" domain, such as "www.example.com"
+                builder.hostOnlyDomain(domain);
+            }
         }
         else
         {
-            // "host" domain, such as "www.example.com"
-            builder.hostOnlyDomain(domain);
+            throw new IllegalArgumentException(ERROR_MSG_DOMAIN + ": '" + htmlUnitCookie + "'");
+        }
+
+        final String name = StringUtils.defaultString(htmlUnitCookie.getName()).trim();
+        builder.name(name);
+
+        final String value = StringUtils.defaultString(htmlUnitCookie.getValue()).trim();
+        builder.value(value);
+
+        final String path = StringUtils.defaultString(htmlUnitCookie.getPath()).trim();
+        if (path.startsWith("/"))
+        {
+            builder.path(path);
+        }
+        else
+        {
+            throw new IllegalArgumentException(ERROR_MSG_PATH + ": '" + htmlUnitCookie + "'");
+        }
+
+        final Date expires = htmlUnitCookie.getExpires();
+        if (expires != null)
+        {
+            builder.expiresAt(expires.getTime());
         }
 
         if (htmlUnitCookie.isSecure())
