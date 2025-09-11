@@ -39,8 +39,7 @@
 
     // the filter function, returns true if the value is to be shown
     function doFilter(value, filterPhrase) {
-        // request table cells contain the URLs as well, so cut them off
-        value = value.trim().replace(/\s*[0-9,.]+ distinct URL.+$/s, "");
+        value = value.trim();
 
         // split filter phrase into filters
         var filters = filterPhrase.split('|');
@@ -455,6 +454,19 @@
 
         // setup the tables
         (function setupTables() {
+            // patch the Table plugin to ignore cluetip text content (e.g. distinct URLs) when filtering and sorting
+            const tableGetCellValue = Table.getCellValue;
+            Table.getCellValue = function() {
+                const node = arguments[0];
+                // don't let element nodes having CSS class 'cluetip-data' contribute any text to computed table cell value
+                if (node && node.nodeType === Node.ELEMENT_NODE && node.classList.contains("cluetip-data")) {
+                    return "";
+                }
+                // invoke the original function
+                return tableGetCellValue.apply(Table, arguments);
+            };
+
+            // now set up the tables
             Table.auto();
 
             // hide loader and show content after HTML for table is build (only if present)
