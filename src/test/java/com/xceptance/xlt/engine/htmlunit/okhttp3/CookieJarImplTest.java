@@ -23,6 +23,7 @@ import org.junit.runner.RunWith;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import util.JUnitParamsUtils;
+import util.JUnitParamsUtils.BlankStringOrNullParamProvider;
 import util.JUnitParamsUtils.BlankStringParamProvider;
 
 @RunWith(JUnitParamsRunner.class)
@@ -32,8 +33,7 @@ public class CookieJarImplTest
     @Parameters(source = BlankStringParamProvider.class)
     public void toOkHttpCookie_BlankDomain(final String domain)
     {
-        callToOkHttpCookieButExpectedException(new Cookie(domain, "name", "value", "/", null, false, false),
-                                               CookieJarImpl.ERROR_MSG_DOMAIN);
+        callToOkHttpCookieButExpectException(new Cookie(domain, "name", "value", "/", null, false, false), CookieJarImpl.ERROR_MSG_DOMAIN);
     }
 
     @Test
@@ -65,12 +65,12 @@ public class CookieJarImplTest
     }
 
     @Test
-    @Parameters(source = BlankStringParamProvider.class)
-    public void toOkHttpCookie_BlankValue(final String name)
+    @Parameters(source = BlankStringOrNullParamProvider.class)
+    public void toOkHttpCookie_BlankValue(final String value)
     {
-        final var okCookie = CookieJarImpl.toOkHttpCookie(new Cookie("domain", name, "value", "/", null, false, false));
+        final var okCookie = CookieJarImpl.toOkHttpCookie(new Cookie("domain", "name", value, "/", null, false, false));
 
-        Assert.assertEquals("", okCookie.name());
+        Assert.assertEquals("", okCookie.value());
     }
 
     @Test
@@ -83,11 +83,10 @@ public class CookieJarImplTest
     }
 
     @Test
-    @Parameters(source = BlankStringParamProvider.class)
+    @Parameters(source = BlankStringOrNullParamProvider.class)
     public void toOkHttpCookie_BlankPath(final String path)
     {
-        callToOkHttpCookieButExpectedException(new Cookie("domain", "name", "value", path, null, false, false),
-                                               CookieJarImpl.ERROR_MSG_PATH);
+        callToOkHttpCookieButExpectException(new Cookie("domain", "name", "value", path, null, false, false), CookieJarImpl.ERROR_MSG_PATH);
     }
 
     @Test
@@ -102,11 +101,11 @@ public class CookieJarImplTest
     @Test
     public void toOkHttpCookie_InvalidPath()
     {
-        callToOkHttpCookieButExpectedException(new Cookie("domain", "name", "value", "path_not_starting_with_slash", null, false, false),
-                                               CookieJarImpl.ERROR_MSG_PATH);
+        callToOkHttpCookieButExpectException(new Cookie("domain", "name", "value", "path_not_starting_with_slash", null, false, false),
+                                             CookieJarImpl.ERROR_MSG_PATH);
     }
 
-    private void callToOkHttpCookieButExpectedException(final Cookie huCookie, final String expectedMessagePrefix)
+    private void callToOkHttpCookieButExpectException(final Cookie huCookie, final String expectedMessagePrefix)
     {
         try
         {
@@ -124,9 +123,9 @@ public class CookieJarImplTest
         public static Object[][] provide()
         {
             return JUnitParamsUtils.parseParamSets("example.com|true",      //
-                                                     " example.com |true",    //
-                                                     ".example.com|false",    //
-                                                     " .example.com |false");
+                                                   " example.com |true",    //
+                                                   ".example.com|false",    //
+                                                   " .example.com |false");
         }
     }
 
