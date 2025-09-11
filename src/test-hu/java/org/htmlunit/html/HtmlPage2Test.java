@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,9 +33,8 @@ import org.htmlunit.MockWebConnection;
 import org.htmlunit.SimpleWebTestCase;
 import org.htmlunit.WebClient;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.util.MimeType;
-import org.htmlunit.util.NameValuePair;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -145,8 +144,7 @@ public class HtmlPage2Test extends SimpleWebTestCase {
             final MockWebConnection webConnection = getMockWebConnection();
 
             webConnection.setResponse(URL_FIRST, html);
-            final List<NameValuePair> emptyList = Collections.emptyList();
-            webConnection.setResponse(URL_SECOND, directBytes, 200, "ok", "image/jpg", emptyList);
+            webConnection.setResponse(URL_SECOND, directBytes, 200, "ok", "image/jpg", Collections.emptyList());
         }
 
         final HtmlPage page = webClient.getPage(URL_FIRST);
@@ -264,9 +262,8 @@ public class HtmlPage2Test extends SimpleWebTestCase {
             final URL urlIframe = new URL(URL_SECOND, "iframe.html");
             webConnection.setResponse(urlIframe, iframeContent);
 
-            final List<NameValuePair> emptyList = Collections.emptyList();
             final URL urlImage = new URL(URL_SECOND, "img.jpg");
-            webConnection.setResponse(urlImage, directBytes, 200, "ok", "image/jpg", emptyList);
+            webConnection.setResponse(urlImage, directBytes, 200, "ok", "image/jpg", Collections.emptyList());
         }
 
         final WebClient webClient = getWebClientWithMockWebConnection();
@@ -381,7 +378,7 @@ public class HtmlPage2Test extends SimpleWebTestCase {
      */
     @Test
     public void saveShouldStripLongFileNames() throws Exception {
-        final RandomStringGenerator generator = new RandomStringGenerator.Builder().withinRange('a', 'z').build();
+        final RandomStringGenerator generator = new RandomStringGenerator.Builder().withinRange('a', 'z').get();
         final String longName = generator.generate(500) + ".html";
         final String html = "<html><body><iframe src='" + longName + "'></iframe></body></html>";
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,8 +13,6 @@
  * limitations under the License.
  */
 package org.htmlunit.html;
-
-import static org.htmlunit.BrowserVersionFeatures.JS_BODY_MARGINS_8;
 
 import java.util.Map;
 
@@ -170,16 +168,11 @@ public class HtmlBody extends HtmlElement {
      * {@inheritDoc}
      */
     @Override
+    @SuppressWarnings("PMD.AvoidDuplicateLiterals")
     public void setDefaults(final ComputedCssStyleDeclaration style) {
-        if (getPage().getWebClient().getBrowserVersion().hasFeature(JS_BODY_MARGINS_8)) {
-            style.setDefaultLocalStyleAttribute("margin", "8px");
-            style.setDefaultLocalStyleAttribute("padding", "0px");
-        }
-        else {
-            style.setDefaultLocalStyleAttribute("margin-left", "8px");
-            style.setDefaultLocalStyleAttribute("margin-right", "8px");
-            style.setDefaultLocalStyleAttribute("margin-top", "8px");
-            style.setDefaultLocalStyleAttribute("margin-bottom", "8px");
-        }
+        style.setDefaultLocalStyleAttribute("margin-left", "8px");
+        style.setDefaultLocalStyleAttribute("margin-right", "8px");
+        style.setDefaultLocalStyleAttribute("margin-top", "8px");
+        style.setDefaultLocalStyleAttribute("margin-bottom", "8px");
     }
 }

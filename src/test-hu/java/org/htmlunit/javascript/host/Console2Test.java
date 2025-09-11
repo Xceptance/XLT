@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import org.htmlunit.SimpleWebTestCase;
 import org.htmlunit.WebConsole;
 import org.htmlunit.WebConsole.Logger;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.util.MimeType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -211,7 +211,7 @@ public class Console2Test extends SimpleWebTestCase {
                 + "<script async>\n"
                 + "try {\n"
                 + "  var myWorker = new Worker('worker.js');\n"
-                + "} catch(e) { log('exception'); }\n"
+                + "} catch(e) { logEx(e); }\n"
                 + "</script></body></html>\n";
 
         loadPage(html);

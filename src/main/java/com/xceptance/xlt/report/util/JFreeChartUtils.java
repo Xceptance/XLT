@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -955,7 +955,7 @@ public final class JFreeChartUtils
      */
     public static NumberAxis createNumberAxis(String axisTitle)
     {
-        if (StringUtils.isBlank(axisTitle))
+        if (axisTitle == null)
         {
             axisTitle = DEFAULT_VALUE_AXIS_TITLE;
         }

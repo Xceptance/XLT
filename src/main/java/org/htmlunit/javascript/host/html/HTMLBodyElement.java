@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,17 +18,14 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.html.HtmlBody;
 import org.htmlunit.html.HtmlElement;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
-import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.configuration.JsxSetter;
-import org.htmlunit.javascript.host.dom.TextRange;
 import org.htmlunit.javascript.host.event.Event;
 import org.htmlunit.util.StringUtils;
 
@@ -44,16 +41,10 @@ import org.htmlunit.util.StringUtils;
 public class HTMLBodyElement extends HTMLElement {
 
     /**
-     * Creates an instance.
-     */
-    public HTMLBodyElement() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @Override
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
         super.jsConstructor();
     }
@@ -221,17 +212,8 @@ public class HTMLBodyElement extends HTMLElement {
      * {@inheritDoc}
      */
     @Override
-    @JsxFunction(IE)
-    public TextRange createTextRange() {
-        return super.createTextRange();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     @JsxGetter({CHROME, EDGE})
-    public Object getOnload() {
+    public Function getOnload() {
         return super.getOnload();
     }
 
@@ -258,7 +240,7 @@ public class HTMLBodyElement extends HTMLElement {
      */
     @Override
     @JsxGetter({CHROME, EDGE})
-    public Object getOnblur() {
+    public Function getOnblur() {
         return super.getOnblur();
     }
 
@@ -276,7 +258,7 @@ public class HTMLBodyElement extends HTMLElement {
      */
     @Override
     @JsxGetter({CHROME, EDGE})
-    public Object getOnfocus() {
+    public Function getOnfocus() {
         return super.getOnfocus();
     }
 
@@ -294,7 +276,7 @@ public class HTMLBodyElement extends HTMLElement {
      */
     @Override
     @JsxGetter({CHROME, EDGE})
-    public Object getOnerror() {
+    public Function getOnerror() {
         return super.getOnerror();
     }
 
@@ -374,7 +356,7 @@ public class HTMLBodyElement extends HTMLElement {
      * Returns the {@code onlanguagechange} event handler for this element.
      * @return the {@code onlanguagechange} event handler for this element
      */
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxGetter
     public Function getOnlanguagechange() {
         return getEventHandler(Event.TYPE_LANGUAGECHANGE);
     }
@@ -383,7 +365,7 @@ public class HTMLBodyElement extends HTMLElement {
      * Sets the {@code onlanguagechange} event handler for this element.
      * @param onlanguagechange the {@code onlanguagechange} event handler for this element
      */
-    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxSetter
     public void setOnlanguagechange(final Object onlanguagechange) {
         setEventHandler(Event.TYPE_LANGUAGECHANGE, onlanguagechange);
     }
@@ -500,7 +482,7 @@ public class HTMLBodyElement extends HTMLElement {
      * Returns the {@code onrejectionhandled} event handler for this element.
      * @return the {@code onrejectionhandled} event handler for this element
      */
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxGetter
     public Function getOnrejectionhandled() {
         return getEventHandler(Event.TYPE_REJECTIONHANDLED);
     }
@@ -509,7 +491,7 @@ public class HTMLBodyElement extends HTMLElement {
      * Sets the {@code onrejectionhandled} event handler for this element.
      * @param onrejectionhandled the {@code onrejectionhandled} event handler for this element
      */
-    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxSetter
     public void setOnrejectionhandled(final Object onrejectionhandled) {
         setEventHandler(Event.TYPE_REJECTIONHANDLED, onrejectionhandled);
     }
@@ -536,7 +518,7 @@ public class HTMLBodyElement extends HTMLElement {
      * Returns the {@code onunhandledrejection} event handler for this element.
      * @return the {@code onunhandledrejection} event handler for this element
      */
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxGetter
     public Function getOnunhandledrejection() {
         return getEventHandler(Event.TYPE_UNHANDLEDREJECTION);
     }
@@ -545,7 +527,7 @@ public class HTMLBodyElement extends HTMLElement {
      * Sets the {@code onunhandledrejection} event handler for this element.
      * @param onunhandledrejection the {@code onunhandledrejection} event handler for this element
      */
-    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxSetter
     public void setOnunhandledrejection(final Object onunhandledrejection) {
         setEventHandler(Event.TYPE_UNHANDLEDREJECTION, onunhandledrejection);
     }
@@ -608,7 +590,7 @@ public class HTMLBodyElement extends HTMLElement {
      * Returns the {@code onmessageerror} event handler for this element.
      * @return the {@code onmessageerror} event handler for this element
      */
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxGetter
     public Function getOnmessageerror() {
         return getEventHandler(Event.TYPE_ONMESSAGEERROR);
     }
@@ -617,7 +599,7 @@ public class HTMLBodyElement extends HTMLElement {
      * Sets the {@code onmessageerror} event handler for this element.
      * @param onmessageerror the {@code onmessageerror} event handler for this element
      */
-    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxSetter
     public void setOnmessageerror(final Object onmessageerror) {
         setEventHandler(Event.TYPE_ONMESSAGEERROR, onmessageerror);
     }
@@ -626,7 +608,7 @@ public class HTMLBodyElement extends HTMLElement {
      * {@inheritDoc}
      */
     @Override
-    @JsxGetter({CHROME, EDGE, IE})
+    @JsxGetter({CHROME, EDGE})
     public Function getOnresize() {
         return super.getOnresize();
     }
@@ -635,7 +617,7 @@ public class HTMLBodyElement extends HTMLElement {
      * {@inheritDoc}
      */
     @Override
-    @JsxSetter({CHROME, EDGE, IE})
+    @JsxSetter({CHROME, EDGE})
     public void setOnresize(final Object onresize) {
         super.setOnresize(onresize);
     }

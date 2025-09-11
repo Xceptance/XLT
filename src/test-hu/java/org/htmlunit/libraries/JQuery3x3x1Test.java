@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,14 @@
  */
 package org.htmlunit.libraries;
 
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.CHROME;
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.EDGE;
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.FF;
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.FF_ESR;
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
+import static org.htmlunit.junit.annotation.TestedBrowser.CHROME;
+import static org.htmlunit.junit.annotation.TestedBrowser.EDGE;
+import static org.htmlunit.junit.annotation.TestedBrowser.FF;
+import static org.htmlunit.junit.annotation.TestedBrowser.FF_ESR;
 
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.NotYetImplemented;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
@@ -387,8 +386,7 @@ public class JQuery3x3x1Test extends JQueryTestBase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "2",
-            IE = "0")
+    @Alerts("2")
     public void core__isPlainObject_Symbol_() throws Exception {
         runTest("core: isPlainObject(Symbol)");
     }
@@ -408,8 +406,7 @@ public class JQuery3x3x1Test extends JQueryTestBase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "1",
-            IE = "0")
+    @Alerts("1")
     public void core__isPlainObject_Object_assign______() throws Exception {
         runTest("core: isPlainObject(Object.assign(...))");
     }
@@ -1501,8 +1498,7 @@ public class JQuery3x3x1Test extends JQueryTestBase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "1",
-            IE = "0")
+    @Alerts("1")
     public void deferred__jQuery_Deferred_then___IsCallable_determination__gh_3596_() throws Exception {
         runTest("deferred: jQuery.Deferred.then - IsCallable determination (gh-3596)");
     }
@@ -1724,8 +1720,7 @@ public class JQuery3x3x1Test extends JQueryTestBase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "2",
-            IE = "0")
+    @Alerts("2")
     public void deprecated__type_for__Symbol_() throws Exception {
         runTest("deprecated: type for `Symbol`");
     }
@@ -1755,9 +1750,7 @@ public class JQuery3x3x1Test extends JQueryTestBase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "1",
-            IE = "0")
-    @NotYetImplemented(IE)
+    @Alerts("1")
     public void deprecated__isFunction_GeneratorFunction_() throws Exception {
         runTest("deprecated: isFunction(GeneratorFunction)");
     }
@@ -1767,8 +1760,7 @@ public class JQuery3x3x1Test extends JQueryTestBase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "1",
-            IE = "0")
+    @Alerts("1")
     @NotYetImplemented({ CHROME, FF, FF_ESR })
     public void deprecated__isFunction_AsyncFunction_() throws Exception {
         runTest("deprecated: isFunction(AsyncFunction)");
@@ -1779,8 +1771,7 @@ public class JQuery3x3x1Test extends JQueryTestBase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "2",
-            IE = "0")
+    @Alerts("2")
     public void deprecated__isFunction_custom___toStringTag_() throws Exception {
         runTest("deprecated: isFunction(custom @@toStringTag)");
     }
@@ -1840,8 +1831,7 @@ public class JQuery3x3x1Test extends JQueryTestBase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "2",
-            IE = "0")
+    @Alerts("2")
     public void deprecated__isNumeric_Symbol_() throws Exception {
         runTest("deprecated: isNumeric(Symbol)");
     }
@@ -1875,7 +1865,7 @@ public class JQuery3x3x1Test extends JQueryTestBase {
     @Alerts(DEFAULT = "15",
             FF = "1, 14, 15",
             FF_ESR = "1, 14, 15")
-    @NotYetImplemented({ CHROME, EDGE, IE})
+    @NotYetImplemented({ CHROME, EDGE})
     public void support__Verify_that_support_tests_resolve_as_expected_per_browser() throws Exception {
         runTest("support: Verify that support tests resolve as expected per browser");
     }
@@ -4609,8 +4599,7 @@ public class JQuery3x3x1Test extends JQueryTestBase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "2",
-            IE = "0")
+    @Alerts("2")
     public void traversing__contents___for__template____remains_inert() throws Exception {
         runTest("traversing: contents() for <template /> remains inert");
     }
@@ -5672,8 +5661,7 @@ public class JQuery3x3x1Test extends JQueryTestBase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "4",
-            IE = "0")
+    @Alerts("4")
     @NotYetImplemented
     public void manipulation__html_script_type_module_() throws Exception {
         runTest("manipulation: html(script type module)");
@@ -6248,7 +6236,6 @@ public class JQuery3x3x1Test extends JQueryTestBase {
      */
     @Test
     @Alerts("42")
-    @NotYetImplemented(IE)
     public void css__css_String_Hash_() throws Exception {
         runTest("css: css(String|Hash)");
     }
@@ -6290,7 +6277,6 @@ public class JQuery3x3x1Test extends JQueryTestBase {
      */
     @Test
     @Alerts("19")
-    @NotYetImplemented(IE)
     public void css__css_String__Object_() throws Exception {
         runTest("css: css(String, Object)");
     }
@@ -6744,8 +6730,7 @@ public class JQuery3x3x1Test extends JQueryTestBase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "3",
-            IE = "2")
+    @Alerts("3")
     public void css__Don_t_default_to_a_cached_previously_used_wrong_prefixed_name__gh_2015_() throws Exception {
         runTest("css: Don't default to a cached previously used wrong prefixed name (gh-2015)");
     }
@@ -6768,8 +6753,7 @@ public class JQuery3x3x1Test extends JQueryTestBase {
     @Alerts(CHROME = "8",
             EDGE = "8",
             FF = "10",
-            FF_ESR = "10",
-            IE = "0")
+            FF_ESR = "10")
     @NotYetImplemented
     public void css__css___customProperty_() throws Exception {
         runTest("css: css(--customProperty)");
@@ -8283,7 +8267,6 @@ public class JQuery3x3x1Test extends JQueryTestBase {
      */
     @Test
     @Alerts("30")
-    @NotYetImplemented(IE)
     public void effects__show_Number____inline_hidden() throws Exception {
         runTest("effects: show(Number) - inline hidden");
     }
@@ -8294,7 +8277,6 @@ public class JQuery3x3x1Test extends JQueryTestBase {
      */
     @Test
     @Alerts("30")
-    @NotYetImplemented(IE)
     public void effects__show_Number____cascade_hidden() throws Exception {
         runTest("effects: show(Number) - cascade hidden");
     }
@@ -8396,7 +8378,6 @@ public class JQuery3x3x1Test extends JQueryTestBase {
      */
     @Test
     @Alerts("3")
-    @NotYetImplemented(IE)
     public void effects__animate_native_inline_width_height() throws Exception {
         runTest("effects: animate native inline width/height");
     }
@@ -9282,9 +9263,7 @@ public class JQuery3x3x1Test extends JQueryTestBase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "2",
-            IE = "1")
-    @NotYetImplemented(IE)
+    @Alerts("2")
     public void effects__non_px_animation_handles_non_numeric_start___11971_() throws Exception {
         runTest("effects: non-px animation handles non-numeric start (#11971)");
     }
@@ -9495,7 +9474,6 @@ public class JQuery3x3x1Test extends JQueryTestBase {
      */
     @Test
     @Alerts("40")
-    @NotYetImplemented(IE)
     public void effects__Show_hide_toggle_and_display__inline() throws Exception {
         runTest("effects: Show/hide/toggle and display: inline");
     }
@@ -10144,7 +10122,7 @@ public class JQuery3x3x1Test extends JQueryTestBase {
     @Alerts(DEFAULT = "4",
             FF = "4, 0, 4",
             FF_ESR = "4, 0, 4")
-    @NotYetImplemented({ CHROME, EDGE, IE})
+    @NotYetImplemented({ CHROME, EDGE})
     public void dimensions__width_height_on_a_table_row_with_phantom_borders__gh_3698_() throws Exception {
         runTest("dimensions: width/height on a table row with phantom borders (gh-3698)");
     }

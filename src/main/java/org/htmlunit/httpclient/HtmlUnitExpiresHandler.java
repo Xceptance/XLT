@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@ package org.htmlunit.httpclient;
 
 import static org.htmlunit.BrowserVersionFeatures.HTTP_COOKIE_EXTENDED_DATE_PATTERNS_1;
 import static org.htmlunit.BrowserVersionFeatures.HTTP_COOKIE_EXTENDED_DATE_PATTERNS_2;
-import static org.htmlunit.BrowserVersionFeatures.HTTP_COOKIE_START_DATE_1970;
 
 import java.util.Date;
 
@@ -96,9 +95,7 @@ final class HtmlUnitExpiresHandler extends BasicExpiresHandler {
         String[] datePatterns = DEFAULT_DATE_PATTERNS;
 
         if (null != browserVersion_) {
-            if (browserVersion_.hasFeature(HTTP_COOKIE_START_DATE_1970)) {
-                startDate = HtmlUnitBrowserCompatCookieSpec.DATE_1_1_1970;
-            }
+            startDate = HtmlUnitBrowserCompatCookieSpec.DATE_1_1_1970;
 
             if (browserVersion_.hasFeature(HTTP_COOKIE_EXTENDED_DATE_PATTERNS_1)) {
                 datePatterns = EXTENDED_DATE_PATTERNS_1;

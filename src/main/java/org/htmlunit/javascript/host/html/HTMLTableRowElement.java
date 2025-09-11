@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,6 @@
  */
 package org.htmlunit.javascript.host.html;
 
-import static org.htmlunit.BrowserVersionFeatures.JS_TABLE_ROW_DELETE_CELL_REQUIRES_INDEX;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,12 +24,14 @@ import org.htmlunit.html.DomNode;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlTable;
 import org.htmlunit.html.HtmlTableRow;
+import org.htmlunit.javascript.HtmlUnitScriptable;
 import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.configuration.JsxSetter;
+import org.htmlunit.javascript.host.dom.DOMException;
 
 /**
  * The JavaScript object {@code HTMLTableRowElement}.
@@ -51,16 +46,10 @@ import org.htmlunit.javascript.configuration.JsxSetter;
 public class HTMLTableRowElement extends HTMLTableComponent {
 
     /**
-     * Creates an instance.
-     */
-    public HTMLTableRowElement() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @Override
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
         super.jsConstructor();
     }
@@ -109,7 +98,7 @@ public class HTMLTableRowElement extends HTMLTableComponent {
      * @return the cells in the row
      */
     @JsxGetter
-    public Object getCells() {
+    public HTMLCollection getCells() {
         final HtmlTableRow row = (HtmlTableRow) getDomNodeOrDie();
 
         final HTMLCollection cells = new HTMLCollection(row, false);
@@ -147,7 +136,7 @@ public class HTMLTableRowElement extends HTMLTableComponent {
      * @return the newly-created cell
      */
     @JsxFunction
-    public Object insertCell(final Object index) {
+    public HtmlUnitScriptable insertCell(final Object index) {
         int position = -1;
         if (!JavaScriptEngine.isUndefined(index)) {
             position = (int) JavaScriptEngine.toNumber(index);
@@ -165,25 +154,26 @@ public class HTMLTableRowElement extends HTMLTableComponent {
             }
             return getScriptableFor(newCell);
         }
-        throw JavaScriptEngine.reportRuntimeError("Index or size is negative or greater than the allowed amount");
+        throw JavaScriptEngine.asJavaScriptException(
+                getWindow(),
+                "Index or size is negative or greater than the allowed amount",
+                DOMException.INDEX_SIZE_ERR);
     }
 
     /**
      * Deletes the cell at the specified index in the element's cells collection. If the index
-     * is -1 (or while simulating IE, when there is no index specified), then the last cell is deleted.
+     * is -1, then the last cell is deleted.
      * @see <a href="http://msdn.microsoft.com/en-us/library/ms536406.aspx">MSDN Documentation</a>
      * @see <a href="http://www.w3.org/TR/2003/REC-DOM-Level-2-HTML-20030109/html.html#ID-11738598">W3C DOM Level2</a>
      * @param index specifies the cell to delete.
      */
     @JsxFunction
     public void deleteCell(final Object index) {
-        int position = -1;
-        if (!JavaScriptEngine.isUndefined(index)) {
-            position = (int) JavaScriptEngine.toNumber(index);
+        if (JavaScriptEngine.isUndefined(index)) {
+            throw JavaScriptEngine.typeError("No enough arguments");
         }
-        else if (getBrowserVersion().hasFeature(JS_TABLE_ROW_DELETE_CELL_REQUIRES_INDEX)) {
-            throw JavaScriptEngine.reportRuntimeError("No enough arguments");
-        }
+
+        int position = (int) JavaScriptEngine.toNumber(index);
 
         final HtmlTableRow htmlRow = (HtmlTableRow) getDomNodeOrDie();
 
@@ -192,7 +182,10 @@ public class HTMLTableRowElement extends HTMLTableComponent {
         }
         final boolean indexValid = position >= -1 && position <= htmlRow.getCells().size();
         if (!indexValid) {
-            throw JavaScriptEngine.reportRuntimeError("Index or size is negative or greater than the allowed amount");
+            throw JavaScriptEngine.asJavaScriptException(
+                    getWindow(),
+                    "Index or size is negative or greater than the allowed amount",
+                    DOMException.INDEX_SIZE_ERR);
         }
 
         htmlRow.getCell(position).remove();
@@ -205,59 +198,5 @@ public class HTMLTableRowElement extends HTMLTableComponent {
     @Override
     public void setOuterHTML(final Object value) {
         throw JavaScriptEngine.reportRuntimeError("outerHTML is read-only for tag 'tr'");
-    }
-
-    /**
-     * Gets the {@code borderColor} attribute.
-     * @return the attribute
-     */
-    @JsxGetter(IE)
-    public String getBorderColor() {
-        return getDomNodeOrDie().getAttribute("borderColor");
-    }
-
-    /**
-     * Sets the {@code borderColor} attribute.
-     * @param borderColor the new attribute
-     */
-    @JsxSetter(IE)
-    public void setBorderColor(final String borderColor) {
-        setColorAttribute("borderColor", borderColor);
-    }
-
-    /**
-     * Gets the {@code borderColor} attribute.
-     * @return the attribute
-     */
-    @JsxGetter(IE)
-    public String getBorderColorDark() {
-        return getDomNodeOrDie().getAttribute("borderColorDark");
-    }
-
-    /**
-     * Sets the {@code borderColor} attribute.
-     * @param borderColor the new attribute
-     */
-    @JsxSetter(IE)
-    public void setBorderColorDark(final String borderColor) {
-        setColorAttribute("borderColorDark", borderColor);
-    }
-
-    /**
-     * Gets the {@code borderColor} attribute.
-     * @return the attribute
-     */
-    @JsxGetter(IE)
-    public String getBorderColorLight() {
-        return getDomNodeOrDie().getAttribute("borderColorLight");
-    }
-
-    /**
-     * Sets the {@code borderColor} attribute.
-     * @param borderColor the new attribute
-     */
-    @JsxSetter(IE)
-    public void setBorderColorLight(final String borderColor) {
-        setColorAttribute("borderColorLight", borderColor);
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,6 @@
  */
 package org.htmlunit.javascript.host.event;
 
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstant;
 import org.htmlunit.javascript.configuration.JsxConstructor;
@@ -29,7 +24,7 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
  * @author Ahmed Ashour
  * @author Ronald Brill
  */
-@JsxClass({CHROME, EDGE, FF, FF_ESR})
+@JsxClass
 public class EventSource extends EventTarget {
 
     /** The connection is being established. */
@@ -43,12 +38,6 @@ public class EventSource extends EventTarget {
     /** The connection is not being established, has been closed or there was a fatal error. */
     @JsxConstant
     public static final int CLOSED = 2;
-
-    /**
-     * Default constructor.
-     */
-    public EventSource() {
-    }
 
     /**
      * JavaScript constructor.

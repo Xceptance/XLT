@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@ package org.htmlunit.javascript.host.html;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.NotYetImplemented;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -118,14 +118,7 @@ public class HTMLCanvasElementTest extends WebDriverTestCase {
                     + "BgZaoSlAABg+UHCBDICBisTFWCEiBgsPwAAQIZAYOVqUpQAgQMlh8gQCAjYLAyVQlKgIDB8gMECGQEDFamKkEJEDBYfoAA"
                     + "gYyAwcpUJSgBAgbLDxAgkBEwWJmqBCVAwGD5AQIEMgIGK1OVoAQIGCw/QIBARsBgZaoSlAABg+UHCBDICBisTFWCEiBgsP"
                     + "wAAQIZAYOVqUpQAgQMlh8gQCAjYLAyVQlKgIDB8gMECGQEDFamKkEJEDBYfoAAgYyAwcpUJSgBAgbLDxAgkBEwWJmqBCVA"
-                    + "wGD5AQIEMgIGK1OVoAQIGCw/QIBARsBgZaoSlACBB1YxAJfjJb2jAAAAAElFTkSuQmCC",
-            IE = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASwAAACWCAYAAABkW7XSAAAAAXNSR0IArs4c6QAAAARnQU1BAA"
-                    + "Cxjwv8YQUAAADGSURBVHhe7cExAQAAAMKg9U9tCF8gAAAAAAAA"
-                    + "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-                    + "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-                    + "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-                    + "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-                    + "AAAAAAAAAAAAAAAAAONUAv9QAAcDhjokAAAAASUVORK5CYII=")
+                    + "wGD5AQIEMgIGK1OVoAQIGCw/QIBARsBgZaoSlACBB1YxAJfjJb2jAAAAAElFTkSuQmCC")
     public void toDataUrl() throws Exception {
         final String html =
             "<html>\n"
@@ -137,7 +130,7 @@ public class HTMLCanvasElementTest extends WebDriverTestCase {
             + "  var canvas = document.getElementById('myCanvas');\n"
             + "  log(canvas.toDataURL());\n"
             + "}\n"
-            + "catch (e) { log('exception'); }\n"
+            + "catch(e) { logEx(e); }\n"
             + "</script>\n"
             + "</body>\n"
             + "</html>";
@@ -202,14 +195,7 @@ public class HTMLCanvasElementTest extends WebDriverTestCase {
                     + "BgZaoSlAABg+UHCBDICBisTFWCEiBgsPwAAQIZAYOVqUpQAgQMlh8gQCAjYLAyVQlKgIDB8gMECGQEDFamKkEJEDBYfoAA"
                     + "gYyAwcpUJSgBAgbLDxAgkBEwWJmqBCVAwGD5AQIEMgIGK1OVoAQIGCw/QIBARsBgZaoSlAABg+UHCBDICBisTFWCEiBgsP"
                     + "wAAQIZAYOVqUpQAgQMlh8gQCAjYLAyVQlKgIDB8gMECGQEDFamKkEJEDBYfoAAgYyAwcpUJSgBAgbLDxAgkBEwWJmqBCVA"
-                    + "wGD5AQIEMgIGK1OVoAQIGCw/QIBARsBgZaoSlACBB1YxAJfjJb2jAAAAAElFTkSuQmCC",
-            IE = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASwAAACWCAYAAABkW7XSAAAAAXNSR0IArs4c6QAAAARnQU1BAACx"
-                    + "jwv8YQUAAADGSURBVHhe7cExAQAAAMKg9U9tCF8gAAAAAAAAAAA"
-                    + "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-                    + "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-                    + "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-                    + "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-                    + "AAAAAAAAAAAAAAAAONUAv9QAAcDhjokAAAAASUVORK5CYII=")
+                    + "wGD5AQIEMgIGK1OVoAQIGCw/QIBARsBgZaoSlACBB1YxAJfjJb2jAAAAAElFTkSuQmCC")
     public void toDataUrlPng() throws Exception {
         final String html =
             "<html>\n"
@@ -221,7 +207,7 @@ public class HTMLCanvasElementTest extends WebDriverTestCase {
             + "  var canvas = document.getElementById('myCanvas');\n"
             + "  log(canvas.toDataURL('image/png'));\n"
             + "}\n"
-            + "catch (e) { log('exception'); }\n"
+            + "catch(e) { logEx(e); }\n"
             + "</script>\n"
             + "</body>\n"
             + "</html>";
@@ -232,10 +218,8 @@ public class HTMLCanvasElementTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"[object CanvasRenderingContext2D]", "[object WebGLRenderingContext]",
-                       "[object WebGLRenderingContext]", "[object WebGL2RenderingContext]", "null", "null"},
-            IE = {"[object CanvasRenderingContext2D]", "null",
-                  "[object WebGLRenderingContext]", "null", "null", "null"})
+    @Alerts({"[object CanvasRenderingContext2D]", "[object WebGLRenderingContext]",
+             "[object WebGLRenderingContext]", "[object WebGL2RenderingContext]", "null", "null"})
     @NotYetImplemented
     public void getContext() throws Exception {
         final String html =

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,7 @@ package org.htmlunit.html;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
@@ -37,8 +36,7 @@ public class HtmlColorInputTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"#000000--null", "#000000--null", "#000000--null"},
-            IE = {"--null", "exception", "--null"})
+    @Alerts({"#000000--null", "#000000--null", "#000000--null"})
     public void defaultValues() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -51,7 +49,7 @@ public class HtmlColorInputTest extends WebDriverTestCase {
             + "      input = document.createElement('input');\n"
             + "      input.type = 'color';\n"
             + "      log(input.value + '-' + input.defaultValue + '-' + input.getAttribute('value'));\n"
-            + "    } catch(e)  { log('exception'); }\n"
+            + "    } catch(e)  { logEx(e); }\n"
 
             + "    var builder = document.createElement('div');\n"
             + "    builder.innerHTML = '<input type=\"color\">';\n"
@@ -72,8 +70,7 @@ public class HtmlColorInputTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"#000000--null", "#000000--null", "#000000--null"},
-            IE = {"--null", "exception", "--null"})
+    @Alerts({"#000000--null", "#000000--null", "#000000--null"})
     public void defaultValuesAfterClone() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -88,7 +85,7 @@ public class HtmlColorInputTest extends WebDriverTestCase {
             + "      input.type = 'color';\n"
             + "      input = input.cloneNode(false);\n"
             + "      log(input.value + '-' + input.defaultValue + '-' + input.getAttribute('value'));\n"
-            + "    } catch(e)  { log('exception'); }\n"
+            + "    } catch(e)  { logEx(e); }\n"
 
             + "    var builder = document.createElement('div');\n"
             + "    builder.innerHTML = '<input type=\"color\">';\n"
@@ -137,8 +134,7 @@ public class HtmlColorInputTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "#000000",
-            IE = "")
+    @Alerts({"#ff0000", "#000000"})
     public void clearInput() throws Exception {
         final String htmlContent
                 = "<html>\n"
@@ -153,7 +149,8 @@ public class HtmlColorInputTest extends WebDriverTestCase {
         final WebElement element = driver.findElement(By.id("tester"));
 
         element.clear();
-        assertEquals(getExpectedAlerts()[0], element.getAttribute("value"));
+        assertEquals(getExpectedAlerts()[0], element.getDomAttribute("value"));
+        assertEquals(getExpectedAlerts()[1], element.getDomProperty("value"));
     }
 
     /**
@@ -219,12 +216,9 @@ public class HtmlColorInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true"},
-            IE = {"true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true"})
+    @Alerts({"true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true"})
     public void validationEmpty() throws Exception {
         validation("<input type='color' id='e1'>\n", "");
     }
@@ -233,12 +227,9 @@ public class HtmlColorInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"false",
-                       "false-true-false-false-false-false-false-false-false-false-false",
-                       "true"},
-            IE = {"false",
-                  "undefined-true-false-false-false-false-false-undefined-false-false-false",
-                  "true"})
+    @Alerts({"false",
+             "false-true-false-false-false-false-false-false-false-false-false",
+             "true"})
     public void validationCustomValidity() throws Exception {
         validation("<input type='color' id='e1'>\n", "elem.setCustomValidity('Invalid');");
     }
@@ -247,12 +238,9 @@ public class HtmlColorInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"false",
-                       "false-true-false-false-false-false-false-false-false-false-false",
-                       "true"},
-            IE = {"false",
-                  "undefined-true-false-false-false-false-false-undefined-false-false-false",
-                  "true"})
+    @Alerts({"false",
+             "false-true-false-false-false-false-false-false-false-false-false",
+             "true"})
     public void validationBlankCustomValidity() throws Exception {
         validation("<input type='color' id='e1'>\n", "elem.setCustomValidity(' ');\n");
     }
@@ -261,12 +249,9 @@ public class HtmlColorInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true"},
-            IE = {"true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true"})
+    @Alerts({"true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true"})
     public void validationResetCustomValidity() throws Exception {
         validation("<input type='color' id='e1'>\n",
                 "elem.setCustomValidity('Invalid');elem.setCustomValidity('');");
@@ -276,13 +261,9 @@ public class HtmlColorInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true"},
-            IE = {"false",
-                  "undefined-false-false-false-false-false-false-undefined-false-false-true",
-                  "true"})
-    @HtmlUnitNYI(IE = {"true", "undefined-false-false-false-false-false-false-undefined-false-true-false", "true"})
+    @Alerts({"true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true"})
     public void validationRequired() throws Exception {
         validation("<input type='color' id='e1' required>\n", "");
     }
@@ -291,12 +272,9 @@ public class HtmlColorInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true"},
-            IE = {"true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true"})
+    @Alerts({"true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true"})
     public void validationRequiredValueSet() throws Exception {
         validation("<input type='color' id='e1' required>\n", "elem.value = '#c8c8c8';");
     }

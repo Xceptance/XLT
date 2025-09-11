@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -638,7 +638,13 @@ public class DataRecordLoggingTest
             public DataManagerImpl answer(InvocationOnMock invocation) throws Throwable
             {
                 // limit to constructor new DataManagerImpl(Session) and avoid using (Session, Metrics)
-                final DataManagerImpl instance = Whitebox.invokeConstructor(DataManagerImpl.class, invocation.getArguments()[0]);
+                final DataManagerImpl instance = Whitebox.invokeConstructor(DataManagerImpl.class, new Class<?>[]
+                    {
+                        Session.class
+                    }, new Object[]
+                    {
+                        invocation.getArgument(0, Session.class)
+                    });
                 mockDataManager = createMockDataManager(instance);
 
                 return mockDataManager;
@@ -876,15 +882,15 @@ public class DataRecordLoggingTest
 
     enum KindOfLoadTestClass
     {
-        /**
-         * Use a load test class that is derived from {@link AbstractTestCase}
-         */
-        XltDerived(GenericLoadTestClasses.XltDerived.class, true),
+     /**
+      * Use a load test class that is derived from {@link AbstractTestCase}
+      */
+     XltDerived(GenericLoadTestClasses.XltDerived.class, true),
 
-        /**
-         * Use a load test class that is not derived from anything except Object
-         */
-        NotDerived(GenericLoadTestClasses.NotDerived.class, false);
+     /**
+      * Use a load test class that is not derived from anything except Object
+      */
+     NotDerived(GenericLoadTestClasses.NotDerived.class, false);
 
         private KindOfLoadTestClass(Class<?> genericTestClassObject, boolean isXltDerived)
         {
@@ -916,34 +922,34 @@ public class DataRecordLoggingTest
 
     enum TestExecutionThreadStrategy
     {
-        /**
-         * Use a {@link LoadTestRunner} thread to execute the load test class
-         */
-        LoadTestRunner(true)
-        {
-            @Override
-            public Thread createThreadFor(Class<?> loadTestClassObject, TestUserConfiguration testUserConfiguration, AgentInfo agentInfo,
-                                          DataRecordLoggingTest thisTestInstance)
-            {
+     /**
+      * Use a {@link LoadTestRunner} thread to execute the load test class
+      */
+     LoadTestRunner(true)
+     {
+         @Override
+         public Thread createThreadFor(Class<?> loadTestClassObject, TestUserConfiguration testUserConfiguration, AgentInfo agentInfo,
+                                       DataRecordLoggingTest thisTestInstance)
+         {
                 return new LoadTestRunner(testUserConfiguration, agentInfo, dummyExecutionTimer()).getThread();
-            }
-        },
+         }
+     },
 
-        /**
-         * Use a simple thread that will just call JUnit's
-         * <code>{@linkplain Request#aClass(Class) Request.aClass(Class)}.getRunner().run(RunNotifier)</code> to execute
-         * the load test class
-         */
-        JUnitClassRequestRunner(false)
-        {
-            @Override
-            public Thread createThreadFor(Class<?> loadTestClassObject, TestUserConfiguration testUserConfiguration, AgentInfo agentInfo,
-                                          DataRecordLoggingTest thisTestInstance)
-            {
-                final Runnable r = () -> Request.aClass(loadTestClassObject).getRunner().run(new RunNotifier());
+     /**
+      * Use a simple thread that will just call JUnit's
+      * <code>{@linkplain Request#aClass(Class) Request.aClass(Class)}.getRunner().run(RunNotifier)</code> to execute
+      * the load test class
+      */
+     JUnitClassRequestRunner(false)
+     {
+         @Override
+         public Thread createThreadFor(Class<?> loadTestClassObject, TestUserConfiguration testUserConfiguration, AgentInfo agentInfo,
+                                       DataRecordLoggingTest thisTestInstance)
+         {
+             final Runnable r = () -> Request.aClass(loadTestClassObject).getRunner().run(new RunNotifier());
                 return new XltThreadFactory(false, null).newThread(r);
-            }
-        };
+         }
+     };
 
         private TestExecutionThreadStrategy(final boolean usesLoadTestRunner)
         {

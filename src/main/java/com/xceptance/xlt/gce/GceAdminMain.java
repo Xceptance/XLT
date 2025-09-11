@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,6 +44,7 @@ public class GceAdminMain
         if (commandLine.hasOption("help"))
         {
             printUsageInfo(options);
+            System.exit(ProcessExitCodes.SUCCESS);
         }
         else
         {
@@ -61,6 +62,8 @@ public class GceAdminMain
                     // Enter the command loop
                     gceAdmin.startInteractiveMode();
                 }
+
+                System.exit(ProcessExitCodes.SUCCESS);
             }
             catch (final Exception e)
             {

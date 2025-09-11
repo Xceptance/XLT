@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
  */
 package org.htmlunit;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.Serializable;
 
 import org.apache.commons.logging.Log;
@@ -38,7 +40,9 @@ import org.htmlunit.corejs.javascript.Scriptable;
  */
 public class WebConsole implements ConsolePrinter, Serializable {
 
-    private Logger logger_ = new DefaultLogger();
+    private static final Log LOG = LogFactory.getLog(WebConsole.class);
+
+    private transient Logger logger_ = new DefaultLogger(LOG);
 
     /**
      * A simple logging interface abstracting logging APIs.
@@ -201,74 +205,80 @@ public class WebConsole implements ConsolePrinter, Serializable {
         }
     }
 
-    private String format(final Context cx, final Scriptable scope, final Object[] args) {
+    private static String format(final Context cx, final Scriptable scope, final Object[] args) {
         String msg = NativeConsole.format(cx, scope, args);
         msg = msg.replaceAll("\\r?\\n", "\n");
         return msg;
     }
 
+    private void readObject(final ObjectInputStream ois) throws ClassNotFoundException, IOException {
+        ois.defaultReadObject();
+        setLogger(new DefaultLogger(LOG));
+    }
+
     /**
      * This class is the default logger used by WebConsole.
      */
-    private static class DefaultLogger implements Logger, Serializable {
+    private static class DefaultLogger implements Logger {
 
-        private static final Log LOG = LogFactory.getLog(WebConsole.class);
+        private final Log webConsoleLogger_;
 
-        DefaultLogger() {
+        /**
+         * Ctor.
+         */
+        DefaultLogger(final Log logger) {
+            super();
+            webConsoleLogger_ = logger;
         }
 
         @Override
         public boolean isTraceEnabled() {
-            return LOG.isTraceEnabled();
+            return webConsoleLogger_.isTraceEnabled();
         }
 
         @Override
         public void trace(final Object message) {
-            if (LOG.isTraceEnabled()) {
-                LOG.trace(message);
-            }
+            webConsoleLogger_.trace(message);
         }
 
         @Override
         public boolean isDebugEnabled() {
-            return LOG.isDebugEnabled();
+            return webConsoleLogger_.isDebugEnabled();
         }
 
         @Override
         public void debug(final Object message) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(message);
-            }
+            webConsoleLogger_.debug(message);
         }
 
         @Override
         public boolean isInfoEnabled() {
-            return LOG.isInfoEnabled();
+            return webConsoleLogger_.isInfoEnabled();
         }
 
         @Override
         public void info(final Object message) {
-            LOG.info(message);
+            webConsoleLogger_.info(message);
         }
 
         @Override
         public boolean isWarnEnabled() {
-            return LOG.isWarnEnabled();
+            return webConsoleLogger_.isWarnEnabled();
         }
 
         @Override
         public void warn(final Object message) {
-            LOG.warn(message);
+            webConsoleLogger_.warn(message);
         }
 
         @Override
         public boolean isErrorEnabled() {
-            return LOG.isErrorEnabled();
+            return webConsoleLogger_.isErrorEnabled();
         }
 
         @Override
         public void error(final Object message) {
-            LOG.error(message);
+            webConsoleLogger_.error(message);
         }
     }
 }

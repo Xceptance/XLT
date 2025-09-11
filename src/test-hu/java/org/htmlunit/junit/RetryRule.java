@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@ package org.htmlunit.junit;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.htmlunit.junit.annotation.Retry;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
@@ -47,9 +48,9 @@ public class RetryRule implements TestRule {
                         stmt.evaluate();
                         return;
                     }
-                    catch (final Throwable t) {
+                    catch (final Throwable e) {
                         if (retryCount_.get() == 0 || desc.getAnnotation(Retry.class) == null) {
-                            throw t;
+                            throw e;
                         }
                     }
                 }

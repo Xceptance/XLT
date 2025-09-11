@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,6 +56,20 @@ public abstract class Session
     public static final void logEvent(final String eventName, final String eventMessage)
     {
         getCurrent().getDataManager().logEvent(eventName, eventMessage);
+    }
+    
+    /**
+     * Logs a line of custom data in the datalogger of the given scope.
+     * (Shortcut method for getDataManager().dataLogger(scope).log(lineOfData))
+     * 
+     * @param scope
+     *            scope of the data logger to be used
+     * @param lineOfData
+     *            line of data to be logged
+     */
+    public static final void logData(String scope, String lineOfData)
+    {
+        getCurrent().getDataManager().dataLogger(scope).log(lineOfData);
     }
 
     /**

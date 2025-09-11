@@ -546,7 +546,8 @@
     }
 
     function isJsonContent(contentType) {
-        //  e.g. "application/json" or "application/<...>+json"
+        //  e.g. "application/json" or "application/<...>+json" or "application/json;charset=utf-8"
+        contentType = (contentType || "").split(";")[0].trim();
         return /^application\/(.+\+)?json$/.test(contentType);
     }
 

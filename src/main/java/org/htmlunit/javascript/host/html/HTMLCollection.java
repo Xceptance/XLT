@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,30 +14,16 @@
  */
 package org.htmlunit.javascript.host.html;
 
-import static org.htmlunit.BrowserVersionFeatures.HTMLCOLLECTION_ITEM_SUPPORTS_DOUBLE_INDEX_ALSO;
-import static org.htmlunit.BrowserVersionFeatures.HTMLCOLLECTION_ITEM_SUPPORTS_ID_SEARCH_ALSO;
 import static org.htmlunit.BrowserVersionFeatures.HTMLCOLLECTION_NAMED_ITEM_ID_FIRST;
-import static org.htmlunit.BrowserVersionFeatures.HTMLCOLLECTION_NULL_IF_NOT_FOUND;
-import static org.htmlunit.BrowserVersionFeatures.HTMLCOLLECTION_SUPPORTS_PARANTHESES;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Supplier;
 
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.corejs.javascript.Callable;
 import org.htmlunit.corejs.javascript.Context;
-import org.htmlunit.corejs.javascript.ES6Iterator;
-import org.htmlunit.corejs.javascript.NativeArrayIterator;
 import org.htmlunit.corejs.javascript.Scriptable;
-import org.htmlunit.corejs.javascript.Undefined;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.html.HtmlForm;
@@ -73,13 +59,15 @@ public class HTMLCollection extends AbstractList implements Callable {
      * Creates an instance.
      */
     public HTMLCollection() {
+        super();
     }
 
     /**
      * JavaScript constructor.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 
     /**
@@ -123,9 +111,9 @@ public class HTMLCollection extends AbstractList implements Callable {
         return new HTMLCollection(parentScope, initialElements);
     }
 
-    @JsxSymbol({CHROME, EDGE, FF, FF_ESR})
-    public ES6Iterator iterator() {
-        return new NativeArrayIterator(getParentScope(), this, NativeArrayIterator.ARRAY_ITERATOR_TYPE.VALUES);
+    @JsxSymbol
+    public Scriptable iterator() {
+        return JavaScriptEngine.newArrayIteratorTypeValues(getParentScope(), this);
     }
 
     /**
@@ -149,10 +137,7 @@ public class HTMLCollection extends AbstractList implements Callable {
             }
             final Object object = getIt(args[0]);
             if (object == NOT_FOUND) {
-                if (getBrowserVersion().hasFeature(HTMLCOLLECTION_NULL_IF_NOT_FOUND)) {
-                    return null;
-                }
-                return Undefined.instance;
+                return null;
             }
             return object;
         }
@@ -166,7 +151,7 @@ public class HTMLCollection extends AbstractList implements Callable {
      * @return true or false
      */
     protected boolean supportsParentheses() {
-        return getBrowserVersion().hasFeature(HTMLCOLLECTION_SUPPORTS_PARANTHESES);
+        return false;
     }
 
     /**
@@ -187,15 +172,10 @@ public class HTMLCollection extends AbstractList implements Callable {
         }
 
         if (matchingElements.isEmpty()) {
-            if (getBrowserVersion().hasFeature(HTMLCOLLECTION_ITEM_SUPPORTS_DOUBLE_INDEX_ALSO)) {
-                final double doubleValue = JavaScriptEngine.toNumber(name);
-                if (!Double.isNaN(doubleValue)) {
-                    return get((int) doubleValue, this);
-                }
-            }
             return NOT_FOUND;
         }
-        else if (matchingElements.size() == 1) {
+
+        if (matchingElements.size() == 1) {
             return getScriptableForElement(matchingElements.get(0));
         }
 
@@ -222,11 +202,6 @@ public class HTMLCollection extends AbstractList implements Callable {
      */
     @JsxFunction
     public Object item(final Object index) {
-        if (index instanceof String && getBrowserVersion().hasFeature(HTMLCOLLECTION_ITEM_SUPPORTS_ID_SEARCH_ALSO)) {
-            final String name = (String) index;
-            return namedItem(name);
-        }
-
         int idx = 0;
         final double doubleValue = JavaScriptEngine.toNumber(index);
         if (!Double.isNaN(doubleValue)) {
@@ -248,7 +223,7 @@ public class HTMLCollection extends AbstractList implements Callable {
      * @see <a href="http://msdn.microsoft.com/en-us/library/ms536634.aspx">MSDN doc</a>
      */
     @JsxFunction
-    public Object namedItem(final String name) {
+    public Scriptable namedItem(final String name) {
         final List<DomNode> elements = getElements();
         final BrowserVersion browserVersion = getBrowserVersion();
         if (browserVersion.hasFeature(HTMLCOLLECTION_NAMED_ITEM_ID_FIRST)) {
@@ -277,30 +252,5 @@ public class HTMLCollection extends AbstractList implements Callable {
             }
         }
         return null;
-    }
-
-    /**
-     * Returns all the elements in this element array that have the specified tag name.
-     * This method returns an empty element array if there are no elements with the
-     * specified tag name.
-     * @param tagName the name of the tag of the elements to return
-     * @return all the elements in this element array that have the specified tag name
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms536776.aspx">MSDN doc</a>
-     */
-    @JsxFunction(IE)
-    public Object tags(final String tagName) {
-        final HTMLCollection tags = new HTMLCollection(getDomNodeOrDie(), false);
-        tags.setElementsSupplier(
-                (Supplier<List<DomNode>> & Serializable)
-                () -> {
-                    final List<DomNode> list = new ArrayList<>();
-                    for (final DomNode elem : this.getElements()) {
-                        if (tagName.equalsIgnoreCase(elem.getLocalName())) {
-                            list.add(elem);
-                        }
-                    }
-                    return list;
-                });
-        return tags;
     }
 }

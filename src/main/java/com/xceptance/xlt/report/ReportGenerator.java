@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
@@ -30,6 +31,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.vfs2.FileName;
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileSystemException;
+import org.apache.commons.vfs2.NameScope;
 import org.apache.commons.vfs2.Selectors;
 import org.apache.commons.vfs2.VFS;
 
@@ -43,6 +45,8 @@ import com.xceptance.xlt.engine.util.TimerUtils;
 import com.xceptance.xlt.mastercontroller.TestCaseLoadProfileConfiguration;
 import com.xceptance.xlt.mastercontroller.TestLoadProfileConfiguration;
 import com.xceptance.xlt.report.external.ExternalReportGenerator;
+import com.xceptance.xlt.report.scorecard.Scorecard;
+import com.xceptance.xlt.report.scorecard.Evaluator;
 import com.xceptance.xlt.report.util.ConcurrentUsersTable;
 import com.xceptance.xlt.report.util.JFreeChartUtils;
 import com.xceptance.xlt.report.util.ReportUtils;
@@ -101,7 +105,7 @@ public class ReportGenerator
                            final File overridePropertyFile, final Properties commandLineProperties, final String testCaseIncludePatternList,
                            final String testCaseExcludePatternList, final String agentIncludePatternList,
                            final String agentExcludePatternList)
-                               throws Exception
+        throws Exception
     {
 
         final FileObject configDir = inputDir.resolveFile(XltConstants.CONFIG_DIR_NAME);
@@ -156,8 +160,6 @@ public class ReportGenerator
             this.outputDir = outputDir;
         }
 
-        // clean or create it
-        ReportGenerator.ensureOutputDirAndClean(this.outputDir);
         config.setReportDirectory(this.outputDir);
 
         // configure the thread pool to be cpu count for now
@@ -169,30 +171,12 @@ public class ReportGenerator
         // setup the report providers
         reportProviders = new ArrayList<ReportProvider>();
 
-        for (final Class<? extends ReportProvider> c : config.getReportProviderClasses())
-        {
-            try
-            {
-                final ReportProvider processor = c.getDeclaredConstructor().newInstance();
-                processor.setConfiguration(config);
-
-                reportProviders.add(processor);
-            }
-            catch (final Throwable t)
-            {
-                final String message = String.format("Failed to instantiate and initialize report provider instance of class '%s': %s'",
-                                                     c.getCanonicalName(), t.getMessage());
-                XltLogger.reportLogger.error(message, t);
-            }
-        }
-
         repGen = new com.xceptance.xlt.report.external.ExternalReportGenerator();
     }
 
     /**
-     * Ensure that output exists and is empty. We have that public here because we need it twice due to either
-     * the dir coming in from external or is determining it when creating the report. Not really nice but
-     * legacy.
+     * Ensure that output exists and is empty. We have that public here because we need it twice due to either the dir
+     * coming in from external or is determining it when creating the report. Not really nice but legacy.
      *
      * @throws IOException
      */
@@ -203,13 +187,13 @@ public class ReportGenerator
          */
         if (dir.exists() == false)
         {
-            XltLogger.reportLogger.info(String.format("Creating output directory: %s", dir));
+            XltLogger.reportLogger.info("Creating output directory: {}", dir);
             FileUtils.forceMkdir(dir);
         }
         else
         {
             // clean output directory first -> Improvement #3243
-            XltLogger.reportLogger.info(String.format("Cleaning output directory: %s", dir));
+            XltLogger.reportLogger.info("Cleaning output directory: {}", dir);
             FileUtils.cleanDirectory(dir);
         }
     }
@@ -259,10 +243,29 @@ public class ReportGenerator
      */
     public void generateReport(final long fromTime, final long toTime, final long duration, final boolean noRampUp,
                                final boolean fromTimeRel, final boolean toTimeRel)
-                                   throws Exception
+        throws Exception
     {
         try
         {
+            // clean/create output directory first
+            ensureOutputDirAndClean(this.outputDir);
+
+            for (final Class<? extends ReportProvider> c : config.getReportProviderClasses())
+            {
+                try
+                {
+                    final ReportProvider processor = c.getDeclaredConstructor().newInstance();
+                    processor.setConfiguration(config);
+
+                    reportProviders.add(processor);
+                }
+                catch (final Throwable t)
+                {
+                    XltLogger.reportLogger.error("Failed to instantiate and initialize report provider instance of class '{}'",
+                                                 c.getCanonicalName(), t);
+                }
+            }
+
             // read all log files and crunch the data
             readLogs(fromTime, toTime, duration, noRampUp, fromTimeRel, toTimeRel);
 
@@ -272,14 +275,23 @@ public class ReportGenerator
             // drop providers
             reportProviders.clear();
 
+            // evaluate report if desired
+            final File scorecardXml = evaluateReport(xmlReport);
+
             // create the html report
-            transformReport(xmlReport, outputDir);
+            transformReport(xmlReport, outputDir, scorecardXml != null);
+
+            // create the report's Scorecard HTML (if evaluation took place)
+            if (scorecardXml != null)
+            {
+                transformScorecard(scorecardXml);
+            }
 
             // output the path to the report either as file path (Win) or as clickable file URL
             final File reportFile = new File(outputDir, "index.html");
             final String reportPath = ReportUtils.toString(reportFile);
 
-            XltLogger.reportLogger.info("Report: " + reportPath);
+            XltLogger.reportLogger.info("Report: {}", reportPath);
         }
         finally
         {
@@ -389,9 +401,8 @@ public class ReportGenerator
         }
         else
         {
-            XltLogger.reportLogger.warn(
-                                         String.format("PLEASE NOTE: Ramp-up could not be excluded since no value could be found for property '%s'.\n",
-                                                       XltConstants.LOAD_TEST_START_DATE));
+            XltLogger.reportLogger.warn("PLEASE NOTE: Ramp-up could not be excluded since no value could be found for property '{}'.",
+                                        XltConstants.LOAD_TEST_START_DATE);
         }
 
         return fromTime;
@@ -400,8 +411,10 @@ public class ReportGenerator
     /**
      * Processing of the log files within a defined time range
      *
-     * @param fromTime start time of the period to report
-     * @param toTime end time of the period to report
+     * @param fromTime
+     *            start time of the period to report
+     * @param toTime
+     *            end time of the period to report
      */
     private void read(final long fromTime, final long toTime)
     {
@@ -409,13 +422,9 @@ public class ReportGenerator
         final DataRecordFactory dataRecordFactory = new DataRecordFactory(config.getDataRecordClasses());
 
         // read the logs
-        final DataProcessor logReader = new DataProcessor(config,
-                                                          inputDir,
-                                                          dataRecordFactory,
-                                                          fromTime, toTime,
-                                                          reportProviders,
-                                                          testCaseIncludePatternList, testCaseExcludePatternList,
-                                                          agentIncludePatternList, agentExcludePatternList);
+        final DataProcessor logReader = new DataProcessor(config, inputDir, dataRecordFactory, fromTime, toTime, reportProviders,
+                                                          testCaseIncludePatternList, testCaseExcludePatternList, agentIncludePatternList,
+                                                          agentExcludePatternList);
         logReader.readDataRecords();
 
         XltLogger.reportLogger.info(Console.endSection());
@@ -466,9 +475,8 @@ public class ReportGenerator
         {
             if (testStartDate == 0 || elapsedTime == 0)
             {
-                System.out.printf("PLEASE NOTE: The specified offset '" + offsetTimeValue +
-                                  "' could not be used since no value could be found for properties '%1$s' and '%2$s'.\n",
-                                  XltConstants.LOAD_TEST_START_DATE, XltConstants.LOAD_TEST_ELAPSED_TIME);
+                XltLogger.reportLogger.warn("PLEASE NOTE: The specified offset '{}' could not be used since no value could be found for properties '{}' and '{}'",
+                                            offsetTimeValue, XltConstants.LOAD_TEST_START_DATE, XltConstants.LOAD_TEST_ELAPSED_TIME);
             }
             else
             {
@@ -480,9 +488,8 @@ public class ReportGenerator
         {
             if (testStartDate == 0)
             {
-                System.out.printf("PLEASE NOTE: The specified offset '" + offsetTimeValue +
-                                  "' could not be used since no value could be found for property '%s' .\n",
-                                  XltConstants.LOAD_TEST_START_DATE);
+                XltLogger.reportLogger.warn("PLEASE NOTE: The specified offset '{}' could not be used since no value could be found for property '{}'",
+                                            offsetTimeValue, XltConstants.LOAD_TEST_START_DATE);
             }
             else
             {
@@ -505,18 +512,18 @@ public class ReportGenerator
         // only 'from' parameter is set
         if (fromTime > 0 && toTime == Long.MAX_VALUE)
         {
-            XltLogger.reportLogger.info(String.format("Data start: %s", new Date(fromTime)));
+            XltLogger.reportLogger.info("Data start: {}", new Date(fromTime));
         }
         // only 'to' parameter is set
         else if (fromTime == 0 && toTime != Long.MAX_VALUE)
         {
-            XltLogger.reportLogger.info(String.format("Data end: %s", new Date(toTime)));
+            XltLogger.reportLogger.info("Data end: {}", new Date(toTime));
         }
         // both parameter are set
         else if (fromTime > 0 && toTime != Long.MAX_VALUE)
         {
-            XltLogger.reportLogger.info(String.format("Data start: %s", new Date(fromTime)));
-            XltLogger.reportLogger.info(String.format("Data end  : %s", new Date(toTime)));
+            XltLogger.reportLogger.info("Data start: {}", new Date(fromTime));
+            XltLogger.reportLogger.info("Data end  : {}", new Date(toTime));
         }
     }
 
@@ -599,7 +606,7 @@ public class ReportGenerator
             }
             catch (FileSystemException e)
             {
-                XltLogger.reportLogger.error(String.format("Issue while copying original properties from %s", reportConfigDir.getPublicURIString()), e);
+                XltLogger.reportLogger.error("Issue while copying original properties from {}", reportConfigDir.getPublicURIString(), e);
             }
         }
         else
@@ -621,7 +628,7 @@ public class ReportGenerator
      * @throws Exception
      *             if anything goes wrong during transformation
      */
-    public void transformReport(final File inputXmlFile, final File outputDir) throws Exception
+    public void transformReport(final File inputXmlFile, final File outputDir, final boolean scorecardPresent) throws Exception
     {
         XltLogger.reportLogger.info(Console.horizontalBar());
         XltLogger.reportLogger.info(Console.startSection("Creating HTML Report..."));
@@ -656,6 +663,7 @@ public class ReportGenerator
         parameters.put("productName", ProductInformation.getProductInformation().getProductName());
         parameters.put("productVersion", ProductInformation.getProductInformation().getVersion());
         parameters.put("productUrl", ProductInformation.getProductInformation().getProductURL());
+        parameters.put("scorecardPresent", Boolean.valueOf(scorecardPresent));
 
         // transform the report
         final ReportTransformer reportTransformer = new ReportTransformer(outputFiles, styleSheetFiles, parameters);
@@ -664,7 +672,7 @@ public class ReportGenerator
 
         try
         {
-            XltLogger.reportLogger.info(String.format("XML data file: %s", inputXmlFile));
+            XltLogger.reportLogger.info("XML data file: {}", inputXmlFile);
 
             // ok, we want to avoid high memory usage
             TaskManager.getInstance().setMaximumThreadCount(1);
@@ -682,6 +690,51 @@ public class ReportGenerator
             XltLogger.reportLogger.info(String.format("...finished - %,d ms", TimerUtils.get().getElapsedTime(start)));
             XltLogger.reportLogger.info(Console.endSection());
         }
+    }
+
+    /**
+     * Re-evaluates the load test report given as input and (re-)generates its Scorecard.
+     * 
+     * @throws Exception
+     *             thrown when evaluation of report or (re-)generation of its Scorecard failed
+     */
+    public void updateScorecard() throws Exception
+    {
+        try
+        {
+            inputDir.resolveFile(XltConstants.LOAD_REPORT_XML_FILENAME, NameScope.CHILD);
+        }
+        catch (FileSystemException fse)
+        {
+            XltLogger.reportLogger.error("Could not find '{}' in directory '{}'.", XltConstants.LOAD_REPORT_XML_FILENAME,
+                                         inputDir.getName().getPathDecoded());
+            return;
+        }
+
+        final FileObject targetDir = VFS.getManager().toFileObject(outputDir);
+        if (inputDir.getName() != targetDir.getName())
+        {
+            ensureOutputDirAndClean(outputDir);
+
+            targetDir.copyFrom(inputDir, Selectors.SELECT_ALL);
+        }
+
+        final File xmlReport = new File(outputDir, XltConstants.LOAD_REPORT_XML_FILENAME);
+
+        // evaluate test if desired
+        final File scorecardXml = evaluateReport(xmlReport);
+
+        // create the report's Scorecard HTML (if evaluation took place)
+        if (scorecardXml != null)
+        {
+            transformScorecard(scorecardXml);
+        }
+
+        // output the path to the report either as file path (Win) or as clickable file URL
+        final File reportFile = new File(outputDir, "index.html");
+        final String reportPath = ReportUtils.toString(reportFile);
+
+        XltLogger.reportLogger.info("Report: {}", reportPath);
     }
 
     /**
@@ -728,6 +781,130 @@ public class ReportGenerator
         }
 
         return inputDirName;
+    }
+
+    /**
+     * Evaluates the given test report XML file and writes its outcome to file named
+     * {@value XltConstants#SCORECARD_REPORT_XML_FILENAME}. N.B. No evaluation is done if there is no proper
+     * configuration file (see property {@value XltConstants#SCORECARD_CONFIG_FILE_PROPERTY}) configured.
+     *
+     * @param reportXMLFile
+     *            the test report XML to evaluate
+     * @return the scorecard's XML file if evaluation took place, or {@code null} otherwise.
+     */
+    private File evaluateReport(final File reportXMLFile)
+    {
+        final String scorecardConfig = config.getStringProperty(XltConstants.SCORECARD_CONFIG_FILE_PROPERTY, null);
+        final File scorecardConfigFile = scorecardConfig != null ? new File(new File(outputDir, XltConstants.CONFIG_DIR_NAME),
+                                                                            scorecardConfig)
+                                                                 : null;
+        if (scorecardConfigFile != null)
+        {
+            XltLogger.reportLogger.debug("Evaluating test report using configuration file '{}'", scorecardConfigFile.getAbsolutePath());
+
+            final String errMessage = "Failed to evaluate test report";
+            try
+            {
+                final File scorecardXMLFile = new File(outputDir, XltConstants.SCORECARD_REPORT_XML_FILENAME);
+                final Evaluator evaluator = new Evaluator(scorecardConfigFile);
+                final Scorecard outcome = evaluator.evaluate(reportXMLFile);
+
+                final String error = outcome.result.getError();
+                if (StringUtils.isNotBlank(error))
+                {
+                    XltLogger.reportLogger.error("{}: {}", errMessage, error);
+                }
+
+                evaluator.writeScorecardToFile(outcome, scorecardXMLFile);
+
+                return scorecardXMLFile;
+            }
+            catch (final Throwable t)
+            {
+                XltLogger.reportLogger.error(errMessage, t);
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Transform the given scorecard XML file using the XSL stylesheet
+     * {@value XltConstants#SCORECARD_REPORT_XSL_FILENAME} that is expected to reside in report generator's
+     * configuration sub-directory {@value XltConstants#SCORECARD_REPORT_XSL_PATH}
+     *
+     * @param inputXmlFile
+     *            the scorecard XMLfile to transform
+     * @throws Exception
+     *             thrown when transformation failed for any reason
+     */
+    private void transformScorecard(final File inputXmlFile) throws Exception
+    {
+        XltLogger.reportLogger.info(Console.horizontalBar());
+        XltLogger.reportLogger.info(Console.startSection("Creating Scorecard..."));
+
+        final File styleSheetFile = new File(new File(config.getConfigDirectory(), XltConstants.SCORECARD_REPORT_XSL_PATH),
+                                             XltConstants.SCORECARD_REPORT_XSL_FILENAME);
+        final File outputFile = new File(outputDir, XltConstants.SCORECARD_REPORT_HTML_FILENAME);
+
+        // determine the name of the project from configuration
+        final String projectName;
+        {
+            final String projectNamePropValue = config.getStringProperty(XltConstants.PROJECT_NAME_PROPERTY, null);
+            projectName = StringUtils.trimToEmpty(projectNamePropValue);
+        }
+
+        // XTC specific parameters
+        final String organization, project, loadTestId, resultId, reportId;
+        {
+            final String organizationPropValue = config.getStringProperty("com.xceptance.xtc.organization", null);
+            organization = StringUtils.trimToEmpty(organizationPropValue);
+
+            final String projectPropValue = config.getStringProperty("com.xceptance.xtc.project", null);
+            project = StringUtils.trimToEmpty(projectPropValue);
+
+            final String loadTestIdPropValue = config.getStringProperty("com.xceptance.xtc.loadtest.run.id", null);
+            loadTestId = StringUtils.trimToEmpty(loadTestIdPropValue);
+
+            final String resultIdPropValue = config.getStringProperty("com.xceptance.xtc.loadtest.result.id", null);
+            resultId = StringUtils.trimToEmpty(resultIdPropValue);
+
+            final String reportIdPropValue = config.getStringProperty("com.xceptance.xtc.loadtest.report.id", null);
+            reportId = StringUtils.trimToEmpty(reportIdPropValue);
+        }
+
+        // create some dynamic parameters
+        final Map<String, Object> parameters = Map.of("productName", ProductInformation.getProductInformation().getProductName(),
+                                                      "productVersion", ProductInformation.getProductInformation().getVersion(),
+                                                      "productUrl", ProductInformation.getProductInformation().getProductURL(),
+                                                      "projectName", projectName, "scorecardPresent", Boolean.TRUE, "xtcOrganization",
+                                                      organization, "xtcProject", project, "xtcLoadTestId", loadTestId, "xtcResultId",
+                                                      resultId, "xtcReportId", reportId);
+
+        // transform the report
+        final ReportTransformer reportTransformer = new ReportTransformer(List.of(outputFile), List.of(styleSheetFile), parameters);
+
+        final long start = TimerUtils.get().getStartTime();
+
+        try
+        {
+
+            // ok, we want to avoid high memory usage
+            TaskManager.getInstance().setMaximumThreadCount(1);
+
+            TaskManager.getInstance().startProgress("Creating");
+            reportTransformer.run(inputXmlFile, outputDir);
+
+        }
+        finally
+        {
+            // wait for any asynchronous task to complete
+            TaskManager.getInstance().waitForAllTasksToComplete();
+            TaskManager.getInstance().stopProgress();
+
+            XltLogger.reportLogger.info(String.format("...finished - %,d ms", TimerUtils.get().getElapsedTime(start)));
+            XltLogger.reportLogger.info(Console.endSection());
+        }
     }
 
     // TODO: Check if the similar method {@link TestLoadProfileConfiguration#getTotalRampUpPeriod()} is still needed.

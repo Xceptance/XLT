@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  */
 package org.htmlunit.javascript.host;
 
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 import static org.junit.Assert.fail;
 
 import java.net.URL;
@@ -48,11 +47,9 @@ import org.htmlunit.html.HtmlInlineFrame;
 import org.htmlunit.html.HtmlInput;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
 import org.htmlunit.util.MimeType;
-import org.htmlunit.util.NameValuePair;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -232,7 +229,7 @@ public class WindowTest extends SimpleWebTestCase {
             assertEquals(secondFrame.getEnclosedWindow(), webClient.getWebWindowByName("secondFrame"));
             // Expected path
         }
-        catch (final WebWindowNotFoundException exception) {
+        catch (final WebWindowNotFoundException e) {
             fail("Expected secondFrame would be found before click.");
         }
         final HtmlAnchor anchor = secondPage.getHtmlElementById("link");
@@ -248,7 +245,7 @@ public class WindowTest extends SimpleWebTestCase {
             assertEquals(secondFrame.getEnclosedWindow(), webClient.getWebWindowByName("secondFrame"));
             // Expected path
         }
-        catch (final WebWindowNotFoundException exception) {
+        catch (final WebWindowNotFoundException e) {
             fail("Expected secondFrame would be found after click.");
         }
 
@@ -368,14 +365,14 @@ public class WindowTest extends SimpleWebTestCase {
             webClient.getWebWindowByName("secondFrame");
             fail("Did not expect secondFrame to still exist after click.");
         }
-        catch (final WebWindowNotFoundException exception) {
+        catch (final WebWindowNotFoundException e) {
             // Expected path
         }
         try {
             webClient.getWebWindowByName("thirdFrame");
             fail("Did not expect thirdFrame to still exist after click.");
         }
-        catch (final WebWindowNotFoundException exception) {
+        catch (final WebWindowNotFoundException e) {
             // Expected path
         }
     }
@@ -435,14 +432,14 @@ public class WindowTest extends SimpleWebTestCase {
             assertSame(namedWindow.getEnclosedPage(), fourthPage);
             // Expected path
         }
-        catch (final WebWindowNotFoundException exception) {
+        catch (final WebWindowNotFoundException e) {
             fail("Expected secondFrame would be found after click.");
         }
         try {
             webClient.getWebWindowByName("thirdFrame");
             fail("Did not expect thirdFrame to still exist after click.");
         }
-        catch (final WebWindowNotFoundException exception) {
+        catch (final WebWindowNotFoundException e) {
             // Expected path
         }
     }
@@ -909,9 +906,8 @@ public class WindowTest extends SimpleWebTestCase {
             0x01, 0x00, 0x01, 0x00, 0x00, 0x02, 0x02, 0x44,
             0x01, 0x00, 0x3b});
 
-        final List<NameValuePair> emptyList = Collections.emptyList();
-        webConnection.setResponse(URL_FIRST, firstContent, 200, "OK", MimeType.TEXT_HTML, emptyList);
-        webConnection.setResponse(URL_SECOND, secondContent, 200, "OK", MimeType.IMAGE_GIF, emptyList);
+        webConnection.setResponse(URL_FIRST, firstContent, 200, "OK", MimeType.TEXT_HTML, Collections.emptyList());
+        webConnection.setResponse(URL_SECOND, secondContent, 200, "OK", MimeType.IMAGE_GIF, Collections.emptyList());
         webClient.setWebConnection(webConnection);
 
         final HtmlPage firstPage = webClient.getPage(URL_FIRST);
@@ -968,9 +964,8 @@ public class WindowTest extends SimpleWebTestCase {
             + "</body></html>";
         final String secondContent = "Hello World";
 
-        final List<NameValuePair> emptyList = Collections.emptyList();
-        webConnection.setResponse(URL_FIRST, firstContent, 200, "OK", MimeType.TEXT_HTML, emptyList);
-        webConnection.setResponse(URL_SECOND, secondContent, 200, "OK", MimeType.TEXT_PLAIN, emptyList);
+        webConnection.setResponse(URL_FIRST, firstContent, 200, "OK", MimeType.TEXT_HTML, Collections.emptyList());
+        webConnection.setResponse(URL_SECOND, secondContent, 200, "OK", MimeType.TEXT_PLAIN, Collections.emptyList());
         webClient.setWebConnection(webConnection);
 
         final HtmlPage firstPage = webClient.getPage(URL_FIRST);
@@ -1027,9 +1022,8 @@ public class WindowTest extends SimpleWebTestCase {
             + "</body></html>";
         final String secondContent = "<junk></junk>\n";
 
-        final List<NameValuePair> emptyList = Collections.emptyList();
-        webConnection.setResponse(URL_FIRST, firstContent, 200, "OK", MimeType.TEXT_HTML, emptyList);
-        webConnection.setResponse(URL_SECOND, secondContent, 200, "OK", MimeType.TEXT_XML, emptyList);
+        webConnection.setResponse(URL_FIRST, firstContent, 200, "OK", MimeType.TEXT_HTML, Collections.emptyList());
+        webConnection.setResponse(URL_SECOND, secondContent, 200, "OK", MimeType.TEXT_XML, Collections.emptyList());
         webClient.setWebConnection(webConnection);
 
         final HtmlPage firstPage = webClient.getPage(URL_FIRST);
@@ -1086,9 +1080,8 @@ public class WindowTest extends SimpleWebTestCase {
             + "</body></html>";
         final String secondContent = "var x=1;\n";
 
-        final List<NameValuePair> emptyList = Collections.emptyList();
-        webConnection.setResponse(URL_FIRST, firstContent, 200, "OK", MimeType.TEXT_HTML, emptyList);
-        webConnection.setResponse(URL_SECOND, secondContent, 200, "OK", "text/javascript", emptyList);
+        webConnection.setResponse(URL_FIRST, firstContent, 200, "OK", MimeType.TEXT_HTML, Collections.emptyList());
+        webConnection.setResponse(URL_SECOND, secondContent, 200, "OK", "text/javascript", Collections.emptyList());
         webClient.setWebConnection(webConnection);
 
         final HtmlPage firstPage = webClient.getPage(URL_FIRST);
@@ -1192,11 +1185,7 @@ public class WindowTest extends SimpleWebTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "Jane", "Smith", "sdg", "finished"},
-            CHROME = "not available",
-            EDGE = "not available",
-            FF = "not available",
-            FF_ESR = "not available")
+    @Alerts("not available")
     public void showModalDialog() throws Exception {
         final String html1
             = "<html><head><script>\n"
@@ -1254,12 +1243,7 @@ public class WindowTest extends SimpleWebTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "result", "finished"},
-            CHROME = {"undefined", "not available"},
-            EDGE = {"undefined", "not available"},
-            FF = {"undefined", "not available"},
-            FF_ESR = {"undefined", "not available"})
-    @NotYetImplemented(IE)
+    @Alerts({"undefined", "not available"})
     public void showModalDialogWithButton() throws Exception {
         final String html1
             = "<html><head>\n"
@@ -1307,8 +1291,7 @@ public class WindowTest extends SimpleWebTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "",
-            IE = {"[object Window]", "a"})
+    @Alerts("")
     public void showModelessDialog() throws Exception {
         final String html1
             = "<html><head><script>\n"
@@ -1363,8 +1346,7 @@ public class WindowTest extends SimpleWebTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"true", "[object Window]", "[object Window]"},
-            IE = {"true", "123", "123"})
+    @Alerts({"true", "[object Window]", "[object Window]"})
     public void overwriteProperty_top() throws Exception {
         final String html
             = "<html><body><script>\n"
@@ -1382,8 +1364,7 @@ public class WindowTest extends SimpleWebTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"true", "[object Window]", "[object Window]"},
-            IE = {"true", "123", "123"})
+    @Alerts({"true", "[object Window]", "[object Window]"})
     public void overwriteProperty_top2() throws Exception {
         final String html
             = "<html><body><script>\n"
@@ -1647,21 +1628,13 @@ public class WindowTest extends SimpleWebTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "before print"
+    @Alerts("before print"
                     + "§event beforeprint"
                     + "§[object Event]beforeprint-false-false-false-[object Window]"
                         + "-false-2-true-true-[object Window]-[object Window]-beforeprint"
                     + "§event afterprint"
                     + "§[object Event]afterprint-false-false-false-[object Window]"
                         + "-false-2-true-true-[object Window]-[object Window]-afterprint"
-                    + "§printed§",
-            IE = "before print"
-                    + "§event beforeprint"
-                    + "§[object Event]beforeprint-false-false-undefined-[object Window]"
-                        + "-false-2-true-undefined-[object Window]-[object Window]-beforeprint"
-                    + "§event afterprint"
-                    + "§[object Event]afterprint-false-false-undefined-[object Window]"
-                        + "-false-2-true-undefined-[object Window]-[object Window]-afterprint"
                     + "§printed§")
     @HtmlUnitNYI(CHROME = "before print"
                     + "§event beforeprint"
@@ -1694,14 +1667,6 @@ public class WindowTest extends SimpleWebTestCase {
                     + "§event afterprint"
                     + "§[object Event]afterprint-false-false-false-[object Window]"
                         + "-false-2-undefined-true-[object Window]-[object Window]-afterprint"
-                    + "§printed§",
-            IE = "before print"
-                    + "§event beforeprint"
-                    + "§[object Event]beforeprint-false-false-undefined-[object Window]"
-                        + "-false-2-undefined-undefined-[object Window]-[object Window]-beforeprint"
-                    + "§event afterprint"
-                    + "§[object Event]afterprint-false-false-undefined-[object Window]"
-                        + "-false-2-undefined-undefined-[object Window]-[object Window]-afterprint"
                     + "§printed§")
     public void printEvent() throws Exception {
         // we have to test this manually

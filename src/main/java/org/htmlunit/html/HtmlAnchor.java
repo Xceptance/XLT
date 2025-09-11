@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  */
 package org.htmlunit.html;
 
-import static org.htmlunit.BrowserVersionFeatures.ANCHOR_EMPTY_HREF_NO_FILENAME;
 import static org.htmlunit.BrowserVersionFeatures.ANCHOR_SEND_PING_REQUEST;
 
 import java.io.IOException;
@@ -50,6 +49,7 @@ import org.htmlunit.util.UrlUtils;
  * @author Dmitri Zoubkov
  * @author Ronald Brill
  * @author Frank Danek
+ * @author Lai Quang Duong
  */
 public class HtmlAnchor extends HtmlElement {
 
@@ -114,6 +114,7 @@ public class HtmlAnchor extends HtmlElement {
         if (ATTRIBUTE_NOT_DEFINED == getHrefAttribute()) {
             return;
         }
+        final String downloadAttribute = getDownloadAttribute();
         HtmlPage page = (HtmlPage) getPage();
         if (StringUtils.startsWithIgnoreCase(href, JavaScriptURLConnection.JAVASCRIPT_PREFIX)) {
             final StringBuilder builder = new StringBuilder(href.length());
@@ -134,7 +135,7 @@ public class HtmlAnchor extends HtmlElement {
             }
 
             final String target;
-            if (shiftKey || ctrlKey || ATTRIBUTE_NOT_DEFINED != getDownloadAttribute()) {
+            if (shiftKey || ctrlKey || ATTRIBUTE_NOT_DEFINED != downloadAttribute) {
                 target = WebClient.TARGET_BLANK;
             }
             else {
@@ -173,7 +174,7 @@ public class HtmlAnchor extends HtmlElement {
         webRequest.setCharset(page.getCharset());
 
         if (!relContainsNoreferrer()) {
-            webRequest.setRefererlHeader(page.getUrl());
+            webRequest.setRefererHeader(page.getUrl());
         }
 
         if (LOG.isDebugEnabled()) {
@@ -187,14 +188,14 @@ public class HtmlAnchor extends HtmlElement {
         final String target;
         if (shiftKey || ctrlKey
                 || (webClient.getAttachmentHandler() == null
-                        && ATTRIBUTE_NOT_DEFINED != getDownloadAttribute())) {
+                        && ATTRIBUTE_NOT_DEFINED != downloadAttribute)) {
             target = WebClient.TARGET_BLANK;
         }
         else {
             target = page.getResolvedTarget(getTargetAttribute());
         }
         page.getWebClient().download(page.getEnclosingWindow(), target, webRequest,
-                true, false, ATTRIBUTE_NOT_DEFINED != getDownloadAttribute(), "Link click");
+                true, false, (ATTRIBUTE_NOT_DEFINED != downloadAttribute) ? downloadAttribute : null, "Link click");
     }
 
     private boolean relContainsNoreferrer() {
@@ -218,13 +219,6 @@ public class HtmlAnchor extends HtmlElement {
         URL url = page.getFullyQualifiedUrl(href);
         // fix for empty url
         if (StringUtils.isEmpty(href)) {
-            final boolean dropFilename = page.getWebClient().getBrowserVersion()
-                    .hasFeature(ANCHOR_EMPTY_HREF_NO_FILENAME);
-            if (dropFilename) {
-                String path = url.getPath();
-                path = path.substring(0, path.lastIndexOf('/') + 1);
-                url = UrlUtils.getUrlWithNewPath(url, path);
-            }
             url = UrlUtils.getUrlWithNewRef(url, null);
         }
         return url;

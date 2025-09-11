@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -100,7 +100,8 @@ public class HtmlNumberInput extends HtmlSelectableTextInput implements Labelabl
             return "";
         }
 
-        if ("-".equals(raw) || "+".equals(raw)) {
+        if (org.htmlunit.util.StringUtils.equalsChar('-', raw)
+                || org.htmlunit.util.StringUtils.equalsChar('+', raw)) {
             return raw;
         }
 
@@ -111,7 +112,7 @@ public class HtmlNumberInput extends HtmlSelectableTextInput implements Labelabl
 
             return raw.trim();
         }
-        catch (final ParseException e) {
+        catch (final ParseException ignored) {
             // ignore
         }
 
@@ -140,7 +141,8 @@ public class HtmlNumberInput extends HtmlSelectableTextInput implements Labelabl
             rawValue = rawValue.replaceAll("\\s", "");
         }
         if (!rawValue.isEmpty()) {
-            if ("-".equals(rawValue) || "+".equals(rawValue)) {
+            if (org.htmlunit.util.StringUtils.equalsChar('-', rawValue)
+                    || org.htmlunit.util.StringUtils.equalsChar('+', rawValue)) {
                 return false;
             }
 
@@ -181,12 +183,12 @@ public class HtmlNumberInput extends HtmlSelectableTextInput implements Labelabl
                                 return false;
                             }
                         }
-                        catch (final NumberFormatException e) {
+                        catch (final NumberFormatException ignored) {
                             // ignore
                         }
                     }
                 }
-                catch (final NumberFormatException e) {
+                catch (final NumberFormatException ignored) {
                     // ignore
                 }
             }
@@ -197,7 +199,7 @@ public class HtmlNumberInput extends HtmlSelectableTextInput implements Labelabl
                         return false;
                     }
                 }
-                catch (final NumberFormatException e) {
+                catch (final NumberFormatException ignored) {
                     // ignore
                 }
             }

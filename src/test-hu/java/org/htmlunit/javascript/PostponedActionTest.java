@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import java.net.URL;
 import org.htmlunit.MockWebConnection;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.WebDriver;
@@ -138,5 +138,35 @@ public class PostponedActionTest extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
         assertTitle(driver, getExpectedAlerts()[0]);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("page 2 / script executed")
+    public void javascriptReload() throws Exception {
+        final String html = "<html>\n"
+                + "<head>\n"
+                + "</head>\n"
+                + "<body onload='document.forms[0].submit()'>\n"
+                + "  <form action='step2.html' method='post'>\n"
+                + "  </form>"
+                + "</body>\n"
+                + "</html>";
+
+        final String secondContent = "<html><head>\n"
+                + "<title>page 2</title>\n"
+                + "</head>\n"
+                + "<body>\n"
+                + "<script async>document.title += ' / script executed§';</script>\n"
+                + "</body>\n"
+                + "</html>";
+
+        final MockWebConnection conn = getMockWebConnection();
+        getMockWebConnection().setResponse(new URL(URL_FIRST, "step2.html"), secondContent);
+
+        final WebDriver driver = loadPage2(html);
+        verifyTitle2(DEFAULT_WAIT_TIME, driver, getExpectedAlerts()[0]);
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -97,9 +96,6 @@ public abstract class AbstractJavaScriptConfiguration {
             }
             else if (browserVersion.isEdge()) {
                 expectedBrowser = EDGE;
-            }
-            else if (browserVersion.isIE()) {
-                expectedBrowser = IE;
             }
             else if (browserVersion.isFirefoxESR()) {
                 expectedBrowser = FF_ESR;
@@ -361,7 +357,7 @@ public abstract class AbstractJavaScriptConfiguration {
 
     private static boolean isSupported(final SupportedBrowser[] browsers, final SupportedBrowser expectedBrowser) {
         for (final SupportedBrowser browser : browsers) {
-            if (isCompatible(browser, expectedBrowser)) {
+            if (browser == expectedBrowser) {
                 return true;
             }
         }
@@ -373,7 +369,10 @@ public abstract class AbstractJavaScriptConfiguration {
      * @param browser1 the first {@link SupportedBrowser}
      * @param browser2 the second {@link SupportedBrowser}
      * @return whether the two {@link SupportedBrowser} are compatible or not
+     *
+     * @deprecated as of version 4.8.0; will be removed without replacement
      */
+    @Deprecated
     public static boolean isCompatible(final SupportedBrowser browser1, final SupportedBrowser browser2) {
         return browser1 == browser2;
     }

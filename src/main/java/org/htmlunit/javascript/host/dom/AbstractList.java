@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,7 +72,9 @@ public class AbstractList extends HtmlUnitScriptable implements ExternalArrayDat
 
     private Function<HtmlAttributeChangeEvent, EffectOnCache> effectOnCacheFunction_ =
             (Function<HtmlAttributeChangeEvent, EffectOnCache> & Serializable) event -> EffectOnCache.RESET;
+
     private Predicate<DomNode> isMatchingPredicate_ = (Predicate<DomNode> & Serializable) domNode -> false;
+
     private Supplier<List<DomNode>> elementsSupplier_ =
             (Supplier<List<DomNode>> & Serializable)
                 () -> {
@@ -93,6 +95,7 @@ public class AbstractList extends HtmlUnitScriptable implements ExternalArrayDat
      * Creates an instance.
      */
     public AbstractList() {
+        super();
     }
 
     /**
@@ -105,6 +108,7 @@ public class AbstractList extends HtmlUnitScriptable implements ExternalArrayDat
      */
     protected AbstractList(final DomNode domNode, final boolean attributeChangeSensitive,
             final List<DomNode> initialElements) {
+        super();
         if (domNode != null) {
             setDomNode(domNode, false);
             final HtmlUnitScriptable parentScope = domNode.getScriptableObject();
@@ -495,7 +499,7 @@ public class AbstractList extends HtmlUnitScriptable implements ExternalArrayDat
 
     @Override
     public void setArrayElement(final int index, final Object value) {
-        // ignored
+        // ignore
     }
 
     @Override

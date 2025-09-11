@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,7 @@
 package org.htmlunit.html;
 
 import static org.htmlunit.BrowserVersionFeatures.EVENT_CONTEXT_MENU_HAS_DETAIL_1;
-import static org.htmlunit.BrowserVersionFeatures.EVENT_ONCLICK_POINTEREVENT_DETAIL_0;
 import static org.htmlunit.BrowserVersionFeatures.EVENT_ONCLICK_USES_POINTEREVENT;
-import static org.htmlunit.BrowserVersionFeatures.EVENT_ONDOUBLECLICK_USES_POINTEREVENT;
 import static org.htmlunit.BrowserVersionFeatures.JS_AREA_WITHOUT_HREF_FOCUSABLE;
 
 import java.io.IOException;
@@ -27,6 +25,8 @@ import java.io.Serializable;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -34,8 +34,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -54,8 +52,8 @@ import org.htmlunit.cssparser.parser.selector.Selector;
 import org.htmlunit.cssparser.parser.selector.SelectorList;
 import org.htmlunit.cssparser.parser.selector.SelectorSpecificity;
 import org.htmlunit.cyberneko.util.FastHashMap;
+import org.htmlunit.html.DefaultElementFactory.OrderedFastHashMapWithLowercaseKeys;
 import org.htmlunit.javascript.AbstractJavaScriptEngine;
-import org.htmlunit.javascript.HtmlUnitContextFactory;
 import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.host.event.Event;
 import org.htmlunit.javascript.host.event.EventTarget;
@@ -77,6 +75,7 @@ import org.xml.sax.SAXException;
  * @author <a href="mailto:tom.anderson@univ.oxon.org">Tom Anderson</a>
  * @author Ronald Brill
  * @author Frank Danek
+ * @author Sven Strickroth
  */
 public class DomElement extends DomNamespaceNode implements Element {
 
@@ -113,6 +112,13 @@ public class DomElement extends DomNamespaceNode implements Element {
     private String styleString_;
     private LinkedHashMap<String, StyleElement> styleMap_;
 
+    private static final Comparator<StyleElement> STYLE_ELEMENT_COMPARATOR = new Comparator<StyleElement>() {
+        @Override
+        public int compare(final StyleElement first, final StyleElement second) {
+            return StyleElement.compareToByImportanceAndSpecificity(first, second);
+        }
+    };
+
     /**
      * Whether the Mouse is currently over this element or not.
      */
@@ -131,7 +137,10 @@ public class DomElement extends DomNamespaceNode implements Element {
             final Map<String, DomAttr> attributes) {
         super(namespaceURI, qualifiedName, page);
 
-        if (attributes != null) {
+        if (attributes == null) {
+            attributes_ = new NamedAttrNodeMapImpl(this, isAttributeCaseSensitive());
+        }
+        else {
             attributes_ = new NamedAttrNodeMapImpl(this, isAttributeCaseSensitive(), attributes);
 
             for (final DomAttr entry : attributes.values()) {
@@ -146,9 +155,6 @@ public class DomElement extends DomNamespaceNode implements Element {
                     namespaces_.put(attrNamespaceURI, prefix);
                 }
             }
-        }
-        else {
-            attributes_ = new NamedAttrNodeMapImpl(this, isAttributeCaseSensitive());
         }
     }
 
@@ -295,7 +301,7 @@ public class DomElement extends DomNamespaceNode implements Element {
         }
 
         final LinkedHashMap<String, StyleElement> styleMap = new LinkedHashMap<>();
-        if (ATTRIBUTE_NOT_DEFINED == styleAttribute || DomElement.ATTRIBUTE_VALUE_EMPTY == styleAttribute) {
+        if (ATTRIBUTE_NOT_DEFINED == styleAttribute || ATTRIBUTE_VALUE_EMPTY == styleAttribute) {
             styleMap_ = styleMap;
             styleString_ = styleAttribute;
             return styleMap_;
@@ -600,25 +606,29 @@ public class DomElement extends DomNamespaceNode implements Element {
      * @param styleMap the styles
      */
     public void writeStyleToElement(final Map<String, StyleElement> styleMap) {
+        if (styleMap.isEmpty()) {
+            setAttribute("style", "");
+            return;
+        }
+
         final StringBuilder builder = new StringBuilder();
-        final SortedSet<StyleElement> sortedValues = new TreeSet<>(styleMap.values());
-        for (final StyleElement e : sortedValues) {
+        final List<StyleElement> styleElements = new ArrayList<>(styleMap.values());
+        Collections.sort(styleElements, STYLE_ELEMENT_COMPARATOR);
+        for (final StyleElement e : styleElements) {
             if (builder.length() != 0) {
                 builder.append(' ');
             }
-            builder.append(e.getName());
-            builder.append(": ");
-            builder.append(e.getValue());
+            builder.append(e.getName())
+                .append(": ")
+                .append(e.getValue());
 
             final String prio = e.getPriority();
             if (org.apache.commons.lang3.StringUtils.isNotBlank(prio)) {
-                builder.append(" !");
-                builder.append(prio);
+                builder.append(" !").append(prio);
             }
             builder.append(';');
         }
-        final String value = builder.toString();
-        setAttribute("style", value);
+        setAttribute("style", builder.toString());
     }
 
     /**
@@ -648,6 +658,27 @@ public class DomElement extends DomNamespaceNode implements Element {
                 return res;
             }
         };
+    }
+
+    /**
+     * <span style="color:red">INTERNAL API - SUBJECT TO CHANGE AT ANY TIME - USE AT YOUR OWN RISK.</span><br>
+     *
+     * @param <E> the specific HtmlElement type
+     * @param tagName The name of the tag to match on
+     * @return A list of matching elements; this is not a live list
+     */
+    public <E extends HtmlElement> List<E> getStaticElementsByTagName(final String tagName) {
+        final List<E> res = new ArrayList<>();
+        for (final Iterator<HtmlElement> iterator = this.new DescendantHtmlElementsIterator(); iterator.hasNext();) {
+            final HtmlElement elem = iterator.next();
+            if (elem.getLocalName().equalsIgnoreCase(tagName)) {
+                final String prefix = elem.getPrefix();
+                if (prefix == null || prefix.isEmpty()) {
+                res.add((E) elem);
+            }
+        }
+        }
+        return res;
     }
 
     /**
@@ -770,7 +801,10 @@ public class DomElement extends DomNamespaceNode implements Element {
      */
     public int getChildElementCount() {
         int counter = 0;
-        for (final Iterator<DomElement> i = getChildElements().iterator(); i.hasNext(); i.next()) {
+
+        final Iterator<DomElement> iterator = getChildElements().iterator();
+        while (iterator.hasNext()) {
+            iterator.next();
             counter++;
         }
         return counter;
@@ -976,7 +1010,8 @@ public class DomElement extends DomNamespaceNode implements Element {
 
         // make enclosing window the current one
         final SgmlPage page = getPage();
-        page.getWebClient().setCurrentWindow(page.getEnclosingWindow());
+        final WebClient webClient = page.getWebClient();
+        webClient.setCurrentWindow(page.getEnclosingWindow());
 
         if (!ignoreVisibility) {
             if (!(page instanceof HtmlPage)) {
@@ -1008,57 +1043,64 @@ public class DomElement extends DomNamespaceNode implements Element {
                 mouseDown(shiftKey, ctrlKey, altKey, MouseEvent.BUTTON_LEFT);
             }
 
-            if (handleFocus) {
-                // give focus to current element (if possible) or only remove it from previous one
-                DomElement elementToFocus = null;
-                if (this instanceof SubmittableElement
-                    || this instanceof HtmlAnchor
-                        && ATTRIBUTE_NOT_DEFINED != ((HtmlAnchor) this).getHrefAttribute()
-                    || this instanceof HtmlArea
-                        && (ATTRIBUTE_NOT_DEFINED != ((HtmlArea) this).getHrefAttribute()
-                            || getPage().getWebClient().getBrowserVersion().hasFeature(JS_AREA_WITHOUT_HREF_FOCUSABLE))
-                    || this instanceof HtmlElement && ((HtmlElement) this).getTabIndex() != null) {
-                    elementToFocus = this;
-                }
-                else if (this instanceof HtmlOption) {
-                    elementToFocus = ((HtmlOption) this).getEnclosingSelect();
-                }
-
-                if (elementToFocus == null) {
-                    ((HtmlPage) page).setFocusedElement(null);
-                }
-                else {
-                    elementToFocus.focus();
-                }
+            final AbstractJavaScriptEngine<?> jsEngine = webClient.getJavaScriptEngine();
+            if (webClient.isJavaScriptEnabled()) {
+                jsEngine.holdPosponedActions();
             }
+            try {
+                if (handleFocus) {
+                    // give focus to current element (if possible) or only remove it from previous one
+                    DomElement elementToFocus = null;
+                    if (this instanceof SubmittableElement
+                        || this instanceof HtmlAnchor
+                            && ATTRIBUTE_NOT_DEFINED != ((HtmlAnchor) this).getHrefAttribute()
+                        || this instanceof HtmlArea
+                            && (ATTRIBUTE_NOT_DEFINED != ((HtmlArea) this).getHrefAttribute()
+                                || webClient.getBrowserVersion().hasFeature(JS_AREA_WITHOUT_HREF_FOCUSABLE))
+                        || this instanceof HtmlElement && ((HtmlElement) this).getTabIndex() != null) {
+                        elementToFocus = this;
+                    }
+                    else if (this instanceof HtmlOption) {
+                        elementToFocus = ((HtmlOption) this).getEnclosingSelect();
+                    }
 
-            if (triggerMouseEvents) {
-                mouseUp(shiftKey, ctrlKey, altKey, MouseEvent.BUTTON_LEFT);
-            }
-
-            MouseEvent event = null;
-            if (page.getWebClient().isJavaScriptEnabled()) {
-                final BrowserVersion browser = page.getWebClient().getBrowserVersion();
-                if (browser.hasFeature(EVENT_ONCLICK_USES_POINTEREVENT)) {
-                    if (browser.hasFeature(EVENT_ONCLICK_POINTEREVENT_DETAIL_0)) {
-                        event = new PointerEvent(getEventTargetElement(), MouseEvent.TYPE_CLICK, shiftKey,
-                                ctrlKey, altKey, MouseEvent.BUTTON_LEFT, 0);
+                    if (elementToFocus == null) {
+                        ((HtmlPage) page).setFocusedElement(null);
                     }
                     else {
+                        elementToFocus.focus();
+                    }
+                }
+
+                if (triggerMouseEvents) {
+                    mouseUp(shiftKey, ctrlKey, altKey, MouseEvent.BUTTON_LEFT);
+                }
+
+                MouseEvent event = null;
+                if (webClient.isJavaScriptEnabled()) {
+                    final BrowserVersion browser = webClient.getBrowserVersion();
+                    if (browser.hasFeature(EVENT_ONCLICK_USES_POINTEREVENT)) {
                         event = new PointerEvent(getEventTargetElement(), MouseEvent.TYPE_CLICK, shiftKey,
                                 ctrlKey, altKey, MouseEvent.BUTTON_LEFT, 1);
                     }
-                }
-                else {
-                    event = new MouseEvent(getEventTargetElement(), MouseEvent.TYPE_CLICK, shiftKey,
-                            ctrlKey, altKey, MouseEvent.BUTTON_LEFT, 1);
-                }
+                    else {
+                        event = new MouseEvent(getEventTargetElement(), MouseEvent.TYPE_CLICK, shiftKey,
+                                ctrlKey, altKey, MouseEvent.BUTTON_LEFT, 1);
+                    }
 
-                if (disableProcessLabelAfterBubbling) {
-                    event.disableProcessLabelAfterBubbling();
+                    if (disableProcessLabelAfterBubbling) {
+                        event.disableProcessLabelAfterBubbling();
+                    }
+                }
+                click(event, shiftKey, ctrlKey, altKey, ignoreVisibility);
+            }
+            finally {
+                if (webClient.isJavaScriptEnabled()) {
+                    jsEngine.processPostponedActions();
                 }
             }
-            return click(event, shiftKey, ctrlKey, altKey, ignoreVisibility);
+
+            return (P) webClient.getCurrentWindow().getEnclosedPage();
         }
     }
 
@@ -1103,9 +1145,11 @@ public class DomElement extends DomNamespaceNode implements Element {
             return (P) page;
         }
 
-        if (!page.getWebClient().isJavaScriptEnabled()) {
+        final WebClient webClient = page.getWebClient();
+        if (!webClient.isJavaScriptEnabled()) {
             doClickStateUpdate(shiftKey, ctrlKey);
-            page.getWebClient().loadDownloadedResponses();
+
+            webClient.loadDownloadedResponses();
             return (P) getPage().getWebClient().getCurrentWindow().getEnclosedPage();
         }
 
@@ -1120,25 +1164,19 @@ public class DomElement extends DomNamespaceNode implements Element {
             stateUpdated = true;
         }
 
-        final AbstractJavaScriptEngine<?> jsEngine = page.getWebClient().getJavaScriptEngine();
-        jsEngine.holdPosponedActions();
-        try {
-            final ScriptResult scriptResult = doClickFireClickEvent(event);
-            final boolean eventIsAborted = event.isAborted(scriptResult);
+        final ScriptResult scriptResult = doClickFireClickEvent(event);
+        final boolean eventIsAborted = event.isAborted(scriptResult);
 
-            final boolean pageAlreadyChanged = contentPage != page.getEnclosingWindow().getEnclosedPage();
-            if (!pageAlreadyChanged && !stateUpdated && !eventIsAborted) {
-                changed = doClickStateUpdate(shiftKey, ctrlKey);
-            }
-        }
-        finally {
-            jsEngine.processPostponedActions();
+        final boolean pageAlreadyChanged = contentPage != page.getEnclosingWindow().getEnclosedPage();
+        if (!pageAlreadyChanged && !stateUpdated && !eventIsAborted) {
+            changed = doClickStateUpdate(shiftKey, ctrlKey);
         }
 
         if (changed) {
             doClickFireChangeEvent();
         }
 
+        webClient.loadDownloadedResponses();
         return (P) getPage().getWebClient().getCurrentWindow().getEnclosedPage();
     }
 
@@ -1233,36 +1271,26 @@ public class DomElement extends DomNamespaceNode implements Element {
         // call click event first
         P clickPage = click(shiftKey, ctrlKey, altKey);
         if (clickPage != getPage()) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("dblClick() is ignored, as click() loaded a different page.");
-            }
+            LOG.debug("dblClick() is ignored, as click() loaded a different page.");
             return clickPage;
         }
 
         // call click event a second time
         clickPage = click(shiftKey, ctrlKey, altKey);
         if (clickPage != getPage()) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("dblClick() is ignored, as click() loaded a different page.");
-            }
+            LOG.debug("dblClick() is ignored, as click() loaded a different page.");
             return clickPage;
         }
 
         final Event event;
-        final WebClient webClient = getPage().getWebClient();
-        if (webClient.getBrowserVersion().hasFeature(EVENT_ONDOUBLECLICK_USES_POINTEREVENT)) {
-            event = new PointerEvent(this, MouseEvent.TYPE_DBL_CLICK, shiftKey, ctrlKey, altKey,
-                    MouseEvent.BUTTON_LEFT, 0);
-        }
-        else {
-            event = new MouseEvent(this, MouseEvent.TYPE_DBL_CLICK, shiftKey, ctrlKey, altKey,
-                    MouseEvent.BUTTON_LEFT, 2);
-        }
+        event = new MouseEvent(this, MouseEvent.TYPE_DBL_CLICK, shiftKey, ctrlKey, altKey,
+                MouseEvent.BUTTON_LEFT, 2);
+
         final ScriptResult scriptResult = fireEvent(event);
         if (scriptResult == null) {
             return clickPage;
         }
-        return (P) webClient.getCurrentWindow().getEnclosedPage();
+        return (P) getPage().getWebClient().getCurrentWindow().getEnclosedPage();
     }
 
     /**
@@ -1424,17 +1452,13 @@ public class DomElement extends DomNamespaceNode implements Element {
     public Page rightClick(final boolean shiftKey, final boolean ctrlKey, final boolean altKey) {
         final Page mouseDownPage = mouseDown(shiftKey, ctrlKey, altKey, MouseEvent.BUTTON_RIGHT);
         if (mouseDownPage != getPage()) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("rightClick() is incomplete, as mouseDown() loaded a different page.");
-            }
+            LOG.debug("rightClick() is incomplete, as mouseDown() loaded a different page.");
             return mouseDownPage;
         }
 
         final Page mouseUpPage = mouseUp(shiftKey, ctrlKey, altKey, MouseEvent.BUTTON_RIGHT);
         if (mouseUpPage != getPage()) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("rightClick() is incomplete, as mouseUp() loaded a different page.");
-            }
+            LOG.debug("rightClick() is incomplete, as mouseUp() loaded a different page.");
             return mouseUpPage;
         }
 
@@ -1466,13 +1490,15 @@ public class DomElement extends DomNamespaceNode implements Element {
         if (MouseEvent.TYPE_CONTEXT_MENU.equals(eventType)) {
             final BrowserVersion browserVersion = webClient.getBrowserVersion();
             if (browserVersion.hasFeature(EVENT_ONCLICK_USES_POINTEREVENT)) {
-                event = new PointerEvent(this, eventType, shiftKey, ctrlKey, altKey, button, 0);
-            }
-            else if (browserVersion.hasFeature(EVENT_CONTEXT_MENU_HAS_DETAIL_1)) {
-                event = new MouseEvent(this, eventType, shiftKey, ctrlKey, altKey, button, 1);
+                if (browserVersion.hasFeature(EVENT_CONTEXT_MENU_HAS_DETAIL_1)) {
+                    event = new PointerEvent(this, eventType, shiftKey, ctrlKey, altKey, button, 1);
+                }
+                else {
+                    event = new PointerEvent(this, eventType, shiftKey, ctrlKey, altKey, button, 0);
+                }
             }
             else {
-                event = new MouseEvent(this, eventType, shiftKey, ctrlKey, altKey, button, 2);
+                event = new MouseEvent(this, eventType, shiftKey, ctrlKey, altKey, button, 1);
             }
         }
         else if (MouseEvent.TYPE_DBL_CLICK.equals(eventType)) {
@@ -1537,8 +1563,8 @@ public class DomElement extends DomNamespaceNode implements Element {
         }
 
         final EventTarget jsElt = getScriptableObject();
-        final HtmlUnitContextFactory cf = ((JavaScriptEngine) client.getJavaScriptEngine()).getContextFactory();
-        final ScriptResult result = cf.callSecured(cx -> jsElt.fireEvent(event), getHtmlPageOrNull());
+        final ScriptResult result = ((JavaScriptEngine) client.getJavaScriptEngine())
+                                        .callSecured(cx -> jsElt.fireEvent(event), getHtmlPageOrNull());
         if (event.isAborted(result)) {
             preventDefault();
         }
@@ -1546,8 +1572,7 @@ public class DomElement extends DomNamespaceNode implements Element {
     }
 
     /**
-     * This method is called if the current fired event is canceled by <code>preventDefault()</code> in FireFox,
-     * or by returning {@code false} in Internet Explorer.
+     * This method is called if the current fired event is canceled by <code>preventDefault()</code>.
      *
      * <p>The default implementation does nothing.</p>
      */
@@ -1643,7 +1668,7 @@ public class DomElement extends DomNamespaceNode implements Element {
             return false;
         }
         catch (final IOException e) {
-            throw new CSSException("Error parsing CSS selectors from '" + selectorString + "': " + e.getMessage());
+            throw new CSSException("Error parsing CSS selectors from '" + selectorString + "': " + e.getMessage(), e);
         }
     }
 
@@ -1680,25 +1705,15 @@ public class DomElement extends DomNamespaceNode implements Element {
             parseHtmlSnippet(source);
         }
     }
-
 }
 
 /**
  * The {@link NamedNodeMap} to store the node attributes.
  */
 class NamedAttrNodeMapImpl implements Map<String, DomAttr>, NamedNodeMap, Serializable {
-    protected static final NamedAttrNodeMapImpl EMPTY_MAP = new NamedAttrNodeMapImpl();
-
     private final OrderedFastHashMap<String, DomAttr> map_;
     private final DomElement domNode_;
     private final boolean caseSensitive_;
-
-    private NamedAttrNodeMapImpl() {
-        super();
-        domNode_ = null;
-        caseSensitive_ = true;
-        map_ = new OrderedFastHashMap<>(0);
-    }
 
     NamedAttrNodeMapImpl(final DomElement domNode, final boolean caseSensitive) {
         super();
@@ -1719,8 +1734,12 @@ class NamedAttrNodeMapImpl implements Map<String, DomAttr>, NamedNodeMap, Serial
         domNode_ = domNode;
         caseSensitive_ = caseSensitive;
 
-        // we expect a special map here, if we don't get it... we have to create us one
-        if (caseSensitive && attributes instanceof OrderedFastHashMap) {
+        if (attributes instanceof OrderedFastHashMapWithLowercaseKeys) {
+            // no need to rework the map at all, we are case sensitive, so
+            // we keep all attributes and we got the right map from outside too
+            map_ = (OrderedFastHashMap) attributes;
+        }
+        else if (caseSensitive && attributes instanceof OrderedFastHashMap) {
             // no need to rework the map at all, we are case sensitive, so
             // we keep all attributes and we got the right map from outside too
             map_ = (OrderedFastHashMap) attributes;

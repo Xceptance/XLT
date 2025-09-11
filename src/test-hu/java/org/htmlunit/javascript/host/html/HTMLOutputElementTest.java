@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ package org.htmlunit.javascript.host.html;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -33,8 +33,7 @@ public class HTMLOutputElementTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"0", "2", "1", "2", "1", "1"},
-            IE = {"undefined", "undefined", "undefined", "undefined", "undefined", "undefined"})
+    @Alerts({"0", "2", "1", "2", "1", "1"})
     public void labels() throws Exception {
         final String html =
             "<html><head>\n"
@@ -63,6 +62,38 @@ public class HTMLOutputElementTest extends WebDriverTestCase {
             + "  <label id='l4' for='e4'> what about</label>\n"
             + "  <label> this<output id='e4'>e 4</output></label><br>\n"
             + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts({"false", "false", "false", "false", "false"})
+    public void willValidate() throws Exception {
+        final String html =
+                "<html><head>\n"
+                + "  <script>\n"
+                + LOG_TITLE_FUNCTION
+                + "    function test() {\n"
+                + "      log(document.getElementById('i1').willValidate);\n"
+                + "      log(document.getElementById('i2').willValidate);\n"
+                + "      log(document.getElementById('i3').willValidate);\n"
+                + "      log(document.getElementById('i4').willValidate);\n"
+                + "      log(document.getElementById('i5').willValidate);\n"
+                + "    }\n"
+                + "  </script>\n"
+                + "</head>\n"
+                + "<body onload='test()'>\n"
+                + "  <form>\n"
+                + "    <output id='i1'>button</output>"
+                + "    <output id='i2' disabled></output>"
+                + "    <output id='i3' hidden></output>"
+                + "    <output id='i4' readonly></output>"
+                + "    <output id='i5' style='display: none'></output>"
+                + "  </form>\n"
+                + "</body></html>";
 
         loadPageVerifyTitle2(html);
     }

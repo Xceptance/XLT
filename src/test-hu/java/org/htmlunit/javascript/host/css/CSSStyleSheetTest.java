@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,6 @@
  */
 package org.htmlunit.javascript.host.css;
 
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
-
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,8 +24,7 @@ import org.htmlunit.WebClient;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
 import org.junit.Test;
@@ -52,9 +49,7 @@ public class CSSStyleSheetTest extends WebDriverTestCase {
      * @throws Exception on test failure
      */
     @Test
-    @Alerts(DEFAULT = {"[object CSSStyleSheet]", "[object HTMLStyleElement]", "true", "undefined", "false"},
-            IE = {"[object CSSStyleSheet]", "[object HTMLStyleElement]",
-                  "true", "[object HTMLStyleElement]", "true"})
+    @Alerts({"[object CSSStyleSheet]", "[object HTMLStyleElement]", "true", "undefined", "false"})
     public void owningNodeOwningElement() throws Exception {
         final String html = "<html><head>\n"
                 + "<script>\n"
@@ -150,12 +145,10 @@ public class CSSStyleSheetTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"8", "§§URL§§style1.css 1", "§§URL§§style2.css 0",
-                       "§§URL§§style3.css 0", "§§URL§§style4.css 1",
-                       "§§URL§§style5.css 1", "§§URL§§style6.css 0",
-                       "§§URL§§style7.css 0", "§§URL§§style8.css 1"},
-            IE = {"2", "§§URL§§style1.css 1", "§§URL§§style5.css 1"})
-    @NotYetImplemented(IE)
+    @Alerts({"8", "§§URL§§style1.css 1", "§§URL§§style2.css 0",
+             "§§URL§§style3.css 0", "§§URL§§style4.css 1",
+             "§§URL§§style5.css 1", "§§URL§§style6.css 0",
+             "§§URL§§style7.css 0", "§§URL§§style8.css 1"})
     public void hrefWrongContentType() throws Exception {
         final String html =
             HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -199,8 +192,7 @@ public class CSSStyleSheetTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"1", "false", "-1", "div", "color: red;", "2"},
-            IE = {"1", "false", "1", "div", "color: red;", "2"})
+    @Alerts({"1", "false", "-1", "div", "color: red;", "2"})
     public void addRule() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -232,8 +224,7 @@ public class CSSStyleSheetTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"2", "-1", "div", "", "3"},
-            IE = {"2", "2", "div", "", "3"})
+    @Alerts({"2", "-1", "div", "", "3"})
     public void addRuleInvalidRule() throws Exception {
         final String html = "<html>\n"
                 + "<head>\n"
@@ -265,7 +256,7 @@ public class CSSStyleSheetTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("SyntaxError/DOMException")
     public void addInvalidRule() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -276,9 +267,9 @@ public class CSSStyleSheetTest extends WebDriverTestCase {
             + "  var rules = s.cssRules || s.rules;\n"
             + "  try {\n"
             + "    if (s.addRule)\n"
-            + "      s.addRule('.testStyle1;', '', 1);\n"
+            + "      s.addRule('.testStyle1;', '', 0);\n"
             + "    log('added');\n"
-            + "  } catch(err) { log('exception'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "}</script>\n"
             + "<style id='myStyle'></style>\n"
             + "</head><body onload='doTest()'>\n"
@@ -357,7 +348,7 @@ public class CSSStyleSheetTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("SyntaxError/DOMException")
     public void insertInvalidRule() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -371,7 +362,7 @@ public class CSSStyleSheetTest extends WebDriverTestCase {
             + "    if (s.insertRule)\n"
             + "      s.insertRule('.testStyle1', 0);\n"
             + "    log('inserted');\n"
-            + "  } catch(err) { log('exception'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "}</script>\n"
             + "<style id='myStyle'></style>\n"
             + "</head><body onload='doTest()'>\n"
@@ -416,7 +407,7 @@ public class CSSStyleSheetTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts("exception")
+    @Alerts("IndexSizeError/DOMException")
     public void deleteRuleInvalidParam() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -432,7 +423,7 @@ public class CSSStyleSheetTest extends WebDriverTestCase {
             + "    else\n"
             + "      s.removeRule(19);\n"
             + "    log('deleted');\n"
-            + "  } catch(err) { log('exception'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "}</script>\n"
             + "<style id='myStyle'></style>\n"
             + "</head><body onload='doTest()'>\n"
@@ -464,7 +455,7 @@ public class CSSStyleSheetTest extends WebDriverTestCase {
             + "    log(rules.length);\n"
             + "    log(rules[0].selectorText);\n"
             + "    log(rules[0].style.cssText);\n"
-            + "  } catch(err) { log('exception'); }\n"
+            + "  } catch(err) { logEx(e); }\n"
             + "}</script>\n"
             + "<style id='myStyle'>\n"
             + "  p { vertical-align:top }\n"
@@ -500,7 +491,7 @@ public class CSSStyleSheetTest extends WebDriverTestCase {
             + "    log(rules.length);\n"
             + "    log(rules[0].selectorText);\n"
             + "    log(rules[0].style.cssText);\n"
-            + "  } catch(err) { log('exception'); }\n"
+            + "  } catch(err) { logEx(e); }\n"
             + "}</script>\n"
             + "<style id='myStyle'>\n"
             + "  p { vertical-align:top }\n"
@@ -971,11 +962,7 @@ public class CSSStyleSheetTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"block", "1"},
-            CHROME = {"block", "0"},
-            EDGE = {"block", "0"},
-            FF = {"block", "0"},
-            FF_ESR = {"block", "0"})
+    @Alerts({"block", "0"})
     public void mediaOnLinkTag_notScreen() throws Exception {
         mediaOnLinkTag("print");
     }
@@ -993,11 +980,7 @@ public class CSSStyleSheetTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"block", "1"},
-            CHROME = {"block", "0"},
-            EDGE = {"block", "0"},
-            FF = {"block", "0"},
-            FF_ESR = {"block", "0"})
+    @Alerts({"block", "0"})
     public void mediaOnLinkTag_multipleWithoutScreen() throws Exception {
         mediaOnLinkTag("print, projection, tv");
     }
@@ -1061,9 +1044,7 @@ public class CSSStyleSheetTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"block", "1"},
-            IE = {"none", "1"})
-    @NotYetImplemented(IE)
+    @Alerts({"block", "1"})
     public void mediaRule_max_width() throws Exception {
         mediaRule("screen and (max-width: 123px)");
     }
@@ -1118,9 +1099,7 @@ public class CSSStyleSheetTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"none", "1"},
-            IE = {"block", "1"})
-    @NotYetImplemented(IE)
+    @Alerts({"none", "1"})
     public void mediaRule_min_width_match() throws Exception {
         mediaRule("screen and (min-width: 123px)");
     }
@@ -1249,9 +1228,7 @@ public class CSSStyleSheetTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"block", "1"},
-            IE = {"none", "1"})
-    @NotYetImplemented(IE)
+    @Alerts({"block", "1"})
     public void mediaRule_max_height() throws Exception {
         mediaRule("screen and (max-height: 123px)");
     }
@@ -1306,9 +1283,7 @@ public class CSSStyleSheetTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"none", "1"},
-            IE = {"block", "1"})
-    @NotYetImplemented(IE)
+    @Alerts({"none", "1"})
     public void mediaRule_min_height_match() throws Exception {
         mediaRule("screen and (min-height: 123px)");
     }
@@ -1446,9 +1421,7 @@ public class CSSStyleSheetTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"none", "1"},
-            IE = {"block", "1"})
-    @NotYetImplemented(IE)
+    @Alerts({"none", "1"})
     public void mediaRule_resolution_match() throws Exception {
         mediaRule("screen and (resolution: 96dpi)");
     }
@@ -1475,9 +1448,7 @@ public class CSSStyleSheetTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"none", "1"},
-            IE = {"block", "1"})
-    @NotYetImplemented(IE)
+    @Alerts({"none", "1"})
     public void mediaRule_resolution_without_value() throws Exception {
         mediaRule("screen and (resolution)");
     }
@@ -1495,9 +1466,7 @@ public class CSSStyleSheetTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"block", "1"},
-            IE = {"none", "1"})
-    @NotYetImplemented(IE)
+    @Alerts({"block", "1"})
     public void mediaRule_max_resolution() throws Exception {
         mediaRule("screen and (max-resolution: 90dpi)");
     }
@@ -1552,9 +1521,7 @@ public class CSSStyleSheetTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"none", "1"},
-            IE = {"block", "1"})
-    @NotYetImplemented(IE)
+    @Alerts({"none", "1"})
     public void mediaRule_min_resolution_match() throws Exception {
         mediaRule("screen and (min-resolution: 10dpi)");
     }
@@ -1591,9 +1558,7 @@ public class CSSStyleSheetTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"block", "1"},
-            IE = {"none", "1"})
-    @NotYetImplemented(IE)
+    @Alerts({"block", "1"})
     public void mediaRule_portrait() throws Exception {
         mediaRule("screen and (orientation: portrait)");
     }
@@ -1602,9 +1567,7 @@ public class CSSStyleSheetTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"none", "1"},
-            IE = {"block", "1"})
-    @NotYetImplemented(IE)
+    @Alerts({"none", "1"})
     public void mediaRule_portrait_not() throws Exception {
         mediaRule("not screen and (orientation: portrait)");
     }
@@ -1613,9 +1576,7 @@ public class CSSStyleSheetTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"none", "1"},
-            IE = {"block", "1"})
-    @NotYetImplemented(IE)
+    @Alerts({"none", "1"})
     public void mediaRule_landscape() throws Exception {
         mediaRule("screen and (orientation: landscape)");
     }
@@ -1624,9 +1585,7 @@ public class CSSStyleSheetTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"block", "1"},
-            IE = {"none", "1"})
-    @NotYetImplemented(IE)
+    @Alerts({"block", "1"})
     public void mediaRule_landscape_not() throws Exception {
         mediaRule("not screen and (orientation: landscape)");
     }
@@ -1753,7 +1712,7 @@ public class CSSStyleSheetTest extends WebDriverTestCase {
                 + "      s.addRule('.testStyle1', 'color: red;', 0);\n"
                 + "    }\n"
                 + "    log('inserted');\n"
-                + "  } catch(err) { log('exception'); }\n"
+                + "  } catch(err) { logEx(e); }\n"
                 + "}</script>\n"
                 + "<style id='myStyle'></style>\n"
                 + "</head>\n"
@@ -2028,8 +1987,7 @@ public class CSSStyleSheetTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "undefined",
-            IE = "[object CSSStyleDeclaration]")
+    @Alerts("undefined")
     public void brokenExternalCSS() throws Exception {
         final String html = "<html><head>\n"
             + "<link rel='stylesheet' type='text/css' href='" + URL_SECOND + "'/>\n"

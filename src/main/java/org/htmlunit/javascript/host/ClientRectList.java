@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,19 +14,11 @@
  */
 package org.htmlunit.javascript.host;
 
-import static org.htmlunit.BrowserVersionFeatures.JS_CLIENTRECTLIST_THROWS_IF_ITEM_NOT_FOUND;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
-
 import java.util.ArrayList;
 import java.util.List;
 
 import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.javascript.HtmlUnitScriptable;
-import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
@@ -38,24 +30,25 @@ import org.htmlunit.javascript.configuration.JsxGetter;
  * @author Ahmed Ashour
  * @author Ronald Brill
  */
-@JsxClass(className = "DOMRectList", value = {CHROME, EDGE, FF, FF_ESR})
-@JsxClass(IE)
+@JsxClass(className = "DOMRectList")
 public class ClientRectList extends HtmlUnitScriptable {
 
-    private List<ClientRect> clientRects_;
+    private final List<ClientRect> clientRects_;
 
     /**
      * Creates an instance.
      */
     public ClientRectList() {
+        super();
         clientRects_ = new ArrayList<>();
     }
 
     /**
      * JavaScript constructor.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 
     /**
@@ -88,9 +81,6 @@ public class ClientRectList extends HtmlUnitScriptable {
     public ClientRect item(final int index) {
         if (index >= 0 && index < clientRects_.size()) {
             return clientRects_.get(index);
-        }
-        if (getBrowserVersion().hasFeature(JS_CLIENTRECTLIST_THROWS_IF_ITEM_NOT_FOUND)) {
-            throw JavaScriptEngine.reportRuntimeError("Invalid index '" + index + "'");
         }
         return null;
     }

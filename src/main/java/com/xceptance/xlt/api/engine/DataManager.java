@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -98,4 +98,11 @@ public interface DataManager
      *            the start time
      */
     public void setStartOfLoggingPeriod(long time);
+    
+    /**
+     * Creates or returns an already created custom data logger for the given scope.
+     * @param scope the scope of the data logger
+     * @return the custom data logger for the given scope
+     */
+    public DataLogger dataLogger(String scope);
 }

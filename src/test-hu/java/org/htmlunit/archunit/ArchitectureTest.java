@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import java.lang.reflect.Executable;
 import java.util.function.Supplier;
 
 import org.apache.commons.lang3.StringUtils;
+import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxClasses;
 import org.htmlunit.javascript.configuration.JsxConstant;
@@ -34,6 +35,7 @@ import org.htmlunit.javascript.configuration.JsxSetter;
 import org.junit.runner.RunWith;
 
 import com.tngtech.archunit.base.DescribedPredicate;
+import com.tngtech.archunit.core.domain.JavaClass;
 import com.tngtech.archunit.core.domain.JavaMethod;
 import com.tngtech.archunit.core.domain.JavaModifier;
 import com.tngtech.archunit.core.importer.ImportOption;
@@ -61,12 +63,19 @@ public class ArchitectureTest {
     public static final ArchRule utilsPackageRule = classes()
         .that().haveNameMatching(".*Util.?")
         .and().doNotHaveFullyQualifiedName("org.htmlunit.cssparser.util.ParserUtils")
-        .and().doNotHaveFullyQualifiedName("org.htmlunit.httpclient.util.HttpDateUtils")
+        .and().doNotHaveFullyQualifiedName("org.htmlunit.http.HttpUtils")
+
         .and().doNotHaveFullyQualifiedName("org.htmlunit.platform.font.AwtFontUtil")
         .and().doNotHaveFullyQualifiedName("org.htmlunit.platform.font.FontUtil")
         .and().doNotHaveFullyQualifiedName("org.htmlunit.platform.font.NoOpFontUtil")
 
         .and().doNotHaveFullyQualifiedName("org.htmlunit.csp.Utils")
+        .and().doNotHaveFullyQualifiedName("org.htmlunit.cyberneko.util.StringUtils")
+
+        .and().resideOutsideOfPackage("org.htmlunit.jetty.util..")
+        .and().doNotHaveFullyQualifiedName("org.htmlunit.jetty.websocket.api.util.QuoteUtil")
+        .and().doNotHaveFullyQualifiedName("org.htmlunit.jetty.websocket.common.util.ReflectUtils")
+        .and().doNotHaveFullyQualifiedName("org.htmlunit.jetty.websocket.common.util.TextUtil")
 
         .should().resideInAPackage("org.htmlunit.util");
 
@@ -76,10 +85,21 @@ public class ArchitectureTest {
     @ArchTest
     public static final ArchRule awtPackageRule = noClasses()
         .that()
-            .doNotHaveFullyQualifiedName("org.htmlunit.html.applets.AppletContextImpl")
-            .and().resideOutsideOfPackage("org.htmlunit.platform..")
+            .resideOutsideOfPackage("org.htmlunit.platform..")
             .and().resideOutsideOfPackage("org.htmlunit.corejs.javascript.tools..")
+            .and().resideOutsideOfPackage("org.htmlunit.jetty..")
         .should().dependOnClassesThat().resideInAnyPackage("java.awt..");
+
+    /**
+     * Do not use org.apache.commons.codec.binary.Base64 - use the jdk instead.
+     */
+    @ArchTest
+    public static final ArchRule jdkBase64Rule = noClasses()
+        .that()
+            .resideOutsideOfPackage("org.htmlunit.jetty..")
+            .and().doNotHaveFullyQualifiedName("org.htmlunit.protocol.data.DataUrlDecoder")
+        .should().dependOnClassesThat().haveFullyQualifiedName("org.apache.commons.codec.binary.Base64");
+
 
     /**
      * JsxClasses are always in the javascript package.
@@ -101,6 +121,16 @@ public class ArchitectureTest {
             .should().haveModifier(JavaModifier.PUBLIC)
             .andShould().haveModifier(JavaModifier.STATIC)
             .andShould().haveModifier(JavaModifier.FINAL);
+
+    /**
+     * Every JsxConstant should be a string, int, or long.
+     */
+    @ArchTest
+    public static final ArchRule jsxConstantType = fields()
+            .that().areAnnotatedWith(JsxConstant.class)
+            .should().haveRawType(String.class)
+            .orShould().haveRawType("int")
+            .orShould().haveRawType("long");
 
     /**
      * JsxGetter/Setter/Functions are always in the javascript package.
@@ -127,25 +157,136 @@ public class ArchitectureTest {
             .should().beDeclaredInClassesThat().areAnnotatedWith(JsxClass.class)
             .orShould().beDeclaredInClassesThat().areAnnotatedWith(JsxClasses.class);
 
-    /**
-     * JsxConstants should not defined as short.
-     */
-    @ArchTest
-    public static final ArchRule jsxConstantReturnType = fields()
-            .that().areAnnotatedWith(JsxConstant.class)
-            .should().notHaveRawType("short")
-            .andShould().notHaveRawType("float");
+    private static final DescribedPredicate<? super JavaClass> isAssignableToScriptable =
+            new DescribedPredicate<JavaClass>("@is not assignable to Scriptable") {
+                @Override
+                public boolean test(final JavaClass javaClass) {
+                    // we have to build a more complex implemenation because
+                    // javaClass.isAssignableTo(Scriptable.class);
+                    // checks also all superclasses
+                    // Therefore we have to switch back to the real java class.
+                    try {
+                        if (javaClass.isPrimitive()) {
+                            return false;
+                        }
+
+                        return Scriptable.class.isAssignableFrom(Class.forName(javaClass.getFullName()));
+                    }
+                    catch (final ClassNotFoundException e) {
+                        throw new RuntimeException(e.getMessage(), e);
+                    }
+                }
+            };
 
     /**
-     * JsxGetter/Setter/Functions should not return a short.
+     * JsxGetter should only return Scriptable's.
      */
     @ArchTest
-    public static final ArchRule jsxAnnotationReturnType = methods()
-            .that().areAnnotatedWith(JsxGetter.class)
-                    .or().areAnnotatedWith(JsxSetter.class)
-                    .or().areAnnotatedWith(JsxFunction.class)
-            .should().notHaveRawReturnType("short")
-            .andShould().notHaveRawReturnType("float");
+    public static final ArchRule jsxGetterReturnType = methods()
+            .that()
+                .areAnnotatedWith(JsxGetter.class)
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.History.getState()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.Navigator.getDoNotTrack()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.URL.getOrigin()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.Window.getClientInformation()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.Window.getControllers()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.Window.getEvent()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.Window.getFrames_js()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.Window.getLength()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.Window.getOpener()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.Window.getParent()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.Window.getSelf()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.Window.getTop()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.dom.AbstractRange.getEndContainer()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.dom.AbstractRange.getStartContainer()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.dom.CharacterData.getData()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.dom.DOMException.getCode()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.dom.DOMException.getFilename()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.dom.DOMException.getLineNumber()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.dom.DOMException.getMessage()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.dom.Document.getActiveElement()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.dom.Document.getDefaultView()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.dom.Document.getHead()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.dom.Node.getParentNode()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.dom.NodeIterator.getFilter()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.dom.Range.getCommonAncestorContainer()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.dom.TreeWalker.getFilter()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.event.BeforeUnloadEvent.getReturnValue()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.event.CustomEvent.getDetail()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.event.Event.getReturnValue()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.event.Event.getSrcElement()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.event.Event.getTarget()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.event.InputEvent.getData()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.event.InputEvent.getInputType()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.event.MessageEvent.getData()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.event.MessageEvent.getPorts()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.event.PopStateEvent.getState()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.event.ProgressEvent.getLoaded()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.event.TextEvent.getData()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.file.FileReader.getResult()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.html.HTMLButtonElement.getValue()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.html.HTMLDataElement.getValue()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.html.HTMLInputElement.getValue()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.html.HTMLMeterElement.getValue()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.html.HTMLOptionElement.getValue()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.html.HTMLParamElement.getValue()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.html.HTMLProgressElement.getValue()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.html.HTMLSelectElement.getValue()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.html.HTMLTextAreaElement.getValue()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.worker.DedicatedWorkerGlobalScope.getSelf()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.xml.XMLHttpRequest.getResponse()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.xml.XMLHttpRequest.getResponseXML()")
+
+            .should().haveRawReturnType(String.class)
+            .orShould().haveRawReturnType("int")
+            .orShould().haveRawReturnType(Integer.class)
+            .orShould().haveRawReturnType("long")
+            .orShould().haveRawReturnType("double")
+            .orShould().haveRawReturnType(Double.class)
+            .orShould().haveRawReturnType("boolean")
+            .orShould().haveRawReturnType(isAssignableToScriptable);
+
+    /**
+     * JsxSetter should only return void.
+     */
+    @ArchTest
+    public static final ArchRule jsxSetterReturnType = methods()
+            .that()
+                .areAnnotatedWith(JsxSetter.class)
+            .should().haveRawReturnType("void");
+
+    /**
+     * JsxFunctions should only return Scriptable's.
+     */
+    @ArchTest
+    public static final ArchRule jsxFunctionReturnType = methods()
+            .that()
+                .areAnnotatedWith(JsxFunction.class)
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.External.isSearchProviderInstalled()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.SimpleArray.item(int)")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.SimpleArray.namedItem(java.lang.String)")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.Storage.getItem(java.lang.String)")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.Window.setInterval(org.htmlunit.corejs.javascript.Context, org.htmlunit.corejs.javascript.Scriptable, org.htmlunit.corejs.javascript.Scriptable, [Ljava.lang.Object;, org.htmlunit.corejs.javascript.Function)")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.Window.setTimeout(org.htmlunit.corejs.javascript.Context, org.htmlunit.corejs.javascript.Scriptable, org.htmlunit.corejs.javascript.Scriptable, [Ljava.lang.Object;, org.htmlunit.corejs.javascript.Function)")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.css.CSSRuleList.item(int)")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.css.StyleSheetList.item(int)")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.dom.NodeList.item(java.lang.Object)")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.html.HTMLCollection.item(java.lang.Object)")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.html.HTMLOptionsCollection.item(int)")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.html.HTMLSelectElement.item(int)")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.intl.V8BreakIterator.resolvedOptions()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.performance.PerformanceNavigation.toJSON()")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.worker.DedicatedWorkerGlobalScope.setInterval(org.htmlunit.corejs.javascript.Context, org.htmlunit.corejs.javascript.Scriptable, org.htmlunit.corejs.javascript.Scriptable, [Ljava.lang.Object;, org.htmlunit.corejs.javascript.Function)")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.worker.DedicatedWorkerGlobalScope.setTimeout(org.htmlunit.corejs.javascript.Context, org.htmlunit.corejs.javascript.Scriptable, org.htmlunit.corejs.javascript.Scriptable, [Ljava.lang.Object;, org.htmlunit.corejs.javascript.Function)")
+                .and().doNotHaveFullName("org.htmlunit.javascript.host.xml.XSLTProcessor.getParameter(java.lang.String, java.lang.String)")
+
+            .should().haveRawReturnType(String.class)
+            .orShould().haveRawReturnType("int")
+            .orShould().haveRawReturnType("long")
+            .orShould().haveRawReturnType("double")
+            .orShould().haveRawReturnType("boolean")
+            .orShould().haveRawReturnType("void")
+            .orShould().haveRawReturnType(isAssignableToScriptable);
 
     /**
      * JsxConstructor should not used for constructors.
@@ -308,6 +449,8 @@ public class ArchitectureTest {
          .that()
             .doNotHaveFullyQualifiedName("org.htmlunit.platform.image.ImageIOImageData")
             .and().doNotHaveFullyQualifiedName("org.htmlunit.platform.canvas.rendering.AwtRenderingBackend")
+            .and().doNotHaveFullyQualifiedName("org.htmlunit.platform.canvas.rendering.AwtRenderingBackend")
+            .and().resideOutsideOfPackage("org.htmlunit.jetty..")
         .should().dependOnClassesThat().resideInAnyPackage("javax.imageio..");
 
     /**
@@ -342,8 +485,27 @@ public class ArchitectureTest {
             .and().doNotHaveFullyQualifiedName("org.htmlunit.WebRequest")
             .and().doNotHaveFullyQualifiedName("org.htmlunit.util.Cookie")
             .and().doNotHaveFullyQualifiedName("org.htmlunit.DefaultCredentialsProvider")
+
             .and().resideOutsideOfPackage("org.htmlunit.httpclient..")
         .should().dependOnClassesThat().resideInAnyPackage("org.apache.http..");
+
+    /**
+     * Make sure the HttpWebConnection is the only entry into the HttpClient adapter.
+     */
+    @ArchTest
+    public static final ArchRule httpWebConnection = noClasses()
+        .that()
+            .doNotHaveFullyQualifiedName("org.htmlunit.HttpWebConnection")
+            .and().areNotInnerClasses()
+            .and().areNotMemberClasses()
+
+            .and().doNotHaveFullyQualifiedName("org.htmlunit.WebClient")
+            .and().doNotHaveFullyQualifiedName("org.htmlunit.WebRequest")
+            .and().doNotHaveFullyQualifiedName("org.htmlunit.javascript.host.xml.XMLHttpRequest")
+            .and().doNotHaveFullyQualifiedName("org.htmlunit.DefaultCredentialsProvider")
+
+            .and().resideOutsideOfPackage("org.htmlunit.httpclient..")
+        .should().dependOnClassesThat().resideInAnyPackage("org.htmlunit.httpclient..");
 
     /**
      * Do not use core-js dependencies outside of the adapter.
@@ -351,8 +513,7 @@ public class ArchitectureTest {
     @ArchTest
     public static final ArchRule corejsPackageRule = noClasses()
         .that()
-            .doNotHaveFullyQualifiedName("org.htmlunit.ProxyAutoConfig")
-            .and().doNotHaveFullyQualifiedName("org.htmlunit.WebConsole")
+            .doNotHaveFullyQualifiedName("org.htmlunit.WebConsole")
             .and().doNotHaveFullyQualifiedName("org.htmlunit.WebConsole$1")
             .and().doNotHaveFullyQualifiedName("org.htmlunit.ScriptException")
             .and().doNotHaveFullyQualifiedName("org.htmlunit.html.DomElement")
@@ -360,11 +521,59 @@ public class ArchitectureTest {
             .and().doNotHaveFullyQualifiedName("org.htmlunit.html.HtmlDialog$1")
             .and().doNotHaveFullyQualifiedName("org.htmlunit.html.HtmlPage")
             .and().doNotHaveFullyQualifiedName("org.htmlunit.util.WebClientUtils")
-            .and().doNotHaveFullyQualifiedName("org.htmlunit.websocket.JettyWebSocketAdapter")
 
             .and().resideOutsideOfPackage("org.htmlunit.javascript..")
-            .and().resideOutsideOfPackage("org.htmlunit.activex.javascript..")
 
             .and().resideOutsideOfPackage("org.htmlunit.corejs..")
         .should().dependOnClassesThat().resideInAnyPackage("org.htmlunit.corejs..");
+
+    /**
+     * Do not use core-js ScriptRuntime outside of the JavaScriptEngine.
+     */
+    @ArchTest
+    public static final ArchRule corejsScriptRuntimeRule = noClasses()
+        .that()
+            .doNotHaveFullyQualifiedName("org.htmlunit.javascript.host.URLSearchParams")
+
+            .and().doNotHaveFullyQualifiedName("org.htmlunit.javascript.HtmlUnitContextFactory")
+            .and().doNotHaveFullyQualifiedName("org.htmlunit.javascript.JavaScriptEngine")
+            .and().doNotHaveFullyQualifiedName("org.htmlunit.javascript.JavaScriptEngine$3")
+            .and().doNotHaveFullyQualifiedName("org.htmlunit.javascript.regexp.HtmlUnitRegExpProxy")
+            .and().resideOutsideOfPackage("org.htmlunit.corejs..")
+
+        .should().dependOnClassesThat().haveFullyQualifiedName("org.htmlunit.corejs.javascript.ScriptRuntime");
+
+    /**
+     * Do not use core-js org.htmlunit.corejs.javascript.Undefined.instance directly.
+     */
+    @ArchTest
+    public static final ArchRule corejsUndefinedRule = noClasses()
+        .that()
+            .doNotHaveFullyQualifiedName("org.htmlunit.javascript.JavaScriptEngine")
+            .and().resideOutsideOfPackage("org.htmlunit.corejs..")
+
+        .should().dependOnClassesThat().haveFullyQualifiedName("org.htmlunit.corejs.javascript.Undefined");
+
+    /**
+     * Do not use core-js ScriptRuntime outside of the JavaScriptEngine.
+     */
+    @ArchTest
+    public static final ArchRule javaScriptEngineRule = noClasses()
+        .that()
+            .resideOutsideOfPackage("org.htmlunit.javascript..")
+
+            .and().doNotHaveFullyQualifiedName("org.htmlunit.WebClient")
+            .and().doNotHaveFullyQualifiedName("org.htmlunit.ScriptResult")
+            .and().doNotHaveFullyQualifiedName("org.htmlunit.html.DomElement")
+            .and().doNotHaveFullyQualifiedName("org.htmlunit.html.HtmlPage")
+            .and().doNotHaveFullyQualifiedName("org.htmlunit.util.DebuggingWebConnection")
+
+        .should().dependOnClassesThat().haveFullyQualifiedName("org.htmlunit.javascript.JavaScriptEngine");
+
+    /**
+     * Do not use jetty.
+     */
+    @ArchTest
+    public static final ArchRule jettyPackageRule = noClasses()
+        .should().dependOnClassesThat().resideInAnyPackage("org.eclipse.jetty..");
 }

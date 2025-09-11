@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@ package org.htmlunit.javascript.host.performance;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.NotYetImplemented;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
@@ -31,7 +31,7 @@ import org.openqa.selenium.WebDriver;
  */
 @RunWith(BrowserRunner.class)
 public class PerformanceTimingTest extends WebDriverTestCase {
-    private static final long now = System.currentTimeMillis();
+    private static final long NOE = System.currentTimeMillis();
 
     /**
      * @throws Exception if the test fails
@@ -72,7 +72,7 @@ public class PerformanceTimingTest extends WebDriverTestCase {
                 + LOG_TITLE_FUNCTION
                 + "  function test() {\n"
                 + "    var performanceTiming = performance.timing;\n"
-                + "    log(performanceTiming.navigationStart > " + now + ");\n"
+                + "    log(performanceTiming.navigationStart > " + NOE + ");\n"
                 + "  }\n"
                 + "  test();\n"
                 + "</script>\n"
@@ -87,8 +87,7 @@ public class PerformanceTimingTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "0",
-            IE = "undefined")
+    @Alerts("0")
     public void secureConnectionStart() throws Exception {
         final String html =
                 HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -176,7 +175,7 @@ public class PerformanceTimingTest extends WebDriverTestCase {
                 + "  function test() {\n"
                 + "    var performanceTiming = performance.timing;\n"
                 + "    var start = performanceTiming.domainLookupStart;\n"
-                + "    log(start > " + now + ");\n"
+                + "    log(start > " + NOE + ");\n"
                 + "    log(performanceTiming.domainLookupEnd >= start);\n"
                 + "  }\n"
                 + "  test();\n"
@@ -203,7 +202,7 @@ public class PerformanceTimingTest extends WebDriverTestCase {
                 + "  function test() {\n"
                 + "    var performanceTiming = performance.timing;\n"
                 + "    var start = performanceTiming.responseStart;\n"
-                + "    log(start > " + now + ");\n"
+                + "    log(start > " + NOE + ");\n"
                 + "    log(performanceTiming.responseEnd >= start);\n"
                 + "  }\n"
                 + "  test();\n"
@@ -230,7 +229,7 @@ public class PerformanceTimingTest extends WebDriverTestCase {
                 + "  function test() {\n"
                 + "    var performanceTiming = performance.timing;\n"
                 + "    var start = performanceTiming.loadEventStart;\n"
-                + "    log(start > " + now + ");\n"
+                + "    log(start > " + NOE + ");\n"
                 + "    log(performanceTiming.loadEventEnd >= start);\n"
                 + "  }\n"
                 + "</script>\n"
@@ -260,7 +259,7 @@ public class PerformanceTimingTest extends WebDriverTestCase {
                 + "  function test() {\n"
                 + "    var performanceTiming = performance.timing;\n"
                 + "    var start = performanceTiming.connectStart;\n"
-                + "    log(start > " + now + ");\n"
+                + "    log(start > " + NOE + ");\n"
                 + "    log(performanceTiming.connectEnd >= start);\n"
                 + "  }\n"
                 + "  test();\n"
@@ -286,7 +285,7 @@ public class PerformanceTimingTest extends WebDriverTestCase {
                 + LOG_TITLE_FUNCTION
                 + "  function test() {\n"
                 + "    var performanceTiming = performance.timing;\n"
-                + "    log(performanceTiming.fetchStart > " + now + ");\n"
+                + "    log(performanceTiming.fetchStart > " + NOE + ");\n"
                 + "  }\n"
                 + "  test();\n"
                 + "</script>\n"
@@ -312,7 +311,7 @@ public class PerformanceTimingTest extends WebDriverTestCase {
                 + "  function test() {\n"
                 + "    var performanceTiming = performance.timing;\n"
                 + "    var start = performanceTiming.domContentLoadedEventStart;\n"
-                + "    log(start > " + now + ");\n"
+                + "    log(start > " + NOE + ");\n"
                 + "    log(performanceTiming.domContentLoadedEventEnd >= start);\n"
                 + "  }\n"
                 + "</script>\n"
@@ -341,11 +340,11 @@ public class PerformanceTimingTest extends WebDriverTestCase {
                 + LOG_TITLE_FUNCTION
                 + "  function test() {\n"
                 + "    var performanceTiming = performance.timing;\n"
-                + "    log(performanceTiming.domLoading > " + now + ");\n"
-                + "    log(performanceTiming.domInteractive > " + now + ");\n"
-                + "    log(performanceTiming.domContentLoadedEventStart > " + now + ");\n"
-                + "    log(performanceTiming.domContentLoadedEventEnd > " + now + ");\n"
-                + "    log(performanceTiming.domComplete > " + now + ");\n"
+                + "    log(performanceTiming.domLoading > " + NOE + ");\n"
+                + "    log(performanceTiming.domInteractive > " + NOE + ");\n"
+                + "    log(performanceTiming.domContentLoadedEventStart > " + NOE + ");\n"
+                + "    log(performanceTiming.domContentLoadedEventEnd > " + NOE + ");\n"
+                + "    log(performanceTiming.domComplete > " + NOE + ");\n"
                 + "  }\n"
                 + "</script>\n"
                 + "</head>\n"

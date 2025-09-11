@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,13 +29,13 @@ import org.w3c.dom.Node;
  * @author Ahmed Ashour
  * @author Ronald Brill
  */
-final class HtmlUnitPrefixResolver extends PrefixResolverDefault {
+public final class HtmlUnitPrefixResolver extends PrefixResolverDefault {
 
     /**
      * Creates a new instance.
      * @param xpathExpressionContext the context from which XPath expression prefixes will be resolved
      */
-    HtmlUnitPrefixResolver(final Node xpathExpressionContext) {
+    public HtmlUnitPrefixResolver(final Node xpathExpressionContext) {
         super(xpathExpressionContext);
     }
 

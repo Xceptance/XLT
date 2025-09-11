@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,6 @@
 package org.htmlunit.javascript.host.event;
 
 import static org.htmlunit.BrowserVersionFeatures.JS_EVENT_INPUT_CTOR_INPUTTYPE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import org.htmlunit.corejs.javascript.ScriptableObject;
 import org.htmlunit.javascript.JavaScriptEngine;
@@ -32,7 +28,7 @@ import org.htmlunit.javascript.configuration.JsxGetter;
  * @author Ahmed Ashour
  * @author Ronald Brill
  */
-@JsxClass({CHROME, EDGE, FF, FF_ESR})
+@JsxClass
 public class InputEvent extends UIEvent {
 
     private String data_;
@@ -43,6 +39,7 @@ public class InputEvent extends UIEvent {
      * Default constructor.
      */
     public InputEvent() {
+        super();
         data_ = "";
         inputType_ = "";
     }

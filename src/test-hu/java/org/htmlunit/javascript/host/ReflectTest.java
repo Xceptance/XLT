@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ package org.htmlunit.javascript.host;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -30,22 +30,19 @@ import org.junit.runner.RunWith;
 public class ReflectTest extends WebDriverTestCase {
 
     @Test
-    @Alerts(DEFAULT = "[object Reflect]",
-            IE = "no Reflect")
+    @Alerts("[object Reflect]")
     public void testToString() throws Exception {
         test("log(Reflect.toString())");
     }
 
     @Test
-    @Alerts(DEFAULT = "1",
-            IE = "no Reflect")
+    @Alerts("1")
     public void apply() throws Exception {
         test("log(Reflect.apply(Math.floor, undefined, [1.75]))");
     }
 
     @Test
-    @Alerts(DEFAULT = {"1", "true", "4", "arg1", "2", "undefined", "null"},
-            IE = "no Reflect")
+    @Alerts({"1", "true", "4", "arg1", "2", "undefined", "null"})
     public void applyDetails() throws Exception {
         final String js =
                 "var o = {};\n"
@@ -73,48 +70,44 @@ public class ReflectTest extends WebDriverTestCase {
     }
 
     @Test
-    @Alerts(DEFAULT = "exception",
-            IE = "no Reflect")
+    @Alerts("TypeError")
     public void applyMissingArgs() throws Exception {
         final String js =
                 "try {\n"
                 + "  Reflect.apply();\n"
                 + "} catch(e) {\n"
-                + "  log('exception');\n"
+                + "  logEx(e);\n"
                 + "}";
         test(js);
     }
 
     @Test
-    @Alerts(DEFAULT = "exception",
-            IE = "no Reflect")
+    @Alerts("TypeError")
     public void applyTargetNotFunction() throws Exception {
         final String js =
                 "try {\n"
                 + "  Reflect.apply({}, undefined, [1.75]);\n"
                 + "} catch(e) {\n"
-                + "  log('exception');\n"
+                + "  logEx(e);\n"
                 + "}";
         test(js);
     }
 
     @Test
-    @Alerts(DEFAULT = "exception",
-            IE = "no Reflect")
+    @Alerts("TypeError")
     public void applyArgumentsListNotFunction() throws Exception {
         final String js =
                 "var s1 = Symbol('1');"
                 + "try {\n"
                 + "  Reflect.apply(Math.floor, undefined, s1);\n"
                 + "} catch(e) {\n"
-                + "  log('exception');\n"
+                + "  logEx(e);\n"
                 + "}";
         test(js);
     }
 
     @Test
-    @Alerts(DEFAULT = {"true", "1776"},
-            IE = "no Reflect")
+    @Alerts({"true", "1776"})
     public void construct() throws Exception {
         final String js =
                 "var d = Reflect.construct(Date, [1776, 6, 4]);\n"
@@ -124,8 +117,7 @@ public class ReflectTest extends WebDriverTestCase {
     }
 
     @Test
-    @Alerts(DEFAULT = {"true", "42"},
-            IE = "no Reflect")
+    @Alerts({"true", "42"})
     public void defineProperty() throws Exception {
         final String js =
                 "var o = {};\n"
@@ -136,8 +128,7 @@ public class ReflectTest extends WebDriverTestCase {
     }
 
     @Test
-    @Alerts(DEFAULT = {"true", "true", "undefined"},
-            IE = "no Reflect")
+    @Alerts({"true", "true", "undefined"})
     public void definePropertyWithoutValue() throws Exception {
         final String js =
                 "var o = {};\n"
@@ -150,8 +141,7 @@ public class ReflectTest extends WebDriverTestCase {
     }
 
     @Test
-    @Alerts(DEFAULT = {"false", "undefined"},
-            IE = "no Reflect")
+    @Alerts({"false", "undefined"})
     public void definePropertyFreezed() throws Exception {
         final String js =
                 "var o = {};\n"
@@ -163,8 +153,7 @@ public class ReflectTest extends WebDriverTestCase {
     }
 
     @Test
-    @Alerts(DEFAULT = {"[get,set,enumerable,configurable]", "false", "true", "true", "true"},
-            IE = "no Reflect")
+    @Alerts({"[get,set,enumerable,configurable]", "false", "true", "true", "true"})
     public void getOwnPropertyDescriptor() throws Exception {
         final String js =
                 "var o1 = {};\n"
@@ -185,8 +174,7 @@ public class ReflectTest extends WebDriverTestCase {
     }
 
     @Test
-    @Alerts(DEFAULT = {"true", "false", "false"},
-            IE = "no Reflect")
+    @Alerts({"true", "false", "false"})
     public void isExtensible() throws Exception {
         final String js =
                 "var o1 = {};\n"
@@ -203,8 +191,7 @@ public class ReflectTest extends WebDriverTestCase {
     }
 
     @Test
-    @Alerts(DEFAULT = {"p1,p2", "length"},
-            IE = "no Reflect")
+    @Alerts({"p1,p2", "length"})
     public void ownKeys() throws Exception {
         final String js =
                 "var o1 = {\n"
@@ -223,8 +210,7 @@ public class ReflectTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"0", "6", "8", "55", "773", "str", "-1", "str2", "Symbol(foo)", "Symbol(bar)"},
-            IE = "no Reflect")
+    @Alerts({"0", "6", "8", "55", "773", "str", "-1", "str2", "Symbol(foo)", "Symbol(bar)"})
     public void ownKeys2() throws Exception {
         final String js =
                 "    var obj = {};\n"
@@ -250,8 +236,7 @@ public class ReflectTest extends WebDriverTestCase {
     }
 
     @Test
-    @Alerts(DEFAULT = "0",
-            IE = "no Reflect")
+    @Alerts("0")
     public void ownKeysEmptyObj() throws Exception {
         final String js =
                 "log(Reflect.ownKeys({}).length)";
@@ -259,8 +244,7 @@ public class ReflectTest extends WebDriverTestCase {
     }
 
     @Test
-    @Alerts(DEFAULT = "0",
-            IE = "no Reflect")
+    @Alerts("0")
     public void ownKeysDeleteObj() throws Exception {
         final String js =
                 "var o = { d: 42 };\n"
@@ -270,8 +254,7 @@ public class ReflectTest extends WebDriverTestCase {
     }
 
     @Test
-    @Alerts(DEFAULT = "length",
-            IE = "no Reflect")
+    @Alerts("length")
     public void ownKeysEmptyArray() throws Exception {
         final String js =
                 "log(Reflect.ownKeys([]));";
@@ -279,8 +262,7 @@ public class ReflectTest extends WebDriverTestCase {
     }
 
     @Test
-    @Alerts(DEFAULT = "2,length",
-            IE = "no Reflect")
+    @Alerts("2,length")
     public void ownKeysArray() throws Exception {
         final String js =
                 "log(Reflect.ownKeys([, , 2]));";
@@ -288,8 +270,7 @@ public class ReflectTest extends WebDriverTestCase {
     }
 
     @Test
-    @Alerts(DEFAULT = "p1,p2",
-            IE = "no Reflect")
+    @Alerts("p1,p2")
     public void ownKeysNotEnumerable() throws Exception {
         final String js =
                 "var o = {};\n"
@@ -301,8 +282,7 @@ public class ReflectTest extends WebDriverTestCase {
     }
 
     @Test
-    @Alerts(DEFAULT = {"true", "false", "true"},
-            IE = "no Reflect")
+    @Alerts({"true", "false", "true"})
     public void has() throws Exception {
         final String js =
                 "var o1 = { p: 42 }\n"
@@ -316,8 +296,7 @@ public class ReflectTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"function () { [native code] }", "true", "false", "true", "true"},
-            IE = "no Reflect")
+    @Alerts({"function () { [native code] }", "true", "false", "true", "true"})
     public void has2() throws Exception {
         final String js =
             "    log(Reflect.has.__proto__);\n"
@@ -332,8 +311,7 @@ public class ReflectTest extends WebDriverTestCase {
     }
 
     @Test
-    @Alerts(DEFAULT = {"true", "false"},
-            IE = "no Reflect")
+    @Alerts({"true", "false"})
     public void hasSymbol() throws Exception {
         final String js =
                 "var s1 = Symbol('1');\n"
@@ -347,8 +325,7 @@ public class ReflectTest extends WebDriverTestCase {
     }
 
     @Test
-    @Alerts(DEFAULT = "function",
-            IE = "no Reflect")
+    @Alerts("function")
     public void hasProto() throws Exception {
         final String js =
                 "var o1 = { p: 42 }\n"
@@ -357,8 +334,7 @@ public class ReflectTest extends WebDriverTestCase {
     }
 
     @Test
-    @Alerts(DEFAULT = {"42", "true", "true", "true"},
-            IE = "no Reflect")
+    @Alerts({"42", "true", "true", "true"})
     public void getOwnPropertyDescriptorSymbol() throws Exception {
         final String js =
                 "var s = Symbol('sym');\n"
@@ -375,8 +351,7 @@ public class ReflectTest extends WebDriverTestCase {
     }
 
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "no Reflect")
+    @Alerts("true")
     public void getOwnPropertyDescriptorUndefinedProperty() throws Exception {
         final String js =
                 "var o = Object.create({p: 1});\n"
@@ -385,8 +360,7 @@ public class ReflectTest extends WebDriverTestCase {
     }
 
     @Test
-    @Alerts(DEFAULT = "one",
-            IE = "no Reflect")
+    @Alerts("one")
     public void getPropertyByInt() throws Exception {
         final String js =
                 "var a = ['zero', 'one']\n"
@@ -396,8 +370,7 @@ public class ReflectTest extends WebDriverTestCase {
 
 
     @Test
-    @Alerts(DEFAULT = {"value 1", "undefined", "foo", "42", "undefined"},
-            IE = "no Reflect")
+    @Alerts({"value 1", "undefined", "foo", "42", "undefined"})
     public void getProperty() throws Exception {
         final String js =
                 "var o = {};\n"
@@ -420,8 +393,7 @@ public class ReflectTest extends WebDriverTestCase {
     }
 
     @Test
-    @Alerts(DEFAULT = {"true", "true", "false"},
-            IE = "no Reflect")
+    @Alerts({"true", "true", "false"})
     public void setPrototypeOf() throws Exception {
         final String js =
                 "var o1 = {};\n"
@@ -436,8 +408,7 @@ public class ReflectTest extends WebDriverTestCase {
     }
 
     @Test
-    @Alerts(DEFAULT = "false",
-            IE = "no Reflect")
+    @Alerts("false")
     public void setPrototypeOfCycle() throws Exception {
         final String js =
                 "var o1 = {};\n"
@@ -446,8 +417,7 @@ public class ReflectTest extends WebDriverTestCase {
     }
 
     @Test
-    @Alerts(DEFAULT = {"true", "true", "false"},
-            IE = "no Reflect")
+    @Alerts({"true", "true", "false"})
     public void setPrototypeOfCycleComplex() throws Exception {
         final String js =
                 "var o1 = {};\n"
@@ -461,8 +431,7 @@ public class ReflectTest extends WebDriverTestCase {
     }
 
     @Test
-    @Alerts(DEFAULT = {"true", "true", "true"},
-            IE = "no Reflect")
+    @Alerts({"true", "true", "true"})
     public void setPrototypeOfSame() throws Exception {
         final String js =
                 "var o1 = {};\n"

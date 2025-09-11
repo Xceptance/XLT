@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ package org.htmlunit.javascript.host;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -33,8 +33,7 @@ public class TextEncoderTest extends WebDriverTestCase {
      * @throws Exception on test failure
      */
     @Test
-    @Alerts(DEFAULT = "utf-8",
-            IE = "no TextEncoder")
+    @Alerts("utf-8")
     public void encoding() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -60,8 +59,7 @@ public class TextEncoderTest extends WebDriverTestCase {
      * @throws Exception on test failure
      */
     @Test
-    @Alerts(DEFAULT = {"0", "8", "72", "116"},
-            IE = "no TextEncoder")
+    @Alerts({"0", "8", "72", "116"})
     public void encode() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -93,8 +91,7 @@ public class TextEncoderTest extends WebDriverTestCase {
      * @throws Exception on test failure
      */
     @Test
-    @Alerts(DEFAULT = {"0", "0", "4"},
-            IE = "no TextEncoder")
+    @Alerts({"0", "0", "4"})
     public void encode2() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"

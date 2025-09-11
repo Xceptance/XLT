@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,22 +14,19 @@
  */
 package org.htmlunit.html;
 
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.CHROME;
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.EDGE;
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
+import static org.htmlunit.junit.annotation.TestedBrowser.CHROME;
+import static org.htmlunit.junit.annotation.TestedBrowser.EDGE;
 
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Collections;
-import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.NotYetImplemented;
 import org.htmlunit.util.MimeType;
-import org.htmlunit.util.NameValuePair;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
@@ -84,9 +81,7 @@ public class HtmlImage2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "2",
-            IE = "1")
-    @NotYetImplemented(IE)
+    @Alerts("2")
     public void loadImage() throws Exception {
         loadImage("src='img.jpg'");
         loadImageInnerHtml("src='img.jpg'");
@@ -152,9 +147,7 @@ public class HtmlImage2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "2",
-            IE = "1")
-    @NotYetImplemented(IE)
+    @Alerts("2")
     public void loadImageWrongType() throws Exception {
         loadImage("src='" + URL_FIRST + "'");
         loadImageInnerHtml("src='" + URL_FIRST + "'");
@@ -166,9 +159,8 @@ public class HtmlImage2Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "2",
             CHROME = "1",
-            EDGE = "1",
-            IE = "1")
-    @NotYetImplemented({CHROME, EDGE, IE})
+            EDGE = "1")
+    @NotYetImplemented({CHROME, EDGE})
     public void loadImageWrongType2() throws Exception {
         loadImageImportNodeHtml("src='" + URL_FIRST + "'");
     }
@@ -179,8 +171,7 @@ public class HtmlImage2Test extends WebDriverTestCase {
         try (InputStream is = getClass().getClassLoader().getResourceAsStream("testfiles/tiny-jpg.img")) {
             final byte[] directBytes = IOUtils.toByteArray(is);
             final URL urlImage = new URL(URL_FIRST, "img.jpg");
-            final List<NameValuePair> emptyList = Collections.emptyList();
-            getMockWebConnection().setResponse(urlImage, directBytes, 200, "ok", "image/jpg", emptyList);
+            getMockWebConnection().setResponse(urlImage, directBytes, 200, "ok", "image/jpg", Collections.emptyList());
         }
 
         final String html = "<html><head>\n"
@@ -206,8 +197,7 @@ public class HtmlImage2Test extends WebDriverTestCase {
         try (InputStream is = getClass().getClassLoader().getResourceAsStream("testfiles/tiny-jpg.img")) {
             final byte[] directBytes = IOUtils.toByteArray(is);
             final URL urlImage = new URL(URL_FIRST, "img.jpg");
-            final List<NameValuePair> emptyList = Collections.emptyList();
-            getMockWebConnection().setResponse(urlImage, directBytes, 200, "ok", "image/jpg", emptyList);
+            getMockWebConnection().setResponse(urlImage, directBytes, 200, "ok", "image/jpg", Collections.emptyList());
         }
 
         final String html = "<html><head>\n"
@@ -239,8 +229,7 @@ public class HtmlImage2Test extends WebDriverTestCase {
         try (InputStream is = getClass().getClassLoader().getResourceAsStream("testfiles/tiny-jpg.img")) {
             final byte[] directBytes = IOUtils.toByteArray(is);
             final URL urlImage = new URL(URL_FIRST, "img.jpg");
-            final List<NameValuePair> emptyList = Collections.emptyList();
-            getMockWebConnection().setResponse(urlImage, directBytes, 200, "ok", "image/jpg", emptyList);
+            getMockWebConnection().setResponse(urlImage, directBytes, 200, "ok", "image/jpg", Collections.emptyList());
         }
 
         final String html = "<html><head>\n"
@@ -288,8 +277,7 @@ public class HtmlImage2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "false",
-            IE = "true")
+    @Alerts("false")
     public void isDisplayedNoSource() throws Exception {
         isDisplayed("");
     }
@@ -298,8 +286,7 @@ public class HtmlImage2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "false",
-            IE = "true")
+    @Alerts("false")
     public void isDisplayedEmptySource() throws Exception {
         isDisplayed("src=''");
     }
@@ -346,8 +333,7 @@ public class HtmlImage2Test extends WebDriverTestCase {
         try (InputStream is = getClass().getClassLoader().getResourceAsStream("testfiles/tiny-jpg.img")) {
             final byte[] directBytes = IOUtils.toByteArray(is);
             final URL urlImage = new URL(URL_FIRST, "img.jpg");
-            final List<NameValuePair> emptyList = Collections.emptyList();
-            getMockWebConnection().setResponse(urlImage, directBytes, 200, "ok", "image/jpg", emptyList);
+            getMockWebConnection().setResponse(urlImage, directBytes, 200, "ok", "image/jpg", Collections.emptyList());
 
             getMockWebConnection().setDefaultResponse("Error: not found", 404, "Not Found", MimeType.TEXT_HTML);
         }
@@ -397,8 +383,8 @@ public class HtmlImage2Test extends WebDriverTestCase {
         try (InputStream is = getClass().getClassLoader().getResourceAsStream("testfiles/tiny-gif.img")) {
             final byte[] directBytes = IOUtils.toByteArray(is);
             final URL urlImage = new URL(URL_SECOND, "abcd/img.gif");
-            final List<NameValuePair> emptyList = Collections.emptyList();
-            getMockWebConnection().setResponse(urlImage, directBytes, 200, "ok", MimeType.IMAGE_GIF, emptyList);
+            getMockWebConnection().setResponse(urlImage, directBytes, 200, "ok",
+                                                MimeType.IMAGE_GIF, Collections.emptyList());
         }
 
         final String html
@@ -420,8 +406,6 @@ public class HtmlImage2Test extends WebDriverTestCase {
 
         expandExpectedAlertsVariables(URL_SECOND);
         loadPageVerifyTitle2(html);
-
-        shutDownRealIE();
     }
 
     /**
@@ -429,15 +413,15 @@ public class HtmlImage2Test extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = {"58", "29", "58", "29"},
-            FF = {"58", "29", "68", "118"},
+            FF = {"58", "29", "70", "118"},
             FF_ESR = {"58", "29", "68", "118"})
     @NotYetImplemented
     public void clickWithCoordinates() throws Exception {
         try (InputStream is = getClass().getClassLoader().getResourceAsStream("testfiles/tiny-gif.img")) {
             final byte[] directBytes = IOUtils.toByteArray(is);
             final URL urlImage = new URL(URL_SECOND, "img.gif");
-            final List<NameValuePair> emptyList = Collections.emptyList();
-            getMockWebConnection().setResponse(urlImage, directBytes, 200, "ok", MimeType.IMAGE_GIF, emptyList);
+            getMockWebConnection().setResponse(urlImage, directBytes, 200, "ok",
+                                        MimeType.IMAGE_GIF, Collections.emptyList());
         }
 
         final String html

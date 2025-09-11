@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,6 @@
 package org.htmlunit.javascript.host.css;
 
 import static org.htmlunit.BrowserVersionFeatures.JS_SELECTOR_TEXT_LOWERCASE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import java.util.Locale;
 import java.util.regex.Matcher;
@@ -49,12 +44,13 @@ public class CSSStyleRule extends CSSRule {
      * Creates a new instance.
      */
     public CSSStyleRule() {
+        super();
     }
 
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     @Override
     public void jsConstructor() {
         super.jsConstructor();
@@ -113,14 +109,5 @@ public class CSSStyleRule extends CSSRule {
         final WrappedCssStyleDeclaration styleDeclaration
                 = new WrappedCssStyleDeclaration(((CSSStyleRuleImpl) getRule()).getStyle(), getBrowserVersion());
         return new CSSStyleDeclaration(getParentStyleSheet(), styleDeclaration);
-    }
-
-    /**
-     * Returns the readonly property.
-     * @return the readonly value.
-     */
-    @JsxGetter(IE)
-    public boolean isReadOnly() {
-        return false;
     }
 }

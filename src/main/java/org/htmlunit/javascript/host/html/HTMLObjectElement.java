@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,37 +14,14 @@
  */
 package org.htmlunit.javascript.host.html;
 
-import static org.htmlunit.BrowserVersionFeatures.HTML_OBJECT_CLASSID;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
-
-import java.applet.Applet;
-import java.lang.reflect.Method;
-import java.util.Map;
-
-import org.htmlunit.WebClient;
-import org.htmlunit.corejs.javascript.BaseFunction;
-import org.htmlunit.corejs.javascript.Context;
-import org.htmlunit.corejs.javascript.Function;
-import org.htmlunit.corejs.javascript.NativeJavaObject;
-import org.htmlunit.corejs.javascript.Scriptable;
-import org.htmlunit.corejs.javascript.ScriptableObject;
-import org.htmlunit.corejs.javascript.Wrapper;
 import org.htmlunit.html.DomElement;
-import org.htmlunit.html.DomNode;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlObject;
-import org.htmlunit.javascript.HtmlUnitContextFactory;
-import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.configuration.JsxSetter;
-import org.htmlunit.javascript.host.ActiveXObjectImpl;
 
 /**
  * The JavaScript object {@code HTMLObjectElement}.
@@ -54,95 +31,15 @@ import org.htmlunit.javascript.host.ActiveXObjectImpl;
  * @author Frank Danek
  */
 @JsxClass(domClass = HtmlObject.class)
-public class HTMLObjectElement extends HTMLElement implements Wrapper {
-
-    private Scriptable wrappedActiveX_;
-
-    /**
-     * Creates an instance.
-     */
-    public HTMLObjectElement() {
-    }
+public class HTMLObjectElement extends HTMLElement {
 
     /**
      * JavaScript constructor.
      */
     @Override
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
         super.jsConstructor();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void setDomNode(final DomNode domNode) {
-        super.setDomNode(domNode);
-
-        if (domNode.getPage().getWebClient().getOptions().isAppletEnabled()) {
-            try {
-                createAppletMethodAndProperties();
-            }
-            catch (final Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
-
-    private void createAppletMethodAndProperties() throws Exception {
-        final HtmlObject appletNode = (HtmlObject) getDomNodeOrDie();
-        final Applet applet = appletNode.getApplet();
-        if (applet == null) {
-            return;
-        }
-
-        // Rhino should provide the possibility to declare delegate for Functions as it does for properties!!!
-        for (final Method method : applet.getClass().getMethods()) {
-            final Function f = new BaseFunction() {
-                @Override
-                public Object call(final Context cx, final Scriptable scope,
-                        final Scriptable thisObj, final Object[] args) {
-
-                    final Object[] realArgs = new Object[method.getParameterTypes().length];
-                    for (int i = 0; i < realArgs.length; i++) {
-                        final Object arg;
-                        if (i > args.length) {
-                            arg = null;
-                        }
-                        else {
-                            arg = Context.jsToJava(args[i], method.getParameterTypes()[i]);
-                        }
-                        realArgs[i] = arg;
-                    }
-                    try {
-                        return method.invoke(applet, realArgs);
-                    }
-                    catch (final Exception e) {
-                        throw JavaScriptEngine.throwAsScriptRuntimeEx(e);
-                    }
-                }
-            };
-            ScriptableObject.defineProperty(this, method.getName(), f, ScriptableObject.READONLY);
-        }
-    }
-
-    /**
-     * Returns the value of the {@code alt} property.
-     * @return the value of the {@code alt} property
-     */
-    @JsxGetter(IE)
-    public String getAlt() {
-        return getDomNodeOrDie().getAttributeDirect("alt");
-    }
-
-    /**
-     * Returns the value of the {@code alt} property.
-     * @param alt the value
-     */
-    @JsxSetter(IE)
-    public void setAlt(final String alt) {
-        getDomNodeOrDie().setAttribute("alt", alt);
     }
 
     /**
@@ -167,7 +64,6 @@ public class HTMLObjectElement extends HTMLElement implements Wrapper {
      * Gets the {@code classid} attribute.
      * @return the {@code classid} attribute
      */
-    @JsxGetter(IE)
     public String getClassid() {
         return getDomNodeOrDie().getAttributeDirect("classid");
     }
@@ -176,104 +72,8 @@ public class HTMLObjectElement extends HTMLElement implements Wrapper {
      * Sets the {@code classid} attribute.
      * @param classid the {@code classid} attribute
      */
-    @JsxSetter(IE)
     public void setClassid(final String classid) {
         getDomNodeOrDie().setAttribute("classid", classid);
-        if (classid.indexOf(':') != -1 && getBrowserVersion().hasFeature(HTML_OBJECT_CLASSID)) {
-            final WebClient webClient = getWindow().getWebWindow().getWebClient();
-            final Map<String, String> map = webClient.getActiveXObjectMap();
-            if (map != null) {
-                final String xClassString = map.get(classid);
-                if (xClassString != null) {
-                    try {
-                        final Class<?> xClass = Class.forName(xClassString);
-                        final Object object = xClass.newInstance();
-                        boolean contextCreated = false;
-                        if (Context.getCurrentContext() == null) {
-                            new HtmlUnitContextFactory(webClient).enterContext();
-                            contextCreated = true;
-                        }
-                        wrappedActiveX_ = Context.toObject(object, getParentScope());
-                        if (contextCreated) {
-                            Context.exit();
-                        }
-                    }
-                    catch (final Exception e) {
-                        throw JavaScriptEngine.reportRuntimeError("ActiveXObject Error: failed instantiating class "
-                                + xClassString + " because " + e.getMessage() + ".");
-                    }
-                    return;
-                }
-            }
-            if (webClient.getOptions().isActiveXNative()
-                    && System.getProperty("os.name").contains("Windows")) {
-                try {
-                    wrappedActiveX_ = new ActiveXObjectImpl(classid);
-                    wrappedActiveX_.setParentScope(getParentScope());
-                }
-                catch (final Exception e) {
-                    throw JavaScriptEngine.throwAsScriptRuntimeEx(e);
-                }
-            }
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Object get(final String name, final Scriptable start) {
-        // for java mocks do a bit more, we have handle unknown properties
-        // ourself
-        if (wrappedActiveX_ instanceof NativeJavaObject) {
-            final NativeJavaObject obj = (NativeJavaObject) wrappedActiveX_;
-            final Object result = obj.get(name, start);
-            if (Scriptable.NOT_FOUND != result) {
-                return result;
-            }
-            return super.get(name, start);
-        }
-
-        if (wrappedActiveX_ != null) {
-            return wrappedActiveX_.get(name, start);
-        }
-        return super.get(name, start);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void put(final String name, final Scriptable start, final Object value) {
-        // for java mocks do a bit more, we have handle unknown properties
-        // ourself
-        if (wrappedActiveX_ instanceof NativeJavaObject) {
-            if (wrappedActiveX_.has(name, start)) {
-                wrappedActiveX_.put(name, start, value);
-            }
-            else {
-                super.put(name, start, value);
-            }
-            return;
-        }
-
-        if (wrappedActiveX_ != null) {
-            wrappedActiveX_.put(name, start, value);
-            return;
-        }
-
-        super.put(name, start, value);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Object unwrap() {
-        if (wrappedActiveX_ instanceof Wrapper) {
-            return ((Wrapper) wrappedActiveX_).unwrap();
-        }
-        return wrappedActiveX_;
     }
 
     /**

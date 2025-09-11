@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package org.htmlunit.javascript.host.dom;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -45,7 +45,7 @@ public class DOMParserTest extends WebDriverTestCase {
             + "  function test() {\n"
             + "    try {\n"
             + "      log(new DOMParser());\n"
-            + "    } catch (e) {log('exception');}\n"
+            + "    } catch(e) {logEx(e);}\n"
             + "  }\n"
             + "</script></head><body onload='test()'>\n"
             + "</body></html>";
@@ -71,7 +71,7 @@ public class DOMParserTest extends WebDriverTestCase {
             + "      log(doc);\n"
             + "      log(doc.body.innerHTML);\n"
             + "      log(doc.URL);\n"
-            + "    } catch(e) { log('exception'); }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "  }\n"
             + "</script></head><body onload='test()'>\n"
             + "</body></html>";
@@ -98,7 +98,7 @@ public class DOMParserTest extends WebDriverTestCase {
             + "      log(doc);\n"
             + "      log(doc.body.innerHTML);\n"
             + "      log(doc.URL);\n"
-            + "    } catch(e) { log('exception'); }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "  }\n"
             + "</script></head><body onload='test()'>\n"
             + "</body></html>";
@@ -123,7 +123,7 @@ public class DOMParserTest extends WebDriverTestCase {
             + "      var parser = new DOMParser();\n"
             + "      var doc = parser.parseFromString(text, 'text/xml');\n"
             + "      log(doc);\n"
-            + "    } catch(e) { log('exception'); }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "  }\n"
             + "</script></head><body onload='test()'>\n"
             + "</body></html>";
@@ -147,7 +147,7 @@ public class DOMParserTest extends WebDriverTestCase {
             + "      var parser = new DOMParser();\n"
             + "      var doc = parser.parseFromString(text, 'application/xml');\n"
             + "      log(doc);\n"
-            + "    } catch(e) { log('exception'); }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "  }\n"
             + "</script></head><body onload='test()'>\n"
             + "</body></html>";
@@ -171,7 +171,7 @@ public class DOMParserTest extends WebDriverTestCase {
             + "      var parser = new DOMParser();\n"
             + "      var doc = parser.parseFromString(text, 'application/xhtml+xml');\n"
             + "      log(doc);\n"
-            + "    } catch(e) { log('exception'); }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "  }\n"
             + "</script></head><body onload='test()'>\n"
             + "</body></html>";
@@ -195,7 +195,7 @@ public class DOMParserTest extends WebDriverTestCase {
             + "      var parser = new DOMParser();\n"
             + "      var doc = parser.parseFromString(text, 'image/svg+xml');\n"
             + "      log(doc);\n"
-            + "    } catch(e) { log('exception'); }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "  }\n"
             + "</script></head><body onload='test()'>\n"
             + "</body></html>";
@@ -207,7 +207,7 @@ public class DOMParserTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("TypeError")
     public void parseFromString_unknownType() throws Exception {
         final String content = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head>\n"
@@ -219,7 +219,7 @@ public class DOMParserTest extends WebDriverTestCase {
             + "      var parser = new DOMParser();\n"
             + "      var doc = parser.parseFromString(text, 'unknown/type');\n"
             + "      log(doc);\n"
-            + "    } catch(e) { log('exception'); }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "  }\n"
             + "</script></head><body onload='test()'>\n"
             + "</body></html>";
@@ -251,7 +251,7 @@ public class DOMParserTest extends WebDriverTestCase {
 
             + "      var x = doc.documentElement;\n"
             + "      log(x.childNodes.length);\n"
-            + "    } catch(e) { log('exception'); }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "  }\n"
             + "</script></head><body onload='test()'>\n"
             + "</body></html>";
@@ -264,8 +264,7 @@ public class DOMParserTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "parsererror",
-            IE = "exception")
+    @Alerts("parsererror")
     public void parseFromString_invalidXml() throws Exception {
         final String content = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head>\n"
@@ -280,7 +279,7 @@ public class DOMParserTest extends WebDriverTestCase {
             + "        log('parsererror');\n"
             + "        return;\n"
             + "      }\n"
-            + "    } catch(e) { log('exception'); }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "  }\n"
             + "</script></head><body onload='test()'>\n"
             + "</body></html>";
@@ -292,8 +291,7 @@ public class DOMParserTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "parsererror",
-            IE = "0")
+    @Alerts("parsererror")
     public void parseFromString_emptyString() throws Exception {
         final String content = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head>\n"
@@ -309,7 +307,7 @@ public class DOMParserTest extends WebDriverTestCase {
             + "        return;\n"
             + "      }\n"
             + "      log(doc.childNodes.length);\n"
-            + "    } catch(e) { log('exception'); }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "  }\n"
             + "</script></head><body onload='test()'>\n"
             + "</body></html>";
@@ -321,7 +319,7 @@ public class DOMParserTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("TypeError")
     public void parseFromString_missingMimeType() throws Exception {
         final String content = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head>\n"
@@ -332,7 +330,7 @@ public class DOMParserTest extends WebDriverTestCase {
             + "    try {\n"
             + "      var parser=new DOMParser();\n"
             + "      parser.parseFromString(text);\n"
-            + "    } catch(e) { log('exception'); }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "  }\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -368,7 +366,7 @@ public class DOMParserTest extends WebDriverTestCase {
             + "      for(var i = 0; i < doc.documentElement.childNodes.length; i++) {\n"
             + "        log(doc.documentElement.childNodes[i]);\n"
             + "      }\n"
-            + "    } catch(e) { log('exception'); }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "  }\n"
             + "</script></head><body onload='test()'></body></html>";
 

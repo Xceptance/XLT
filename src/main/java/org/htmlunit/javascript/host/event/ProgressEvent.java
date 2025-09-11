@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,11 +13,6 @@
  * limitations under the License.
  */
 package org.htmlunit.javascript.host.event;
-
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import org.htmlunit.corejs.javascript.ScriptableObject;
 import org.htmlunit.javascript.JavaScriptEngine;
@@ -43,13 +38,14 @@ public class ProgressEvent extends Event {
      * Default constructor.
      */
     public ProgressEvent() {
+        super();
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor(final String type, final ScriptableObject details) {
         super.jsConstructor(type, details);
 
@@ -73,7 +69,7 @@ public class ProgressEvent extends Event {
                 try {
                     loaded_ = Long.parseLong(loaded.toString());
                 }
-                catch (final NumberFormatException e) {
+                catch (final NumberFormatException ignored) {
                     // ignore
                 }
             }
@@ -89,7 +85,7 @@ public class ProgressEvent extends Event {
                 try {
                     total_ = Long.parseLong(details.get("total").toString());
                 }
-                catch (final NumberFormatException e) {
+                catch (final NumberFormatException ignored) {
                     // ignore
                 }
             }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ public class UrlRequestFilter extends AbstractPatternRequestFilter
     {
         // with the change to get split caches per thread, we can affort
         // a lookup here and also profit from "does not apply" look ups.
-        super("u", regex, exclude, 1000);
+        super("u", regex, exclude, 5000);
     }
 
     /**

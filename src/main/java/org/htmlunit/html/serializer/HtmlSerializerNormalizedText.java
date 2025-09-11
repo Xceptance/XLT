@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,6 @@ import org.htmlunit.html.DomComment;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.html.DomText;
-import org.htmlunit.html.HtmlApplet;
 import org.htmlunit.html.HtmlBody;
 import org.htmlunit.html.HtmlBreak;
 import org.htmlunit.html.HtmlCheckBoxInput;
@@ -113,10 +112,6 @@ public class HtmlSerializerNormalizedText {
             appendText(builder, (DomText) node);
         }
         else if (node instanceof DomComment) {
-            // nothing to do
-        }
-        else if (node instanceof HtmlApplet
-                && node.getPage().getWebClient().getOptions().isAppletEnabled()) {
             // nothing to do
         }
         else if (node instanceof HtmlBreak) {
@@ -579,7 +574,11 @@ public class HtmlSerializerNormalizedText {
         ignoreMaskedElements_ = ignore;
     }
 
+    /**
+     * Helper to compose the text for the serializer based on several modes.
+     */
     protected static class HtmlSerializerTextBuilder {
+
         /** Mode. */
         protected enum Mode {
             /** Collapse whitespace. */
@@ -609,13 +608,25 @@ public class HtmlSerializerNormalizedText {
         private final StringBuilder builder_;
         private int trimRightPos_;
 
+        /**
+         * Ctor.
+         */
         public HtmlSerializerTextBuilder() {
             builder_ = new StringBuilder();
             state_ = State.EMPTY;
             trimRightPos_ = builder_.length();
         }
 
+        /**
+         * Append the provided content.
+         *
+         * @param content the content to add
+         * @param mode the {@link Mode}
+         */
         public void append(final String content, final Mode mode) {
+            if (content == null) {
+                return;
+            }
             final int length = content.length();
             if (length == 0) {
                 return;
@@ -702,6 +713,9 @@ public class HtmlSerializerNormalizedText {
             }
         }
 
+        /**
+         * Append a block separator.
+         */
         public void appendBlockSeparator() {
             switch (state_) {
                 case EMPTY:
@@ -747,22 +761,34 @@ public class HtmlSerializerNormalizedText {
             }
         }
 
+        /**
+         * Append a line separator.
+         */
         public void appendNewLine() {
             builder_.append(LINE_SEPARATOR);
             state_ = State.NEWLINE_AT_END;
             trimRightPos_ = builder_.length();
         }
 
+        /**
+         * Append a tab.
+         */
         public void appendTab() {
             builder_.append('\t');
             trimRightPos_ = builder_.length();
         }
 
+        /**
+         * Append a blank.
+         */
         private void appendBlank() {
             builder_.append(' ');
             trimRightPos_ = builder_.length();
         }
 
+        /**
+         * @return the constructed text.
+         */
         public String getText() {
             return builder_.substring(0, trimRightPos_);
         }

@@ -15,11 +15,10 @@
 // specific language governing permissions and limitations
 // under the License.
 //
-// Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+// Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
 
 package com.xceptance.xlt.engine.xltdriver;
 
-import static org.openqa.selenium.remote.Browser.HTMLUNIT;
 import static org.openqa.selenium.remote.CapabilityType.ACCEPT_INSECURE_CERTS;
 import static org.openqa.selenium.remote.CapabilityType.PAGE_LOAD_STRATEGY;
 
@@ -33,10 +32,12 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.WeakHashMap;
@@ -51,6 +52,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import javax.net.ssl.SSLHandshakeException;
 
 import org.htmlunit.BrowserVersion;
+import org.htmlunit.CookieManager;
 import org.htmlunit.Page;
 import org.htmlunit.ProxyConfig;
 import org.htmlunit.ScriptResult;
@@ -58,7 +60,6 @@ import org.htmlunit.SgmlPage;
 import org.htmlunit.StringWebResponse;
 import org.htmlunit.TopLevelWindow;
 import org.htmlunit.UnexpectedPage;
-import org.htmlunit.Version;
 import org.htmlunit.WaitingRefreshHandler;
 import org.htmlunit.WebClient;
 import org.htmlunit.WebClientOptions;
@@ -88,22 +89,27 @@ import org.htmlunit.platform.AwtClipboardHandler;
 import org.htmlunit.util.UrlUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Capabilities;
+import org.openqa.selenium.Cookie;
 import org.openqa.selenium.HasCapabilities;
+import org.openqa.selenium.InvalidCookieDomainException;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.NoSuchSessionException;
 import org.openqa.selenium.NoSuchWindowException;
-import org.openqa.selenium.Platform;
 import org.openqa.selenium.Proxy;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.TimeoutException;
+import org.openqa.selenium.UnableToSetCookieException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.WrapsElement;
+import com.xceptance.xlt.engine.xltdriver.logging.HtmlUnitLogs;
+import com.xceptance.xlt.engine.xltdriver.options.HtmlUnitDriverOptions;
 import com.xceptance.xlt.engine.xltdriver.w3.Action;
 import com.xceptance.xlt.engine.xltdriver.w3.Algorithms;
 import org.openqa.selenium.interactions.Interactive;
 import org.openqa.selenium.interactions.Sequence;
+import org.openqa.selenium.logging.Logs;
 import org.openqa.selenium.remote.Browser;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
@@ -127,6 +133,7 @@ import com.xceptance.xlt.api.engine.Session;
  * @author Rob Winch
  * @author Andrei Solntsev
  * @author Martin Bartoš
+ * @author Scott Babcock
  */
 public class HtmlUnitDriver implements WebDriver, JavascriptExecutor, HasCapabilities, Interactive {
 
@@ -171,18 +178,22 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor, HasCapabil
      * Constructs a new instance with JavaScript disabled, and the
      * {@link BrowserVersion#getDefault() default} BrowserVersion.
      */
+    /* XC: TODO: Not supported at the moment.
     public HtmlUnitDriver() {
         this(BrowserVersion.getDefault(), false);
     }
+    */
 
     /**
      * Constructs a new instance with the specified {@link BrowserVersion}.
      *
      * @param version the browser version to use
      */
+    /* XC: TODO: Not supported at the moment.
     public HtmlUnitDriver(final BrowserVersion version) {
         this(version, false);
     }
+    */
 
     /**
      * Constructs a new instance, specify JavaScript support and using the
@@ -190,9 +201,11 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor, HasCapabil
      *
      * @param enableJavascript whether to enable JavaScript support or not
      */
+    /* XC: TODO: Not supported at the moment.
     public HtmlUnitDriver(final boolean enableJavascript) {
         this(BrowserVersion.getDefault(), enableJavascript);
     }
+    */
 
     /**
      * Constructs a new instance with the specified {@link BrowserVersion} and the
@@ -201,39 +214,34 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor, HasCapabil
      * @param version          the browser version to use
      * @param enableJavascript whether to enable JavaScript support or not
      */
+    /* XC: TODO: Not supported at the moment.
     public HtmlUnitDriver(final BrowserVersion version, final boolean enableJavascript) {
-        this(version, enableJavascript, null);
-
-        modifyWebClient(webClient_);
+        this(new HtmlUnitDriverOptions(version, enableJavascript));
     }
+    */
+
+    /* XC: TODO: Not supported at the moment.
+    public HtmlUnitDriver(final Capabilities desiredCapabilities, final Capabilities requiredCapabilities) {
+        this(new DesiredCapabilities(desiredCapabilities, requiredCapabilities));
+    }
+    */
 
     /**
      * The browserName is {@link Browser#HTMLUNIT} "htmlunit" and the
      * browserVersion denotes the required browser AND its version. For example
-     * "chrome" for Chrome, "firefox-100" for Firefox 100 or "internet explorer" for
-     * IE.
+     * "chrome" for Chrome, "firefox-100" for Firefox 100.
      *
      * @param capabilities desired capabilities requested for the htmlunit driver
      *                     session
      */
+    /* XC: TODO: Not supported at the moment.
     public HtmlUnitDriver(final Capabilities capabilities) {
-        this(BrowserVersionDeterminer.determine(capabilities),
-                capabilities.getCapability(JAVASCRIPT_ENABLED) == null || capabilities.is(JAVASCRIPT_ENABLED),
-                Proxy.extractFrom(capabilities));
+        final HtmlUnitDriverOptions driverOptions = new HtmlUnitDriverOptions(capabilities);
+        webClient_ = newWebClient(driverOptions.getWebClientVersion());
 
-        setDownloadImages(capabilities.is(DOWNLOAD_IMAGES_CAPABILITY));
+        setAcceptInsecureCerts(Boolean.FALSE != driverOptions.getCapability(ACCEPT_INSECURE_CERTS));
 
-        if (alert_ != null) {
-            alert_.handleBrowserCapabilities(capabilities);
-        }
-
-        Boolean acceptInsecureCerts = (Boolean) capabilities.getCapability(ACCEPT_INSECURE_CERTS);
-        if (acceptInsecureCerts == null) {
-            acceptInsecureCerts = true;
-        }
-        setAcceptInsecureCerts(acceptInsecureCerts);
-
-        final String pageLoadStrategyString = (String) capabilities.getCapability(PAGE_LOAD_STRATEGY);
+        final String pageLoadStrategyString = (String) driverOptions.getCapability(PAGE_LOAD_STRATEGY);
         if ("none".equals(pageLoadStrategyString)) {
             pageLoadStrategy_ = PageLoadStrategy.NONE;
         }
@@ -241,25 +249,10 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor, HasCapabil
             pageLoadStrategy_ = PageLoadStrategy.EAGER;
         }
 
-        modifyWebClient(webClient_);
-    }
-
-    public HtmlUnitDriver(final Capabilities desiredCapabilities, final Capabilities requiredCapabilities) {
-        this(new DesiredCapabilities(desiredCapabilities, requiredCapabilities));
-    }
-
-    private HtmlUnitDriver(final BrowserVersion version, final boolean enableJavascript, final Proxy proxy) {
-        webClient_ = newWebClient(version);
-
         final WebClientOptions clientOptions = webClient_.getOptions();
-        clientOptions.setHomePage(UrlUtils.URL_ABOUT_BLANK.toString());
-        clientOptions.setThrowExceptionOnFailingStatusCode(false);
-        clientOptions.setPrintContentOnFailingStatusCode(false);
-        clientOptions.setRedirectEnabled(true);
-        clientOptions.setUseInsecureSSL(true);
+        driverOptions.applyOptions(clientOptions);
 
-        setJavascriptEnabled(enableJavascript);
-        setProxySettings(proxy);
+        setProxySettings(Proxy.extractFrom(driverOptions));
 
         webClient_.setRefreshHandler(new WaitingRefreshHandler());
         webClient_.setClipboardHandler(new AwtClipboardHandler());
@@ -267,18 +260,16 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor, HasCapabil
         elementFinder_ = new HtmlUnitElementFinder();
 
         alert_ = new HtmlUnitAlert(this);
+        alert_.handleBrowserCapabilities(driverOptions);
         currentWindow_ = new HtmlUnitWindow(webClient_.getCurrentWindow());
 
         defaultExecutor_ = Executors.newCachedThreadPool();
         executor_ = defaultExecutor_;
 
         // Now put us on the home page, like a real browser
-        // TODO #2961 - Don't load any page in c'tor to prevent premature start of HU's JS thread
-        /*
         get(clientOptions.getHomePage());
-        */
 
-        options_ = new HtmlUnitOptions(this);
+        options_ = new HtmlUnitWebDriverOptions(this);
         targetLocator_ = new HtmlUnitTargetLocator(this);
 
         webClient_.addWebWindowListener(new WebWindowListener() {
@@ -330,6 +321,96 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor, HasCapabil
         });
 
         resetKeyboardAndMouseState();
+        modifyWebClient(webClient_);
+    }
+    */
+
+    /**
+     * Constructs a new instance with the specified {@link BrowserVersion}.
+     *
+     * @param version the browser version to use
+     */
+    protected HtmlUnitDriver(final BrowserVersion version) {
+
+        /*
+         * Similar to the constructor above, but stripped down a little. The constructor is based on BrowserVersion
+         * instead of Capabilities, so it does not support setting WebClient options via capabilities. This is by
+         * intention as the XltWebClient has already configured itself via properties. Applying the capabilities would
+         * reconfigure our web client again.
+         */
+        
+        webClient_ = newWebClient(version);
+
+        webClient_.setRefreshHandler(new WaitingRefreshHandler());
+        webClient_.setClipboardHandler(new AwtClipboardHandler());
+
+        elementFinder_ = new HtmlUnitElementFinder();
+
+        alert_ = new HtmlUnitAlert(this);
+        currentWindow_ = new HtmlUnitWindow(webClient_.getCurrentWindow());
+
+        defaultExecutor_ = Executors.newCachedThreadPool();
+        executor_ = defaultExecutor_;
+
+        // Now put us on the home page, like a real browser
+        // TODO #2961 - Don't load any page in c'tor to prevent premature start of HU's JS thread
+        /*
+        get(clientOptions.getHomePage());
+        */
+
+        options_ = new HtmlUnitWebDriverOptions(this);
+        targetLocator_ = new HtmlUnitTargetLocator(this);
+
+        webClient_.addWebWindowListener(new WebWindowListener() {
+            @Override
+            public void webWindowOpened(final WebWindowEvent webWindowEvent) {
+                if (webWindowEvent.getWebWindow() instanceof TopLevelWindow) {
+                    // use the first top level window we are getting aware of
+                    if (currentWindow_ == null && webClient_.getTopLevelWindows().size() == 1) {
+                        currentWindow_ = new HtmlUnitWindow(webClient_.getTopLevelWindows().get(0));
+                    }
+                }
+            }
+
+            @Override
+            public void webWindowContentChanged(final WebWindowEvent event) {
+                elementsMap_.remove(event.getOldPage());
+                if (event.getWebWindow() != currentWindow_.getWebWindow()) {
+                    return;
+                }
+
+                // Do we need to pick some new default content?
+                switchToDefaultContentOfWindow(currentWindow_.getWebWindow());
+            }
+
+            @Override
+            public void webWindowClosed(final WebWindowEvent event) {
+                elementsMap_.remove(event.getOldPage());
+
+                // the last window is gone
+                if (getWebClient().getTopLevelWindows().size() == 0) {
+                    currentWindow_ = null;
+                    return;
+                }
+
+                // Check if the event window refers to us or one of our parent windows
+                // setup the currentWindow appropriately if necessary
+                WebWindow ourCurrentWindow = currentWindow_.getWebWindow();
+                final WebWindow ourCurrentTopWindow = currentWindow_.getWebWindow().getTopWindow();
+                do {
+                    // Instance equality is okay in this case
+                    if (ourCurrentWindow == event.getWebWindow()) {
+                        setCurrentWindow(ourCurrentTopWindow);
+                        return;
+                    }
+                    ourCurrentWindow = ourCurrentWindow.getParentWindow();
+                }
+                while (ourCurrentWindow != ourCurrentTopWindow);
+            }
+        });
+
+        resetKeyboardAndMouseState();
+        modifyWebClient(webClient_);
     }
 
     /**
@@ -628,13 +709,7 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor, HasCapabil
 
     @Override
     public Capabilities getCapabilities() {
-        final DesiredCapabilities capabilities = new DesiredCapabilities(HTMLUNIT.browserName(), "", Platform.ANY);
-
-        capabilities.setPlatform(Platform.getCurrent());
-        capabilities.setVersion(Version.getProductVersion());
-
-        capabilities.setCapability(HtmlUnitDriver.JAVASCRIPT_ENABLED, isJavascriptEnabled());
-        return capabilities;
+        return new HtmlUnitDriverOptions(getBrowserVersion()).importOptions(webClient_.getOptions());
     }
 
     @Override
@@ -832,12 +907,31 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor, HasCapabil
 
     @Override
     public void quit() {
-        if (webClient_ != null) {
-            alert_.close();
-            webClient_.close();
-            webClient_ = null;
+        // closing the web client while some async processes are running
+        // will produce strange effects; therefore wait until they are done
+        while (runAsyncRunning_) {
+            try {
+                Thread.sleep(10);
+            }
+            catch (final InterruptedException e) {
+                throw new RuntimeException(e);
+            }
         }
-        defaultExecutor_.shutdown();
+
+        conditionLock_.lock();
+        runAsyncRunning_ = true;
+        try {
+            if (webClient_ != null) {
+                alert_.close();
+                webClient_.close();
+                webClient_ = null;
+            }
+            defaultExecutor_.shutdown();
+        }
+        finally {
+            runAsyncRunning_ = false;
+            conditionLock_.unlock();
+        }
     }
 
     @Override
@@ -947,7 +1041,14 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor, HasCapabil
                 || arg instanceof Number // special case the underlying type
                 || arg instanceof String
                 || arg instanceof Boolean
-                || arg.getClass().isArray()
+
+                || arg instanceof Object[]
+                || arg instanceof int[]
+                || arg instanceof long[]
+                || arg instanceof float[]
+                || arg instanceof double[]
+                || arg instanceof boolean[]
+
                 || arg instanceof Collection<?> || arg instanceof Map<?, ?>)) {
             throw new IllegalArgumentException(
                     "Argument must be a string, number, boolean or WebElement: " + arg + " (" + arg.getClass() + ")");
@@ -957,13 +1058,11 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor, HasCapabil
             final HtmlUnitWebElement webElement = (HtmlUnitWebElement) arg;
             assertElementNotStale(webElement.getElement());
             return webElement.getElement().getScriptableObject();
-
         }
         else if (arg instanceof HtmlElement) {
             final HtmlElement element = (HtmlElement) arg;
             assertElementNotStale(element);
             return element.getScriptableObject();
-
         }
         else if (arg instanceof Collection<?>) {
             final List<Object> list = new ArrayList<>();
@@ -971,25 +1070,60 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor, HasCapabil
                 list.add(parseArgumentIntoJavascriptParameter(scope, o));
             }
             return Context.getCurrentContext().newArray(scope, list.toArray());
-
         }
-        else if (arg.getClass().isArray()) {
+
+        else if (arg instanceof Object[]) {
             final List<Object> list = new ArrayList<>();
             for (final Object o : (Object[]) arg) {
                 list.add(parseArgumentIntoJavascriptParameter(scope, o));
             }
             return Context.getCurrentContext().newArray(scope, list.toArray());
-
         }
-        else if (arg instanceof Map<?, ?>) {
-            final Map<?, ?> argmap = (Map<?, ?>) arg;
-            final Scriptable map = Context.getCurrentContext().newObject(scope);
-            for (final Map.Entry<?, ?> entry : argmap.entrySet()) {
-                map.put((String) entry.getKey(), map, parseArgumentIntoJavascriptParameter(scope, entry.getValue()));
+        else if (arg instanceof int[]) {
+            final List<Object> list = new ArrayList<>();
+            for (final Object o : (int[]) arg) {
+                list.add(parseArgumentIntoJavascriptParameter(scope, o));
             }
-            return map;
-
+            return Context.getCurrentContext().newArray(scope, list.toArray());
         }
+        else if (arg instanceof long[]) {
+            final List<Object> list = new ArrayList<>();
+            for (final Object o : (long[]) arg) {
+                list.add(parseArgumentIntoJavascriptParameter(scope, o));
+            }
+            return Context.getCurrentContext().newArray(scope, list.toArray());
+        }
+        else if (arg instanceof float[]) {
+            final List<Object> list = new ArrayList<>();
+            for (final Object o : (float[]) arg) {
+                list.add(parseArgumentIntoJavascriptParameter(scope, o));
+            }
+            return Context.getCurrentContext().newArray(scope, list.toArray());
+        }
+        else if (arg instanceof double[]) {
+            final List<Object> list = new ArrayList<>();
+            for (final Object o : (double[]) arg) {
+                list.add(parseArgumentIntoJavascriptParameter(scope, o));
+            }
+            return Context.getCurrentContext().newArray(scope, list.toArray());
+        }
+        else if (arg instanceof boolean[]) {
+            final List<Object> list = new ArrayList<>();
+            for (final Object o : (boolean[]) arg) {
+                list.add(parseArgumentIntoJavascriptParameter(scope, o));
+            }
+            return Context.getCurrentContext().newArray(scope, list.toArray());
+        }
+
+        else if (arg instanceof Map<?, ?>) {
+            final Map<?, ?> map = (Map<?, ?>) arg;
+            final Scriptable obj = Context.getCurrentContext().newObject(scope);
+            for (final Map.Entry<?, ?> entry : map.entrySet()) {
+                obj.put((String) entry.getKey(), obj, parseArgumentIntoJavascriptParameter(scope, entry.getValue()));
+            }
+            return obj;
+        }
+
         else {
             return arg;
         }
@@ -1169,6 +1303,10 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor, HasCapabil
         return getElementsMap().addIfAbsent(this, element);
     }
 
+    public HtmlUnitWebElement toWebElement(final String elementId) {
+        return getElementsMap().getWebElement(elementId);
+    }
+
     public boolean isJavascriptEnabled() {
         return getWebClient().getOptions().isJavaScriptEnabled();
     }
@@ -1280,7 +1418,7 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor, HasCapabil
         return currentWindow_;
     }
 
-    private class HtmlUnitNavigation implements Navigation {
+    private final class HtmlUnitNavigation implements Navigation {
 
         @Override
         public void back() {
@@ -1353,10 +1491,12 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor, HasCapabil
 
     protected static class ElementsMap {
         private final Map<SgmlPage, Map<DomElement, HtmlUnitWebElement>> elementsMapByPage_;
+        private final Map<String, HtmlUnitWebElement> elementsMapById_;
         private int idCounter_;
 
         public ElementsMap() {
             elementsMapByPage_ = new WeakHashMap<>();
+            elementsMapById_ = new HashMap<>();
             idCounter_ = 0;
         }
 
@@ -1369,12 +1509,25 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor, HasCapabil
                 idCounter_++;
                 e = new HtmlUnitWebElement(driver, idCounter_, element);
                 pageMap.put(element, e);
+                elementsMapById_.put(Integer.toString(idCounter_), e);
             }
             return e;
         }
 
         public void remove(final Page page) {
-            elementsMapByPage_.remove(page);
+            final Map<DomElement, HtmlUnitWebElement> pageMap = elementsMapByPage_.remove(page);
+            if (pageMap != null) {
+                pageMap.values().forEach(element -> elementsMapById_.remove(Integer.toString(element.getId())));
+            }
+        }
+
+        public HtmlUnitWebElement getWebElement(final String elementId) {
+            final HtmlUnitWebElement webElement = elementsMapById_.get(elementId);
+            if (webElement == null) {
+                throw new StaleElementReferenceException(
+                        "Failed finding web element associated with identifier: " + elementId);
+            }
+            return webElement;
         }
     }
 
@@ -1417,5 +1570,174 @@ public class HtmlUnitDriver implements WebDriver, JavascriptExecutor, HasCapabil
     public void openNewWindow() {
         final WebWindow newWindow = webClient_.openWindow(UrlUtils.URL_ABOUT_BLANK, "");
         currentWindow_ = new HtmlUnitWindow(newWindow);
+    }
+
+    protected class HtmlUnitWebDriverOptions implements WebDriver.Options {
+        private final HtmlUnitLogs logs_;
+        private final HtmlUnitDriver driver_;
+        private final HtmlUnitTimeouts timeouts_;
+
+        protected HtmlUnitWebDriverOptions(final HtmlUnitDriver driver) {
+            driver_ = driver;
+            logs_ = new HtmlUnitLogs(getWebClient());
+            timeouts_ = new HtmlUnitTimeouts(getWebClient());
+        }
+
+        @Override
+        public Logs logs() {
+            return logs_;
+        }
+
+        @Override
+        public void addCookie(final Cookie cookie) {
+            final Page page = window().lastPage();
+            if (!(page instanceof HtmlPage)) {
+                throw new UnableToSetCookieException("You may not set cookies on a page that is not HTML");
+            }
+
+            final String domain = getDomainForCookie();
+            verifyDomain(cookie, domain);
+
+            getWebClient().getCookieManager().addCookie(
+                    new org.htmlunit.util.Cookie(
+                            domain,
+                            cookie.getName(),
+                            cookie.getValue(),
+                            cookie.getPath(),
+                            cookie.getExpiry(),
+                            cookie.isSecure(),
+                            cookie.isHttpOnly(),
+                            cookie.getSameSite()));
+        }
+
+        private void verifyDomain(final Cookie cookie, String expectedDomain) {
+            String domain = cookie.getDomain();
+            if (domain == null) {
+                return;
+            }
+
+            if ("".equals(domain)) {
+                throw new InvalidCookieDomainException(
+                        "Domain must not be an empty string. Consider using null instead");
+            }
+
+            // Line-noise-tastic
+            if (domain.matches(".*[^:]:\\d+$")) {
+                domain = domain.replaceFirst(":\\d+$", "");
+            }
+
+            expectedDomain = expectedDomain.startsWith(".") ? expectedDomain : "." + expectedDomain;
+            domain = domain.startsWith(".") ? domain : "." + domain;
+
+            if (!expectedDomain.endsWith(domain)) {
+                throw new InvalidCookieDomainException(
+                        String.format("You may only add cookies that would be visible to the current domain: %s => %s",
+                                domain, expectedDomain));
+            }
+        }
+
+        @Override
+        public Cookie getCookieNamed(final String name) {
+            final Set<Cookie> allCookies = getCookies();
+            for (final Cookie cookie : allCookies) {
+                if (name.equals(cookie.getName())) {
+                    return cookie;
+                }
+            }
+
+            return null;
+        }
+
+        @Override
+        public void deleteCookieNamed(final String name) {
+            final CookieManager cookieManager = getWebClient().getCookieManager();
+
+            final URL url = getRawUrl();
+            final Set<org.htmlunit.util.Cookie> rawCookies = getWebClient().getCookies(url);
+            for (final org.htmlunit.util.Cookie cookie : rawCookies) {
+                if (name.equals(cookie.getName())) {
+                    cookieManager.removeCookie(cookie);
+                }
+            }
+        }
+
+        @Override
+        public void deleteCookie(final Cookie cookie) {
+            getWebClient().getCookieManager().removeCookie(convertSeleniumCookieToHtmlUnit(cookie));
+        }
+
+        @Override
+        public void deleteAllCookies() {
+            final CookieManager cookieManager = getWebClient().getCookieManager();
+
+            final URL url = getRawUrl();
+            final Set<org.htmlunit.util.Cookie> rawCookies = getWebClient().getCookies(url);
+            for (final org.htmlunit.util.Cookie cookie : rawCookies) {
+                cookieManager.removeCookie(cookie);
+            }
+        }
+
+        @Override
+        public Set<Cookie> getCookies() {
+            final URL url = getRawUrl();
+
+            // The about:blank URL (the default in case no navigation took place)
+            // does not have a valid 'hostname' part and cannot be used for creating
+            // cookies based on it - return an empty set.
+
+            if (!url.toString().startsWith("http")) {
+                return Collections.emptySet();
+            }
+
+            final Set<Cookie> result = new HashSet<>();
+            for (final org.htmlunit.util.Cookie c : getWebClient().getCookies(url)) {
+                result .add(
+                        new Cookie.Builder(c.getName(), c.getValue())
+                        .domain(c.getDomain())
+                        .path(c.getPath())
+                        .expiresOn(c.getExpires())
+                        .isSecure(c.isSecure())
+                        .isHttpOnly(c.isHttpOnly())
+                        .sameSite(c.getSameSite())
+                        .build());
+            }
+
+            return Collections.unmodifiableSet(result);
+        }
+
+        private org.htmlunit.util.Cookie convertSeleniumCookieToHtmlUnit(final Cookie cookie) {
+            return new org.htmlunit.util.Cookie(
+                    cookie.getDomain(),
+                    cookie.getName(),
+                    cookie.getValue(),
+                    cookie.getPath(),
+                    cookie.getExpiry(),
+                    cookie.isSecure(),
+                    cookie.isHttpOnly(),
+                    cookie.getSameSite());
+        }
+
+        private String getDomainForCookie() {
+            final URL current = getRawUrl();
+            return current.getHost();
+        }
+
+        private WebClient getWebClient() {
+            return driver_.getWebClient();
+        }
+
+        @Override
+        public WebDriver.Timeouts timeouts() {
+            return timeouts_;
+        }
+
+        @Override
+        public HtmlUnitWindow window() {
+            return driver_.getCurrentWindow();
+        }
+
+        private URL getRawUrl() {
+            return Optional.ofNullable(window().lastPage()).map(Page::getUrl).orElse(null);
+        }
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,11 +13,6 @@
  * limitations under the License.
  */
 package org.htmlunit.javascript.host.html;
-
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.HtmlEmbed;
@@ -36,16 +31,10 @@ import org.htmlunit.javascript.configuration.JsxSetter;
 public class HTMLEmbedElement extends HTMLElement {
 
     /**
-     * Creates an instance.
-     */
-    public HTMLEmbedElement() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @Override
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
         super.jsConstructor();
     }
@@ -54,7 +43,7 @@ public class HTMLEmbedElement extends HTMLElement {
      * Returns the value of the {@code align} property.
      * @return the value of the {@code align} property
      */
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxGetter
     public String getAlign() {
         return getAlign(true);
     }
@@ -63,7 +52,7 @@ public class HTMLEmbedElement extends HTMLElement {
      * Sets the value of the {@code align} property.
      * @param align the value of the {@code align} property
      */
-    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxSetter
     public void setAlign(final String align) {
         setAlign(align, false);
     }

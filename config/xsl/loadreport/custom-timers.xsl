@@ -41,11 +41,11 @@
 <xsl:param name="productVersion" />
 <xsl:param name="productUrl" />
 <xsl:param name="projectName" />
+<xsl:param name="scorecardPresent" />
 
 <xsl:template match="/testreport">
 
-<xsl:text disable-output-escaping="yes">&lt;!</xsl:text><xsl:text>DOCTYPE html</xsl:text><xsl:text disable-output-escaping="yes">&gt;&#13;</xsl:text>
-<html lang="en">    
+<html lang="en">
 <head>
     <xsl:call-template name="head">
         <xsl:with-param name="title" select="'XLT Report - Custom Timers'" />
@@ -55,7 +55,9 @@
 <body id="loadtestreport">
 <div id="container">
     <div id="content">
-        <xsl:call-template name="header" />
+        <xsl:call-template name="header">
+            <xsl:with-param name="scorecardPresent" select="$scorecardPresent" />
+        </xsl:call-template>
 
         <div id="data-content">
 

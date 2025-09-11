@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,8 @@ public class ParsingInvalidCssTest
             final HtmlPage page = wc.getPage(getClass().getResource(getClass().getSimpleName() + ".html"));
 
             final HtmlElement e = (HtmlElement) page.getByXPath("//h1").get(0);
-            final ComputedCSSStyleDeclaration styleDec = ((HTMLElement) e.getScriptableObject()).getCurrentStyle();
+            final HTMLElement scriptable = e.getScriptableObject();
+            final ComputedCSSStyleDeclaration styleDec = scriptable.getWindow().getComputedStyle(scriptable, null);
             Assert.assertEquals("url(\"someFile.jpg\") top right", styleDec.getStyleAttribute(Definition.BACKGROUND));
         }
     }

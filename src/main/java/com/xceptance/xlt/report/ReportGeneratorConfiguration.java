@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,6 @@ import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.report.ReportProvider;
 import com.xceptance.xlt.api.report.ReportProviderConfiguration;
 import com.xceptance.xlt.api.util.XltException;
-import com.xceptance.xlt.api.util.XltLogger;
 import com.xceptance.xlt.api.util.XltProperties;
 import com.xceptance.xlt.common.XltConstants;
 import com.xceptance.xlt.common.XltPropertyNames;
@@ -48,6 +47,26 @@ import com.xceptance.xlt.report.ReportGeneratorConfiguration.ChartCappingInfo.Ch
 import com.xceptance.xlt.report.ReportGeneratorConfiguration.ChartCappingInfo.ChartCappingMode;
 import com.xceptance.xlt.report.mergerules.InvalidRequestProcessingRuleException;
 import com.xceptance.xlt.report.mergerules.RequestProcessingRule;
+import com.xceptance.xlt.report.mergerules.RequestProcessingRule.AgentNameExcludePattern;
+import com.xceptance.xlt.report.mergerules.RequestProcessingRule.AgentNamePattern;
+import com.xceptance.xlt.report.mergerules.RequestProcessingRule.ContentTypeExcludePattern;
+import com.xceptance.xlt.report.mergerules.RequestProcessingRule.ContentTypePattern;
+import com.xceptance.xlt.report.mergerules.RequestProcessingRule.ContinueOnMatchAtId;
+import com.xceptance.xlt.report.mergerules.RequestProcessingRule.ContinueOnNoMatchAtId;
+import com.xceptance.xlt.report.mergerules.RequestProcessingRule.DropOnMatch;
+import com.xceptance.xlt.report.mergerules.RequestProcessingRule.HttpMethodExcludePattern;
+import com.xceptance.xlt.report.mergerules.RequestProcessingRule.HttpMethodPattern;
+import com.xceptance.xlt.report.mergerules.RequestProcessingRule.NewName;
+import com.xceptance.xlt.report.mergerules.RequestProcessingRule.RequestNameExcludePattern;
+import com.xceptance.xlt.report.mergerules.RequestProcessingRule.RequestNamePattern;
+import com.xceptance.xlt.report.mergerules.RequestProcessingRule.RunTimeRanges;
+import com.xceptance.xlt.report.mergerules.RequestProcessingRule.StatusCodeExcludePattern;
+import com.xceptance.xlt.report.mergerules.RequestProcessingRule.StatusCodePattern;
+import com.xceptance.xlt.report.mergerules.RequestProcessingRule.StopOnMatch;
+import com.xceptance.xlt.report.mergerules.RequestProcessingRule.TransactionNameExcludePattern;
+import com.xceptance.xlt.report.mergerules.RequestProcessingRule.TransactionNamePattern;
+import com.xceptance.xlt.report.mergerules.RequestProcessingRule.UrlExcludePattern;
+import com.xceptance.xlt.report.mergerules.RequestProcessingRule.UrlPattern;
 import com.xceptance.xlt.report.providers.RequestTableColorization;
 import com.xceptance.xlt.report.providers.RequestTableColorization.ColorizationRule;
 
@@ -79,14 +98,14 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
          */
         public enum ChartCappingMethod
         {
-         /** No capping (default). */
-         NONE,
+            /** No capping (default). */
+            NONE,
 
-         /** Cap at an absolute value. */
-         ABSOLUTE,
+            /** Cap at an absolute value. */
+            ABSOLUTE,
 
-         /** Cap at the n-fold of the average value. */
-         NFOLD_OF_AVERAGE
+            /** Cap at the n-fold of the average value. */
+            NFOLD_OF_AVERAGE
         };
 
         /**
@@ -94,11 +113,11 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
          */
         public enum ChartCappingMode
         {
-         /** Cap the chart at the capping value only if necessary. */
-         SMART,
+            /** Cap the chart at the capping value only if necessary. */
+            SMART,
 
-         /** Always cap the chart at the capping value even if the maximum values are below the capping value. */
-         ALWAYS
+            /** Always cap the chart at the capping value even if the maximum values are below the capping value. */
+            ALWAYS
         };
 
         /**
@@ -163,9 +182,13 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
     // Special settings for profiling and debugging
     private static final String PROP_PARSER_THREAD_COUNT = PROP_PREFIX + "parser.threads";
+
     private static final String PROP_READER_THREAD_COUNT = PROP_PREFIX + "reader.threads";
+
     private static final String PROP_THREAD_QUEUE_SIZE = PROP_PREFIX + "queue.bucketsize";
+
     private static final String PROP_THREAD_QUEUE_LENGTH = PROP_PREFIX + "queue.length";
+
     private static final String PROP_DATA_SAMPLE_FACTOR = PROP_PREFIX + "data.sampleFactor";
 
     private static final String PROP_TRANSFORMATIONS_PREFIX = PROP_PREFIX + "transformations.";
@@ -187,6 +210,16 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     private static final String PROP_CHART_CAPPING_MODE = PROP_CHARTS_PREFIX + "cappingMode";
 
     private static final String PROP_REMOVE_INDEXES_FROM_REQUEST_NAMES = PROP_PREFIX + "requests.removeIndexes";
+
+    private static final String PROP_SLOWEST_REQUESTS_PER_BUCKET = PROP_PREFIX + "slowestRequests.requestsPerBucket";
+
+    private static final String PROP_SLOWEST_REQUESTS_TOTAL = PROP_PREFIX + "slowestRequests.totalRequests";
+
+    private static final String PROP_SLOWEST_REQUESTS_MIN_RUNTIME = PROP_PREFIX + "slowestRequests.minRuntime";
+
+    private static final String PROP_SLOWEST_REQUESTS_MAX_RUNTIME = PROP_PREFIX + "slowestRequests.maxRuntime";
+    
+    private static final String PROP_CUSTOM_DATA_AGGREGATE_FILE_CONTENTS = PROP_PREFIX + "customDataLogs.aggregateFileContents";
 
     private final float chartsCompressionFactor;
 
@@ -211,6 +244,16 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     private final double[] runtimePercentiles;
 
     private final List<RequestTableColorization> requestTableColorization;
+
+    private final int slowestRequestsPerBucket;
+
+    private final int slowestRequestsTotal;
+
+    private final int slowestRequestsMinRuntime;
+
+    private final int slowestRequestsMaxRuntime;
+    
+    private final boolean aggregateCustomData;
 
     private final List<String> styleSheetFileNames;
 
@@ -243,8 +286,11 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     private boolean noAgentCharts;
 
     public final int readerThreadCount;
+
     public final int parserThreadCount;
+
     public final int threadQueueBucketSize;
+
     public final int threadQueueLength;
 
     public final int dataSampleFactor;
@@ -276,11 +322,11 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     private final int transactionErrorOverviewChartLimit;
 
     private final int errorDetailsChartLimit;
-    
+
     private final int directoryLimitPerError;
-    
+
     private final double directoryReplacementChance;
-    
+
     private final int stackTracesLimit;
 
     private final Map<Pattern, Double> apdexThresholdsByActionNamePattern = new HashMap<>();
@@ -321,7 +367,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     /**
      * Creates a new ReportGeneratorConfiguration object.
      *
-     * @param overridePropertyFileName
+     * @param overridePropertyFile
      *            Property file that overrides the basic one. This parameter might be <code>null</code> or empty
      * @param commandLineProperties
      *            Properties set on command line. This parameter might be <code>null</code>.
@@ -408,9 +454,9 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
         directoryLimitPerError = getIntProperty(XltPropertyNames.ReportGenerator.Errors.DIRECTORY_LIMIT_PER_ERROR, 10);
         directoryReplacementChance = getDoubleProperty(XltPropertyNames.ReportGenerator.Errors.DIRECTORY_REPLACEMENT_CHANCE, 0.1);
-        
+
         stackTracesLimit = getIntProperty(XltPropertyNames.ReportGenerator.Errors.STACKTRACES_LIMIT, 500);
-        
+
         // event settings
         groupEventsByTestCase = getBooleanProperty(PROP_PREFIX + "events.groupByTestCase", true);
         eventLimit = getIntProperty(PROP_PREFIX + "events.eventLimit", 100);
@@ -456,6 +502,13 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
         requestTableColorization = readRequestTableColorization(runtimeIntervalBoundaries, runtimePercentiles);
 
+        slowestRequestsPerBucket = getIntProperty(PROP_SLOWEST_REQUESTS_PER_BUCKET, 20);
+        slowestRequestsTotal = getIntProperty(PROP_SLOWEST_REQUESTS_TOTAL, 500);
+        slowestRequestsMinRuntime = getIntProperty(PROP_SLOWEST_REQUESTS_MIN_RUNTIME, 3_000);
+        slowestRequestsMaxRuntime = getIntProperty(PROP_SLOWEST_REQUESTS_MAX_RUNTIME, 600_000);
+        
+        aggregateCustomData = getBooleanProperty(PROP_CUSTOM_DATA_AGGREGATE_FILE_CONTENTS, true);
+
         // load the transformation configuration
         outputFileNames = new ArrayList<>();
         styleSheetFileNames = new ArrayList<>();
@@ -483,7 +536,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
             }
             sb.append("\n");
 
-            throw new RuntimeException(sb.toString());
+            throw new XltException(sb.toString());
         }
     }
 
@@ -757,6 +810,31 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
         return PROP_REQUESTS_TABLE_COLORIZE_DEFAULT;
     }
 
+    public int getSlowestRequestsPerBucket()
+    {
+        return slowestRequestsPerBucket;
+    }
+
+    public int getSlowestRequestsTotal()
+    {
+        return slowestRequestsTotal;
+    }
+
+    public int getSlowestRequestsMinRuntime()
+    {
+        return slowestRequestsMinRuntime;
+    }
+
+    public int getSlowestRequestsMaxRuntime()
+    {
+        return slowestRequestsMaxRuntime;
+    }
+    
+    public boolean aggregateCustomData()
+    {
+        return aggregateCustomData;
+    }
+
     public List<String> getStyleSheetFileNames()
     {
         return styleSheetFileNames;
@@ -791,7 +869,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     {
         return errorDetailsChartLimit;
     }
-    
+
     /**
      * The maximum number of directory hints remembered for a certain error (stack trace).
      *
@@ -801,9 +879,10 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     {
         return directoryLimitPerError;
     }
-    
+
     /**
-     * The chance to replace directory hints remembered for a certain error (stack trace) when the maximum number is reached.
+     * The chance to replace directory hints remembered for a certain error (stack trace) when the maximum number is
+     * reached.
      *
      * @return the chance to replace listed directory hints
      */
@@ -811,7 +890,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     {
         return directoryReplacementChance;
     }
-    
+
     /**
      * The maximum number of errors that will be saved complete with their stack trace.
      *
@@ -1001,7 +1080,6 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
         return eventLimit;
     }
 
-
     /**
      * Indicates whether or not to group events by test case.
      *
@@ -1011,7 +1089,6 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     {
         return eventMessageLimit;
     }
-
 
     /**
      * Returns whether to automatically remove any indexes from the request name (i.e. "HomePage.1.27" -> "HomePage").
@@ -1465,60 +1542,68 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
             final String basePropertyName = PROP_REQUEST_MERGE_RULES_PREFIX + i;
 
             // general stuff
-            final String newName = getStringProperty(basePropertyName + ".newName", "");
-            final boolean stopOnMatch = getBooleanProperty(basePropertyName + ".stopOnMatch", true);
-            final boolean dropOnMatch = getBooleanProperty(basePropertyName + ".dropOnMatch", false);
+            final var newName = new NewName(getStringProperty(basePropertyName + ".newName", ""));
+            final var stopOnMatch = new StopOnMatch(getBooleanProperty(basePropertyName + ".stopOnMatch", true));
+            final var dropOnMatch = new DropOnMatch(getBooleanProperty(basePropertyName + ".dropOnMatch", false));
+            final var continueOnMatchAtId = new ContinueOnMatchAtId(getIntProperty(basePropertyName + ".continueOnMatchAtId", i));
+            final var continueOnNoMatchAtId = new ContinueOnNoMatchAtId(getIntProperty(basePropertyName + ".continueOnNoMatchAtId", i));
 
             // include patterns
-            final String urlPattern = getStringProperty(basePropertyName + ".urlPattern", "");
-            final String contentTypePattern = getStringProperty(basePropertyName + ".contentTypePattern", "");
-            final String statusCodePattern = getStringProperty(basePropertyName + ".statusCodePattern", "");
-            final String requestNamePattern = getStringProperty(basePropertyName + ".namePattern", "");
-            final String agentNamePattern = getStringProperty(basePropertyName + ".agentPattern", "");
-            final String transactionNamePattern = getStringProperty(basePropertyName + ".transactionPattern", "");
-            final String methodPattern = getStringProperty(basePropertyName + ".methodPattern", "");
-            final String responseTimes = getStringProperty(basePropertyName + ".runTimeRanges", "");
+            final var urlPattern = new UrlPattern(getStringProperty(basePropertyName + ".urlPattern", ""));
+            final var contentTypePattern = new ContentTypePattern(getStringProperty(basePropertyName + ".contentTypePattern", ""));
+            final var statusCodePattern = new StatusCodePattern(getStringProperty(basePropertyName + ".statusCodePattern", ""));
+            final var requestNamePattern = new RequestNamePattern(getStringProperty(basePropertyName + ".namePattern", ""));
+            final var agentNamePattern = new AgentNamePattern(getStringProperty(basePropertyName + ".agentPattern", ""));
+            final var transactionNamePattern = new TransactionNamePattern(getStringProperty(basePropertyName + ".transactionPattern", ""));
+            final var httpMethodPattern = new HttpMethodPattern(getStringProperty(basePropertyName + ".methodPattern", ""));
+            final var runTimeRanges = new RunTimeRanges(getStringProperty(basePropertyName + ".runTimeRanges", ""));
 
             // exclude patterns
-            final String urlExcludePattern = getStringProperty(basePropertyName + ".urlPattern.exclude", "");
-            final String contentTypeExcludePattern = getStringProperty(basePropertyName + ".contentTypePattern.exclude", "");
-            final String statusCodeExcludePattern = getStringProperty(basePropertyName + ".statusCodePattern.exclude", "");
-            final String requestNameExcludePattern = getStringProperty(basePropertyName + ".namePattern.exclude", "");
-            final String agentNameExcludePattern = getStringProperty(basePropertyName + ".agentPattern.exclude", "");
-            final String transactionNameExcludePattern = getStringProperty(basePropertyName + ".transactionPattern.exclude", "");
-            final String methodExcludePattern = getStringProperty(basePropertyName + ".methodPattern.exclude", "");
+            final var urlExcludePattern = new UrlExcludePattern(getStringProperty(basePropertyName + ".urlPattern.exclude", ""));
+            final var contentTypeExcludePattern = new ContentTypeExcludePattern(getStringProperty(basePropertyName + ".contentTypePattern.exclude", ""));
+            final var statusCodeExcludePattern = new StatusCodeExcludePattern(getStringProperty(basePropertyName + ".statusCodePattern.exclude", ""));
+            final var requestNameExcludePattern = new RequestNameExcludePattern(getStringProperty(basePropertyName + ".namePattern.exclude", ""));
+            final var agentNameExcludePattern = new AgentNameExcludePattern(getStringProperty(basePropertyName + ".agentPattern.exclude", ""));
+            final var transactionNameExcludePattern = new TransactionNameExcludePattern(getStringProperty(basePropertyName + ".transactionPattern.exclude", ""));
+            final var httpMethodExcludePattern = new HttpMethodExcludePattern(getStringProperty(basePropertyName + ".methodPattern.exclude", ""));
 
             // ensure that either newName or dropOnMatch is set
-            if (StringUtils.isNotBlank(newName) == dropOnMatch)
+            if (StringUtils.isNotBlank(newName.value()) == dropOnMatch.value())
             {
-                throw new RuntimeException(String.format("Either specify property '%s' or set property '%s' to true",
-                                                         basePropertyName + ".newName", basePropertyName + ".dropOnMatch"));
+                throw new XltException(String.format("Either specify property '%s' or set property '%s' to true",
+                                                     basePropertyName + ".newName", basePropertyName + ".dropOnMatch"));
             }
 
             // ensure that dropOnMatch and stopOnMatch are not contradicting
-            if (dropOnMatch && !stopOnMatch)
+            if (dropOnMatch.value() && !stopOnMatch.value())
             {
-                throw new RuntimeException(String.format("If property '%s' is true, property '%s' cannot be false",
-                                                         basePropertyName + ".dropOnMatch", basePropertyName + ".stopOnMatch"));
+                throw new XltException(String.format("If property '%s' is true, property '%s' cannot be false",
+                                                     basePropertyName + ".dropOnMatch", basePropertyName + ".stopOnMatch"));
             }
 
             // create and validate the rules
             try
             {
-                final RequestProcessingRule mergeRule = new RequestProcessingRule(newName, requestNamePattern, urlPattern,
-                                                                                  contentTypePattern, statusCodePattern, agentNamePattern,
-                                                                                  transactionNamePattern, methodPattern, responseTimes,
-                                                                                  stopOnMatch, requestNameExcludePattern, urlExcludePattern,
+                final RequestProcessingRule mergeRule = new RequestProcessingRule(i, 
+                                                                                  newName, 
+                                                                                  requestNamePattern, urlPattern,
+                                                                                  contentTypePattern, statusCodePattern, 
+                                                                                  agentNamePattern, transactionNamePattern, 
+                                                                                  httpMethodPattern, runTimeRanges,
+                                                                                  stopOnMatch, 
+                                                                                  requestNameExcludePattern, urlExcludePattern,
                                                                                   contentTypeExcludePattern, statusCodeExcludePattern,
                                                                                   agentNameExcludePattern, transactionNameExcludePattern,
-                                                                                  methodExcludePattern, dropOnMatch);
+                                                                                  httpMethodExcludePattern, 
+                                                                                  continueOnMatchAtId,
+                                                                                  continueOnNoMatchAtId,
+                                                                                  dropOnMatch);
                 requestProcessingRules.add(mergeRule);
             }
             catch (final InvalidRequestProcessingRuleException imre)
             {
                 // Log it and continue with next rule.
                 final String errMsg = "Request processing rule '" + basePropertyName + "' is invalid. " + imre.getMessage();
-                XltLogger.reportLogger.error(errMsg, imre);
                 System.err.println(errMsg);
                 // remember that we encountered an invalid merge rule
                 invalidRulePresent = true;
@@ -1527,7 +1612,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
         if (invalidRulePresent)
         {
-            throw new RuntimeException("Please check your configuration. At least one request processing rule is invalid and needs to be fixed.");
+            throw new XltException("Please check your configuration. At least one request processing rule is invalid.");
         }
 
         return requestProcessingRules;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 package com.xceptance.xlt.util;
 
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -28,6 +30,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileSystemException;
 
@@ -62,14 +65,13 @@ import com.xceptance.xlt.engine.util.PropertyIncludeResolver.PropertyIncludeResu
 public class XltPropertiesImpl extends XltProperties
 {
     /**
-     * The properties object holding the current configuration. This is a merged version
-     * of the buckets.
+     * The properties object holding the current configuration. This is a merged version of the buckets.
      */
     private final VarSubstitutionSupportedProperties mergedProperties = new VarSubstitutionSupportedProperties();
 
     /**
-     * Holding all properties by source, so we can later expose this to callers to add properties
-     * at a certain position if needed. This also holds the order of the properties
+     * Holding all properties by source, so we can later expose this to callers to add properties at a certain position
+     * if needed. This also holds the order of the properties
      */
     private final LinkedHashMap<String, DetailedProperties> propertyBuckets = new LinkedHashMap<>();
 
@@ -79,8 +81,8 @@ public class XltPropertiesImpl extends XltProperties
     private final LinkedHashMap<String, Properties> cachedPropertyBuckets = new LinkedHashMap<>();
 
     /**
-     * The start time of the test. It will be set when the singleton instance is created.
-     * This is reset when you call reset during testing.
+     * The start time of the test. It will be set when the singleton instance is created. This is reset when you call
+     * reset during testing.
      */
     private long startTime = -1L;
 
@@ -88,6 +90,16 @@ public class XltPropertiesImpl extends XltProperties
      * The XLT version string.
      */
     private String version;
+
+    /**
+     * The home directory.
+     */
+    private Path homeDirectory;
+
+    /**
+     * The config directory.
+     */
+    private Path configDirectory;
 
     // ********************************************************************
     /**
@@ -115,11 +127,10 @@ public class XltPropertiesImpl extends XltProperties
      * set at XltExecutionContext. This method uses a thread-local gate to detect and avoid recursive attempts to create
      * an instance.
      *
-     * @param ignoreMissingIncludes
+     * @param ignoreMissing
      *            whether or not missing include property files should be ignored
      * @param staySilent
      *            shall we complain about missing things or stay silent, useful for startup
-     *
      * @return new instance of XltPropertiesImpl or {@code null} if this method is called recursively
      */
     public static XltPropertiesImpl createInstance(final boolean ignoreMissing, boolean staySilent)
@@ -138,8 +149,8 @@ public class XltPropertiesImpl extends XltProperties
     }
 
     /**
-     * Creates an XltProperties instance using the given parameters. It is absolutely legal to create
-     * your very own instance if needed.
+     * Creates an XltProperties instance using the given parameters. It is absolutely legal to create your very own
+     * instance if needed.
      *
      * @param homeDirectory
      *            the home directory
@@ -150,8 +161,8 @@ public class XltPropertiesImpl extends XltProperties
      * @param staySilent
      *            shall we complain about missing things or stay silent, useful for startup
      */
-    public XltPropertiesImpl(final FileObject homeDirectory, final FileObject configDirectory,
-                             final boolean ignoreMissingIncludes, final boolean staySilent)
+    public XltPropertiesImpl(final FileObject homeDirectory, final FileObject configDirectory, final boolean ignoreMissingIncludes,
+                             final boolean staySilent)
     {
         this(homeDirectory, configDirectory,
              (System.getenv("XLT_HOME") == null && System.getProperty(XltConstants.XLT_PACKAGE_PATH + ".home") == null),
@@ -159,38 +170,43 @@ public class XltPropertiesImpl extends XltProperties
     }
 
     /**
-     * Creates an XltProperties instance using the given parameters. It is absolutely legal to create
-     * your very own instance if needed.
+     * Creates an XltProperties instance using the given parameters. It is absolutely legal to create your very own
+     * instance if needed.
      *
      * @param homeDirectory
      *            the home directory
      * @param configDirectory
      *            the configuration directory
      * @param devMode
-     *          true if we are running in dev mode, mainly needed when we bring up the properties
-     *          as a standalone instance
+     *            true if we are running in dev mode, mainly needed when we bring up the properties as a standalone
+     *            instance
      * @param ignoreMissingIncludes
      *            whether to ignore any missing property file include
      * @param staySilent
      *            shall we complain about missing things or stay silent, useful for startup
      */
-    public XltPropertiesImpl(final FileObject homeDirectory, final FileObject configDirectory,
-                             final boolean devMode, final boolean ignoreMissingIncludes, final boolean staySilent)
+    public XltPropertiesImpl(final FileObject homeDirectory, final FileObject configDirectory, final boolean devMode,
+                             final boolean ignoreMissingIncludes, final boolean staySilent)
     {
         this.devMode = devMode;
 
         initialize(homeDirectory, configDirectory, ignoreMissingIncludes, staySilent);
 
         // we work with fake data here to avoid pulling up SessionImpl
-        this.collectAdditonalRequestData = getProperty("XltPropertiesImpl", "XLTNoSuchUser-00000", XltConstants.PROP_COLLECT_ADDITIONAL_REQUEST_DATA).map(Boolean::valueOf).orElse(false);
-        this.collectUsedIpAddress = getProperty("XltPropertiesImpl", "XLTNoSuchUser-00000", XltConstants.PROP_COLLECT_USED_IP_ADDRESS).map(Boolean::valueOf).orElse(false);
-        this.removeUserInfoFromRequestUrl = getProperty("XltPropertiesImpl", "XLTNoSuchUser-00000", XltConstants.PROP_REMOVE_USERINFO_FROM_REQUEST_URL).map(Boolean::valueOf).orElse(true);
+        this.collectAdditonalRequestData = getProperty("XltPropertiesImpl", "XLTNoSuchUser-00000",
+                                                       XltConstants.PROP_COLLECT_ADDITIONAL_REQUEST_DATA).map(Boolean::valueOf)
+                                                                                                         .orElse(false);
+        this.collectUsedIpAddress = getProperty("XltPropertiesImpl", "XLTNoSuchUser-00000",
+                                                XltConstants.PROP_COLLECT_USED_IP_ADDRESS).map(Boolean::valueOf).orElse(false);
+        this.removeUserInfoFromRequestUrl = getProperty("XltPropertiesImpl", "XLTNoSuchUser-00000",
+                                                        XltConstants.PROP_REMOVE_USERINFO_FROM_REQUEST_URL).map(Boolean::valueOf)
+                                                                                                           .orElse(true);
 
     }
 
     /**
-     * Creates an empty XltProperties. This is useful for testing as well as when we don't want to load anything but need
-     * the logic of the property lookup. Attention: This does not provide any bucket data or source data.
+     * Creates an empty XltProperties. This is useful for testing as well as when we don't want to load anything but
+     * need the logic of the property lookup. Attention: This does not provide any bucket data or source data.
      */
     public XltPropertiesImpl()
     {
@@ -198,10 +214,11 @@ public class XltPropertiesImpl extends XltProperties
     }
 
     /**
-     * Creates an empty XltProperties. This is useful for testing as well as when we don't want to load anything but need
-     * the logic of the property lookup. Attention: This does not provide any bucket data or source data.
+     * Creates an empty XltProperties. This is useful for testing as well as when we don't want to load anything but
+     * need the logic of the property lookup. Attention: This does not provide any bucket data or source data.
      *
-     * @param properties start a new instance with this set of properties
+     * @param properties
+     *            start a new instance with this set of properties
      */
     public XltPropertiesImpl(final Properties properties)
     {
@@ -209,13 +226,17 @@ public class XltPropertiesImpl extends XltProperties
     }
 
     /**
-     * Creates an empty XltProperties. This is useful for testing as well as when we don't want to load anything but need
-     * the logic of the property lookup. Attention: This does not provide any bucket data or source data.
+     * Creates an empty XltProperties. This is useful for testing as well as when we don't want to load anything but
+     * need the logic of the property lookup. Attention: This does not provide any bucket data or source data.
      *
-     * @param properties start a new instance with this set of properties as optional for more flexible handling
+     * @param properties
+     *            start a new instance with this set of properties as optional for more flexible handling
      */
     public XltPropertiesImpl(final Optional<Properties> properties)
     {
+        this.homeDirectory = XltExecutionContext.getCurrent().getTestSuiteHomeDir().getPath();
+        this.configDirectory = XltExecutionContext.getCurrent().getTestSuiteConfigDir().getPath();
+
         // get version and start time
         this.devMode = (System.getenv("XLT_HOME") == null && System.getProperty(XltConstants.XLT_PACKAGE_PATH + ".home") == null);
         this.version = ProductInformation.getProductInformation().getVersion();
@@ -229,10 +250,11 @@ public class XltPropertiesImpl extends XltProperties
     }
 
     /**
-     * Initializes the instance from scratch, ensure that only one is doing it. That should already been taken care
-     * of higher in the chain, just for safety. Won't do a thing if this is the same thread.
+     * Initializes the instance from scratch, ensure that only one is doing it. That should already been taken care of
+     * higher in the chain, just for safety. Won't do a thing if this is the same thread.
      */
-    private synchronized void initialize(final FileObject homeDirectory, final FileObject configDirectory, boolean ignoreMissingIncludes, boolean staySilent)
+    private synchronized void initialize(final FileObject homeDirectory, final FileObject configDirectory, boolean ignoreMissingIncludes,
+                                         boolean staySilent)
     {
         clear();
 
@@ -240,6 +262,9 @@ public class XltPropertiesImpl extends XltProperties
         var hd = homeDirectory == null ? XltExecutionContext.getCurrent().getTestSuiteHomeDir() : homeDirectory;
         var cd = configDirectory == null ? XltExecutionContext.getCurrent().getTestSuiteConfigDir() : configDirectory;
         loadProperties(hd, cd, ignoreMissingIncludes, staySilent);
+
+        this.homeDirectory = hd.getPath();
+        this.configDirectory = cd.getPath();
 
         // get version and start time
         version = ProductInformation.getProductInformation().getVersion();
@@ -257,25 +282,32 @@ public class XltPropertiesImpl extends XltProperties
      * files includes via &quot;xlt.com.xceptance.loadtest.include.NUMBER&quot; properties are loaded (see ticket 1650
      * for details).
      * <p>
-     * If in development mode, dev.properties is loaded. If secret.properties exists, it is loaded last and its property keys
-     * are transformed from key to secret.key if they are not yet named secret.
+     * If in development mode, dev.properties is loaded. If secret.properties exists, it is loaded last and its property
+     * keys are transformed from key to secret.key if they are not yet named secret.
      * <p>
      * Finally, the Java system properties are loaded because they are the last instances where some property value can
      * be overridden.
      * </p>
      *
-     * @param homeDirectory where is our home
-     * @param configDirectory what is the config dir
-     * @param ignoreMissingIncludes shall we ignore missing includes
-     * @param staySilent shall we complain about missing things or stay silent, useful for startup
+     * @param homeDirectory
+     *            where is our home
+     * @param configDirectory
+     *            what is the config dir
+     * @param ignoreMissingIncludes
+     *            shall we ignore missing includes
+     * @param staySilent
+     *            shall we complain about missing things or stay silent, useful for startup
      */
-    private void loadProperties(final FileObject homeDirectory, final FileObject configDirectory, boolean ignoreMissingIncludes, boolean staySilent)
+    private void loadProperties(final FileObject homeDirectory, final FileObject configDirectory, boolean ignoreMissingIncludes,
+                                boolean staySilent)
     {
         /*
          * Load default.properties and project, this is not longer optional
          */
-        process(homeDirectory, configDirectory, XltConstants.DEFAULT_PROPERTY_FILENAME, XltProperties.DEFAULT_PROPERTIES, true, ignoreMissingIncludes, s -> s);
-        process(homeDirectory, configDirectory, XltConstants.PROJECT_PROPERTY_FILENAME, XltProperties.PROJECT_PROPERTIES, true, ignoreMissingIncludes, s -> s);
+        process(homeDirectory, configDirectory, XltConstants.DEFAULT_PROPERTY_FILENAME, XltProperties.DEFAULT_PROPERTIES, true,
+                ignoreMissingIncludes, s -> s);
+        process(homeDirectory, configDirectory, XltConstants.PROJECT_PROPERTY_FILENAME, XltProperties.PROJECT_PROPERTIES, true,
+                ignoreMissingIncludes, s -> s);
 
         // apply system props temporary here in case someone has the test props defined there
         final Properties temp = new Properties();
@@ -292,7 +324,8 @@ public class XltPropertiesImpl extends XltProperties
         if (testPropertiesFile != null)
         {
             // if we specified it, we have to be able to load it !!!
-            process(homeDirectory, configDirectory, testPropertiesFile, XltProperties.TEST_PROPERTIES, false, ignoreMissingIncludes, s -> s);
+            process(homeDirectory, configDirectory, testPropertiesFile, XltProperties.TEST_PROPERTIES, false, ignoreMissingIncludes,
+                    s -> s);
         }
         else
         {
@@ -306,16 +339,17 @@ public class XltPropertiesImpl extends XltProperties
         // guess whether we are in development mode, try to load it when in dev mode, loading is optional
         if (this.devMode)
         {
-            process(homeDirectory, configDirectory, XltConstants.DEV_PROPERTY_FILENAME, XltProperties.DEVELOPMENT_PROPERTIES, true,ignoreMissingIncludes,  s -> s);
+            process(homeDirectory, configDirectory, XltConstants.DEV_PROPERTY_FILENAME, XltProperties.DEVELOPMENT_PROPERTIES, true,
+                    ignoreMissingIncludes, s -> s);
         }
 
         // ok, finally put the secrets into the mix
 
         // load the secrets and any includes they might have, secrets get a key transformation
-        process(homeDirectory, configDirectory, XltConstants.SECRET_PROPERTIES_FILENAME, XltProperties.SECRET_PROPERTIES, true, ignoreMissingIncludes, s ->
-        {
-            return s.startsWith(XltConstants.SECRET_PREFIX) ?  s : XltConstants.SECRET_PREFIX + s;
-        });
+        process(homeDirectory, configDirectory, XltConstants.SECRET_PROPERTIES_FILENAME, XltProperties.SECRET_PROPERTIES, true,
+                ignoreMissingIncludes, s -> {
+                    return s.startsWith(XltConstants.SECRET_PREFIX) ? s : XltConstants.SECRET_PREFIX + s;
+                });
 
         // system properties always overwrite properties from files
         this.mergedProperties.putAll(System.getProperties());
@@ -331,23 +365,27 @@ public class XltPropertiesImpl extends XltProperties
     }
 
     /**
-     * The handling of a single property load, includes will be handled automatically. This fully
-     * handles the loading including and update of the merged properties. Hence after this call, the merged properties will have
-     * mostly a new state.
+     * The handling of a single property load, includes will be handled automatically. This fully handles the loading
+     * including and update of the merged properties. Hence after this call, the merged properties will have mostly a
+     * new state.
      *
-     * @param homeDirectory the context in which we can read files without complaining
-     * @param configDirectory where is the file located
-     * @param fileName what is the file we want to load from, this is relative to config
-     * @param bucketName for keeping the data by file name sorted for later sharing with others for more dedicated processing
-     * @param ignoreMissing shall we just continue when a file is missing?
-     * @param ignoreMissingIncludes shall we be forgiving when an incldue is missing?
-     * @param keyTransformer a function applied to the later loading to be able to modify keys of properties if needed
+     * @param homeDirectory
+     *            the context in which we can read files without complaining
+     * @param configDirectory
+     *            where is the file located
+     * @param fileName
+     *            what is the file we want to load from, this is relative to config
+     * @param bucketName
+     *            for keeping the data by file name sorted for later sharing with others for more dedicated processing
+     * @param ignoreMissing
+     *            shall we just continue when a file is missing?
+     * @param ignoreMissingIncludes
+     *            shall we be forgiving when an incldue is missing?
+     * @param keyTransformer
+     *            a function applied to the later loading to be able to modify keys of properties if needed
      */
-    private void process(final FileObject homeDirectory, final FileObject configDirectory,
-                         final String fileName, final String bucketName,
-                         boolean ignoreMissing,
-                         boolean ignoreMissingIncludes,
-                         final Function<String, String> keyTransformer)
+    private void process(final FileObject homeDirectory, final FileObject configDirectory, final String fileName, final String bucketName,
+                         boolean ignoreMissing, boolean ignoreMissingIncludes, final Function<String, String> keyTransformer)
     {
         // get us the file
         final Optional<PropertyInclude> propFile = getFile(configDirectory, fileName);
@@ -385,7 +423,8 @@ public class XltPropertiesImpl extends XltProperties
         }
 
         // resolve includes but don't load them, just check
-        List<PropertyIncludeResult> includeResult = PropertyIncludeResolver.resolve(homeDirectory, configDirectory, List.of(propFile.get()));
+        List<PropertyIncludeResult> includeResult = PropertyIncludeResolver.resolve(homeDirectory, configDirectory,
+                                                                                    List.of(propFile.get()));
 
         // warn or fail, filter out what we don't want
         includeResult = verifyFiles(includeResult, ignoreMissing, ignoreMissingIncludes);
@@ -400,9 +439,8 @@ public class XltPropertiesImpl extends XltProperties
             // load all properties
             if (XltLogger.runTimeLogger.isDebugEnabled())
             {
-                var msg = firstName.isEmpty() ?
-                                               String.format("Loading from property file: %s ...", include.name) :
-                                                   String.format("Loading from include file %s of %s ...", include.name, firstName.get());
+                var msg = firstName.isEmpty() ? String.format("Loading from property file: %s ...", include.name)
+                                              : String.format("Loading from include file %s of %s ...", include.name, firstName.get());
 
                 XltLogger.runTimeLogger.debug(msg);
 
@@ -442,18 +480,22 @@ public class XltPropertiesImpl extends XltProperties
     }
 
     /**
-     * Just check that the files have the right state and break if needed. Will filter out everything not correct, so
-     * we can rely later on a clean list.
+     * Just check that the files have the right state and break if needed. Will filter out everything not correct, so we
+     * can rely later on a clean list.
      *
-     * @param files a list of loaded files
-     * @param ignoreMissing shall we ignore files that are not available, ignoreMissing is a general handle for all missing files, if this is false, we can still ignore missing includes
-     * @param ignoreMissingIncludes shall we ignore missing includes?
-     *
+     * @param files
+     *            a list of loaded files
+     * @param ignoreMissing
+     *            shall we ignore files that are not available, ignoreMissing is a general handle for all missing files,
+     *            if this is false, we can still ignore missing includes
+     * @param ignoreMissingIncludes
+     *            shall we ignore missing includes?
      * @return an updated list
-     *
-     * @exception will raise {@link PropertiesConfigurationException} if something is wrong, will also write an error log entry
+     * @exception PropertiesConfigurationException
+     *                if something is wrong, will also write an error log entry
      */
-    private List<PropertyIncludeResult> verifyFiles(final List<PropertyIncludeResult> files, final boolean ignoreMissing, final boolean ignoreMissingIncludes)
+    private List<PropertyIncludeResult> verifyFiles(final List<PropertyIncludeResult> files, final boolean ignoreMissing,
+                                                    final boolean ignoreMissingIncludes)
     {
         // clean new list
         final List<PropertyIncludeResult> newFiles = new ArrayList<>();
@@ -473,14 +515,16 @@ public class XltPropertiesImpl extends XltProperties
             {
                 if (ignoreMissingIncludes && file.isInclude)
                 {
-                    var msg = String.format("File %s has been seen multiple times when resolving properties, this can indicate a cyclic include pattern but also just be a repeated reference. Ignoring for the moment.", file.name);
+                    var msg = String.format("File %s has been seen multiple times when resolving properties, this can indicate a cyclic include pattern but also just be a repeated reference. Ignoring for the moment.",
+                                            file.name);
                     XltLogger.runTimeLogger.warn(msg);
 
                     continue;
                 }
                 else
                 {
-                    var msg = String.format("File %s has been seen multiple times when resolving properties, this can indicate a cyclic include pattern but also just be a repeated reference.", file.name);
+                    var msg = String.format("File %s has been seen multiple times when resolving properties, this can indicate a cyclic include pattern but also just be a repeated reference.",
+                                            file.name);
                     XltLogger.runTimeLogger.error(msg);
 
                     // abort
@@ -529,7 +573,6 @@ public class XltPropertiesImpl extends XltProperties
      *            the configuration directory to use
      * @param fileName
      *            the name of the file for which to create a file object
-     *
      * @return resolved file object or empty optional
      */
     private Optional<PropertyInclude> getFile(final FileObject configDir, final String fileName)
@@ -549,8 +592,8 @@ public class XltPropertiesImpl extends XltProperties
     }
 
     /**
-     * Logs the properties as a sorted list. This is public to allow to log it when needed again and to
-     * aid testing. Secret properties will be masked.
+     * Logs the properties as a sorted list. This is public to allow to log it when needed again and to aid testing.
+     * Secret properties will be masked.
      *
      * @return returns the properties as formatted object of lines
      */
@@ -560,8 +603,8 @@ public class XltPropertiesImpl extends XltProperties
     }
 
     /**
-     * Logs the properties as a sorted list. This is public to allow to log it when needed again and to
-     * aid testing. Secret properties will be masked.
+     * Logs the properties as a sorted list. This is public to allow to log it when needed again and to aid testing.
+     * Secret properties will be masked.
      *
      * @return a dump of the selected properties
      */
@@ -572,8 +615,7 @@ public class XltPropertiesImpl extends XltProperties
         {
             // mask anything that is a secret (source does not matter)
             final String k = (String) entry.getKey();
-            final Object v = k.startsWith(XltConstants.SECRET_PREFIX) ?
-                                                                       XltConstants.MASK_PROPERTIES_HIDETEXT : entry.getValue();
+            final Object v = k.startsWith(XltConstants.SECRET_PREFIX) ? XltConstants.MASK_PROPERTIES_HIDETEXT : entry.getValue();
 
             result.add(k + " = " + v);
         }
@@ -633,7 +675,6 @@ public class XltPropertiesImpl extends XltProperties
      *
      * @param key
      *            the property key.
-     *
      */
     @Override
     public boolean containsKey(final String key)
@@ -674,10 +715,10 @@ public class XltPropertiesImpl extends XltProperties
     }
 
     /**
-     * Convenience method. Calls {@link #getPropertiesForKey(String, Properties)} with the member properties of this
-     * instance.
+     * Convenience method. Calls {@link PropertiesUtils#getPropertiesForKey(String, Properties)} with the member
+     * properties of this instance.
      *
-     * @see #getPropertiesForKey(String, Properties)
+     * @see PropertiesUtils#getPropertiesForKey(String, Properties)
      */
     @Override
     public Map<String, String> getPropertiesForKey(final String domainKey)
@@ -696,7 +737,8 @@ public class XltPropertiesImpl extends XltProperties
      * <li>the simple key, e.g. "password"</li>
      * </ol>
      *
-     * @param session the session to get utility data from
+     * @param session
+     *            the session to get utility data from
      * @param bareKey
      *            the bare property key, i.e. without any prefixes
      * @return the first key that produces a result
@@ -719,17 +761,19 @@ public class XltPropertiesImpl extends XltProperties
 
     private String getNonPrefixedKey(final String bareKey)
     {
-        return bareKey.startsWith(XltConstants.SECRET_PREFIX) ? bareKey.substring(XltConstants.SECRET_PREFIX.length())
-                                                              : bareKey;
+        return bareKey.startsWith(XltConstants.SECRET_PREFIX) ? bareKey.substring(XltConstants.SECRET_PREFIX.length()) : bareKey;
     }
 
     /**
-     * Internal version of {@link #getEffectiveKey(Session, String)} to avoid session usage. Comes in handy in some areas
+     * Internal version of {@link #getEffectiveKey(Session, String)} to avoid session usage. Comes in handy in some
+     * areas
      *
-     * @param testCaseClassName the test class'es name
-     * @param userName the session user name
-     * @param bareKey the bare property key, i.e. without any prefixes
-
+     * @param testCaseClassName
+     *            the test class'es name
+     * @param userName
+     *            the session user name
+     * @param bareKey
+     *            the bare property key, i.e. without any prefixes
      * @return the first key that produces a result
      */
     @Override
@@ -776,6 +820,7 @@ public class XltPropertiesImpl extends XltProperties
 
     /**
      * Part of the previous code, put here to make it reusable
+     *
      * @param nonPrefixedKey
      * @param bareKey
      * @return
@@ -811,8 +856,7 @@ public class XltPropertiesImpl extends XltProperties
     }
 
     /**
-     * Looks up a key in the properties without a sessin context but still with paying
-     * attention to secure keys.
+     * Looks up a key in the properties without a sessin context but still with paying attention to secure keys.
      *
      * @param key
      *            the property key
@@ -1014,6 +1058,36 @@ public class XltPropertiesImpl extends XltProperties
     }
 
     /**
+     * Returns the test suite's config directory.
+     *
+     * @return the config directory path
+     */
+    @Override
+    public Path getConfigDirectory()
+    {
+        return configDirectory;
+    }
+
+    /**
+     * Returns the test suite's data directory.
+     *
+     * @return the data directory path
+     */
+    @Override
+    public Path getDataDirectory()
+    {
+        final String propDir = getProperty(XltConstants.PROP_DATA_DIRECTORY);
+        final Path path = Paths.get(StringUtils.isBlank(propDir) ? XltConstants.DEFAULT_DATA_DIR_PATH : propDir);
+
+        if (!path.isAbsolute())
+        {
+            return homeDirectory.resolve(path);
+        }
+
+        return path;
+    }
+
+    /**
      * Removes the property with the given key from the internal properties store.
      *
      * @param key
@@ -1029,7 +1103,6 @@ public class XltPropertiesImpl extends XltProperties
 
     /**
      * Method for changing the properties during runtime. Can be called multiple times to add additional properties.
-     *
      *
      * @param newProperties
      *            complete new set of properties, will be added to existing properties and overwrites already defined
@@ -1111,8 +1184,8 @@ public class XltPropertiesImpl extends XltProperties
         }
 
         /**
-         * Allows to apply a transformation of the key before storing. It is important that the key is a String, otherwise
-         * we will fail.
+         * Allows to apply a transformation of the key before storing. It is important that the key is a String,
+         * otherwise we will fail.
          */
         public void putAll(final Map<? extends Object, ? extends Object> map, final Function<String, String> keyTransformer)
         {
@@ -1134,7 +1207,9 @@ public class XltPropertiesImpl extends XltProperties
          * Relative name to the config directory
          */
         public final String relativeName;
+
         public final Properties properties;
+
         public final List<PropertyIncludeResult> propertyChain;
 
         public DetailedProperties(final String relativeName, final Properties properties, final List<PropertyIncludeResult> propertyChain)
@@ -1151,9 +1226,31 @@ public class XltPropertiesImpl extends XltProperties
         return cachedPropertyBuckets;
     }
 
-    public FileObject getTestPropertyFile()
+    /**
+     * Returns the resolved virtual file object of the referenced test properties file.
+     *
+     * @param fallbackToProjectProperties
+     *            whether to fall back to project properties file in case no test properties file is referenced
+     * @return virtual file object of referenced test properties file (or project properties if no test properties file
+     *         is referenced and project properties should not be used as fall-back) or {@code null}
+     */
+    public FileObject getTestPropertyFile(final boolean fallbackToProjectProperties)
     {
-        return this.propertyBuckets.get(XltProperties.TEST_PROPERTIES).propertyChain.get(0).file;
+        DetailedProperties bucket = this.propertyBuckets.get(XltProperties.TEST_PROPERTIES);
+        if (bucket != null && !bucket.propertyChain.isEmpty())
+        {
+            return bucket.propertyChain.get(0).file;
+        }
+        if (fallbackToProjectProperties)
+        {
+            bucket = this.propertyBuckets.get(XltProperties.PROJECT_PROPERTIES);
+            if (bucket != null && !bucket.propertyChain.isEmpty())
+            {
+                return bucket.propertyChain.get(0).file;
+            }
+
+        }
+        return null;
     }
 
     /**
@@ -1180,8 +1277,7 @@ public class XltPropertiesImpl extends XltProperties
     public List<FileObject> getUsedPropertyFiles()
     {
         final List<FileObject> r = new ArrayList<>();
-        propertyBuckets.values().forEach(p ->
-        {
+        propertyBuckets.values().forEach(p -> {
             p.propertyChain.forEach(i -> r.add(i.file));
         });
 
@@ -1192,17 +1288,14 @@ public class XltPropertiesImpl extends XltProperties
      * Returns the relative paths of the resolved property files. This means the property files which are there by
      * default and the property files transitively included by &quot;includes&quot; in these property files. However
      * note that some of the default files are optional (as &quot;dev.properties&quot;) and the returned list only
-     * contains existing files. For internal use only!
-     *
-     * The relative path is meant to  be relative to config as base.
+     * contains existing files. For internal use only! The relative path is meant to be relative to config as base.
      *
      * @return the resolved property files as relative name
      */
     public List<String> getUsedPropertyFilesByRelativeName()
     {
         final List<String> r = new ArrayList<>();
-        propertyBuckets.values().forEach(p ->
-        {
+        propertyBuckets.values().forEach(p -> {
             p.propertyChain.forEach(i -> r.add(i.name));
         });
 

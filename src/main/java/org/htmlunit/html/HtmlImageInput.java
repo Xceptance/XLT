@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 package org.htmlunit.html;
 
 import static org.htmlunit.BrowserVersionFeatures.HTMLIMAGE_NAME_VALUE_PARAMS;
-import static org.htmlunit.BrowserVersionFeatures.JS_IMAGE_COMPLETE_RETURNS_TRUE_FOR_NO_REQUEST;
 
 import java.io.File;
 import java.io.IOException;
@@ -184,7 +183,7 @@ public class HtmlImageInput extends HtmlInput implements LabelableElement {
     }
 
     /**
-     * {@inheritDoc} Also sets the value to the new default value, just like IE.
+     * {@inheritDoc} Also sets the value to the new default value.
      * @see SubmittableElement#setDefaultValue(String)
      */
     @Override
@@ -221,7 +220,7 @@ public class HtmlImageInput extends HtmlInput implements LabelableElement {
     private void downloadImageIfNeeded() throws IOException {
         if (!downloaded_) {
             final String src = getSrc();
-            if (!"".equals(src)) {
+            if (!org.htmlunit.util.StringUtils.isEmptyString(src)) {
                 final HtmlPage page = (HtmlPage) getPage();
                 final WebClient webClient = page.getWebClient();
 
@@ -229,12 +228,11 @@ public class HtmlImageInput extends HtmlInput implements LabelableElement {
                 final WebRequest request = new WebRequest(new URL(src), browser.getImgAcceptHeader(),
                                                                 browser.getAcceptEncodingHeader());
                 request.setCharset(page.getCharset());
-                request.setRefererlHeader(page.getUrl());
+                request.setRefererHeader(page.getUrl());
                 imageWebResponse_ = webClient.loadWebResponse(request);
             }
 
-            downloaded_ = hasFeature(JS_IMAGE_COMPLETE_RETURNS_TRUE_FOR_NO_REQUEST)
-                    || (imageWebResponse_ != null && imageWebResponse_.getContentType().contains("image"));
+            downloaded_ = true;
         }
     }
 
@@ -251,13 +249,5 @@ public class HtmlImageInput extends HtmlInput implements LabelableElement {
                 IOUtils.copy(inputStream, fos);
             }
         }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected boolean propagateClickStateUpdateToParent() {
-        return true;
     }
 }

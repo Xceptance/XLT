@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,7 @@
 package org.htmlunit.javascript.host.html;
 
 import static org.htmlunit.BrowserVersionFeatures.HTMLBASEFONT_END_TAG_FORBIDDEN;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
-import org.htmlunit.BrowserVersion;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.html.HtmlSpan;
 import org.htmlunit.javascript.configuration.JsxClass;
@@ -40,16 +35,10 @@ public class HTMLSpanElement extends HTMLElement {
     private boolean endTagForbidden_;
 
     /**
-     * Creates an instance.
-     */
-    public HTMLSpanElement() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @Override
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
         super.jsConstructor();
     }
@@ -61,16 +50,8 @@ public class HTMLSpanElement extends HTMLElement {
     @Override
     public void setDomNode(final DomNode domNode) {
         super.setDomNode(domNode);
-        final BrowserVersion browser = getBrowserVersion();
-        if (browser.hasFeature(HTMLBASEFONT_END_TAG_FORBIDDEN)) {
-            switch (StringUtils.toRootLowerCase(domNode.getLocalName())) {
-                case "basefont":
-                case "keygen":
-                    endTagForbidden_ = true;
-                    break;
-                default:
-            }
-        }
+        endTagForbidden_ = getBrowserVersion().hasFeature(HTMLBASEFONT_END_TAG_FORBIDDEN)
+                            && "basefont".equals(StringUtils.toRootLowerCase(domNode.getLocalName()));
     }
 
     /**

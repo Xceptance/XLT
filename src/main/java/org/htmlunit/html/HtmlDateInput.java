@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,8 +13,6 @@
  * limitations under the License.
  */
 package org.htmlunit.html;
-
-import static org.htmlunit.BrowserVersionFeatures.JS_INPUT_SET_VALUE_DATE_SUPPORTED;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -98,14 +96,13 @@ public class HtmlDateInput extends HtmlSelectableTextInput implements LabelableE
      * @return if the input element has a valid min value
      */
     private boolean isMinValid() {
-        if (hasFeature(JS_INPUT_SET_VALUE_DATE_SUPPORTED)
-                && !getMin().isEmpty()) {
+        if (!getMin().isEmpty()) {
             try {
                 final LocalDate dateValue = LocalDate.parse(getRawValue(), FORMATTER_);
                 final LocalDate minDate = LocalDate.parse(getMin(), FORMATTER_);
                 return minDate.isEqual(dateValue) || minDate.isBefore(dateValue);
             }
-            catch (final DateTimeParseException e) {
+            catch (final DateTimeParseException ignored) {
                 // ignore
             }
         }
@@ -120,14 +117,13 @@ public class HtmlDateInput extends HtmlSelectableTextInput implements LabelableE
      * @return if the input element has a valid max value
      */
     private boolean isMaxValid() {
-        if (hasFeature(JS_INPUT_SET_VALUE_DATE_SUPPORTED)
-                && !getMax().isEmpty()) {
+        if (!getMax().isEmpty()) {
             try {
                 final LocalDate dateValue = LocalDate.parse(getRawValue(), FORMATTER_);
                 final LocalDate maxDate = LocalDate.parse(getMax(), FORMATTER_);
                 return maxDate.isEqual(dateValue) || maxDate.isAfter(dateValue);
             }
-            catch (final DateTimeParseException e) {
+            catch (final DateTimeParseException ignored) {
                 // ignore
             }
         }
@@ -140,12 +136,12 @@ public class HtmlDateInput extends HtmlSelectableTextInput implements LabelableE
     @Override
     public void setValue(final String newValue) {
         try {
-            if (hasFeature(JS_INPUT_SET_VALUE_DATE_SUPPORTED) && StringUtils.isNotEmpty(newValue)) {
+            if (StringUtils.isNotEmpty(newValue)) {
                 FORMATTER_.parse(newValue);
             }
             super.setValue(newValue);
         }
-        catch (final DateTimeParseException e) {
+        catch (final DateTimeParseException ignored) {
             // ignore
         }
     }

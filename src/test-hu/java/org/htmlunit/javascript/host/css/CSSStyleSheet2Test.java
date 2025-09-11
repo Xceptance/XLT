@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@ package org.htmlunit.javascript.host.css;
 
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.SimpleWebTestCase;
+import org.htmlunit.css.ComputedCssStyleDeclaration;
 import org.htmlunit.css.CssStyleSheet;
 import org.htmlunit.cssparser.parser.CSSErrorHandler;
 import org.htmlunit.cssparser.parser.CSSException;
@@ -31,10 +32,9 @@ import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlInput;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlStyle;
-import org.htmlunit.javascript.host.html.HTMLElement;
 import org.htmlunit.javascript.host.html.HTMLStyleElement;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.w3c.dom.NodeList;
@@ -258,7 +258,7 @@ public class CSSStyleSheet2Test extends SimpleWebTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("CSSStyleDeclaration for 'ComputedCssStyleDeclaration for 'HtmlBody[<body>]''")
+    @Alerts("ComputedCssStyleDeclaration for 'HtmlBody[<body>]'")
     public void brokenExternalCSS() throws Exception {
         final String html = "<html><head>\n"
             + "<link rel='stylesheet' type='text/css' href='" + URL_SECOND + "'/></head></html>";
@@ -268,7 +268,7 @@ public class CSSStyleSheet2Test extends SimpleWebTestCase {
 
         final NodeList list = htmlPage.getElementsByTagName("body");
         final HtmlElement element = (HtmlElement) list.item(0);
-        final ComputedCSSStyleDeclaration style = ((HTMLElement) element.getScriptableObject()).getCurrentStyle();
+        final ComputedCssStyleDeclaration style = htmlPage.getEnclosingWindow().getComputedStyle(element, null);
         assertEquals(getExpectedAlerts()[0], style.toString());
     }
 

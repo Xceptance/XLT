@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,19 +14,18 @@
  */
 package org.htmlunit.javascript;
 
-import static org.htmlunit.BrowserVersionFeatures.JS_ARGUMENTS_READ_ONLY_ACCESSED_FROM_FUNCTION;
-import static org.htmlunit.BrowserVersionFeatures.JS_IGNORES_LAST_LINE_CONTAINING_UNCOMMENTED;
+import static org.htmlunit.BrowserVersionFeatures.JS_ARRAY_SORT_ACCEPTS_INCONSISTENT_COMPERATOR;
 import static org.htmlunit.BrowserVersionFeatures.JS_PROPERTY_DESCRIPTOR_NAME;
-import static org.htmlunit.BrowserVersionFeatures.JS_PROPERTY_DESCRIPTOR_NEW_LINE;
 
 import java.io.Serializable;
-import java.util.Map;
+import java.util.function.Consumer;
 
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.ScriptException;
 import org.htmlunit.ScriptPreProcessor;
 import org.htmlunit.WebClient;
 import org.htmlunit.corejs.javascript.Callable;
+import org.htmlunit.corejs.javascript.CompilerEnvirons;
 import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.ContextAction;
 import org.htmlunit.corejs.javascript.ContextFactory;
@@ -67,6 +66,7 @@ public class HtmlUnitContextFactory extends ContextFactory {
      * @param webClient the web client using this factory
      */
     public HtmlUnitContextFactory(final WebClient webClient) {
+        super();
         webClient_ = webClient;
         browserVersion_ = webClient.getBrowserVersion();
     }
@@ -158,7 +158,8 @@ public class HtmlUnitContextFactory extends ContextFactory {
         @Override
         protected Script compileString(String source, final Evaluator compiler,
                 final ErrorReporter compilationErrorReporter, final String sourceName,
-                final int lineno, final Object securityDomain) {
+                final int lineno, final Object securityDomain,
+                final Consumer<CompilerEnvirons> compilerEnvironsProcessor) {
 
             // this method gets called by Context.compileString and by ScriptRuntime.evalSpecial
             // which is used for window.eval. We have to take care in which case we are.
@@ -186,28 +187,6 @@ public class HtmlUnitContextFactory extends ContextFactory {
                         && source.charAt(start++) == '-') {
                     source = source.replaceFirst("<!--", "// <!--");
                 }
-
-                // IE ignores the last line containing uncommented -->
-                // if (browserVersion_.hasFeature(JS_IGNORES_LAST_LINE_CONTAINING_UNCOMMENTED)
-                //         && sourceCodeTrimmed.endsWith("-->")) {
-                // **** Memory Optimization ****
-                // see above
-                if (browserVersion_.hasFeature(JS_IGNORES_LAST_LINE_CONTAINING_UNCOMMENTED)) {
-                    int end = source.length() - 1;
-                    while ((end > -1) && (source.charAt(end) <= ' ')) {
-                        end--;
-                    }
-                    if (1 < end
-                            && source.charAt(end--) == '>'
-                            && source.charAt(end--) == '-'
-                            && source.charAt(end--) == '-') {
-                        final int lastDoubleSlash = source.lastIndexOf("//");
-                        final int lastNewLine = Math.max(source.lastIndexOf('\n'), source.lastIndexOf('\r'));
-                        if (lastNewLine > lastDoubleSlash) {
-                            source = source.substring(0, lastNewLine);
-                        }
-                    }
-                }
             }
 
             // Pre process the source code
@@ -216,7 +195,7 @@ public class HtmlUnitContextFactory extends ContextFactory {
             source = preProcess(page, source, sourceName, lineno, null);
 
             return super.compileString(source, compiler, compilationErrorReporter,
-                    sourceName, lineno, securityDomain);
+                    sourceName, lineno, securityDomain, compilerEnvironsProcessor);
         }
 
         @Override
@@ -270,22 +249,13 @@ public class HtmlUnitContextFactory extends ContextFactory {
         final TimeoutContext cx = new TimeoutContext(this);
         cx.setLanguageVersion(Context.VERSION_ES6);
         cx.setLocale(browserVersion_.getBrowserLocale());
+        cx.setTimeZone(browserVersion_.getSystemTimezone());
 
         // make sure no java classes are usable from js
-        cx.setClassShutter(fullClassName -> {
-            final  Map<String, String> activeXObjectMap = webClient_.getActiveXObjectMap();
-            if (activeXObjectMap != null) {
-                for (final String mappedClass : activeXObjectMap.values()) {
-                    if (fullClassName.equals(mappedClass)) {
-                        return true;
-                    }
-                }
-            }
-            return false;
-        });
+        cx.setClassShutter(fullClassName -> false);
 
         // Use pure interpreter mode to get observeInstructionCount() callbacks.
-        cx.setOptimizationLevel(-1);
+        cx.setInterpretedMode(true);
 
         // Set threshold on how often we want to receive the callbacks
         cx.setInstructionObserverThreshold(INSTRUCTION_COUNT_THRESHOLD);
@@ -299,7 +269,7 @@ public class HtmlUnitContextFactory extends ContextFactory {
         }
 
         // register custom RegExp processing
-        ScriptRuntime.setRegExpProxy(cx, new HtmlUnitRegExpProxy(ScriptRuntime.getRegExpProxy(cx), browserVersion_));
+        ScriptRuntime.setRegExpProxy(cx, new HtmlUnitRegExpProxy(ScriptRuntime.getRegExpProxy(cx)));
 
         cx.setMaximumInterpreterStackDepth(5_000);
 
@@ -373,13 +343,11 @@ public class HtmlUnitContextFactory extends ContextFactory {
             case Context.FEATURE_INTL_402:
                 return true;
             case Context.FEATURE_HTMLUNIT_FN_ARGUMENTS_IS_RO_VIEW:
-                return browserVersion_.hasFeature(JS_ARGUMENTS_READ_ONLY_ACCESSED_FROM_FUNCTION);
-            case Context.FEATURE_HTMLUNIT_FUNCTION_DECLARED_FORWARD_IN_BLOCK:
                 return true;
             case Context.FEATURE_HTMLUNIT_MEMBERBOX_NAME:
                 return browserVersion_.hasFeature(JS_PROPERTY_DESCRIPTOR_NAME);
-            case Context.FEATURE_HTMLUNIT_MEMBERBOX_NEWLINE:
-                return browserVersion_.hasFeature(JS_PROPERTY_DESCRIPTOR_NEW_LINE);
+            case Context.FEATURE_HTMLUNIT_ARRAY_SORT_COMPERATOR_ACCEPTS_BOOL:
+                return browserVersion_.hasFeature(JS_ARRAY_SORT_ACCEPTS_INCONSISTENT_COMPERATOR);
             default:
                 return super.hasFeature(cx, featureIndex);
         }

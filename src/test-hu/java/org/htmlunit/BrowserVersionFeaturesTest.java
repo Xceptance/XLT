@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ import org.junit.Test;
  * @author Ronald Brill
  * @author Frank Danek
  */
-public class BrowserVersionFeaturesTest  {
+public class BrowserVersionFeaturesTest {
 
     /**
      * Test of alphabetical order.
@@ -68,7 +68,6 @@ public class BrowserVersionFeaturesTest  {
         browsers.add(BrowserVersion.EDGE);
         browsers.add(BrowserVersion.FIREFOX);
         browsers.add(BrowserVersion.FIREFOX_ESR);
-        browsers.add(BrowserVersion.INTERNET_EXPLORER);
 
         for (final BrowserVersionFeatures feature : BrowserVersionFeatures.values()) {
             int useCount = 0;
@@ -105,9 +104,6 @@ public class BrowserVersionFeaturesTest  {
     }
 
     private static SupportedBrowser expectedBrowserName(final BrowserVersion browser) {
-        if (browser == BrowserVersion.CHROME) {
-            return SupportedBrowser.CHROME;
-        }
         if (browser == BrowserVersion.EDGE) {
             return SupportedBrowser.EDGE;
         }
@@ -118,7 +114,7 @@ public class BrowserVersionFeaturesTest  {
             return SupportedBrowser.FF_ESR;
         }
 
-        return SupportedBrowser.IE;
+        return SupportedBrowser.CHROME;
     }
 
     /**

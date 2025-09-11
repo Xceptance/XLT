@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import org.htmlunit.corejs.javascript.Function;
 import org.htmlunit.javascript.configuration.JsxClass;
@@ -51,13 +50,14 @@ public class Screen extends EventTarget {
      * Creates an instance.
      */
     public Screen() {
+        super();
     }
 
     /**
      * JavaScript constructor.
      */
     @Override
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
         super.jsConstructor();
     }
@@ -83,7 +83,7 @@ public class Screen extends EventTarget {
      * Returns the {@code availLeft} property.
      * @return the {@code availLeft} property
      */
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxGetter
     public int getAvailLeft() {
         return screen_.getAvailLeft();
     }
@@ -92,7 +92,7 @@ public class Screen extends EventTarget {
      * Returns the {@code availTop} property.
      * @return the {@code availTop} property
      */
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxGetter
     public int getAvailTop() {
         return screen_.getAvailTop();
     }
@@ -107,57 +107,12 @@ public class Screen extends EventTarget {
     }
 
     /**
-     * Returns the {@code bufferDepth} property.
-     * @return the {@code bufferDepth} property
-     */
-    @JsxGetter(IE)
-    public int getBufferDepth() {
-        return screen_.getBufferDepth();
-    }
-
-    /**
-     * Sets the {@code bufferDepth} property.
-     * @param bufferDepth the {@code bufferDepth} property
-     */
-    @JsxSetter(IE)
-    public void setBufferDepth(final int bufferDepth) {
-        screen_.setBufferDepth(bufferDepth);
-    }
-
-    /**
      * Returns the {@code colorDepth} property.
      * @return the {@code colorDepth} property
      */
     @JsxGetter
     public int getColorDepth() {
         return screen_.getColorDepth();
-    }
-
-    /**
-     * Returns the {@code deviceXDPI} property.
-     * @return the {@code deviceXDPI} property
-     */
-    @JsxGetter(IE)
-    public int getDeviceXDPI() {
-        return screen_.getDeviceXDPI();
-    }
-
-    /**
-     * Returns the {@code deviceYDPI} property.
-     * @return the {@code deviceYDPI} property
-     */
-    @JsxGetter(IE)
-    public int getDeviceYDPI() {
-        return screen_.getDeviceYDPI();
-    }
-
-    /**
-     * Returns the {@code fontSmoothingEnabled} property.
-     * @return the {@code fontSmoothingEnabled} property
-     */
-    @JsxGetter(IE)
-    public boolean isFontSmoothingEnabled() {
-        return screen_.isFontSmoothingEnabled();
     }
 
     /**
@@ -179,48 +134,12 @@ public class Screen extends EventTarget {
     }
 
     /**
-     * Returns the {@code logicalXDPI} property.
-     * @return the {@code logicalXDPI} property
-     */
-    @JsxGetter(IE)
-    public int getLogicalXDPI() {
-        return screen_.getLogicalXDPI();
-    }
-
-    /**
-     * Returns the {@code logicalYDPI} property.
-     * @return the {@code logicalYDPI} property
-     */
-    @JsxGetter(IE)
-    public int getLogicalYDPI() {
-        return screen_.getLogicalXDPI();
-    }
-
-    /**
      * Returns the {@code pixelDepth} property.
      * @return the {@code pixelDepth} property
      */
     @JsxGetter
     public int getPixelDepth() {
         return screen_.getPixelDepth();
-    }
-
-    /**
-     * Returns the {@code systemXDPI} property.
-     * @return the {@code systemXDPI} property
-     */
-    @JsxGetter(IE)
-    public int getSystemXDPI() {
-        return screen_.getSystemXDPI();
-    }
-
-    /**
-     * Returns the {@code systemYDPI} property.
-     * @return the {@code systemYDPI} property
-     */
-    @JsxGetter(IE)
-    public int getSystemYDPI() {
-        return screen_.getSystemYDPI();
     }
 
     /**
@@ -245,7 +164,7 @@ public class Screen extends EventTarget {
      * Returns the {@code orientation} property.
      * @return the {@code orientation} property
      */
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxGetter
     public ScreenOrientation getOrientation() {
         final ScreenOrientation screenOrientation = new ScreenOrientation();
         screenOrientation.setPrototype(getPrototype(screenOrientation.getClass()));

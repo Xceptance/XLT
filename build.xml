@@ -88,8 +88,8 @@
         <resolver:dependencies id="depsFromPom" pomRef="xlt.pom" />
 
         <resolver:resolve dependenciesref="depsFromPom" remotereposref="resolver.repositories">
-            <files refid="deps.fileset" scopes="compile" />
-            <files refid="provided.fileset" scopes="compile,provided" />
+            <files refid="deps.fileset" scopes="compile,runtime" />
+            <files refid="provided.fileset" scopes="provided" />
         </resolver:resolve>
 
         <condition property="need.copy.deps">
@@ -178,7 +178,7 @@
 
         <mkdir dir="${classes.dir}" />
 
-        <javac srcdir="${src.dir}/main/java" destdir="${classes.dir}" debug="on" optimize="off" deprecation="on" encoding="utf8" source="11" target="11">
+        <javac srcdir="${src.dir}/main/java" destdir="${classes.dir}" debug="on" optimize="off" deprecation="on" encoding="utf8" source="21" target="21">
             <classpath refid="classpath" />
 
             <!-- Shorten the default list of modules to avoid issues (for example, jdk.jsobject clashes with HtmlUnit). -->

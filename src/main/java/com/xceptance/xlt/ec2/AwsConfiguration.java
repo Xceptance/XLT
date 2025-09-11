@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import java.io.IOException;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.amazonaws.Protocol;
 import com.xceptance.common.util.AbstractConfiguration;
 import com.xceptance.xlt.engine.XltExecutionContext;
 
@@ -51,12 +50,20 @@ public class AwsConfiguration extends AbstractConfiguration
      */
     private static final String PROP_SECRET_KEY = PROP_PREFIX + "secretKey";
 
+    /**
+     * AWS property name for the session token.
+     */
+    private static final String PROP_SESSION_TOKEN = PROP_PREFIX + "sessionToken";
+
+    /**
+     * AWS property name for SSH key pair settings.
+     */
     private static final String PROP_SSH_KEY = PROP_PREFIX + "keypair.";
 
     /**
      * AWS property name for the protocol.
      */
-    private static final String PROP_PROTOCOL = PROP_PREFIX + "protocol";
+    private static final String PROP_PROXY_PROTOCOL = PROP_PROXY_PREFIX + "protocol";
 
     /**
      * AWS property name for the HTTP proxy host.
@@ -91,7 +98,7 @@ public class AwsConfiguration extends AbstractConfiguration
     /**
      * The protocol.
      */
-    private final Protocol protocol;
+    private final String protocol;
 
     /**
      * The HTTP proxy host.
@@ -119,6 +126,11 @@ public class AwsConfiguration extends AbstractConfiguration
     private final String secretKey;
 
     /**
+     * The AWS session token.
+     */
+    private final String sessionToken;
+
+    /**
      * The timeout to wait for a specified instance state.
      */
     private final int instanceConnectTimeout;
@@ -131,17 +143,6 @@ public class AwsConfiguration extends AbstractConfiguration
      */
     public AwsConfiguration()
     {
-        this(null, null);
-    }
-
-    /**
-     * Creates a new {@link AwsConfiguration} object. The given credential s override the configured credentials.
-     *
-     * @throws RuntimeException
-     *             if an error occurs
-     */
-    public AwsConfiguration(final String accessKey, final String secretKey)
-    {
         try
         {
             final File configDirectory = XltExecutionContext.getCurrent().getXltConfigDir();
@@ -149,10 +150,11 @@ public class AwsConfiguration extends AbstractConfiguration
 
             loadProperties(propFile);
 
-            this.accessKey = StringUtils.isNotBlank(accessKey) ? accessKey : getStringProperty(PROP_ACCESS_KEY);
-            this.secretKey = StringUtils.isNotBlank(secretKey) ? secretKey : getStringProperty(PROP_SECRET_KEY);
+            accessKey = getStringProperty(PROP_ACCESS_KEY, null);
+            secretKey = getStringProperty(PROP_SECRET_KEY, null);
+            sessionToken = getStringProperty(PROP_SESSION_TOKEN, null);
 
-            protocol = Protocol.valueOf(getStringProperty(PROP_PROTOCOL, "https").toUpperCase());
+            protocol = getStringProperty(PROP_PROXY_PROTOCOL, "http");
             proxyHost = getStringProperty(PROP_PROXY_HOST, null);
             proxyPort = getIntProperty(PROP_PROXY_PORT, 8888);
             proxyUserName = getStringProperty(PROP_PROXY_USER_NAME, null);
@@ -178,9 +180,9 @@ public class AwsConfiguration extends AbstractConfiguration
     /**
      * Returns the value of the 'protocol' attribute.
      *
-     * @return the value of protocolxyHost
+     * @return the value of protocol
      */
-    public Protocol getProtocol()
+    public String getProtocol()
     {
         return protocol;
     }
@@ -233,6 +235,16 @@ public class AwsConfiguration extends AbstractConfiguration
     public String getSecretKey()
     {
         return secretKey;
+    }
+
+    /**
+     * Returns the value of the 'sessionToken' attribute.
+     *
+     * @return the value of sessionToken
+     */
+    public String getSessionToken()
+    {
+        return sessionToken;
     }
 
     /**

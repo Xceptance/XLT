@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -228,7 +228,7 @@ final class PageTransformer
                 final URL u = htmlPage.getFullyQualifiedUrl(attValue);
                 if (u != null)
                 {
-                    final String newUrl = mapping.map(UrlUtils.encodeUrl(u, false, charset));
+                    final String newUrl = mapping.map(UrlUtils.encodeUrl(u, charset));
 
                     if (newUrl != null)
                     {
@@ -311,7 +311,7 @@ final class PageTransformer
             final URL url = htmlPage.getFullyQualifiedUrl(urlString);
             if (url != null)
             {
-                final String newUrl = mapping.map(UrlUtils.encodeUrl(url, false, charset));
+                final String newUrl = mapping.map(UrlUtils.encodeUrl(url, charset));
 
                 if (newUrl != null)
                 {
@@ -406,7 +406,7 @@ final class PageTransformer
             final URL url = XltWebClient.makeUrlAbsolute(baseURL, urlString);
             if (url != null)
             {
-                final String crcString = mapping.map(UrlUtils.encodeUrl(url, false, charset));
+                final String crcString = mapping.map(UrlUtils.encodeUrl(url, charset));
 
                 if (crcString != null)
                 {

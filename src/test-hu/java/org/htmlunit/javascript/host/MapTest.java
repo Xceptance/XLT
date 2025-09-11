@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,12 @@
  */
 package org.htmlunit.javascript.host;
 
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
-
 import java.util.Map;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -39,9 +36,7 @@ public class MapTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"3", "value1"},
-            IE = {"1", "undefined"})
-    @NotYetImplemented(IE)
+    @Alerts({"3", "value1"})
     public void get() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -65,9 +60,8 @@ public class MapTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"function entries() { [native code] }",
-                       "[object Map Iterator]", "0,foo", "1,bar", "[object Object],baz", "undefined"},
-            IE = {})
+    @Alerts({"function entries() { [native code] }",
+             "[object Map Iterator]", "0,foo", "1,bar", "[object Object],baz", "undefined"})
     public void iterator() throws Exception {
         final String html =
             HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -102,9 +96,8 @@ public class MapTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"function entries() { [native code] }",
-                       "[object Map Iterator]", "0,foo", "1,bar", "[object Object],baz", "undefined"},
-            IE = {})
+    @Alerts({"function entries() { [native code] }",
+             "[object Map Iterator]", "0,foo", "1,bar", "[object Object],baz", "undefined"})
     public void entries() throws Exception {
         final String html =
             HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -139,9 +132,8 @@ public class MapTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"function values() { [native code] }",
-                       "[object Map Iterator]", "foo", "bar", "baz", "undefined"},
-            IE = {})
+    @Alerts({"function values() { [native code] }",
+             "[object Map Iterator]", "foo", "bar", "baz", "undefined"})
     public void values() throws Exception {
         final String html =
             HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -176,9 +168,8 @@ public class MapTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"function keys() { [native code] }",
-                       "[object Map Iterator]", "0", "1", "[object Object]", "undefined"},
-            IE = {})
+    @Alerts({"function keys() { [native code] }",
+             "[object Map Iterator]", "0", "1", "[object Object]", "undefined"})
     public void keys() throws Exception {
         final String html =
             HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -213,9 +204,7 @@ public class MapTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "2",
-            IE = "0")
-    @NotYetImplemented(IE)
+    @Alerts("2")
     public void constructorArray() throws Exception {
         final String html
             = "<html><head>\n"
@@ -235,9 +224,7 @@ public class MapTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "exception",
-            IE = "0")
-    @NotYetImplemented(IE)
+    @Alerts("TypeError")
     public void constructorInt32Array() throws Exception {
         final String html
             = "<html><head>\n"
@@ -249,7 +236,7 @@ public class MapTest extends WebDriverTestCase {
             + "    var myMap = new Map(array);\n"
             + "    log(myMap.size);\n"
             + "  } catch(e) {\n"
-            + "    log('exception');\n"
+            + "    logEx(e);\n"
             + "  }\n"
             + "}\n"
             + "</script></head><body onload='test()'>\n"
@@ -262,9 +249,7 @@ public class MapTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "exception",
-            IE = "0")
-    @NotYetImplemented(IE)
+    @Alerts("TypeError")
     public void constructorStringParam() throws Exception {
         final String html
             = "<html><head>\n"
@@ -275,7 +260,7 @@ public class MapTest extends WebDriverTestCase {
             + "    var myMap = new Map('test');\n"
             + "    log(myMap.size);\n"
             + "  } catch(e) {\n"
-            + "    log('exception');\n"
+            + "    logEx(e);\n"
             + "  }\n"
             + "}\n"
             + "</script></head><body onload='test()'>\n"
@@ -288,9 +273,7 @@ public class MapTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "exception",
-            IE = "0")
-    @NotYetImplemented(IE)
+    @Alerts("TypeError")
     public void constructorSetParam() throws Exception {
         final String html
             = "<html><head>\n"
@@ -301,7 +284,7 @@ public class MapTest extends WebDriverTestCase {
             + "    var myMap = new Map(new Set('test'));\n"
             + "    log(myMap.size);\n"
             + "  } catch(e) {\n"
-            + "    log('exception');\n"
+            + "    logEx(e);\n"
             + "  }\n"
             + "}\n"
             + "</script></head><body onload='test()'>\n"
@@ -314,9 +297,7 @@ public class MapTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "2",
-            IE = "0")
-    @NotYetImplemented(IE)
+    @Alerts("2")
     public void constructorMapParam() throws Exception {
         final String html
             = "<html><head>\n"
@@ -338,8 +319,7 @@ public class MapTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"1", "77", "one"},
-            IE = "exception")
+    @Alerts({"1", "77", "one"})
     public void constructorIteratorParam() throws Exception {
         final String html
             = "<html><head>\n"
@@ -367,7 +347,7 @@ public class MapTest extends WebDriverTestCase {
             + "    var myMap = new Map(myIterable);\n"
             + "    log(myMap.size);\n"
             + "    myMap.forEach(logElement);\n"
-            + "  }catch(e) { log('exception'); }"
+            + "  }catch(e) { logEx(e); }"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -380,12 +360,10 @@ public class MapTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"value1", "key1", "[object Map]", "[object Window]",
-                       "[object Object]", "key2", "[object Map]", "[object Window]",
-                       "null", "key3", "[object Map]", "[object Window]",
-                       "undefined", "key4", "[object Map]", "[object Window]"},
-            IE = {})
-    @NotYetImplemented(IE)
+    @Alerts({"value1", "key1", "[object Map]", "[object Window]",
+             "[object Object]", "key2", "[object Map]", "[object Window]",
+             "null", "key3", "[object Map]", "[object Window]",
+             "undefined", "key4", "[object Map]", "[object Window]"})
     public void forEach() throws Exception {
         final String html
             = "<html><head>\n"
@@ -415,12 +393,10 @@ public class MapTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"value1", "key1", "[object Map]", "undefined",
-                       "[object Object]", "key2", "[object Map]", "undefined",
-                       "null", "key3", "[object Map]", "undefined",
-                       "undefined", "key4", "[object Map]", "undefined"},
-            IE = {})
-    @NotYetImplemented(IE)
+    @Alerts({"value1", "key1", "[object Map]", "undefined",
+             "[object Object]", "key2", "[object Map]", "undefined",
+             "null", "key3", "[object Map]", "undefined",
+             "undefined", "key4", "[object Map]", "undefined"})
     public void forEachStrict() throws Exception {
         final String html
             = "<html><head>\n"
@@ -451,12 +427,10 @@ public class MapTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"value1", "key1", "[object Map]", "hello",
-                       "[object Object]", "key2", "[object Map]", "hello",
-                       "null", "key3", "[object Map]", "hello",
-                       "undefined", "key4", "[object Map]", "hello"},
-            IE = {})
-    @NotYetImplemented(IE)
+    @Alerts({"value1", "key1", "[object Map]", "hello",
+             "[object Object]", "key2", "[object Map]", "hello",
+             "null", "key3", "[object Map]", "hello",
+             "undefined", "key4", "[object Map]", "hello"})
     public void forEachThis() throws Exception {
         final String html
             = "<html><head>\n"
@@ -484,8 +458,7 @@ public class MapTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "[object Map Iterator]",
-            IE = {})
+    @Alerts("[object Map Iterator]")
     public void iteratorPrototype() throws Exception {
         final String html =
             HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -512,10 +485,8 @@ public class MapTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"value1", "undefined", "[object Map]", "[object Window]",
-                       "[object Object]", "key2", "[object Map]", "[object Window]"},
-            IE = {})
-    @NotYetImplemented(IE)
+    @Alerts({"value1", "undefined", "[object Map]", "[object Window]",
+             "[object Object]", "key2", "[object Map]", "[object Window]"})
     public void forEach_withElision() throws Exception {
         final String html
             = "<html><head>\n"

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,8 @@
  */
 package org.htmlunit.javascript.host.event;
 
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import java.util.ArrayList;
 
@@ -168,9 +165,6 @@ public class Event extends HtmlUnitScriptable {
     /** The pointerout event type, triggered by {@code pointerout} event handlers. */
     public static final String TYPE_POINTEROUT = "pointerout";
 
-    /** The help event type, triggered by {@code help} event handlers. */
-    public static final String TYPE_HELP = "help";
-
     /** The ratechange event type, triggered by {@code ratechange} event handlers. */
     public static final String TYPE_RATECHANGE = "ratechange";
 
@@ -192,14 +186,14 @@ public class Event extends HtmlUnitScriptable {
     /** The auxclick event type, triggered by {@code auxclick} event handlers. */
     public static final String TYPE_AUXCLICK = "auxclick";
 
-    /** The mspointerleave event type, triggered by {@code mspointerleave} event handlers. */
-    public static final String TYPE_MSPOINTERLEAVE = "mspointerleave";
-
+//    /** The mspointerleave event type, triggered by {@code mspointerleave} event handlers. */
+//    public static final String TYPE_MSPOINTERLEAVE = "mspointerleave";
+//
     /** The webkitanimationstart event type, triggered by {@code webkitanimationstart} event handlers. */
     public static final String TYPE_WEBANIMATIONSTART = "webkitanimationstart";
 
-    /** The msgesturestart event type, triggered by {@code msgesturestart} event handlers. */
-    public static final String TYPE_MSGESTURESTART = "msgesturestart";
+//    /** The msgesturestart event type, triggered by {@code msgesturestart} event handlers. */
+//    public static final String TYPE_MSGESTURESTART = "msgesturestart";
 
     /** The drag event type, triggered by {@code drag} event handlers. */
     public static final String TYPE_DRAG = "drag";
@@ -219,23 +213,11 @@ public class Event extends HtmlUnitScriptable {
     /** The play event type, triggered by {@code play} event handlers. */
     public static final String TYPE_PLAY = "play";
 
-    /** The mspointerover event type, triggered by {@code mspointerover} event handlers. */
-    public static final String TYPE_MSPOINTEROVER = "mspointerover";
-
-    /** The mspointerup event type, triggered by {@code mspointerup} event handlers. */
-    public static final String TYPE_MSPOINTERUP = "mspointerup";
-
     /** The loadedmetadata event type, triggered by {@code loadedmetadata} event handlers. */
     public static final String TYPE_LOADEDMETADATA = "loadedmetadata";
 
-    /** The msinertiastart event type, triggered by {@code msinertiastart} event handlers. */
-    public static final String TYPE_MSINERTIASTART = "msinertiastart";
-
     /** The pointermove event type, triggered by {@code pointermove} event handlers. */
     public static final String TYPE_POINTERMOVE = "pointermove";
-
-    /** The mspointermove event type, triggered by {@code mspointermove} event handlers. */
-    public static final String TYPE_MSPOINTERMOVE = "mspointermove";
 
     /** The lostpointercapture event type, triggered by {@code lostpointercapture} event handlers. */
     public static final String TYPE_LOSTPOINTERCAPTURE = "lostpointercapture";
@@ -273,8 +255,8 @@ public class Event extends HtmlUnitScriptable {
     /** The pageshow event type, triggered by {@code pageshow} event handlers. */
     public static final String TYPE_PAGESHOW = "pageshow";
 
-    /** The mspointerenter event type, triggered by {@code mspointerenter} event handlers. */
-    public static final String TYPE_MSPOINTENTER = "mspointerenter";
+//    /** The mspointerenter event type, triggered by {@code mspointerenter} event handlers. */
+//    public static final String TYPE_MSPOINTENTER = "mspointerenter";
 
     /** The mozfullscreenchange event type, triggered by {@code mozfullscreenchange} event handlers. */
     public static final String TYPE_MOZFULLSCREENCHANGE = "mozfullscreenchange";
@@ -283,7 +265,7 @@ public class Event extends HtmlUnitScriptable {
     public static final String TYPE_DURATIONCHANGE = "durationchange";
 
     /** The playing event type, triggered by {@code playing} event handlers. */
-    public static final String TYPE_PLAYNG = "playing";
+    public static final String TYPE_PLAYING = "playing";
 
     /** The ended event type, triggered by {@code ended} event handlers. */
     public static final String TYPE_ENDED = "ended";
@@ -315,9 +297,6 @@ public class Event extends HtmlUnitScriptable {
     /** The pointercancel event type, triggered by {@code pointercancel} event handlers. */
     public static final String TYPE_POINTERCANCEL = "pointercancel";
 
-    /** The msgestureend event type, triggered by {@code msgestureend} event handlers. */
-    public static final String TYPE_MSGESTUREEND = "msgestureend";
-
     /** The resize event type, triggered by {@code resize} event handlers. */
     public static final String TYPE_RESIZE = "resize";
 
@@ -329,9 +308,6 @@ public class Event extends HtmlUnitScriptable {
 
     /** The wheel event type, triggered by {@code wheel} event handlers. */
     public static final String TYPE_WHEEL = "wheel";
-
-    /** The mspointerdown event type, triggered by {@code mspointerdown} event handlers. */
-    public static final String TYPE_MSPOINTERDOWN = "mspointerdown";
 
     /** The pointerleave event type, triggered by {@code pointerleave} event handlers. */
     public static final String TYPE_POINTERLEAVE = "pointerleave";
@@ -345,9 +321,6 @@ public class Event extends HtmlUnitScriptable {
     /** The animationstart event type, triggered by {@code animationstart} event handlers. */
     public static final String TYPE_ANIMATIONSTART = "animationstart";
 
-    /** The mspointercancel event type, triggered by {@code mspointercancel} event handlers. */
-    public static final String TYPE_MSPOINTERCANCEL = "mspointercancel";
-
     /** The timeupdate event type, triggered by {@code timeupdate} event handlers. */
     public static final String TYPE_TIMEUPDATE = "timeupdate";
 
@@ -357,26 +330,14 @@ public class Event extends HtmlUnitScriptable {
     /** The webkitanimationiteration event type, triggered by {@code webkitanimationiteration} event handlers. */
     public static final String TYPE_WEBKITANIMATIONITERATION = "webkitanimationiteration";
 
-    /** The msgesturetap event type, triggered by {@code msgesturetap} event handlers. */
-    public static final String TYPE_MSGESTURETAP = "msgesturetap";
-
     /** The dragover event type, triggered by {@code dragover} event handlers. */
     public static final String TYPE_DRAGOVER = "dragover";
 
     /** The online event type, triggered by {@code online} event handlers. */
     public static final String TYPE_ONLINE = "online";
 
-    /** The msgesturedoubletap event type, triggered by {@code msgesturedoubletap} event handlers. */
-    public static final String TYPE_MSGESTUREDOUBLETAP = "msgesturedoubletap";
-
-    /** The show event type, triggered by {@code show} event handlers. */
-    public static final String TYPE_SHOW = "show";
-
     /** The volumechange event type, triggered by {@code volumechange} event handlers. */
     public static final String TYPE_VOLUMECHANGE = "volumechange";
-
-    /** The msgesturechange event type, triggered by {@code msgesturechange} event handlers. */
-    public static final String TYPE_MSGESTURECHANGE = "msgesturechange";
 
     /** The gotpointercapture event type, triggered by {@code gotpointercapture} event handlers. */
     public static final String TYPE_GOTPOINTERCAPTURE = "gotpointercapture";
@@ -386,9 +347,6 @@ public class Event extends HtmlUnitScriptable {
 
     /** The webkitanimationend event type, triggered by {@code webkitanimationend} event handlers. */
     public static final String TYPE_WEBKITANIMATIONEND = "webkitanimationend";
-
-    /** The mspointerout event type, triggered by {@code mspointerout} event handlers. */
-    public static final String TYPE_MSPOINTEROUT = "mspointerout";
 
     /** The devicemotion event type, triggered by {@code devicemotion} event handlers. */
     public static final String TYPE_DEVICEMOTION = "devicemotion";
@@ -414,8 +372,8 @@ public class Event extends HtmlUnitScriptable {
     /** The transitionend event type, triggered by {@code transitionend} event handlers. */
     public static final String TYPE_TRANSITIONEND = "transitionend";
 
-    /** The msgesturehold event type, triggered by {@code msgesturehold} event handlers. */
-    public static final String TYPE_MSGESTUREHOLD = "msgesturehold";
+//    /** The msgesturehold event type, triggered by {@code msgesturehold} event handlers. */
+//    public static final String TYPE_MSGESTUREHOLD = "msgesturehold";
 
     /** The deviceorientationabsolute event type, triggered by {@code deviceorientationabsolute} event handlers. */
     public static final String TYPE_DEVICEORIENTATIONABSOLUTE = "deviceorientationabsolute";
@@ -437,6 +395,7 @@ public class Event extends HtmlUnitScriptable {
 
     /** The webkitfullscreenerror event type, triggered by {@code webkitfullscreenerror} event handlers. */
     public static final String TYPE_WEBKITFULLSCREENERROR = "webkitfullscreenerror";
+
     /** The copy event type, triggered by {@code copy} event handlers. */
     public static final String TYPE_COPY = "copy";
 
@@ -448,30 +407,6 @@ public class Event extends HtmlUnitScriptable {
 
     /** The onmessageerror event type, triggered by {@code onmessageerror} event handlers. */
     public static final String TYPE_ONMESSAGEERROR = "onmessageerror";
-
-    /** The stop event type, triggered by {@code stop} event handlers. */
-    public static final String TYPE_STOP = "stop";
-
-    /** The msgotpointercapture event type, triggered by {@code msgotpointercapture} event handlers. */
-    public static final String TYPE_MSGOTPOINTERCAPTURE = "msgotpointercapture";
-
-    /** The mslostpointercapture event type, triggered by {@code mslostpointercapture} event handlers. */
-    public static final String TYPE_MSLOSTPOINTERCAPTURE = "mslostpointercapture";
-
-    /** The activate event type, triggered by {@code activate} event handlers. */
-    public static final String TYPE_ACTIVATE = "activate";
-
-    /** The deactivate event type, triggered by {@code deactivate} event handlers. */
-    public static final String TYPE_DEACTIVATE = "deactivate";
-
-    /** The mscontentzoom event type, triggered by {@code mscontentzoom} event handlers. */
-    public static final String TYPE_MSCONTENTZOOM = "mscontentzoom";
-
-    /** The msmanipulationstatechanged event type, triggered by {@code msmanipulationstatechanged} event handlers. */
-    public static final String TYPE_MSMANIPULATIONSTATECHANGED = "msmanipulationstatechanged";
-
-    /** The beforeactivate event type, triggered by {@code beforeactivate} event handlers. */
-    public static final String TYPE_BEFOREACTIVATE = "beforeactivate";
 
     /** The pointerlockchange event type, triggered by {@code pointerlockchange} event handlers. */
     public static final String TYPE_POINTERLOCKCHANGE = "pointerlockchange";
@@ -487,21 +422,6 @@ public class Event extends HtmlUnitScriptable {
 
     /** The beforescriptexecute event type, triggered by {@code beforescriptexecute} event handlers. */
     public static final String TYPE_BEFORESCRIPTEXECUTE = "beforescriptexecute";
-
-    /** The msfullscreenchange event type, triggered by {@code msfullscreenchange} event handlers. */
-    public static final String TYPE_MSFULLSCREENCHANGE = "msfullscreenchange";
-
-    /** The msfullscreenerror event type, triggered by {@code msfullscreenerror} event handlers. */
-    public static final String TYPE_MSFULLSCREENERROR = "msfullscreenerror";
-
-    /** The beforedeactivate event type, triggered by {@code beforedeactivate} event handlers. */
-    public static final String TYPE_BEFOREDEACTIVATE = "beforedeactivate";
-
-    /** The msthumbnailclick event type, triggered by {@code msthumbnailclick} event handlers. */
-    public static final String TYPE_MSTHUMBNAILCLICK = "msthumbnailclick";
-
-    /** The storagecommit event type, triggered by {@code storagecommit} event handlers. */
-    public static final String TYPE_STORAGECOMMIT = "storagecommit";
 
     /** The ontransitioncancel event type, triggered by {@code ontransitioncancel} event handlers. */
     public static final String TYPE_ONTRANSITIONCANCEL = "ontransitioncancel";
@@ -528,7 +448,7 @@ public class Event extends HtmlUnitScriptable {
     public static final String TYPE_MSSITEMODEJUMPLISTITEMREMOVED = "mssitemodejumplistitemremoved";
 
     /** No event phase. */
-    @JsxConstant({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstant
     public static final int NONE = 0;
 
     /** The first event phase: the capturing phase. */
@@ -559,14 +479,14 @@ public class Event extends HtmlUnitScriptable {
     @JsxConstant({FF, FF_ESR})
     public static final int META_MASK = 0x8;
 
-    private Object srcElement_;        // IE-only writable equivalent of target.
+    private Object srcElement_;        // writable equivalent of target.
     private EventTarget target_;       // W3C standard read-only equivalent of srcElement.
     private Scriptable currentTarget_; // Changes during event capturing and bubbling.
     private String type_ = "";         // The event type.
     private int keyCode_;              // Key code for a keypress
-    private boolean shiftKey_;         // Exposed here in IE, only in mouse events in FF.
-    private boolean ctrlKey_;          // Exposed here in IE, only in mouse events in FF.
-    private boolean altKey_;           // Exposed here in IE, only in mouse events in FF.
+    private boolean shiftKey_;
+    private boolean ctrlKey_;
+    private boolean altKey_;
     private String propertyName_;
     private boolean stopPropagation_;
     private boolean stopImmediatePropagation_;
@@ -618,6 +538,7 @@ public class Event extends HtmlUnitScriptable {
      * @param type the event type
      */
     public Event(final EventTarget target, final String type) {
+        super();
         srcElement_ = target;
         target_ = target;
         currentTarget_ = target;
@@ -664,6 +585,7 @@ public class Event extends HtmlUnitScriptable {
      * Used to build the prototype.
      */
     public Event() {
+        super();
     }
 
     /**
@@ -681,7 +603,7 @@ public class Event extends HtmlUnitScriptable {
      * @param type the event type
      * @param details the event details (optional)
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor(final String type, final ScriptableObject details) {
         boolean bubbles = false;
         boolean cancelable = false;
@@ -732,7 +654,6 @@ public class Event extends HtmlUnitScriptable {
      * Sets the object that fired the event.
      * @param srcElement the object that fired the event
      */
-    @JsxSetter(IE)
     public void setSrcElement(final Object srcElement) {
         srcElement_ = srcElement;
     }
@@ -1026,8 +947,7 @@ public class Event extends HtmlUnitScriptable {
 
     /**
      * Returns {@code true} if this event has been aborted via <code>preventDefault()</code> in
-     * standards-compliant browsers, or via the event's <code>returnValue</code> property in IE, or
-     * by the event handler returning {@code false}.
+     * standards-compliant browsers.
      *
      * @param result the event handler result (if {@code false}, the event is considered aborted)
      * @return {@code true} if this event has been aborted
@@ -1064,7 +984,7 @@ public class Event extends HtmlUnitScriptable {
     /**
      * @return the return value property
      */
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxGetter
     public Object getReturnValue() {
         return !preventDefault_;
     }
@@ -1072,7 +992,7 @@ public class Event extends HtmlUnitScriptable {
     /**
      * @param newValue the new return value
      */
-    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxSetter
     public void setReturnValue(final Object newValue) {
         if (isCancelable()) {
             final boolean bool = !JavaScriptEngine.toBoolean(newValue);
@@ -1085,8 +1005,8 @@ public class Event extends HtmlUnitScriptable {
     /**
      * @return the return composed property
      */
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
-    public Object getComposed() {
+    @JsxGetter
+    public boolean getComposed() {
         return false;
     }
 

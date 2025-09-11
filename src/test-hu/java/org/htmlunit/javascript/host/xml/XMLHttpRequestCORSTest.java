@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,11 +33,9 @@ import javax.servlet.http.HttpServletResponse;
 import org.htmlunit.HttpHeader;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
-import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.WebDriver;
@@ -54,20 +52,10 @@ import org.openqa.selenium.WebDriver;
 public class XMLHttpRequestCORSTest extends WebDriverTestCase {
 
     /**
-     * Closes the real IE; otherwise tests are failing because of cached responses.
-     */
-    @After
-    public void shutDownRealBrowsersAfter() {
-        shutDownRealIE();
-    }
-
-    /**
      * @throws Exception if the test fails.
      */
     @Test
-    @Alerts(DEFAULT = {"error [object ProgressEvent]", "error", "false", "0", "false"},
-            IE =      {"error [object ProgressEvent]", "error", "false", "0", "true"})
-    @HtmlUnitNYI(IE = {"error [object ProgressEvent]", "error", "true", "0", "false"})
+    @Alerts({"error [object ProgressEvent]", "error", "false", "0", "false"})
     public void noCorsHeaderCallsErrorHandler() throws Exception {
         final String html = "<html><head>\n"
                 + "<script>\n"
@@ -85,7 +73,7 @@ public class XMLHttpRequestCORSTest extends WebDriverTestCase {
                 + "                    log(event.total > 0);\n"
                 + "                  };\n"
                 + "    xhr.send();\n"
-                + "  } catch(e) { log('exception'); }\n"
+                + "  } catch(e) { logEx(e); }\n"
                 + "}\n"
                 + "</script>\n"
                 + "</head>\n"
@@ -143,11 +131,6 @@ public class XMLHttpRequestCORSTest extends WebDriverTestCase {
      */
     @Test
     @Alerts({"4", "200", "null"})
-    @HtmlUnitNYI(CHROME = {"4", "200", "[object XMLDocument]"},
-            EDGE = {"4", "200", "[object XMLDocument]"},
-            FF = {"4", "200", "[object XMLDocument]"},
-            FF_ESR = {"4", "200", "[object XMLDocument]"},
-            IE = {"4", "200", "[object XMLDocument]"})
     public void simpleHead() throws Exception {
         expandExpectedAlertsVariables(new URL("http://localhost:" + PORT));
 
@@ -217,7 +200,7 @@ public class XMLHttpRequestCORSTest extends WebDriverTestCase {
      * @throws Exception if the test fails.
      */
     @Test
-    @Alerts("exception")
+    @Alerts("NetworkError/DOMException")
     public void simplePut() throws Exception {
         expandExpectedAlertsVariables(new URL("http://localhost:" + PORT));
 
@@ -233,7 +216,7 @@ public class XMLHttpRequestCORSTest extends WebDriverTestCase {
                 + "    log(xhr.readyState);\n"
                 + "    log(xhr.status);\n"
                 + "    log(xhr.responseXML.firstChild.firstChild.nodeValue);\n"
-                + "  } catch(e) { log('exception') }\n"
+                + "  } catch(e) { logEx(e) }\n"
                 + "}\n"
                 + "</script>\n"
                 + "</head>\n"
@@ -294,7 +277,7 @@ public class XMLHttpRequestCORSTest extends WebDriverTestCase {
      * @throws Exception if the test fails.
      */
     @Test
-    @Alerts({"exception", "4", "0", ""})
+    @Alerts({"NetworkError/DOMException", "4", "0", ""})
     public void noAccessControlAllowOrigin() throws Exception {
         incorrectAccessControlAllowOrigin(null);
     }
@@ -311,7 +294,7 @@ public class XMLHttpRequestCORSTest extends WebDriverTestCase {
                 + "    var url = 'http://' + window.location.hostname + ':" + PORT2 + "/simple2';\n"
                 + "    xhr.open('GET', url, false);\n"
                 + "    xhr.send();\n"
-                + "  } catch(e) { log('exception') }\n"
+                + "  } catch(e) { logEx(e) }\n"
                 + "  log(xhr.readyState);\n"
                 + "  log(xhr.status);\n"
                 + "  log(xhr.responseText);\n"
@@ -333,7 +316,7 @@ public class XMLHttpRequestCORSTest extends WebDriverTestCase {
      * @throws Exception if the test fails.
      */
     @Test
-    @Alerts({"exception", "4", "0", ""})
+    @Alerts({"NetworkError/DOMException", "4", "0", ""})
     public void nonMatchingAccessControlAllowOrigin() throws Exception {
         incorrectAccessControlAllowOrigin("http://www.sourceforge.net");
     }
@@ -342,9 +325,7 @@ public class XMLHttpRequestCORSTest extends WebDriverTestCase {
      * @throws Exception if the test fails.
      */
     @Test
-    @Alerts(DEFAULT = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother", "null"},
-            IE = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother, content-type", "null"})
-    @HtmlUnitNYI(IE = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother", "null"})
+    @Alerts({"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother", "null"})
     public void preflight() throws Exception {
         doPreflightTestAllowedMethods("POST, GET, OPTIONS", MimeType.TEXT_PLAIN, null);
 
@@ -356,9 +337,7 @@ public class XMLHttpRequestCORSTest extends WebDriverTestCase {
      * @throws Exception if the test fails.
      */
     @Test
-    @Alerts(DEFAULT = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother", "null"},
-            IE = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother, content-type", "null"})
-    @HtmlUnitNYI(IE = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother", "null"})
+    @Alerts({"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother", "null"})
     public void preflight_cookie() throws Exception {
         doPreflightTestAllowedMethods("POST, GET, OPTIONS", MimeType.TEXT_PLAIN, "cookie=sweet");
 
@@ -370,9 +349,7 @@ public class XMLHttpRequestCORSTest extends WebDriverTestCase {
      * @throws Exception if the test fails.
      */
     @Test
-    @Alerts(DEFAULT = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother", "null"},
-            IE = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother, content-type", "null"})
-    @HtmlUnitNYI(IE = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother", "null"})
+    @Alerts({"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother", "null"})
     // unstable test case, this will work on real Chrome if individually run, but will fail if run with other cases
     public void preflight_contentTypeWithCharset() throws Exception {
         doPreflightTestAllowedMethods("POST, GET, OPTIONS", MimeType.TEXT_PLAIN + ";charset=utf-8", null);
@@ -385,9 +362,7 @@ public class XMLHttpRequestCORSTest extends WebDriverTestCase {
      * @throws Exception if the test fails.
      */
     @Test
-    @Alerts(DEFAULT = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother", "null"},
-            IE = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother, content-type", "null"})
-    @HtmlUnitNYI(IE = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother", "null"})
+    @Alerts({"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother", "null"})
     // unstable test case, this will work on real Chrome if individually run, but will fail if run with other cases
     public void preflightUrlEncoded() throws Exception {
         doPreflightTestAllowedMethods("POST, GET, OPTIONS", "application/x-www-form-urlencoded", null);
@@ -400,9 +375,7 @@ public class XMLHttpRequestCORSTest extends WebDriverTestCase {
      * @throws Exception if the test fails.
      */
     @Test
-    @Alerts(DEFAULT = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother", "null"},
-            IE = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother, content-type", "null"})
-    @HtmlUnitNYI(IE = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother", "null"})
+    @Alerts({"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother", "null"})
     // unstable test case, this will work on real Chrome if individually run, but will fail if run with other cases
     public void preflightUrlEncoded_contentTypeWithCharset() throws Exception {
         doPreflightTestAllowedMethods("POST, GET, OPTIONS", "application/x-www-form-urlencoded;charset=utf-8", null);
@@ -415,9 +388,7 @@ public class XMLHttpRequestCORSTest extends WebDriverTestCase {
      * @throws Exception if the test fails.
      */
     @Test
-    @Alerts(DEFAULT = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother", "null"},
-            IE = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother, content-type", "null"})
-    @HtmlUnitNYI(IE = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother", "null"})
+    @Alerts({"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother", "null"})
     // unstable test case, this will work on real Chrome if individually run, but will fail if run with other cases
     public void preflightMultipart() throws Exception {
         doPreflightTestAllowedMethods("POST, GET, OPTIONS", "multipart/form-data", null);
@@ -430,9 +401,7 @@ public class XMLHttpRequestCORSTest extends WebDriverTestCase {
      * @throws Exception if the test fails.
      */
     @Test
-    @Alerts(DEFAULT = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother", "null"},
-            IE = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother, content-type", "null"})
-    @HtmlUnitNYI(IE = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother", "null"})
+    @Alerts({"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother", "null"})
     // unstable test case, this will work on real Chrome if individually run, but will fail if run with other cases
     public void preflightMultipart_contentTypeWithCharset() throws Exception {
         doPreflightTestAllowedMethods("POST, GET, OPTIONS", "multipart/form-data;charset=utf-8", null);
@@ -447,9 +416,7 @@ public class XMLHttpRequestCORSTest extends WebDriverTestCase {
      * @throws Exception if the test fails.
      */
     @Test
-    @Alerts(DEFAULT = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother", "null"},
-            IE = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother, content-type", "null"})
-    @HtmlUnitNYI(IE = {"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother", "null"})
+    @Alerts({"4", "200", "§§URL§§", "§§URL§§", "GET", "x-pingother", "null"})
     // unstable test case, this will fail on real Chrome if individually run, but will succeed if run with other cases
     public void preflight_incorrect_methods() throws Exception {
         doPreflightTestAllowedMethods(null, MimeType.TEXT_PLAIN, null);
@@ -568,7 +535,7 @@ public class XMLHttpRequestCORSTest extends WebDriverTestCase {
      * @throws Exception if the test fails.
      */
     @Test
-    @Alerts({"exception", "4", "0"})
+    @Alerts({"NetworkError/DOMException", "4", "0"})
     // unstable test case, this will fail on real Chrome if individually run, but will succeed if run with other cases
     public void preflight_incorrect_headers() throws Exception {
         expandExpectedAlertsVariables(new URL("http://localhost:" + PORT));
@@ -583,7 +550,7 @@ public class XMLHttpRequestCORSTest extends WebDriverTestCase {
                 + "    xhr.open('GET', url, false);\n"
                 + "    xhr.setRequestHeader('X-PINGOTHER', 'pingpong');\n"
                 + "    xhr.send();\n"
-                + "  } catch(e) { log('exception') }\n"
+                + "  } catch(e) { logEx(e) }\n"
                 + "  log(xhr.readyState);\n"
                 + "  log(xhr.status);\n"
                 + "}\n"
@@ -606,9 +573,7 @@ public class XMLHttpRequestCORSTest extends WebDriverTestCase {
      * @throws Exception if the test fails.
      */
     @Test
-    @Alerts(DEFAULT = {"4", "200", "options_headers", "x-ping,x-pong"},
-            IE = {"4", "200", "options_headers", "x-ping, x-pong"})
-    @HtmlUnitNYI(IE = {"4", "200", "options_headers", "x-ping,x-pong"})
+    @Alerts({"4", "200", "options_headers", "x-ping,x-pong"})
     public void preflight_many_header_values() throws Exception {
         expandExpectedAlertsVariables(new URL("http://localhost:" + PORT));
 
@@ -623,7 +588,7 @@ public class XMLHttpRequestCORSTest extends WebDriverTestCase {
                 + "    xhr.setRequestHeader('X-PING', 'ping');\n"
                 + "    xhr.setRequestHeader('X-PONG', 'pong');\n"
                 + "    xhr.send();\n"
-                + "  } catch(e) { log('exception') }\n"
+                + "  } catch(e) { logEx(e) }\n"
                 + "  log(xhr.readyState);\n"
                 + "  log(xhr.status);\n"
                 + "  log(xhr.responseXML.firstChild.childNodes[3].tagName);\n"
@@ -891,7 +856,7 @@ public class XMLHttpRequestCORSTest extends WebDriverTestCase {
                 + "    xhr.withCredentials = true;\n"
                 + "    xhr.onreadystatechange = onReadyStateChange;\n"
                 + "    xhr.send();\n"
-                + "  } catch(e) { log('exception') }\n"
+                + "  } catch(e) { logEx(e) }\n"
                 + "  log(xhr.readyState);\n"
                 + "  try {\n"
                 + "    log(xhr.status);\n"

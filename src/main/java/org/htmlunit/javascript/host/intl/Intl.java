@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@ public class Intl extends HtmlUnitScriptable {
     private void define(final Class<? extends HtmlUnitScriptable> c, final BrowserVersion browserVersion) {
         try {
             final ClassConfiguration config = AbstractJavaScriptConfiguration.getClassConfiguration(c, browserVersion);
-            final HtmlUnitScriptable prototype = JavaScriptEngine.configureClass(config, this, browserVersion);
+            final HtmlUnitScriptable prototype = JavaScriptEngine.configureClass(config, this);
             final FunctionObject functionObject =
                     new RecursiveFunctionObject(config.getJsConstructor().getKey(),
                             config.getJsConstructor().getValue(), this, browserVersion);

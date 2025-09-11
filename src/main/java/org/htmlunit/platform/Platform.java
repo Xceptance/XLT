@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ import org.w3c.dom.Node;
  * This is required to support at least the differences with android.
  *
  * @author Ronald Brill
+ * @author Sven Strickroth
  */
 public final class Platform {
 
@@ -51,18 +52,18 @@ public final class Platform {
 
     static {
         try {
-            HelperSunXerces_ = (XmlUtilsHelperAPI)
-                    Class.forName("org.htmlunit.platform.util.XmlUtilsSunXercesHelper").newInstance();
+            HelperSunXerces_ = (XmlUtilsHelperAPI) Class.forName("org.htmlunit.platform.util.XmlUtilsSunXercesHelper")
+                                                    .getDeclaredConstructor().newInstance();
         }
-        catch (final Exception | LinkageError e) {
+        catch (final Exception | LinkageError ignored) {
             // ignore
         }
 
         try {
-            HelperXerces_ = (XmlUtilsHelperAPI)
-                    Class.forName("org.htmlunit.platform.util.XmlUtilsXercesHelper").newInstance();
+            HelperXerces_ = (XmlUtilsHelperAPI) Class.forName("org.htmlunit.platform.util.XmlUtilsXercesHelper")
+                                                    .getDeclaredConstructor().newInstance();
         }
-        catch (final Exception | LinkageError e2) {
+        catch (final Exception | LinkageError ignored) {
             // ignore
         }
     }
@@ -163,16 +164,16 @@ public final class Platform {
                         "org.htmlunit.platform.image.ImageIOImageData");
             return (ImageData) ConstructorUtils.invokeConstructor(backendClass, inputStream);
         }
-        catch (final InvocationTargetException e) {
-            final Throwable targetEx = e.getTargetException();
+        catch (final InvocationTargetException ex) {
+            final Throwable targetEx = ex.getTargetException();
             if (targetEx instanceof IOException) {
-                throw (IOException) e.getTargetException();
+                throw (IOException) targetEx;
             }
 
             return new NoOpImageData();
         }
-        catch (final RuntimeException re) {
-            throw re;
+        catch (final RuntimeException ex) {
+            throw ex;
         }
         catch (final Throwable ex) {
             return new NoOpImageData();
@@ -180,5 +181,6 @@ public final class Platform {
     }
 
     private Platform() {
+        // util class
     }
 }

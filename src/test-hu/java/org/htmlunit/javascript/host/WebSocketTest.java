@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,8 @@
 package org.htmlunit.javascript.host;
 
 import static java.nio.charset.StandardCharsets.UTF_16LE;
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.FF;
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.FF_ESR;
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
+import static org.htmlunit.junit.annotation.TestedBrowser.FF;
+import static org.htmlunit.junit.annotation.TestedBrowser.FF_ESR;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -33,19 +32,17 @@ import org.eclipse.jetty.websocket.servlet.ServletUpgradeResponse;
 import org.eclipse.jetty.websocket.servlet.WebSocketCreator;
 import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
 import org.htmlunit.HttpHeader;
-import org.htmlunit.WebClient;
-import org.htmlunit.WebClientInternals;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.NotYetImplemented;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 
 /**
  * Tests for {@link WebSocket}.
@@ -116,22 +113,53 @@ public class WebSocketTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"exception undefined", "exception null", "exception empty", "exception invalid"})
+    @Alerts(DEFAULT = {"exception no param", "ws://localhost:22222/undefined", "ws://localhost:22222/null",
+                       "ws://localhost:22222/", "ws://localhost:22222/", "exception invalid"},
+            FF = {"exception no param", "ws://localhost:22222/undefined", "ws://localhost:22222/null",
+                  "exception empty", "ws://localhost:22222/", "exception invalid"},
+            FF_ESR = {"exception no param", "ws://localhost:22222/undefined", "ws://localhost:22222/null",
+                      "exception empty", "ws://localhost:22222/", "exception invalid"})
+    @HtmlUnitNYI(
+            CHROME = {"exception no param", "ws://localhost:22222/undefined", "ws://localhost:22222/null",
+                      "ws://localhost:22222/", "ws://localhost:22222/", "ws://localhost:22222/#"},
+            EDGE = {"exception no param", "ws://localhost:22222/undefined", "ws://localhost:22222/null",
+                    "ws://localhost:22222/", "ws://localhost:22222/", "ws://localhost:22222/#"},
+            FF = {"exception no param", "ws://localhost:22222/undefined", "ws://localhost:22222/null",
+                  "ws://localhost:22222/", "ws://localhost:22222/", "ws://localhost:22222/#"},
+            FF_ESR = {"exception no param", "ws://localhost:22222/undefined", "ws://localhost:22222/null",
+                      "ws://localhost:22222/", "ws://localhost:22222/", "ws://localhost:22222/#"})
     public void initialWithoutUrl() throws Exception {
         final String html = "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "  function test() {\n"
             + "    try {\n"
-            + "      new WebSocket(undefined);\n"
+            + "      let ws = new WebSocket();\n"
+            + "      log(ws.url);"
+            + "    } catch(e) { log('exception no param') }\n"
+
+            + "    try {\n"
+            + "      let ws = new WebSocket(undefined);\n"
+            + "      log(ws.url);"
             + "    } catch(e) { log('exception undefined') }\n"
+
             + "    try {\n"
-            + "      new WebSocket(null);\n"
+            + "      let ws = new WebSocket(null);\n"
+            + "      log(ws.url);"
             + "    } catch(e) { log('exception null') }\n"
+
             + "    try {\n"
-            + "      new WebSocket('');\n"
+            + "      let ws = new WebSocket('');\n"
+            + "      log(ws.url);"
             + "    } catch(e) { log('exception empty') }\n"
+
             + "    try {\n"
-            + "      new WebSocket('#');\n"
+            + "      let ws = new WebSocket(' ');\n"
+            + "      log(ws.url);"
+            + "    } catch(e) { log('exception blank') }\n"
+
+            + "    try {\n"
+            + "      let ws = new WebSocket('#');\n"
+            + "      log(ws.url);"
             + "    } catch(e) { log('exception invalid') }\n"
             + "  }\n"
             + "</script></head><body onload='test()'>\n"
@@ -144,9 +172,7 @@ public class WebSocketTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"blob", "blob", "arraybuffer", "blob", "blob"},
-            IE = {"blob", "exception", "arraybuffer", "blob", "exception"})
-    @NotYetImplemented(IE)
+    @Alerts({"blob", "blob", "arraybuffer", "blob", "blob"})
     public void binaryType() throws Exception {
         final String html = "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
@@ -158,22 +184,22 @@ public class WebSocketTest extends WebDriverTestCase {
             + "    try {\n"
             + "      ws.binaryType = 'abc';\n"
             + "      log(ws.binaryType);\n"
-            + "    } catch(e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
 
             + "    try {\n"
             + "      ws.binaryType = 'arraybuffer';\n"
             + "      log(ws.binaryType);\n"
-            + "    } catch(e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
 
             + "    try {\n"
             + "      ws.binaryType = 'blob';\n"
             + "      log(ws.binaryType);\n"
-            + "    } catch(e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
 
             + "    try {\n"
             + "      ws.binaryType = '';\n"
             + "      log(ws.binaryType);\n"
-            + "    } catch(e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + "</script></head><body onload='test()'>\n"
             + "</body></html>";
@@ -265,7 +291,7 @@ public class WebSocketTest extends WebDriverTestCase {
                         webSocket.session_.getRemote().sendString(data);
                     }
                 }
-                catch (final IOException x) {
+                catch (final IOException e) {
                     session_.close();
                 }
             }
@@ -398,7 +424,7 @@ public class WebSocketTest extends WebDriverTestCase {
                         webSocket.session_.getRemote().sendString(cookie);
                     }
                 }
-                catch (final IOException x) {
+                catch (final IOException e) {
                     session_.close();
                 }
             }
@@ -414,32 +440,19 @@ public class WebSocketTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"onOpenListener",
-                       "onOpen", "open", "[object WebSocket]", "[object WebSocket]",
-                       "undefined", "undefined", "undefined", "undefined",
-                       "onMessageTextListener", "message", "[object WebSocket]", "[object WebSocket]",
-                       "server_text", "§§URL§§", "", "null",
-                       "onMessageText", "message", "[object WebSocket]", "[object WebSocket]",
-                       "server_text", "§§URL§§", "", "null",
-                       "onMessageBinaryListener", "message", "[object WebSocket]", "[object WebSocket]",
-                       "[object ArrayBuffer]", "§§URL§§", "", "null",
-                       "onMessageBinary", "message", "[object WebSocket]", "[object WebSocket]",
-                       "[object ArrayBuffer]", "§§URL§§", "", "null",
-                       "onCloseListener code: 1000",
-                       "onClose code: 1000"},
-            IE = {"onOpenListener",
-                  "onOpen", "open", "[object WebSocket]", "[object WebSocket]",
-                  "undefined", "undefined", "undefined", "undefined",
-                  "onMessageTextListener", "message", "[object WebSocket]", "[object WebSocket]",
-                  "server_text", "", "undefined", "null",
-                  "onMessageText", "message", "[object WebSocket]", "[object WebSocket]",
-                  "server_text", "", "undefined", "null",
-                  "onMessageBinaryListener", "message", "[object WebSocket]", "[object WebSocket]",
-                  "[object ArrayBuffer]", "", "undefined", "null",
-                  "onMessageBinary", "message", "[object WebSocket]", "[object WebSocket]",
-                  "[object ArrayBuffer]", "", "undefined", "null",
-                  "onCloseListener code: 1000",
-                  "onClose code: 1000"})
+    @Alerts({"onOpenListener",
+             "onOpen", "open", "[object WebSocket]", "[object WebSocket]",
+             "undefined", "undefined", "undefined", "undefined",
+             "onMessageTextListener", "message", "[object WebSocket]", "[object WebSocket]",
+             "server_text", "§§URL§§", "", "null",
+             "onMessageText", "message", "[object WebSocket]", "[object WebSocket]",
+             "server_text", "§§URL§§", "", "null",
+             "onMessageBinaryListener", "message", "[object WebSocket]", "[object WebSocket]",
+             "[object ArrayBuffer]", "§§URL§§", "", "null",
+             "onMessageBinary", "message", "[object WebSocket]", "[object WebSocket]",
+             "[object ArrayBuffer]", "§§URL§§", "", "null",
+             "onCloseListener code: 1000",
+             "onClose code: 1000"})
     public void events() throws Exception {
         expandExpectedAlertsVariables("ws://localhost:" + PORT);
         final String expected = String.join("\n", getExpectedAlerts());
@@ -457,7 +470,7 @@ public class WebSocketTest extends WebDriverTestCase {
             do {
                 Thread.sleep(100);
 
-                text = logElement.getAttribute("value").trim().replaceAll("\r", "");
+                text = logElement.getDomProperty("value").trim().replaceAll("\r", "");
             }
             while (text.length() <= expected.length() && System.currentTimeMillis() < maxWait);
 
@@ -510,20 +523,7 @@ public class WebSocketTest extends WebDriverTestCase {
                       "onMessageBinary", "message", "[object WebSocket]", "[object WebSocket]",
                       "[object ArrayBuffer]", "§§URL§§", "", "null",
                       "onCloseListener code: 1000  wasClean: false",
-                      "onClose code: 1000  wasClean: false"},
-            IE = {"onOpenListener",
-                  "onOpen", "open", "[object WebSocket]", "[object WebSocket]",
-                  "undefined", "undefined", "undefined", "undefined",
-                  "onMessageTextListener", "message", "[object WebSocket]", "[object WebSocket]",
-                  "server_text", "", "undefined", "null",
-                  "onMessageText", "message", "[object WebSocket]", "[object WebSocket]",
-                  "server_text", "", "undefined", "null",
-                  "onMessageBinaryListener", "message", "[object WebSocket]", "[object WebSocket]",
-                  "[object ArrayBuffer]", "", "undefined", "null",
-                  "onMessageBinary", "message", "[object WebSocket]", "[object WebSocket]",
-                  "[object ArrayBuffer]", "", "undefined", "null",
-                  "onCloseListener code: 1000  wasClean: true",
-                  "onClose code: 1000  wasClean: true"})
+                      "onClose code: 1000  wasClean: false"})
     @NotYetImplemented({FF, FF_ESR})
     public void wasClean() throws Exception {
         expandExpectedAlertsVariables("ws://localhost:" + PORT);
@@ -542,7 +542,7 @@ public class WebSocketTest extends WebDriverTestCase {
             do {
                 Thread.sleep(100);
 
-                text = logElement.getAttribute("value").trim().replaceAll("\r", "");
+                text = logElement.getDomProperty("value").trim().replaceAll("\r", "");
             }
             while (text.length() <= expected.length() && System.currentTimeMillis() < maxWait);
 
@@ -572,7 +572,7 @@ public class WebSocketTest extends WebDriverTestCase {
             do {
                 Thread.sleep(DEFAULT_WAIT_TIME);
 
-                text = logElement.getAttribute("value").trim().replaceAll("\r", "");
+                text = logElement.getDomProperty("value").trim().replaceAll("\r", "");
             }
             while (text.length() > 0 && counter++ < 10);
 
@@ -650,44 +650,6 @@ public class WebSocketTest extends WebDriverTestCase {
                     throw new IllegalArgumentException("Unknown request: " + data);
                 }
             }
-        }
-    }
-
-    /**
-     * @throws Exception if the test fails
-     */
-    @Test
-    public void listener() throws Exception {
-        startWebServer("src/test-hu/resources/org/htmlunit/javascript/host",
-                null, null, new EventsWebSocketHandler());
-        try {
-            final WebDriver driver = getWebDriver();
-            final int[] webSocketCreated = {0};
-
-            if (driver instanceof HtmlUnitDriver) {
-                final WebClient webClient = getWebClient();
-                final WebClientInternals internals = webClient.getInternals();
-
-                internals.addListener(new WebClientInternals.Listener() {
-                    @Override
-                    public void webSocketCreated(final WebSocket webSocket) {
-                        webSocketCreated[0]++;
-                    }
-                });
-            }
-
-            driver.get(URL_FIRST + "WebSocketTest_listener.html");
-
-            if (driver instanceof HtmlUnitDriver) {
-                final long maxWait = System.currentTimeMillis() + DEFAULT_WAIT_TIME;
-                while (webSocketCreated[0] < 0 && System.currentTimeMillis() < maxWait) {
-                    Thread.sleep(30);
-                }
-                assertEquals(1, webSocketCreated[0]);
-            }
-        }
-        finally {
-            stopWebServers();
         }
     }
 

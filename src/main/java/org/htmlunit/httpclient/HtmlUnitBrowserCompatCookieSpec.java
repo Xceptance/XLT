@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -103,7 +103,7 @@ public class HtmlUnitBrowserCompatCookieSpec extends CookieSpecBase {
     public HtmlUnitBrowserCompatCookieSpec(final BrowserVersion browserVersion) {
         super(new HtmlUnitVersionAttributeHandler(),
                 new HtmlUnitDomainHandler(browserVersion),
-                new HtmlUnitPathHandler(browserVersion),
+                new HtmlUnitPathHandler(),
                 new HtmlUnitMaxAgeHandler(),
                 new HtmlUnitSecureHandler(),
                 new BasicCommentHandler(),
@@ -140,7 +140,7 @@ public class HtmlUnitBrowserCompatCookieSpec extends CookieSpecBase {
         }
 
         final String headername = header.getName();
-        if (!headername.equalsIgnoreCase(SM.SET_COOKIE)) {
+        if (!SM.SET_COOKIE.equalsIgnoreCase(headername)) {
             throw new MalformedCookieException("Unrecognized cookie header '" + header + "'");
         }
         final HeaderElement[] helems = header.getElements();
@@ -281,7 +281,7 @@ public class HtmlUnitBrowserCompatCookieSpec extends CookieSpecBase {
         private static final BitSet TOKEN_DELIMS = TokenParser.INIT_BITSET('=', PARAM_DELIMITER);
         private static final BitSet VALUE_DELIMS = TokenParser.INIT_BITSET(PARAM_DELIMITER);
 
-        private final TokenParser tokenParser_ = TokenParser.INSTANCE;
+        private static final TokenParser TOKEN_PARSER = TokenParser.INSTANCE;
 
         HeaderElement parseHeader(final CharArrayBuffer buffer, final ParserCursor cursor) throws ParseException {
             final NameValuePair nvp = parseNameValuePair(buffer, cursor);
@@ -296,7 +296,7 @@ public class HtmlUnitBrowserCompatCookieSpec extends CookieSpecBase {
         }
 
         private NameValuePair parseNameValuePair(final CharArrayBuffer buffer, final ParserCursor cursor) {
-            final String name = tokenParser_.parseToken(buffer, cursor, TOKEN_DELIMS);
+            final String name = TOKEN_PARSER.parseToken(buffer, cursor, TOKEN_DELIMS);
             if (cursor.atEnd()) {
                 return new BasicNameValuePair(name, null);
             }
@@ -307,7 +307,7 @@ public class HtmlUnitBrowserCompatCookieSpec extends CookieSpecBase {
                 return new BasicNameValuePair(name, null);
             }
 
-            final String value = tokenParser_.parseToken(buffer, cursor, VALUE_DELIMS);
+            final String value = TOKEN_PARSER.parseToken(buffer, cursor, VALUE_DELIMS);
             if (!cursor.atEnd()) {
                 cursor.updatePos(cursor.getPos() + 1);
             }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ package org.htmlunit.javascript.host.html;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -31,8 +31,7 @@ public class HTMLHeadingElementTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"left", "right", "center", "justify", "wrong", ""},
-            IE = {"left", "right", "center", "justify", "", ""})
+    @Alerts({"left", "right", "center", "justify", "wrong", ""})
     public void getAlign() throws Exception {
         final String html
             = "<html><body>\n"
@@ -58,8 +57,7 @@ public class HTMLHeadingElementTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"CenTer", "8", "foo", "left", "right", "center", "justify"},
-            IE = {"center", "error", "center", "error", "center", "left", "right", "center", "justify"})
+    @Alerts({"CenTer", "8", "foo", "left", "right", "center", "justify"})
     public void setAlign() throws Exception {
         final String html
             = "<html><body>\n"
@@ -70,7 +68,7 @@ public class HTMLHeadingElementTest extends WebDriverTestCase {
             + "  function setAlign(elem, value) {\n"
             + "    try {\n"
             + "      elem.align = value;\n"
-            + "    } catch (e) { log('error'); }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "    log(elem.align);\n"
             + "  }\n"
 

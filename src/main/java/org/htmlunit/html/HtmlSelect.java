@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,7 @@
  */
 package org.htmlunit.html;
 
-import static org.htmlunit.BrowserVersionFeatures.EVENT_MOUSE_ON_DISABLED;
-import static org.htmlunit.BrowserVersionFeatures.HTMLSELECT_WILL_VALIDATE_ALWAYS_TRUE;
 import static org.htmlunit.BrowserVersionFeatures.HTMLSELECT_WILL_VALIDATE_IGNORES_READONLY;
-import static org.htmlunit.BrowserVersionFeatures.JS_SELECT_SET_VALUES_CHECKS_ONLY_VALUE_ATTRIBUTE;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -112,7 +109,7 @@ public class HtmlSelect extends HtmlElement implements DisabledElement, Submitta
      */
     @Override
     public boolean handles(final Event event) {
-        if (event instanceof MouseEvent && hasFeature(EVENT_MOUSE_ON_DISABLED)) {
+        if (event instanceof MouseEvent) {
             return true;
         }
 
@@ -164,7 +161,7 @@ public class HtmlSelect extends HtmlElement implements DisabledElement, Submitta
      * @return all of the options in this select element
      */
     public List<HtmlOption> getOptions() {
-        return Collections.unmodifiableList(this.getElementsByTagNameImpl("option"));
+        return Collections.unmodifiableList(getStaticElementsByTagName("option"));
     }
 
     /**
@@ -174,7 +171,7 @@ public class HtmlSelect extends HtmlElement implements DisabledElement, Submitta
      * @return the option specified by the index
      */
     public HtmlOption getOption(final int index) {
-        return this.<HtmlOption>getElementsByTagNameImpl("option").get(index);
+        return this.<HtmlOption>getStaticElementsByTagName("option").get(index);
     }
 
     /**
@@ -182,7 +179,7 @@ public class HtmlSelect extends HtmlElement implements DisabledElement, Submitta
      * @return the number of options
      */
     public int getOptionSize() {
-        return getElementsByTagName("option").size();
+        return getStaticElementsByTagName("option").size();
     }
 
     /**
@@ -191,7 +188,7 @@ public class HtmlSelect extends HtmlElement implements DisabledElement, Submitta
      * @param newLength the new length property value
      */
     public void setOptionSize(final int newLength) {
-        final List<HtmlElement> elementList = getElementsByTagName("option");
+        final List<HtmlElement> elementList = getStaticElementsByTagName("option");
 
         for (int i = elementList.size() - 1; i >= newLength; i--) {
             elementList.get(i).remove();
@@ -204,7 +201,8 @@ public class HtmlSelect extends HtmlElement implements DisabledElement, Submitta
      */
     public void removeOption(final int index) {
         final ChildElementsIterator iterator = new ChildElementsIterator(this);
-        for (int i = 0; iterator.hasNext();) {
+        int i = 0;
+        while (iterator.hasNext()) {
             final DomElement element = iterator.next();
             if (element instanceof HtmlOption) {
                 if (i == index) {
@@ -224,7 +222,8 @@ public class HtmlSelect extends HtmlElement implements DisabledElement, Submitta
      */
     public void replaceOption(final int index, final HtmlOption newOption) {
         final ChildElementsIterator iterator = new ChildElementsIterator(this);
-        for (int i = 0; iterator.hasNext();) {
+        int i = 0;
+        while (iterator.hasNext()) {
             final DomElement element = iterator.next();
             if (element instanceof HtmlOption) {
                 if (i == index) {
@@ -301,15 +300,7 @@ public class HtmlSelect extends HtmlElement implements DisabledElement, Submitta
     public <P extends Page> P setSelectedAttribute(final String optionValue,
             final boolean isSelected, final boolean invokeOnFocus) {
         try {
-            final boolean attributeOnly = hasFeature(JS_SELECT_SET_VALUES_CHECKS_ONLY_VALUE_ATTRIBUTE)
-                    && !optionValue.isEmpty();
-            final HtmlOption selected;
-            if (attributeOnly) {
-                selected = getOptionByValueStrict(optionValue);
-            }
-            else {
-                selected = getOptionByValue(optionValue);
-            }
+            final HtmlOption selected = getOptionByValue(optionValue);
             return setSelectedAttribute(selected, isSelected, invokeOnFocus, true, false, true);
         }
         catch (final ElementNotFoundException e) {
@@ -464,10 +455,10 @@ public class HtmlSelect extends HtmlElement implements DisabledElement, Submitta
     @Override
     public String getDefaultValue() {
         final List<HtmlOption> options = getSelectedOptions();
-        if (options.size() > 0) {
-            return options.get(0).getValueAttribute();
+        if (options.isEmpty()) {
+            return "";
         }
-        return "";
+        return options.get(0).getValueAttribute();
     }
 
     /**
@@ -521,16 +512,6 @@ public class HtmlSelect extends HtmlElement implements DisabledElement, Submitta
         throw new ElementNotFoundException("option", VALUE_ATTRIBUTE, value);
     }
 
-    private HtmlOption getOptionByValueStrict(final String value) throws ElementNotFoundException {
-        WebAssert.notNull(VALUE_ATTRIBUTE, value);
-        for (final HtmlOption option : getOptions()) {
-            if (option.getAttributeDirect(VALUE_ATTRIBUTE).equals(value)) {
-                return option;
-            }
-        }
-        throw new ElementNotFoundException("option", VALUE_ATTRIBUTE, value);
-    }
-
     /**
      * Returns the {@link HtmlOption} object that has the specified text.
      *
@@ -555,7 +536,7 @@ public class HtmlSelect extends HtmlElement implements DisabledElement, Submitta
      * @return the value of the attribute {@code name} or an empty string if that attribute isn't defined
      */
     public final String getNameAttribute() {
-        return getAttributeDirect(DomElement.NAME_ATTRIBUTE);
+        return getAttributeDirect(NAME_ATTRIBUTE);
     }
 
     /**
@@ -575,12 +556,12 @@ public class HtmlSelect extends HtmlElement implements DisabledElement, Submitta
     public final int getSize() {
         int size = 0;
         final String sizeAttribute = getSizeAttribute();
-        if (ATTRIBUTE_NOT_DEFINED != sizeAttribute && sizeAttribute != DomElement.ATTRIBUTE_VALUE_EMPTY) {
+        if (ATTRIBUTE_NOT_DEFINED != sizeAttribute && ATTRIBUTE_VALUE_EMPTY != sizeAttribute) {
             try {
                 size = Integer.parseInt(sizeAttribute);
             }
-            catch (final Exception e) {
-                //silently ignore
+            catch (final Exception ignored) {
+                // silently ignore
             }
         }
         return size;
@@ -609,7 +590,20 @@ public class HtmlSelect extends HtmlElement implements DisabledElement, Submitta
      */
     @Override
     public final boolean isDisabled() {
-        return hasAttribute(ATTRIBUTE_DISABLED);
+        if (hasAttribute(ATTRIBUTE_DISABLED)) {
+            return true;
+        }
+
+        Node node = getParentNode();
+        while (node != null) {
+            if (node instanceof DisabledElement
+                    && ((DisabledElement) node).isDisabled()) {
+                return true;
+            }
+            node = node.getParentNode();
+        }
+
+        return false;
     }
 
     /**
@@ -782,9 +776,7 @@ public class HtmlSelect extends HtmlElement implements DisabledElement, Submitta
      */
     @Override
     public boolean willValidate() {
-        return hasFeature(HTMLSELECT_WILL_VALIDATE_ALWAYS_TRUE)
-                || (!isDisabled()
-                        && (hasFeature(HTMLSELECT_WILL_VALIDATE_IGNORES_READONLY) || !isReadOnly()));
+        return !isDisabled() && (hasFeature(HTMLSELECT_WILL_VALIDATE_IGNORES_READONLY) || !isReadOnly());
     }
 
     /**

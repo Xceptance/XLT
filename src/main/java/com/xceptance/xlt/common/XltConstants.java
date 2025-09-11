@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,6 +78,11 @@ public final class XltConstants
      * The extension of XML files, such as log4j2.xml.
      */
     public static final String XML_FILE_EXTENSION = ".xml";
+
+    /**
+     * The extension of JSON files, such as my-config.json.
+     */
+    public static final String JSON_FILE_EXTENSION = ".json";
 
     /**
      * The name of the system property which holds the agent configuration directory.
@@ -176,6 +181,11 @@ public final class XltConstants
                                                                           .map(Pattern::compile).collect(Collectors.toList());
 
     /**
+     * The prefix of custom log files.
+     */
+    public static final String CUSTOM_LOG_PREFIX = "custom_log_";
+    
+    /**
      * The option name of the <em>from</em> option on the command line.
      */
     public static final String COMMANDLINE_OPTION_FROM = "from";
@@ -226,9 +236,14 @@ public final class XltConstants
     public static final String DIRECTORY_DATE_FORMAT = COMMANDLINE_DATE_FORMAT;
 
     /**
-     * The name of the configuration directory
+     * The name of the configuration directory.
      */
     public static final String CONFIG_DIR_NAME = "config";
+
+    /**
+     * The default path of the data directory.
+     */
+    public static final String DEFAULT_DATA_DIR_PATH = XltConstants.CONFIG_DIR_NAME + "/data";
 
     /**
      * The directory name of the common resources (CSS, JS, Images) for all test reports.
@@ -460,4 +475,38 @@ public final class XltConstants
      * The name if we want to clean the user info
      */
     public static final String PROP_REMOVE_USERINFO_FROM_REQUEST_URL = XltConstants.XLT_PACKAGE_PATH + ".results.data.request.removeUserInfoFromURL";
+
+    /**
+     * The name of the property for specifying the test suite's data directory.
+     */
+    public static final String PROP_DATA_DIRECTORY = XltConstants.XLT_PACKAGE_PATH + ".data.directory";
+
+    /*
+     * Scorecard configuration values
+     */
+
+    /**
+     * The property name for path to scorecard configuration file.
+     */
+    public static final String SCORECARD_CONFIG_FILE_PROPERTY = XLT_PACKAGE_PATH + ".scorecard.config";
+
+    /**
+     * The XML file name for scorecard.
+     */
+    public static final String SCORECARD_REPORT_XML_FILENAME = "scorecard.xml";
+
+    /**
+     * The path of the directory with all XSL files for scorecard rendering.
+     */
+    public static final String SCORECARD_REPORT_XSL_PATH = "xsl/scorecard";
+
+    /**
+     * The name of the XSL file for rendering the scorecard report page.
+     */
+    public static final String SCORECARD_REPORT_XSL_FILENAME = "index.xsl";
+
+    /**
+     * The name of the HTML output file for rendering the scorecard report page.
+     */
+    public static final String SCORECARD_REPORT_HTML_FILENAME = "scorecard.html";
 }

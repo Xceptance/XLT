@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,8 +40,8 @@ import java.util.regex.Pattern;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
 import org.htmlunit.WebDriverTestCase;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
-import org.htmlunit.junit.BrowserRunner.TestedBrowser;
+import org.htmlunit.junit.annotation.NotYetImplemented;
+import org.htmlunit.junit.annotation.TestedBrowser;
 import org.htmlunit.libraries.JQuery1x8x2Test;
 
 /**
@@ -79,7 +79,7 @@ public final class JQueryExtractor {
         final String version = (String) MethodUtils.invokeExactMethod(testClass.newInstance(), "getVersion");
         final File baseDir = new File("src/test-hu/resources/libraries/jQuery/" + version + "/expectations");
 
-        for (final String browser : new String[] {"CHROME", "EDGE", "FF", "FF_ESR", "IE"}) {
+        for (final String browser : new String[] {"CHROME", "EDGE", "FF", "FF_ESR"}) {
             final File out = new File(baseDir, browser + ".out");
             final File results = new File(baseDir, "results." + browser + ".txt");
             extractExpectations(out, results);
@@ -314,8 +314,7 @@ public final class JQueryExtractor {
                                 && browserNames.contains("CHROME")
                                 && browserNames.contains("EDGE")
                                 && browserNames.contains("FF")
-                                && browserNames.contains("FF_ESR")
-                                && browserNames.contains("IE")) {
+                                && browserNames.contains("FF_ESR")) {
                             System.out.println("    @NotYetImplemented");
                         }
                         else {
@@ -392,7 +391,7 @@ public final class JQueryExtractor {
 
     static class Expectation {
 
-        private static final Pattern pattern_ =
+        private static final Pattern PATTERN =
                 Pattern.compile("(\\d+\\. ?)?(.+)\\((\\d+(, \\d+, \\d+)?)\\) \\[([0-9a-f]{1,8})\\]");
 
         private final int line_;
@@ -402,7 +401,7 @@ public final class JQueryExtractor {
 
         Expectation(final File file, final int line, final String string) {
             line_ = line;
-            final Matcher matcher = pattern_.matcher(string);
+            final Matcher matcher = PATTERN.matcher(string);
             if (!matcher.matches()) {
                 throw new RuntimeException("Invalid line " + line + ": '" + string
                         + "' in file: " + file.getAbsolutePath());

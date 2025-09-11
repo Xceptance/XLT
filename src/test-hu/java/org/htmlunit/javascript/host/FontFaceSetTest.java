@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ package org.htmlunit.javascript.host;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -52,8 +52,7 @@ public class FontFaceSetTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "[object FontFaceSet]",
-            IE = "undefined")
+    @Alerts("[object FontFaceSet]")
     public void documentFonts() throws Exception {
         final String html
             = "<html>\n"
@@ -71,8 +70,7 @@ public class FontFaceSetTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "then: ",
-            IE = "document.fonts is undefined")
+    @Alerts("then: ")
     public void load() throws Exception {
         final String html
             = "<html>\n"

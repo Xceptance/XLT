@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -732,19 +732,24 @@ public class XltCharBuffer implements CharSequence, Comparable<XltCharBuffer>
     public boolean equals(Object obj)
     {
         // this test is null-safe and highly JVM optimized
-        if (!(obj instanceof XltCharBuffer))
+        if (obj instanceof XltCharBuffer)
+        {
+            final XltCharBuffer other = (XltCharBuffer) obj;
+            if (this.length != other.length)
+            {
+                return false;
+            }
+    
+            // now, we go the expensive route
+            return Arrays.equals(this.src, 
+                                 from, from + length, 
+                                 other.src, 
+                                 other.from, other.from + length);
+        }
+        else
         {
             return false;
         }
-
-        final XltCharBuffer other = (XltCharBuffer) obj;
-        if (this.length != other.length)
-        {
-            return false;
-        }
-
-        // now, we go the expensive route
-        return Arrays.equals(this.src, from, from + length, other.src, other.from, other.from + length);
     }
 
     /*

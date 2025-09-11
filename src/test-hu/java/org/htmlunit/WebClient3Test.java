@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 package org.htmlunit;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 import static org.junit.Assert.assertArrayEquals;
 
 import java.net.URL;
@@ -29,8 +28,9 @@ import java.util.zip.Deflater;
 import org.apache.commons.io.IOUtils;
 import org.htmlunit.html.HtmlInlineFrame;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.NotYetImplemented;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
 import org.junit.Test;
@@ -185,9 +185,6 @@ public class WebClient3Test extends WebDriverTestCase {
     @Test
     @Alerts({"open", "first", "second"})
     public void windowOpenedByAnchorTargetIsAttachedToJavascriptEventLoop() throws Exception {
-        // TODO [IE]SINGLE-VS-BULK test runs when executed as single but breaks as bulk
-        shutDownRealIE();
-
         final String firstContent = "<html>\n"
             + "<head>\n"
             + "<script type='text/javascript'>\n"
@@ -231,9 +228,6 @@ public class WebClient3Test extends WebDriverTestCase {
     @Test
     @Alerts({"open", "first", "second"})
     public void windowOpenedByFormTargetIsAttachedToJavascriptEventLoop() throws Exception {
-        // TODO [IE]SINGLE-VS-BULK test runs when executed as single but breaks as bulk
-        shutDownRealIE();
-
         final String firstContent = "<html>\n"
             + "<head>\n"
             + "<script type='text/javascript'>\n"
@@ -368,7 +362,6 @@ public class WebClient3Test extends WebDriverTestCase {
      */
     @Test
     @Alerts({"Executed", "later"})
-    // TODO [IE]ERRORPAGE real IE displays own error page if response is to small
     public void execJavascriptOnErrorPages() throws Exception {
         final String errorHtml = "<html>\n"
                 + "<head>\n"
@@ -382,7 +375,7 @@ public class WebClient3Test extends WebDriverTestCase {
                 + "</body></html>\n";
 
         final MockWebConnection conn = getMockWebConnection();
-        conn.setResponse(URL_FIRST, errorHtml, 404, "Not Found", MimeType.TEXT_HTML, new ArrayList<NameValuePair>());
+        conn.setResponse(URL_FIRST, errorHtml, 404, "Not Found", MimeType.TEXT_HTML, new ArrayList<>());
 
         loadPage2(URL_FIRST, StandardCharsets.UTF_8);
         verifyTitle2(DEFAULT_WAIT_TIME, getWebDriver(), getExpectedAlerts());
@@ -413,9 +406,6 @@ public class WebClient3Test extends WebDriverTestCase {
     @Test
     @Alerts("modified")
     public void deflateCompressionGZipCompatible() throws Exception {
-        // TODO [IE]SINGLE-VS-BULK test runs when executed as single but breaks as bulk
-        shutDownRealIE();
-
         doTestDeflateCompression(true);
     }
 
@@ -424,9 +414,7 @@ public class WebClient3Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "modified",
-            IE = "Hello world")
-    @NotYetImplemented(IE)
+    @Alerts("modified")
     // IE does not support deflate compression anymore but I couldn't find a way to disable it in HttpClient
     public void deflateCompressionNonGZipCompatible() throws Exception {
         doTestDeflateCompression(false);
@@ -473,9 +461,7 @@ public class WebClient3Test extends WebDriverTestCase {
      * @throws Exception if something goes wrong
      */
     @Test
-    @Alerts(DEFAULT = "executed",
-             IE = "")
-    @NotYetImplemented(IE)
+    @Alerts("executed")
     public void javascriptContentDetectorWithoutContentType500() throws Exception {
         final MockWebConnection conn = getMockWebConnection();
         conn.setDefaultResponse("<script>alert('executed')</script>", 500, "OK", null);
@@ -594,6 +580,67 @@ public class WebClient3Test extends WebDriverTestCase {
 
             driver.get(url);
             assertEquals(title, driver.getTitle());
+        }
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"en-US", "en-US,en"})
+    public void language() throws Exception {
+        final String html
+            = "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "function test() {\n"
+            + "  log(navigator.language);\n"
+            + "  log(navigator.languages);\n"
+            + "}\n"
+            + "</script></head><body onload='test()'>\n"
+            + "</body></html>";
+
+        shutDownAll();
+        try {
+            loadPageVerifyTitle2(html);
+        }
+        finally {
+            shutDownAll();
+        }
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts(DEFAULT = {"de-DE", "de-DE,de,en-US,en"},
+            EDGE = {"de", "de,de-DE,en,en-GB,en-US"},
+            FF = {"de-DE", "de-DE,de"},
+            FF_ESR = {"de-DE", "de-DE,de"})
+    @HtmlUnitNYI(CHROME = {"de-DE", "de-DE,de"},
+            EDGE = {"de-DE", "de-DE,de"})
+    public void languageDE() throws Exception {
+        final String html
+            = "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "function test() {\n"
+            + "  log(navigator.language);\n"
+            + "  log(navigator.languages);\n"
+            + "}\n"
+            + "</script></head><body onload='test()'>\n"
+            + "</body></html>";
+
+        shutDownAll();
+        try {
+            final BrowserVersion.BrowserVersionBuilder builder
+                = new BrowserVersion.BrowserVersionBuilder(getBrowserVersion());
+            builder.setBrowserLanguage("de-DE");
+            builder.setAcceptLanguageHeader("de-DE,de");
+            setBrowserVersion(builder.build());
+
+            loadPageVerifyTitle2(html);
+        }
+        finally {
+            shutDownAll();
         }
     }
 }

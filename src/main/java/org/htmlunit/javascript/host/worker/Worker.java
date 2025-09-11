@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,15 +45,22 @@ public class Worker extends EventTarget {
      */
     public Worker() {
         // prototype constructor
+        super();
         workerScope_ = null;
     }
 
-    private Worker(final Context cx, final Window owningWindow, final String url) throws Exception {
+    private Worker(final Context cx, final Window owningWindow, final String url,
+                       final Scriptable options) throws Exception {
+        super();
         setParentScope(owningWindow);
         setPrototype(getPrototype(getClass()));
 
         final WebClient webClient = getWindow().getWebWindow().getWebClient();
-        workerScope_ = new DedicatedWorkerGlobalScope(owningWindow, cx, webClient, this);
+        String name = null;
+        if (options != null && options.has("name", options)) {
+            name = JavaScriptEngine.toString(options.get("name", options));
+        }
+        workerScope_ = new DedicatedWorkerGlobalScope(owningWindow, cx, webClient, name, this);
 
         workerScope_.loadAndExecute(webClient, url, null, false);
     }
@@ -73,11 +80,15 @@ public class Worker extends EventTarget {
             final Object[] args, final Function ctorObj, final boolean inNewExpr) throws Exception {
         if (args.length < 1 || args.length > 2) {
             throw JavaScriptEngine.reportRuntimeError(
-                    "Worker Error: constructor must have one or two String parameters.");
+                    "Worker Error: constructor must have one or two parameters.");
         }
 
         final String url = JavaScriptEngine.toString(args[0]);
-        return new Worker(cx, getWindow(ctorObj), url);
+        Scriptable options = null;
+        if (args.length > 1 && args[1] instanceof Scriptable) {
+            options = (Scriptable) args[1];
+        }
+        return new Worker(cx, getWindow(ctorObj), url, options);
     }
 
     /**
@@ -112,7 +123,7 @@ public class Worker extends EventTarget {
      * @return the handler
      */
     @JsxGetter
-    public Object getOnmessage() {
+    public Function getOnmessage() {
         return getEventListenersContainer().getEventHandler(Event.TYPE_MESSAGE);
     }
 }

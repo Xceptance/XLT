@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,6 @@
  */
 package org.htmlunit.html;
 
-import static org.htmlunit.BrowserVersionFeatures.EVENT_MOUSE_ON_DISABLED;
-import static org.htmlunit.BrowserVersionFeatures.HTMLTEXTAREA_SET_DEFAULT_VALUE_UPDATES_VALUE;
-import static org.htmlunit.BrowserVersionFeatures.HTMLTEXTAREA_USE_ALL_TEXT_CHILDREN;
-import static org.htmlunit.BrowserVersionFeatures.HTMLTEXTAREA_WILL_VALIDATE_IGNORES_READONLY;
-import static org.htmlunit.BrowserVersionFeatures.JS_INPUT_SET_VALUE_MOVE_SELECTION_TO_START;
-
 import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.Collections;
@@ -27,13 +21,13 @@ import java.util.HashSet;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.text.StringEscapeUtils;
 import org.htmlunit.SgmlPage;
 import org.htmlunit.html.impl.SelectableTextInput;
 import org.htmlunit.html.impl.SelectableTextSelectionDelegate;
 import org.htmlunit.javascript.host.event.Event;
 import org.htmlunit.javascript.host.event.MouseEvent;
 import org.htmlunit.util.NameValuePair;
+import org.w3c.dom.Node;
 
 /**
  * Wrapper for the HTML element "textarea".
@@ -94,7 +88,7 @@ public class HtmlTextArea extends HtmlElement implements DisabledElement, Submit
      */
     @Override
     public boolean handles(final Event event) {
-        if (event instanceof MouseEvent && hasFeature(EVENT_MOUSE_ON_DISABLED)) {
+        if (event instanceof MouseEvent) {
             return true;
         }
 
@@ -108,29 +102,12 @@ public class HtmlTextArea extends HtmlElement implements DisabledElement, Submit
      */
     @Override
     public final String getText() {
-        if (hasFeature(HTMLTEXTAREA_USE_ALL_TEXT_CHILDREN)) {
-            return readValueIE();
-        }
         return readValue();
     }
 
     private String readValue() {
         final StringBuilder builder = new StringBuilder();
         for (final DomNode node : getChildren()) {
-            if (node instanceof DomText) {
-                builder.append(((DomText) node).getData());
-            }
-        }
-        // if content starts with new line, it is ignored (=> for the parser?)
-        if (builder.length() != 0 && builder.charAt(0) == '\n') {
-            builder.deleteCharAt(0);
-        }
-        return builder.toString();
-    }
-
-    private String readValueIE() {
-        final StringBuilder builder = new StringBuilder();
-        for (final DomNode node : getDescendants()) {
             if (node instanceof DomText) {
                 builder.append(((DomText) node).getData());
             }
@@ -165,33 +142,23 @@ public class HtmlTextArea extends HtmlElement implements DisabledElement, Submit
             appendChild(newChild);
         }
         else {
-            if (hasFeature(HTMLTEXTAREA_USE_ALL_TEXT_CHILDREN)) {
-                removeAllChildren();
+            DomNode next = child.getNextSibling();
+            while (next != null && !(next instanceof DomText)) {
+                child = next;
+                next = child.getNextSibling();
+            }
+
+            if (next == null) {
+                removeChild(child);
                 final DomText newChild = new DomText(getPage(), newValue);
                 appendChild(newChild);
             }
             else {
-                DomNode next = child.getNextSibling();
-                while (next != null && !(next instanceof DomText)) {
-                    child = next;
-                    next = child.getNextSibling();
-                }
-
-                if (next == null) {
-                    removeChild(child);
-                    final DomText newChild = new DomText(getPage(), newValue);
-                    appendChild(newChild);
-                }
-                else {
-                    ((DomText) next).setData(newValue);
-                }
+                ((DomText) next).setData(newValue);
             }
         }
 
-        int pos = 0;
-        if (!hasFeature(JS_INPUT_SET_VALUE_MOVE_SELECTION_TO_START)) {
-            pos = newValue.length();
-        }
+        final int pos = newValue.length();
         setSelectionStart(pos);
         setSelectionEnd(pos);
     }
@@ -229,8 +196,7 @@ public class HtmlTextArea extends HtmlElement implements DisabledElement, Submit
         }
 
         // for FF, if value is still default value, change value too
-        if (hasFeature(HTMLTEXTAREA_SET_DEFAULT_VALUE_UPDATES_VALUE)
-                && getText().equals(getDefaultValue())) {
+        if (getText().equals(getDefaultValue())) {
             setTextInternal(defaultValue);
         }
         defaultValue_ = defaultValue;
@@ -308,7 +274,20 @@ public class HtmlTextArea extends HtmlElement implements DisabledElement, Submit
      */
     @Override
     public final boolean isDisabled() {
-        return hasAttribute(ATTRIBUTE_DISABLED);
+        if (hasAttribute(ATTRIBUTE_DISABLED)) {
+            return true;
+        }
+
+        Node node = getParentNode();
+        while (node != null) {
+            if (node instanceof DisabledElement
+                    && ((DisabledElement) node).isDisabled()) {
+                return true;
+            }
+            node = node.getParentNode();
+        }
+
+        return false;
     }
 
     /**
@@ -456,7 +435,7 @@ public class HtmlTextArea extends HtmlElement implements DisabledElement, Submit
         printOpeningTagContentAsXml(printWriter);
 
         printWriter.print(">");
-        printWriter.print(StringEscapeUtils.escapeXml10(getText()));
+        printWriter.print(org.htmlunit.util.StringUtils.escapeXml(getText()));
         printWriter.print("</textarea>");
     }
 
@@ -629,8 +608,7 @@ public class HtmlTextArea extends HtmlElement implements DisabledElement, Submit
      */
     @Override
     public boolean willValidate() {
-        return !isDisabled()
-                && (hasFeature(HTMLTEXTAREA_WILL_VALIDATE_IGNORES_READONLY) || !isReadOnly());
+        return !isDisabled() && !isReadOnly();
     }
 
     /**

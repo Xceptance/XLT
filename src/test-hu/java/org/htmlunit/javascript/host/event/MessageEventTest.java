@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,10 @@
  */
 package org.htmlunit.javascript.host.event;
 
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
-
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -54,9 +51,8 @@ public class MessageEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object MessageEvent]", "type-message", "false", "false", "false",
-                       "null", "", "", "null"},
-            IE = "exception")
+    @Alerts({"[object MessageEvent]", "type-message", "false", "false", "false",
+             "null", "", "", "null"})
     public void create_ctor() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"
@@ -65,7 +61,7 @@ public class MessageEventTest extends WebDriverTestCase {
             + "    try {\n"
             + "      var event = new MessageEvent('type-message');\n"
             + "      dump(event);\n"
-            + "    } catch (e) { log('exception'); }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "  }\n"
             + DUMP_EVENT_FUNCTION
             + "</script></head><body onload='test()'>\n"
@@ -78,9 +74,8 @@ public class MessageEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object MessageEvent]", "type-message", "false", "false", "false",
-                       "test-data", "test-origin", "42", "[object Window]"},
-            IE = "exception")
+    @Alerts({"[object MessageEvent]", "type-message", "false", "false", "false",
+             "test-data", "test-origin", "42", "[object Window]"})
     public void create_ctorWithDetails() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"
@@ -94,7 +89,7 @@ public class MessageEventTest extends WebDriverTestCase {
             + "        'source': window\n"
             + "      });\n"
             + "      dump(event);\n"
-            + "    } catch (e) { log('exception'); }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "  }\n"
             + DUMP_EVENT_FUNCTION
             + "</script></head><body onload='test()'>\n"
@@ -129,10 +124,7 @@ public class MessageEventTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "exception",
-            IE = {"-[object MessageEvent]", "-message", "-true", "-true", "-undefined", "-hello",
-                  "-http://localhost:", "-undefined", "-[object Window]"})
-    @NotYetImplemented(IE)
+    @Alerts("TypeError")
     public void initMessageEventPortsNull() throws Exception {
         final String[] expectedAlerts = getExpectedAlerts();
         if (expectedAlerts.length > 4) {
@@ -148,7 +140,7 @@ public class MessageEventTest extends WebDriverTestCase {
             + "  try {\n"
             + "    e.initMessageEvent('message', true, true, 'hello', '" + origin + "', 2, window, null);\n"
             + "    dump(e);\n"
-            + "  } catch (e) { log('exception'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "} else {\n"
             + "  log('no initMessageEvent');\n"
             + "}\n"
@@ -162,10 +154,8 @@ public class MessageEventTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"[object MessageEvent]", "message", "true", "true", "false", "hello",
-                       "http://localhost:", "2", "[object Window]"},
-            IE = {"[object MessageEvent]", "message", "true", "true", "undefined", "hello",
-                  "http://localhost:", "undefined", "[object Window]"})
+    @Alerts({"[object MessageEvent]", "message", "true", "true", "false", "hello",
+             "http://localhost:", "2", "[object Window]"})
     public void initMessageEventPortsUndefined() throws Exception {
         final String[] expectedAlerts = getExpectedAlerts();
         if (expectedAlerts.length > 4) {
@@ -181,7 +171,7 @@ public class MessageEventTest extends WebDriverTestCase {
             + "  try {\n"
             + "    e.initMessageEvent('message', true, true, 'hello', '" + origin + "', 2, window, undefined);\n"
             + "    dump(e);\n"
-            + "  } catch (e) { log('exception'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "} else {\n"
             + "  log('no initMessageEvent');\n"
             + "}\n"
@@ -195,10 +185,8 @@ public class MessageEventTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"[object MessageEvent]", "message", "true", "true", "false", "hello",
-                       "http://localhost:", "2", "[object Window]"},
-            IE = {"[object MessageEvent]", "message", "true", "true", "undefined", "hello",
-                  "http://localhost:", "undefined", "[object Window]"})
+    @Alerts({"[object MessageEvent]", "message", "true", "true", "false", "hello",
+             "http://localhost:", "2", "[object Window]"})
     public void initMessageEvent() throws Exception {
         final String[] expectedAlerts = getExpectedAlerts();
         expectedAlerts[6] += PORT;
@@ -212,7 +200,7 @@ public class MessageEventTest extends WebDriverTestCase {
             + "  try {\n"
             + "    e.initMessageEvent('message', true, true, 'hello', '" + origin + "', 2, window, []);\n"
             + "    dump(e);\n"
-            + "  } catch (e) { log('exception ' + e); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "} else {\n"
             + "  log('no initMessageEvent');\n"
             + "}\n"

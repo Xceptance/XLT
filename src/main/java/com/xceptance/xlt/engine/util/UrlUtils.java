@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,13 +18,14 @@ package com.xceptance.xlt.engine.util;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.htmlunit.httpclient.HttpClientConverter;
 import org.htmlunit.util.NameValuePair;
 
-import com.xceptance.common.util.RegExUtils;
 import com.xceptance.xlt.common.XltConstants;
 
 /**
@@ -34,6 +35,12 @@ import com.xceptance.xlt.common.XltConstants;
  */
 public final class UrlUtils
 {
+    /**
+     * RegEx pattern matching an IPv6 address in square brackets, optionally followed by a port. The pattern doesn't
+     * verify that the IPv6 address or the port have the valid format, so "[]:" or "[Z]:Z" will match as well.
+     */
+    private final static Pattern IPV6_HOST_PORT_PATTERN = Pattern.compile("^(\\[.*\\])(?::(.*))?$");
+
     /**
      * Default constructor. Declared private to prevent external instantiation.
      */
@@ -106,8 +113,10 @@ public final class UrlUtils
      * @param urlString
      *            the input URL
      * @return a {@link URLInfo} object with the details
+     * @throws NumberFormatException
+     *             if the port of the URL can't be parsed as an Integer
      */
-    public static URLInfo parseUrlString(final String urlString)
+    public static URLInfo parseUrlString(final String urlString) throws NumberFormatException
     {
         if (StringUtils.isEmpty(urlString))
         {
@@ -148,15 +157,24 @@ public final class UrlUtils
         userInfo = parts[0];
         hostPort = parts[1];
 
-        parts = split(hostPort, ":", true);
-        host = parts[0];
-        port = parts[1];
-
-        int p = -1;
-        if (StringUtils.isNotBlank(port) && RegExUtils.isMatching(port, "\\d+"))
+        // check if the host is in IPv6 format
+        final Matcher ipv6Matcher = IPV6_HOST_PORT_PATTERN.matcher(hostPort);
+        if (ipv6Matcher.matches())
         {
-            p = Integer.parseInt(port);
+            host = ipv6Matcher.group(1);
+            port = ipv6Matcher.group(2);
         }
+        else
+        {
+            // if the host isn't in IPv6 format it shouldn't contain any colons, so we can safely split host and port at
+            // the colon
+            parts = split(hostPort, ":", true);
+            host = parts[0];
+            port = parts[1];
+        }
+
+        // NumberFormatException will be thrown if port can't be parsed as an Integer
+        final int p = StringUtils.isNotBlank(port) ? Integer.parseInt(port) : -1;
 
         return URLInfo.builder().proto(protocol).userInfo(userInfo).host(host).port(p).path(path).query(query).fragment(fragment).build();
     }
@@ -240,7 +258,7 @@ public final class UrlUtils
         if (info != null)
         {
             final StringBuilder sb = new StringBuilder();
-            if(info.getProtocol() != null)
+            if (info.getProtocol() != null)
             {
                 sb.append(info.getProtocol()).append("://");
             }

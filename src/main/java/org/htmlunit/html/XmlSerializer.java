@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -158,6 +158,10 @@ public class XmlSerializer {
         return response;
     }
 
+    /**
+     * Prints the text content from this node and all children.
+     * @param node the node
+     */
     protected void printText(final DomNode node) {
         for (DomNode child = node.getFirstChild(); child != null; child = child.getNextSibling()) {
             if (child instanceof DomText) {
@@ -180,12 +184,12 @@ public class XmlSerializer {
         final Map<String, DomAttr> attributes = readAttributes(node);
 
         for (final Map.Entry<String, DomAttr> entry : attributes.entrySet()) {
-            builder_.append(' ');
-            builder_.append(entry.getKey());
-            builder_.append("=\"");
+            builder_.append(' ')
+                .append(entry.getKey())
+                .append("=\"");
             final String value = entry.getValue().getNodeValue();
-            builder_.append(org.htmlunit.util.StringUtils.escapeXmlAttributeValue(value));
-            builder_.append('"');
+            builder_.append(org.htmlunit.util.StringUtils.escapeXmlAttributeValue(value))
+                .append('"');
         }
     }
 
@@ -216,6 +220,10 @@ public class XmlSerializer {
         return attributes;
     }
 
+    /**
+     * @param frame the frame to get the attributes from
+     * @return the attribute map
+     */
     private Map<String, DomAttr> getAttributesFor(final BaseFrameElement frame) throws IOException {
         final Map<String, DomAttr> map = createAttributesCopyWithClonedAttribute(frame, DomElement.SRC_ATTRIBUTE);
         final DomAttr srcAttr = map.get(DomElement.SRC_ATTRIBUTE);
@@ -259,6 +267,11 @@ public class XmlSerializer {
         return ".unknown";
     }
 
+    /**
+     * @param link the link to get the attributes from
+     * @return the attribute map
+     * @throws IOException in case of error
+     */
     protected Map<String, DomAttr> getAttributesFor(final HtmlLink link) throws IOException {
         final Map<String, DomAttr> map = createAttributesCopyWithClonedAttribute(link, "href");
         final DomAttr hrefAttr = map.get("href");
@@ -286,6 +299,10 @@ public class XmlSerializer {
         return map;
     }
 
+    /**
+     * @param image the image to get the attributes from
+     * @return the attribute map
+     */
     protected Map<String, DomAttr> getAttributesFor(final HtmlImage image) {
         final Map<String, DomAttr> map = createAttributesCopyWithClonedAttribute(image, DomElement.SRC_ATTRIBUTE);
         final DomAttr srcAttr = map.get(DomElement.SRC_ATTRIBUTE);
@@ -346,6 +363,10 @@ public class XmlSerializer {
         return newMap;
     }
 
+    /**
+     * @param element the element to check
+     * @return true if the element is a HtmlScript
+     */
     protected boolean isExcluded(final DomElement element) {
         return element instanceof HtmlScript;
     }

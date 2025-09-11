@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,11 +13,6 @@
  * limitations under the License.
  */
 package org.htmlunit.javascript.host.html;
-
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import java.net.MalformedURLException;
 
@@ -39,6 +34,7 @@ import org.htmlunit.javascript.host.dom.DOMTokenList;
  *
  * @author Ahmed Ashour
  * @author Ronald Brill
+ * @author Sven Strickroth
  */
 @JsxClass(domClass = HtmlLink.class)
 public class HTMLLinkElement extends HTMLElement {
@@ -52,16 +48,10 @@ public class HTMLLinkElement extends HTMLElement {
     private CSSStyleSheet sheet_;
 
     /**
-     * Creates an instance.
-     */
-    public HTMLLinkElement() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @Override
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
         super.jsConstructor();
     }
@@ -169,16 +159,12 @@ public class HTMLLinkElement extends HTMLElement {
             }
             catch (final RuntimeException e) {
                 // Got something unexpected; we can throw an exception in this case.
-                if (LOG.isErrorEnabled()) {
-                    LOG.error("RuntimeException loading stylesheet", e);
-                }
+                LOG.error("RuntimeException loading stylesheet", e);
                 throw JavaScriptEngine.reportRuntimeError("Exception: " + e);
             }
             catch (final Exception e) {
                 // Got something unexpected; we can throw an exception in this case.
-                if (LOG.isErrorEnabled()) {
-                    LOG.error("Exception loading stylesheet", e);
-                }
+                LOG.error("Exception loading stylesheet", e);
                 throw JavaScriptEngine.reportRuntimeError("Exception: " + e);
             }
         }
@@ -197,7 +183,7 @@ public class HTMLLinkElement extends HTMLElement {
      * Returns the {@code relList} attribute.
      * @return the {@code relList} attribute
      */
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxGetter
     public DOMTokenList getRelList() {
         return new DOMTokenList(this, "rel");
     }
@@ -206,7 +192,7 @@ public class HTMLLinkElement extends HTMLElement {
      * Sets the relList property.
      * @param rel attribute value
      */
-    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxSetter
     public void setRelList(final Object rel) {
         if (JavaScriptEngine.isUndefined(rel)) {
             setRel("undefined");

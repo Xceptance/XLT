@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,6 @@
  */
 package org.htmlunit.javascript.host.event;
 
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
@@ -32,8 +30,9 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
  * DOM Level 2 Events</a>.
  *
  * @author Ahmed Ashour
+ * @author Ronald Brill
  */
-@JsxClass
+@JsxClass({FF, FF_ESR})
 public class MutationEvent extends Event {
 
     /** Modification. */
@@ -49,19 +48,13 @@ public class MutationEvent extends Event {
     public static final int REMOVAL = 3;
 
     /**
-     * Creates an instance.
-     */
-    public MutationEvent() {
-    }
-
-    /**
      * JavaScript constructor.
      *
      * @param type the event type
      * @param details the event details (optional)
      */
     @Override
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor(final String type, final ScriptableObject details) {
         throw JavaScriptEngine.typeError("Illegal constructor call for MutationEvent");
     }

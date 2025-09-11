@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,6 @@
  */
 package org.htmlunit.html;
 
-import static org.htmlunit.BrowserVersionFeatures.EVENT_MOUSE_ON_DISABLED;
-import static org.htmlunit.BrowserVersionFeatures.HTMLBUTTON_SUBMIT_IGNORES_DISABLED_STATE;
 import static org.htmlunit.BrowserVersionFeatures.HTMLBUTTON_WILL_VALIDATE_IGNORES_READONLY;
 import static org.htmlunit.html.HtmlForm.ATTRIBUTE_FORMNOVALIDATE;
 
@@ -23,7 +21,6 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Locale;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
@@ -33,6 +30,7 @@ import org.htmlunit.SgmlPage;
 import org.htmlunit.javascript.host.event.Event;
 import org.htmlunit.javascript.host.event.MouseEvent;
 import org.htmlunit.util.NameValuePair;
+import org.w3c.dom.Node;
 
 /**
  * Wrapper for the HTML element "button".
@@ -46,6 +44,7 @@ import org.htmlunit.util.NameValuePair;
  * @author Dmitri Zoubkov
  * @author Ronald Brill
  * @author Frank Danek
+ * @author Sven Strickroth
  */
 public class HtmlButton extends HtmlElement implements DisabledElement, SubmittableElement,
                 LabelableElement, FormFieldWithNameHistory, ValidatableElement {
@@ -90,7 +89,7 @@ public class HtmlButton extends HtmlElement implements DisabledElement, Submitta
      */
     @Override
     protected boolean doClickStateUpdate(final boolean shiftKey, final boolean ctrlKey) throws IOException {
-        if (hasFeature(HTMLBUTTON_SUBMIT_IGNORES_DISABLED_STATE) || !isDisabled()) {
+        if (!isDisabled()) {
             final HtmlForm form = getEnclosingForm();
             if (form != null) {
                 final String type = getType();
@@ -117,7 +116,20 @@ public class HtmlButton extends HtmlElement implements DisabledElement, Submitta
      */
     @Override
     public final boolean isDisabled() {
-        return hasAttribute(ATTRIBUTE_DISABLED);
+        if (hasAttribute(ATTRIBUTE_DISABLED)) {
+            return true;
+        }
+
+        Node node = getParentNode();
+        while (node != null) {
+            if (node instanceof DisabledElement
+                    && ((DisabledElement) node).isDisabled()) {
+                return true;
+            }
+            node = node.getParentNode();
+        }
+
+        return false;
     }
 
     /**
@@ -143,9 +155,7 @@ public class HtmlButton extends HtmlElement implements DisabledElement, Submitta
      */
     @Override
     public void reset() {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("reset() not implemented for this element");
-        }
+        LOG.debug("reset() not implemented for this element");
     }
 
     /**
@@ -155,9 +165,7 @@ public class HtmlButton extends HtmlElement implements DisabledElement, Submitta
      */
     @Override
     public void setDefaultValue(final String defaultValue) {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("setDefaultValue() not implemented for this element");
-        }
+        LOG.debug("setDefaultValue() not implemented for this element");
     }
 
     /**
@@ -167,9 +175,7 @@ public class HtmlButton extends HtmlElement implements DisabledElement, Submitta
      */
     @Override
     public String getDefaultValue() {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("getDefaultValue() not implemented for this element");
-        }
+        LOG.debug("getDefaultValue() not implemented for this element");
         return "";
     }
 
@@ -208,7 +214,7 @@ public class HtmlButton extends HtmlElement implements DisabledElement, Submitta
      */
     @Override
     public boolean handles(final Event event) {
-        if (event instanceof MouseEvent && hasFeature(EVENT_MOUSE_ON_DISABLED)) {
+        if (event instanceof MouseEvent) {
             return true;
         }
 
@@ -252,11 +258,11 @@ public class HtmlButton extends HtmlElement implements DisabledElement, Submitta
      * @return the normalized type value (submit|reset|button).
      */
     public String getType() {
-        final String type = getTypeAttribute().toLowerCase(Locale.ROOT);
-        if (TYPE_RESET.equals(type)) {
+        final String type = getTypeAttribute();
+        if (TYPE_RESET.equalsIgnoreCase(type)) {
             return TYPE_RESET;
         }
-        if (TYPE_BUTTON.equals(type)) {
+        if (TYPE_BUTTON.equalsIgnoreCase(type)) {
             return TYPE_BUTTON;
         }
         return TYPE_SUBMIT;

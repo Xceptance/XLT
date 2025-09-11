@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -314,38 +314,9 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
         cssMode = CssMode.getMode(props.getProperty("com.xceptance.xlt.css.download.images"));
 
         // JavaScript
-        if (javaScriptEngineEnabled)
-        {
-            // setup JavaScript engine
-            int optimizationLevel = props.getProperty("com.xceptance.xlt.js.compiler.optimizationLevel", -1);
-            if (optimizationLevel < -1 || optimizationLevel > 9)
-            {
-                XltLogger.runTimeLogger.warn("Property 'com.xceptance.xlt.js.compiler.optimizationLevel' is set to an invalid value. Will use -1 instead.");
-                optimizationLevel = -1;
-            }
-
-            final boolean takeMeasurements = props.getProperty("com.xceptance.xlt.js.takeMeasurements", false);
-
-            setJavaScriptEngine(new XltJavaScriptEngine(this, optimizationLevel, takeMeasurements));
-            getOptions().setJavaScriptEnabled(props.getProperty("com.xceptance.xlt.javaScriptEnabled", false));
-            getOptions().setThrowExceptionOnScriptError(props.getProperty("com.xceptance.xlt.stopTestOnJavaScriptErrors", false));
-
-            // setup JavaScript debugger
-            if (props.getProperty("com.xceptance.xlt.js.debugger.enabled", false))
-            {
-                setJavaScriptDebuggerEnabled(true);
-
-                // create JS beautifying response processor only when needed
-                if (props.getProperty("com.xceptance.xlt.js.debugger.beautifyDownloadedJavaScript", true))
-                {
-                    jsBeautifier = new JSBeautifingResponseProcessor();
-                }
-            }
-        }
-        else
-        {
-            getOptions().setJavaScriptEnabled(false);
-        }
+        getOptions().setJavaScriptEnabled(props.getProperty("com.xceptance.xlt.javaScriptEnabled", false));
+        getOptions().setThrowExceptionOnScriptError(props.getProperty("com.xceptance.xlt.stopTestOnJavaScriptErrors", false));
+        configureJavaScriptEngine(props);
 
         // default user authentication
         final String userName = props.getProperty("com.xceptance.xlt.auth.userName");
@@ -353,7 +324,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
         {
             final String password = props.getProperty("com.xceptance.xlt.auth.password", "");
 
-            ((DefaultCredentialsProvider) getCredentialsProvider()).addCredentials(userName, password);
+            ((DefaultCredentialsProvider) getCredentialsProvider()).addCredentials(userName, password.toCharArray());
 
             if (XltLogger.runTimeLogger.isInfoEnabled())
             {
@@ -384,12 +355,12 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
 
             // proxy authentication
             final String proxyUserName = props.getProperty("com.xceptance.xlt.proxy.userName");
-            final String proxyPassword = props.getProperty("com.xceptance.xlt.proxy.password");
+            final String proxyPassword = props.getProperty("com.xceptance.xlt.proxy.password", "");
 
             if (proxyUserName != null && proxyUserName.length() > 0)
             {
-                ((DefaultCredentialsProvider) getCredentialsProvider()).addCredentials(proxyUserName, proxyPassword, proxyHost, proxyPort,
-                                                                                       null);
+                ((DefaultCredentialsProvider) getCredentialsProvider()).addCredentials(proxyUserName, proxyPassword.toCharArray(),
+                                                                                       proxyHost, proxyPort, null);
 
                 if (XltLogger.runTimeLogger.isInfoEnabled())
                 {
@@ -448,36 +419,30 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
         getOptions().setHistorySizeLimit(historySizeLimit);
 
         // set web connection
-        final WebConnection underlyingWebConnection;
-        if (props.getProperty("com.xceptance.xlt.http.offline", false))
-        {
-            // we are in offline mode and return fixed responses
-            underlyingWebConnection = new XltOfflineWebConnection();
-        }
-        else
-        {
-            final String client = props.getProperty("com.xceptance.xlt.http.client");
-            final boolean collectTargetIpAddress = ((XltPropertiesImpl) props).collectUsedIpAddress();
-            if ("okhttp3".equals(client))
-            {
-                final boolean http2Enabled = props.getProperty("com.xceptance.xlt.http.client.okhttp3.http2Enabled", true);
-                underlyingWebConnection = new OkHttp3WebConnection(this, http2Enabled, collectTargetIpAddress);
-            }
-            else
-            {
-                // the default connection
-                underlyingWebConnection = new XltApacheHttpWebConnection(this, collectTargetIpAddress);
-            }
-        }
-
-        XltLogger.runTimeLogger.debug("Using web connection class: " + underlyingWebConnection.getClass().getName());
-
-        final XltHttpWebConnection connection = new XltHttpWebConnection(this, underlyingWebConnection);
-        setWebConnection(connection);
+        configureWebConnection(props);
 
         // load key/trust material for client/server authentication
-        setUpKeyStore(props);
-        setUpTrustStore(props);
+        configureKeyStore(props);
+        configureTrustStore(props);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void reset()
+    {
+        super.reset();
+
+        final XltProperties props = XltProperties.getInstance();
+
+        // create a new instance of "our" JavaScript engine if needed
+        configureJavaScriptEngine(props);
+
+        // create a new instance of "our" web connection
+        configureWebConnection(props);
+
+        pageLocalCache.clear();
     }
 
     /**
@@ -808,8 +773,8 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
         // JS resources
         if (loadStaticContent || haveJS)
         {
-            // remove comments (don't remove conditional comments if IE)
-            final String commentPattern = getBrowserVersion().isIE() ? "(?sm)<!--[^\\[].*?-->" : "(?sm)<!--.*?-->";
+            // remove comments
+            final String commentPattern = "(?sm)<!--.*?-->";
             page = RegExUtils.replaceAll(page, commentPattern, "");
 
             // remove scripts (in-line scripts might contain resource URLs in the code)
@@ -1052,7 +1017,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
      */
     @Override
     public void download(final WebWindow requestingWindow, final String target, final WebRequest request, final boolean checkHash,
-                         final boolean forceLoad, final boolean forceAttachment, final String description)
+                         final boolean forceLoad, final String forceAttachmentWithFilename, final String description)
     {
         if (requestingWindow.getTopWindow() == requestingWindow)
         {
@@ -1071,7 +1036,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
 
         request.setDocumentRequest();
 
-        super.download(requestingWindow, target, request, checkHash, forceLoad, forceAttachment, description);
+        super.download(requestingWindow, target, request, checkHash, forceLoad, forceAttachmentWithFilename, description);
     }
 
     /**
@@ -1938,11 +1903,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
         final BrowserVersion browserVersion;
         final String browserType = XltProperties.getInstance().getProperty("com.xceptance.xlt.browser", "FF").toUpperCase();
 
-        if (browserType.equals("IE"))
-        {
-            browserVersion = BrowserVersion.INTERNET_EXPLORER;
-        }
-        else if (browserType.equals("CH"))
+        if (browserType.equals("CH"))
         {
             browserVersion = BrowserVersion.CHROME;
         }
@@ -2060,13 +2021,85 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
     }
 
     /**
+     * Sets up the JavaScript engine to be used by this web client.
+     *
+     * @param props
+     *            the configuration
+     */
+    private void configureJavaScriptEngine(final XltProperties props)
+    {
+        if (isJavaScriptEngineEnabled())
+        {
+            // setup JavaScript engine
+            int optimizationLevel = props.getProperty("com.xceptance.xlt.js.compiler.optimizationLevel", -1);
+            if (optimizationLevel < -1 || optimizationLevel > 9)
+            {
+                XltLogger.runTimeLogger.warn("Property 'com.xceptance.xlt.js.compiler.optimizationLevel' is set to an invalid value. Will use -1 instead.");
+                optimizationLevel = -1;
+            }
+
+            final boolean takeMeasurements = props.getProperty("com.xceptance.xlt.js.takeMeasurements", false);
+
+            setJavaScriptEngine(new XltJavaScriptEngine(this, optimizationLevel, takeMeasurements));
+
+            // setup JavaScript debugger
+            if (props.getProperty("com.xceptance.xlt.js.debugger.enabled", false))
+            {
+                setJavaScriptDebuggerEnabled(true);
+
+                // create JS beautifying response processor only when needed
+                if (props.getProperty("com.xceptance.xlt.js.debugger.beautifyDownloadedJavaScript", true))
+                {
+                    jsBeautifier = new JSBeautifingResponseProcessor();
+                }
+            }
+        }
+    }
+
+    /**
+     * Sets up the web connection to be used by this web client.
+     *
+     * @param props
+     *            the configuration
+     */
+    private void configureWebConnection(final XltProperties props)
+    {
+        final WebConnection underlyingWebConnection;
+        if (props.getProperty("com.xceptance.xlt.http.offline", false))
+        {
+            // we are in offline mode and return fixed responses
+            underlyingWebConnection = new XltOfflineWebConnection();
+        }
+        else
+        {
+            final String client = props.getProperty("com.xceptance.xlt.http.client");
+            final boolean collectTargetIpAddress = ((XltPropertiesImpl) props).collectUsedIpAddress();
+            if ("okhttp3".equals(client))
+            {
+                final boolean http2Enabled = props.getProperty("com.xceptance.xlt.http.client.okhttp3.http2Enabled", true);
+                underlyingWebConnection = new OkHttp3WebConnection(this, http2Enabled, collectTargetIpAddress);
+            }
+            else
+            {
+                // the default connection
+                underlyingWebConnection = new XltApacheHttpWebConnection(this, collectTargetIpAddress);
+            }
+        }
+
+        XltLogger.runTimeLogger.debug("Using web connection class: " + underlyingWebConnection.getClass().getName());
+
+        final XltHttpWebConnection connection = new XltHttpWebConnection(this, underlyingWebConnection);
+        setWebConnection(connection);
+    }
+
+    /**
      * Sets up the key store with the client key to be used by this web client. The store is read from a file specified
      * in the test suite configuration.
      *
      * @param props
      *            the configuration
      */
-    private void setUpKeyStore(final XltProperties props)
+    private void configureKeyStore(final XltProperties props)
     {
         final String storeFilePath = props.getProperty("com.xceptance.xlt.tls.keyStore.file");
         if (StringUtils.isNotBlank(storeFilePath))
@@ -2086,7 +2119,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
      * @param props
      *            the configuration
      */
-    private void setUpTrustStore(final XltProperties props)
+    private void configureTrustStore(final XltProperties props)
     {
         final String storeFilePath = props.getProperty("com.xceptance.xlt.tls.trustStore.file");
         if (StringUtils.isNotBlank(storeFilePath))

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -153,7 +153,7 @@ public class WebResponseData implements Serializable {
                 if (stream.markSupported()) { // should be always the case as the content is in a byte[] or in a file
                     stream.mark(2);
                     final byte[] buffer = new byte[2];
-                    final int byteCount = stream.read(buffer, 0, 2);
+                    final int byteCount = IOUtils.read(stream, buffer, 0, 2);
                     zlibHeader = byteCount == 2 && (((buffer[0] & 0xff) << 8) | (buffer[1] & 0xff)) == 0x789c;
                     stream.reset();
                 }

@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,14 +45,14 @@ import org.junit.runner.RunWith;
  */
 @RunWith(BrowserRunner.class)
 public class HtmlImageDownloadTest extends WebServerTestCase {
-    private static final String base_file_path_ = "src/test-hu/resources/org/htmlunit/html";
+    private static final String BASE_FILE_PATH = "src/test-hu/resources/org/htmlunit/html";
 
     /**
      * Constructor.
      * @throws Exception if an exception occurs
      */
     public HtmlImageDownloadTest() throws Exception {
-        startWebServer(base_file_path_);
+        startWebServer(BASE_FILE_PATH);
     }
 
     /**
@@ -107,8 +107,7 @@ public class HtmlImageDownloadTest extends WebServerTestCase {
             htmlImage.getImageData();
             fail("it was not an image!");
         }
-        catch (final IOException ioe) {
-            // Correct behavior
+        catch (final IOException expected) {
         }
     }
 

@@ -1,0 +1,1215 @@
+{
+    "comment": "A first demo for auto-rating its resulting scorecard",
+    "version": 2,
+
+    "selectors" : [
+        {
+            "id" : "homepageP95",
+            "expression" : "max(//requests/request[matches(name, '^Homepage')]/percentiles/p95)",
+            "comment" : "Get us the max of all P95 of homepage like requests"
+        },
+        {
+            "id" : "homepageP99",
+            "expression" : "max(//requests/request[matches(name, '^Homepage')]/percentiles/p99)",
+            "comment" : "Get us the max of all P99 of homepage like requests"
+        },
+
+        {
+            "id" : "catalogP95",
+            "expression" : "max(//requests/request[matches(name, '^(SelectTopCategory|SelectCategory|ProductDetailView)')]/percentiles/p95)",
+            "comment" : "Get us the max of all P95 of catalog like requests"
+        },
+        {
+            "id" : "catalogP99",
+            "expression" : "max(//requests/request[matches(name, '^(SelectTopCategory|SelectCategory|ProductDetailView)')]/percentiles/p99)",
+            "comment" : "Get us the max of all P99 of catalog like requests"
+        },
+
+
+        {
+            "id" : "accountP95",
+            "expression" : "max(//requests/request[matches(name, '^(Login|Logout|Register|GoToRegistrationForm|GoToSignIn)')]/percentiles/p95)",
+            "comment" : "Get us the max of all P95 of account like requests"
+        },
+        {
+            "id" : "accountP99",
+            "expression" : "max(//requests/request[matches(name, '^(Login|Logout|Register|GoToRegistrationForm|GoToSignIn)')]/percentiles/p99)",
+            "comment" : "Get us the max of all P99 of account like requests"
+        },
+
+
+        {
+            "id" : "cartP95",
+            "expression" : "max(//requests/request[matches(name, '^(AddToCart|ViewCart)')]/percentiles/p95)",
+            "comment" : "Get us the max of all P95 of cart like requests"
+        },
+        {
+            "id" : "cartP99",
+            "expression" : "max(//requests/request[matches(name, '^(AddToCart|ViewCart)')]/percentiles/p99)",
+            "comment" : "Get us the max of all P99 of cart like requests"
+        },
+
+
+        {
+            "id" : "checkoutP95",
+            "expression" : "max(//requests/request[matches(name, '^(StartCheckout|EnterShippingAddress|EnterBillingAddress|EnterPaymentMethod)') and count > 50]/percentiles/p95)",
+            "comment" : "Get us the max of all P95 of checkout like requests, ensure that we don't hit PlaceOrder and have enough samples to consider it."
+        },
+        {
+            "id" : "checkoutP99",
+            "expression" : "max(//requests/request[matches(name, '^(StartCheckout|EnterShippingAddress|EnterBillingAddress|EnterPaymentMethod)') and count > 50]/percentiles/p99)",
+            "comment" : "Get us the max of all P99 of checkout like requests, ensure that we don't hit PlaceOrder and have enough samples to consider it."
+        },
+
+
+        {
+            "id" : "orderP95",
+            "expression" : "max(//requests/request[matches(name, '^(PlaceOrder)')]/percentiles/p95)",
+            "comment" : "Get us the max of all P95 of order like requests"
+        },
+        {
+            "id" : "orderP99",
+            "expression" : "max(//requests/request[matches(name, '^(PlaceOrder)')]/percentiles/p99)",
+            "comment" : "Get us the max of all P99 of order like requests"
+        },
+
+
+        {
+            "id" : "orderCount",
+            "expression" : "max(//requests/request[matches(name, '^(PlaceOrder)')]/count)",
+            "comment" : "Get us the order count"
+        },
+
+
+        {
+            "id" : "orderErrors",
+            "expression" : "sum(//actions/action[matches(name, '^(PlaceOrder)')]/errorPercentage)",
+            "comment" : "Get us the order percentage errors"
+        },
+        {
+            "id" : "transactionErrors",
+            "expression" : "/testreport/summary/transactions/errorPercentage",
+            "comment" : "Get transaction error percentage"
+        },
+        {
+            "id" : "actionErrors",
+            "expression" : "/testreport/summary/actions/errorPercentage",
+            "comment" : "Get action errors"
+        },
+        {
+            "id" : "requestErrors",
+            "expression" : "/testreport/summary/requests/errorPercentage",
+            "comment" : "Get requests errors"
+        }
+    ],
+
+    "rules" : [
+        {
+            "id" : "baseCpuCheck",
+            "name" : "Agent CPU Usage",
+            "description" : "Verify that the CPU usage of agents is low enough",
+            "failsTest" : false,
+            "enabled" : true,
+            "checks" : [
+                {
+                    "selector" : "count(//agents/agent/totalCpuUsage/mean[number() > 60])",
+                    "condition" : "= 0",
+                    "comment" : "Check the mean to avoid consuming too much"
+                }
+            ],
+            "messages" : {
+                "success" : "Agent CPU usage is within limits",
+                "fail" : "Agent CPU usage might have influenced the result, apply caution",
+            },
+            "points" : 0
+        },
+        {
+            "id" : "critialCpuCheck",
+            "name" : "Max Agent CPU Usage",
+            "description" : "Verify that the CPU usage was never too high",
+            "failsTest" : true,
+            "enabled" : true,
+            "checks" : [
+                {
+                    "selector" : "max(//agents/agent/totalCpuUsage/max)",
+                    "condition" : "< 95",
+                    "comment" : "Check the max to avoid influencing the test result"
+                },
+            ],
+            "messages" : {
+                "success" : "Agent CPU usage is within limits",
+                "fail" : "Max CPU usage was too high for a moment",
+            },
+            "points" : 0
+        },
+        {
+            "id" : "wastingResources",
+            "name" : "Agent Wasting",
+            "description" : "Check that we use our machines wisely",
+            "failsTest" : false,
+            "enabled" : true,
+            "negateResult" : false,
+            "checks" : [
+                {
+                    "selector" : "count(//agents/agent/totalCpuUsage/mean[number() < 25])",
+                    "condition" : "= 0",
+                    "comment" : "Check the mean to avoid consuming too little"
+                },
+            ],
+            "messages" : {
+                "success" : "All agents seem to be utilized well enough",
+                "fail" : "You might have too many ",
+            },
+            "points" : 0
+        },
+
+        {
+            "id" : "fallThroughF",
+            "name" : "F",
+            "description" : "F",
+            "failsTest" : true,
+            "failsOn" : "PASSED",
+            "enabled" : true,
+            "negateResult" : false,
+            "checks" : [
+            ],
+            "messages" : {
+                "success" : "F",
+                "fail" : "",
+            },
+            "points" : 0
+        },
+
+
+        {
+            "id" : "homepageAplus",
+            "name" : "Homepage A+",
+            "description" : "Homepage A+ rating criteria",
+            "failsTest" : false,
+            "enabled" : true,
+            "negateResult" : false,
+            "checks" : [
+                {
+                    "selectorId" : "homepageP95",
+                    "condition" : "<= 100",
+                },
+                {
+                    "selectorId" : "homepageP99",
+                    "condition" : "<= 250",
+                },
+            ],
+            "messages" : {
+                "success" : "A+",
+                "fail" : "",
+            },
+            "points" : 12
+        },
+        {
+            "id" : "homepageA",
+            "name" : "Homepage A",
+            "description" : "Homepage A rating criteria",
+            "failsTest" : false,
+            "enabled" : true,
+            "negateResult" : false,
+            "checks" : [
+                {
+                    "selectorId" : "homepageP95",
+                    "condition" : "<= 250",
+                },
+                {
+                    "selectorId" : "homepageP99",
+                    "condition" : "<= 750",
+                },
+            ],
+            "messages" : {
+                "success" : "A",
+                "fail" : "",
+            },
+            "points" : 11
+        },
+        {
+            "id" : "homepageB",
+            "name" : "Homepage B",
+            "description" : "Homepage B rating criteria",
+            "failsTest" : false,
+            "enabled" : true,
+            "negateResult" : false,
+            "checks" : [
+                {
+                    "selectorId" : "homepageP95",
+                    "condition" : "<= 500",
+                },
+                {
+                    "selectorId" : "homepageP99",
+                    "condition" : "<= 1500",
+                },
+            ],
+            "messages" : {
+                "success" : "B",
+                "fail" : "",
+            },
+            "points" : 10
+        },
+        {
+            "id" : "homepageC",
+            "name" : "Homepage C",
+            "description" : "Homepage C rating criteria",
+            "failsTest" : false,
+            "enabled" : true,
+            "negateResult" : false,
+            "checks" : [
+                {
+                    "selectorId" : "homepageP95",
+                    "condition" : "<= 1000",
+                },
+                {
+                    "selectorId" : "homepageP99",
+                    "condition" : "<= 3000",
+                },
+            ],
+            "messages" : {
+                "success" : "C",
+                "fail" : "",
+            },
+            "points" : 6
+        },
+        {
+            "id" : "homepageD",
+            "name" : "Homepage D",
+            "description" : "Homepage D rating criteria",
+            "failsTest" : false,
+            "enabled" : true,
+            "negateResult" : false,
+            "checks" : [
+                {
+                    "selectorId" : "homepageP95",
+                    "condition" : "<= 2000",
+                },
+                {
+                    "selectorId" : "homepageP99",
+                    "condition" : "<= 7000",
+                },
+            ],
+            "messages" : {
+                "success" : "D",
+                "fail" : "",
+            },
+            "points" : 2
+        },
+        {
+            "id" : "homepageF",
+            "name" : "Homepage F",
+            "description" : "Homepage F rating criteria, this is for information only, we don't need that here, rather we have a generic F.",
+            "failsTest" : true,
+            "enabled" : false,
+            "negateResult" : false,
+            "checks" : [
+                {
+                    "selectorId" : "homepageP95",
+                    "condition" : "> 2000",
+                },
+                {
+                    "selectorId" : "homepageP99",
+                    "condition" : "> 7000",
+                },
+            ],
+            "messages" : {
+                "success" : "F",
+                "fail" : "",
+            },
+            "points" : 0
+        },
+
+
+        {
+            "id" : "catalogAplus",
+            "name" : "Catalog A+",
+            "description" : "Catalog A+ rating criteria",
+            "failsTest" : false,
+            "enabled" : true,
+            "negateResult" : false,
+            "checks" : [
+                {
+                    "selectorId" : "catalogP95",
+                    "condition" : "<= 100",
+                },
+                {
+                    "selectorId" : "catalogP99",
+                    "condition" : "<= 250",
+                },
+            ],
+            "messages" : {
+                "success" : "A+",
+                "fail" : "",
+            },
+            "points" : 12
+        },
+        {
+            "id" : "catalogA",
+            "name" : "Catalog A",
+            "description" : "Catalog A rating criteria",
+            "failsTest" : false,
+            "enabled" : true,
+            "negateResult" : false,
+            "checks" : [
+                {
+                    "selectorId" : "catalogP95",
+                    "condition" : "<= 250",
+                },
+                {
+                    "selectorId" : "catalogP99",
+                    "condition" : "<= 750",
+                },
+            ],
+            "messages" : {
+                "success" : "A",
+                "fail" : "",
+            },
+            "points" : 11
+        },
+        {
+            "id" : "catalogB",
+            "name" : "Catalog B",
+            "description" : "Catalog B rating criteria",
+            "failsTest" : false,
+            "enabled" : true,
+            "negateResult" : false,
+            "checks" : [
+                {
+                    "selectorId" : "catalogP95",
+                    "condition" : "<= 500",
+                },
+                {
+                    "selectorId" : "catalogP99",
+                    "condition" : "<= 1500",
+                },
+            ],
+            "messages" : {
+                "success" : "B",
+                "fail" : "",
+            },
+            "points" : 10
+        },
+        {
+            "id" : "catalogC",
+            "name" : "Catalog C",
+            "description" : "Catalog C rating criteria",
+            "failsTest" : false,
+            "enabled" : true,
+            "negateResult" : false,
+            "checks" : [
+                {
+                    "selectorId" : "catalogP95",
+                    "condition" : "<= 1000",
+                },
+                {
+                    "selectorId" : "catalogP99",
+                    "condition" : "<= 3000",
+                },
+            ],
+            "messages" : {
+                "success" : "C",
+                "fail" : "",
+            },
+            "points" : 6
+        },
+        {
+            "id" : "catalogD",
+            "name" : "Catalog D",
+            "description" : "Catalog D rating criteria",
+            "failsTest" : false,
+            "enabled" : true,
+            "negateResult" : false,
+            "checks" : [
+                {
+                    "selectorId" : "catalogP95",
+                    "condition" : "<= 2000",
+                },
+                {
+                    "selectorId" : "catalogP99",
+                    "condition" : "<= 7000",
+                },
+            ],
+            "messages" : {
+                "success" : "D",
+                "fail" : "",
+            },
+            "points" : 2
+        },
+        {
+            "id" : "catalogF",
+            "name" : "Catalog F",
+            "description" : "Catalog F rating criteria, just for information, a generic F rule wil catch it all.",
+            "failsTest" : true,
+            "enabled" : false,
+            "negateResult" : false,
+            "checks" : [
+                {
+                    "selectorId" : "catalogP95",
+                    "condition" : "> 2000",
+                },
+                {
+                    "selectorId" : "catalogP99",
+                    "condition" : "> 7000",
+                },
+            ],
+            "messages" : {
+                "success" : "F",
+                "fail" : "",
+            },
+            "points" : 0
+        },
+
+
+        {
+            "id" : "cartAplus",
+            "name" : "Cart A+",
+            "description" : "Cart A+ rating criteria",
+            "failsTest" : false,
+            "enabled" : true,
+            "negateResult" : false,
+            "checks" : [
+                {
+                    "selectorId" : "cartP95",
+                    "condition" : "<= 100",
+                },
+                {
+                    "selectorId" : "cartP99",
+                    "condition" : "<= 250",
+                },
+            ],
+            "messages" : {
+                "success" : "A+",
+                "fail" : "",
+            },
+            "points" : 12
+        },
+        {
+            "id" : "cartA",
+            "name" : "Cart A",
+            "description" : "Cart A rating criteria",
+            "failsTest" : false,
+            "enabled" : true,
+            "negateResult" : false,
+            "checks" : [
+                {
+                    "selectorId" : "cartP95",
+                    "condition" : "<= 250",
+                },
+                {
+                    "selectorId" : "cartP99",
+                    "condition" : "<= 750",
+                },
+            ],
+            "messages" : {
+                "success" : "A",
+                "fail" : "",
+            },
+            "points" : 11
+        },
+        {
+            "id" : "cartB",
+            "name" : "Cart B",
+            "description" : "Cart B rating criteria",
+            "failsTest" : false,
+            "enabled" : true,
+            "negateResult" : false,
+            "checks" : [
+                {
+                    "selectorId" : "cartP95",
+                    "condition" : "<= 500",
+                },
+                {
+                    "selectorId" : "cartP99",
+                    "condition" : "<= 1500",
+                },
+            ],
+            "messages" : {
+                "success" : "B",
+                "fail" : "",
+            },
+            "points" : 10
+        },
+        {
+            "id" : "cartC",
+            "name" : "Cart C",
+            "description" : "Cart C rating criteria",
+            "failsTest" : false,
+            "enabled" : true,
+            "negateResult" : false,
+            "checks" : [
+                {
+                    "selectorId" : "cartP95",
+                    "condition" : "<= 1000",
+                },
+                {
+                    "selectorId" : "cartP99",
+                    "condition" : "<= 3000",
+                },
+            ],
+            "messages" : {
+                "success" : "C",
+                "fail" : "",
+            },
+            "points" : 6
+        },
+        {
+            "id" : "cartD",
+            "name" : "Cart D",
+            "description" : "Cart D rating criteria",
+            "failsTest" : false,
+            "enabled" : true,
+            "negateResult" : false,
+            "checks" : [
+                {
+                    "selectorId" : "cartP95",
+                    "condition" : "<= 2000",
+                },
+                {
+                    "selectorId" : "cartP99",
+                    "condition" : "<= 7000",
+                },
+            ],
+            "messages" : {
+                "success" : "D",
+                "fail" : "",
+            },
+            "points" : 2
+        },
+        {
+            "id" : "cartF",
+            "name" : "Cart F",
+            "description" : "Cart F rating criteria, just for information, a generic F rule wil catch it all.",
+            "failsTest" : true,
+            "enabled" : false,
+            "negateResult" : false,
+            "checks" : [
+                {
+                    "selectorId" : "cartP95",
+                    "condition" : "> 2000",
+                },
+                {
+                    "selectorId" : "cartP99",
+                    "condition" : "> 7000",
+                },
+            ],
+            "messages" : {
+                "success" : "F",
+                "fail" : "",
+            },
+            "points" : 0
+        },
+
+        {
+            "id" : "accountAplus",
+            "name" : "Account A+",
+            "description" : "Account A+ rating criteria",
+            "failsTest" : false,
+            "enabled" : true,
+            "negateResult" : false,
+            "checks" : [
+                {
+                    "selectorId" : "accountP95",
+                    "condition" : "<= 100",
+                },
+                {
+                    "selectorId" : "accountP99",
+                    "condition" : "<= 250",
+                },
+            ],
+            "messages" : {
+                "success" : "A+",
+                "fail" : "",
+            },
+            "points" : 12
+        },
+        {
+            "id" : "accountA",
+            "name" : "Account A",
+            "description" : "Account A rating criteria",
+            "failsTest" : false,
+            "enabled" : true,
+            "negateResult" : false,
+            "checks" : [
+                {
+                    "selectorId" : "accountP95",
+                    "condition" : "<= 250",
+                },
+                {
+                    "selectorId" : "accountP99",
+                    "condition" : "<= 750",
+                },
+            ],
+            "messages" : {
+                "success" : "A",
+                "fail" : "",
+            },
+            "points" : 11
+        },
+        {
+            "id" : "accountB",
+            "name" : "Account B",
+            "description" : "Account B rating criteria",
+            "failsTest" : false,
+            "enabled" : true,
+            "negateResult" : false,
+            "checks" : [
+                {
+                    "selectorId" : "accountP95",
+                    "condition" : "<= 500",
+                },
+                {
+                    "selectorId" : "accountP99",
+                    "condition" : "<= 1500",
+                },
+            ],
+            "messages" : {
+                "success" : "B",
+                "fail" : "",
+            },
+            "points" : 10
+        },
+        {
+            "id" : "accountC",
+            "name" : "Account C",
+            "description" : "Account C rating criteria",
+            "failsTest" : false,
+            "enabled" : true,
+            "negateResult" : false,
+            "checks" : [
+                {
+                    "selectorId" : "accountP95",
+                    "condition" : "<= 1000",
+                },
+                {
+                    "selectorId" : "accountP99",
+                    "condition" : "<= 3000",
+                },
+            ],
+            "messages" : {
+                "success" : "C",
+                "fail" : "",
+            },
+            "points" : 6
+        },
+        {
+            "id" : "accountD",
+            "name" : "Account D",
+            "description" : "Account D rating criteria",
+            "failsTest" : false,
+            "enabled" : true,
+            "negateResult" : false,
+            "checks" : [
+                {
+                    "selectorId" : "accountP95",
+                    "condition" : "<= 2000",
+                },
+                {
+                    "selectorId" : "accountP99",
+                    "condition" : "<= 7000",
+                },
+            ],
+            "messages" : {
+                "success" : "D",
+                "fail" : "",
+            },
+            "points" : 2
+        },
+        {
+            "id" : "accountF",
+            "name" : "Account F",
+            "description" : "Account F rating criteria, just for information, a generic F rule wil catch it all.",
+            "failsTest" : true,
+            "enabled" : false,
+            "negateResult" : false,
+            "checks" : [
+                {
+                    "selectorId" : "accountP95",
+                    "condition" : "> 2000",
+                },
+                {
+                    "selectorId" : "accountP99",
+                    "condition" : "> 7000",
+                },
+            ],
+            "messages" : {
+                "success" : "F",
+                "fail" : "",
+            },
+            "points" : 0
+        },
+
+        {
+            "id" : "checkoutAplus",
+            "name" : "Checkout A+",
+            "description" : "Checkout A+ rating criteria",
+            "failsTest" : false,
+            "enabled" : true,
+            "negateResult" : false,
+            "checks" : [
+                {
+                    "selectorId" : "checkoutP95",
+                    "condition" : "<= 100",
+                },
+                {
+                    "selectorId" : "checkoutP99",
+                    "condition" : "<= 250",
+                },
+            ],
+            "messages" : {
+                "success" : "A+",
+                "fail" : "",
+            },
+            "points" : 12
+        },
+        {
+            "id" : "checkoutA",
+            "name" : "Checkout A",
+            "description" : "Checkout A rating criteria",
+            "failsTest" : false,
+            "enabled" : true,
+            "negateResult" : false,
+            "checks" : [
+                {
+                    "selectorId" : "checkoutP95",
+                    "condition" : "<= 250",
+                },
+                {
+                    "selectorId" : "checkoutP99",
+                    "condition" : "<= 750",
+                },
+            ],
+            "messages" : {
+                "success" : "A",
+                "fail" : "",
+            },
+            "points" : 11
+        },
+        {
+            "id" : "checkoutB",
+            "name" : "Checkout B",
+            "description" : "Checkout B rating criteria",
+            "failsTest" : false,
+            "enabled" : true,
+            "negateResult" : false,
+            "checks" : [
+                {
+                    "selectorId" : "checkoutP95",
+                    "condition" : "<= 500",
+                },
+                {
+                    "selectorId" : "checkoutP99",
+                    "condition" : "<= 1500",
+                },
+            ],
+            "messages" : {
+                "success" : "B",
+                "fail" : "",
+            },
+            "points" : 10
+        },
+        {
+            "id" : "checkoutC",
+            "name" : "Checkout C",
+            "description" : "Checkout C rating criteria",
+            "failsTest" : false,
+            "enabled" : true,
+            "negateResult" : false,
+            "checks" : [
+                {
+                    "selectorId" : "checkoutP95",
+                    "condition" : "<= 1000",
+                },
+                {
+                    "selectorId" : "checkoutP99",
+                    "condition" : "<= 3000",
+                },
+            ],
+            "messages" : {
+                "success" : "C",
+                "fail" : "",
+            },
+            "points" : 6
+        },
+        {
+            "id" : "checkoutD",
+            "name" : "Checkout D",
+            "description" : "Checkout D rating criteria",
+            "failsTest" : false,
+            "enabled" : true,
+            "negateResult" : false,
+            "checks" : [
+                {
+                    "selectorId" : "checkoutP95",
+                    "condition" : "<= 2000",
+                },
+                {
+                    "selectorId" : "checkoutP99",
+                    "condition" : "<= 7000",
+                },
+            ],
+            "messages" : {
+                "success" : "D",
+                "fail" : "",
+            },
+            "points" : 2
+        },
+        {
+            "id" : "checkoutF",
+            "name" : "Checkout F",
+            "description" : "Checkout F rating criteria, just for information, a generic F rule wil catch it all.",
+            "failsTest" : true,
+            "enabled" : false,
+            "negateResult" : false,
+            "checks" : [
+                {
+                    "selectorId" : "checkoutP95",
+                    "condition" : "> 2000",
+                },
+                {
+                    "selectorId" : "checkoutP99",
+                    "condition" : "> 7000",
+                },
+            ],
+            "messages" : {
+                "success" : "F",
+                "fail" : "",
+            },
+            "points" : 0
+        },
+
+
+        {
+            "id" : "orderAplus",
+            "name" : "Order A+",
+            "description" : "Order A+ rating criteria",
+            "failsTest" : false,
+            "enabled" : true,
+            "negateResult" : false,
+            "checks" : [
+                {
+                    "selectorId" : "orderP95",
+                    "condition" : "<= 100",
+                },
+                {
+                    "selectorId" : "orderP99",
+                    "condition" : "<= 250",
+                },
+            ],
+            "messages" : {
+                "success" : "A+",
+                "fail" : "",
+            },
+            "points" : 12
+        },
+        {
+            "id" : "orderA",
+            "name" : "Order A",
+            "description" : "Order A rating criteria",
+            "failsTest" : false,
+            "enabled" : true,
+            "negateResult" : false,
+            "checks" : [
+                {
+                    "selectorId" : "orderP95",
+                    "condition" : "<= 250",
+                },
+                {
+                    "selectorId" : "orderP99",
+                    "condition" : "<= 750",
+                },
+            ],
+            "messages" : {
+                "success" : "A",
+                "fail" : "",
+            },
+            "points" : 11
+        },
+        {
+            "id" : "orderB",
+            "name" : "Order B",
+            "description" : "Order B rating criteria",
+            "failsTest" : false,
+            "enabled" : true,
+            "negateResult" : false,
+            "checks" : [
+                {
+                    "selectorId" : "orderP95",
+                    "condition" : "<= 500",
+                },
+                {
+                    "selectorId" : "orderP99",
+                    "condition" : "<= 1500",
+                },
+            ],
+            "messages" : {
+                "success" : "B",
+                "fail" : "",
+            },
+            "points" : 10
+        },
+        {
+            "id" : "orderC",
+            "name" : "Order C",
+            "description" : "Order C rating criteria",
+            "failsTest" : false,
+            "enabled" : true,
+            "negateResult" : false,
+            "checks" : [
+                {
+                    "selectorId" : "orderP95",
+                    "condition" : "<= 1000",
+                },
+                {
+                    "selectorId" : "orderP99",
+                    "condition" : "<= 3000",
+                },
+            ],
+            "messages" : {
+                "success" : "C",
+                "fail" : "",
+            },
+            "points" : 6
+        },
+        {
+            "id" : "orderD",
+            "name" : "Order D",
+            "description" : "Order D rating criteria",
+            "failsTest" : false,
+            "enabled" : true,
+            "negateResult" : false,
+            "checks" : [
+                {
+                    "selectorId" : "orderP95",
+                    "condition" : "<= 2000",
+                },
+                {
+                    "selectorId" : "orderP99",
+                    "condition" : "<= 7000",
+                },
+            ],
+            "messages" : {
+                "success" : "D",
+                "fail" : "a",
+            },
+            "points" : 2
+        },
+        {
+            "id" : "orderF",
+            "name" : "Order F",
+            "description" : "Order F rating criteria, just for information, a generic F rule wil catch it all.",
+            "failsTest" : true,
+            "enabled" : false,
+            "negateResult" : false,
+            "checks" : [
+                {
+                    "selectorId" : "orderP95",
+                    "condition" : "> 2000",
+                },
+                {
+                    "selectorId" : "orderP99",
+                    "condition" : "> 7000",
+                },
+            ],
+            "messages" : {
+                "success" : "F",
+                "fail" : "a",
+            },
+            "points" : 0
+        },
+
+        {
+            "id" : "orderErrorsRule",
+            "name" : "Order Errors",
+            "description" : "Ensure that only few orders failed",
+            "failsTest" : true,
+            "enabled" : true,
+            "failsOn" : "NOTPASSED",
+            "negateResult" : false,
+            "checks" : [
+                {
+                    "selectorId" : "orderErrors",
+                    "condition" : "< 1.0 ",
+                },
+            ],
+            "messages" : {
+                "success" : "Order failure rate is ok",
+                "fail" : "Too many orders failed",
+            },
+            "points" : 5
+        },
+        {
+            "id" : "requestErrorsRule",
+            "name" : "Request Errors",
+            "description" : "Request error rate",
+            "failsTest" : true,
+            "enabled" : true,
+            "failsOn" : "NOTPASSED",
+            "negateResult" : false,
+            "checks" : [
+                {
+                    "selectorId" : "requestErrors",
+                    "condition" : "< 0.5 ",
+                },
+            ],
+            "messages" : {
+                "success" : "Request failure rate is ok",
+                "fail" : "Too many requests failed",
+            },
+            "points" : 5
+        },
+        {
+            "id" : "actionErrorsRule",
+            "name" : "Action Errors",
+            "description" : "Action error rate",
+            "failsTest" : true,
+            "enabled" : true,
+            "failsOn" : "NOTPASSED",
+            "negateResult" : false,
+            "checks" : [
+                {
+                    "selectorId" : "actionErrors",
+                    "condition" : "< 0.5 ",
+                },
+            ],
+            "messages" : {
+                "success" : "Action failure rate is ok",
+                "fail" : "Too many actions failed",
+            },
+            "points" : 5
+        },
+        {
+            "id" : "transactionErrorsRule",
+            "name" : "Transaction Errors",
+            "description" : "Transaction error rate",
+            "failsTest" : true,
+            "enabled" : true,
+            "failsOn" : "NOTPASSED",
+            "negateResult" : false,
+            "checks" : [
+                {
+                    "selectorId" : "transactionErrors",
+                    "condition" : "< 1.0 ",
+                },
+            ],
+            "messages" : {
+                "success" : "Transaction failure rate is ok",
+                "fail" : "Too many transactions failed",
+            },
+            "points" : 5
+        },
+    ],
+
+    "groups" : [
+        {
+            "id" : "CPUs",
+            "name" : "Agent CPU Usage",
+            "description" : "Verify that the CPU usage of agents is ok",
+            "failsTest" : true,
+            "mode" : "allPassed",
+            "enabled" : true,
+            "rules" : ["baseCpuCheck", "critialCpuCheck", "wastingResources"],
+            "messages" : {
+                "success" : "All CPU metrics are ok",
+                "fail" : "Verify the test setup, because some CPU metrics are off",
+            },
+        },
+        {
+            "id" : "Homepage",
+            "name" : "Homepage Rating",
+            "description" : "Rates the homepage",
+            "failsTest" : false,
+            "mode" : "firstPassed",
+            "enabled" : true,
+            "rules" : ["homepageAplus", "homepageA", "homepageB", "homepageC", "homepageD", "homepageF", "fallThroughF"],
+            "messages" : {
+                "success" : "Homepage Success",
+                "fail" : "Homepage fail",
+            },
+        },
+        {
+            "id" : "Catalog",
+            "enabled": true,
+            "name" : "Catalog Rating",
+            "description" : "Rates the catalog",
+            "failsTest" : false,
+            "mode" : "firstPassed",
+            "rules" : ["catalogAplus", "catalogA", "catalogB", "catalogC", "catalogD", "catalogF", "fallThroughF"],
+        },
+        {
+            "id" : "Cart",
+            "enabled": true,
+            "name" : "Cart Rating",
+            "description" : "Rates the cart",
+            "failsTest" : false,
+            "mode" : "firstPassed",
+            "rules" : ["cartAplus", "cartA", "cartB", "cartC", "cartD", "cartF", "fallThroughF"],
+        },
+        {
+            "id" : "Account",
+            "enabled": true,
+            "name" : "Account Rating",
+            "description" : "Rates the account",
+            "failsTest" : false,
+            "mode" : "firstPassed",
+            "rules" : ["accountAplus", "accountA", "accountB", "accountC", "accountD", "accountF", "fallThroughF"],
+        },        {
+            "id" : "Checkout",
+            "enabled": true,
+            "name" : "Checkout Rating",
+            "description" : "Rates the checkout",
+            "failsTest" : false,
+            "mode" : "firstPassed",
+            "rules" : ["checkoutAplus", "checkoutA", "checkoutB", "checkoutC", "checkoutD", "checkoutF", "fallThroughF"],
+        },
+        {
+            "id" : "Order",
+            "enabled": true,
+            "name" : "Order Rating",
+            "description" : "Rates the ordering",
+            "failsTest" : false,
+            "mode" : "firstPassed",
+            "rules" : ["orderAplus", "orderA", "orderB", "orderC", "orderD", "orderF", "fallThroughF"],
+        },
+        {
+            "id" : "Errors",
+            "enabled": true,
+            "name" : "Error Check",
+            "description" : "Error occurrences",
+            "failsTest" : true,
+            "mode" : "allPassed",
+            "rules" : ["requestErrorsRule", "actionErrorsRule", "transactionErrorsRule", "orderErrorsRule"],
+            "messages" : {
+                "success" : "Error rates seem low enough",
+                "fail" : "Too many errors in some sectors",
+            },
+        },
+    ],
+
+    "ratings" : [
+        {
+            "id": "poor",
+            "name": "Poor",
+            "enabled": true,
+            "description": "Load test performed poorly",
+            "value": 50.0,
+            "failsTest" : false
+        },
+        {
+            "id": "ok",
+            "name": "Ok",
+            "enabled": true,
+            "description": "Load test result likely valid",
+            "value": 80.0,
+            "failsTest" : false
+        },
+        {
+            "id": "success",
+            "name": "Success",
+            "enabled": true,
+            "description": "Load test performed nicely",
+            "value": 100.0,
+            "failsTest" : false
+        }
+    ]
+}

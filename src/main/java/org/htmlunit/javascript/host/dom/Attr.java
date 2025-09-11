@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,18 +14,8 @@
  */
 package org.htmlunit.javascript.host.dom;
 
-import static org.htmlunit.BrowserVersionFeatures.JS_ATTR_FIRST_LAST_CHILD_RETURNS_NULL;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
-
-import org.htmlunit.corejs.javascript.Scriptable;
-import org.htmlunit.corejs.javascript.ScriptableObject;
 import org.htmlunit.html.DomAttr;
 import org.htmlunit.html.DomElement;
-import org.htmlunit.html.DomText;
 import org.htmlunit.javascript.HtmlUnitScriptable;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
@@ -48,16 +38,10 @@ import org.htmlunit.javascript.configuration.JsxSetter;
 public class Attr extends Node {
 
     /**
-     * Creates an instance.
-     */
-    public Attr() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @Override
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
         super.jsConstructor();
     }
@@ -72,19 +56,6 @@ public class Attr extends Node {
             domNode.setValue(parent.getAttribute(getName()));
         }
         domNode.remove();
-    }
-
-    /**
-     * Returns {@code true} if the attribute is a custom property.
-     * @return {@code true} if the attribute is a custom property
-     */
-    @JsxGetter(IE)
-    public boolean isExpando() {
-        final Object owner = getOwnerElement();
-        if (null == owner) {
-            return false;
-        }
-        return !ScriptableObject.hasProperty((Scriptable) owner, getName());
     }
 
     /**
@@ -167,12 +138,7 @@ public class Attr extends Node {
      */
     @Override
     public Node getLastChild() {
-        if (getBrowserVersion().hasFeature(JS_ATTR_FIRST_LAST_CHILD_RETURNS_NULL)) {
-            return null;
-        }
-
-        final DomText text = new DomText(getDomNodeOrDie().getPage(), getNodeValue());
-        return text.getScriptableObject();
+        return null;
     }
 
     /**
@@ -188,7 +154,7 @@ public class Attr extends Node {
      */
     @Override
     @JsxGetter
-    public Object getPrefix() {
+    public String getPrefix() {
         return super.getPrefix();
     }
 
@@ -197,7 +163,7 @@ public class Attr extends Node {
      */
     @Override
     @JsxGetter
-    public Object getLocalName() {
+    public String getLocalName() {
         return super.getLocalName();
     }
 
@@ -206,7 +172,7 @@ public class Attr extends Node {
      */
     @Override
     @JsxGetter
-    public Object getNamespaceURI() {
+    public String getNamespaceURI() {
         return super.getNamespaceURI();
     }
 
@@ -215,7 +181,7 @@ public class Attr extends Node {
      * @return the document
      */
     @Override
-    public Object getRootNode() {
+    public Node getRootNode() {
         return this;
     }
 }

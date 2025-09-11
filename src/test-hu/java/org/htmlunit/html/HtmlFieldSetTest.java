@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,7 @@ package org.htmlunit.html;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
@@ -69,8 +68,7 @@ public class HtmlFieldSetTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "undefined", "undefined", "center", "8", "foo"},
-            IE = {"left", "right", "", "error", "error", "center", "right", ""})
+    @Alerts({"undefined", "undefined", "undefined", "center", "8", "foo"})
     public void align() throws Exception {
         final String html
             = "<html><body>\n"
@@ -90,9 +88,7 @@ public class HtmlFieldSetTest extends WebDriverTestCase {
             + "  function set(fs, value) {\n"
             + "    try {\n"
             + "      fs.align = value;\n"
-            + "    } catch (e) {\n"
-            + "      log('error');\n"
-            + "    }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + "  var fs1 = document.getElementById('fs1');\n"
             + "  var fs2 = document.getElementById('fs2');\n"
@@ -116,8 +112,32 @@ public class HtmlFieldSetTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
+    @Alerts({"true", "false"})
+    public void disabled() throws Exception {
+        final String html
+            = "<html><body>\n"
+            + "<form>\n"
+            + "  <fieldset id='fs1' disabled>\n"
+            + "    <input type'text' id='txt1' />\n"
+            + "  </fieldset>\n"
+            + "</form>\n"
+            + "<script>\n"
+            + LOG_TITLE_FUNCTION
+            + "  var fs1 = document.getElementById('fs1');\n"
+            + "  var txt1 = document.getElementById('txt1');\n"
+            + "  log(fs1.disabled);\n"
+            + "  log(txt1.disabled);\n"
+            + "</script>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
     @Alerts({"false", "false", "false", "false", "false"})
-    @HtmlUnitNYI(IE = {"false", "false", "false", "false", "false"})
     public void willValidate() throws Exception {
         final String html =
                 "<html><head>\n"
@@ -149,12 +169,9 @@ public class HtmlFieldSetTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "false"},
-            IE = {"true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "false"})
+    @Alerts({"true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "false"})
     public void validationEmpty() throws Exception {
         validation("<fieldset id='e1' />\n", "");
     }
@@ -163,12 +180,9 @@ public class HtmlFieldSetTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"true",
-                       "false-true-false-false-false-false-false-false-false-false-false",
-                       "false"},
-            IE = {"true",
-                  "undefined-true-false-false-false-false-false-undefined-false-false-false",
-                  "false"})
+    @Alerts({"true",
+             "false-true-false-false-false-false-false-false-false-false-false",
+             "false"})
     public void validationCustomValidity() throws Exception {
         validation("<fieldset id='e1' />\n", "elem.setCustomValidity('Invalid');");
     }
@@ -177,12 +191,9 @@ public class HtmlFieldSetTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"true",
-                       "false-true-false-false-false-false-false-false-false-false-false",
-                       "false"},
-            IE = {"true",
-                  "undefined-true-false-false-false-false-false-undefined-false-false-false",
-                  "false"})
+    @Alerts({"true",
+             "false-true-false-false-false-false-false-false-false-false-false",
+             "false"})
     public void validationBlankCustomValidity() throws Exception {
         validation("<fieldset id='e1' />\n", "elem.setCustomValidity(' ');\n");
     }
@@ -191,12 +202,9 @@ public class HtmlFieldSetTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "false"},
-            IE = {"true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "false"})
+    @Alerts({"true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "false"})
     public void validationResetCustomValidity() throws Exception {
         validation("<fieldset id='e1' />\n",
                 "elem.setCustomValidity('Invalid');elem.setCustomValidity('');");
@@ -206,14 +214,22 @@ public class HtmlFieldSetTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "false"},
-            IE = {"true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "false"})
+    @Alerts({"true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "false"})
     public void validationRequired() throws Exception {
         validation("<fieldset id='e1' required/>\n", "");
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts({"true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "false"})
+    public void validationDisabled() throws Exception {
+        validation("<fieldset id='e1' disabled/>\n", "");
     }
 
     private void validation(final String htmlPart, final String jsPart) throws Exception {

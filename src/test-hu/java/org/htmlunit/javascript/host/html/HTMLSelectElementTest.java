@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,18 +14,14 @@
  */
 package org.htmlunit.javascript.host.html;
 
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
-
 import java.util.List;
 
 import org.htmlunit.HttpMethod;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.BuggyWebDriver;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.BuggyWebDriver;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
@@ -255,10 +251,10 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "      s.selectedIndex = 2;\n"
             + "      log(s.selectedIndex);\n"
 
-            + "      try { s.selectedIndex = 25; } catch (e) { log('exception') }\n"
+            + "      try { s.selectedIndex = 25; } catch(e) { logEx(e) }\n"
             + "      log(s.selectedIndex);\n"
 
-            + "      try { s.selectedIndex = -14; } catch (e) { log('exception') }\n"
+            + "      try { s.selectedIndex = -14; } catch(e) { logEx(e) }\n"
             + "      log(s.selectedIndex);\n"
             + "    }\n"
             + "  </script>\n"
@@ -540,7 +536,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "      var options = document.form1.select1;\n"
             + "      try {\n"
             + "        options.add(new Option('Four','value4'), null);\n"
-            + "      } catch(e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
             + "      log(options.length);\n"
             + "      var index = options.length - 1;\n"
             + "      log(options[index].text);\n"
@@ -585,7 +581,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "        oSelect.add(new Option('Three b', 'value3b'), 3);\n"
             + "        log(oSelect[3].text);\n"
             + "        log(oSelect[3].value);\n"
-            + "      } catch(e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
             + "    }\n"
             + "  </script>\n"
             + "</head>\n"
@@ -622,7 +618,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "        oSelect.add(new Option('test', 'testValue'), null);\n"
             + "        log(oSelect[oSelect.length-1].text);\n"
             + "        log(oSelect[oSelect.length-1].value);\n"
-            + "      } catch(e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
             + "    }\n"
             + "  </script>\n"
             + "</head>\n"
@@ -838,7 +834,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"0", "exception"})
+    @Alerts({"0", "NotFoundError/DOMException"})
     public void addOptionMethodNewOptionEmptySelect() throws Exception {
         addOptionMethod(", new Option('foo', '123')", true, false);
     }
@@ -847,7 +843,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"0", "exception"})
+    @Alerts({"0", "NotFoundError/DOMException"})
     public void addOptionMethodNewOptionEmptySelectMulti() throws Exception {
         addOptionMethod(", new Option('foo', '123')", true, true);
     }
@@ -874,7 +870,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"3", "exception"})
+    @Alerts({"3", "NotFoundError/DOMException"})
     public void addOptionMethodNewOption() throws Exception {
         addOptionMethod(", new Option('foo', '123')", false, false);
     }
@@ -883,7 +879,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"3", "exception"})
+    @Alerts({"3", "NotFoundError/DOMException"})
     public void addOptionMethodNewOptionMulti() throws Exception {
         addOptionMethod(", new Option('foo', '123')", false, true);
     }
@@ -979,7 +975,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "        for (var i = 0; i < oSelect.options.length; i++) {\n"
             + "          log(oSelect.options[i].text + (oSelect.options[i].selected ? '*' : ''));\n"
             + "        }\n"
-            + "      } catch (e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
             + "    }\n"
             + "  </script>\n"
             + "</head>\n"
@@ -1021,7 +1017,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "        var opt = new Option('foo', '123');\n"
             + "        oSelect.add(opt, -1);\n"
             + "        log(oSelect.length);\n"
-            + "      } catch (e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
             + "    }\n"
             + "  </script>\n"
             + "</head>\n"
@@ -1038,8 +1034,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"0", "0", "-1"},
-            IE = {"0", "exception"})
+    @Alerts({"0", "0", "-1"})
     public void removeOptionMethodIndexMinusOneEmptySelect() throws Exception {
         removeOptionMethod("-1", true, false);
     }
@@ -1048,8 +1043,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"0", "0", "-1"},
-            IE = {"0", "exception"})
+    @Alerts({"0", "0", "-1"})
     public void removeOptionMethodIndexMinusOneEmptySelectMulti() throws Exception {
         removeOptionMethod("-1", true, true);
     }
@@ -1112,8 +1106,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"3", "3", "1", "One", "Two*", "Three"},
-            IE = {"3", "exception"})
+    @Alerts({"3", "3", "1", "One", "Two*", "Three"})
     public void removeOptionMethodIndexMinusOne() throws Exception {
         removeOptionMethod("-1", false, false);
     }
@@ -1122,8 +1115,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"3", "3", "1", "One", "Two*", "Three*"},
-            IE = {"3", "exception"})
+    @Alerts({"3", "3", "1", "One", "Two*", "Three*"})
     public void removeOptionMethodIndexMinusOneMulti() throws Exception {
         removeOptionMethod("-1", false, true);
     }
@@ -1380,7 +1372,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "        for (var i = 0; i < oSelect.options.length; i++) {\n"
             + "          log(oSelect.options[i].text + (oSelect.options[i].selected ? '*' : ''));\n"
             + "        }\n"
-            + "      } catch (e) { log('exception'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
             + "    }\n"
             + "  </script>\n"
             + "</head>\n"
@@ -1485,7 +1477,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "    log(options.length);\n"
             + "    log(options[1].text);\n"
             + "    log(options[1].value);\n"
-            + "  } catch(e) { log('exception'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "}</script></head><body onload='doTest()'>\n"
             + "<p>hello world</p>\n"
             + "<form name='form1'>\n"
@@ -1674,8 +1666,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "exception",
-            IE = {"2-2", "1-1", "2-2", "0-0", "2-2", "1-1"})
+    @Alerts("TypeError")
     public void optionsDelegateToSelect() throws Exception {
         final String html =
             HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -1693,7 +1684,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "\n"
             + "    s.options.selectedIndex = 1;\n"
             + "    doAlerts(s);\n"
-            + "  } catch (e) { log('exception'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "}\n"
             + "function doAlerts(s) {\n"
             + "  log(s.childNodes.length + '-' + s.options.childNodes.length);\n"
@@ -2199,7 +2190,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "    var s = document.getElementById('mySelect');\n"
             + "    log(s.item(0).text);\n"
             + "    log(s.item(300));\n"
-            + "    try { log(s.item(-5)); } catch(e) { log('exception'); }\n"
+            + "    try { log(s.item(-5)); } catch(e) { logEx(e); }\n"
             + "  </script>\n"
             + "</body></html>";
 
@@ -2297,8 +2288,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"two", "One"},
-            IE = {"two", ""})
+    @Alerts({"two", "One"})
     public void valueByText() throws Exception {
         final String html =
             HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -2328,8 +2318,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"two", "One"},
-            IE = {"two", ""})
+    @Alerts({"two", "One"})
     public void valueByTextTrim() throws Exception {
         final String html =
             HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -2490,8 +2479,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "mouse over",
-            IE = "")
+    @Alerts("mouse over")
     @BuggyWebDriver(FF = "mouse overmouse overmouse over",
             FF_ESR = "mouse overmouse overmouse over")
     public void mouseOverDisabledSelect() throws Exception {
@@ -2526,8 +2514,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"0", "2", "1", "2", "1", "1"},
-            IE = {"undefined", "undefined", "undefined", "undefined", "undefined", "undefined"})
+    @Alerts({"0", "2", "1", "2", "1", "1"})
     public void labels() throws Exception {
         final String html =
             "<html><head>\n"
@@ -2564,9 +2551,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"1", "false", "true", "false", "false"},
-            IE = {"1", "true", "true", "true", "true"})
-    @HtmlUnitNYI(IE = {"1", "false", "true", "true", "true"})
+    @Alerts({"1", "false", "true", "false", "false"})
     public void in() throws Exception {
         final String html =
             "<html>\n"
@@ -2598,8 +2583,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "[object HTMLOptionElement]", "2"},
-            IE = {"null", "[object HTMLOptionElement]", "2"})
+    @Alerts({"undefined", "[object HTMLOptionElement]", "2"})
     public void addOptionByAssigningViaIndex() throws Exception {
         final String html =
             "<html>\n"
@@ -2628,8 +2612,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "[object HTMLOptionElement]", "8"},
-            IE = {"null", "[object HTMLOptionElement]", "8"})
+    @Alerts({"undefined", "[object HTMLOptionElement]", "8"})
     public void addOptionByAssigningViaIndex2() throws Exception {
         final String html =
             "<html>\n"
@@ -2770,9 +2753,7 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"[object HTMLOptionElement]", "[object HTMLOptionElement]", "[object HTMLOptionElement]"},
-            IE = "exception")
-    @NotYetImplemented(IE)
+    @Alerts({"[object HTMLOptionElement]", "[object HTMLOptionElement]", "[object HTMLOptionElement]"})
     public void optionsForOf() throws Exception {
         final String html =
               "<html>\n"
@@ -2795,6 +2776,40 @@ public class HTMLSelectElementTest extends WebDriverTestCase {
             + "</select>\n"
             + "</body>\n"
             + "</html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Alerts(DEFAULT = {"true", "false", "true", "false", "true"},
+            FF = {"true", "false", "true", "true", "true"},
+            FF_ESR = {"true", "false", "true", "true", "true"})
+    public void willValidate() throws Exception {
+        final String html =
+                "<html><head>\n"
+                + "  <script>\n"
+                + LOG_TITLE_FUNCTION
+                + "    function test() {\n"
+                + "      log(document.getElementById('i1').willValidate);\n"
+                + "      log(document.getElementById('i2').willValidate);\n"
+                + "      log(document.getElementById('i3').willValidate);\n"
+                + "      log(document.getElementById('i4').willValidate);\n"
+                + "      log(document.getElementById('i5').willValidate);\n"
+                + "    }\n"
+                + "  </script>\n"
+                + "</head>\n"
+                + "<body onload='test()'>\n"
+                + "  <form>\n"
+                + "    <select id='i1'>button</select>"
+                + "    <select id='i2' disabled></select>"
+                + "    <select id='i3' hidden></select>"
+                + "    <select id='i4' readonly></select>"
+                + "    <select id='i5' style='display: none'></select>"
+                + "  </form>\n"
+                + "</body></html>";
 
         loadPageVerifyTitle2(html);
     }

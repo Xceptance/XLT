@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,11 +13,6 @@
  * limitations under the License.
  */
 package org.htmlunit.javascript.host.html;
-
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import org.htmlunit.html.HtmlBlockQuote;
 import org.htmlunit.html.HtmlInlineQuotation;
@@ -33,21 +28,15 @@ import org.htmlunit.javascript.configuration.JsxSetter;
  * @author Ronald Brill
  * @author Carsten Steul
  */
-@JsxClass(domClass = HtmlInlineQuotation.class, value = {CHROME, EDGE, FF, FF_ESR})
-@JsxClass(domClass = HtmlBlockQuote.class, value = {CHROME, EDGE, FF, FF_ESR})
+@JsxClass(domClass = HtmlInlineQuotation.class)
+@JsxClass(domClass = HtmlBlockQuote.class)
 public class HTMLQuoteElement extends HTMLElement {
-
-    /**
-     * Creates an instance.
-     */
-    public HTMLQuoteElement() {
-    }
 
     /**
      * JavaScript constructor.
      */
     @Override
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
         super.jsConstructor();
     }
