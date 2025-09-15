@@ -19,7 +19,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.StringUtils;
 import org.htmlunit.CookieManager;
 import org.htmlunit.util.Cookie;
 
@@ -32,9 +31,7 @@ import okhttp3.HttpUrl;
  */
 class CookieJarImpl implements CookieJar
 {
-    static final String ERROR_MSG_DOMAIN = "Domain not set in cookie";
-
-    static final String ERROR_MSG_PATH = "Path not set or does not start with '/' in cookie";
+    static final String ERROR_MSG_COOKIE_INVALID = "Cookie not valid for use with OkHttp";
 
     /**
      * HtmlUnit's cookie manager.
@@ -101,60 +98,53 @@ class CookieJarImpl implements CookieJar
      */
     static okhttp3.Cookie toOkHttpCookie(final Cookie htmlUnitCookie)
     {
-        final Builder builder = new okhttp3.Cookie.Builder();
-
-        final String domain = StringUtils.defaultString(htmlUnitCookie.getDomain()).trim();
-        if (!domain.isEmpty())
+        try
         {
+            final Builder builder = new okhttp3.Cookie.Builder();
+
+            builder.name(htmlUnitCookie.getName());
+            builder.value(htmlUnitCookie.getValue());
+
+            final String domain = htmlUnitCookie.getDomain();
             if (domain.startsWith("."))
             {
                 // "wildcard" domain, such as ".example.com"
                 // the cookie builder expects the domain to be passed without the leading dot
-                builder.domain(StringUtils.stripStart(domain, "."));
+                builder.domain(domain.substring(1));
             }
             else
             {
                 // "host" domain, such as "www.example.com"
                 builder.hostOnlyDomain(domain);
             }
+
+            final String path = htmlUnitCookie.getPath();
+            if (path != null)
+            {
+                builder.path(path);
+            }
+
+            final Date expires = htmlUnitCookie.getExpires();
+            if (expires != null)
+            {
+                builder.expiresAt(expires.getTime());
+            }
+
+            if (htmlUnitCookie.isSecure())
+            {
+                builder.secure();
+            }
+
+            if (htmlUnitCookie.isHttpOnly())
+            {
+                builder.httpOnly();
+            }
+
+            return builder.build();
         }
-        else
+        catch (final Exception e)
         {
-            throw new IllegalArgumentException(ERROR_MSG_DOMAIN + ": '" + htmlUnitCookie + "'");
+            throw new IllegalArgumentException(ERROR_MSG_COOKIE_INVALID + ": '" + htmlUnitCookie + "'", e);
         }
-
-        final String name = StringUtils.defaultString(htmlUnitCookie.getName()).trim();
-        builder.name(name);
-
-        final String value = StringUtils.defaultString(htmlUnitCookie.getValue()).trim();
-        builder.value(value);
-
-        final String path = StringUtils.defaultString(htmlUnitCookie.getPath()).trim();
-        if (path.startsWith("/"))
-        {
-            builder.path(path);
-        }
-        else
-        {
-            throw new IllegalArgumentException(ERROR_MSG_PATH + ": '" + htmlUnitCookie + "'");
-        }
-
-        final Date expires = htmlUnitCookie.getExpires();
-        if (expires != null)
-        {
-            builder.expiresAt(expires.getTime());
-        }
-
-        if (htmlUnitCookie.isSecure())
-        {
-            builder.secure();
-        }
-
-        if (htmlUnitCookie.isHttpOnly())
-        {
-            builder.httpOnly();
-        }
-
-        return builder.build();
     }
 }

@@ -102,7 +102,7 @@ public class JUnitParamsUtils
      * @return an Object array containing one Object array for each parameter; each of the inner Object arrays contains
      *         a single parameter
      */
-    public static Object[][] wrapEachParam(final Object[] params)
+    public static Object[][] wrapEachParam(final Object... params)
     {
         return Arrays.stream(params).map(JUnitParamsUtils::wrapParams).toArray(Object[][]::new);
     }
