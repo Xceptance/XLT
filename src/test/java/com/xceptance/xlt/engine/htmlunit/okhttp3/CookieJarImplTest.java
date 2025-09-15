@@ -15,6 +15,7 @@
  */
 package com.xceptance.xlt.engine.htmlunit.okhttp3;
 
+import java.time.Instant;
 import java.util.Date;
 
 import org.hamcrest.CoreMatchers;
@@ -23,7 +24,6 @@ import org.htmlunit.util.Cookie;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.threeten.bp.Instant;
 
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
