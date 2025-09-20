@@ -45,29 +45,30 @@ import com.xceptance.xlt.common.XltPropertyNames;
 import com.xceptance.xlt.engine.XltExecutionContext;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration.ChartCappingInfo.ChartCappingMethod;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration.ChartCappingInfo.ChartCappingMode;
-import com.xceptance.xlt.report.mergerules.InvalidRequestProcessingRuleException;
-import com.xceptance.xlt.report.mergerules.RequestProcessingRule;
-import com.xceptance.xlt.report.mergerules.RequestProcessingRule.AgentNameExcludePattern;
-import com.xceptance.xlt.report.mergerules.RequestProcessingRule.AgentNamePattern;
-import com.xceptance.xlt.report.mergerules.RequestProcessingRule.ContentTypeExcludePattern;
-import com.xceptance.xlt.report.mergerules.RequestProcessingRule.ContentTypePattern;
-import com.xceptance.xlt.report.mergerules.RequestProcessingRule.ContinueOnMatchAtId;
-import com.xceptance.xlt.report.mergerules.RequestProcessingRule.ContinueOnNoMatchAtId;
-import com.xceptance.xlt.report.mergerules.RequestProcessingRule.DropOnMatch;
-import com.xceptance.xlt.report.mergerules.RequestProcessingRule.HttpMethodExcludePattern;
-import com.xceptance.xlt.report.mergerules.RequestProcessingRule.HttpMethodPattern;
-import com.xceptance.xlt.report.mergerules.RequestProcessingRule.NewName;
-import com.xceptance.xlt.report.mergerules.RequestProcessingRule.RequestNameExcludePattern;
-import com.xceptance.xlt.report.mergerules.RequestProcessingRule.RequestNamePattern;
-import com.xceptance.xlt.report.mergerules.RequestProcessingRule.RunTimeRanges;
-import com.xceptance.xlt.report.mergerules.RequestProcessingRule.StatusCodeExcludePattern;
-import com.xceptance.xlt.report.mergerules.RequestProcessingRule.StatusCodePattern;
-import com.xceptance.xlt.report.mergerules.RequestProcessingRule.StopOnMatch;
-import com.xceptance.xlt.report.mergerules.RequestProcessingRule.TransactionNameExcludePattern;
-import com.xceptance.xlt.report.mergerules.RequestProcessingRule.TransactionNamePattern;
-import com.xceptance.xlt.report.mergerules.RequestProcessingRule.UrlExcludePattern;
-import com.xceptance.xlt.report.mergerules.RequestProcessingRule.UrlPattern;
-import com.xceptance.xlt.report.mergerules.RequestProcessingRule.UrlPrecheckText;
+import com.xceptance.xlt.report.mergerules.InvalidMergeRuleException;
+import com.xceptance.xlt.report.mergerules.MergeRule;
+import com.xceptance.xlt.report.mergerules.MergeRule.AgentNameExcludePattern;
+import com.xceptance.xlt.report.mergerules.MergeRule.AgentNamePattern;
+import com.xceptance.xlt.report.mergerules.MergeRule.ContentTypeExcludePattern;
+import com.xceptance.xlt.report.mergerules.MergeRule.ContentTypePattern;
+import com.xceptance.xlt.report.mergerules.MergeRule.ContinueOnMatchAtId;
+import com.xceptance.xlt.report.mergerules.MergeRule.ContinueOnNoMatchAtId;
+import com.xceptance.xlt.report.mergerules.MergeRule.DropOnMatch;
+import com.xceptance.xlt.report.mergerules.MergeRule.HttpMethodExcludePattern;
+import com.xceptance.xlt.report.mergerules.MergeRule.HttpMethodPattern;
+import com.xceptance.xlt.report.mergerules.MergeRule.NewName;
+import com.xceptance.xlt.report.mergerules.MergeRule.NameExcludePattern;
+import com.xceptance.xlt.report.mergerules.MergeRule.NamePattern;
+import com.xceptance.xlt.report.mergerules.MergeRule.RunTimeRanges;
+import com.xceptance.xlt.report.mergerules.MergeRule.StatusCodeExcludePattern;
+import com.xceptance.xlt.report.mergerules.MergeRule.StatusCodePattern;
+import com.xceptance.xlt.report.mergerules.MergeRule.StopOnMatch;
+import com.xceptance.xlt.report.mergerules.MergeRule.TransactionNameExcludePattern;
+import com.xceptance.xlt.report.mergerules.MergeRule.TransactionNamePattern;
+import com.xceptance.xlt.report.mergerules.MergeRule.UrlExcludePattern;
+import com.xceptance.xlt.report.mergerules.MergeRule.UrlPattern;
+import com.xceptance.xlt.report.mergerules.MergeRule.UrlText;
+import com.xceptance.xlt.report.mergerules.MergeRule.UrlTextExclude;
 import com.xceptance.xlt.report.providers.RequestTableColorization;
 import com.xceptance.xlt.report.providers.RequestTableColorization.ColorizationRule;
 
@@ -1517,9 +1518,9 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
      *
      * @return the list of request processing rules
      */
-    public List<RequestProcessingRule> getRequestProcessingRules()
+    public List<MergeRule> getRequestProcessingRules()
     {
-        final List<RequestProcessingRule> requestProcessingRules = new ArrayList<>();
+        final List<MergeRule> requestProcessingRules = new ArrayList<>();
 
         final Set<Integer> requestMergerNumbers = new TreeSet<>();
         final Set<String> requestMergerNumberStrings = getPropertyKeyFragment(PROP_REQUEST_MERGE_RULES_PREFIX);
@@ -1545,20 +1546,21 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
             final var urlPattern = new UrlPattern(getStringProperty(basePropertyName + ".urlPattern", ""));
             final var contentTypePattern = new ContentTypePattern(getStringProperty(basePropertyName + ".contentTypePattern", ""));
             final var statusCodePattern = new StatusCodePattern(getStringProperty(basePropertyName + ".statusCodePattern", ""));
-            final var requestNamePattern = new RequestNamePattern(getStringProperty(basePropertyName + ".namePattern", ""));
+            final var requestNamePattern = new NamePattern(getStringProperty(basePropertyName + ".namePattern", ""));
             final var agentNamePattern = new AgentNamePattern(getStringProperty(basePropertyName + ".agentPattern", ""));
             final var transactionNamePattern = new TransactionNamePattern(getStringProperty(basePropertyName + ".transactionPattern", ""));
             final var httpMethodPattern = new HttpMethodPattern(getStringProperty(basePropertyName + ".methodPattern", ""));
             final var runTimeRanges = new RunTimeRanges(getStringProperty(basePropertyName + ".runTimeRanges", ""));
 
             // performance check pattern
-            final var urlPrecheckText = new UrlPrecheckText(getStringProperty(basePropertyName + ".urlPrecheckText", ""));
+            final var urlText = new UrlText(getStringProperty(basePropertyName + ".urlText", ""));
+            final var urlTextExclude = new UrlTextExclude(getStringProperty(basePropertyName + ".urlText.exclude", ""));
             
             // exclude patterns
             final var urlExcludePattern = new UrlExcludePattern(getStringProperty(basePropertyName + ".urlPattern.exclude", ""));
             final var contentTypeExcludePattern = new ContentTypeExcludePattern(getStringProperty(basePropertyName + ".contentTypePattern.exclude", ""));
             final var statusCodeExcludePattern = new StatusCodeExcludePattern(getStringProperty(basePropertyName + ".statusCodePattern.exclude", ""));
-            final var requestNameExcludePattern = new RequestNameExcludePattern(getStringProperty(basePropertyName + ".namePattern.exclude", ""));
+            final var requestNameExcludePattern = new NameExcludePattern(getStringProperty(basePropertyName + ".namePattern.exclude", ""));
             final var agentNameExcludePattern = new AgentNameExcludePattern(getStringProperty(basePropertyName + ".agentPattern.exclude", ""));
             final var transactionNameExcludePattern = new TransactionNameExcludePattern(getStringProperty(basePropertyName + ".transactionPattern.exclude", ""));
             final var httpMethodExcludePattern = new HttpMethodExcludePattern(getStringProperty(basePropertyName + ".methodPattern.exclude", ""));
@@ -1580,7 +1582,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
             // create and validate the rules
             try
             {
-                final RequestProcessingRule mergeRule = new RequestProcessingRule(i, 
+                final MergeRule mergeRule = new MergeRule(i, 
                                                                                   newName, 
                                                                                   requestNamePattern, urlPattern,
                                                                                   contentTypePattern, statusCodePattern, 
@@ -1594,10 +1596,11 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
                                                                                   continueOnMatchAtId,
                                                                                   continueOnNoMatchAtId,
                                                                                   dropOnMatch,
-                                                                                  urlPrecheckText);
+                                                                                  urlText,
+                                                                                  urlTextExclude);
                 requestProcessingRules.add(mergeRule);
             }
-            catch (final InvalidRequestProcessingRuleException imre)
+            catch (final InvalidMergeRuleException imre)
             {
                 // Log it and continue with next rule.
                 final String errMsg = "Request processing rule '" + basePropertyName + "' is invalid. " + imre.getMessage();

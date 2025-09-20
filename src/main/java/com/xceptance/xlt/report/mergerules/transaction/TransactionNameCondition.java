@@ -13,14 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.xceptance.xlt.report.mergerules;
+package com.xceptance.xlt.report.mergerules.transaction;
+
+import org.apache.commons.lang3.StringUtils;
 
 import com.xceptance.xlt.api.engine.RequestData;
+import com.xceptance.xlt.report.mergerules.Condition;
 
 /**
  * Filters requests based on their transaction name.
  */
-public class TransactionNameRequestFilter extends AbstractPatternRequestFilter
+public class TransactionNameCondition extends Condition
 {
     /**
      * Constructor.
@@ -28,22 +31,9 @@ public class TransactionNameRequestFilter extends AbstractPatternRequestFilter
      * @param regex
      *            the regular expression to identify matching requests
      */
-    public TransactionNameRequestFilter(final String regex)
+    public TransactionNameCondition(final String regex)
     {
-        this(regex, false);
-    }
-
-    /**
-     * Constructor.
-     *
-     * @param regex
-     *            the regular expression to identify matching requests
-     * @param exclude
-     *            whether or not this is an exclusion rule
-     */
-    public TransactionNameRequestFilter(final String regex, final boolean exclude)
-    {
-        super("t", regex, exclude, 300);
+        super(regex, 300);
     }
 
     /**
@@ -53,5 +43,33 @@ public class TransactionNameRequestFilter extends AbstractPatternRequestFilter
     protected CharSequence getText(final RequestData requestData)
     {
         return requestData.getTransactionName();
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected String getTypeCode()
+    {
+        return "t";
+    }
+    
+    /**
+     * Returns the right condition
+     * 
+     * @param regex the regular expression to identify matching requests
+     * 
+     * @return the condition
+     */
+    public static Condition build(final String regex)
+    {
+        if (!StringUtils.isBlank(regex)) 
+        {
+            return new TransactionNameCondition(regex);
+        }
+        else
+        {
+            return new TransactionNameEmptyCondition();
+        }
     }
 }

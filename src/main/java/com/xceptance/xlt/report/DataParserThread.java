@@ -33,7 +33,7 @@ import com.xceptance.xlt.api.engine.TransactionData;
 import com.xceptance.xlt.api.report.PostProcessedDataContainer;
 import com.xceptance.xlt.api.util.SimpleArrayList;
 import com.xceptance.xlt.api.util.XltCharBuffer;
-import com.xceptance.xlt.report.mergerules.RequestProcessing;
+import com.xceptance.xlt.report.mergerules.MergeRuleProcessor;
 import com.zaxxer.sparsebits.SparseBitSet;
 
 import it.unimi.dsi.util.FastRandom;
@@ -124,7 +124,7 @@ class DataParserThread implements Runnable
         final SimpleArrayList<XltCharBuffer> csvParseResultBuffer = new SimpleArrayList<>(50);
 
         // our request processing, this is move away from here to test it better
-        final RequestProcessing requestProcessing = new RequestProcessing(config.getRequestProcessingRules(),
+        final MergeRuleProcessor requestProcessing = new MergeRuleProcessor(config.getRequestProcessingRules(),
                                                                           config.getRemoveIndexesFromRequestNames());
 
         while (true)

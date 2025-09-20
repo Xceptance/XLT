@@ -13,45 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.xceptance.xlt.report.mergerules;
+package com.xceptance.xlt.report.mergerules.requestname;
 
 import com.xceptance.xlt.api.engine.RequestData;
 
 /**
- * Filters requests based on their name.
+ * Just supplies data if needed
  */
-public class RequestNameRequestFilter extends AbstractPatternRequestFilter
+public class RequestNameEmptyCondition extends RequestNameCondition
 {
     /**
      * Constructor.
-     *
-     * @param regex
-     *            the regular expression to identify matching requests
      */
-    public RequestNameRequestFilter(final String regex)
+    public RequestNameEmptyCondition()
     {
-        this(regex, false);
+        super("");
     }
 
-    /**
-     * Constructor.
-     *
-     * @param regex
-     *            the regular expression to identify matching requests
-     * @param exclude
-     *            whether or not this is an exclusion rule
-     */
-    public RequestNameRequestFilter(final String regex, final boolean exclude)
+    @Override
+    protected boolean apply(final RequestData requestData)
     {
-        super("n", regex, exclude, 600);
+        return true;
     }
-
+    
     /**
      * {@inheritDoc}
      */
     @Override
-    protected CharSequence getText(final RequestData requestData)
+    protected CharSequence getReplacementText(final RequestData requestData, final int capturingGroupIndex)
     {
+        // this is our replacement text without conditions
         return requestData.getName();
     }
 }

@@ -7,17 +7,17 @@ import org.apache.commons.logging.LogFactory;
 
 import com.xceptance.xlt.api.engine.RequestData;
 
-public class RequestProcessing
+public class MergeRuleProcessor
 {
     /**
      * Class logger.
      */
-    private static final Log LOG = LogFactory.getLog(RequestProcessing.class);
+    private static final Log LOG = LogFactory.getLog(MergeRuleProcessor.class);
     
     /**
      * The list of request processing rules to apply.
      */
-    private final RequestProcessingRule[] requestProcessingRules;
+    private final MergeRule[] requestProcessingRules;
     
     /**
      * Whether or not to remove indexes from request names.
@@ -30,15 +30,15 @@ public class RequestProcessing
      * @param requestProcessingRules the rules to apply
      * @param removeIndexesFromRequestNames whether or not to remove indexes from request names
      */
-    public RequestProcessing(final List<RequestProcessingRule> requestProcessingRules, final boolean removeIndexesFromRequestNames)
+    public MergeRuleProcessor(final List<MergeRule> requestProcessingRules, final boolean removeIndexesFromRequestNames)
     {
-        this.requestProcessingRules = requestProcessingRules.toArray(new RequestProcessingRule[requestProcessingRules.size()]);
+        this.requestProcessingRules = requestProcessingRules.toArray(new MergeRule[requestProcessingRules.size()]);
         this.removeIndexesFromRequestNames = removeIndexesFromRequestNames;
 
         // this is a sanity test against programming errors and not user data input errors
         // we can start at 0!
         int lastId = -1;
-        for (RequestProcessingRule rule : this.requestProcessingRules)
+        for (MergeRule rule : this.requestProcessingRules)
         {
             if (rule.getId() <= lastId)
             {
@@ -65,6 +65,8 @@ public class RequestProcessing
     {
         // fix up the name first (Product.1.2 -> Product) if so configured
         // this can likely live in RequestData and act on XltCharBuffer instead String
+        // we might want to use a XltCharBuffer and just limit the buffer instead of
+        // copying it
         String requestName = requestData.getName();
         if (removeIndexesFromRequestNames)
         {
@@ -79,7 +81,7 @@ public class RequestProcessing
         // what is the next rule to process in case we want to jump on match or mismatch
         // we can optionally also drop or just stop
         int nextId = 0;
-        RequestProcessingRule requestProcessingRule = null;
+        MergeRule requestProcessingRule = null;
         
         try
         {
@@ -99,7 +101,7 @@ public class RequestProcessing
                     }
 
                     // we want to stop here
-                    if (nextId == RequestProcessingRule.STOP)
+                    if (nextId == MergeRule.STOP)
                     {
                         break;
                     }

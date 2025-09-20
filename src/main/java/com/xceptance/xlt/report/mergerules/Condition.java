@@ -27,19 +27,19 @@ import com.xceptance.common.util.RegExUtils;
 import com.xceptance.xlt.api.engine.RequestData;
 
 /**
- * Base class for all request filters that use regular expressions to identify matching requests.
+ * Base class for all request filters. Even if they don't use any regex, they will inherit from this class.
  */
-public abstract class AbstractPatternRequestFilter extends AbstractRequestFilter
+public abstract class Condition
 {
     /**
-     * Cache the expensive stuff, we are a per thread instance. Can be empty!
-     */
-    private final LRUClockMap<CharSequence, MatchResult> cache;
-
-    /**
-     * Just a place holder for a NULL
+     * Just a place holder for a NULL in the cache because null is ambiguous.
      */
     private static final MatchResult NULL = Pattern.compile(".*").matcher("null").toMatchResult();
+
+    /**
+     * Cache the expensive stuff, we are a per thread instance.
+     */
+    private final LRUClockMap<CharSequence, MatchResult> cache;
 
     /**
      * The matcher we use when we don't want to cache anything
@@ -47,15 +47,10 @@ public abstract class AbstractPatternRequestFilter extends AbstractRequestFilter
     private final Matcher matcher;
 
     /**
-     * Whether or not this is an exclusion rule.
-     */
-    final boolean isExclude;
-
-    /**
      * The last state of the evaluation, so we don't have look anything up. All filters are already
      * stateful, so we can do that. 
      */
-    protected MatchResult lastFilterState;
+    private MatchResult lastFilterState;
 
     /**
      * Constructor.
@@ -66,32 +61,43 @@ public abstract class AbstractPatternRequestFilter extends AbstractRequestFilter
      *            the regular expression to identify matching requests
      * @param exclude
      *            whether or not this is an exclusion rule
+     * @param cacheSize
+     *           the size of the cache for match results, must be larger than 0, it might happen
+     *           that we configure one but don't use it at all, such as for runtimes
      */
-    public AbstractPatternRequestFilter(final String typeCode, final String regex, final boolean exclude, final int cacheSize)
+    public Condition(final String regex, final int cacheSize)
     {
-        super(typeCode);
-
         this.matcher = StringUtils.isBlank(regex) ? null : RegExUtils.getPattern(regex, 0).matcher("any");
-        this.isExclude = exclude;
         if (cacheSize <= 0)
         {
             throw new IllegalArgumentException("Cache size larger than 0");
         }
         this.cache = new LRUClockMap<>(cacheSize);
     }
+    
+    /**
+     * Returns the last filterstate. This saves time because we are not holding
+     * the state externally anymore but it also means that a condition is not
+     * thread-safe and has to be used carefully. Speed rulez!
+     * 
+     * @return the lastFilterState or null of it was a miss
+     */
+    public MatchResult getLastFilterState()
+    {
+        return lastFilterState;
+    }
 
     /**
-     * Returns the text to examine from the passed request data object.d
+     * Returns the text to examine from the passed request data object
      *
-     * @return the text
+     * @return the text to check against
      */
     protected abstract CharSequence getText(final RequestData requestData);
-
+    
     /**
      * {@inheritDoc}
      */
-    @Override
-    public boolean appliesTo(final RequestData requestData)
+    protected boolean apply(final RequestData requestData)
     {
         if (this.matcher == null)
         {
@@ -102,64 +108,58 @@ public abstract class AbstractPatternRequestFilter extends AbstractRequestFilter
         // get the data to match against
         final CharSequence text = getText(requestData);
 
-        if (text == null)
-        {
-            // empty is always fine
-            return true;
-        }
-        
+        // check the cache if we already have done that
         MatchResult result = this.cache.get(text);
-        if (result == null)
+        if (result != null)
         {
-            // not found, produce and cache, recycle the matcher
-            // cache only the result, not the matcher itself
-            final Matcher m = this.matcher.reset(text);
-
-            if (m.find() ^ isExclude)
+            // ok, we got one, just see if this is NULL or a match
+            if (result == NULL)
             {
-                // we don't cache the matcher but the result which is immutable
-                result = m.toMatchResult();
-                cache.put(text, result);
-
-                this.lastFilterState = result;
-                return true;
-            }
-            else
-            {
-                // remember the miss
-                cache.put(text, NULL);
                 this.lastFilterState = null;
                 return false;
             }
+            else
+            {
+                this.lastFilterState = result;
+                return true;
+            }
         }
-
-        // ok, we got one, just see if this is NULL or a match
-        if (result == NULL)
+        
+        // not found, produce and cache, recycle the matcher
+        // cache only the result, not the matcher itself
+        final Matcher m = this.matcher.reset(text);
+        if (m.find())
         {
-            this.lastFilterState = null;
-            return false;
+            result = m.toMatchResult();
+            cache.put(text, result);
+
+            this.lastFilterState = result;
+            return true;
         }
         else
         {
-            this.lastFilterState = result;
-            return true;
+            // remember the miss
+            cache.put(text, NULL);
+            
+            this.lastFilterState = null;
+            return false;                
         }
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the right text for the the replacement of a certain group or 
+     * if no group given, we return the entire text
      */
-    @Override
-    public CharSequence getReplacementText(final RequestData requestData, final int capturingGroupIndex)
+    protected CharSequence getReplacementText(final RequestData requestData, final int capturingGroupIndex)
     {
-        if (isExclude || matcher == null || capturingGroupIndex == -1)
+        if (matcher == null || capturingGroupIndex == -1)
         {
             return getText(requestData);
         }
 
         try
         {
-            return this.lastFilterState.group(capturingGroupIndex);
+            return this.getLastFilterState().group(capturingGroupIndex);
         }
         catch (final IndexOutOfBoundsException ioobe)
         {
@@ -171,23 +171,9 @@ public abstract class AbstractPatternRequestFilter extends AbstractRequestFilter
     }
 
     /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String toString()
-    {
-        final StringBuilder sb = new StringBuilder("{ type: '");
-        sb.append(getTypeCode()).append("', ");
-        sb.append("pattern: '").append(getPattern()).append("', ");
-        sb.append("isExclude: ").append(isExclude).append(" }");
-
-        return sb.toString();
-    }
-
-    /**
      * Returns the filter pattern string.
      */
-    public String getPattern()
+    protected String getPattern()
     {
         return (matcher == null) ? StringUtils.EMPTY : matcher.pattern().pattern();
     }
@@ -195,16 +181,28 @@ public abstract class AbstractPatternRequestFilter extends AbstractRequestFilter
     /**
      * Whether this filter has an empty pattern.
      */
-    public boolean isEmpty()
+    protected boolean isEmpty()
     {
         return matcher == null;
     }
+    
+    /**
+     * Returns the type code of this request filter.
+     *
+     * @return the type code
+     */
+    protected abstract String getTypeCode();
 
     /**
-     * Whether this filter is an exclude filter.
+     * {@inheritDoc}
      */
-    public boolean isExclude()
+    @Override
+    public String toString()
     {
-        return isExclude;
+        final StringBuilder sb = new StringBuilder("{ type: '");
+        sb.append(getTypeCode()).append("', ");
+        sb.append("pattern: '").append(getPattern()).append("'}");
+
+        return sb.toString();
     }
 }

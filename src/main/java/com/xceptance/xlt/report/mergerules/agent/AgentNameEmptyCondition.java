@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.xceptance.xlt.report.mergerules;
+package com.xceptance.xlt.report.mergerules.agent;
 
 import com.xceptance.xlt.api.engine.RequestData;
 
 /**
- * Filters requests based on their agent name.
+ * Checks requests based on their agent name.
  */
-public class AgentNameRequestFilter extends AbstractPatternRequestFilter
+public class AgentNameEmptyCondition extends AgentNameCondition
 {
     /**
      * Constructor.
@@ -28,29 +28,25 @@ public class AgentNameRequestFilter extends AbstractPatternRequestFilter
      * @param regex
      *            the regular expression to identify matching requests
      */
-    public AgentNameRequestFilter(final String regex)
+    public AgentNameEmptyCondition()
     {
-        this(regex, false);
-    }
-
-    /**
-     * Constructor.
-     *
-     * @param regex
-     *            the regular expression to identify matching requests
-     * @param exclude
-     *            whether or not this is an exclusion rule
-     */
-    public AgentNameRequestFilter(final String regex, final boolean exclude)
-    {
-        super("a", regex, exclude, 300);
+        super("");
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    protected CharSequence getText(final RequestData requestData)
+    protected boolean apply(final RequestData requestData)
+    {
+        return true;
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected CharSequence getReplacementText(final RequestData requestData, final int capturingGroupIndex)
     {
         return requestData.getAgentName();
     }

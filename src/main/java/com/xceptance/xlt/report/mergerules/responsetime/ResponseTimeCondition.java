@@ -13,16 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.xceptance.xlt.report.mergerules;
+package com.xceptance.xlt.report.mergerules.responsetime;
+
+import java.util.regex.PatternSyntaxException;
 
 import org.apache.commons.lang3.StringUtils;
 
 import com.xceptance.xlt.api.engine.RequestData;
+import com.xceptance.xlt.report.mergerules.Condition;
+import com.xceptance.xlt.report.mergerules.InvalidMergeRuleException;
 
 /**
  * Filters requests based on their response time.
  */
-public class ResponseTimeRequestFilter extends AbstractRequestFilter
+public class ResponseTimeCondition extends Condition
 {
     /**
      * The response time boundaries.
@@ -39,11 +43,15 @@ public class ResponseTimeRequestFilter extends AbstractRequestFilter
      * 
      * @param responseTimes
      *            the response time range definition string
+     * @throws InvalidMergeRuleException 
      */
-    public ResponseTimeRequestFilter(final String responseTimes)
+    public ResponseTimeCondition(final String responseTimes)
     {
-        super("r");
+        // we don't need pattern and cache
+        super("", 4);
 
+        try
+        {
         // pre-calculate the replacement strings
         final String[] ranges = StringUtils.split(responseTimes, " ;,");
 
@@ -52,7 +60,12 @@ public class ResponseTimeRequestFilter extends AbstractRequestFilter
         {
             responseTimeBoundaries[i] = Integer.parseInt(ranges[i]);
         }
-
+        }
+        catch (final NumberFormatException e)
+        {
+            throw new PatternSyntaxException("Invalid response time range definition", responseTimes, 0);
+        }
+        
         responseTimeRanges = new String[responseTimeBoundaries.length + 1];
         long previousBoundary = 0;
         for (int i = 0; i < responseTimeBoundaries.length; i++)
@@ -69,8 +82,9 @@ public class ResponseTimeRequestFilter extends AbstractRequestFilter
      * {@inheritDoc}
      */
     @Override
-    public boolean appliesTo(final RequestData requestData)
+    protected boolean apply(final RequestData requestData)
     {
+        // we always match because we don't check, we only provide data
         return true;
     }
 
@@ -78,7 +92,7 @@ public class ResponseTimeRequestFilter extends AbstractRequestFilter
      * {@inheritDoc}
      */
     @Override
-    public String getReplacementText(final RequestData requestData, final int capturingGroupIndex)
+    protected String getReplacementText(final RequestData requestData, final int capturingGroupIndex)
     {
         final long responseTime = requestData.getRunTime();
 
@@ -94,6 +108,15 @@ public class ResponseTimeRequestFilter extends AbstractRequestFilter
         return responseTimeRanges[i];
     }
 
+    /**
+     * This only satisfies the compiler and is not needed at all
+     */
+    @Override
+    protected CharSequence getText(final RequestData requestData)
+    {
+        return Long.toString(requestData.getRunTime());
+    }
+    
     /**
      * {@inheritDoc}
      */
@@ -114,5 +137,14 @@ public class ResponseTimeRequestFilter extends AbstractRequestFilter
         sb.append("]}");
 
         return sb.toString();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected String getTypeCode()
+    {
+        return "r";
     }
 }

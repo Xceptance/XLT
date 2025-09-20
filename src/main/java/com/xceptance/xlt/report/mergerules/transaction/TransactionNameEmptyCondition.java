@@ -13,45 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.xceptance.xlt.report.mergerules;
+package com.xceptance.xlt.report.mergerules.transaction;
 
 import com.xceptance.xlt.api.engine.RequestData;
 
 /**
- * Filters requests based on their status code.
+ * Filters requests based on their transaction name.
  */
-public class StatusCodeRequestFilter extends AbstractPatternRequestFilter
+public class TransactionNameEmptyCondition extends TransactionNameCondition
 {
     /**
      * Constructor.
-     *
-     * @param regex
-     *            the regular expression to identify matching requests
      */
-    public StatusCodeRequestFilter(final String regex)
+    public TransactionNameEmptyCondition()
     {
-        this(regex, false);
+        super("");
     }
 
-    /**
-     * Constructor.
-     *
-     * @param regex
-     *            the regular expression to identify matching requests
-     * @param exclude
-     *            whether or not this is an exclusion rule
-     */
-    public StatusCodeRequestFilter(final String regex, final boolean exclude)
+    @Override
+    protected boolean apply(final RequestData requestData)
     {
-        super("s", regex, exclude, 150);
+        return true;
     }
-
+    
     /**
      * {@inheritDoc}
      */
     @Override
-    protected CharSequence getText(final RequestData requestData)
+    protected CharSequence getReplacementText(final RequestData requestData, final int capturingGroupIndex)
     {
-        return requestData.getResponseCodeAsChars();
+        return requestData.getTransactionName();
     }
 }

@@ -18,7 +18,7 @@ package com.xceptance.xlt.report.mergerules;
 /**
  * Container for placeholder information within a pattern.
  *
- * @author rschwietzke
+ * @author Rene Schwietzke, Xceptance GmbH
  */
 public class PlaceholderPosition
 {
@@ -48,14 +48,9 @@ public class PlaceholderPosition
     public final int length;
     
     /**
-     * Indicates whether the placeholder is marked as used.
-     */
-    public boolean used = false;
-
-    /**
      * The request filter associated with the placeholder, if any.
      */
-    public AbstractRequestFilter requestFilter = null;
+    public Condition condition = null;
     
     /**
      * Constructor to initialize all fields of the placeholder.
@@ -83,13 +78,19 @@ public class PlaceholderPosition
      * @param start The start position of the placeholder in the pattern.
      * @param used Indicates whether the placeholder is marked as used.
      */
-    public PlaceholderPosition(final String typeCode, final int capturingGroupIndex, final int start, final boolean used)
+    public PlaceholderPosition(final String typeCode, final int capturingGroupIndex, final int start)
     {
         this.typeCode = typeCode;
         this.capturingGroupIndex = capturingGroupIndex;
         this.start = start;
         this.end = start;
         this.length = 0;
-        this.used = used;
+    }
+
+    @Override
+    public String toString()
+    {
+        return "[typeCode=" + typeCode + ", capturingGroupIndex=" + capturingGroupIndex + ", start=" + start +
+               ", end=" + end + ", length=" + length + ", condition=" + condition + "]";
     }
 }

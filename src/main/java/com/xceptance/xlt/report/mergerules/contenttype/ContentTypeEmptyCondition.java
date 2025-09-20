@@ -13,44 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.xceptance.xlt.report.mergerules;
+package com.xceptance.xlt.report.mergerules.contenttype;
 
 import com.xceptance.xlt.api.engine.RequestData;
 
 /**
  * Filters requests based on their content type.
  */
-public class ContentTypeRequestFilter extends AbstractPatternRequestFilter
+public class ContentTypeEmptyCondition extends ContentTypeCondition
 {
     /**
      * Constructor.
-     *
-     * @param regex
-     *            the regular expression to identify matching requests
      */
-    public ContentTypeRequestFilter(final String regex)
+    public ContentTypeEmptyCondition()
     {
-        this(regex, false);
+        super("");
     }
 
-    /**
-     * Constructor.
-     *
-     * @param regex
-     *            the regular expression to identify matching requests
-     * @param exclude
-     *            whether or not this is an exclusion rule
-     */
-    public ContentTypeRequestFilter(final String regex, final boolean exclude)
+    @Override
+    protected boolean apply(final RequestData requestData)
     {
-        super("c", regex, exclude, 150);
+        return true;
     }
-
+    
     /**
      * {@inheritDoc}
      */
     @Override
-    protected CharSequence getText(final RequestData requestData)
+    protected CharSequence getReplacementText(final RequestData requestData, final int capturingGroupIndex)
     {
         return requestData.getContentType();
     }
