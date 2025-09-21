@@ -21,7 +21,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.xceptance.xlt.api.engine.RequestData;
 import com.xceptance.xlt.report.mergerules.Condition;
-import com.xceptance.xlt.report.mergerules.InvalidMergeRuleException;
 
 /**
  * Filters requests based on their response time.
