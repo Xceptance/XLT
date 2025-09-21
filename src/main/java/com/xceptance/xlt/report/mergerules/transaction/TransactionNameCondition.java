@@ -33,7 +33,8 @@ public class TransactionNameCondition extends Condition
      */
     public TransactionNameCondition(final String regex)
     {
-        super(regex, 300);
+        // small cache because transaction names are very limited 
+        super(regex, 100);
     }
 
     /**
