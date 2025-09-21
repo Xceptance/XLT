@@ -136,6 +136,9 @@ public class RequestData extends TimerData
      */
     private XltCharBuffer url;
 
+    /**
+     * We need this for a later efficient search using urlText when reporting
+     */
     private String originalUrl;
 
     /**
