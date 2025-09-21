@@ -28,6 +28,10 @@ import com.xceptance.xlt.api.engine.RequestData;
 
 /**
  * Base class for all request filters. Even if they don't use any regex, they will inherit from this class.
+ * 
+ * @author Hartmut Arlt (Xceptance Software Technologies GmbH)
+ * @author Jörg Weber (Xceptance Software Technologies GmbH)
+ * @author Rene Schwietzke (Xceptance Software Technologies GmbH)
  */
 public abstract class Condition
 {

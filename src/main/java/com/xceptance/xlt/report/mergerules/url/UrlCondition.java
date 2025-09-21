@@ -22,6 +22,9 @@ import com.xceptance.xlt.report.mergerules.Condition;
 
 /**
  * Filters requests based on their URLs.
+ * 
+ * @author Jörg Werner (Xceptance Software Technologies GmbH)
+ * @author Rene Schwietzke (Xceptance Software Technologies GmbH)
  */
 public class UrlCondition extends Condition
 {
@@ -30,8 +33,6 @@ public class UrlCondition extends Condition
      *
      * @param regex
      *            the regular expression to identify matching requests
-     * @param exclude
-     *            whether or not this is an exclusion rule
      */
     public UrlCondition(final String regex)
     {

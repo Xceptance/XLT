@@ -104,22 +104,53 @@ public class MergeRule
     /**
      * Constructor.
      *
+     * @param id
+     *          the ID of this rule
      * @param newName
+     *          the new name for requests matching this rule, may contain placeholders
      * @param requestNamePattern
+     *          the request name pattern to match, may be empty
      * @param urlPattern
+     *          the URL pattern to match, may be empty
      * @param contentTypePattern
+     *          the content type pattern to match, may be empty
      * @param statusCodePattern
+     *          the status code pattern to match, may be empty
      * @param agentNamePattern
+     *         the agent name pattern to match, may be empty
      * @param transactionNamePattern
+     *         the transaction name pattern to match, may be empty
+     * @param httpMethodPattern
+     *         the HTTP method pattern to match, may be empty
      * @param responseTimeRanges
+     *         the response time ranges to match, may be empty
      * @param stopOnMatch
+     *         whether or not to stop processing further rules if this rule matched
      * @param requestNameExcludePattern
+     *         the request name exclude pattern to match, may be empty
      * @param urlExcludePattern
+     *         the URL exclude pattern to match, may be empty
      * @param contentTypeExcludePattern
+     *         the content type exclude pattern to match, may be empty
      * @param statusCodeExcludePattern
+     *         the status code exclude pattern to match, may be empty
      * @param agentNameExcludePattern
+     *         the agent name exclude pattern to match, may be empty
      * @param transactionNameExcludePattern
+     *         the transaction name exclude pattern to match, may be empty
+     * @param httpMethodExcludePattern
+     *         the HTTP method exclude pattern to match, may be empty
+     * @param continueOnMatchAtId
+     *         the ID of the rule to continue processing at if this rule matched
+     * @param continueOnNoMatchAtId
+     *         the ID of the rule to continue processing at if this rule did not match
      * @param dropOnMatch
+     *         whether or not to drop requests matching this rule, implies stopping further processing
+     * @param urlText
+     *         the URL text to match, may be empty
+     * @param urlTextExclude
+     *         the URL text exclude to match, may be empty
+     * 
      * @throws InvalidMergeRuleException
      */
     public MergeRule(final int id,
@@ -265,7 +296,9 @@ public class MergeRule
     }
 
     /**
-     * To speed things up, we match request filters to placeholder 
+     * To speed things up, we match merge include conditions to placeholders
+     * 
+     * @param positions the list of placeholder positions
      */
     private void resolveRequestFilter(final PlaceholderPosition[] positions)
     {
@@ -287,6 +320,8 @@ public class MergeRule
     /**
      * Parses the position of the placeholders in the new name field of the rule.
      * Composes a newName without the placeholders for later speed
+     * 
+     * @param nameWithPlaceholders the name with placeholders
      * 
      * @throws InvalidMergeRuleException
      */
@@ -325,7 +360,8 @@ public class MergeRule
         }
 
 
-        // to avoid calculations later, we revert the positions
+        // to avoid calculations later, we revert the positions and can basically just insert without 
+        // caring about the position changes due to inserts
         Collections.reverse(positions);
 
         // get us an efficient array for later
@@ -372,7 +408,7 @@ public class MergeRule
      *
      * @param requestData
      *            the request data object to process, will also be directly modified as result
-     * @return true if we want to stop, false otherwise
+     * @return the ID of the next rule to process, or {@link #STOP} or {@link #DROP}
      */
     public int process(final RequestData requestData)
     {
@@ -536,7 +572,7 @@ public class MergeRule
                         // check that the filter pattern has the wanted matching group
                         final String pattern = c.getPattern();
                         final int nbCaptureGroups = RegExUtils.getCaptureGroupCount(pattern);
-                        
+
                         if (placeholderPosition.capturingGroupIndex > nbCaptureGroups)
                         {
                             throw new InvalidMergeRuleException(
@@ -564,7 +600,7 @@ public class MergeRule
     public static record TransactionNamePattern(String value) {}; 
     public static record HttpMethodPattern(String value) {};  
     public static record RunTimeRanges(String value) {};
-    
+
     public static record NameExcludePattern(String value) {}; 
     public static record UrlExcludePattern(String value) {};
     public static record ContentTypeExcludePattern(String value) {}; 
