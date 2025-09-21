@@ -99,12 +99,12 @@ public abstract class Condition
      */
     protected boolean apply(final RequestData requestData)
     {
-        if (this.matcher == null)
-        {
-            // empty is always fine, we just want to get the full text
-            return true;
-        }
-
+        /**
+         * Because we now have a special Condition that is taking care of empty patterns,
+         * we can assume that if we are here, we have a pattern to match against.
+         * One less if!
+         */
+        
         // get the data to match against
         final CharSequence text = getText(requestData);
 
@@ -152,14 +152,12 @@ public abstract class Condition
      */
     protected CharSequence getReplacementText(final RequestData requestData, final int capturingGroupIndex)
     {
-        if (matcher == null || capturingGroupIndex == -1)
-        {
-            return getText(requestData);
-        }
-
+        /**
+         * If no capturing group is given, we return the entire text. Empty matchers no longer possible.
+         */
         try
         {
-            return this.getLastFilterState().group(capturingGroupIndex);
+            return capturingGroupIndex == -1 ? getText(requestData) : this.getLastFilterState().group(capturingGroupIndex);
         }
         catch (final IndexOutOfBoundsException ioobe)
         {
