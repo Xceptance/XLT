@@ -28,16 +28,11 @@ public class InvalidMergeRuleException extends Exception
     private static final long serialVersionUID = 7981238688848743328L;
 
     /**
-     * 
-     */
-    public InvalidMergeRuleException()
-    {
-    }
+     * Constructor.
 
-    /**
-     * @param message
+     * @param message the message describing the problem
      */
-    public InvalidMergeRuleException(String message)
+    public InvalidMergeRuleException(final String message)
     {
         super(message);
     }
