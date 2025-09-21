@@ -18,7 +18,9 @@ package com.xceptance.xlt.report.mergerules.transaction;
 import com.xceptance.xlt.api.engine.RequestData;
 
 /**
- * Filters requests based on their transaction name.
+ * Provide data but otherwise match all transaction names.
+ * 
+ * @author Rene Schwietzke (Xceptance Software Technologies GmbH)
  */
 public class TransactionNameEmptyCondition extends TransactionNameCondition
 {
@@ -33,6 +35,7 @@ public class TransactionNameEmptyCondition extends TransactionNameCondition
     @Override
     protected boolean apply(final RequestData requestData)
     {
+        // always true because the regex is empty
         return true;
     }
     

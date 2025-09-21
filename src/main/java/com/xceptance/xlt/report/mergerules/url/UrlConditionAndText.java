@@ -20,6 +20,8 @@ import com.xceptance.xlt.report.mergerules.Condition;
 
 /**
  * Filters requests based on their URLs.
+ * 
+ * @author Rene Schwietzke (Xceptance Software Technologies GmbH)
  */
 public class UrlConditionAndText extends Condition
 {

@@ -72,9 +72,10 @@ public abstract class Condition
     public Condition(final String regex, final int cacheSize)
     {
         this.matcher = StringUtils.isBlank(regex) ? null : RegExUtils.getPattern(regex, 0).matcher("any");
+        
         if (cacheSize <= 0)
         {
-            throw new IllegalArgumentException("Cache size larger than 0");
+            throw new IllegalArgumentException("Cache size must be larger than 0");
         }
         this.cache = new LRUClockMap<>(cacheSize);
     }

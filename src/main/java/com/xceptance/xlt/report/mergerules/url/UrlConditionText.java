@@ -20,6 +20,8 @@ import com.xceptance.xlt.report.mergerules.Condition;
 
 /**
  * We filter just by a contains
+ * 
+ * @author Rene Schwietzke (Xceptance Software Technologies GmbH)
  */
 public class UrlConditionText extends Condition
 {

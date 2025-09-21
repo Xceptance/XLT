@@ -19,6 +19,8 @@ import com.xceptance.xlt.api.engine.RequestData;
 
 /**
  * We only supply data here, so that we can use the UrlCondition as a decorator for our replacement text.
+ * 
+ * @author Rene Schwietzke (Xceptance Software Technologies GmbH)
  */
 public class UrlEmptyCondition extends UrlCondition
 {
