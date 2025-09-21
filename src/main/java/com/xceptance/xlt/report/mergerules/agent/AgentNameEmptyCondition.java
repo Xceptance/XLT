@@ -18,7 +18,9 @@ package com.xceptance.xlt.report.mergerules.agent;
 import com.xceptance.xlt.api.engine.RequestData;
 
 /**
- * Checks requests based on their agent name.
+ * Provide data but otherwise match all agent names.
+ *
+ * @author Rene Schwietzke (Xceptance Software Technologies GmbH)
  */
 public class AgentNameEmptyCondition extends AgentNameCondition
 {

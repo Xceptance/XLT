@@ -22,6 +22,10 @@ import com.xceptance.xlt.report.mergerules.Condition;
 
 /**
  * Filters requests based on their HTTP method.
+ * 
+ * @author Jörg Werner (Xceptance Software Technologies GmbH)
+ * @author Hartmut Arlt (Xceptance Software Technologies GmbH)
+ * @author Rene Schwietzke (Xceptance Software Technologies GmbH)
  */
 public class HttpMethodCondition extends Condition
 {
@@ -33,7 +37,7 @@ public class HttpMethodCondition extends Condition
      */
     public HttpMethodCondition(final String regex)
     {
-        super(regex, 60);
+        super(regex, 30);
     }
 
     /**

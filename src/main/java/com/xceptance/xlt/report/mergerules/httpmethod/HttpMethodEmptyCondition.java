@@ -18,7 +18,9 @@ package com.xceptance.xlt.report.mergerules.httpmethod;
 import com.xceptance.xlt.api.engine.RequestData;
 
 /**
- * Filters requests based on their HTTP method.
+ * Provide data but otherwise match all HTTP methods.
+ * 
+ * @author Rene Schwietzke (Xceptance Software Technologies GmbH)
  */
 public class HttpMethodEmptyCondition extends HttpMethodCondition
 {

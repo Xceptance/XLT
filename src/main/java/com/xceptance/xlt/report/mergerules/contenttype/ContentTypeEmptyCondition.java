@@ -18,7 +18,9 @@ package com.xceptance.xlt.report.mergerules.contenttype;
 import com.xceptance.xlt.api.engine.RequestData;
 
 /**
- * Filters requests based on their content type.
+ * Provide data but otherwise match all content types.
+ *
+ * @author Rene Schwietzke (Xceptance Software Technologies GmbH)
  */
 public class ContentTypeEmptyCondition extends ContentTypeCondition
 {

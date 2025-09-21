@@ -18,7 +18,9 @@ package com.xceptance.xlt.report.mergerules.statuscode;
 import com.xceptance.xlt.api.engine.RequestData;
 
 /**
- * Filters requests based on their status code.
+ * Provide data but otherwise match all status codes.
+ * 
+ * @author Rene Schwietzke (Xceptance Software Technologies GmbH)
  */
 public class StatusCodeEmptyCondition extends StatusCodeCondition
 {

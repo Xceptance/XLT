@@ -38,7 +38,7 @@ public class UrlCondition extends Condition
     {
         // with the change to get split caches per thread, we can afford to do
         // a lookup here and also profit from "does not apply" look ups.
-        super(regex, 5000);
+        super(regex, 2500);
     }
 
     /**

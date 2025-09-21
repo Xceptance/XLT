@@ -22,6 +22,10 @@ import com.xceptance.xlt.report.mergerules.Condition;
 
 /**
  * Filters requests based on their name.
+ * 
+ * @author Jörg Werner (Xceptance Software Technologies GmbH)
+ * @author Hartmut Arlt (Xceptance Software Technologies GmbH)
+ * @author Rene Schwietzke (Xceptance Software Technologies GmbH)
  */
 public class RequestNameCondition extends Condition
 {
@@ -30,12 +34,12 @@ public class RequestNameCondition extends Condition
      *
      * @param regex
      *            the regular expression to identify matching requests
-     * @param exclude
-     *            whether or not this is an exclusion rule
      */
     public RequestNameCondition(final String regex)
     {
-        super(regex, 600);
+        // we don't have that many different request names, so a smaller cache
+        // might be sufficient and benefits the CPU cache
+        super(regex, 300);
     }
 
     /**

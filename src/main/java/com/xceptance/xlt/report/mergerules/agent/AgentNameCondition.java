@@ -19,13 +19,13 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.xceptance.xlt.api.engine.RequestData;
 import com.xceptance.xlt.report.mergerules.Condition;
-import com.xceptance.xlt.report.mergerules.url.UrlCondition;
-import com.xceptance.xlt.report.mergerules.url.UrlConditionAndText;
-import com.xceptance.xlt.report.mergerules.url.UrlConditionText;
-import com.xceptance.xlt.report.mergerules.url.UrlEmptyCondition;
 
 /**
  * Checks requests based on their agent name.
+ * 
+ * @author Jörg Werner (Xceptance Software Technologies GmbH)
+ * @author Hartmut Arlt (Xceptance Software Technologies GmbH)
+ * @author Rene Schwietzke (Xceptance Software Technologies GmbH)
  */
 public class AgentNameCondition extends Condition
 {

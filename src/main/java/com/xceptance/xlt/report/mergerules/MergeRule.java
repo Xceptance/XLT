@@ -41,6 +41,10 @@ import com.xceptance.xlt.report.mergerules.url.UrlCondition;
  * 
  * Conditions can be including or excluding based on conditions. If any exclude condition matches, 
  * the rule is not applied. Only if all include conditions match, the rule is applied.
+ * 
+ * @author Jörg Werner (Xceptance Software Technologies GmbH)
+ * @author Hartmut Arlt (Xceptance Software Technologies GmbH)
+ * @author Rene Schwietzke (Xceptance Software Technologies GmbH)
  */
 public class MergeRule
 {

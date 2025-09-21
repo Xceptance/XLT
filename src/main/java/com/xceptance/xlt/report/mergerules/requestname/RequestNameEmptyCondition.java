@@ -19,6 +19,8 @@ import com.xceptance.xlt.api.engine.RequestData;
 
 /**
  * Just supplies data if needed
+ * 
+ * @author Rene Schwietzke (Xceptance Software Technologies GmbH)
  */
 public class RequestNameEmptyCondition extends RequestNameCondition
 {

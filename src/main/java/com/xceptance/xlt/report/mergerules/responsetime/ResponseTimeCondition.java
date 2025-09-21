@@ -25,6 +25,10 @@ import com.xceptance.xlt.report.mergerules.InvalidMergeRuleException;
 
 /**
  * Filters requests based on their response time.
+ * 
+ * @author Jörg Werner (Xceptance Software Technologies GmbH)
+ * @author Hartmut Arlt (Xceptance Software Technologies GmbH)
+ * @author Rene Schwietzke (Xceptance Software Technologies GmbH)
  */
 public class ResponseTimeCondition extends Condition
 {
@@ -43,31 +47,31 @@ public class ResponseTimeCondition extends Condition
      * 
      * @param responseTimes
      *            the response time range definition string
-     * @throws InvalidMergeRuleException 
      */
     public ResponseTimeCondition(final String responseTimes)
     {
-        // we don't need pattern and cache
+        // we don't need pattern and cache, but just to satisfy the super constructor
         super("", 4);
 
         try
         {
-        // pre-calculate the replacement strings
-        final String[] ranges = StringUtils.split(responseTimes, " ;,");
+            // pre-calculate the replacement strings
+            final String[] ranges = StringUtils.split(responseTimes, " ;,");
 
-        responseTimeBoundaries = new long[ranges.length];
-        for (int i = 0; i < responseTimeBoundaries.length; i++)
-        {
-            responseTimeBoundaries[i] = Integer.parseInt(ranges[i]);
-        }
+            responseTimeBoundaries = new long[ranges.length];
+            for (int i = 0; i < responseTimeBoundaries.length; i++)
+            {
+                responseTimeBoundaries[i] = Integer.parseInt(ranges[i]);
+            }
         }
         catch (final NumberFormatException e)
         {
             throw new PatternSyntaxException("Invalid response time range definition", responseTimes, 0);
         }
-        
+
         responseTimeRanges = new String[responseTimeBoundaries.length + 1];
         long previousBoundary = 0;
+        
         for (int i = 0; i < responseTimeBoundaries.length; i++)
         {
             final long nextBoundary = responseTimeBoundaries[i];
@@ -116,7 +120,7 @@ public class ResponseTimeCondition extends Condition
     {
         return Long.toString(requestData.getRunTime());
     }
-    
+
     /**
      * {@inheritDoc}
      */
