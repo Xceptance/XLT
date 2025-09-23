@@ -56,9 +56,9 @@ import com.xceptance.xlt.report.mergerules.MergeRule.ContinueOnNoMatchAtId;
 import com.xceptance.xlt.report.mergerules.MergeRule.DropOnMatch;
 import com.xceptance.xlt.report.mergerules.MergeRule.HttpMethodExcludePattern;
 import com.xceptance.xlt.report.mergerules.MergeRule.HttpMethodPattern;
-import com.xceptance.xlt.report.mergerules.MergeRule.NewName;
 import com.xceptance.xlt.report.mergerules.MergeRule.NameExcludePattern;
 import com.xceptance.xlt.report.mergerules.MergeRule.NamePattern;
+import com.xceptance.xlt.report.mergerules.MergeRule.NewName;
 import com.xceptance.xlt.report.mergerules.MergeRule.RunTimeRanges;
 import com.xceptance.xlt.report.mergerules.MergeRule.StatusCodeExcludePattern;
 import com.xceptance.xlt.report.mergerules.MergeRule.StatusCodePattern;
@@ -522,16 +522,24 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     }
 
     /**
-     * Checks the given string for leading zero digits and remove
-     * them if needed.
+     * Checks the given string for leading zero digits.
      *
-     * @param s the string to be checked
-     * @return the sanitized string
+     * @param s
+     *            the string to be checked
      */
-    private String dealWithLeadingZeros(final String s)
+    private void checkForLeadingZeros(final String s)
     {
-        // remove leading zeros
-        return s.replaceFirst("^0+(?!$)", "");
+        if (s.length() > 1 && s.startsWith("0"))
+        {
+            final StringBuilder sb = new StringBuilder("Leading zeros are not allowed in request merge rule indices.\nPlease check your configuration and fix the following properties:");
+            for (final String prop : getPropertyKeysWithPrefix(PROP_REQUEST_MERGE_RULES_PREFIX + s + "."))
+            {
+                sb.append("\n\t").append(prop);
+            }
+            sb.append("\n");
+
+            throw new XltException(sb.toString());
+        }
     }
 
     /**
@@ -1518,7 +1526,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
      *
      * @return the list of request processing rules
      */
-    public List<MergeRule> getRequestProcessingRules()
+    public List<MergeRule> getMergeRules()
     {
         final List<MergeRule> requestProcessingRules = new ArrayList<>();
 

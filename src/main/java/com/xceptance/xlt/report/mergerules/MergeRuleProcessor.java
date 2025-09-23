@@ -40,7 +40,7 @@ public class MergeRuleProcessor
     /**
      * The list of request processing rules to apply.
      */
-    private final MergeRule[] requestProcessingRules;
+    private final MergeRule[] mergeRules;
     
     /**
      * Whether or not to remove indexes from request names.
@@ -55,13 +55,13 @@ public class MergeRuleProcessor
      */
     public MergeRuleProcessor(final List<MergeRule> requestProcessingRules, final boolean removeIndexesFromRequestNames)
     {
-        this.requestProcessingRules = requestProcessingRules.toArray(new MergeRule[requestProcessingRules.size()]);
+        this.mergeRules = requestProcessingRules.toArray(new MergeRule[requestProcessingRules.size()]);
         this.removeIndexesFromRequestNames = removeIndexesFromRequestNames;
 
         // this is a sanity test against programming errors and not user data input errors
         // we can start at 0!
         int lastId = -1;
-        for (MergeRule rule : this.requestProcessingRules)
+        for (MergeRule rule : this.mergeRules)
         {
             if (rule.getId() <= lastId)
             {
@@ -99,19 +99,19 @@ public class MergeRuleProcessor
         // what is the next rule to process in case we want to jump on match or mismatch
         // we can optionally also drop or just stop
         int nextId = 0;
-        MergeRule requestProcessingRule = null;
+        MergeRule mergeRule = null;
         
         try
         {
-            for (int i = 0; i < requestProcessingRules.length; i++)
+            for (int i = 0; i < this.mergeRules.length; i++)
             {
-                requestProcessingRule = requestProcessingRules[i];
+                mergeRule = mergeRules[i];
                 
                 // shall we process this rule or jump ahead
-                if (nextId <= requestProcessingRule.getId())
+                if (nextId <= mergeRule.getId())
                 {
                     // request data comes back indirectly modified if needed
-                    nextId = requestProcessingRule.process(requestData);
+                    nextId = mergeRule.process(requestData);
                     if (nextId >= 0)
                     {
                         // we wish to continue with one of the next rules
@@ -138,7 +138,7 @@ public class MergeRuleProcessor
         }
         catch (final Throwable t)
         {
-            final String msg = String.format("Failed to apply request merge rule: %s\n%s", requestProcessingRule, t);
+            final String msg = String.format("Failed to apply request merge rule: %s\n%s", mergeRule, t);
             LOG.error(msg);
 
             // restore the request's original name
