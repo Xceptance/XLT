@@ -33,8 +33,7 @@ import com.xceptance.xlt.api.engine.TransactionData;
 import com.xceptance.xlt.api.report.PostProcessedDataContainer;
 import com.xceptance.xlt.api.util.SimpleArrayList;
 import com.xceptance.xlt.api.util.XltCharBuffer;
-import com.xceptance.xlt.report.mergerules.RequestProcessing;
-import com.xceptance.xlt.report.mergerules.RequestProcessingRule;
+import com.xceptance.xlt.report.mergerules.MergeRuleProcessor;
 import com.zaxxer.sparsebits.SparseBitSet;
 
 import it.unimi.dsi.util.FastRandom;
@@ -109,7 +108,7 @@ class DataParserThread implements Runnable
         this.toTime = toTime;
         this.dispatcher = dispatcher;
         this.config = config;
-        
+
         // Get the rules now! 
         // Reason: If a rule is invalid, an exception is thrown from here, which will terminate the report generator correctly.
         requestProcessingRules = config.getRequestProcessingRules();
@@ -135,7 +134,7 @@ class DataParserThread implements Runnable
         final SimpleArrayList<XltCharBuffer> csvParseResultBuffer = new SimpleArrayList<>(50);
 
         // our request processing, this is move away from here to test it better
-        final RequestProcessing requestProcessing = new RequestProcessing(requestProcessingRules,
+        final MergeRuleProcessor requestProcessing = new MergeRuleProcessor(requestProcessingRules,
                                                                           config.getRemoveIndexesFromRequestNames());
 
         while (true)

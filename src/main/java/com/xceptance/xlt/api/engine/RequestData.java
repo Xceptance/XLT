@@ -59,6 +59,11 @@ public class RequestData extends TimerData
      * The value to show if the host could not be determined from a URL.
      */
     public final static XltCharBuffer UNKNOWN_HOST = XltCharBuffer.valueOf("(unknown)");
+    
+    /**
+     * No response code available
+     */
+    public final static XltCharBuffer NO_RESPONSE_CODE = XltCharBuffer.valueOf("0");
 
     /**
      * The size of the response message in bytes.
@@ -89,6 +94,7 @@ public class RequestData extends TimerData
      * The response code.
      */
     private int responseCode;
+    private XltCharBuffer responseCodeAsChars;
 
     /**
      * The time it took to send the request to the server.
@@ -129,6 +135,11 @@ public class RequestData extends TimerData
      * The request URL.
      */
     private XltCharBuffer url;
+
+    /**
+     * We need this for a later efficient search using urlText when reporting
+     */
+    private String originalUrl;
 
     /**
      * The hash code of a url without fragment, needed downstream
@@ -317,6 +328,16 @@ public class RequestData extends TimerData
     public XltCharBuffer getUrl()
     {
         return url;
+    }
+
+    /**
+     * Returns the request's original URL.
+     *
+     * @return the original URL
+     */
+    public String getOriginalUrl()
+    {
+        return this.originalUrl;
     }
 
     /**
@@ -536,11 +557,41 @@ public class RequestData extends TimerData
         if (responseCode >= 0)
         {
             this.responseCode = responseCode;
+            this.responseCodeAsChars = XltCharBuffer.valueOf(Integer.toString(responseCode));
         }
         else
         {
             throw new IllegalArgumentException("Response code must not be negative: " + responseCode + "'.");
         }
+    }
+
+    /**
+     * Sets the request's response code.
+     *
+     * @param responseCode
+     *            the response code
+     */
+    public void setResponseCode(final XltCharBuffer responseCode)
+    {
+        if (!responseCode.isEmpty())
+        {
+            this.responseCode = ParseNumbers.parseInt(responseCode);
+            this.responseCodeAsChars = responseCode;
+        }
+        else
+        {
+            throw new IllegalArgumentException("Response code must not be negative: " + responseCode + "'.");
+        }
+    }
+
+    /**
+     * Get the request's response code as originally recorded.
+     *
+     * @return responseCode the response code as chars
+     */
+    public XltCharBuffer getResponseCodeAsChars()
+    {
+        return this.responseCodeAsChars;
     }
 
     /**
@@ -596,6 +647,7 @@ public class RequestData extends TimerData
     public void setUrl(final String url)
     {
         this.url = XltCharBuffer.valueOf(url);
+        this.originalUrl = url;
     }
 
     /**
@@ -625,6 +677,7 @@ public class RequestData extends TimerData
         }
 
         this.url = url;
+        this.originalUrl = url.toString();
     }
 
     /**
@@ -782,7 +835,7 @@ public class RequestData extends TimerData
 
         setBytesSent(ParseNumbers.parseInt(values.get(5)));
         setBytesReceived(ParseNumbers.parseInt(values.get(6)));
-        setResponseCode(ParseNumbers.parseInt(values.get(7)));
+        setResponseCode(values.get(7));
 
         if (values.size() > 23)
         {

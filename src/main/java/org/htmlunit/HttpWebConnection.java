@@ -540,7 +540,6 @@ public class HttpWebConnection implements WebConnection {
             HttpClientBuilder builder = httpClientBuilder_.get(currentThread);
             if (builder == null) {
                 builder = createHttpClientBuilder();
-
                 // this factory is required later
                 // to be sure this is done, we do it outside the createHttpClient() call
                 final RegistryBuilder<CookieSpecProvider> registeryBuilder
