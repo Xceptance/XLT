@@ -21,25 +21,22 @@ import java.util.List;
 import java.util.StringJoiner;
 
 /**
- * This is a simple LRU map implementation based on a clock algorithm.
- * Not thread-safe! Null support was removed. The LRU part is not really 
- * predictable, but it is fast and simple. We don't keep a linked list, 
- * rather a marker that give every entry a second chance. 
+ * This is a simple LRU map implementation based on the clock algorithm.
+ * Not thread-safe! Null key and value support was removed. 
+ * The LRU part is not really predictable, but it is fast and simple. 
+ * We don't keep a linked list, rather a marker that give every entry a second chance. 
  * If the second chance is false, we can evict this entry. This can happen
  * rather early. In general, it is still a good enough LRU implementation.
  * 
- * To save operations and have less state and memory writes, we are using the
- * current insert position in the array as a clock hand. The clock hand is moved
- * to the right untl we find an entry that has no second chance. 
+ * This makes it memory and CPU cache efficient.
  * 
  * https://www.geeksforgeeks.org/operating-systems/second-chance-or-clock-page-replacement-policy/
  *
  * @since 9.1.0
+ * @author René Schwietzke (Xceptance Software Technologies GmbH)
  */
 public class LRUClockMap<K, V>
 {
-    private final Wrapper<K, V> FREE_KEY = null;
-
     /**
      * Keys and values       
      */
@@ -61,14 +58,14 @@ public class LRUClockMap<K, V>
     private int mask;
 
     /** 
-     * Our clock hand, the current position in the array
+     * Our clock hand, the next position in the array to check for eviction
      */
-    private int clockHand = -1;
+    private int clockHand = 0;
     
     /**
      * Wrapper class for key, value, and secondChance bit.
-     * The secondChance is true to skip it when the clock 
-     * is checked. If this is false, we can dispose this entry.
+     * When secondChance is true we skip it when the clock 
+     * is checked. If it is false, we dispose the entry.
      */
     private static class Wrapper<K, V> 
     {
@@ -76,7 +73,12 @@ public class LRUClockMap<K, V>
         V value;
         boolean secondChance;
 
-        Wrapper(K key, V value) 
+        /**
+         * Create a new wrapper entry
+         * @param key the key
+         * @param value the value
+         */
+        Wrapper(final K key, final V value) 
         {
             this.key = key;
             this.value = value;
@@ -84,12 +86,9 @@ public class LRUClockMap<K, V>
             this.secondChance = true;
         }
 
-        @Override
-        public int hashCode() 
-        {
-            return key.hashCode();
-        }
-        
+        /**
+         * For debugging purposes
+         */
         @Override
         public String toString() 
         {
@@ -97,6 +96,11 @@ public class LRUClockMap<K, V>
         }
     }
 
+    /**
+     * Creates a new LRU map with the given maximum size.
+     * 
+     * @param maxSize the maximum number of entries to hold
+     */
     @SuppressWarnings("unchecked")
     public LRUClockMap(final int maxSize)
     {
@@ -106,26 +110,40 @@ public class LRUClockMap<K, V>
         }
         this.maxSize = maxSize;
 
-        final int capacity = arraySize(maxSize, 0.3333f);
+        final int capacity = arraySize(maxSize, 0.50f);
         this.mask = capacity - 1;
 
         this.data = (Wrapper<K, V>[]) new Wrapper[capacity];
     }
 
     /**
-     * Read data without touching the clock flag. This is mostly for testing purposes.
-     *
-     * @param key
-     * @return
+     * Mix the hash to have a better distribution. 
+     * Inspired by OpenJDK HashMap.
+     * 
+     * @param h the original hash
+     * @return the mixed hash
      */
-    public V getNoLRU(final K key)
+    private int mixHash(final int h) 
+    {
+        return h ^ (h >>> 16);
+    }
+    
+    /**
+     * Read data without touching the clock flag. This is mostly for testing purposes
+     * or in case you really don't want to affect the LRU state.
+     *
+     * @param key what key to look for
+     * @return the value for the key or null if not founds
+     */
+    public V getRaw(final K key)
     {
         int ptr = mixHash(key.hashCode()) & this.mask;
+        
         while (true)
         {
             final Wrapper<K, V> w = this.data[ptr];
 
-            if (w == FREE_KEY)
+            if (w == null)
             {
                 return null;
             }
@@ -133,16 +151,24 @@ public class LRUClockMap<K, V>
             {
                 return w.value;
             }
+            
             ptr = (ptr + 1) & this.mask;
         }         
     }
     
+    /**
+     * Get a value from the map. This will set the second chance flag
+     * if the entry is found.
+     * 
+     * @param key what key to look for
+     * @return the value for the key or null if not found
+     */
     public V get(final K key)
     {
         int ptr = mixHash(key.hashCode()) & this.mask;
         final Wrapper<K, V> w = this.data[ptr];
 
-        if (w == FREE_KEY)
+        if (w == null)
         {
             return null;
         }
@@ -161,6 +187,9 @@ public class LRUClockMap<K, V>
         else
         {
             // we have to do linear probing now
+            // this is the slow path and hence its own method
+            // to keep the main get method as lean as possible
+            // for better inlining
             return expensiveGet(key, ptr);
         }
     }
@@ -175,16 +204,19 @@ public class LRUClockMap<K, V>
      */
     private V expensiveGet(final K key, int ptr)
     {
+        // we start with the next position because we already checked ptr
+        // and missed there
         while (true)
         {
             ptr = (ptr + 1) & this.mask;
             final Wrapper<K, V> w = this.data[ptr];
 
-            if (w == FREE_KEY)
+            if (w == null)
             {
                 return null;
             }
-            else if (w.key.equals(key))
+            
+            if (w.key.equals(key))
             {
                 if (!w.secondChance)
                 {
@@ -195,55 +227,119 @@ public class LRUClockMap<K, V>
                 }
                 return w.value;
             }
+            
+            // not found, continue searching
         }    
     }
 
-    private int mixHash(int h) 
-    {
-        h = h ^ (h >>> 16);
-        return h;
-    }
-    
+    /**
+     * Associates the specified value with the specified key in this map.
+     * If the map previously contained a mapping for the key, the old
+     * value is replaced. Starts eviction if the max size is reached.
+     *
+     * @param key key with which the specified value is to be associated
+     * @param value value to be associated with the specified key
+     * @return the previous value associated with key, or null if there was no mapping for key.
+     */
     public V put(final K key, final V value)
     {
-        int ptr = mixHash(key.hashCode()) & this.mask;
-
-        while (true)
+        final int ptr = mixHash(key.hashCode()) & this.mask;
+        
+        // evict before inserting a new entry helps to avoid 
+        // pushing it out again immediately
+        if (this.size == maxSize)
         {
-            ptr = ptr & this.mask;
-            final Wrapper<K, V> w = this.data[ptr];
-
-            if (w == FREE_KEY)
+            // if this is going to be an insert, we have to evict
+            // otherwise just update
+            final V oldValue = update(key, value, ptr);
+            if (oldValue != null)
             {
-                this.size++;
-                this.data[ptr] = new Wrapper<>(key, value);
-
-                if (this.size > maxSize)
-                {
-                    // we are full, so we need to evict
-                    // we start at the current position
-                    // so we don't need a clockhand 
-                    // no prove that this shortcut works as 
-                    // good as a real clock hand, but it seems to
-                    // make sense and we have less memory to write to
-                    evict();
-                }
-
-                return null;
-            }
-
-            if (w.key.equals(key))
-            {
-                final V oldValue = w.value;
-                w.value = value;
-                w.secondChance = true; // give it a second chance
+                // we just updated an existing entry, no eviction needed
                 return oldValue;
             }
-
-            ptr++;
+            // ok, we have not updated, so we have to kick one out
+            evict();
         }
+        
+        // put the entry, might replace an existing one or be added, we have enough space 
+        // at this point for sure
+        return putInternal(key, value, ptr);
     }
 
+    /**
+     * Internal put method that does not evict
+     * 
+     * @param key the key to put
+     * @param value the value to put
+     * @param ptr the position to start searching
+     *
+     * @return the old value or null if there was none
+     */
+    private V putInternal(final K key, final V value, int ptr)
+    {
+        while (true)
+        {
+            final Wrapper<K, V> current = this.data[ptr];
+
+            if (current == null)
+            {
+                // found a free slot
+                this.data[ptr] = new Wrapper<>(key, value);
+                // we added one entry, so size is increased
+                this.size++; 
+                
+                return null;
+            }
+            else if (current.key.equals(key))
+            {
+                // key already exists, replace value
+                final V oldValue = current.value;
+                current.value = value;
+                current.secondChance = true;
+
+                return oldValue;
+            }
+            
+            ptr = (ptr + 1) & this.mask; // move to next position
+        }
+    }
+    
+    /**
+     * Internal method to combine get and put functionality but 
+     * without insertion because we might have to evict first.
+     * 
+     * @param key the key to put
+     * @param value the value to put
+     * @param ptr the position to start searching
+     * 
+     * @return the old value or null if there was none
+     */
+    private V update(final K key, final V value, int ptr)
+    {
+        while (true)
+        {
+            final Wrapper<K, V> current = this.data[ptr];
+
+            if (current == null)
+            {
+                // no entry found, we don't do anything here
+                // just tell
+                return null;
+            }
+            else if (current.key.equals(key))
+            {
+                // key already exists, replace value
+                final V oldValue = current.value;
+                current.value = value;
+                current.secondChance = true;
+
+                return oldValue;
+            }
+            
+            ptr = (ptr + 1) & this.mask; // move to next position
+        }
+    }
+    
     /**
      * Removes the mapping for a key from this map if it is present.
      *
@@ -258,7 +354,7 @@ public class LRUClockMap<K, V>
         {
             final Wrapper<K, V> w = this.data[ptr];
 
-            if (w == FREE_KEY)
+            if (w == null)
             {
                 // Key not found
                 return null;
@@ -286,24 +382,24 @@ public class LRUClockMap<K, V>
     {
         while (true)
         {
-            // ok, next pos
-            clockHand = (clockHand + 1) & this.mask;
-
             final Wrapper<K, V> w = this.data[clockHand];
-            if (w == FREE_KEY)
+            
+            if (w != null)
             {
-                continue; // skip this entry, no real data
+                if (w.secondChance == false)
+                {
+                    // free this entry and fix array up
+                    freePositionAndAdjustArray(clockHand);
+                    return;
+                }
+                else
+                {
+                    // gave it a second chance, now this is gone
+                    w.secondChance = false;
+                }
             }
-
-            if (w.secondChance == false)
-            {
-                // free this entry and fix array up
-                freePositionAndAdjustArray(clockHand);
-                return;
-            }
-
-            // lost the second chance, might be evicted next time
-            w.secondChance = false;
+            
+            clockHand = (clockHand + 1) & this.mask; // move to next position
         }
     }
 
@@ -316,7 +412,7 @@ public class LRUClockMap<K, V>
      */
     private void freePositionAndAdjustArray(final int ptr)
     {
-        this.data[ptr] = FREE_KEY;
+        this.data[ptr] = null;
         this.size--; // we removed one entry, so size is reduced
        
         // Shift all entries after this position if needed
@@ -326,18 +422,18 @@ public class LRUClockMap<K, V>
             currentPtr = (currentPtr + 1) & this.mask;
 
             final Wrapper<K, V> w = this.data[currentPtr];
-            if (w == FREE_KEY)
+            if (w == null)
             {
                 break; // no more entries to shift
             }
             
-            this.data[currentPtr] = FREE_KEY; // free this entry
+            this.data[currentPtr] = null; // free this entry
             realign(w); // put it back to the map, it will find a new position eventually
         }
     }
     
     /**
-     * Internal put to account for removed entries. We do not have
+     * Internal reput to account for removed entries. We do not have
      * double keys in the map, so we can safely ignore that fact.
      * 
      * @param entry the wrapper to put
@@ -350,7 +446,7 @@ public class LRUClockMap<K, V>
         {
             final Wrapper<K, V> current = this.data[ptr];
 
-            if (current == FREE_KEY)
+            if (current == null)
             {
                 // found a free slot
                 this.data[ptr] = entry;
@@ -360,6 +456,11 @@ public class LRUClockMap<K, V>
         }
     }
     
+    /**
+     * Returns the number of key-value mappings in this map.
+     *
+     * @return the number of entries in the map
+     */
     public int size()
     {
         return this.size;
@@ -408,7 +509,7 @@ public class LRUClockMap<K, V>
         for (int i = 0; i < length; i++)
         {
             final Wrapper<K, V> w = this.data[i];
-            if (w != FREE_KEY)
+            if (w != null)
             {
                 result.add(w.key);
             }
@@ -422,7 +523,7 @@ public class LRUClockMap<K, V>
      */
     public void clear()
     {
-        Arrays.fill(data, FREE_KEY);
+        Arrays.fill(data, null);
         this.size = 0;
     }
 
@@ -476,7 +577,7 @@ public class LRUClockMap<K, V>
         for (int i = 0; i < length; i++)
         {
             final Wrapper<K, V> w = this.data[i];
-            if (w == FREE_KEY)
+            if (w == null)
             {
                 sj.add(i + " FREE");
             }
@@ -485,6 +586,9 @@ public class LRUClockMap<K, V>
                 sj.add(i + " " + new DebugWrapper<K, V>(w, i).toString());
             }
         }
+        sj.add("clockHand: " + clockHand);
+        sj.add("size: " + size);
+        sj.add("maxSize: " + maxSize);
         
         return sj.toString();
     }
@@ -519,7 +623,7 @@ public class LRUClockMap<K, V>
         for (int i = 0; i < this.data.length; i++)
         {
             final Wrapper<K, V> w = this.data[i];
-            if (w == FREE_KEY)
+            if (w == null)
             {
                 result.add(null);
             }
