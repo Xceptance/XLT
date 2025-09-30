@@ -15,10 +15,11 @@
  */
 package com.xceptance.xlt.report;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.stream.Collectors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -55,7 +56,13 @@ class StatisticsProcessor
     /**
      * The configured report providers. An array for less overhead.
      */
-    private final List<ReportProvider> reportProviders;
+    private final List<ReportProviderPool> reportProviderExecutors;
+
+    /**
+     * Our pool of report providers with their own executors. This isolates the report providers from each other
+     * in the sense of one thread one report provider. No synchronization is needed anymore inside the report providers.
+     */
+    private record ReportProviderPool(ExecutorService executor, ReportProvider provider) {};
 
     /**
      * Constructor.
@@ -66,7 +73,10 @@ class StatisticsProcessor
     public StatisticsProcessor(final List<ReportProvider> reportProviders)
     {
         // filter the list and take only the provider that really need runtime parsed data
-        this.reportProviders = reportProviders.stream().filter(p -> p.wantsDataRecords()).collect(Collectors.toList());
+        this.reportProviderExecutors = reportProviders.
+            stream().
+            filter(p -> p.wantsDataRecords())
+            .map(r -> new ReportProviderPool(Executors.newSingleThreadExecutor(Thread.ofVirtual().factory()), r)).toList();
     }
 
     /**
@@ -103,54 +113,40 @@ class StatisticsProcessor
             return;
         }
 
-        // get your own list
-        final List<ReportProvider> providerList = new ArrayList<>(reportProviders);
+        // each provider is its own pool, so there is no external synchronization needed
+        // anymore, submit to all pools at once, the incoming data is read only and will be
+        // synchronized when the thread starts
+        final var futures = reportProviderExecutors
+            .stream()
+            .map(r -> r.executor.submit(() -> r.provider.processAll(dataContainer)))
+            .toList();
 
-        // run as long as we have not all data put into the report providers
-        while (providerList.isEmpty() == false)
-        {
-            ReportProvider provider = null;
-
-            for (int i = 0; i < providerList.size(); i++)
-            {
-                final boolean wasLocked = providerList.get(i).lock();
-                if (wasLocked)
-                {
-                    provider = providerList.remove(i);
-                    break;
-                }
-            }
-
-            if (provider == null)
-            {
-                // nothing found, try again
-                continue;
-            }
-
-            // we have one, we can process the data
-            try
-            {
-                provider.processAll(dataContainer);
-            }
-            catch (final Throwable t)
-            {
-                LOG.error("Failed to process data record, discarding full chunk", t);
-            }
-            finally
-            {
-                provider.unlock();
-
-                // be fair to others and give them a chance
-                Thread.yield();
-            }
-        }
-
-        // get the max and min
+        // get the max and min, update only when needed
         updateLock.lock();
+        if (dataContainer.getMinimumTime() < minimumTime)
         {
-            minimumTime = Math.min(minimumTime, dataContainer.getMinimumTime());
-            maximumTime = Math.max(maximumTime, dataContainer.getMaximumTime());
+            minimumTime = dataContainer.getMinimumTime();
+        }
+        if (dataContainer.getMaximumTime() > maximumTime)
+        {
+            maximumTime = dataContainer.getMaximumTime();
         }
         updateLock.unlock();
+
+        // ok, wait till we finished in all pools
+        futures.forEach(f -> {
+            try
+            {
+                f.get();
+            }
+            catch (InterruptedException e)
+            {
+                LOG.warn("Request statistics process was interrupted", e);
+            }
+            catch (ExecutionException e)
+            {
+                LOG.error("Failed to process data record, discarding full chunk", e.getCause());
+            }
+        });
     }
 }
