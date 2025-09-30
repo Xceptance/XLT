@@ -23,7 +23,7 @@ public class LowPrecisionIntValueSetTest
 {
     private IntLowPrecisionValueSet valueSet;
 
-    int buckets = 100;
+    int buckets = 128;
 
     @Before
     public void before()
@@ -96,6 +96,30 @@ public class LowPrecisionIntValueSetTest
         Assert.assertArrayEquals(v, values, 0);
     }
 
+    @Test
+    public void getValues_specificValuesScaled()
+    {
+        var valueSet = new IntLowPrecisionValueSet(128);
+        
+        int[] v =
+            {
+                3, 11, 37, 53, 73, 97, 101, 111, 137, 153, 173, 197, 1000, 2000, 3000
+            };
+        double[] e =
+            {
+                0.0, 32.0, 64.0, 96.0, 128.0, 160.0, 192.0, 992.0, 1984.0, 2976.0
+            };
+
+        for (final int i : v)
+        {
+            valueSet.addValue(i);
+        }
+
+        // check that we get the right values back
+        final double[] values = valueSet.getValues();
+        Assert.assertArrayEquals(e, values, 0);
+    }
+    
     @Test
     public void merge()
     {
