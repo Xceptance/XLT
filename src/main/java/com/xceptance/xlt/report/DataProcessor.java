@@ -133,10 +133,10 @@ public class DataProcessor
         statisticsProcessor = new StatisticsProcessor(reportProviders);
 
         // create the reader executor
-        dataReaderExecutor = Executors.newFixedThreadPool(config.readerThreadCount, new DaemonThreadFactory(i -> "DataReader-" + i, Thread.MAX_PRIORITY));
+        dataReaderExecutor = Executors.newFixedThreadPool(2 * config.readerThreadCount, Thread.ofVirtual().name("DataReader-", 0).factory());
 
         // create the data record parser threads
-        dataParserExecutor = Executors.newFixedThreadPool(config.parserThreadCount, new DaemonThreadFactory(i -> "DataParser-" + i));
+        dataParserExecutor = Executors.newFixedThreadPool(2 * config.parserThreadCount, Thread.ofVirtual().name("DataParser-", 0).factory());
 
         // create the dispatcher
         dispatcher = new Dispatcher(config, statisticsProcessor);
