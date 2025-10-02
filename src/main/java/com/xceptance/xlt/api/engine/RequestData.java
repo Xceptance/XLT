@@ -580,7 +580,7 @@ public class RequestData extends TimerData
         }
         else
         {
-            throw new IllegalArgumentException("Response code must not be negative: " + responseCode + "'.");
+            throw new IllegalArgumentException("Response code must not be empty");
         }
     }
 
