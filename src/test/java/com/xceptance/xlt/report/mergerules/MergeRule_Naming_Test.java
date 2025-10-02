@@ -850,5 +850,3 @@ public class MergeRule_Naming_Test extends MergeRuleTestBase
         assertEquals("Failed to parse the matching group index 'a' as integer", ex.getMessage());
     }
 }
-
-

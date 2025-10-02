@@ -296,5 +296,3 @@ public class MergeRule_Name_Test extends MergeRuleTestBase
         assertEquals("RocketZ42", data.getName());
     }
 }
-
-
