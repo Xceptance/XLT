@@ -86,7 +86,7 @@ public class MergeRule
     private final Condition[] excludeConditions;
 
     /**
-     * The list of place where to insert the data to form a new name
+     * The list of placeholders with info where to insert the data to form a new name.
      */
     private final PlaceholderPosition[] newNamePlaceholders;
 
@@ -373,17 +373,17 @@ public class MergeRule
     }
 
     /**
-     * Get us a new name that has not longer any placeholders in it, but rather the positions where
-     * to insert data.
+     * Get us a new name that has not longer any placeholders in it. Instead the placeholder positions get updated with
+     * information where to insert data in the new name.
      * 
-     * @param newName the current name with placeholders
-     * @param positions a set of already parsed placeholder positions 
-     * @return the new name clean of placeholders 
+     * @param nameWithPlaceholders
+     *            the current name with placeholders
+     * @param positions
+     *            a set of already parsed placeholder positions
+     * @return the new name clean of placeholders
      */
     public static String adjustNewName(final String nameWithPlaceholders, final List<PlaceholderPosition> positions)
     {
-        // create us a new name without the placeholders, so we can later easily just insert the replacements without
-        // removing or calculating the position
         final StringBuilder name = new StringBuilder(nameWithPlaceholders);
         int displacement = 0;
 
@@ -395,7 +395,7 @@ public class MergeRule
             // append the part before the placeholder
             name.delete(pos.start - displacement, pos.end - displacement);
 
-            // update the placeholder, it is now different from before because it does not 
+            // update the placeholder, it is now different from before because it does not
             // really reflect room anymore, rather a position
             positions.set(i, new PlaceholderPosition(pos.typeCode, pos.capturingGroupIndex, pos.start - displacement));
 
@@ -412,7 +412,8 @@ public class MergeRule
      *
      * @param requestData
      *            the request data object to process, will also be directly modified as result
-     * @return the ID of the next rule to process, or {@link #STOP} or {@link #DROP}
+     * @return the ID of the next rule to process or {@link #STOP} to stop further processing or {@link #DROP} to drop
+     *         the request
      */
     public int process(final RequestData requestData)
     {

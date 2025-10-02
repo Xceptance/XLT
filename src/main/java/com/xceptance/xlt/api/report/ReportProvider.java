@@ -119,7 +119,10 @@ public interface ReportProvider extends ReportCreator
     }
 
     /**
-     * Locks this provider for data record processing. Returns when successfully locked.
+     * Tries to lock this provider for data record processing.
+     *
+     * @return <code>true</code> if the lock could be acquired, <code>false</code> if this provider is already locked by
+     *         another thread
      */
     public boolean lock();
 
