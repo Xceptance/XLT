@@ -301,4 +301,3 @@ public class MergeRule_HttpMethod_Test extends MergeRuleTestBase
         assertEquals("originalName", data.getName());
     }
 }
-

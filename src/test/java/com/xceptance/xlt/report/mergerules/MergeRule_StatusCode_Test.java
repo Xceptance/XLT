@@ -300,4 +300,3 @@ public class MergeRule_StatusCode_Test extends MergeRuleTestBase
         assertEquals("originalName", data.getName());
     }
 }
-
