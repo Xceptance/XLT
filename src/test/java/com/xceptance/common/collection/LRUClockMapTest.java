@@ -15,8 +15,6 @@ import java.util.stream.IntStream;
 
 import org.junit.Test;
 
-import com.xceptance.common.util.RandomUtils;
-
 import it.unimi.dsi.util.FastRandom;
 
 /**
@@ -461,7 +459,7 @@ public class LRUClockMapTest
         var r = new FastRandom(7L);
         for (int i = 0; i < 42000; i++)
         {
-            var k = RandomUtils.randomString(new FastRandom(i), r.nextInt(10, 50));
+            var k = new FastRandom(i).randomString(FastRandom.CHARS, r.nextInt(10, 50));
             var v = "v" + i;
 
             map.put(k, v);
@@ -532,7 +530,7 @@ public class LRUClockMapTest
         var r = new FastRandom(7L);
         for (int i = 0; i < 1_000_000; i++)
         {
-            map.put(RandomUtils.randomString(r, r.nextInt(20)), "v" + i);
+            map.put(r.randomString(FastRandom.CHARS, r.nextInt(20)), "v" + i);
         }
 
         assertEquals(maxSize, map.size());
