@@ -573,14 +573,22 @@ public class RequestData extends TimerData
      */
     public void setResponseCode(final XltCharBuffer responseCode)
     {
-        if (!responseCode.isEmpty())
+        if (responseCode != null && !responseCode.isEmpty())
         {
-            this.responseCode = ParseNumbers.parseInt(responseCode);
-            this.responseCodeAsChars = responseCode;
+            final int code = ParseNumbers.parseInt(responseCode);
+            if (code >= 0)
+            {
+                this.responseCode = code;
+                this.responseCodeAsChars = responseCode;
+            }
+            else
+            {
+                throw new IllegalArgumentException("Response code must not be negative: " + responseCode + "'.");
+            }
         }
         else
         {
-            throw new IllegalArgumentException("Response code must not be empty");
+            throw new IllegalArgumentException("Response code must not be null or empty");
         }
     }
 
