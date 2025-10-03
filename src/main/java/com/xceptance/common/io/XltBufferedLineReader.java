@@ -45,8 +45,8 @@ public class XltBufferedLineReader implements Closeable
     // real buffer length
     private int bufferLength;
 
-    // follow the JDK 21 change to set this to 16k by default
-    private static final int BUFFERSIZE = 2 * 8192;
+    // larger buffer to load less often
+    private static final int BUFFERSIZE = 4 * 8192;
 
     // in case we read a \r, we might have to skip the following \n
     private boolean skipNL = false;
@@ -109,7 +109,6 @@ public class XltBufferedLineReader implements Closeable
         }
 
         char[] sb = null;
-        int lastFill = 0;
         int start = bufferPos;
         int sbLength = 0;
 
@@ -117,30 +116,36 @@ public class XltBufferedLineReader implements Closeable
         {
             if (bufferPos == bufferLength)
             {
-                lastFill = fill();
+                final int lastFill = fill();
                 start = 0;
-            }
 
-            if (lastFill == -1)
-            {
-                // end reached
-                eof = true;
+                if (lastFill == -1)
+                {
+                    // end reached
+                    eof = true;
 
-                // save the rest
-                return sb == null ? null : new XltCharBuffer(sb, 0, sbLength);
+                    // save the rest
+                    return sb == null ? null : new XltCharBuffer(sb, 0, sbLength);
+                }
             }
 
             // do we have to skip a newline?
-            if (skipNL && buffer[bufferPos] == '\n')
+            if (skipNL)
             {
-                start = ++bufferPos;
-            }
-            skipNL = false;
+                skipNL = false;
 
+                if (buffer[bufferPos] == '\n')
+                {
+                    start = ++bufferPos;
+                }
+            }
+            
             // run till we have a '\r'
             boolean eol = false;
             int i;
-            for (i = bufferPos; i < bufferLength; i++)
+            int length = bufferLength;
+            
+            for (i = bufferPos; i < length; i++)
             {
                 final char c = buffer[i];
                 if (c <= '\r') // help to save comparisons
