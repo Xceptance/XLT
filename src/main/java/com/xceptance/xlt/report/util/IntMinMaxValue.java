@@ -15,49 +15,130 @@
  */
 package com.xceptance.xlt.report.util;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * A {@link IntMinMaxValue} stores the minimum/maximum/sum/count of all the sample values added, but can also reproduce a
  * rough approximation of the distinct values added.
  */
 public class IntMinMaxValue
 {
-    private long accumulatedValue;
+    // The sum for later average calculation
+    private long totalValue = 0;
 
+    // how much data have we seen
+    private long count = 0;
+
+    // the min and max values seen
     private int maximum = Integer.MIN_VALUE;
-
     private int minimum = Integer.MAX_VALUE;
-
-    private int valueCount;
 
     /**
      * Holds an approximation of the distinct values added to this min-max value.
+     * This was LowPrecisionIntValueSet before. We moved it here for less memory consumption
+     * and better performance. We also limit it to 128 distinct values. We used 256 before
+     * but wee we started with XLT it was 128 for a long time.
      */
-    private final IntLowPrecisionValueSet valueSet = new IntLowPrecisionValueSet();
+    private long distinctValuesLow = 0;
+    private long distinctValuesHigh = 0;
 
+    /**
+     * The value scaling factor. 2 pow scale.
+     */
+    private int distinctValuesScale = 0;
+    
     /**
      * Constructor.
      * 
      * @param value
      *            the first value to add
      */
-    public IntMinMaxValue(final int value)
+    public IntMinMaxValue(final int firstValue)
     {
-        valueSet.addValue(value);
-
-        accumulatedValue = value;
-        maximum = value;
-        minimum = value;
-        valueCount = 1;
+        // we set both here to ensure we can later run with a single
+        // comparison only
+        this.maximum = minimum = firstValue;
+        updateValue(firstValue);
     }
 
+    /**
+     * Adds the given sample value to this min-max value.
+     * 
+     * @param value
+     *            the sample to add
+     */
+    public void updateValue(final int value)
+    {
+        var v = value < 0 ? 0 : value;
+        
+        this.totalValue += v;
+        this.count++;
+
+        // use explicit comparisons to avoid Math.max/Math.min calls
+        // and writing the values when not necessary
+        if (v > this.maximum)
+        {
+            this.maximum = v;
+        }
+        else if (value < this.minimum)
+        {
+            this.minimum = v;
+        }
+        scaleDistinctValues(v);
+    }
+    
+    /**
+     * Adds a value to this set, we support only positive values.
+     * 
+     * @param value
+     *            the value
+     */
+    private void scaleDistinctValues(final int value)
+    {
+        // adjust the value according to the current scale
+        var v  = value >> distinctValuesScale; // div
+
+        // make the value fit into the bit set by scaling the bit set as necessary
+        while (v >= 128)
+        {
+            // we join adjacent buckets by increasing joining the bits adjacent bits
+            // this means we lose precision, but we can still
+            var l = distinctValuesLow = BitCompression.combineAdjacentBits(distinctValuesLow);
+            l = BitCompression.compressAndShiftOddBits(l);
+
+            var h = BitCompression.combineAdjacentBits(distinctValuesHigh);
+            h = BitCompression.compressAndShiftOddBits(h);
+
+            // join them in low
+            distinctValuesLow = l | (h << 32);
+            // clear high part  
+            distinctValuesHigh = 0;
+            
+            // increase scale and try again
+            v = value >> (++distinctValuesScale); 
+        }
+
+        // set distinct values
+        v = value >> this.distinctValuesScale;
+        if (v < 64)
+        {
+            distinctValuesLow |= (1L << v);
+        }
+        else
+        {
+            distinctValuesHigh |= (1L << (v - 64));
+        }
+    }
+    
     /**
      * Returns the sum of the values added to this min-max value.
      * 
      * @return the accumulated value
      */
-    public long getAccumulatedValue()
+    public long getTotalValue()
     {
-        return accumulatedValue;
+        return this.totalValue;
     }
 
     /**
@@ -67,7 +148,7 @@ public class IntMinMaxValue
      */
     public int getAverageValue()
     {
-        return (int) (accumulatedValue / valueCount);
+        return (int) (this.totalValue / count);
     }
 
     /**
@@ -91,23 +172,26 @@ public class IntMinMaxValue
     }
 
     /**
-     * Returns the average of the values added to this min-max value.
-     * 
-     * @return the average value
-     */
-    public int getValue()
-    {
-        return getAverageValue();
-    }
-
-    /**
      * Returns an approximation of the distinct values added to this min-max value.
      * 
      * @return the values
      */
     public double[] getValues()
     {
-        return valueSet.getValues();
+        final List<Double> values = new ArrayList<>(128);
+        
+        for (int i = 0; i < 128; i++) 
+        {
+            final boolean set = (i < 64) ? ((distinctValuesLow & (1L << i)) != 0) 
+                                         : ((distinctValuesHigh & (1L << (i - 64))) != 0);
+            final double v = (1L << distinctValuesScale ) * i; 
+            if (set)
+            {
+                values.add(v);
+            }
+        }
+
+        return values.stream().mapToDouble(Double::doubleValue).toArray();
     }
 
     /**
@@ -117,7 +201,7 @@ public class IntMinMaxValue
      */
     public int getValueCount()
     {
-        return valueCount;
+        return (int) this.count;
     }
 
     /**
@@ -133,10 +217,11 @@ public class IntMinMaxValue
             maximum = Math.max(maximum, item.maximum);
             minimum = Math.min(minimum, item.minimum);
     
-            accumulatedValue += item.accumulatedValue;
-            valueCount += item.valueCount;
+            totalValue += item.totalValue;
+            count += item.count;
     
-            valueSet.merge(item.valueSet);
+            //valueSet.merge(item.valueSet);
+            throw new UnsupportedOperationException("Merging of distinct values not supported yet.");
         }
             
         return this;
@@ -148,31 +233,11 @@ public class IntMinMaxValue
     @Override
     public String toString()
     {
-        return "" + getValue() + "/" + getAccumulatedValue() + "/" + getMinimumValue() + "/" + getMaximumValue() + "/" + getValueCount();
+        return "" + getAverageValue() + "/" + getTotalValue() + "/" + getMinimumValue() + "/" + getMaximumValue() + "/" + getValueCount();
     }
-
-    /**
-     * Adds the given sample value to this min-max value.
-     * 
-     * @param sample
-     *            the sample to add
-     */
-    public void updateValue(final int sample)
-    {
-        valueSet.addValue(sample);
-
-        maximum = Math.max(maximum, sample);
-        minimum = Math.min(minimum, sample);
-
-        accumulatedValue += sample;
-        valueCount++;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
+    
     @Override
-    public boolean equals(Object obj)
+    public boolean equals(final Object obj)
     {
         if (this == obj)
         {
@@ -187,18 +252,7 @@ public class IntMinMaxValue
             return false;
         }
         final IntMinMaxValue other = (IntMinMaxValue) obj;
-        if (accumulatedValue != other.accumulatedValue)
-        {
-            return false;
-        }
-        if (valueSet == null)
-        {
-            if (other.valueSet != null)
-            {
-                return false;
-            }
-        }
-        else if (!valueSet.equals(other.valueSet))
+        if (count != other.count)
         {
             return false;
         }
@@ -210,7 +264,19 @@ public class IntMinMaxValue
         {
             return false;
         }
-        if (valueCount != other.valueCount)
+        if (totalValue != other.totalValue)
+        {
+            return false;
+        }
+        if (distinctValuesLow != other.distinctValuesLow)
+        {
+            return false;
+        }
+        if (distinctValuesHigh != other.distinctValuesHigh)
+        {
+            return false;
+        }
+        if (distinctValuesScale != other.distinctValuesScale)
         {
             return false;
         }
