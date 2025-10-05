@@ -43,7 +43,7 @@ public class IntMinMaxTimeSeriesDataItem extends TimeSeriesDataItem
      */
     public IntMinMaxTimeSeriesDataItem(final RegularTimePeriod period, final IntMinMaxValue minMaxValue)
     {
-        super(period, (double) minMaxValue.getAccumulatedValue() / (double) minMaxValue.getValueCount());
+        super(period, minMaxValue.getAverageValue());
 
         this.minMaxValue = minMaxValue;
     }
