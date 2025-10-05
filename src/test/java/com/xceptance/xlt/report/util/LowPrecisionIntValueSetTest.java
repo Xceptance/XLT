@@ -78,6 +78,45 @@ public class LowPrecisionIntValueSetTest
     }
 
     @Test
+    public void getValues_0()
+    {
+        // add only some specific values -> no scaling necessary
+        double[] v =
+            {
+                0.0
+            };
+
+        for (double i : v)
+        {
+            valueSet.addValue((int) i);
+        }
+
+        // check that we get the same values back
+        final double[] values = valueSet.getValues();
+        Assert.assertArrayEquals(v, values, 0);
+    }
+    
+    @Test
+    public void getValues_1()
+    {
+        // add only some specific values -> no scaling necessary
+        double[] v =
+            {
+                1.0
+            };
+
+        for (double i : v)
+        {
+            valueSet.addValue((int) i);
+        }
+
+        // check that we get the same values back
+        final double[] values = valueSet.getValues();
+        Assert.assertArrayEquals(v, values, 0);
+    }
+    
+    
+    @Test
     public void getValues_specificValues()
     {
         // add only some specific values -> no scaling necessary
