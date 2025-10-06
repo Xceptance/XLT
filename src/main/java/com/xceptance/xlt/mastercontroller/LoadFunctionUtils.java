@@ -15,9 +15,13 @@
  */
 package com.xceptance.xlt.mastercontroller;
 
-import com.xceptance.common.util.AbsoluteOrRelativeNumber;
-
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
+
+import com.xceptance.common.util.AbsoluteOrRelativeNumber;
 
 /**
  * Utility class for parsing and calculating load functions.
@@ -430,5 +434,155 @@ public final class LoadFunctionUtils
     public static boolean isValidStartingPoint(final AbsoluteOrRelativeNumber<Integer> time, final AbsoluteOrRelativeNumber<Integer> value)
     {
         return !time.isRelativeNumber() && time.getValue() == LoadFunctionUtils.START_TIME && !value.isRelativeNumber();
+    }
+
+    /**
+     * Applies jitter to the given load function.
+     *
+     * @param loadFunction
+     *            the load function (may be <code>null</code>)
+     * @param jitterFunction
+     *            the jitter function (may be <code>null</code>)
+     * @param random
+     *            the random number generator to use
+     * @return the jittered load function
+     */
+    public static int[][] applyJitter(final int[][] loadFunction, final int[][] jitterFunction, final Random random)
+    {
+        if (loadFunction == null || loadFunction.length == 0 || jitterFunction == null || jitterFunction.length == 0 || random == null)
+        {
+            return loadFunction;
+        }
+
+        // A simple jitter function with a value of 0 means no jitter
+        if (isSimpleLoadFunction(jitterFunction) && jitterFunction[0][1] == 0)
+        {
+            return loadFunction;
+        }
+
+        final List<int[]> newLoadFunctionPoints = new ArrayList<>();
+        final Set<Integer> supportingPoints = new HashSet<>();
+        for (final int[] point : loadFunction)
+        {
+            supportingPoints.add(point[0]);
+        }
+
+        final int duration = loadFunction[loadFunction.length - 1][0];
+
+        for (int t = 0; t <= duration; t++)
+        {
+            final double baseValue = interpolate(loadFunction, t);
+
+            if (supportingPoints.contains(t))
+            {
+                newLoadFunctionPoints.add(new int[]
+                    {
+                        t, (int) Math.round(baseValue)
+                    });
+            }
+            else
+            {
+                final double jitterPermil = interpolate(jitterFunction, t);
+                final double jitter = jitterPermil / 1000.0;
+
+                // nextGaussian() has a mean of 0 and a standard deviation of 1.
+                // Clamp it to the range [-1, 1] to avoid extreme values and adhere to the hint in the issue.
+                final double clampedGaussian = Math.max(-1.0, Math.min(1.0, random.nextGaussian()));
+
+                final double deviation = jitter * clampedGaussian;
+                double newValue = baseValue * (1 + deviation);
+
+                // Clamp the new value to be between 0 and 2 * baseValue
+                newValue = Math.max(0, newValue);
+                newValue = Math.min(newValue, baseValue * 2);
+
+                final int finalValue = (int) Math.round(newValue);
+                newLoadFunctionPoints.add(new int[]
+                    {
+                        t, finalValue
+                    });
+            }
+        }
+
+        // Simplify the new load function by removing redundant points
+        final List<int[]> finalFunction = new ArrayList<>();
+        if (!newLoadFunctionPoints.isEmpty())
+        {
+            finalFunction.add(newLoadFunctionPoints.get(0));
+            for (int i = 1; i < newLoadFunctionPoints.size(); i++)
+            {
+                final int[] currentPoint = newLoadFunctionPoints.get(i);
+                final int[] lastAddedPoint = finalFunction.get(finalFunction.size() - 1);
+
+                // Keep the point if its value is different from the last added point's value.
+                if (currentPoint[1] != lastAddedPoint[1])
+                {
+                    finalFunction.add(currentPoint);
+                }
+                // Also keep all supporting points regardless of their value.
+                else if (supportingPoints.contains(currentPoint[0]))
+                {
+                    if (currentPoint[0] != lastAddedPoint[0])
+                    {
+                        finalFunction.add(currentPoint);
+                    }
+                }
+            }
+        }
+
+        return finalFunction.toArray(new int[0][]);
+    }
+
+    /**
+     * Performs linear interpolation on a given load function for a specific time.
+     *
+     * @param function
+     *            the load function
+     * @param time
+     *            the time for which to interpolate the value
+     * @return the interpolated value at the given time
+     */
+    private static double interpolate(final int[][] function, final int time)
+    {
+        if (time <= function[0][0])
+        {
+            return function[0][1];
+        }
+        if (time >= function[function.length - 1][0])
+        {
+            return function[function.length - 1][1];
+        }
+
+        int[] p1 = null;
+        int[] p2 = null;
+
+        for (int i = 0; i < function.length - 1; i++)
+        {
+            if (function[i][0] <= time && time < function[i + 1][0])
+            {
+                p1 = function[i];
+                p2 = function[i + 1];
+                break;
+            }
+        }
+
+        if (p1 == null)
+        {
+            // Should not happen given the checks above
+            return function[function.length - 1][1];
+        }
+
+        // Linear interpolation
+        final double t1 = p1[0];
+        final double v1 = p1[1];
+        final double t2 = p2[0];
+        final double v2 = p2[1];
+
+        if (t1 == t2)
+        {
+            return v1;
+        }
+
+        return v1 + (time - t1) * (v2 - v1) / (t2 - t1);
     }
 }

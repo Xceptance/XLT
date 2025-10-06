@@ -15,9 +15,13 @@
  */
 package com.xceptance.xlt.mastercontroller;
 
-import com.xceptance.common.util.AbsoluteOrRelativeNumber;
+import java.util.Arrays;
+import java.util.Random;
+
 import org.junit.Assert;
 import org.junit.Test;
+
+import com.xceptance.common.util.AbsoluteOrRelativeNumber;
 
 /**
  * Tests the implementation of {@link LoadFunctionUtils}.
@@ -1435,6 +1439,131 @@ public class LoadFunctionUtilsTest
         Assert.assertFalse(LoadFunctionUtils.isValidStartingPoint(validStartTime, new AbsoluteOrRelativeNumber<>(true, 25)));
         Assert.assertFalse(LoadFunctionUtils.isValidStartingPoint(validStartTime, new AbsoluteOrRelativeNumber<>(true, -1)));
         Assert.assertFalse(LoadFunctionUtils.isValidStartingPoint(validStartTime, new AbsoluteOrRelativeNumber<>(true, -25)));
+    }
+
+    // ====================================
+    // applyJitter
+    // ====================================
+
+    @Test
+    public void applyJitter()
+    {
+        // --- Test Case: Null/Empty Inputs ---
+        final int[][] loadFunction =
+            {
+                {
+                    0, 100
+                },
+                {
+                    10, 200
+                }
+            };
+        final int[][] jitterFunction =
+            {
+                {
+                    0, 100
+                }
+            }; // 10%
+        final Random random = new Random(12345L);
+
+        Assert.assertArrayEquals("Null load function", null, LoadFunctionUtils.applyJitter(null, jitterFunction, random));
+        Assert.assertArrayEquals("Empty load function", new int[0][], LoadFunctionUtils.applyJitter(new int[0][], jitterFunction, random));
+        Assert.assertArrayEquals("Null jitter function", loadFunction, LoadFunctionUtils.applyJitter(loadFunction, null, random));
+        Assert.assertArrayEquals("Empty jitter function", loadFunction,
+                                 LoadFunctionUtils.applyJitter(loadFunction, new int[0][], random));
+        Assert.assertArrayEquals("Null random", loadFunction, LoadFunctionUtils.applyJitter(loadFunction, jitterFunction, null));
+
+        // --- Test Case: Zero Jitter ---
+        final int[][] zeroJitter =
+            {
+                {
+                    0, 0
+                }
+            };
+        final int[][] zeroJitterResult = LoadFunctionUtils.applyJitter(loadFunction, zeroJitter, random);
+        Assert.assertArrayEquals("Jitter of 0 should not change the function", loadFunction, zeroJitterResult);
+
+        // --- Test Case: Predictable Jitter ---
+        final int[][] jitterFunc =
+            {
+                {
+                    0, 250
+                }
+            }; // 25%
+        final Random random1 = new Random(54321L);
+        final int[][] result1 = LoadFunctionUtils.applyJitter(loadFunction, jitterFunc, random1);
+
+        final Random random2 = new Random(54321L);
+        final int[][] result2 = LoadFunctionUtils.applyJitter(loadFunction, jitterFunc, random2);
+        Assert.assertArrayEquals("With the same seed, jitter must be predictable", result1, result2);
+
+        // --- Test Case: Supporting Points Unchanged ---
+        final int[][] multiPointLoadFunction =
+            {
+                {
+                    0, 100
+                },
+                {
+                    5, 150
+                },
+                {
+                    10, 100
+                }
+            };
+        final int[][] highJitterFunc =
+            {
+                {
+                    0, 500
+                }
+            }; // 50%
+        final Random highJitterRandom = new Random(98765L);
+        final int[][] highJitterResult = LoadFunctionUtils.applyJitter(multiPointLoadFunction, highJitterFunc, highJitterRandom);
+
+        // Find the points in the result that correspond to the original supporting points
+        final int p0 = Arrays.stream(highJitterResult).filter(p -> p[0] == 0).findFirst().get()[1];
+        final int p5 = Arrays.stream(highJitterResult).filter(p -> p[0] == 5).findFirst().get()[1];
+        final int p10 = Arrays.stream(highJitterResult).filter(p -> p[0] == 10).findFirst().get()[1];
+
+        Assert.assertEquals("Value at supporting point t=0 should be unchanged", 100, p0);
+        Assert.assertEquals("Value at supporting point t=5 should be unchanged", 150, p5);
+        Assert.assertEquals("Value at supporting point t=10 should be unchanged", 100, p10);
+
+        // --- Test Case: Value Boundaries ---
+        final int[][] boundaryLoadFunc =
+            {
+                {
+                    0, 100
+                },
+                {
+                    10, 100
+                }
+            };
+        final int[][] fullJitterFunc =
+            {
+                {
+                    0, 1000
+                }
+            }; // 100%
+        final Random boundaryRandom = new Random(42L);
+        final int[][] boundaryResult = LoadFunctionUtils.applyJitter(boundaryLoadFunc, fullJitterFunc, boundaryRandom);
+
+        boolean hasIntermediatePoints = false;
+        for (final int[] point : boundaryResult)
+        {
+            // check boundaries for intermediate points
+            if (point[0] > 0 && point[0] < 10)
+            {
+                hasIntermediatePoints = true;
+                final double baseValue = 100;
+                Assert.assertTrue("Value should not be negative", point[1] >= 0);
+                Assert.assertTrue("Value should not be more than double the base value", point[1] <= baseValue * 2);
+            }
+        }
+        Assert.assertTrue("Test is not effective without intermediate points", hasIntermediatePoints);
+
+        // --- Test Case: General Correctness ---
+        // Just make sure it runs and produces a different result
+        Assert.assertFalse("With jitter, the function should be different", Arrays.deepEquals(loadFunction, result1));
     }
 
     @SuppressWarnings("unused")

@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -63,6 +64,11 @@ public class TestLoadProfileConfiguration extends AbstractConfiguration
      * property suffix to set the number of iterations of a test
      */
     private static final String PROP_SUFFIX_ITERATIONS = ".iterations";
+
+    /**
+     * property suffix to set the jitter of a test
+     */
+    private static final String PROP_SUFFIX_JITTER = ".jitter";
 
     /**
      * property suffix to set the load factor of a test
@@ -123,6 +129,11 @@ public class TestLoadProfileConfiguration extends AbstractConfiguration
     private static final String PROP_SUFFIX_DURATION = ".duration";
 
     private static final String PROP_SUFFIX_ISCLIENTPERFTEST = ".clientPerformanceTest";
+
+    /**
+     * property name to get the initial value for the random number generator
+     */
+    private static final String PROP_RANDOM_INIT_VALUE = "com.xceptance.xlt.random.initValue";
 
     /**
      * property name to get the base value for the action think time
@@ -348,6 +359,7 @@ public class TestLoadProfileConfiguration extends AbstractConfiguration
         final int defaultRampUpStepSize = getIntProperty(PROP_LOAD_TEST_DEFAULTS + PROP_SUFFIX_RAMP_UP_STEP_SIZE, -1);
         final int defaultRampUpInitialValue = getIntProperty(PROP_LOAD_TEST_DEFAULTS + PROP_SUFFIX_RAMP_UP_INITIAL_VALUE, -1);
         final int[][] defaultLoadFactor = getDoubleLoadFunction(PROP_LOAD_TEST_DEFAULTS + PROP_SUFFIX_LOAD_FACTOR, null);
+        final int[][] defaultJitter = getDoubleLoadFunction(PROP_LOAD_TEST_DEFAULTS + PROP_SUFFIX_JITTER, null);
         final int[][] defaultUsers = getLoadFunction(PROP_LOAD_TEST_DEFAULTS + PROP_SUFFIX_USERS, null);
         final int[][] defaultArrivalRate = getLoadFunction(PROP_LOAD_TEST_DEFAULTS + PROP_SUFFIX_ARRIVAL_RATE, null);
         final int defaultActionThinkTime = getIntProperty(PROP_ACTION_THINK_TIME, 0);
@@ -365,6 +377,7 @@ public class TestLoadProfileConfiguration extends AbstractConfiguration
         defaultConfig.setRampUpStepSize(defaultRampUpStepSize);
         defaultConfig.setRampUpInitialValue(defaultRampUpInitialValue);
         defaultConfig.setLoadFactor(defaultLoadFactor);
+        defaultConfig.setJitter(defaultJitter);
         defaultConfig.setNumberOfUsers(defaultUsers);
         defaultConfig.setArrivalRate(defaultArrivalRate);
         defaultConfig.setActionThinkTime(defaultActionThinkTime);
@@ -404,6 +417,7 @@ public class TestLoadProfileConfiguration extends AbstractConfiguration
             final int rampUpInitialValue = getIntProperty(propertyName + PROP_SUFFIX_RAMP_UP_INITIAL_VALUE,
                                                           defaultConfiguration.getRampUpInitialValue());
             final int[][] loadFactor = getDoubleLoadFunction(propertyName + PROP_SUFFIX_LOAD_FACTOR, defaultConfiguration.getLoadFactor());
+            final int[][] jitter = getDoubleLoadFunction(propertyName + PROP_SUFFIX_JITTER, defaultConfiguration.getJitter());
             int[][] users = getLoadFunction(propertyName + PROP_SUFFIX_USERS, defaultConfiguration.getNumberOfUsers());
             int[][] arrivalRate = getLoadFunction(propertyName + PROP_SUFFIX_ARRIVAL_RATE, defaultConfiguration.getArrivalRate());
             final boolean isCPTest = getBooleanProperty(propertyName + PROP_SUFFIX_ISCLIENTPERFTEST, false);
@@ -466,6 +480,16 @@ public class TestLoadProfileConfiguration extends AbstractConfiguration
             arrivalRate = LoadFunctionUtils.scaleLoadFunction(arrivalRate, loadFactor);
             users = LoadFunctionUtils.scaleLoadFunction(users, loadFactor);
 
+            // apply jitter function
+            if (jitter != null)
+            {
+                final long seed = getLongProperty(PROP_RANDOM_INIT_VALUE, System.currentTimeMillis()) + testCaseName.hashCode();
+                final Random random = new Random(seed);
+
+                arrivalRate = LoadFunctionUtils.applyJitter(arrivalRate, jitter, random);
+                users = LoadFunctionUtils.applyJitter(users, jitter, random);
+            }
+
             // set the load function for the test report
             int[][] complexLoadFunction = null;
             if (arrivalRate != null && LoadFunctionUtils.isComplexLoadFunction(arrivalRate))
@@ -517,6 +541,7 @@ public class TestLoadProfileConfiguration extends AbstractConfiguration
             config.setComplexLoadFunction(complexLoadFunction);
             config.setRampUpPeriod(rampUpPeriod);
             config.setLoadFactor(loadFactor);
+            config.setJitter(jitter);
             config.setCPTest(isCPTest);
             config.setActionThinkTime(actionThinkTime);
             config.setActionThinkTimeDeviation(actionThinkTimeDeviation);

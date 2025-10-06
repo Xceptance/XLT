@@ -28,6 +28,8 @@ public class TestCaseLoadProfileConfiguration
 
     private int initialDelay;
 
+    private int[][] jitter;
+
     private int[][] loadFactor;
 
     private int measurementPeriod;
@@ -59,6 +61,17 @@ public class TestCaseLoadProfileConfiguration
     public int getInitialDelay()
     {
         return initialDelay;
+    }
+
+    /**
+     * Returns the jitter as two-dimensional array of non-negative integral values whereas the 1st dimension specifies
+     * the time offset in seconds and the 2nd dimension specifies the jitter in per mil at the given time offset.
+     *
+     * @return the jitter
+     */
+    public int[][] getJitter()
+    {
+        return jitter;
     }
 
     /**
@@ -126,6 +139,11 @@ public class TestCaseLoadProfileConfiguration
     public void setInitialDelay(final int initialDelay)
     {
         this.initialDelay = Math.max(initialDelay, 0);
+    }
+
+    public void setJitter(final int[][] jitter)
+    {
+        this.jitter = jitter;
     }
 
     public void setLoadFactor(final int[][] loadFactor)
