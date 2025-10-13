@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 9.0.0
+#Version 9.2.0-SNAPSHOT
 
 CLSS public abstract com.xceptance.xlt.api.actions.AbstractAction
 cons protected init(com.xceptance.xlt.api.actions.AbstractAction,java.lang.String)
@@ -406,12 +406,14 @@ hfds TYPE_CODE
 CLSS public com.xceptance.xlt.api.engine.RequestData
 cons public init()
 cons public init(java.lang.String)
+fld public final static com.xceptance.xlt.api.util.XltCharBuffer NO_RESPONSE_CODE
 fld public final static com.xceptance.xlt.api.util.XltCharBuffer UNKNOWN_HOST
 meth public com.xceptance.xlt.api.util.XltCharBuffer getContentType()
 meth public com.xceptance.xlt.api.util.XltCharBuffer getFormData()
 meth public com.xceptance.xlt.api.util.XltCharBuffer getFormDataEncoding()
 meth public com.xceptance.xlt.api.util.XltCharBuffer getHost()
 meth public com.xceptance.xlt.api.util.XltCharBuffer getHttpMethod()
+meth public com.xceptance.xlt.api.util.XltCharBuffer getResponseCodeAsChars()
 meth public com.xceptance.xlt.api.util.XltCharBuffer getUrl()
 meth public com.xceptance.xlt.api.util.XltCharBuffer getUsedIpAddress()
 meth public int getBytesReceived()
@@ -425,6 +427,7 @@ meth public int getServerBusyTime()
 meth public int getTimeToFirstBytes()
 meth public int getTimeToLastBytes()
 meth public int hashCodeOfUrlWithoutFragment()
+meth public java.lang.String getOriginalUrl()
 meth public java.lang.String getRequestId()
 meth public java.lang.String getResponseId()
 meth public java.lang.String[] getIpAddresses()
@@ -446,6 +449,7 @@ meth public void setReceiveTime(int)
 meth public void setRemainingValues(java.util.List<com.xceptance.xlt.api.util.XltCharBuffer>)
 meth public void setRequestId(com.xceptance.xlt.api.util.XltCharBuffer)
 meth public void setRequestId(java.lang.String)
+meth public void setResponseCode(com.xceptance.xlt.api.util.XltCharBuffer)
 meth public void setResponseCode(int)
 meth public void setResponseId(com.xceptance.xlt.api.util.XltCharBuffer)
 meth public void setResponseId(java.lang.String)
@@ -458,7 +462,7 @@ meth public void setUrl(java.lang.String)
 meth public void setUsedIpAddress(com.xceptance.xlt.api.util.XltCharBuffer)
 meth public void setUsedIpAddress(java.lang.String)
 supr com.xceptance.xlt.api.engine.TimerData
-hfds IP_ADDRESSES_SEPARATOR,TYPE_CODE,bytesReceived,bytesSent,connectTime,contentType,dnsTime,formData,formDataEncoding,hashCodeOfUrlWithoutFragment,host,httpMethod,ipAddresses,receiveTime,requestId,responseCode,responseId,sendTime,serverBusyTime,timeToFirstBytes,timeToLastBytes,url,usedIpAddress
+hfds IP_ADDRESSES_SEPARATOR,TYPE_CODE,bytesReceived,bytesSent,connectTime,contentType,dnsTime,formData,formDataEncoding,hashCodeOfUrlWithoutFragment,host,httpMethod,ipAddresses,originalUrl,receiveTime,requestId,responseCode,responseCodeAsChars,responseId,sendTime,serverBusyTime,timeToFirstBytes,timeToLastBytes,url,usedIpAddress
 
 CLSS public com.xceptance.xlt.api.engine.RequestFilter
 cons public init()
@@ -1896,6 +1900,7 @@ meth public java.lang.CharSequence subSequence(int,int)
 meth public java.lang.String toDebugString()
 meth public java.lang.String toString()
 meth public java.util.List<com.xceptance.xlt.api.util.XltCharBuffer> split(char)
+meth public static boolean contains(com.xceptance.xlt.api.util.XltCharBuffer,com.xceptance.xlt.api.util.XltCharBuffer,int[])
 meth public static com.xceptance.xlt.api.util.XltCharBuffer empty()
 meth public static com.xceptance.xlt.api.util.XltCharBuffer emptyWhenNull(com.xceptance.xlt.api.util.XltCharBuffer)
 meth public static com.xceptance.xlt.api.util.XltCharBuffer valueOf(char[])
@@ -1905,6 +1910,7 @@ meth public static com.xceptance.xlt.api.util.XltCharBuffer valueOf(com.xceptanc
 meth public static com.xceptance.xlt.api.util.XltCharBuffer valueOf(java.lang.String)
 meth public static com.xceptance.xlt.api.util.XltCharBuffer valueOf(java.lang.String,java.lang.String)
 meth public static com.xceptance.xlt.api.util.XltCharBuffer valueOf(java.lang.String,java.lang.String,java.lang.String)
+meth public static int[] createShiftTable(com.xceptance.xlt.api.util.XltCharBuffer)
 supr java.lang.Object
 hfds EMPTY_ARRAY,from,hashCode,length,src
 

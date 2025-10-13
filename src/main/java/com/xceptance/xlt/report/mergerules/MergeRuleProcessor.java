@@ -22,17 +22,25 @@ import org.apache.commons.logging.LogFactory;
 
 import com.xceptance.xlt.api.engine.RequestData;
 
-public class RequestProcessing
+/**
+ * This class processes requests according to a list of request processing rules. 
+ * The rules are applied in the order of their IDs. Skipping is possible, but jumping back is not.
+ * 
+ * @author Jörg Werner (Xceptance Software Technologies GmbH)
+ * @author Hartmut Arlt (Xceptance Software Technologies GmbH)
+ * @author Rene Schwietzke (Xceptance Software Technologies GmbH)
+ */
+public class MergeRuleProcessor
 {
     /**
      * Class logger.
      */
-    private static final Log LOG = LogFactory.getLog(RequestProcessing.class);
+    private static final Log LOG = LogFactory.getLog(MergeRuleProcessor.class);
     
     /**
      * The list of request processing rules to apply.
      */
-    private final RequestProcessingRule[] requestProcessingRules;
+    private final MergeRule[] mergeRules;
     
     /**
      * Whether or not to remove indexes from request names.
@@ -45,15 +53,15 @@ public class RequestProcessing
      * @param requestProcessingRules the rules to apply
      * @param removeIndexesFromRequestNames whether or not to remove indexes from request names
      */
-    public RequestProcessing(final List<RequestProcessingRule> requestProcessingRules, final boolean removeIndexesFromRequestNames)
+    public MergeRuleProcessor(final List<MergeRule> requestProcessingRules, final boolean removeIndexesFromRequestNames)
     {
-        this.requestProcessingRules = requestProcessingRules.toArray(new RequestProcessingRule[requestProcessingRules.size()]);
+        this.mergeRules = requestProcessingRules.toArray(new MergeRule[requestProcessingRules.size()]);
         this.removeIndexesFromRequestNames = removeIndexesFromRequestNames;
 
         // this is a sanity test against programming errors and not user data input errors
         // we can start at 0!
         int lastId = -1;
-        for (RequestProcessingRule rule : this.requestProcessingRules)
+        for (MergeRule rule : this.mergeRules)
         {
             if (rule.getId() <= lastId)
             {
@@ -65,21 +73,18 @@ public class RequestProcessing
     
     /**
      * Processes a request according to the configured request processing rules. 
-     * Currently, this means renaming or discarding requests. Because we want to test it
-     * we made it static public. This is not meant to be a public API, but rather a utility method.
+     * Currently, this means renaming or discarding requests.
      *
      * @param requestData
      *            the request data record
-     * @param requestProcessingRules
-     *            the rules to apply
-     * @param removeIndexesFromRequestNames
-     *            in case we want to clean the name too
      * @return the processed request data record, or <code>null</code> if the data record is to be discarded
      */
     public RequestData postprocess(final RequestData requestData)
     {
         // fix up the name first (Product.1.2 -> Product) if so configured
         // this can likely live in RequestData and act on XltCharBuffer instead String
+        // we might want to use a XltCharBuffer and just limit the buffer instead of
+        // copying it
         String requestName = requestData.getName();
         if (removeIndexesFromRequestNames)
         {
@@ -94,19 +99,19 @@ public class RequestProcessing
         // what is the next rule to process in case we want to jump on match or mismatch
         // we can optionally also drop or just stop
         int nextId = 0;
-        RequestProcessingRule requestProcessingRule = null;
+        MergeRule mergeRule = null;
         
         try
         {
-            for (int i = 0; i < requestProcessingRules.length; i++)
+            for (int i = 0; i < this.mergeRules.length; i++)
             {
-                requestProcessingRule = requestProcessingRules[i];
+                mergeRule = mergeRules[i];
                 
                 // shall we process this rule or jump ahead
-                if (nextId <= requestProcessingRule.getId())
+                if (nextId <= mergeRule.getId())
                 {
                     // request data comes back indirectly modified if needed
-                    nextId = requestProcessingRule.process(requestData);
+                    nextId = mergeRule.process(requestData);
                     if (nextId >= 0)
                     {
                         // we wish to continue with one of the next rules
@@ -114,7 +119,7 @@ public class RequestProcessing
                     }
 
                     // we want to stop here
-                    if (nextId == RequestProcessingRule.STOP)
+                    if (nextId == MergeRule.STOP)
                     {
                         break;
                     }
@@ -133,7 +138,7 @@ public class RequestProcessing
         }
         catch (final Throwable t)
         {
-            final String msg = String.format("Failed to apply request merge rule: %s\n%s", requestProcessingRule, t);
+            final String msg = String.format("Failed to apply request merge rule: %s\n%s", mergeRule, t);
             LOG.error(msg);
 
             // restore the request's original name
