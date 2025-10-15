@@ -15,14 +15,11 @@
  */
 package com.xceptance.xlt.report.providers;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
-import java.util.zip.GZIPOutputStream;
 
+import org.apache.commons.io.FileUtils;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.CombinedDomainXYPlot;
 import org.jfree.chart.plot.CombinedRangeXYPlot;
@@ -31,6 +28,8 @@ import org.jfree.data.Range;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
 import org.jfree.data.xy.XYIntervalSeries;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.engine.TimerData;
@@ -57,6 +56,8 @@ import com.xceptance.xlt.report.util.ValueSet;
  */
 public class BasicTimerDataProcessor extends AbstractDataProcessor
 {
+    private static final Logger log = LoggerFactory.getLogger(JFreeChartUtils.class);
+
     private final ValueSet countPerSecondValueSet = new ValueSet();
 
     private final ValueSet errorsPerSecondValueSet = new ValueSet();
@@ -65,7 +66,7 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
 
     private final RuntimeHistogram runTimeHistogram = new RuntimeHistogram(10);
 
-    private double[] percentiles;
+    private final double[] percentiles;
 
     private final IntMinMaxValueSet runTimeValueSet;
 
@@ -121,7 +122,7 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
         timerReport.median = ReportUtils.convertToBigDecimal(runTimeHistogram.getMedianValue());
 
         // set the percentiles
-        for (double percentile : percentiles)
+        for (final double percentile : percentiles)
         {
             timerReport.percentiles.put("p" + ReportUtils.formatValue(percentile),
                                         ReportUtils.convertToBigDecimal(runTimeHistogram.getPercentile(percentile)));
@@ -142,57 +143,6 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
         {
             // post-process the run time series now as they will be needed for multiple charts
             final TimeSeries runTimeTimeSeries = JFreeChartUtils.toMinMaxTimeSeries(runTimeValueSet, "Runtime");
-
-            StringBuilder sb = new StringBuilder();
-            sb.append('[');
-
-            int size = runTimeTimeSeries.getItems().size();
-
-            for (int i = 0; i < size; i++)
-            {
-                IntMinMaxTimeSeriesDataItem dataItem = (IntMinMaxTimeSeriesDataItem) runTimeTimeSeries.getDataItem(i);
-
-                sb.append('[');
-                sb.append(dataItem.getPeriod().getFirstMillisecond());
-                sb.append(',');
-                sb.append(dataItem.getMinMaxValue().getAverageValue());
-                sb.append(',');
-                sb.append(dataItem.getMinMaxValue().getMinimumValue());
-                sb.append(',');
-                sb.append(dataItem.getMinMaxValue().getMaximumValue());
-                sb.append(']');
-
-                if (i < size - 1)
-                {
-                    sb.append(',');
-                }
-            }
-            sb.append(']');
-
-            try
-            {
-                File file = new File(getChartDir(), name + ".json");
-
-                try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.US_ASCII)))
-                {
-                    writer.append(sb);
-                }
-
-                File gzFile = new File(getChartDir(), name + ".json.gz");
-
-                try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new GZIPOutputStream(new FileOutputStream(gzFile)), StandardCharsets.US_ASCII)))
-                {
-                    writer.append(sb);
-                }
-
-                // FileUtils.write(new File(getChartDir(), name + ".json"), sb, StandardCharsets.US_ASCII);
-            }
-            catch (IOException e)
-            {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-
             final TimeSeries runTimeAverageTimeSeries = JFreeChartUtils.createMovingAverageTimeSeries(runTimeTimeSeries,
                                                                                                       getMovingAveragePercentage());
 
@@ -239,6 +189,8 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
                     saveCountPerSecondChart(name, countPerSecondTimeSeries);
                 }
             });
+
+            taskManager.addTask(() -> saveRawDataAsJson(name, runTimeTimeSeries));
         }
 
         return timerReport;
@@ -501,5 +453,46 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
 
         // System.out.printf("OK (%,d values, %,d ms)\n", runTimeTimeSeries.getItemCount(), TimerUtils.getTime() -
         // start);
+    }
+
+    private void saveRawDataAsJson(final String timerName, final TimeSeries responseTimeSeries)
+    {
+        final int size = responseTimeSeries.getItems().size();
+
+        // build a JSON array with the raw data
+        final StringBuilder sb = new StringBuilder();
+        sb.append('[');
+        for (int i = 0; i < size; i++)
+        {
+            final IntMinMaxTimeSeriesDataItem dataItem = (IntMinMaxTimeSeriesDataItem) responseTimeSeries.getDataItem(i);
+
+            sb.append('[');
+            sb.append(dataItem.getPeriod().getFirstMillisecond());
+            sb.append(',');
+            sb.append(dataItem.getMinMaxValue().getAverageValue());
+            sb.append(',');
+            sb.append(dataItem.getMinMaxValue().getMinimumValue());
+            sb.append(',');
+            sb.append(dataItem.getMinMaxValue().getMaximumValue());
+            sb.append(']');
+
+            if (i < size - 1)
+            {
+                sb.append(',');
+            }
+        }
+        sb.append(']');
+
+        // save the JSON data to a file in the charts directory
+        final File jsonFile = new File(getChartDir(), timerName + ".json");
+
+        try
+        {
+            FileUtils.write(jsonFile, sb, StandardCharsets.US_ASCII);
+        }
+        catch (final IOException e)
+        {
+            log.error("Failed to create JSON file '{}'", jsonFile, e);
+        }
     }
 }

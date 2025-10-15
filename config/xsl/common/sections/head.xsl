@@ -37,7 +37,7 @@
         <script src="js/tabs.js"/>
         <script src="js/table.js"/>
         <script src="js/crosshair.js"/>
-        <script src=" https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+        <script src="js/echarts-6.0.0.min.js"/>
 
         <link rel="icon" href="images/favicon.png" sizes="any" />
         <link rel="icon" href="images/favicon.svg" type="image/svg+xml" />
