@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,8 @@ package com.xceptance.xlt.report.providers;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 
-import org.apache.commons.io.FileUtils;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.CombinedDomainXYPlot;
 import org.jfree.chart.plot.CombinedRangeXYPlot;
@@ -31,6 +31,7 @@ import org.jfree.data.xy.XYIntervalSeries;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.xceptance.common.io.FileUtils;
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.engine.TimerData;
 import com.xceptance.xlt.api.report.AbstractReportProvider;
@@ -190,7 +191,7 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
                 }
             });
 
-            taskManager.addTask(() -> saveRawDataAsJson(name, runTimeTimeSeries));
+            taskManager.addTask(() -> saveResponseTimeSeriesAsJson(name, runTimeTimeSeries));
         }
 
         return timerReport;
@@ -455,11 +456,20 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
         // start);
     }
 
-    private void saveRawDataAsJson(final String timerName, final TimeSeries responseTimeSeries)
+    /**
+     * Writes the response time series data to a JSON file in the charts directory. The data in this file is later read
+     * from the load test report and forms the basis for interactive charts.
+     * 
+     * @param timerName
+     *            the name of the timer
+     * @param responseTimeSeries
+     *            the response time series
+     */
+    private void saveResponseTimeSeriesAsJson(final String timerName, final TimeSeries responseTimeSeries)
     {
         final int size = responseTimeSeries.getItems().size();
 
-        // build a JSON array with the raw data
+        // build a JSON string with the series data
         final StringBuilder sb = new StringBuilder();
         sb.append('[');
         for (int i = 0; i < size; i++)
@@ -483,12 +493,12 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
         }
         sb.append(']');
 
-        // save the JSON data to a file in the charts directory
-        final File jsonFile = new File(getChartDir(), timerName + ".json");
+        // save the JSON string to a file in the charts directory
+        final File jsonFile = new File(getChartDir(), FileUtils.convertIllegalCharsInFileName(timerName) + ".json");
 
         try
         {
-            FileUtils.write(jsonFile, sb, StandardCharsets.US_ASCII);
+            Files.writeString(jsonFile.toPath(), sb, StandardCharsets.US_ASCII);
         }
         catch (final IOException e)
         {

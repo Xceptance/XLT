@@ -552,14 +552,19 @@
         // lazy load the echart images to speed up the site
         (function setupEChartGroups() {
             $('div.charts div.echart').each(function () {
-                var $this = $(this);
                 var name = this.getAttribute('name');
+                var url = this.getAttribute('src');
+
                 var echart = echarts.init(this);
                 echart.showLoading();
-                $.ajax({
-                    dataType: "json",
-                    url: this.getAttribute('src'),
+
+                $.getJSON({
+                    url: url,
                     data: null,
+                    beforeSend: function (xhr) {
+                        // avoid errors in browser console (XML Parsing Error: syntax error) when loading from file system
+                        xhr.overrideMimeType("application/json");
+                    },
                     success: function (data) {
                         echart.hideLoading();
 
