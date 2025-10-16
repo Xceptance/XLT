@@ -27,7 +27,7 @@
                     <a href="#Overview-{$gid}">Overview</a>
                 </li>
                 <li class="c-tabs-nav-link">
-                    <a href="#DynamicOverview-{$gid}">Overview (Dynamic)</a>
+                    <a href="#DynamicOverview-{$gid}">Dynamic Overview</a>
                 </li>
                 <li class="c-tabs-nav-link">
                     <a href="#Averages-{$gid}">Averages</a>
@@ -74,6 +74,7 @@
                 <div class="c-tab-content echart" style="width:900px;height:300px">
 					<xsl:attribute name="src">charts/<xsl:value-of select="$directory"/>/<xsl:value-of
 							select="$encodedName"/>.json</xsl:attribute>
+					<xsl:attribute name="name"><xsl:value-of select="name"/></xsl:attribute>
                 </div>
             </div>
 

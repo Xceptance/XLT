@@ -553,6 +553,7 @@
         (function setupEChartGroups() {
             $('div.charts div.echart').each(function () {
                 var $this = $(this);
+                var name = this.getAttribute('name');
                 var echart = echarts.init(this);
                 echart.showLoading();
                 $.ajax({
@@ -561,12 +562,14 @@
                     data: null,
                     success: function (data) {
                         echart.hideLoading();
-                        console.log(data);
-                        var dataValue = data.map(item => [item[0], item[1]]);
-                        var dataLower = data.map(item => [item[0], item[2]]);
-                        var dataUpper = data.map(item => [item[0], item[3] - item[2]]);
-                        console.log(dataValue);
 
+                        // create time series data
+                        var dataMean = data.map(item => [item[0], item[1]]);                    // timestamp and mean value
+                        var dataMinimum = data.map(item => [item[0], item[2]]);                 // timestamp and min value
+                        var dataMaximum = data.map(item => [item[0], item[3]]);                 // timestamp and max value
+                        var dataMaxMinDiff = data.map(item => [item[0], item[3] - item[2]]);    // timestamp and diff value
+
+                        // set up the chart
                         echart.setOption(
                             (option = {
                                 animation: false,
@@ -582,15 +585,15 @@
                                     borderWidth: 0.5,
                                 },
                                 textStyle: {
-                                    fontFamily: "Roboto"
+                                    fontFamily: "Roboto",
                                 },
                                 title: {
                                     top: 8,
                                     left: "center",
-                                    text: "TODO",
+                                    text: name,
                                     textStyle: {
                                         fontWeight: 500,
-                                        fontSize: 12
+                                        fontSize: 13,
                                     }
                                 },
                                 toolbox: {
@@ -607,7 +610,7 @@
                                             },
                                             brushStyle: {
                                                 color: '#a00',
-                                                opacity: 0.25
+                                                opacity: 0.25,
                                             }
                                         }
                                     }
@@ -712,27 +715,10 @@
                                 },
                                 series: [
                                     {
-                                        name: 'Maximum',
-                                        type: 'line',
-                                        data: dataUpper,
-                                        lineStyle: {
-                                            opacity: 0
-                                        },
-                                        itemStyle: {
-                                            color: '#a00'
-                                        },
-                                        areaStyle: {
-                                            color: '#ccc'
-                                        },
-                                        stack: 'confidence-band',
-                                        symbol: 'none'
-                                    },
-                                    {
                                         name: 'Mean',
                                         type: 'line',
-                                        data: dataValue,
+                                        data: dataMean,
                                         lineStyle: {
-                                            color: '#00c',
                                             width: 1
                                         },
                                         itemStyle: {
@@ -741,22 +727,58 @@
                                         showSymbol: false
                                     },
                                     {
+                                        name: 'Maximum',
+                                        type: 'line',
+                                        data: dataMaximum,
+                                        lineStyle: {
+                                            opacity: 0,
+                                            width: 1,
+                                        },
+                                        itemStyle: {
+                                            color: '#a00'
+                                        },
+                                        symbol: 'none',
+                                    },
+                                    {
                                         name: 'Minimum',
                                         type: 'line',
-                                        data: dataLower,
+                                        data: dataMinimum,
                                         lineStyle: {
-                                            opacity: 0
+                                            opacity: 0,
+                                            width: 1,
                                         },
                                         itemStyle: {
                                             color: '#0a0'
                                         },
                                         stack: 'confidence-band',
-                                        symbol: 'none'
-                                    }
+                                        symbol: 'none',
+                                    },
+                                    {
+                                        name: 'Diff',
+                                        type: 'line',
+                                        data: dataMaxMinDiff,
+                                        lineStyle: {
+                                            opacity: 0,
+                                            width: 1,
+                                        },
+                                        itemStyle: {
+                                            color: '#a0a'
+                                        },
+                                        areaStyle: {
+                                            color: '#ccc'
+                                        },
+                                        stack: 'confidence-band',
+                                        stackStrategy: 'all',
+                                        symbol: 'none',
+                                        tooltip: {
+                                            show: false,
+                                        },
+                                    },
                                 ]
                             })
                         );
 
+                        // put the echart in zoom mode right from the start
                         echart.dispatchAction({
                             type: "takeGlobalCursor",
                             key: "dataZoomSelect",
