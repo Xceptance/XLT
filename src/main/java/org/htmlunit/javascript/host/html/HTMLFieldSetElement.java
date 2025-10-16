@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,12 +13,6 @@
  * limitations under the License.
  */
 package org.htmlunit.javascript.host.html;
-
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.HtmlFieldSet;
@@ -39,43 +33,19 @@ import org.htmlunit.javascript.configuration.JsxSetter;
 public class HTMLFieldSetElement extends HTMLElement {
 
     /**
-     * Creates an instance.
-     */
-    public HTMLFieldSetElement() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @Override
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
         super.jsConstructor();
-    }
-
-    /**
-     * Returns the value of the {@code align} property.
-     * @return the value of the {@code align} property
-     */
-    @JsxGetter(IE)
-    public String getAlign() {
-        return getAlign(false);
-    }
-
-    /**
-     * Sets the value of the {@code align} property.
-     * @param align the value of the {@code align} property
-     */
-    @JsxSetter(IE)
-    public void setAlign(final String align) {
-        setAlign(align, false);
     }
 
     /**
      * Returns the {@code name} attribute.
      * @return the {@code name} attribute
      */
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxGetter
     @Override
     public String getName() {
         return getDomNodeOrDie().getAttributeDirect(DomElement.NAME_ATTRIBUTE);
@@ -85,7 +55,7 @@ public class HTMLFieldSetElement extends HTMLElement {
      * Sets the {@code name} attribute.
      * @param name the {@code name} attribute
      */
-    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxSetter
     @Override
     public void setName(final String name) {
         getDomNodeOrDie().setAttribute(DomElement.NAME_ATTRIBUTE, name);

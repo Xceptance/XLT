@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import java.util.Arrays;
 
 import org.apache.commons.lang3.StringUtils;
 import org.htmlunit.html.serializer.HtmlSerializerVisibleText.HtmlSerializerTextBuilder;
-import org.htmlunit.html.serializer.HtmlSerializerVisibleText.Mode;
+import org.htmlunit.html.serializer.HtmlSerializerVisibleText.HtmlSerializerTextBuilder.Mode;
 import org.junit.Test;
 
 /**
@@ -269,7 +269,6 @@ public class HtmlSerializerVisibleTextTest {
         serializer.append("\u3000", Mode.WHITE_SPACE_NORMAL);
         assertEquals("\u3000", serializer.getText());
 
-        // real IE treats this as space, will not consider this for performance reasons
         serializer = new HtmlSerializerVisibleText.HtmlSerializerTextBuilder();
         serializer.append("\uFEFF", Mode.WHITE_SPACE_NORMAL);
         assertEquals("\uFEFF", serializer.getText());

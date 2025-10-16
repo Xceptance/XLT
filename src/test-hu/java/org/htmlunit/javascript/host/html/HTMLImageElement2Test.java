@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,19 @@
  */
 package org.htmlunit.javascript.host.html;
 
-import java.net.URL;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
+import org.apache.commons.io.IOUtils;
+import org.htmlunit.CollectingAlertHandler;
 import org.htmlunit.MockWebConnection;
 import org.htmlunit.SimpleWebTestCase;
 import org.htmlunit.WebClient;
+import org.htmlunit.html.HtmlPage;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
 import org.htmlunit.util.MimeType;
-import org.htmlunit.util.NameValuePair;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -37,165 +39,6 @@ import org.junit.runner.RunWith;
  */
 @RunWith(BrowserRunner.class)
 public class HTMLImageElement2Test extends SimpleWebTestCase {
-
-    /**
-     * Verifies that if an image has an <tt>onload</tt> attribute, it gets downloaded
-     * and the <tt>onload</tt> handler gets invoked.
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Alerts({"0", "1"})
-    public void onLoad_calledWhenImageDownloaded_static() throws Exception {
-        final String html = "<html>\n"
-                + "<body>\n"
-                + "  <img src='foo.png' onload='test()'>\n"
-                + "  <script>\n"
-                    // first script to be sure that img onload doesn't get executed after first JS execution
-                + "    alert(0);\n"
-                + "  </script>\n"
-                + "  <script>\n"
-                + "    function test() {\n"
-                + "      alert(1);\n"
-                + "    }\n"
-                + "  </script>\n"
-                + "</body></html>";
-
-        final MockWebConnection conn = getMockWebConnection();
-        final URL imageUrl = new URL(URL_FIRST, "foo.png");
-        conn.setResponse(imageUrl, "foo", MimeType.IMAGE_PNG);
-
-        loadPageWithAlerts(html);
-        assertEquals(imageUrl, conn.getLastWebRequest().getUrl());
-    }
-
-    /**
-     * Verifies that if an image has an <tt>onload</tt> attribute, it gets downloaded
-     * and the <tt>onload</tt> handler gets invoked.
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Alerts("1")
-    public void onLoad_calledWhenImageDownloaded_dynamic() throws Exception {
-        final String html = "<html><body>\n"
-            + "<script>\n"
-            + "  var i = document.createElement('img');\n"
-            + "  i.src = '" + URL_SECOND + "';\n"
-            + "  i.src = '" + URL_THIRD + "';\n"
-            + "  i.onload = function() { alert(1); };\n"
-            + "</script></body></html>";
-
-        final MockWebConnection conn = getMockWebConnection();
-        conn.setResponse(URL_SECOND, "foo", MimeType.IMAGE_PNG);
-        conn.setResponse(URL_THIRD, "foo", MimeType.IMAGE_PNG);
-
-        loadPageWithAlerts(html);
-        assertEquals(URL_THIRD, conn.getLastWebRequest().getUrl());
-    }
-
-    /**
-     * Verifies that if an image has an <tt>onload</tt> attribute, it gets downloaded
-     * and the <tt>onload</tt> handler gets invoked.
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Alerts("1")
-    public void onLoad_calledWhenImageDownloaded_dynamic_onLoad_already_set() throws Exception {
-        final String html = "<html><body>\n"
-            + "<script>\n"
-            + "  var i = document.createElement('img');\n"
-            + "  i.onload = function() { alert(1); };\n"
-            + "  i.src = '" + URL_SECOND + "';\n"
-            + "</script></body></html>";
-
-        final MockWebConnection conn = getMockWebConnection();
-        conn.setResponse(URL_SECOND, "foo", MimeType.IMAGE_PNG);
-
-        loadPageWithAlerts(html);
-        assertEquals(URL_SECOND, conn.getLastWebRequest().getUrl());
-    }
-
-    /**
-     * Verifies that if an image is created if the page is already
-     * finished, the onload handler is called.
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Alerts({"1", "2"})
-    public void onLoad_calledWhenImageDownloaded_dynamic_twoSteps() throws Exception {
-        final String html = "<html><body>\n"
-            + "<script>\n"
-            + "  var i = document.createElement('img');\n"
-            + "  i.src = '" + URL_SECOND + "';\n"
-            + "  i.onload = function() {\n"
-            + "    alert(1);\n"
-            + "    var i2 = document.createElement('img');\n"
-            + "    i2.src = '" + URL_THIRD + "';\n"
-            + "    i2.onload = function() {\n"
-            + "      alert(2);\n"
-            + "    };\n"
-            + "  };\n"
-            + "</script></body></html>";
-
-        final MockWebConnection conn = getMockWebConnection();
-        conn.setResponse(URL_SECOND, "foo", MimeType.IMAGE_PNG);
-        conn.setResponse(URL_THIRD, "foo", MimeType.IMAGE_PNG);
-
-        loadPageWithAlerts(html);
-        assertEquals(URL_THIRD, conn.getLastWebRequest().getUrl());
-    }
-
-    /**
-     * Verifies that if an image has an <tt>onload</tt> attribute set from a script, it gets downloaded
-     * and the <tt>onload</tt> handler gets invoked.
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Alerts({"image one", "image two"})
-    public void onLoad_calledWhenImageDownloaded_mixed() throws Exception {
-        final String html
-            = "<html><body><img id='img' name='img'/><script>\n"
-            + "  var i = document.getElementById('img');\n"
-            + "  i.onload = function() {\n"
-            + "    alert('image one');\n"
-            + "    i.onload = function() {\n"
-            + "      alert('image two');\n"
-            + "    };\n"
-            + "    i.src = '" + URL_THIRD + "';\n"
-            + "  };\n"
-            + "  i.setAttribute('src','" + URL_SECOND + "');\n"
-            + "  var t = setTimeout(function() {clearTimeout(t);}, 500);\n"
-            + "</script></body></html>";
-
-        final MockWebConnection conn = getMockWebConnection();
-        conn.setResponse(URL_SECOND, "foo", MimeType.IMAGE_PNG);
-        conn.setResponse(URL_THIRD, "foo", MimeType.IMAGE_PNG);
-
-        loadPageWithAlerts(html);
-
-        final List<String> requestedUrls = conn.getRequestedUrls(URL_FIRST);
-        assertEquals(requestedUrls.size(), 3);
-        assertEquals("", requestedUrls.get(0));
-        assertEquals("second/", requestedUrls.get(1));
-        assertEquals(URL_THIRD.toString(), requestedUrls.get(2));
-        assertEquals(URL_THIRD, conn.getLastWebRequest().getUrl());
-    }
-
-    /**
-     * Verifies that if an image has an <tt>onload</tt> attribute, the <tt>onload</tt> handler
-     * does not get invoked if we can't download the image.
-     * @throws Exception if an error occurs
-     */
-    @Test
-    public void onLoad_notCalledWhenImageNotDownloaded() throws Exception {
-        final String html = "<html><body><img src='" + URL_SECOND + "' onload='alert(1)'></body></html>";
-
-        final MockWebConnection conn = getMockWebConnection();
-        conn.setResponse(URL_SECOND, "foo", 404, "Not Found", MimeType.TEXT_HTML, new ArrayList<NameValuePair>());
-
-        loadPageWithAlerts(html);
-
-        assertEquals(URL_SECOND, conn.getLastWebRequest().getUrl());
-    }
 
     /**
      * Verifies that if an image has an <tt>onload</tt> attribute but javascript is disabled,
@@ -216,4 +59,101 @@ public class HTMLImageElement2Test extends SimpleWebTestCase {
         loadPageWithAlerts(html);
         assertEquals(URL_FIRST, conn.getLastWebRequest().getUrl());
     }
+
+    /**
+     * Make sure this works without an exception.
+     *
+     * @throws Exception on test failure
+     */
+    @Test
+    public void onload_complex_JavascriptDisabled() throws Exception {
+        try (InputStream is = getClass().getClassLoader().getResourceAsStream("testfiles/tiny-jpg.img")) {
+            final byte[] directBytes = IOUtils.toByteArray(is);
+
+            getMockWebConnection().setResponse(URL_SECOND, directBytes, 200, "ok",
+                    MimeType.IMAGE_JPEG, Collections.emptyList());
+        }
+
+        final String html =
+                "<html>\n"
+                + "<head>\n"
+                + "<script>\n"
+                + "  function test(i) {\n"
+                + "    alert('in');\n"
+                + "    var image = new Image();\n"
+                + "    image.onload = function () { alert(\"Image.onload(\" + i + \")\") };\n"
+                + "    image.src = '" + URL_SECOND + "';\n"
+                + "    alert('out');\n"
+                + "  }\n"
+                + "</script>\n"
+                + "</head>\n"
+                + "<body onload='test(0)'>\n"
+                + "<button id='myId'"
+                +           "onmousedown=\"alert('mousedown'); test(1)\" "
+                +           "onmouseup=\"alert('mouseup'); test(2)\" "
+                +           "onclick=\"alert('click'); test(3)\"></button>\n"
+                + "</body>\n"
+                + "</html>\n";
+
+        final WebClient client = getWebClientWithMockWebConnection();
+        client.getOptions().setJavaScriptEnabled(false);
+
+        final List<String> collectedAlerts = new ArrayList<>();
+        client.setAlertHandler(new CollectingAlertHandler(collectedAlerts));
+
+        final HtmlPage page = loadPage(html);
+        page.getElementById("myId").click();
+        assertEquals(getExpectedAlerts(), collectedAlerts);
+        assertEquals(1, getMockWebConnection().getRequestCount());
+        assertEquals(URL_FIRST, getMockWebConnection().getLastWebRequest().getUrl());
+    }
+
+    /**
+     * Make sure this works without an exception.
+     *
+     * @throws Exception on test failure
+     */
+    @Test
+    public void onload_complex_JavascriptEngineDisabled() throws Exception {
+        try (InputStream is = getClass().getClassLoader().getResourceAsStream("testfiles/tiny-jpg.img")) {
+            final byte[] directBytes = IOUtils.toByteArray(is);
+
+            getMockWebConnection().setResponse(URL_SECOND, directBytes, 200, "ok",
+                    MimeType.IMAGE_JPEG, Collections.emptyList());
+        }
+
+        final String html =
+                "<html>\n"
+                + "<head>\n"
+                + "<script>\n"
+                + "  function test(i) {\n"
+                + "    alert('in');\n"
+                + "    var image = new Image();\n"
+                + "    image.onload = function () { alert(\"Image.onload(\" + i + \")\") };\n"
+                + "    image.src = '" + URL_SECOND + "';\n"
+                + "    alert('out');\n"
+                + "  }\n"
+                + "</script>\n"
+                + "</head>\n"
+                + "<body onload='test(0)'>\n"
+                + "<button id='myId'"
+                +           "onmousedown=\"alert('mousedown'); test(1)\" "
+                +           "onmouseup=\"alert('mouseup'); test(2)\" "
+                +           "onclick=\"alert('click'); test(3)\"></button>\n"
+                + "</body>\n"
+                + "</html>\n";
+
+        try (WebClient webClient = new WebClient(getBrowserVersion(), false, null, -1)) {
+            final List<String> collectedAlerts = new ArrayList<>();
+
+            final HtmlPage page = loadPage(webClient, html, collectedAlerts);
+            assertFalse(page.getWebClient().isJavaScriptEngineEnabled());
+
+            page.getElementById("myId").click();
+            assertEquals(getExpectedAlerts(), collectedAlerts);
+            assertEquals(1, getMockWebConnection().getRequestCount());
+            assertEquals(URL_FIRST, getMockWebConnection().getLastWebRequest().getUrl());
+        }
+    }
+
 }

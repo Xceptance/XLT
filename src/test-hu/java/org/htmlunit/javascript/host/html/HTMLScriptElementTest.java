@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ import java.nio.charset.StandardCharsets;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.NotYetImplemented;
 import org.htmlunit.util.MimeType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -211,7 +211,8 @@ public class HTMLScriptElementTest extends WebDriverTestCase {
             + "<head></head>\n"
             + "<body>\n"
             + "<script>\n"
-            + LOG_TITLE_FUNCTION
+            // do not use LOG_TITLE_FUNCTION here
+            + "    function log(msg) { window.document.title += msg + '\\u00a7'; }\n"
             + "</script>\n"
             + "  <script>\n"
             + "    //<![CDATA[\n"
@@ -252,7 +253,8 @@ public class HTMLScriptElementTest extends WebDriverTestCase {
             + "<head></head>\n"
             + "<body>\n"
             + "<script>\n"
-            + LOG_TITLE_FUNCTION
+            // do not use LOG_TITLE_FUNCTION here
+            + "    function log(msg) { window.document.title += msg + '\\u00a7'; }\n"
             + "</script>\n"
             + "  <script>\n"
             + "    //<![CDATA[\n"
@@ -328,7 +330,7 @@ public class HTMLScriptElementTest extends WebDriverTestCase {
               + "  var source = document.createTextNode(\"log('executed');\");\n"
               + "  try {\n"
               + "    script.appendChild(source);\n"
-              + "  } catch(e) {log('exception'); }\n"
+              + "  } catch(e) {logEx(e); }\n"
               + "  log('end');\n"
               + "</script>\n"
               + "</body></html>";
@@ -353,7 +355,7 @@ public class HTMLScriptElementTest extends WebDriverTestCase {
               + "  var source = document.createTextNode(\"log('executed');\");\n"
               + "  try {\n"
               + "    script.appendChild(source);\n"
-              + "  } catch(e) {log('exception'); }\n"
+              + "  } catch(e) {logEx(e); }\n"
               + "  log('middle');\n"
               + "  document.body.appendChild(script);\n"
               + "  log('end');\n"
@@ -476,7 +478,7 @@ public class HTMLScriptElementTest extends WebDriverTestCase {
               + "  var source = document.createTextNode(\"log('executed');\");\n"
               + "  try {\n"
               + "    script.appendChild(source);\n"
-              + "  } catch(e) {log('exception'); }\n"
+              + "  } catch(e) {logEx(e); }\n"
               + "  log('end');\n"
               + "</script>\n"
               + "</body></html>";
@@ -549,7 +551,7 @@ public class HTMLScriptElementTest extends WebDriverTestCase {
               + "  var source = document.createTextNode(\"log('executed');\");\n"
               + "  try {\n"
               + "    script.appendChild(source);\n"
-              + "  } catch(e) {log('exception'); }\n"
+              + "  } catch(e) {logEx(e); }\n"
               + "  log('end');\n"
               + "</script>\n"
               + "</body></html>";
@@ -574,7 +576,7 @@ public class HTMLScriptElementTest extends WebDriverTestCase {
               + "  var source = document.createTextNode(\"log('executed');\");\n"
               + "  try {\n"
               + "    script.appendChild(source);\n"
-              + "  } catch(e) {log('exception'); }\n"
+              + "  } catch(e) {logEx(e); }\n"
               + "  log('end');\n"
               + "</script>\n"
               + "</body></html>";
@@ -601,7 +603,7 @@ public class HTMLScriptElementTest extends WebDriverTestCase {
               + "  var source = document.createTextNode(\"log('executed');\");\n"
               + "  try {\n"
               + "    script.appendChild(source);\n"
-              + "  } catch(e) {log('exception'); }\n"
+              + "  } catch(e) {logEx(e); }\n"
               + "  log('end');\n"
               + "</script>\n"
               + "</body></html>";
@@ -812,8 +814,7 @@ public class HTMLScriptElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"script-for", "exception", "script-body"},
-            IE = {"script-body", "script-for", "hello"})
+    @Alerts({"script-for", "TypeError", "script-body"})
     public void scriptForEvent() throws Exception {
         // IE accepts it with () or without
         scriptForEvent("onload");
@@ -830,7 +831,7 @@ public class HTMLScriptElementTest extends WebDriverTestCase {
             + "  try {\n"
             + "    document.form1.txt.value = 'hello';\n"
             + "    log(document.form1.txt.value);\n"
-            + "  } catch(e) {log('exception'); }\n"
+            + "  } catch(e) {logEx(e); }\n"
             + "</script></head>\n"
             + "<body>\n"
             + "  <form name='form1'><input type='text' name='txt'></form>\n"
@@ -971,8 +972,7 @@ public class HTMLScriptElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"1", "2", "3"},
-            IE = "1")
+    @Alerts({"1", "2", "3"})
     public void scriptType() throws Exception {
         final String html
             = "<html>\n"
@@ -1154,7 +1154,7 @@ public class HTMLScriptElementTest extends WebDriverTestCase {
             + "    var div = document.getElementById('tester');\n"
             + "    try {\n"
             + "      div.innerHTML = div.innerHTML;\n"
-            + "    } catch (e) { log('exception'); }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "    log(div.innerHTML);\n"
             + "  </script>\n"
 
@@ -1579,5 +1579,92 @@ public class HTMLScriptElementTest extends WebDriverTestCase {
             + "  </body></html>";
 
         loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"var x = 'HtmlUnit'", "</> htmx rocks!"})
+    public void innerHtml1() throws Exception {
+        final String html =
+            "<html>\n"
+            + "  <head>\n"
+            + "    <title>Page Title</title>\n"
+            + "    <script>\n"
+            + LOG_TEXTAREA_FUNCTION
+            + "      function test() {\n"
+            + "        var script = document.getElementsByTagName('script')[1];\n"
+            + "        log(script.innerHTML);\n"
+            + "        script.innerHTML = '</> htmx rocks!';\n"
+            + "        log(script.innerHTML);\n"
+            + "      }\n"
+            + "    </script>\n"
+            + "  </head>\n"
+            + "  <body onload='test()'>"
+            + "    <script>var x = 'HtmlUnit'</script>\n"
+            + LOG_TEXTAREA
+            + "  </body>\n"
+            + "</html>";
+
+        loadPageVerifyTextArea2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"var x = 'HtmlUnit'", "<div>htmx rocks</div>"})
+    public void innerHtmlTag() throws Exception {
+        final String html =
+            "<html>\n"
+            + "  <head>\n"
+            + "    <title>Page Title</title>\n"
+            + "    <script>\n"
+            + LOG_TEXTAREA_FUNCTION
+            + "      function test() {\n"
+            + "        var script = document.getElementsByTagName('script')[1];\n"
+            + "        log(script.innerHTML);\n"
+            + "        script.innerHTML = '<div>htmx rocks</div>';\n"
+            + "        log(script.innerHTML);\n"
+            + "      }\n"
+            + "    </script>\n"
+            + "  </head>\n"
+            + "  <body onload='test()'>\n"
+            + "    <script>var x = 'HtmlUnit'</script>\n"
+            + LOG_TEXTAREA
+            + "  </body>\n"
+            + "</html>";
+
+        loadPageVerifyTextArea2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"", "&lt;/> htmx rocks!"})
+    public void innerHtmlEscaping() throws Exception {
+        final String html =
+            "<html>\n"
+            + "  <head>\n"
+            + "    <title>Page Title</title>\n"
+            + "    <script>\n"
+            + LOG_TEXTAREA_FUNCTION
+            + "      function test() {\n"
+            + "        var script = document.getElementsByTagName('script')[1];\n"
+            + "        log(script.innerHTML);\n"
+            + "        script.innerHTML = '&lt;/> htmx rocks!';\n"
+            + "        log(script.innerHTML);\n"
+            + "      }\n"
+            + "    </script>\n"
+            + "  </head>\n"
+            + "  <body onload='test()'>\n"
+            + "    <script></script>\n"
+            + LOG_TEXTAREA
+            + "  </body>\n"
+            + "</html>";
+
+        loadPageVerifyTextArea2(html);
     }
 }

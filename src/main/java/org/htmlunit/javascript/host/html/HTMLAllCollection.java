@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,23 +14,11 @@
  */
 package org.htmlunit.javascript.host.html;
 
-import static org.htmlunit.BrowserVersionFeatures.HTMLALLCOLLECTION_DO_NOT_CONVERT_STRINGS_TO_NUMBER;
-import static org.htmlunit.BrowserVersionFeatures.HTMLALLCOLLECTION_INTEGER_INDEX;
-import static org.htmlunit.BrowserVersionFeatures.HTMLALLCOLLECTION_NO_COLLECTION_FOR_MANY_HITS;
-import static org.htmlunit.BrowserVersionFeatures.HTMLALLCOLLECTION_NULL_IF_NAMED_ITEM_NOT_FOUND;
-import static org.htmlunit.BrowserVersionFeatures.HTMLCOLLECTION_ITEM_FUNCT_SUPPORTS_DOUBLE_INDEX_ALSO;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-
 import java.util.ArrayList;
 import java.util.List;
 
-import org.htmlunit.BrowserVersion;
 import org.htmlunit.corejs.javascript.Context;
 import org.htmlunit.corejs.javascript.Scriptable;
-import org.htmlunit.corejs.javascript.Undefined;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.DomNode;
 import org.htmlunit.javascript.JavaScriptEngine;
@@ -50,13 +38,14 @@ public class HTMLAllCollection extends HTMLCollection {
      * Creates an instance.
      */
     public HTMLAllCollection() {
+        super();
     }
 
     /**
      * JavaScript constructor.
      */
     @Override
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
         super.jsConstructor();
     }
@@ -77,36 +66,28 @@ public class HTMLAllCollection extends HTMLCollection {
      */
     @Override
     public Object item(final Object index) {
-        double numb;
+        final double numb;
 
-        final BrowserVersion browser;
         if (index instanceof String) {
             final String name = (String) index;
             final Object result = namedItem(name);
             if (null != result && !JavaScriptEngine.isUndefined(result)) {
                 return result;
             }
-            numb = Double.NaN;
-
-            browser = getBrowserVersion();
-            if (!browser.hasFeature(HTMLALLCOLLECTION_DO_NOT_CONVERT_STRINGS_TO_NUMBER)) {
-                numb = JavaScriptEngine.toNumber(index);
-            }
+            numb = JavaScriptEngine.toNumber(index);
             if (Double.isNaN(numb)) {
                 return null;
             }
         }
         else {
             numb = JavaScriptEngine.toNumber(index);
-            browser = getBrowserVersion();
         }
 
         if (numb < 0) {
             return null;
         }
 
-        if (!browser.hasFeature(HTMLCOLLECTION_ITEM_FUNCT_SUPPORTS_DOUBLE_INDEX_ALSO)
-                && (Double.isInfinite(numb) || numb != Math.floor(numb))) {
+        if (Double.isInfinite(numb) || numb != Math.floor(numb)) {
             return null;
         }
 
@@ -121,13 +102,12 @@ public class HTMLAllCollection extends HTMLCollection {
      * {@inheritDoc}
      */
     @Override
-    public final Object namedItem(final String name) {
+    public final Scriptable namedItem(final String name) {
         final List<DomNode> elements = getElements();
 
         // See if there is an element in the element array with the specified id.
         final List<DomElement> matching = new ArrayList<>();
 
-        final BrowserVersion browser = getBrowserVersion();
         for (final DomNode next : elements) {
             if (next instanceof DomElement) {
                 final DomElement elem = (DomElement) next;
@@ -138,16 +118,11 @@ public class HTMLAllCollection extends HTMLCollection {
             }
         }
 
-        if (matching.size() == 1
-                || (matching.size() > 1
-                        && browser.hasFeature(HTMLALLCOLLECTION_NO_COLLECTION_FOR_MANY_HITS))) {
+        if (matching.size() == 1) {
             return getScriptableForElement(matching.get(0));
         }
         if (matching.isEmpty()) {
-            if (browser.hasFeature(HTMLALLCOLLECTION_NULL_IF_NAMED_ITEM_NOT_FOUND)) {
-                return null;
-            }
-            return Undefined.instance;
+            return null;
         }
 
         // many elements => build a sub collection
@@ -163,26 +138,23 @@ public class HTMLAllCollection extends HTMLCollection {
      */
     @Override
     public Object call(final Context cx, final Scriptable scope, final Scriptable thisObj, final Object[] args) {
-        final BrowserVersion browser = getBrowserVersion();
         boolean nullIfNotFound = false;
-        if (browser.hasFeature(HTMLALLCOLLECTION_INTEGER_INDEX)) {
-            if (args[0] instanceof Number) {
-                final double val = ((Number) args[0]).doubleValue();
-                if (val != (int) val) {
-                    return null;
-                }
-                if (val >= 0) {
-                    nullIfNotFound = true;
-                }
+        if (args[0] instanceof Number) {
+            final double val = ((Number) args[0]).doubleValue();
+            if (val != (int) val) {
+                return null;
             }
-            else {
-                final String val = JavaScriptEngine.toString(args[0]);
-                try {
-                    args[0] = Integer.parseInt(val);
-                }
-                catch (final NumberFormatException e) {
-                    // ignore
-                }
+            if (val >= 0) {
+                nullIfNotFound = true;
+            }
+        }
+        else {
+            final String val = JavaScriptEngine.toString(args[0]);
+            try {
+                args[0] = Integer.parseInt(val);
+            }
+            catch (final NumberFormatException ignored) {
+                // ignore
             }
         }
 
@@ -199,5 +171,17 @@ public class HTMLAllCollection extends HTMLCollection {
     @Override
     protected boolean supportsParentheses() {
         return true;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected Object equivalentValues(final Object value) {
+        if (value == null || JavaScriptEngine.isUndefined(value)) {
+            return Boolean.TRUE;
+        }
+
+        return super.equivalentValues(value);
     }
 }

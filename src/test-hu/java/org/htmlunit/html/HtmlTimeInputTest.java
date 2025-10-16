@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,9 @@ package org.htmlunit.html;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.BuggyWebDriver;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.BuggyWebDriver;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
@@ -40,8 +40,7 @@ public class HtmlTimeInputTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"--null", "--null", "--null"},
-            IE = {"--null", "exception", "--null"})
+    @Alerts({"--null", "--null", "--null"})
     public void defaultValues() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -54,7 +53,7 @@ public class HtmlTimeInputTest extends WebDriverTestCase {
             + "      input = document.createElement('input');\n"
             + "      input.type = 'time';\n"
             + "      log(input.value + '-' + input.defaultValue + '-' + input.getAttribute('value'));\n"
-            + "    } catch(e)  { log('exception'); }\n"
+            + "    } catch(e)  { logEx(e); }\n"
 
             + "    var builder = document.createElement('div');\n"
             + "    builder.innerHTML = '<input type=\"time\">';\n"
@@ -75,8 +74,7 @@ public class HtmlTimeInputTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"--null", "--null", "--null"},
-            IE = {"--null", "exception", "--null"})
+    @Alerts({"--null", "--null", "--null"})
     public void defaultValuesAfterClone() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -91,7 +89,7 @@ public class HtmlTimeInputTest extends WebDriverTestCase {
             + "      input.type = 'time';\n"
             + "      input = input.cloneNode(false);\n"
             + "      log(input.value + '-' + input.defaultValue + '-' + input.getAttribute('value'));\n"
-            + "    } catch(e)  { log('exception'); }\n"
+            + "    } catch(e)  { logEx(e); }\n"
 
             + "    var builder = document.createElement('div');\n"
             + "    builder.innerHTML = '<input type=\"time\">';\n"
@@ -115,8 +113,7 @@ public class HtmlTimeInputTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"", "20:04"},
             FF = {"08:04", "20:04"},
-            FF_ESR = {"08:04", "20:04"},
-            IE = {"0804", "0804PM"})
+            FF_ESR = {"08:04", "20:04"})
     @BuggyWebDriver(FF = {"08:04", ""},
             FF_ESR = {"08:04", ""})
     @HtmlUnitNYI(CHROME = {"08:04", "20:04"},
@@ -131,11 +128,14 @@ public class HtmlTimeInputTest extends WebDriverTestCase {
         final WebDriver driver = loadPage2(htmlContent);
 
         final WebElement input = driver.findElement(By.id("foo"));
+
         input.sendKeys("0804");
-        assertEquals(getExpectedAlerts()[0], input.getAttribute("value"));
+        assertNull(input.getDomAttribute("value"));
+        assertEquals(getExpectedAlerts()[0], input.getDomProperty("value"));
 
         input.sendKeys("PM");
-        assertEquals(getExpectedAlerts()[1], input.getAttribute("value"));
+        assertNull(input.getDomAttribute("value"));
+        assertEquals(getExpectedAlerts()[1], input.getDomProperty("value"));
     }
 
     /**
@@ -149,13 +149,13 @@ public class HtmlTimeInputTest extends WebDriverTestCase {
         final WebElement p = driver.findElement(By.id("p"));
         try {
             p.sendKeys("804PM");
-            assertEquals(getExpectedAlerts()[0], "no ex: " + p.getAttribute("value"));
+            assertEquals(getExpectedAlerts()[0], "no ex: " + p.getDomProperty("value"));
             return;
         }
         catch (final InvalidElementStateException e) {
             // as expected
         }
-        assertEquals(getExpectedAlerts()[0], "ex: " + p.getAttribute("value"));
+        assertEquals(getExpectedAlerts()[0], "ex: " + p.getDomProperty("value"));
     }
 
     /**
@@ -241,7 +241,7 @@ public class HtmlTimeInputTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("")
+    @Alerts({"11:55", ""})
     public void clearInput() throws Exception {
         final String htmlContent
                 = "<html>\n"
@@ -255,8 +255,12 @@ public class HtmlTimeInputTest extends WebDriverTestCase {
         final WebDriver driver = loadPage2(htmlContent);
         final WebElement element = driver.findElement(By.id("tester"));
 
+        assertEquals(getExpectedAlerts()[0], element.getDomAttribute("value"));
+        assertEquals(getExpectedAlerts()[0], element.getDomProperty("value"));
+
         element.clear();
-        assertEquals(getExpectedAlerts()[0], element.getAttribute("value"));
+        assertEquals(getExpectedAlerts()[0], element.getDomAttribute("value"));
+        assertEquals(getExpectedAlerts()[1], element.getDomProperty("value"));
     }
 
     /**
@@ -287,8 +291,7 @@ public class HtmlTimeInputTest extends WebDriverTestCase {
     }
 
     @Test
-    @Alerts(DEFAULT = "true-false-true-true-true-true",
-            IE = "true-true-true-true-true-true")
+    @Alerts("true-false-true-true-true-true")
     public void minValidation() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -318,8 +321,7 @@ public class HtmlTimeInputTest extends WebDriverTestCase {
     }
 
     @Test
-    @Alerts(DEFAULT = "true-true-true-false-true-true",
-            IE = "true-true-true-true-true-true")
+    @Alerts("true-true-true-false-true-true")
     public void maxValidation() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -384,12 +386,9 @@ public class HtmlTimeInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true"},
-            IE = {"true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true"})
+    @Alerts({"true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true"})
     public void validationEmpty() throws Exception {
         validation("<input type='time' id='e1'>\n", "");
     }
@@ -398,12 +397,9 @@ public class HtmlTimeInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"false",
-                       "false-true-false-false-false-false-false-false-false-false-false",
-                       "true"},
-            IE = {"false",
-                  "undefined-true-false-false-false-false-false-undefined-false-false-false",
-                  "true"})
+    @Alerts({"false",
+             "false-true-false-false-false-false-false-false-false-false-false",
+             "true"})
     public void validationCustomValidity() throws Exception {
         validation("<input type='time' id='e1'>\n", "elem.setCustomValidity('Invalid');");
     }
@@ -412,12 +408,9 @@ public class HtmlTimeInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"false",
-                       "false-true-false-false-false-false-false-false-false-false-false",
-                       "true"},
-            IE = {"false",
-                  "undefined-true-false-false-false-false-false-undefined-false-false-false",
-                  "true"})
+    @Alerts({"false",
+             "false-true-false-false-false-false-false-false-false-false-false",
+             "true"})
     public void validationBlankCustomValidity() throws Exception {
         validation("<input type='time' id='e1'>\n", "elem.setCustomValidity(' ');\n");
     }
@@ -426,12 +419,9 @@ public class HtmlTimeInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true"},
-            IE = {"true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true"})
+    @Alerts({"true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true"})
     public void validationResetCustomValidity() throws Exception {
         validation("<input type='time' id='e1'>\n",
                 "elem.setCustomValidity('Invalid');elem.setCustomValidity('');");
@@ -441,12 +431,9 @@ public class HtmlTimeInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"false",
-                       "false-false-false-false-false-false-false-false-false-false-true",
-                       "true"},
-            IE = {"false",
-                  "undefined-false-false-false-false-false-false-undefined-false-false-true",
-                  "true"})
+    @Alerts({"false",
+             "false-false-false-false-false-false-false-false-false-false-true",
+             "true"})
     public void validationRequired() throws Exception {
         validation("<input type='time' id='e1' required>\n", "");
     }
@@ -455,12 +442,9 @@ public class HtmlTimeInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true"},
-            IE = {"true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true"})
+    @Alerts({"true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true"})
     public void validationRequiredValueSet() throws Exception {
         validation("<input type='time' id='e1' required>\n", "elem.value='10:00';");
     }

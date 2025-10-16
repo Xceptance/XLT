@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,11 +13,6 @@
  * limitations under the License.
  */
 package org.htmlunit.javascript.host;
-
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import java.net.MalformedURLException;
 import java.util.ArrayList;
@@ -61,7 +56,7 @@ import org.htmlunit.util.UrlUtils;
  * @author cd alexndr
  * @author Lai Quang Duong
  */
-@JsxClass({CHROME, EDGE, FF, FF_ESR})
+@JsxClass
 public class URLSearchParams extends HtmlUnitScriptable {
 
     private static final Log LOG = LogFactory.getLog(URLSearchParams.class);
@@ -83,6 +78,7 @@ public class URLSearchParams extends HtmlUnitScriptable {
         }
 
         public NativeParamsIterator(final String className) {
+            super();
             iterator_ = Collections.emptyIterator();
             type_ = Type.BOTH;
             className_ = className;
@@ -126,6 +122,7 @@ public class URLSearchParams extends HtmlUnitScriptable {
      * Constructs a new instance.
      */
     public URLSearchParams() {
+        super();
     }
 
     /**
@@ -133,6 +130,7 @@ public class URLSearchParams extends HtmlUnitScriptable {
      * @param url the base url
      */
     URLSearchParams(final URL url) {
+        super();
         url_ = url;
     }
 
@@ -165,7 +163,7 @@ public class URLSearchParams extends HtmlUnitScriptable {
      */
     private static List<NameValuePair> resolveParams(final Object params) {
         // if params is a sequence
-        if (params instanceof Scriptable && ScriptableObject.hasProperty((Scriptable) params, SymbolKey.ITERATOR)) {
+        if (params instanceof Scriptable && hasProperty((Scriptable) params, SymbolKey.ITERATOR)) {
 
             final Context cx = Context.getCurrentContext();
             final Scriptable paramsScriptable = (Scriptable) params;
@@ -177,7 +175,7 @@ public class URLSearchParams extends HtmlUnitScriptable {
                     if (!(nameValue instanceof Scriptable)) {
                         throw JavaScriptEngine.typeError("The provided value cannot be converted to a sequence.");
                     }
-                    if (!ScriptableObject.hasProperty((Scriptable) nameValue, SymbolKey.ITERATOR)) {
+                    if (!hasProperty((Scriptable) nameValue, SymbolKey.ITERATOR)) {
                         throw JavaScriptEngine.typeError("The object must have a callable @@iterator property.");
                     }
 
@@ -185,12 +183,12 @@ public class URLSearchParams extends HtmlUnitScriptable {
 
                         final Iterator<Object> nameValueIterator = nameValueItr.iterator();
                         final Object name =
-                                nameValueIterator.hasNext() ? nameValueIterator.next() : Scriptable.NOT_FOUND;
+                                nameValueIterator.hasNext() ? nameValueIterator.next() : NOT_FOUND;
                         final Object value =
-                                nameValueIterator.hasNext() ? nameValueIterator.next() : Scriptable.NOT_FOUND;
+                                nameValueIterator.hasNext() ? nameValueIterator.next() : NOT_FOUND;
 
-                        if (name == Scriptable.NOT_FOUND
-                                || value == Scriptable.NOT_FOUND
+                        if (name == NOT_FOUND
+                                || value == NOT_FOUND
                                 || nameValueIterator.hasNext()) {
                             throw JavaScriptEngine.typeError("Sequence initializer must only contain pair elements.");
                         }
@@ -300,7 +298,7 @@ public class URLSearchParams extends HtmlUnitScriptable {
         final List<NameValuePair> splitted = splitQuery();
         splitted.removeIf(entry -> entry.getName().equals(name));
 
-        if (splitted.size() == 0) {
+        if (splitted.isEmpty()) {
             try {
                 url_.setSearch((String) null);
             }
@@ -456,8 +454,8 @@ public class URLSearchParams extends HtmlUnitScriptable {
      * @return an iterator.
      */
     @JsxFunction
-    @JsxSymbol(value = {CHROME, EDGE, FF, FF_ESR}, symbolName = "iterator")
-    public Object entries() {
+    @JsxSymbol(symbolName = "iterator")
+    public ES6Iterator entries() {
         final List<NameValuePair> splitted = splitQuery();
 
         return new NativeParamsIterator(getParentScope(),
@@ -471,7 +469,7 @@ public class URLSearchParams extends HtmlUnitScriptable {
      * @return an iterator.
      */
     @JsxFunction
-    public Object keys() {
+    public ES6Iterator keys() {
         final List<NameValuePair> splitted = splitQuery();
 
         return new NativeParamsIterator(getParentScope(),
@@ -485,7 +483,7 @@ public class URLSearchParams extends HtmlUnitScriptable {
      * @return an iterator.
      */
     @JsxFunction
-    public Object values() {
+    public ES6Iterator values() {
         final List<NameValuePair> splitted = splitQuery();
 
         return new NativeParamsIterator(getParentScope(),
@@ -495,7 +493,7 @@ public class URLSearchParams extends HtmlUnitScriptable {
     /**
      * @return the total number of search parameter entries
      */
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxGetter
     public int getSize() {
         final List<NameValuePair> splitted = splitQuery();
         return splitted.size();
@@ -540,7 +538,7 @@ public class URLSearchParams extends HtmlUnitScriptable {
         webRequest.setEncodingType(FormEncodingType.URL_ENCODED);
 
         final List<NameValuePair> splitted = splitQuery();
-        if (splitted.size() > 0) {
+        if (!splitted.isEmpty()) {
             final List<NameValuePair> params = new ArrayList<>();
             for (final NameValuePair entry : splitted) {
                 params.add(new NameValuePair(entry.getName(), entry.getValue()));

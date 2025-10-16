@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,9 +48,9 @@ public class SvgJavaScriptTest extends WebDriverTestCase {
         final WebDriver driver = loadPage2(html, URL_FIRST, "image/svg+xml", ISO_8859_1);
         final WebElement rect = driver.findElement(By.id("rect"));
 
-        assertEquals("blue", rect.getAttribute("fill"));
+        assertEquals("blue", rect.getDomAttribute("fill"));
         rect.click();
-        assertEquals("green", rect.getAttribute("fill"));
+        assertEquals("green", rect.getDomAttribute("fill"));
     }
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.StringUtils;
 import org.htmlunit.CookieManager;
 import org.htmlunit.util.Cookie;
 
@@ -32,6 +31,8 @@ import okhttp3.HttpUrl;
  */
 class CookieJarImpl implements CookieJar
 {
+    static final String ERROR_MSG_COOKIE_INVALID = "Cookie not valid for use with OkHttp";
+
     /**
      * HtmlUnit's cookie manager.
      */
@@ -95,36 +96,55 @@ class CookieJarImpl implements CookieJar
      *            the source cookie
      * @return the converted cookie
      */
-    private static okhttp3.Cookie toOkHttpCookie(final Cookie htmlUnitCookie)
+    static okhttp3.Cookie toOkHttpCookie(final Cookie htmlUnitCookie)
     {
-        final Builder builder = new okhttp3.Cookie.Builder();
-
-        builder.name(htmlUnitCookie.getName()).value(htmlUnitCookie.getValue()).path(htmlUnitCookie.getPath())
-               .expiresAt(htmlUnitCookie.getExpires().getTime());
-
-        final String domain = htmlUnitCookie.getDomain();
-        if (domain.startsWith("."))
+        try
         {
-            // "wildcard" domain, such as ".example.com"
-            // the cookie builder expects the domain to be passed without the leading dot
-            builder.domain(StringUtils.stripStart(domain, "."));
-        }
-        else
-        {
-            // "host" domain, such as "www.example.com"
-            builder.hostOnlyDomain(domain);
-        }
+            final Builder builder = new okhttp3.Cookie.Builder();
 
-        if (htmlUnitCookie.isSecure())
-        {
-            builder.secure();
-        }
+            builder.name(htmlUnitCookie.getName());
+            builder.value(htmlUnitCookie.getValue());
 
-        if (htmlUnitCookie.isHttpOnly())
-        {
-            builder.httpOnly();
-        }
+            final String domain = htmlUnitCookie.getDomain();
+            if (domain.startsWith("."))
+            {
+                // "wildcard" domain, such as ".example.com"
+                // the cookie builder expects the domain to be passed without the leading dot
+                builder.domain(domain.substring(1));
+            }
+            else
+            {
+                // "host" domain, such as "www.example.com"
+                builder.hostOnlyDomain(domain);
+            }
 
-        return builder.build();
+            final String path = htmlUnitCookie.getPath();
+            if (path != null)
+            {
+                builder.path(path);
+            }
+
+            final Date expires = htmlUnitCookie.getExpires();
+            if (expires != null)
+            {
+                builder.expiresAt(expires.getTime());
+            }
+
+            if (htmlUnitCookie.isSecure())
+            {
+                builder.secure();
+            }
+
+            if (htmlUnitCookie.isHttpOnly())
+            {
+                builder.httpOnly();
+            }
+
+            return builder.build();
+        }
+        catch (final Exception e)
+        {
+            throw new IllegalArgumentException(ERROR_MSG_COOKIE_INVALID + ": '" + htmlUnitCookie + "'", e);
+        }
     }
 }

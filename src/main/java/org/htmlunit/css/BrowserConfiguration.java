@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ abstract class BrowserConfiguration {
 
     abstract boolean matches(BrowserVersion browserVersion);
 
-    public boolean isIteratable() {
+    public boolean isIterable() {
         return true;
     }
 
@@ -117,14 +117,6 @@ abstract class BrowserConfiguration {
         return new FFESR(defaultValue);
     }
 
-    static BrowserConfiguration ie(final String defaultValue) {
-        return new IE(defaultValue);
-    }
-
-    static BrowserConfiguration ieNotIterable(final String defaultValue) {
-        return new IENotIterable(defaultValue);
-    }
-
     static class ChromeAndEdgeNotIterable extends BrowserConfiguration {
         ChromeAndEdgeNotIterable(final String defaultValue) {
             super(defaultValue);
@@ -136,7 +128,7 @@ abstract class BrowserConfiguration {
         }
 
         @Override
-        public boolean isIteratable() {
+        public boolean isIterable() {
             return false;
         }
     }
@@ -209,7 +201,7 @@ abstract class BrowserConfiguration {
         }
 
         @Override
-        public boolean isIteratable() {
+        public boolean isIterable() {
             return false;
         }
     }
@@ -237,33 +229,6 @@ abstract class BrowserConfiguration {
             return browserVersion.isFirefox()
                     && browserVersion.getBrowserVersionNumeric()
                         > BrowserVersion.FIREFOX_ESR.getBrowserVersionNumeric();
-        }
-    }
-
-    private static class IE extends BrowserConfiguration {
-        IE(final String defaultValue) {
-            super(defaultValue);
-        }
-
-        @Override
-        public boolean matches(final BrowserVersion browserVersion) {
-            return browserVersion.isIE();
-        }
-    }
-
-    private static class IENotIterable extends BrowserConfiguration {
-        IENotIterable(final String defaultValue) {
-            super(defaultValue);
-        }
-
-        @Override
-        public boolean matches(final BrowserVersion browserVersion) {
-            return browserVersion.isIE();
-        }
-
-        @Override
-        public boolean isIteratable() {
-            return false;
         }
     }
 }

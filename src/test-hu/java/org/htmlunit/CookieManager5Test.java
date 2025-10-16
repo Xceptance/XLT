@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -172,16 +172,25 @@ public class CookieManager5Test extends WebServerTestCase {
         servlets.put(SetCookieExpires1000Servlet.URL, SetCookieExpires1000Servlet.class);
         startWebServer("./", null, servlets);
 
-        final WebClient webClient = getWebClient();
-        webClient.getPage("http://localhost:" + PORT + SetCookieExpires10Servlet.URL);
-        assertEquals(1, webClient.getCookieManager().getCookies().size());
-        Cookie cookie = webClient.getCookieManager().getCookies().iterator().next();
-        assertFalse("" + cookie.getExpires(), cookie.getExpires().after(date));
+        try (WebClient webClient = getWebClient()) {
+            webClient.getPage("http://localhost:" + PORT + SetCookieExpires10Servlet.URL);
+            assertEquals(1, webClient.getCookieManager().getCookies().size());
+            Cookie cookie = webClient.getCookieManager().getCookies().iterator().next();
+            assertFalse("" + cookie.getExpires(), cookie.getExpires().after(date));
 
-        webClient.getPage("http://localhost:" + PORT + SetCookieExpires1000Servlet.URL);
-        assertEquals(1, webClient.getCookieManager().getCookies().size());
-        cookie = webClient.getCookieManager().getCookies().iterator().next();
-        assertTrue("" + cookie.getExpires(), cookie.getExpires().after(date));
+            webClient.getPage("http://localhost:" + PORT + SetCookieExpires1000Servlet.URL);
+            assertEquals(1, webClient.getCookieManager().getCookies().size());
+            cookie = webClient.getCookieManager().getCookies().iterator().next();
+            assertTrue("" + cookie.getExpires(), cookie.getExpires().after(date));
+        }
+    }
+
+    @Override
+    protected WebClient getWebClient() {
+        final WebClient webClient = super.getWebClient();
+        // set timeout to fail fast when the url not mapped
+        webClient.getOptions().setTimeout(1000);
+        return webClient;
     }
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ import java.util.List;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.util.NameValuePair;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -529,8 +529,7 @@ public class HtmlButton2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "2",
-            IE = "1")
+    @Alerts("2")
     public void typeUnknownExternal() throws Exception {
         final String html
             = "<html><head><title>first</title></head><body>\n"
@@ -560,8 +559,7 @@ public class HtmlButton2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "2",
-            IE = "1")
+    @Alerts("2")
     public void typeSubmitExternal() throws Exception {
         final String html
             = "<html><head><title>first</title></head><body>\n"
@@ -621,8 +619,7 @@ public class HtmlButton2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "2",
-            IE = "1")
+    @Alerts("2")
     public void submitWithoutTypeExternal() throws Exception {
         final String html
             = "<html><head><title>first</title></head><body>\n"
@@ -682,8 +679,7 @@ public class HtmlButton2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"2", "second"},
-            IE = {"2", "third"})
+    @Alerts({"2", "second"})
     public void externalPreferenceFrom() throws Exception {
         final String html
             = "<html><head><title>first</title></head><body>\n"
@@ -712,16 +708,13 @@ public class HtmlButton2Test extends WebDriverTestCase {
         final int expectedReqCount = Integer.parseInt(getExpectedAlerts()[0]);
         assertEquals(expectedReqCount, getMockWebConnection().getRequestCount());
         assertTitle(driver, getExpectedAlerts()[1]);
-
-        shutDownRealIE();
     }
 
     /**
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"2", "second"},
-            IE = {"2", "third"})
+    @Alerts({"2", "second"})
     public void internalDifferentFrom() throws Exception {
         final String html
             = "<html><head><title>first</title></head><body>\n"
@@ -803,9 +796,7 @@ public class HtmlButton2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "1",
-            FF_ESR = "2",
-            IE = "2")
+    @Alerts("1")
     public void onclickDisablesSubmit() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -834,9 +825,7 @@ public class HtmlButton2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"foo", "foonewValue", "foonewValue"},
-            FF_ESR = {"foo", "foonewValue", "foo"},
-            IE = {"foo", "foonewValue", "foo"})
+    @Alerts({"foo", "foonewValue", "foonewValue"})
     public void onclickDisablesReset() throws Exception {
         final String html = "<html><head>\n"
             + "  <script type='text/javascript'>\n"
@@ -856,13 +845,17 @@ public class HtmlButton2Test extends WebDriverTestCase {
         final WebDriver webDriver = loadPage2(html);
 
         final WebElement textfield = webDriver.findElement(By.id("textfield"));
-        assertEquals(getExpectedAlerts()[0], textfield.getAttribute("value"));
+        assertEquals(getExpectedAlerts()[0], textfield.getDomAttribute("value"));
+        assertEquals(getExpectedAlerts()[0], textfield.getDomProperty("value"));
+
         textfield.sendKeys("newValue");
-        assertEquals(getExpectedAlerts()[1], textfield.getAttribute("value"));
+        assertEquals(getExpectedAlerts()[0], textfield.getDomAttribute("value"));
+        assertEquals(getExpectedAlerts()[1], textfield.getDomProperty("value"));
 
         final WebElement reset = webDriver.findElement(By.name("resetBtn"));
         reset.click();
-        assertEquals(getExpectedAlerts()[2], textfield.getAttribute("value"));
+        assertEquals(getExpectedAlerts()[0], textfield.getDomAttribute("value"));
+        assertEquals(getExpectedAlerts()[2], textfield.getDomProperty("value"));
     }
 
     /**
@@ -871,8 +864,7 @@ public class HtmlButton2Test extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"true", "false", "true", "false", "true", "true", "false", "false", "true", "true"},
             FF = {"true", "false", "true", "true", "true", "true", "false", "false", "true", "true"},
-            FF_ESR = {"true", "false", "true", "true", "true", "true", "false", "false", "true", "true"},
-            IE = {"true", "false", "true", "true", "true", "true", "false", "false", "true", "true"})
+            FF_ESR = {"true", "false", "true", "true", "true", "true", "false", "false", "true", "true"})
     public void willValidate() throws Exception {
         final String html =
                 "<html><head>\n"
@@ -914,12 +906,9 @@ public class HtmlButton2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true"},
-            IE = {"true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true"})
+    @Alerts({"true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true"})
     public void validationEmpty() throws Exception {
         validation("<button id='b1'>b1</button>\n", "");
     }
@@ -928,12 +917,9 @@ public class HtmlButton2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true"},
-            IE = {"true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true"})
+    @Alerts({"true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true"})
     public void validationEmpty_Submit() throws Exception {
         validation("<button id='b1' type='submit'>b1</button>\n", "");
     }
@@ -942,12 +928,9 @@ public class HtmlButton2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "false"},
-            IE = {"true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "false"})
+    @Alerts({"true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "false"})
     public void validationEmpty_Reset() throws Exception {
         validation("<button id='b1' type='reset'>b1</button>\n", "");
     }
@@ -956,12 +939,9 @@ public class HtmlButton2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"false",
-                       "false-true-false-false-false-false-false-false-false-false-false",
-                       "true"},
-            IE = {"false",
-                  "undefined-true-false-false-false-false-false-undefined-false-false-false",
-                  "true"})
+    @Alerts({"false",
+             "false-true-false-false-false-false-false-false-false-false-false",
+             "true"})
     public void validationCustomValidity() throws Exception {
         validation("<button id='b1'>b1</button>\n", "elem.setCustomValidity('Invalid');");
     }
@@ -970,12 +950,9 @@ public class HtmlButton2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"false",
-                       "false-true-false-false-false-false-false-false-false-false-false",
-                       "true"},
-            IE = {"false",
-                  "undefined-true-false-false-false-false-false-undefined-false-false-false",
-                  "true"})
+    @Alerts({"false",
+             "false-true-false-false-false-false-false-false-false-false-false",
+             "true"})
     public void validationCustomValidity_Submit() throws Exception {
         validation("<button id='b1' type='submit'>b1</button>\n", "elem.setCustomValidity('Invalid');");
     }
@@ -984,12 +961,9 @@ public class HtmlButton2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"true",
-                       "false-true-false-false-false-false-false-false-false-false-false",
-                       "false"},
-            IE = {"true",
-                  "undefined-true-false-false-false-false-false-undefined-false-false-false",
-                  "false"})
+    @Alerts({"true",
+             "false-true-false-false-false-false-false-false-false-false-false",
+             "false"})
     public void validationCustomValidity_Reset() throws Exception {
         validation("<button id='b1' type='reset'>b1</button>\n", "elem.setCustomValidity('Invalid');");
     }
@@ -998,12 +972,9 @@ public class HtmlButton2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"false",
-                       "false-true-false-false-false-false-false-false-false-false-false",
-                       "true"},
-            IE = {"false",
-                  "undefined-true-false-false-false-false-false-undefined-false-false-false",
-                  "true"})
+    @Alerts({"false",
+             "false-true-false-false-false-false-false-false-false-false-false",
+             "true"})
     public void validationBlankCustomValidity() throws Exception {
         validation("<button id='b1'>b1</button>\n", "elem.setCustomValidity(' ');\n");
     }
@@ -1012,12 +983,9 @@ public class HtmlButton2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"false",
-                       "false-true-false-false-false-false-false-false-false-false-false",
-                       "true"},
-            IE = {"false",
-                  "undefined-true-false-false-false-false-false-undefined-false-false-false",
-                  "true"})
+    @Alerts({"false",
+             "false-true-false-false-false-false-false-false-false-false-false",
+             "true"})
     public void validationBlankCustomValidity_Submit() throws Exception {
         validation("<button id='b1' type='submit'>b1</button>\n", "elem.setCustomValidity(' ');\n");
     }
@@ -1026,12 +994,9 @@ public class HtmlButton2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"true",
-                       "false-true-false-false-false-false-false-false-false-false-false",
-                       "false"},
-            IE = {"true",
-                  "undefined-true-false-false-false-false-false-undefined-false-false-false",
-                  "false"})
+    @Alerts({"true",
+             "false-true-false-false-false-false-false-false-false-false-false",
+             "false"})
     public void validationBlankCustomValidity_Reset() throws Exception {
         validation("<button id='b1' type='reset'>b1</button>\n", "elem.setCustomValidity(' ');\n");
     }
@@ -1040,12 +1005,9 @@ public class HtmlButton2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true"},
-            IE = {"true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true"})
+    @Alerts({"true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true"})
     public void validationResetCustomValidity() throws Exception {
         validation("<button id='b1'>b1</button>\n",
                 "elem.setCustomValidity('Invalid');elem.setCustomValidity('');");
@@ -1055,12 +1017,9 @@ public class HtmlButton2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true"},
-            IE = {"true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true"})
+    @Alerts({"true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true"})
     public void validationResetCustomValidity_Submit() throws Exception {
         validation("<button id='b1' type='submit'>b1</button>\n",
                 "elem.setCustomValidity('Invalid');elem.setCustomValidity('');");
@@ -1070,12 +1029,9 @@ public class HtmlButton2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "false"},
-            IE = {"true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "false"})
+    @Alerts({"true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "false"})
     public void validationResetCustomValidity_Reset() throws Exception {
         validation("<button id='b1' type='reset'>b1</button>\n",
                 "elem.setCustomValidity('Invalid');elem.setCustomValidity('');");
@@ -1085,12 +1041,9 @@ public class HtmlButton2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true"},
-            IE = {"true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true"})
+    @Alerts({"true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true"})
     public void validationRequired() throws Exception {
         validation("<button id='b1' required>b1</button>\n", "");
     }
@@ -1099,12 +1052,9 @@ public class HtmlButton2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true"},
-            IE = {"true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true"})
+    @Alerts({"true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true"})
     public void validationRequired_Submit() throws Exception {
         validation("<button id='b1' type='submit' required>b1</button>\n", "");
     }
@@ -1113,12 +1063,9 @@ public class HtmlButton2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "false"},
-            IE = {"true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "false"})
+    @Alerts({"true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "false"})
     public void validationRequired_Reset() throws Exception {
         validation("<button id='b1' type='reset' required>b1</button>\n", "");
     }

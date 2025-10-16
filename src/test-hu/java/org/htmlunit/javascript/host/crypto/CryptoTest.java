@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ package org.htmlunit.javascript.host.crypto;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.WebDriver;
@@ -34,8 +34,7 @@ public class CryptoTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"function", "error"},
-            IE = {"object", "error"})
+    @Alerts({"function", "TypeError"})
     public void ctor() throws Exception {
         final String html
             = "<html>\n"
@@ -47,7 +46,7 @@ public class CryptoTest extends WebDriverTestCase {
             + "      try {\n"
             + "        log(typeof Crypto);\n"
             + "        new Crypto();\n"
-            + "      } catch(e) { log('error'); }\n"
+            + "      } catch(e) { logEx(e); }\n"
             + "    }\n"
             + "  </script>\n"
             + "</head>\n"
@@ -63,8 +62,7 @@ public class CryptoTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"true", "true", "true", "false", "false", "false", "10", "true"},
-            IE = {"true", "true", "true", "exception"})
+    @Alerts({"true", "true", "true", "false", "false", "false", "10", "true"})
     public void getRandomValues() throws Exception {
         final String html = "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
@@ -81,7 +79,7 @@ public class CryptoTest extends WebDriverTestCase {
             + "  log(res.length);\n"
             + "  log(res === array);\n"
             + "}\n"
-            + "catch(e) { log('exception'); }\n"
+            + "catch(e) { logEx(e); }\n"
             + "</script></head></html>";
 
         loadPageVerifyTitle2(html);
@@ -91,21 +89,19 @@ public class CryptoTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "[0-9a-f]{8}\\-[0-9a-f]{4}\\-[0-9a-f]{4}\\-[0-9a-f]{4}\\-[0-9a-f]{12}§",
-            IE = "exception§")
+    @Alerts("[0-9a-f]{8}\\-[0-9a-f]{4}\\-[0-9a-f]{4}\\-[0-9a-f]{4}\\-[0-9a-f]{12}§")
     public void randomUUID() throws Exception {
         final String html = "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "try {\n"
             + "  log(window.crypto.randomUUID());\n"
             + "}\n"
-            + "catch(e) { log('exception'); }\n"
+            + "catch(e) { logEx(e); }\n"
             + "</script></head></html>";
 
         final WebDriver driver = loadPage2(html);
         final String title = driver.getTitle();
 
-        System.out.println(title);
         assertTrue(title, title.matches(getExpectedAlerts()[0]));
     }
 
@@ -113,7 +109,7 @@ public class CryptoTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("QuotaExceededError/DOMException")
     public void getRandomValuesQuotaExceeded() throws Exception {
         final String html = "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
@@ -121,7 +117,7 @@ public class CryptoTest extends WebDriverTestCase {
             + "  var array = new Uint32Array(16385);\n"
             + "  window.crypto.getRandomValues(array);\n"
             + "}\n"
-            + "catch(e) { log('exception'); }\n"
+            + "catch(e) { logEx(e); }\n"
             + "</script></head></html>";
 
         loadPageVerifyTitle2(html);
@@ -131,15 +127,14 @@ public class CryptoTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "[object SubtleCrypto]",
-            IE = "exception")
+    @Alerts("[object SubtleCrypto]")
     public void subtle() throws Exception {
         final String html = "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
             + "try {\n"
             + "  log(window.crypto.subtle);\n"
             + "}\n"
-            + "catch(e) { log('exception'); }\n"
+            + "catch(e) { logEx(e); }\n"
             + "</script></head></html>";
 
         loadPageVerifyTitle2(html);

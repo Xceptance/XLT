@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@ package org.htmlunit.javascript;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.WebDriver;
@@ -45,7 +45,7 @@ public class NativeErrorTest extends WebDriverTestCase {
             + "function test() {\n"
             + "  try {\n"
             + "    null.method();\n"
-            + "  } catch (e) {\n"
+            + "  } catch(e) {\n"
             + "    if (e.stack) {\n"
             + "      var s = e.stack;\n"
             + "      log(typeof s);\n"
@@ -73,7 +73,7 @@ public class NativeErrorTest extends WebDriverTestCase {
             + "function test() {\n"
             + "  try {\n"
             + "    throw new Error();\n"
-            + "  } catch (e) {\n"
+            + "  } catch(e) {\n"
             + "    if (e.stack) {\n"
             + "      var s = e.stack;\n"
             + "      log(typeof s);\n"
@@ -93,9 +93,7 @@ public class NativeErrorTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"string", "true"},
-            IE = "undefined")
-    @HtmlUnitNYI(IE = {"string", "true"})
+    @Alerts({"string", "true"})
     public void stackNewErrorWithoutThrow() throws Exception {
         final String html
             = "<html><head><script>\n"
@@ -120,9 +118,7 @@ public class NativeErrorTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
-    @HtmlUnitNYI(IE = "true")
+    @Alerts("true")
     public void stackInNewError() throws Exception {
         final String html
             = "<html><head><script>\n"
@@ -147,8 +143,7 @@ public class NativeErrorTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = "method()@url",
             EDGE = "method()@url",
             FF = "method()@url",
-            FF_ESR = "method()@url",
-            IE = "method()@url")
+            FF_ESR = "method()@url")
     public void stackContent() throws Exception {
         final String html
             = "<html><head><script>\n"
@@ -156,7 +151,7 @@ public class NativeErrorTest extends WebDriverTestCase {
             + "function test() {\n"
             + "  try {\n"
             + "    null.method();\n"
-            + "  } catch (e) {\n"
+            + "  } catch(e) {\n"
             + "    if (e.stack) {\n"
             + "      var s = e.stack;\n"
             + "      if (s.indexOf('test()@') != -1) {\n"
@@ -189,8 +184,7 @@ public class NativeErrorTest extends WebDriverTestCase {
     @HtmlUnitNYI(CHROME = "method()@url",
             EDGE = "method()@url",
             FF = "method()@url",
-            FF_ESR = "method()@url",
-            IE = "method()@url")
+            FF_ESR = "method()@url")
     public void stackContentNewError() throws Exception {
         final String html
             = "<html><head><script>\n"
@@ -198,7 +192,7 @@ public class NativeErrorTest extends WebDriverTestCase {
             + "function test() {\n"
             + "  try {\n"
             + "    throw new Error();\n"
-            + "  } catch (e) {\n"
+            + "  } catch(e) {\n"
             + "    if (e.stack) {\n"
             + "      var s = e.stack;\n"
             + "      if (s.indexOf('test()@') != -1) {\n"
@@ -233,7 +227,7 @@ public class NativeErrorTest extends WebDriverTestCase {
             + "function test() {\n"
             + "  try {\n"
             + "    null.method();\n"
-            + "  } catch (e) {\n"
+            + "  } catch(e) {\n"
             + "    if (e.stack) {\n"
             + "      var s = e.stack;\n"
             + "      log(s.length > 10);\n"
@@ -307,7 +301,7 @@ public class NativeErrorTest extends WebDriverTestCase {
                 + "function test() {\n"
                 + "  try {\n"
                 + "    throw new Error();\n"
-                + "  } catch (e) {\n"
+                + "  } catch(e) {\n"
                 + "    log(e.stack.replace('\\r', '\\\\r').replace('\\n', '\\\\n'));\n"
                 + "  }"
                 + "}\n"

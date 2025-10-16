@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,14 +19,13 @@ import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TimeZone;
 
 import org.apache.commons.io.FilenameUtils;
-import org.htmlunit.javascript.configuration.AbstractJavaScriptConfiguration;
 import org.htmlunit.javascript.configuration.BrowserFeature;
 import org.htmlunit.javascript.configuration.SupportedBrowser;
 import org.htmlunit.util.MimeType;
@@ -61,58 +60,27 @@ import org.htmlunit.util.MimeType;
  * @author Frank Danek
  * @author Ronald Brill
  */
+@SuppressWarnings("PMD.AvoidDuplicateLiterals")
 public final class BrowserVersion implements Serializable {
 
-    /**
-     * Application name the Netscape navigator series of browsers.
-     */
-    private static final String NETSCAPE = "Netscape";
-
-    /**
-     * United States English language identifier.
-     */
-    private static final String LANGUAGE_ENGLISH_US = "en-US";
-
-    /**
-     * United States.
-     */
-    private static final String TIMEZONE_NEW_YORK = "America/New_York";
-
-    /**
-     * The X86 CPU class.
-     */
-    private static final String CPU_CLASS_X86 = "x86";
-
-    /**
-     * The WIN32 platform.
-     */
-    private static final String PLATFORM_WIN32 = "Win32";
-
     /** Latest Firefox. */
-    public static final BrowserVersion FIREFOX = new BrowserVersion(122, "FF");
+    public static final BrowserVersion FIREFOX = new BrowserVersion(135, "FF");
 
-    private static final int FIREFOX_ESR_NUMERIC = 115;
+    private static final int FIREFOX_ESR_NUMERIC = 128;
 
     /** Firefox ESR. */
     public static final BrowserVersion FIREFOX_ESR = new BrowserVersion(FIREFOX_ESR_NUMERIC, "FF-ESR");
 
-    /**
-     * Internet Explorer 11.
-     * @deprecated as of version 3.0.0
-     */
-    @Deprecated
-    public static final BrowserVersion INTERNET_EXPLORER = new BrowserVersion(11, "IE");
-
     /** Latest Edge. */
-    public static final BrowserVersion EDGE = new BrowserVersion(121, "Edge");
+    public static final BrowserVersion EDGE = new BrowserVersion(133, "Edge");
 
     /** Latest Chrome. */
-    public static final BrowserVersion CHROME = new BrowserVersion(121, "Chrome");
+    public static final BrowserVersion CHROME = new BrowserVersion(133, "Chrome");
 
     /**
      * Array with all supported browsers.
      */
-    public static final BrowserVersion[] ALL_SUPPORTED_BROWSERS = {CHROME, EDGE, FIREFOX, FIREFOX_ESR, INTERNET_EXPLORER};
+    public static final BrowserVersion[] ALL_SUPPORTED_BROWSERS = {CHROME, EDGE, FIREFOX, FIREFOX_ESR};
 
     /**
      * The best supported browser version at the moment.
@@ -122,12 +90,13 @@ public final class BrowserVersion implements Serializable {
     /** The default browser version. */
     private static BrowserVersion DefaultBrowserVersion_ = BEST_SUPPORTED;
 
-    /* Register plugins for the browser versions. */
     static {
         FIREFOX_ESR.applicationVersion_ = "5.0 (Windows)";
-        FIREFOX_ESR.userAgent_ = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/"
+        FIREFOX_ESR.userAgent_ = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:"
+                                    + FIREFOX_ESR.getBrowserVersionNumeric() + ".0) Gecko/20100101 Firefox/"
                                     + FIREFOX_ESR.getBrowserVersionNumeric() + ".0";
         FIREFOX_ESR.buildId_ = "20181001000000";
+        FIREFOX_ESR.vendor_ = "";
         FIREFOX_ESR.productSub_ = "20100101";
         FIREFOX_ESR.headerNamesOrdered_ = new String[] {
             HttpHeader.HOST,
@@ -135,18 +104,19 @@ public final class BrowserVersion implements Serializable {
             HttpHeader.ACCEPT,
             HttpHeader.ACCEPT_LANGUAGE,
             HttpHeader.ACCEPT_ENCODING,
-            HttpHeader.REFERER,
             HttpHeader.CONNECTION,
+            HttpHeader.REFERER,
             HttpHeader.COOKIE,
             HttpHeader.UPGRADE_INSECURE_REQUESTS,
             HttpHeader.SEC_FETCH_DEST,
             HttpHeader.SEC_FETCH_MODE,
             HttpHeader.SEC_FETCH_SITE,
-            HttpHeader.SEC_FETCH_USER};
-        FIREFOX_ESR.htmlAcceptHeader_ = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8";
+            HttpHeader.SEC_FETCH_USER,
+            HttpHeader.PRIORITY};
+        FIREFOX_ESR.htmlAcceptHeader_ = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
         FIREFOX_ESR.acceptLanguageHeader_ = "en-US,en;q=0.5";
         FIREFOX_ESR.xmlHttpRequestAcceptHeader_ = "*/*";
-        FIREFOX_ESR.imgAcceptHeader_ = "image/avif,image/webp,*/*";
+        FIREFOX_ESR.imgAcceptHeader_ = "image/avif,image/webp,image/png,image/svg+xml,image/*;q=0.8,*/*;q=0.5";
         FIREFOX_ESR.cssAcceptHeader_ = "text/css,*/*;q=0.1";
         FIREFOX_ESR.fontHeights_ = new int[] {
             0, 2, 3, 5, 6, 6, 7, 9, 10, 11, 12, 13, 15, 16, 16, 17, 18, 20, 21, 22, 23, 25, 26, 26, 28, 29,
@@ -162,6 +132,7 @@ public final class BrowserVersion implements Serializable {
                                             + FIREFOX.getBrowserVersionNumeric() + ".0) Gecko/20100101 Firefox/"
                                             + FIREFOX.getBrowserVersionNumeric() + ".0";
         FIREFOX.buildId_ = "20181001000000";
+        FIREFOX.vendor_ = "";
         FIREFOX.productSub_ = "20100101";
         FIREFOX.headerNamesOrdered_ = new String[] {
             HttpHeader.HOST,
@@ -169,18 +140,19 @@ public final class BrowserVersion implements Serializable {
             HttpHeader.ACCEPT,
             HttpHeader.ACCEPT_LANGUAGE,
             HttpHeader.ACCEPT_ENCODING,
-            HttpHeader.REFERER,
             HttpHeader.CONNECTION,
+            HttpHeader.REFERER,
             HttpHeader.COOKIE,
             HttpHeader.UPGRADE_INSECURE_REQUESTS,
             HttpHeader.SEC_FETCH_DEST,
             HttpHeader.SEC_FETCH_MODE,
             HttpHeader.SEC_FETCH_SITE,
-            HttpHeader.SEC_FETCH_USER};
-        FIREFOX.htmlAcceptHeader_ = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8";
+            HttpHeader.SEC_FETCH_USER,
+            HttpHeader.PRIORITY};
+        FIREFOX.htmlAcceptHeader_ = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
         FIREFOX.acceptLanguageHeader_ = "en-US,en;q=0.5";
         FIREFOX.xmlHttpRequestAcceptHeader_ = "*/*";
-        FIREFOX.imgAcceptHeader_ = "image/avif,image/webp,*/*";
+        FIREFOX.imgAcceptHeader_ = "image/avif,image/webp,image/png,image/svg+xml,image/*;q=0.8,*/*;q=0.5";
         FIREFOX.cssAcceptHeader_ = "text/css,*/*;q=0.1";
         FIREFOX.fontHeights_ = new int[] {
             0, 2, 3, 5, 6, 6, 7, 9, 10, 11, 12, 13, 15, 16, 16, 17, 18, 20, 21, 22, 23, 25, 26, 26, 28, 29,
@@ -191,42 +163,13 @@ public final class BrowserVersion implements Serializable {
             120, 122, 122, 123, 124, 126, 127, 128, 129, 130, 132, 132, 133, 134, 137, 138, 139,
             140, 141, 143, 143, 144, 145, 146, 148};
 
-        INTERNET_EXPLORER.applicationVersion_ = "5.0 (Windows NT 10.0; WOW64; Trident/7.0; Zoom 3.6.0; rv:"
-                                                    + INTERNET_EXPLORER.getBrowserVersionNumeric() + ".0) like Gecko";
-        INTERNET_EXPLORER.userAgent_ = "Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; Zoom 3.6.0; rv:11.0) like Gecko";
-        INTERNET_EXPLORER.headerNamesOrdered_ = new String[] {
-            HttpHeader.ACCEPT,
-            HttpHeader.REFERER,
-            HttpHeader.ACCEPT_LANGUAGE,
-            HttpHeader.USER_AGENT,
-            HttpHeader.ACCEPT_ENCODING,
-            HttpHeader.HOST,
-            HttpHeader.DNT,
-            HttpHeader.CONNECTION,
-            HttpHeader.COOKIE};
-        INTERNET_EXPLORER.acceptEncodingHeader_ = "gzip, deflate";
-        INTERNET_EXPLORER.htmlAcceptHeader_ = "text/html, application/xhtml+xml, image/jxr, */*";
-        INTERNET_EXPLORER.acceptLanguageHeader_ = "en-US,en;q=0.9";
-        INTERNET_EXPLORER.imgAcceptHeader_ = "image/png, image/svg+xml, image/jxr, image/*;q=0.8, */*;q=0.5";
-        INTERNET_EXPLORER.cssAcceptHeader_ = "text/css, */*";
-        INTERNET_EXPLORER.scriptAcceptHeader_ = "application/javascript, */*;q=0.8";
-        INTERNET_EXPLORER.fontHeights_ = new int[] {
-            0, 1, 2, 3, 5, 6, 7, 8, 9, 10, 12, 13, 14, 15, 16, 17, 18, 20, 21, 22, 23, 24, 25, 26, 28,
-            29, 30, 31, 32, 33, 35, 36, 37, 38, 39, 40, 41, 43, 44, 45, 46, 47, 48, 49, 51, 52, 53, 54, 55, 56, 58,
-            59, 60, 61, 62, 63, 64, 66, 67, 68, 69, 70, 71, 72, 74, 75, 76, 77, 78, 79, 80, 82, 83, 84, 85, 86, 87,
-            89, 90, 91, 92, 93, 94, 95, 97, 98, 99, 100, 101, 102, 103, 105, 106, 107, 108, 109, 110, 112, 113, 114,
-            115, 116, 117, 118, 120, 121, 122, 123, 124, 125, 126, 128, 129, 130, 131, 132, 133, 135, 136, 137, 138,
-            139, 140, 141, 143, 144, 145, 146, 147};
-
         // CHROME (Win10 64bit)
         CHROME.applicationVersion_ = "5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/"
                                         + CHROME.getBrowserVersionNumeric() + ".0.0.0 Safari/537.36";
         CHROME.userAgent_ = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/"
                                         + CHROME.getBrowserVersionNumeric() + ".0.0.0 Safari/537.36";
 
-        CHROME.applicationCodeName_ = "Mozilla";
         CHROME.vendor_ = "Google Inc.";
-        CHROME.cpuClass_ = null;
         CHROME.productSub_ = "20030107";
         CHROME.headerNamesOrdered_ = new String[] {
             HttpHeader.HOST,
@@ -252,9 +195,18 @@ public final class BrowserVersion implements Serializable {
         CHROME.imgAcceptHeader_ = "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8";
         CHROME.cssAcceptHeader_ = "text/css,*/*;q=0.1";
         CHROME.scriptAcceptHeader_ = "*/*";
-        CHROME.secClientHintUserAgentHeader_ = "\"Not A(Brand\";v=\"99\", \"Google Chrome\";v=\""
-                        + CHROME.getBrowserVersionNumeric() + "\", \"Chromium\";v=\""
-                        + CHROME.getBrowserVersionNumeric() + "\"";
+
+        if (CHROME.getBrowserVersionNumeric() % 2 == 0) {
+            CHROME.secClientHintUserAgentHeader_ = "\"Not A(Brand\";v=\"8\", \"Chromium\";v=\""
+                            + CHROME.getBrowserVersionNumeric() + "\", \"Google Chrome\";v=\""
+                            + CHROME.getBrowserVersionNumeric() + "\"";
+        }
+        else {
+            CHROME.secClientHintUserAgentHeader_ = "\"Not(A:Brand\";v=\"99\", \"Google Chrome\";v=\""
+                    + CHROME.getBrowserVersionNumeric() + "\", \"Chromium\";v=\""
+                    + CHROME.getBrowserVersionNumeric() + "\"";
+        }
+
         CHROME.fontHeights_ = new int[] {
             0, 1, 2, 4, 5, 5, 6, 8, 9, 10, 11, 12, 15, 16, 16, 17, 18, 20, 21, 22, 23, 25, 26, 26,
             27, 28, 30, 31, 32, 33, 34, 36, 37, 37, 38, 40, 42, 43, 44, 45, 47, 48, 48, 49, 51, 52, 53, 54, 55, 57,
@@ -271,9 +223,7 @@ public final class BrowserVersion implements Serializable {
                                         + EDGE.getBrowserVersionNumeric() + ".0.0.0 Safari/537.36 Edg/"
                                         + EDGE.getBrowserVersionNumeric() + ".0.0.0";
 
-        EDGE.applicationCodeName_ = "Mozilla";
         EDGE.vendor_ = "Google Inc.";
-        EDGE.cpuClass_ = null;
         EDGE.productSub_ = "20030107";
         EDGE.headerNamesOrdered_ = new String[] {
             HttpHeader.HOST,
@@ -299,9 +249,16 @@ public final class BrowserVersion implements Serializable {
         EDGE.imgAcceptHeader_ = "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8";
         EDGE.cssAcceptHeader_ = "text/css,*/*;q=0.1";
         EDGE.scriptAcceptHeader_ = "*/*";
-        EDGE.secClientHintUserAgentHeader_ = "\"Not A(Brand\";v=\"99\", \"Microsoft Edge\";v=\""
-                            + EDGE.getBrowserVersionNumeric() + "\", \"Chromium\";v=\""
-                            + EDGE.getBrowserVersionNumeric() + "\"";
+        if (CHROME.getBrowserVersionNumeric() % 2 == 0) {
+            EDGE.secClientHintUserAgentHeader_ = "\"Microsoft Edge\";v=\""
+                    + EDGE.getBrowserVersionNumeric() + "\", \"Chromium\";v=\""
+                    + EDGE.getBrowserVersionNumeric() + "\", \"Not_A Brand\";v=\"24\"";
+        }
+        else {
+            EDGE.secClientHintUserAgentHeader_ = "\"Not(A:Brand\";v=\"99\", \"Microsoft Edge\";v=\""
+                    + EDGE.getBrowserVersionNumeric() + "\", \"Chromium\";v=\""
+                    + EDGE.getBrowserVersionNumeric() + "\"";
+        }
         EDGE.fontHeights_ = new int[] {
             0, 1, 2, 4, 5, 5, 6, 8, 9, 10, 11, 12, 15, 16, 16, 17, 18, 20, 21, 22, 23, 25, 26, 26,
             27, 28, 30, 31, 32, 33, 34, 36, 37, 37, 38, 40, 42, 43, 44, 45, 47, 48, 48, 49, 51, 52, 53, 54, 55, 57,
@@ -420,51 +377,23 @@ public final class BrowserVersion implements Serializable {
         FIREFOX.registerUploadMimeType("xht", "application/xhtml+xml");
         FIREFOX.registerUploadMimeType("txt", MimeType.TEXT_PLAIN);
         FIREFOX.registerUploadMimeType("text", MimeType.TEXT_PLAIN);
-
-        INTERNET_EXPLORER.registerUploadMimeType("html", MimeType.TEXT_HTML);
-        INTERNET_EXPLORER.registerUploadMimeType("htm", MimeType.TEXT_HTML);
-        INTERNET_EXPLORER.registerUploadMimeType("css", MimeType.TEXT_CSS);
-        INTERNET_EXPLORER.registerUploadMimeType("xml", MimeType.TEXT_XML);
-        INTERNET_EXPLORER.registerUploadMimeType("gif", MimeType.IMAGE_GIF);
-        INTERNET_EXPLORER.registerUploadMimeType("jpeg", MimeType.IMAGE_JPEG);
-        INTERNET_EXPLORER.registerUploadMimeType("jpg", MimeType.IMAGE_JPEG);
-        INTERNET_EXPLORER.registerUploadMimeType("png", MimeType.IMAGE_PNG);
-        INTERNET_EXPLORER.registerUploadMimeType("mp4", "video/mp4");
-        INTERNET_EXPLORER.registerUploadMimeType("m4v", "video/mp4");
-        INTERNET_EXPLORER.registerUploadMimeType("m4a", "audio/mp4");
-        INTERNET_EXPLORER.registerUploadMimeType("mp3", "audio/mpeg");
-        INTERNET_EXPLORER.registerUploadMimeType("ogv", "video/ogg");
-        INTERNET_EXPLORER.registerUploadMimeType("ogm", "video/ogg");
-        INTERNET_EXPLORER.registerUploadMimeType("ogg", "audio/ogg");
-        INTERNET_EXPLORER.registerUploadMimeType("oga", "audio/ogg");
-        INTERNET_EXPLORER.registerUploadMimeType("opus", "audio/ogg");
-        INTERNET_EXPLORER.registerUploadMimeType("webm", "video/webm");
-        INTERNET_EXPLORER.registerUploadMimeType("wav", "audio/wav");
-        INTERNET_EXPLORER.registerUploadMimeType("flac", "audio/x-flac");
-        INTERNET_EXPLORER.registerUploadMimeType("xhtml", "application/xhtml+xml");
-        INTERNET_EXPLORER.registerUploadMimeType("xht", "application/xhtml+xml");
-        INTERNET_EXPLORER.registerUploadMimeType("txt", MimeType.TEXT_PLAIN);
     }
 
     private final int browserVersionNumeric_;
     private final String nickname_;
 
-    private String applicationCodeName_ = "Mozilla";
-    private String applicationMinorVersion_ = "0";
+    private String applicationCodeName_;
+    private String applicationMinorVersion_;
     private String applicationName_;
     private String applicationVersion_;
     private String buildId_;
     private String productSub_;
-    private String vendor_ = "";
-    private Locale browserLocale_ = Locale.forLanguageTag(LANGUAGE_ENGLISH_US);
-    private String cpuClass_ = CPU_CLASS_X86;
-    private boolean onLine_ = true;
-    private String platform_ = PLATFORM_WIN32;
-    private String systemLanguage_ = LANGUAGE_ENGLISH_US;
-    private TimeZone systemTimezone_ = TimeZone.getTimeZone(TIMEZONE_NEW_YORK);
+    private String vendor_;
+    private Locale browserLocale_;
+    private boolean onLine_;
+    private String platform_;
+    private TimeZone systemTimezone_;
     private String userAgent_;
-    private String userLanguage_ = LANGUAGE_ENGLISH_US;
-    private final Set<PluginConfiguration> plugins_;
     private final Set<BrowserVersionFeatures> features_;
     private String acceptEncodingHeader_;
     private String acceptLanguageHeader_;
@@ -483,13 +412,21 @@ public final class BrowserVersion implements Serializable {
      * Creates a new browser version instance.
      *
      * @param browserVersionNumeric the floating number version of the browser
-     * @param nickname the short name of the browser (like "FF", "IE", ...) - has to be unique
+     * @param nickname the short name of the browser (like "FF", "CHROME", ...) - has to be unique
      */
     BrowserVersion(final int browserVersionNumeric, final String nickname) {
         browserVersionNumeric_ = browserVersionNumeric;
         nickname_ = nickname;
 
-        applicationName_ = NETSCAPE;
+        applicationCodeName_ = "Mozilla";
+        applicationMinorVersion_ = "0";
+        applicationName_ = "Netscape";
+        onLine_ = true;
+        platform_ = "Win32";
+
+        browserLocale_ = Locale.forLanguageTag("en-US");
+        systemTimezone_ = TimeZone.getTimeZone("America/New_York");
+
         acceptEncodingHeader_ = "gzip, deflate, br";
         htmlAcceptHeader_ = "*/*";
         imgAcceptHeader_ = "*/*";
@@ -499,19 +436,23 @@ public final class BrowserVersion implements Serializable {
         secClientHintUserAgentHeader_ = "";
         secClientHintUserAgentPlatformHeader_ = "\"Windows\"";
 
-        plugins_ = new HashSet<>();
         features_ = EnumSet.noneOf(BrowserVersionFeatures.class);
         uploadMimeTypes_ = new HashMap<>();
 
         initFeatures();
     }
 
+    /**
+     * @param other the {@link BrowserVersion} to compare with
+     * @return true if the nickname and the numeric version are the same
+     */
+    public boolean isSameBrowser(final BrowserVersion other) {
+        return Objects.equals(nickname_, other.nickname_) && browserVersionNumeric_ == other.browserVersionNumeric_;
+    }
+
     private void initFeatures() {
         final SupportedBrowser expectedBrowser;
-        if (isChrome()) {
-            expectedBrowser = SupportedBrowser.CHROME;
-        }
-        else if (isEdge()) {
+        if (isEdge()) {
             expectedBrowser = SupportedBrowser.EDGE;
         }
         else if (isFirefoxESR()) {
@@ -521,7 +462,7 @@ public final class BrowserVersion implements Serializable {
             expectedBrowser = SupportedBrowser.FF;
         }
         else {
-            expectedBrowser = SupportedBrowser.IE;
+            expectedBrowser = SupportedBrowser.CHROME;
         }
 
         for (final BrowserVersionFeatures features : BrowserVersionFeatures.values()) {
@@ -530,7 +471,7 @@ public final class BrowserVersion implements Serializable {
                 final BrowserFeature browserFeature = field.getAnnotation(BrowserFeature.class);
                 if (browserFeature != null) {
                     for (final SupportedBrowser browser : browserFeature.value()) {
-                        if (AbstractJavaScriptConfiguration.isCompatible(expectedBrowser, browser)) {
+                        if (expectedBrowser == browser) {
                             features_.add(features);
                         }
                     }
@@ -559,15 +500,6 @@ public final class BrowserVersion implements Serializable {
     public static void setDefault(final BrowserVersion newBrowserVersion) {
         WebAssert.notNull("newBrowserVersion", newBrowserVersion);
         DefaultBrowserVersion_ = newBrowserVersion;
-    }
-
-    /**
-     * Returns {@code true} if this <code>BrowserVersion</code> instance represents some
-     * version of Internet Explorer.
-     * @return whether version is a version of IE
-     */
-    public boolean isIE() {
-        return getNickname().startsWith("IE");
     }
 
     /**
@@ -607,7 +539,7 @@ public final class BrowserVersion implements Serializable {
     }
 
     /**
-     * Returns the short name of the browser like {@code FF}, {@code IE}, etc.
+     * Returns the short name of the browser like {@code FF}, {@code CHROME}, etc.
      *
      * @return the short name (if any)
      */
@@ -643,7 +575,7 @@ public final class BrowserVersion implements Serializable {
     }
 
     /**
-     * Returns the application name, for example "Microsoft Internet Explorer".
+     * Returns the application name, for example "Netscape".
      * @return the application name
      * @see <a href="http://msdn.microsoft.com/en-us/library/ms533079.aspx">MSDN documentation</a>
      */
@@ -669,7 +601,7 @@ public final class BrowserVersion implements Serializable {
 
     /**
      * Returns the browser locale.
-     * Default value is {@link #LANGUAGE_ENGLISH_US} if not explicitly configured.
+     * Default value is ENGLISH_US if not explicitly configured.
      * @return the system locale
      */
     public Locale getBrowserLocale() {
@@ -678,22 +610,12 @@ public final class BrowserVersion implements Serializable {
 
     /**
      * Returns the browser application language, for example "en-us".
-     * Default value is {@link #LANGUAGE_ENGLISH_US} if not explicitly configured.
+     * Default value is ENGLISH_US if not explicitly configured.
      * @return the browser application language
      * @see <a href="http://msdn.microsoft.com/en-us/library/ms533542.aspx">MSDN documentation</a>
      */
     public String getBrowserLanguage() {
         return browserLocale_.toLanguageTag();
-    }
-
-    /**
-     * Returns the type of CPU in the machine, for example "x86".
-     * Default value is {@link #CPU_CLASS_X86} if not explicitly configured.
-     * @return the type of CPU in the machine
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms533697.aspx">MSDN documentation</a>
-     */
-    public String getCpuClass() {
-        return cpuClass_;
     }
 
     /**
@@ -708,22 +630,12 @@ public final class BrowserVersion implements Serializable {
 
     /**
      * Returns the platform on which the application is running, for example "Win32".
-     * Default value is {@link #PLATFORM_WIN32} if not explicitly configured.
+     * Default value is 'Win32' if not explicitly configured.
      * @return the platform on which the application is running
      * @see <a href="http://msdn.microsoft.com/en-us/library/ms534340.aspx">MSDN documentation</a>
      */
     public String getPlatform() {
         return platform_;
-    }
-
-    /**
-     * Returns the system language, for example "en-us".
-     * Default value is {@link #LANGUAGE_ENGLISH_US} if not explicitly configured.
-     * @return the system language
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms534653.aspx">MSDN documentation</a>
-     */
-    public String getSystemLanguage() {
-        return systemLanguage_;
     }
 
     /**
@@ -741,16 +653,6 @@ public final class BrowserVersion implements Serializable {
      */
     public String getUserAgent() {
         return userAgent_;
-    }
-
-    /**
-     * Returns the user language, for example "en-us".
-     * Default value is {@link #LANGUAGE_ENGLISH_US} if not explicitly configured.
-     * @return the user language
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms534713.aspx">MSDN documentation</a>
-     */
-    public String getUserLanguage() {
-        return userLanguage_;
     }
 
     /**
@@ -827,15 +729,6 @@ public final class BrowserVersion implements Serializable {
      */
     public String getSecClientHintUserAgentPlatformHeader() {
         return secClientHintUserAgentPlatformHeader_;
-    }
-
-    /**
-     * Returns the available plugins. This makes only sense for Firefox as only this
-     * browser makes this kind of information available via JavaScript.
-     * @return the available plugins
-     */
-    public Set<PluginConfiguration> getPlugins() {
-        return plugins_;
     }
 
     /**
@@ -933,6 +826,7 @@ public final class BrowserVersion implements Serializable {
      * Because BrowserVersion is immutable we need a builder
      * for this complex object setup.
      */
+    @SuppressWarnings("PMD.LinguisticNaming")
     public static class BrowserVersionBuilder {
         private final BrowserVersion workPiece_;
 
@@ -951,12 +845,9 @@ public final class BrowserVersion implements Serializable {
                 .setApplicationMinorVersion(version.getApplicationMinorVersion())
                 .setVendor(version.getVendor())
                 .setBrowserLanguage(version.getBrowserLanguage())
-                .setCpuClass(version.getCpuClass())
                 .setOnLine(version.isOnLine())
                 .setPlatform(version.getPlatform())
-                .setSystemLanguage(version.getSystemLanguage())
                 .setSystemTimezone(version.getSystemTimezone())
-                .setUserLanguage(version.getUserLanguage())
                 .setBuildId(version.getBuildId())
                 .setProductSub(version.getProductSub())
                 .setAcceptEncodingHeader(version.getAcceptEncodingHeader())
@@ -970,10 +861,6 @@ public final class BrowserVersion implements Serializable {
                 .setSecClientHintUserAgentPlatformHeader(version.getSecClientHintUserAgentPlatformHeader())
                 .setHeaderNamesOrdered(version.getHeaderNamesOrdered())
                 .setFontHeights(version.fontHeights_);
-
-            for (final PluginConfiguration pluginConf : version.getPlugins()) {
-                workPiece_.plugins_.add(pluginConf.clone());
-            }
 
             workPiece_.features_.addAll(version.features_);
             workPiece_.uploadMimeTypes_.putAll(version.uploadMimeTypes_);
@@ -1045,15 +932,6 @@ public final class BrowserVersion implements Serializable {
         }
 
         /**
-         * @param cpuClass the cpuClass to set
-         * @return this for fluent use
-         */
-        public BrowserVersionBuilder setCpuClass(final String cpuClass) {
-            workPiece_.cpuClass_ = cpuClass;
-            return this;
-        }
-
-        /**
          * @param onLine the onLine to set
          * @return this for fluent use
          */
@@ -1072,15 +950,6 @@ public final class BrowserVersion implements Serializable {
         }
 
         /**
-         * @param systemLanguage the systemLanguage to set
-         * @return this for fluent use
-         */
-        public BrowserVersionBuilder setSystemLanguage(final String systemLanguage) {
-            workPiece_.systemLanguage_ = systemLanguage;
-            return this;
-        }
-
-        /**
          * @param systemTimezone the systemTimezone to set
          * @return this for fluent use
          */
@@ -1095,15 +964,6 @@ public final class BrowserVersion implements Serializable {
          */
         public BrowserVersionBuilder setUserAgent(final String userAgent) {
             workPiece_.userAgent_ = userAgent;
-            return this;
-        }
-
-        /**
-         * @param userLanguage the userLanguage to set
-         * @return this for fluent use
-         */
-        public BrowserVersionBuilder setUserLanguage(final String userLanguage) {
-            workPiece_.userLanguage_ = userLanguage;
             return this;
         }
 

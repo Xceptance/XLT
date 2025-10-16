@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,12 +45,6 @@ public class V8BreakIterator extends HtmlUnitScriptable {
     private transient BreakIterator breakIterator_;
     private String text_;
     private boolean typeAlwaysNone_;
-
-    /**
-     * The default constructor.
-     */
-    public V8BreakIterator() {
-    }
 
     /**
      * JavaScript constructor.

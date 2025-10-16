@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import java.util.Collections;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
@@ -74,16 +74,26 @@ public class HtmlPasswordInputTest extends WebDriverTestCase {
         final String html = "<html><head></head><body><input type='password' id='p'/></body></html>";
         final WebDriver driver = loadPage2(html);
         final WebElement p = driver.findElement(By.id("p"));
+
         p.sendKeys("abc");
-        assertEquals("abc", p.getAttribute("value"));
+        assertNull(p.getDomAttribute("value"));
+        assertEquals("abc", p.getDomProperty("value"));
+
         p.sendKeys(Keys.BACK_SPACE);
-        assertEquals("ab", p.getAttribute("value"));
+        assertNull(p.getDomAttribute("value"));
+        assertEquals("ab", p.getDomProperty("value"));
+
         p.sendKeys(Keys.BACK_SPACE);
-        assertEquals("a", p.getAttribute("value"));
+        assertNull(p.getDomAttribute("value"));
+        assertEquals("a", p.getDomProperty("value"));
+
         p.sendKeys(Keys.BACK_SPACE);
-        assertEquals("", p.getAttribute("value"));
+        assertNull(p.getDomAttribute("value"));
+        assertEquals("", p.getDomProperty("value"));
+
         p.sendKeys(Keys.BACK_SPACE);
-        assertEquals("", p.getAttribute("value"));
+        assertNull(p.getDomAttribute("value"));
+        assertEquals("", p.getDomProperty("value"));
     }
 
     /**
@@ -101,7 +111,8 @@ public class HtmlPasswordInputTest extends WebDriverTestCase {
         catch (final InvalidElementStateException e) {
             // as expected
         }
-        assertEquals("", p.getAttribute("value"));
+        assertNull(p.getDomAttribute("value"));
+        assertEquals("", p.getDomProperty("value"));
     }
 
     /**
@@ -183,8 +194,10 @@ public class HtmlPasswordInputTest extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
         final WebElement p = driver.findElement(By.id("p"));
+
         p.sendKeys("abcd");
-        assertEquals("abc", p.getAttribute("value"));
+        assertNull(p.getDomAttribute("value"));
+        assertEquals("abc", p.getDomProperty("value"));
     }
 
     /**
@@ -210,8 +223,10 @@ public class HtmlPasswordInputTest extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
         final WebElement p = driver.findElement(By.id("p"));
+
         p.sendKeys("abcd");
-        assertEquals("abc", p.getAttribute("value"));
+        assertNull(p.getDomAttribute("value"));
+        assertEquals("abc", p.getDomProperty("value"));
     }
 
     /**
@@ -544,8 +559,7 @@ public class HtmlPasswordInputTest extends WebDriverTestCase {
      * @throws Exception if test fails
      */
     @Test
-    @Alerts(DEFAULT = {"0,0", "11,11", "3,11", "3,10"},
-            IE = {"0,0", "0,0", "3,3", "3,10"})
+    @Alerts({"0,0", "11,11", "3,11", "3,10"})
     public void selection2_1() throws Exception {
         selection2(3, 10);
     }
@@ -554,8 +568,7 @@ public class HtmlPasswordInputTest extends WebDriverTestCase {
      * @throws Exception if test fails
      */
     @Test
-    @Alerts(DEFAULT = {"0,0", "11,11", "11,11", "11,11"},
-            IE = {"0,0", "0,0", "0,0", "0,11"})
+    @Alerts({"0,0", "11,11", "11,11", "11,11"})
     public void selection2_2() throws Exception {
         selection2(-3, 15);
     }
@@ -564,8 +577,7 @@ public class HtmlPasswordInputTest extends WebDriverTestCase {
      * @throws Exception if test fails
      */
     @Test
-    @Alerts(DEFAULT = {"0,0", "11,11", "10,11", "5,5"},
-            IE = {"0,0", "0,0", "10,10", "5,5"})
+    @Alerts({"0,0", "11,11", "10,11", "5,5"})
     public void selection2_3() throws Exception {
         selection2(10, 5);
     }
@@ -595,8 +607,7 @@ public class HtmlPasswordInputTest extends WebDriverTestCase {
      * @throws Exception if test fails
      */
     @Test
-    @Alerts(DEFAULT = {"0,0", "4,5", "10,10", "4,4", "1,1"},
-            IE = {"0,0", "4,5", "0,0", "0,0", "0,0"})
+    @Alerts({"0,0", "4,5", "10,10", "4,4", "1,1"})
     public void selectionOnUpdate() throws Exception {
         final String html = "<html>\n"
             + "<body>\n"
@@ -680,16 +691,12 @@ public class HtmlPasswordInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"0987654321!",
-                       "false",
-                       "false-false-true-false-false-false-false-false-false-false-false",
-                       "true",
-                       "§§URL§§", "1"},
-            IE = {"0987654321!",
-                  "false",
-                  "undefined-false-true-false-false-false-false-undefined-false-false-false",
-                  "true",
-                  "§§URL§§", "1"})
+    @Alerts({"0987654321!",
+             "0987654321!",
+             "false",
+             "false-false-true-false-false-false-false-false-false-false-false",
+             "true",
+             "§§URL§§", "1"})
     public void patternValidationInvalid() throws Exception {
         validation("<input type='password' pattern='[0-9a-zA-Z]{10,40}' id='e1' name='k' value='0987654321!'>\n",
                     "", null);
@@ -699,16 +706,12 @@ public class HtmlPasswordInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"68746d6c756e69742072756c657a21",
-                       "true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true",
-                       "§§URL§§?k=68746d6c756e69742072756c657a21", "2"},
-            IE = {"68746d6c756e69742072756c657a21",
-                  "true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true",
-                  "§§URL§§?k=68746d6c756e69742072756c657a21", "2"})
+    @Alerts({"68746d6c756e69742072756c657a21",
+             "68746d6c756e69742072756c657a21",
+             "true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true",
+             "§§URL§§?k=68746d6c756e69742072756c657a21", "2"})
     public void patternValidationValid() throws Exception {
         validation("<input type='password' pattern='[0-9a-zA-Z]{10,40}' "
                 + "id='e1' name='k' value='68746d6c756e69742072756c657a21'>\n", "", null);
@@ -718,16 +721,12 @@ public class HtmlPasswordInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"",
-                       "true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true",
-                       "§§URL§§?k=", "2"},
-            IE = {"",
-                  "true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true",
-                  "§§URL§§?k=", "2"})
+    @Alerts({"",
+             "",
+             "true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true",
+             "§§URL§§?k=", "2"})
     public void patternValidationEmpty() throws Exception {
         validation("<input type='password' pattern='[0-9a-zA-Z]{10,40}' id='e1' name='k' value=''>\n", "", null);
     }
@@ -736,16 +735,12 @@ public class HtmlPasswordInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {" ",
-                       "false",
-                       "false-false-true-false-false-false-false-false-false-false-false",
-                       "true",
-                       "§§URL§§", "1"},
-            IE = {" ",
-                  "false",
-                  "undefined-false-true-false-false-false-false-undefined-false-false-false",
-                  "true",
-                  "§§URL§§", "1"})
+    @Alerts({" ",
+             " ",
+             "false",
+             "false-false-true-false-false-false-false-false-false-false-false",
+             "true",
+             "§§URL§§", "1"})
     public void patternValidationBlank() throws Exception {
         validation("<input type='password' pattern='[0-9a-zA-Z]{10,40}' id='e1' name='k' value=' '>\n", "", null);
     }
@@ -754,16 +749,12 @@ public class HtmlPasswordInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"  \t",
-                       "false",
-                       "false-false-true-false-false-false-false-false-false-false-false",
-                       "true",
-                       "§§URL§§", "1"},
-            IE = {"  \t",
-                  "false",
-                  "undefined-false-true-false-false-false-false-undefined-false-false-false",
-                  "true",
-                  "§§URL§§", "1"})
+    @Alerts({"  \t",
+             "  \t",
+             "false",
+             "false-false-true-false-false-false-false-false-false-false-false",
+             "true",
+             "§§URL§§", "1"})
     public void patternValidationWhitespace() throws Exception {
         validation("<input type='password' pattern='[0-9a-zA-Z]{10,40}' id='e1' name='k' value='  \t'>\n", "", null);
     }
@@ -772,16 +763,12 @@ public class HtmlPasswordInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {" 210 ",
-                       "true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true",
-                       "§§URL§§?k=+210+", "2"},
-            IE = {" 210 ",
-                  "true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true",
-                  "§§URL§§?k=+210+", "2"})
+    @Alerts({" 210 ",
+             " 210 ",
+             "true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true",
+             "§§URL§§?k=+210+", "2"})
     public void patternValidationTrimInitial() throws Exception {
         validation("<input type='password' pattern='[ 012]{3,10}' id='e1' name='k' value=' 210 '>\n", "", null);
     }
@@ -790,16 +777,12 @@ public class HtmlPasswordInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {" 210 ",
-                       "true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true",
-                       "§§URL§§?k=+210+", "2"},
-            IE = {" 210 ",
-                  "true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true",
-                  "§§URL§§?k=+210+", "2"})
+    @Alerts({"null",
+             " 210 ",
+             "true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true",
+             "§§URL§§?k=+210+", "2"})
     public void patternValidationTrimType() throws Exception {
         validation("<input type='password' pattern='[ 012]{3,10}' id='e1' name='k'>\n", "", " 210 ");
     }
@@ -808,16 +791,12 @@ public class HtmlPasswordInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"abcd",
-                       "false",
-                       "false-false-false-false-false-false-false-true-false-false-false",
-                       "true",
-                       "§§URL§§", "1"},
-            IE = {"abcd",
-                  "true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true",
-                  "§§URL§§?k=abcd", "2"})
+    @Alerts({"null",
+             "abcd",
+             "false",
+             "false-false-false-false-false-false-false-true-false-false-false",
+             "true",
+             "§§URL§§", "1"})
     public void minLengthValidationInvalid() throws Exception {
         validation("<input type='password' minlength='5' id='e1' name='k'>\n", "", "abcd");
     }
@@ -827,16 +806,12 @@ public class HtmlPasswordInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"ab",
-                       "true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true",
-                       "§§URL§§?k=ab", "2"},
-            IE = {"ab",
-                  "true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true",
-                  "§§URL§§?k=ab", "2"})
+    @Alerts({"ab",
+             "ab",
+             "true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true",
+             "§§URL§§?k=ab", "2"})
     public void minLengthValidationInvalidInitial() throws Exception {
         validation("<input type='password' minlength='5' id='e1' name='k' value='ab'>\n", "", null);
     }
@@ -845,16 +820,12 @@ public class HtmlPasswordInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"",
-                       "true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true",
-                       "§§URL§§?k=", "2"},
-            IE = {"",
-                  "true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true",
-                  "§§URL§§?k=", "2"})
+    @Alerts({"null",
+             "",
+             "true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true",
+             "§§URL§§?k=", "2"})
     public void minLengthValidationInvalidNoInitial() throws Exception {
         validation("<input type='password' minlength='5' id='e1' name='k'>\n", "", null);
     }
@@ -863,16 +834,12 @@ public class HtmlPasswordInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"abcdefghi",
-                       "true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true",
-                       "§§URL§§?k=abcdefghi", "2"},
-            IE = {"abcdefghi",
-                  "true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true",
-                  "§§URL§§?k=abcdefghi", "2"})
+    @Alerts({"null",
+             "abcdefghi",
+             "true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true",
+             "§§URL§§?k=abcdefghi", "2"})
     public void minLengthValidationValid() throws Exception {
         validation("<input type='password' minlength='5' id='e1' name='k'>\n", "", "abcdefghi");
     }
@@ -881,16 +848,12 @@ public class HtmlPasswordInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"abcd",
-                       "true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true",
-                       "§§URL§§?k=abcd", "2"},
-            IE = {"abcd",
-                  "true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true",
-                  "§§URL§§?k=abcd", "2"})
+    @Alerts({"null",
+             "abcd",
+             "true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true",
+             "§§URL§§?k=abcd", "2"})
     public void maxLengthValidationValid() throws Exception {
         validation("<input type='password' maxlength='5' id='e1' name='k'>\n", "", "abcd");
     }
@@ -899,16 +862,12 @@ public class HtmlPasswordInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"abcde",
-                       "true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true",
-                       "§§URL§§?k=abcde", "2"},
-            IE = {"abcde",
-                  "true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true",
-                  "§§URL§§?k=abcde", "2"})
+    @Alerts({"null",
+             "abcde",
+             "true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true",
+             "§§URL§§?k=abcde", "2"})
     public void maxLengthValidationInvalid() throws Exception {
         validation("<input type='password' maxlength='5' id='e1' name='k'>\n", "", "abcdefghi");
     }
@@ -917,16 +876,12 @@ public class HtmlPasswordInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"abcdefghi",
-                       "true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true",
-                       "§§URL§§?k=abcdefghi", "2"},
-            IE = {"abcdefghi",
-                  "true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true",
-                  "§§URL§§?k=abcdefghi", "2"})
+    @Alerts({"abcdefghi",
+             "abcdefghi",
+             "true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true",
+             "§§URL§§?k=abcdefghi", "2"})
     public void maxLengthValidationInvalidInitial() throws Exception {
         validation("<input type='password' maxlength='5' id='e1' name='k' value='abcdefghi'>\n", "", null);
     }
@@ -967,16 +922,12 @@ public class HtmlPasswordInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"",
-                       "true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true",
-                       "§§URL§§?k=", "2"},
-            IE = {"",
-                  "true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true",
-                  "§§URL§§?k=", "2"})
+    @Alerts({"null",
+             "",
+             "true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true",
+             "§§URL§§?k=", "2"})
     public void validationEmpty() throws Exception {
         validation("<input type='password' id='e1' name='k'>\n", "", null);
     }
@@ -985,16 +936,12 @@ public class HtmlPasswordInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"",
-                       "false",
-                       "false-true-false-false-false-false-false-false-false-false-false",
-                       "true",
-                       "§§URL§§", "1"},
-            IE = {"",
-                  "false",
-                  "undefined-true-false-false-false-false-false-undefined-false-false-false",
-                  "true",
-                  "§§URL§§", "1"})
+    @Alerts({"null",
+             "",
+             "false",
+             "false-true-false-false-false-false-false-false-false-false-false",
+             "true",
+             "§§URL§§", "1"})
     public void validationCustomValidity() throws Exception {
         validation("<input type='password' id='e1' name='k'>\n", "elem.setCustomValidity('Invalid');", null);
     }
@@ -1003,16 +950,12 @@ public class HtmlPasswordInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"",
-                       "false",
-                       "false-true-false-false-false-false-false-false-false-false-false",
-                       "true",
-                       "§§URL§§", "1"},
-            IE = {"",
-                  "false",
-                  "undefined-true-false-false-false-false-false-undefined-false-false-false",
-                  "true",
-                  "§§URL§§", "1"})
+    @Alerts({"null",
+             "",
+             "false",
+             "false-true-false-false-false-false-false-false-false-false-false",
+             "true",
+             "§§URL§§", "1"})
     public void validationBlankCustomValidity() throws Exception {
         validation("<input type='password' id='e1' name='k'>\n", "elem.setCustomValidity(' ');\n", null);
     }
@@ -1021,16 +964,12 @@ public class HtmlPasswordInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"",
-                       "true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true",
-                       "§§URL§§?k=", "2"},
-            IE = {"",
-                  "true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true",
-                  "§§URL§§?k=", "2"})
+    @Alerts({"null",
+             "",
+             "true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true",
+             "§§URL§§?k=", "2"})
     public void validationResetCustomValidity() throws Exception {
         validation("<input type='password' id='e1' name='k'>\n",
                 "elem.setCustomValidity('Invalid');elem.setCustomValidity('');", null);
@@ -1040,16 +979,12 @@ public class HtmlPasswordInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"",
-                       "false",
-                       "false-false-false-false-false-false-false-false-false-false-true",
-                       "true",
-                       "§§URL§§", "1"},
-            IE = {"",
-                  "false",
-                  "undefined-false-false-false-false-false-false-undefined-false-false-true",
-                  "true",
-                  "§§URL§§", "1"})
+    @Alerts({"null",
+             "",
+             "false",
+             "false-false-false-false-false-false-false-false-false-false-true",
+             "true",
+             "§§URL§§", "1"})
     public void validationRequired() throws Exception {
         validation("<input type='password' id='e1' name='k' required>\n", "", null);
     }
@@ -1058,16 +993,12 @@ public class HtmlPasswordInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"",
-                       "true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true",
-                       "§§URL§§?k=victoria", "2"},
-            IE = {"",
-                  "true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true",
-                  "§§URL§§?k=victoria", "2"})
+    @Alerts({"null",
+             "",
+             "true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true",
+             "§§URL§§?k=victoria", "2"})
     public void validationRequiredValueSet() throws Exception {
         validation("<input type='password' id='e1' name='k' required>\n", "elem.value='victoria';", null);
     }
@@ -1076,16 +1007,12 @@ public class HtmlPasswordInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"",
-                       "false",
-                       "false-false-true-false-false-false-false-false-false-false-false",
-                       "true",
-                       "§§URL§§", "1"},
-            IE = {"",
-                  "false",
-                  "undefined-false-true-false-false-false-false-undefined-false-false-false",
-                  "true",
-                  "§§URL§§", "1"})
+    @Alerts({"null",
+             "",
+             "false",
+             "false-false-true-false-false-false-false-false-false-false-false",
+             "true",
+             "§§URL§§", "1"})
     public void validationPattern() throws Exception {
         validation("<input type='password' id='e1' name='k' pattern='abc'>\n", "elem.value='one';", null);
     }
@@ -1139,13 +1066,15 @@ public class HtmlPasswordInputTest extends WebDriverTestCase {
         if (sendKeys != null) {
             foo.sendKeys(sendKeys);
         }
-        assertEquals(getExpectedAlerts()[0], foo.getAttribute("value"));
+
+        assertEquals(getExpectedAlerts()[0], "" + foo.getDomAttribute("value"));
+        assertEquals(getExpectedAlerts()[1], foo.getDomProperty("value"));
 
         driver.findElement(By.id("myTest")).click();
-        verifyTitle2(driver, getExpectedAlerts()[1], getExpectedAlerts()[2], getExpectedAlerts()[3]);
+        verifyTitle2(driver, getExpectedAlerts()[2], getExpectedAlerts()[3], getExpectedAlerts()[4]);
 
         driver.findElement(By.id("myButton")).click();
-        assertEquals(getExpectedAlerts()[4], getMockWebConnection().getLastWebRequest().getUrl());
-        assertEquals(Integer.parseInt(getExpectedAlerts()[5]), getMockWebConnection().getRequestCount());
+        assertEquals(getExpectedAlerts()[5], getMockWebConnection().getLastWebRequest().getUrl());
+        assertEquals(Integer.parseInt(getExpectedAlerts()[6]), getMockWebConnection().getRequestCount());
     }
 }

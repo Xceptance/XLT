@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,13 +19,12 @@ import java.net.URI;
 import java.nio.ByteBuffer;
 import java.util.concurrent.Future;
 
-import org.eclipse.jetty.util.ssl.SslContextFactory;
-import org.eclipse.jetty.websocket.api.Session;
-import org.eclipse.jetty.websocket.api.WebSocketPolicy;
-import org.eclipse.jetty.websocket.client.WebSocketClient;
 import org.htmlunit.WebClient;
 import org.htmlunit.WebClientOptions;
-import org.htmlunit.corejs.javascript.typedarrays.NativeArrayBuffer;
+import org.htmlunit.jetty.util.ssl.SslContextFactory;
+import org.htmlunit.jetty.websocket.api.Session;
+import org.htmlunit.jetty.websocket.api.WebSocketPolicy;
+import org.htmlunit.jetty.websocket.client.WebSocketClient;
 
 /**
  * Jetty based impl of the WebSocketAdapter.
@@ -40,6 +39,7 @@ public abstract class JettyWebSocketAdapter implements WebSocketAdapter {
     private Session outgoingSession_;
 
     public JettyWebSocketAdapter(final WebClient webClient) {
+        super();
         final WebClientOptions options = webClient.getOptions();
 
         if (webClient.getOptions().isUseInsecureSSL()) {
@@ -76,6 +76,9 @@ public abstract class JettyWebSocketAdapter implements WebSocketAdapter {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void start() throws Exception {
         synchronized (clientLock_) {
@@ -83,6 +86,9 @@ public abstract class JettyWebSocketAdapter implements WebSocketAdapter {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void connect(final URI url) throws Exception {
         synchronized (clientLock_) {
@@ -99,15 +105,16 @@ public abstract class JettyWebSocketAdapter implements WebSocketAdapter {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void send(final Object content) throws IOException {
         if (content instanceof String) {
             outgoingSession_.getRemote().sendString((String) content);
         }
-        else if (content instanceof NativeArrayBuffer) {
-            final byte[] bytes = ((NativeArrayBuffer) content).getBuffer();
-            final ByteBuffer buffer = ByteBuffer.wrap(bytes);
-            outgoingSession_.getRemote().sendBytes(buffer);
+        else if (content instanceof ByteBuffer) {
+            outgoingSession_.getRemote().sendBytes((ByteBuffer) content);
         }
         else {
             throw new IllegalStateException(
@@ -115,6 +122,9 @@ public abstract class JettyWebSocketAdapter implements WebSocketAdapter {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void closeIncommingSession() {
         if (incomingSession_ != null) {
@@ -122,6 +132,9 @@ public abstract class JettyWebSocketAdapter implements WebSocketAdapter {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void closeOutgoingSession() {
         if (outgoingSession_ != null) {
@@ -129,6 +142,9 @@ public abstract class JettyWebSocketAdapter implements WebSocketAdapter {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void closeClient() throws Exception {
         synchronized (clientLock_) {
@@ -142,11 +158,18 @@ public abstract class JettyWebSocketAdapter implements WebSocketAdapter {
         }
     }
 
-    private class JettyWebSocketAdapterImpl extends org.eclipse.jetty.websocket.api.WebSocketAdapter {
+    private class JettyWebSocketAdapterImpl extends org.htmlunit.jetty.websocket.api.WebSocketAdapter {
 
+        /**
+         * Ctor.
+         */
         JettyWebSocketAdapterImpl() {
+            super();
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public void onWebSocketConnect(final Session session) {
             super.onWebSocketConnect(session);
@@ -155,6 +178,9 @@ public abstract class JettyWebSocketAdapter implements WebSocketAdapter {
             JettyWebSocketAdapter.this.onWebSocketConnect();
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public void onWebSocketClose(final int statusCode, final String reason) {
             super.onWebSocketClose(statusCode, reason);
@@ -163,6 +189,9 @@ public abstract class JettyWebSocketAdapter implements WebSocketAdapter {
             JettyWebSocketAdapter.this.onWebSocketClose(statusCode, reason);
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public void onWebSocketText(final String message) {
             super.onWebSocketText(message);
@@ -170,6 +199,9 @@ public abstract class JettyWebSocketAdapter implements WebSocketAdapter {
             JettyWebSocketAdapter.this.onWebSocketText(message);
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public void onWebSocketBinary(final byte[] data, final int offset, final int length) {
             super.onWebSocketBinary(data, offset, length);
@@ -177,6 +209,9 @@ public abstract class JettyWebSocketAdapter implements WebSocketAdapter {
             JettyWebSocketAdapter.this.onWebSocketBinary(data, offset, length);
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public void onWebSocketError(final Throwable cause) {
             super.onWebSocketError(cause);

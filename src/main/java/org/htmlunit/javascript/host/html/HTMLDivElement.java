@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,8 @@
  */
 package org.htmlunit.javascript.host.html;
 
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import org.htmlunit.html.HtmlDivision;
 import org.htmlunit.html.HtmlMarquee;
@@ -39,16 +36,10 @@ import org.htmlunit.javascript.configuration.JsxSetter;
 public class HTMLDivElement extends HTMLElement {
 
     /**
-     * Creates an instance.
-     */
-    public HTMLDivElement() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @Override
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
         super.jsConstructor();
     }
@@ -69,30 +60,5 @@ public class HTMLDivElement extends HTMLElement {
     @JsxSetter
     public void setAlign(final String align) {
         setAlign(align, false);
-    }
-
-    /**
-     * Returns the value of the {@code noWrap} attribute.
-     * @return the value of the {@code noWrap} attribute
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms534196.aspx">MSDN Documentation</a>
-     */
-    @JsxGetter(IE)
-    public boolean isNoWrap() {
-        return getDomNodeOrDie().hasAttribute("noWrap");
-    }
-
-    /**
-     * Sets the value of the {@code noWrap} attribute.
-     * @param noWrap the value of the {@code noWrap} attribute
-     * @see <a href="http://msdn.microsoft.com/en-us/library/ms534196.aspx">MSDN Documentation</a>
-     */
-    @JsxSetter(IE)
-    public void setNoWrap(final boolean noWrap) {
-        if (noWrap) {
-            getDomNodeOrDie().setAttribute("noWrap", "");
-        }
-        else {
-            getDomNodeOrDie().removeAttribute("noWrap");
-        }
     }
 }

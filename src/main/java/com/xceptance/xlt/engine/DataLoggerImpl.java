@@ -1,3 +1,18 @@
+/*
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.xceptance.xlt.engine;
 
 import java.io.BufferedWriter;
@@ -12,6 +27,7 @@ import com.xceptance.xlt.api.engine.DataLogger;
 import com.xceptance.xlt.api.engine.Session;
 import com.xceptance.xlt.api.util.XltLogger;
 import com.xceptance.xlt.common.XltConstants;
+import com.xceptance.xlt.report.providers.CustomLogsReportProvider;
 
 public class DataLoggerImpl implements DataLogger
 {
@@ -60,6 +76,10 @@ public class DataLoggerImpl implements DataLogger
                 {
                     return;
                 }
+                
+                // write a marker line that tells the CustomLogsReportProvider that this file is using a header
+                writer.write(CustomLogsReportProvider.CUSTOM_DATA_HEADER_MARKER);
+                writer.write(System.lineSeparator());
    
                 // write the header line
                 StringBuilder s = new StringBuilder(header);

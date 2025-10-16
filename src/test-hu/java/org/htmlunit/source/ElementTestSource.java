@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,12 +49,12 @@ public final class ElementTestSource {
                     final Field field2 = c.getDeclaredField("TAG_NAME2");
                     namesMap.put(field2.get(null).toString(), c.getName());
                 }
-                catch (final Exception e) {
-                    //ignore
+                catch (final Exception ignored) {
+                    // ignore
                 }
             }
-            catch (final Exception e) {
-                //ignore
+            catch (final Exception ignored) {
+                // ignore
             }
         }
         for (final String tag : DefaultElementFactory.SUPPORTED_TAGS_) {

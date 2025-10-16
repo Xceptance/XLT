@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,11 @@
  */
 package org.htmlunit.javascript.host;
 
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
-
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.javascript.host.xml.XMLDocumentTest;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.util.MimeType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,9 +39,7 @@ public class NamedNodeMapTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"name=f", "id=f", "foo=bar", "baz=blah"},
-            IE = {"name=f", "id=f", "baz=blah", "foo=bar"})
-    @NotYetImplemented(IE)
+    @Alerts({"name=f", "id=f", "foo=bar", "baz=blah"})
     public void attributes() throws Exception {
         final String html =
               "<html>\n"
@@ -75,9 +70,7 @@ public class NamedNodeMapTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"name=f", "id=f", "foo=bar", "baz=blah"},
-            IE = "exception")
-    @NotYetImplemented(IE)
+    @Alerts({"name=f", "id=f", "foo=bar", "baz=blah"})
     public void attributesForOf() throws Exception {
         final String html =
               "<html>\n"
@@ -124,11 +117,11 @@ public class NamedNodeMapTest extends WebDriverTestCase {
             + "    try {\n"
             + "      log(f.attributes.name.nodeName);\n"
             + "      log(f.attributes.name.nodeValue);\n"
-            + "    } catch(e) { log('exception'); }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "    try {\n"
             + "      log(f.attributes.NaMe.nodeName);\n"
             + "      log(f.attributes.nAmE.nodeValue);\n"
-            + "    } catch(e) { log('exception'); }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "    log(f.attributes.getNamedItem('notExisting'));\n"
             + "  }\n"
             + "</script>\n"
@@ -145,8 +138,7 @@ public class NamedNodeMapTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT =  {"myattr", "myattr2", "myattr", "myattr2", "myattr2"},
-            IE = {"myAttr", "myattr2", "myAttr", "myattr2", "myattr2"})
+    @Alerts({"myattr", "myattr2", "myattr", "myattr2", "myattr2"})
     public void getNamedItem_HTML_Case() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -198,7 +190,7 @@ public class NamedNodeMapTest extends WebDriverTestCase {
             + "    try {\n"
             + "      log(doc.documentElement.attributes.name.nodeName);\n"
             + "      log(doc.documentElement.attributes.name.nodeValue);\n"
-            + "    } catch(e) { log('exception'); }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "    log(doc.documentElement.attributes.getNamedItem('NaMe'));\n"
             + "    log(doc.documentElement.attributes.NaMe);\n"
             + "    log(doc.documentElement.attributes.getNamedItem('nonExistent'));\n"

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@ package org.htmlunit.javascript.host.event;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -44,8 +44,7 @@ public class CustomEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object CustomEvent]", "my", "false", "false", "false", "null"},
-            IE = "exception")
+    @Alerts({"[object CustomEvent]", "my", "false", "false", "false", "null"})
     public void create_ctor() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"
@@ -54,7 +53,7 @@ public class CustomEventTest extends WebDriverTestCase {
             + "    try {\n"
             + "      var event = new CustomEvent('my');\n"
             + "      dump(event);\n"
-            + "    } catch (e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + DUMP_EVENT_FUNCTION
             + "</script></head><body onload='test()'>\n"
@@ -67,7 +66,7 @@ public class CustomEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("TypeError")
     @HtmlUnitNYI(CHROME = {"[object CustomEvent]", "undefined", "false", "false", "false", "null"},
                 EDGE = {"[object CustomEvent]", "undefined", "false", "false", "false", "null"},
                 FF = {"[object CustomEvent]", "undefined", "false", "false", "false", "null"},
@@ -80,7 +79,7 @@ public class CustomEventTest extends WebDriverTestCase {
             + "    try {\n"
             + "      var event = new CustomEvent();\n"
             + "      dump(event);\n"
-            + "    } catch (e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + DUMP_EVENT_FUNCTION
             + "</script></head><body onload='test()'>\n"
@@ -93,8 +92,7 @@ public class CustomEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object CustomEvent]", "42", "false", "false", "false", "null"},
-            IE = "exception")
+    @Alerts({"[object CustomEvent]", "42", "false", "false", "false", "null"})
     public void create_ctorNumericType() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"
@@ -103,7 +101,7 @@ public class CustomEventTest extends WebDriverTestCase {
             + "    try {\n"
             + "      var event = new CustomEvent(42);\n"
             + "      dump(event);\n"
-            + "    } catch (e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + DUMP_EVENT_FUNCTION
             + "</script></head><body onload='test()'>\n"
@@ -116,8 +114,7 @@ public class CustomEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object CustomEvent]", "null", "false", "false", "false", "null"},
-            IE = "exception")
+    @Alerts({"[object CustomEvent]", "null", "false", "false", "false", "null"})
     public void create_ctorNullType() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"
@@ -126,7 +123,7 @@ public class CustomEventTest extends WebDriverTestCase {
             + "    try {\n"
             + "      var event = new CustomEvent(null);\n"
             + "      dump(event);\n"
-            + "    } catch (e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + DUMP_EVENT_FUNCTION
             + "</script></head><body onload='test()'>\n"
@@ -139,7 +136,7 @@ public class CustomEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void create_ctorUnknownType() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"
@@ -148,7 +145,7 @@ public class CustomEventTest extends WebDriverTestCase {
             + "    try {\n"
             + "      var event = new CustomEvent(unknown);\n"
             + "      dump(event);\n"
-            + "    } catch (e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + DUMP_EVENT_FUNCTION
             + "</script></head><body onload='test()'>\n"
@@ -161,8 +158,7 @@ public class CustomEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object CustomEvent]", "HtmlUnitEvent", "false", "false", "false", "null"},
-            IE = "exception")
+    @Alerts({"[object CustomEvent]", "HtmlUnitEvent", "false", "false", "false", "null"})
     public void create_ctorArbitraryType() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"
@@ -171,7 +167,7 @@ public class CustomEventTest extends WebDriverTestCase {
             + "    try {\n"
             + "      var event = new CustomEvent('HtmlUnitEvent');\n"
             + "      dump(event);\n"
-            + "    } catch (e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + DUMP_EVENT_FUNCTION
             + "</script></head><body onload='test()'>\n"
@@ -184,8 +180,7 @@ public class CustomEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object CustomEvent]", "click", "false", "false", "false", "abcd"},
-            IE = "exception")
+    @Alerts({"[object CustomEvent]", "click", "false", "false", "false", "abcd"})
     public void create_ctorAllDetails() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"
@@ -196,7 +191,7 @@ public class CustomEventTest extends WebDriverTestCase {
             + "        'detail': 'abcd'"
             + "      });\n"
             + "      dump(event);\n"
-            + "    } catch (e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + DUMP_EVENT_FUNCTION
             + "</script></head><body onload='test()'>\n"
@@ -217,7 +212,7 @@ public class CustomEventTest extends WebDriverTestCase {
             + "    try {\n"
             + "      var e = document.createEvent('CustomEvent');\n"
             + "      log(typeof e.initCustomEvent);\n"
-            + "    } catch(e) {log('exception')}\n"
+            + "    } catch(e) {logEx(e)}\n"
             + "  }\n"
             + "</script></head><body onload='test()'>\n"
             + "</body></html>";

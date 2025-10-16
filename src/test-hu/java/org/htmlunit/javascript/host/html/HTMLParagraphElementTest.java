@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlParagraph;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.WebDriver;
@@ -61,8 +61,7 @@ public class HTMLParagraphElementTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"", "hello", "left", "hi", "right"},
-            IE = {"", "error", "", "left", "error", "left", "right"})
+    @Alerts({"", "hello", "left", "hi", "right"})
     public void align() throws Exception {
         final String html =
             "<html>\n"
@@ -84,9 +83,7 @@ public class HTMLParagraphElementTest extends WebDriverTestCase {
             + "      function set(e, value) {\n"
             + "        try {\n"
             + "          e.align = value;\n"
-            + "        } catch (e) {\n"
-            + "          log('error');\n"
-            + "        }\n"
+            + "        } catch(e) { logEx(e); }\n"
             + "      }\n"
             + "    </script>\n"
             + "  </head>\n"
@@ -100,10 +97,8 @@ public class HTMLParagraphElementTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "undefined", "undefined", "undefined", "undefined", "undefined",
-                       "undefined", "left", "none", "right", "all", "2", "abc", "8"},
-            IE = {"", "left", "all", "right", "none", "", "", "!", "!", "!", "left", "none", "right", "all", "none",
-                  "", ""})
+    @Alerts({"undefined", "undefined", "undefined", "undefined", "undefined", "undefined",
+             "undefined", "left", "none", "right", "all", "2", "abc", "8"})
     public void clear() throws Exception {
         final String html
             = "<html><body>\n"

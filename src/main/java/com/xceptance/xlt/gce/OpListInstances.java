@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,9 +23,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.google.api.services.compute.model.Instance;
-import com.google.api.services.compute.model.InstanceGroup;
-import com.google.api.services.compute.model.Region;
+import com.google.cloud.compute.v1.Instance;
+import com.google.cloud.compute.v1.InstanceGroup;
+import com.google.cloud.compute.v1.Region;
 import com.xceptance.common.util.ConsoleUiUtils;
 
 /**
@@ -213,7 +213,7 @@ class OpListInstances
 
         for (final Instance instance : instances)
         {
-            final Map<String, String> labels = instance.getLabels();
+            final Map<String, String> labels = instance.getLabelsMap();
             if (labels != null)
             {
                 final String nameLabel = labels.get("name");
@@ -257,7 +257,7 @@ class OpListInstances
 
         for (final Instance instance : instances)
         {
-            final Map<String, String> instanceLabels = instance.getLabels();
+            final Map<String, String> instanceLabels = instance.getLabelsMap();
 
             if (instanceLabels != null)
             {

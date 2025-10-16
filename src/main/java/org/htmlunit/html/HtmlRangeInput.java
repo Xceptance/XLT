@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -133,7 +133,7 @@ public class HtmlRangeInput extends HtmlInput implements LabelableElement {
                 setValue(min + ((max - min) / 2));
             }
         }
-        catch (final NumberFormatException e) {
+        catch (final NumberFormatException ignored) {
             // ignore
         }
     }
@@ -188,7 +188,7 @@ public class HtmlRangeInput extends HtmlInput implements LabelableElement {
                 setRawValue(min + ((max - min) / 2));
             }
         }
-        catch (final NumberFormatException e) {
+        catch (final NumberFormatException ignored) {
             // ignore
         }
     }
@@ -254,7 +254,7 @@ public class HtmlRangeInput extends HtmlInput implements LabelableElement {
                 final double value = Double.parseDouble(getRawValue());
                 return getMinNumeric() <= value;
             }
-            catch (final NumberFormatException e) {
+            catch (final NumberFormatException ignored) {
                 // ignore
             }
         }
@@ -274,7 +274,7 @@ public class HtmlRangeInput extends HtmlInput implements LabelableElement {
                 final int value = Integer.parseInt(getRawValue());
                 return getMaxNumeric() >= value;
             }
-            catch (final NumberFormatException e) {
+            catch (final NumberFormatException ignored) {
                 // ignore
             }
         }

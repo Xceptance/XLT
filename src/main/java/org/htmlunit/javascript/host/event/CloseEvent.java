@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,10 @@
  */
 package org.htmlunit.javascript.host.event;
 
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
-
 import org.htmlunit.corejs.javascript.ScriptableObject;
 import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
-import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
 
 /**
@@ -44,6 +37,7 @@ public class CloseEvent extends Event {
      * Creates a new event instance.
      */
     public CloseEvent() {
+        super();
         setType(TYPE_CLOSE);
         reason_ = "";
     }
@@ -64,7 +58,7 @@ public class CloseEvent extends Event {
      * @param details the event details (optional)
      */
     @Override
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor(final String type, final ScriptableObject details) {
         super.jsConstructor(type, details);
 
@@ -73,24 +67,6 @@ public class CloseEvent extends Event {
             reason_ = JavaScriptEngine.toString(details.get("reason"));
             wasClean_ = JavaScriptEngine.toBoolean(details.get("wasClean"));
         }
-    }
-
-    /**
-     * Initializes this close event.
-     * @param type the event type
-     * @param bubbles whether or not the event should bubble
-     * @param cancelable whether or not the event the event should be cancelable
-     * @param wasClean the wasClean flag
-     * @param reasonCode the reason code
-     * @param reason the reason
-     */
-    @JsxFunction(IE)
-    public void initCloseEvent(final String type, final boolean bubbles, final boolean cancelable,
-            final boolean wasClean, final int reasonCode, final String reason) {
-        super.initEvent(type, bubbles, cancelable);
-        wasClean_ = wasClean;
-        code_ = reasonCode;
-        reason_ = reason;
     }
 
     /**

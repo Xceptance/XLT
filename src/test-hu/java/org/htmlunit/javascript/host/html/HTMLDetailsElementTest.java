@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ package org.htmlunit.javascript.host.html;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -32,10 +32,8 @@ public class HTMLDetailsElementTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"false", "null", "true", "", "false", "null", "true", "",
-                       "true", "", "true", "TrUE", "false", "null"},
-            IE = {"undefined", "null", "true", "null", "false", "null", "true", "null",
-                  "faLSE", "null", "faLSE", "TrUE", "faLSE", "null"})
+    @Alerts({"false", "null", "true", "", "false", "null", "true", "",
+             "true", "", "true", "TrUE", "false", "null"})
     public void open() throws Exception {
         final String html =
             "<html>\n"
@@ -89,8 +87,7 @@ public class HTMLDetailsElementTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"false", "null", "false", "null", "true", "", "true", "blah", "false", "null"},
-            IE = {"undefined", "null", "", "null", "abc", "null", "abc", "blah", "abc", "null"})
+    @Alerts({"false", "null", "false", "null", "true", "", "true", "blah", "false", "null"})
     public void openString() throws Exception {
         final String html =
             "<html>\n"
@@ -136,9 +133,8 @@ public class HTMLDetailsElementTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "null", "", "null", "abc", "null", "abc", "blah", "abc", "null"},
-            CHROME = {"", "null", "", "", "abc", "abc", "blah", "blah", "", "null"},
-            EDGE = {"", "null", "", "", "abc", "abc", "blah", "blah", "", "null"})
+    @Alerts(DEFAULT = {"", "null", "", "", "abc", "abc", "blah", "blah", "", "null"},
+            FF_ESR = {"undefined", "null", "", "null", "abc", "null", "abc", "blah", "abc", "null"})
     public void name() throws Exception {
         final String html =
             "<html>\n"

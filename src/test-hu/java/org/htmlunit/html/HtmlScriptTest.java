@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,9 +26,8 @@ import org.htmlunit.MockWebConnection;
 import org.htmlunit.SimpleWebTestCase;
 import org.htmlunit.WebClient;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.util.MimeType;
-import org.htmlunit.util.NameValuePair;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -223,8 +222,7 @@ public class HtmlScriptTest extends SimpleWebTestCase {
         conn.setResponse(URL_FIRST, html);
         conn.setResponse(URL_SECOND, "var foo;", MimeType.TEXT_JAVASCRIPT);
         conn.setResponse(URL_THIRD, "varrrr foo;", MimeType.TEXT_JAVASCRIPT);
-        conn.setResponse(fourOhFour, "", 404, "Missing", MimeType.TEXT_JAVASCRIPT,
-                new ArrayList<NameValuePair>());
+        conn.setResponse(fourOhFour, "", 404, "Missing", MimeType.TEXT_JAVASCRIPT, new ArrayList<>());
         client.setWebConnection(conn);
         final List<String> actual = new ArrayList<>();
         client.setAlertHandler(new CollectingAlertHandler(actual));

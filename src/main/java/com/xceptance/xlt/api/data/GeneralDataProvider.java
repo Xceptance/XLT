@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,8 @@ import com.xceptance.xlt.api.util.XltRandom;
 /**
  * The {@link GeneralDataProvider} class is a general data provider for commonly needed test data objects that comes in
  * handy all the time. It provides access to several fixed sets of data objects, which are backed by special predefined
- * data files in the XLT data directory ("[testsuite]/config/data/default"):
+ * data files in the {@value DataProvider#DEFAULT} subdirectory of the test suite's data directory (e.g.
+ * "[testsuite]/config/data/default"):
  * <ul>
  * <li>first names (firstnames.txt)</li>
  * <li>last names (lastnames.txt)</li>

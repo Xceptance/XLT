@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,7 @@
  */
 package org.htmlunit.javascript.host.html;
 
-import static org.htmlunit.BrowserVersionFeatures.JS_PROMISE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-
-import org.htmlunit.corejs.javascript.Undefined;
+import org.htmlunit.corejs.javascript.NativePromise;
 import org.htmlunit.html.HtmlMedia;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstant;
@@ -90,16 +84,10 @@ public class HTMLMediaElement extends HTMLElement {
     public static final int NETWORK_NO_SOURCE = 3;
 
     /**
-     * Creates an instance.
-     */
-    public HTMLMediaElement() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @Override
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
         super.jsConstructor();
     }
@@ -125,12 +113,9 @@ public class HTMLMediaElement extends HTMLElement {
      *         or is rejected if for any reason playback cannot be started
      */
     @JsxFunction
-    public Object play() {
-        if (getBrowserVersion().hasFeature(JS_PROMISE)) {
-            return setupRejectedPromise(() ->
-                        new DOMException("HtmlUnit does not support media play().", DOMException.NOT_FOUND_ERR));
-        }
-        return Undefined.instance;
+    public NativePromise play() {
+        return setupRejectedPromise(() ->
+                    new DOMException("HtmlUnit does not support media play().", DOMException.NOT_FOUND_ERR));
     }
 
     /**
@@ -138,6 +123,7 @@ public class HTMLMediaElement extends HTMLElement {
      */
     @JsxFunction
     public void pause() {
+        // nothing to do
     }
 
     /**
@@ -147,6 +133,7 @@ public class HTMLMediaElement extends HTMLElement {
      */
     @JsxFunction
     public void load() {
+        // nothing to do
     }
 
     /**
@@ -172,6 +159,11 @@ public class HTMLMediaElement extends HTMLElement {
         return getNodeNameCustomize();
     }
 
+    /**
+     * Separate method to be able to override this in subclasses.
+     *
+     * @return the node name
+     */
     protected String getNodeNameCustomize() {
         final HtmlMedia element = (HtmlMedia) getDomNodeOrNull();
         if (element == null) {

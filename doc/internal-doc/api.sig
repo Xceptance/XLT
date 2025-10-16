@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 8.6.0-SNAPSHOT
+#Version 9.2.0-SNAPSHOT
 
 CLSS public abstract com.xceptance.xlt.api.actions.AbstractAction
 cons protected init(com.xceptance.xlt.api.actions.AbstractAction,java.lang.String)
@@ -406,12 +406,14 @@ hfds TYPE_CODE
 CLSS public com.xceptance.xlt.api.engine.RequestData
 cons public init()
 cons public init(java.lang.String)
+fld public final static com.xceptance.xlt.api.util.XltCharBuffer NO_RESPONSE_CODE
 fld public final static com.xceptance.xlt.api.util.XltCharBuffer UNKNOWN_HOST
 meth public com.xceptance.xlt.api.util.XltCharBuffer getContentType()
 meth public com.xceptance.xlt.api.util.XltCharBuffer getFormData()
 meth public com.xceptance.xlt.api.util.XltCharBuffer getFormDataEncoding()
 meth public com.xceptance.xlt.api.util.XltCharBuffer getHost()
 meth public com.xceptance.xlt.api.util.XltCharBuffer getHttpMethod()
+meth public com.xceptance.xlt.api.util.XltCharBuffer getResponseCodeAsChars()
 meth public com.xceptance.xlt.api.util.XltCharBuffer getUrl()
 meth public com.xceptance.xlt.api.util.XltCharBuffer getUsedIpAddress()
 meth public int getBytesReceived()
@@ -425,6 +427,7 @@ meth public int getServerBusyTime()
 meth public int getTimeToFirstBytes()
 meth public int getTimeToLastBytes()
 meth public int hashCodeOfUrlWithoutFragment()
+meth public java.lang.String getOriginalUrl()
 meth public java.lang.String getRequestId()
 meth public java.lang.String getResponseId()
 meth public java.lang.String[] getIpAddresses()
@@ -446,6 +449,7 @@ meth public void setReceiveTime(int)
 meth public void setRemainingValues(java.util.List<com.xceptance.xlt.api.util.XltCharBuffer>)
 meth public void setRequestId(com.xceptance.xlt.api.util.XltCharBuffer)
 meth public void setRequestId(java.lang.String)
+meth public void setResponseCode(com.xceptance.xlt.api.util.XltCharBuffer)
 meth public void setResponseCode(int)
 meth public void setResponseId(com.xceptance.xlt.api.util.XltCharBuffer)
 meth public void setResponseId(java.lang.String)
@@ -458,7 +462,7 @@ meth public void setUrl(java.lang.String)
 meth public void setUsedIpAddress(com.xceptance.xlt.api.util.XltCharBuffer)
 meth public void setUsedIpAddress(java.lang.String)
 supr com.xceptance.xlt.api.engine.TimerData
-hfds IP_ADDRESSES_SEPARATOR,TYPE_CODE,bytesReceived,bytesSent,connectTime,contentType,dnsTime,formData,formDataEncoding,hashCodeOfUrlWithoutFragment,host,httpMethod,ipAddresses,receiveTime,requestId,responseCode,responseId,sendTime,serverBusyTime,timeToFirstBytes,timeToLastBytes,url,usedIpAddress
+hfds IP_ADDRESSES_SEPARATOR,TYPE_CODE,bytesReceived,bytesSent,connectTime,contentType,dnsTime,formData,formDataEncoding,hashCodeOfUrlWithoutFragment,host,httpMethod,ipAddresses,originalUrl,receiveTime,requestId,responseCode,responseCodeAsChars,responseId,sendTime,serverBusyTime,timeToFirstBytes,timeToLastBytes,url,usedIpAddress
 
 CLSS public com.xceptance.xlt.api.engine.RequestFilter
 cons public init()
@@ -1896,6 +1900,7 @@ meth public java.lang.CharSequence subSequence(int,int)
 meth public java.lang.String toDebugString()
 meth public java.lang.String toString()
 meth public java.util.List<com.xceptance.xlt.api.util.XltCharBuffer> split(char)
+meth public static boolean contains(com.xceptance.xlt.api.util.XltCharBuffer,com.xceptance.xlt.api.util.XltCharBuffer,int[])
 meth public static com.xceptance.xlt.api.util.XltCharBuffer empty()
 meth public static com.xceptance.xlt.api.util.XltCharBuffer emptyWhenNull(com.xceptance.xlt.api.util.XltCharBuffer)
 meth public static com.xceptance.xlt.api.util.XltCharBuffer valueOf(char[])
@@ -1905,6 +1910,7 @@ meth public static com.xceptance.xlt.api.util.XltCharBuffer valueOf(com.xceptanc
 meth public static com.xceptance.xlt.api.util.XltCharBuffer valueOf(java.lang.String)
 meth public static com.xceptance.xlt.api.util.XltCharBuffer valueOf(java.lang.String,java.lang.String)
 meth public static com.xceptance.xlt.api.util.XltCharBuffer valueOf(java.lang.String,java.lang.String,java.lang.String)
+meth public static int[] createShiftTable(com.xceptance.xlt.api.util.XltCharBuffer)
 supr java.lang.Object
 hfds EMPTY_ARRAY,from,hashCode,length,src
 
@@ -1942,6 +1948,8 @@ meth public abstract java.lang.String getProperty(java.lang.String)
 meth public abstract java.lang.String getProperty(java.lang.String,java.lang.String)
 meth public abstract java.lang.String getPropertyRandomValue(java.lang.String,java.lang.String)
 meth public abstract java.lang.String getVersion()
+meth public abstract java.nio.file.Path getConfigDirectory()
+meth public abstract java.nio.file.Path getDataDirectory()
 meth public abstract java.util.LinkedHashMap<java.lang.String,java.util.Properties> getPropertyBuckets()
 meth public abstract java.util.Map<java.lang.String,java.lang.String> getPropertiesForKey(java.lang.String)
 meth public abstract java.util.Optional<java.lang.String> getProperty(com.xceptance.xlt.api.engine.Session,java.lang.String)
@@ -2093,15 +2101,11 @@ supr java.lang.Object
 hfds binary,headless,options,profile
 
 CLSS public com.xceptance.xlt.engine.xltdriver.HtmlUnitDriver
-cons public init()
-cons public init(boolean)
-cons public init(org.htmlunit.BrowserVersion)
-cons public init(org.htmlunit.BrowserVersion,boolean)
-cons public init(org.openqa.selenium.Capabilities)
-cons public init(org.openqa.selenium.Capabilities,org.openqa.selenium.Capabilities)
+cons protected init(org.htmlunit.BrowserVersion)
 fld public final static java.lang.String BROWSER_LANGUAGE_CAPABILITY = "browserLanguage"
 fld public final static java.lang.String DOWNLOAD_IMAGES_CAPABILITY = "downloadImages"
 fld public final static java.lang.String JAVASCRIPT_ENABLED = "javascriptEnabled"
+innr protected HtmlUnitWebDriverOptions
 innr protected abstract interface static JavaScriptResultsCollection
 innr protected static ElementsMap
 intf org.openqa.selenium.HasCapabilities
@@ -2126,6 +2130,7 @@ meth public com.xceptance.xlt.engine.xltdriver.HtmlUnitAlert getAlert()
 meth public com.xceptance.xlt.engine.xltdriver.HtmlUnitDriver$ElementsMap getElementsMap()
 meth public com.xceptance.xlt.engine.xltdriver.HtmlUnitKeyboard getKeyboard()
 meth public com.xceptance.xlt.engine.xltdriver.HtmlUnitMouse getMouse()
+meth public com.xceptance.xlt.engine.xltdriver.HtmlUnitWebElement toWebElement(java.lang.String)
 meth public com.xceptance.xlt.engine.xltdriver.HtmlUnitWindow getCurrentWindow()
 meth public java.lang.String getCurrentUrl()
 meth public java.lang.String getPageSource()
@@ -2176,6 +2181,7 @@ meth public abstract char charAt(int)
 meth public abstract int length()
 meth public abstract java.lang.CharSequence subSequence(int,int)
 meth public abstract java.lang.String toString()
+meth public boolean isEmpty()
 meth public java.util.stream.IntStream chars()
 meth public java.util.stream.IntStream codePoints()
 meth public static int compare(java.lang.CharSequence,java.lang.CharSequence)
@@ -2198,6 +2204,7 @@ cons public init(java.lang.String)
 cons public init(java.lang.String,java.lang.Throwable)
 cons public init(java.lang.Throwable)
 supr java.lang.Throwable
+hfds serialVersionUID
 
 CLSS public java.lang.IllegalStateException
 cons public init()
@@ -2205,6 +2212,7 @@ cons public init(java.lang.String)
 cons public init(java.lang.String,java.lang.Throwable)
 cons public init(java.lang.Throwable)
 supr java.lang.RuntimeException
+hfds serialVersionUID
 
 CLSS public abstract interface java.lang.Iterable<%0 extends java.lang.Object>
 meth public abstract java.util.Iterator<{java.lang.Iterable%0}> iterator()
@@ -2215,7 +2223,7 @@ CLSS public java.lang.Object
 cons public init()
 meth protected java.lang.Object clone() throws java.lang.CloneNotSupportedException
 meth protected void finalize() throws java.lang.Throwable
- anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="9")
+ anno 0 java.lang.Deprecated(boolean forRemoval=true, java.lang.String since="9")
 meth public boolean equals(java.lang.Object)
 meth public final java.lang.Class<?> getClass()
 meth public final void notify()
@@ -2233,6 +2241,7 @@ cons public init(java.lang.String)
 cons public init(java.lang.String,java.lang.Throwable)
 cons public init(java.lang.Throwable)
 supr java.lang.Exception
+hfds serialVersionUID
 
 CLSS public java.lang.Throwable
 cons protected init(java.lang.String,java.lang.Throwable,boolean,boolean)
@@ -2255,6 +2264,8 @@ meth public void printStackTrace(java.io.PrintStream)
 meth public void printStackTrace(java.io.PrintWriter)
 meth public void setStackTrace(java.lang.StackTraceElement[])
 supr java.lang.Object
+hfds CAUSE_CAPTION,EMPTY_THROWABLE_ARRAY,NULL_CAUSE_MESSAGE,SELF_SUPPRESSION_MESSAGE,SUPPRESSED_CAPTION,SUPPRESSED_SENTINEL,UNASSIGNED_STACK,backtrace,cause,depth,detailMessage,serialVersionUID,stackTrace,suppressedExceptions
+hcls PrintStreamOrWriter,SentinelHolder,WrappedPrintStream,WrappedPrintWriter
 
 CLSS public abstract interface java.lang.annotation.Annotation
 meth public abstract boolean equals(java.lang.Object)
@@ -2312,7 +2323,7 @@ meth public java.util.stream.Stream<{java.util.Collection%0}> parallelStream()
 meth public java.util.stream.Stream<{java.util.Collection%0}> stream()
 
 CLSS public abstract interface java.util.List<%0 extends java.lang.Object>
-intf java.util.Collection<{java.util.List%0}>
+intf java.util.SequencedCollection<{java.util.List%0}>
 meth public !varargs static <%0 extends java.lang.Object> java.util.List<{%%0}> of({%%0}[])
  anno 0 java.lang.SafeVarargs()
 meth public abstract <%0 extends java.lang.Object> {%%0}[] toArray({%%0}[])
@@ -2340,6 +2351,7 @@ meth public abstract void clear()
 meth public abstract {java.util.List%0} get(int)
 meth public abstract {java.util.List%0} remove(int)
 meth public abstract {java.util.List%0} set(int,{java.util.List%0})
+meth public java.util.List<{java.util.List%0}> reversed()
 meth public java.util.Spliterator<{java.util.List%0}> spliterator()
 meth public static <%0 extends java.lang.Object> java.util.List<{%%0}> copyOf(java.util.Collection<? extends {%%0}>)
 meth public static <%0 extends java.lang.Object> java.util.List<{%%0}> of()
@@ -2353,8 +2365,24 @@ meth public static <%0 extends java.lang.Object> java.util.List<{%%0}> of({%%0},
 meth public static <%0 extends java.lang.Object> java.util.List<{%%0}> of({%%0},{%%0},{%%0},{%%0},{%%0},{%%0},{%%0},{%%0})
 meth public static <%0 extends java.lang.Object> java.util.List<{%%0}> of({%%0},{%%0},{%%0},{%%0},{%%0},{%%0},{%%0},{%%0},{%%0})
 meth public static <%0 extends java.lang.Object> java.util.List<{%%0}> of({%%0},{%%0},{%%0},{%%0},{%%0},{%%0},{%%0},{%%0},{%%0},{%%0})
+meth public void addFirst({java.util.List%0})
+meth public void addLast({java.util.List%0})
 meth public void replaceAll(java.util.function.UnaryOperator<{java.util.List%0}>)
 meth public void sort(java.util.Comparator<? super {java.util.List%0}>)
+meth public {java.util.List%0} getFirst()
+meth public {java.util.List%0} getLast()
+meth public {java.util.List%0} removeFirst()
+meth public {java.util.List%0} removeLast()
+
+CLSS public abstract interface java.util.SequencedCollection<%0 extends java.lang.Object>
+intf java.util.Collection<{java.util.SequencedCollection%0}>
+meth public abstract java.util.SequencedCollection<{java.util.SequencedCollection%0}> reversed()
+meth public void addFirst({java.util.SequencedCollection%0})
+meth public void addLast({java.util.SequencedCollection%0})
+meth public {java.util.SequencedCollection%0} getFirst()
+meth public {java.util.SequencedCollection%0} getLast()
+meth public {java.util.SequencedCollection%0} removeFirst()
+meth public {java.util.SequencedCollection%0} removeLast()
 
 CLSS public abstract interface !annotation org.jspecify.annotations.NullMarked
  anno 0 java.lang.annotation.Documented()
@@ -2436,7 +2464,6 @@ intf org.openqa.selenium.devtools.HasDevTools
 intf org.openqa.selenium.html5.LocationContext
 intf org.openqa.selenium.html5.WebStorage
 intf org.openqa.selenium.logging.HasLogEvents
-intf org.openqa.selenium.mobile.NetworkConnection
 meth public !varargs java.lang.Object executeScript(org.openqa.selenium.ScriptKey,java.lang.Object[])
 meth public <%0 extends java.lang.Object> void onLogEvent(org.openqa.selenium.logging.EventType<{%%0}>)
 meth public java.lang.String getCastIssueMessage()
@@ -2454,10 +2481,6 @@ meth public org.openqa.selenium.html5.Location location()
  anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
 meth public org.openqa.selenium.html5.SessionStorage getSessionStorage()
  anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
-meth public org.openqa.selenium.mobile.NetworkConnection$ConnectionType getNetworkConnection()
- anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
-meth public org.openqa.selenium.mobile.NetworkConnection$ConnectionType setNetworkConnection(org.openqa.selenium.mobile.NetworkConnection$ConnectionType)
- anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
 meth public void deleteNetworkConditions()
 meth public void launchApp(java.lang.String)
 meth public void quit()
@@ -2473,7 +2496,7 @@ meth public void startTabMirroring(java.lang.String)
 meth public void stopCasting(java.lang.String)
 meth public void unpin(org.openqa.selenium.ScriptKey)
 supr org.openqa.selenium.remote.RemoteWebDriver
-hfds LOG,biDi,biDiUri,capabilities,connection,devTools,launch,locationContext,networkConditions,networkConnection,permissions,scriptKeys,webStorage
+hfds LOG,biDi,biDiUri,capabilities,connection,devTools,launch,locationContext,networkConditions,permissions,scriptKeys,webStorage
 
 CLSS public abstract interface org.openqa.selenium.chromium.HasCasting
  anno 0 org.openqa.selenium.Beta()
@@ -2520,7 +2543,6 @@ cons public init(org.openqa.selenium.firefox.FirefoxDriverService,org.openqa.sel
 cons public init(org.openqa.selenium.firefox.FirefoxOptions)
 innr public final static SystemProperty
 intf org.openqa.selenium.bidi.HasBiDi
-intf org.openqa.selenium.devtools.HasDevTools
 intf org.openqa.selenium.firefox.HasContext
 intf org.openqa.selenium.firefox.HasExtensions
 intf org.openqa.selenium.firefox.HasFullPageScreenshot
@@ -2529,12 +2551,8 @@ meth public <%0 extends java.lang.Object> {%%0} getFullPageScreenshotAs(org.open
 meth public java.lang.String installExtension(java.nio.file.Path)
 meth public java.lang.String installExtension(java.nio.file.Path,java.lang.Boolean)
 meth public java.util.Optional<org.openqa.selenium.bidi.BiDi> maybeGetBiDi()
-meth public java.util.Optional<org.openqa.selenium.devtools.DevTools> maybeGetDevTools()
- anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
 meth public org.openqa.selenium.Capabilities getCapabilities()
 meth public org.openqa.selenium.bidi.BiDi getBiDi()
-meth public org.openqa.selenium.devtools.DevTools getDevTools()
- anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
 meth public org.openqa.selenium.firefox.FirefoxCommandContext getContext()
 meth public org.openqa.selenium.html5.LocalStorage getLocalStorage()
  anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
@@ -2547,7 +2565,7 @@ meth public void setContext(org.openqa.selenium.firefox.FirefoxCommandContext)
 meth public void setFileDetector(org.openqa.selenium.remote.FileDetector)
 meth public void uninstallExtension(java.lang.String)
 supr org.openqa.selenium.remote.RemoteWebDriver
-hfds LOG,biDi,biDiUri,capabilities,cdpUri,connection,context,devTools,extensions,fullPageScreenshot,webStorage
+hfds LOG,biDi,biDiUri,capabilities,context,extensions,fullPageScreenshot,webStorage
 hcls FirefoxDriverCommandExecutor
 
 CLSS public abstract interface org.openqa.selenium.firefox.HasContext
@@ -2581,12 +2599,6 @@ meth public abstract void resetInputState()
 
 CLSS public abstract interface org.openqa.selenium.logging.HasLogEvents
 meth public abstract <%0 extends java.lang.Object> void onLogEvent(org.openqa.selenium.logging.EventType<{%%0}>)
-
-CLSS public abstract interface org.openqa.selenium.mobile.NetworkConnection
- anno 0 java.lang.Deprecated(boolean forRemoval=false, java.lang.String since="")
-innr public static ConnectionType
-meth public abstract org.openqa.selenium.mobile.NetworkConnection$ConnectionType getNetworkConnection()
-meth public abstract org.openqa.selenium.mobile.NetworkConnection$ConnectionType setNetworkConnection(org.openqa.selenium.mobile.NetworkConnection$ConnectionType)
 
 CLSS public abstract interface !annotation org.openqa.selenium.remote.Augmentable
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
@@ -2670,6 +2682,7 @@ hfds LOG,WEBDRIVER_REMOTE_ENABLE_TRACING,converter,elementLocation,errorHandler,
 hcls RemoteAlert,RemoteNavigation,RemoteVirtualAuthenticator
 
 CLSS public abstract interface org.openqa.selenium.virtualauthenticator.HasVirtualAuthenticator
+ anno 0 org.jspecify.annotations.NullMarked()
 meth public abstract org.openqa.selenium.virtualauthenticator.VirtualAuthenticator addVirtualAuthenticator(org.openqa.selenium.virtualauthenticator.VirtualAuthenticatorOptions)
 meth public abstract void removeVirtualAuthenticator(org.openqa.selenium.virtualauthenticator.VirtualAuthenticator)
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@ package org.htmlunit.javascript.host.dom;
 
 import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
 import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import org.htmlunit.javascript.HtmlUnitScriptable;
 import org.htmlunit.javascript.configuration.JsxClass;
@@ -28,19 +27,14 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
  * @author Ahmed Ashour
  * @author Ronald Brill
  */
-@JsxClass({CHROME, EDGE, IE})
+@JsxClass({CHROME, EDGE})
 public class DOMError extends HtmlUnitScriptable {
-
-    /**
-     * Creates an instance.
-     */
-    public DOMError() {
-    }
 
     /**
      * JavaScript constructor.
      */
     @JsxConstructor({CHROME, EDGE})
     public void jsConstructor() {
+        // nothing to do
     }
 }

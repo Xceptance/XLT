@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -149,6 +149,24 @@ public class FuzzerTest extends WebTestCase {
     public void case58943() throws Exception {
         // https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=58943
         test("test-58943.html");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void case67067() throws Exception {
+        // https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=67067
+        test("test-67067.html");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    public void case67493() throws Exception {
+        // https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=67493
+        test("test-67493.html");
     }
 
     private void test(final String inputFileName) throws Exception {

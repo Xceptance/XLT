@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -236,9 +236,14 @@ public final class XltConstants
     public static final String DIRECTORY_DATE_FORMAT = COMMANDLINE_DATE_FORMAT;
 
     /**
-     * The name of the configuration directory
+     * The name of the configuration directory.
      */
     public static final String CONFIG_DIR_NAME = "config";
+
+    /**
+     * The default path of the data directory.
+     */
+    public static final String DEFAULT_DATA_DIR_PATH = XltConstants.CONFIG_DIR_NAME + "/data";
 
     /**
      * The directory name of the common resources (CSS, JS, Images) for all test reports.
@@ -470,6 +475,11 @@ public final class XltConstants
      * The name if we want to clean the user info
      */
     public static final String PROP_REMOVE_USERINFO_FROM_REQUEST_URL = XltConstants.XLT_PACKAGE_PATH + ".results.data.request.removeUserInfoFromURL";
+
+    /**
+     * The name of the property for specifying the test suite's data directory.
+     */
+    public static final String PROP_DATA_DIRECTORY = XltConstants.XLT_PACKAGE_PATH + ".data.directory";
 
     /*
      * Scorecard configuration values

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,11 +13,6 @@
  * limitations under the License.
  */
 package org.htmlunit.javascript.host.canvas;
-
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import java.io.IOException;
 
@@ -63,13 +58,15 @@ public class CanvasRenderingContext2D extends HtmlUnitScriptable {
      * Default constructor.
      */
     public CanvasRenderingContext2D() {
+        super();
     }
 
     /**
      * JavaScript constructor.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 
     /**
@@ -77,6 +74,7 @@ public class CanvasRenderingContext2D extends HtmlUnitScriptable {
      * @param canvas the {@link HTMLCanvasElement}
      */
     public CanvasRenderingContext2D(final HTMLCanvasElement canvas) {
+        super();
         canvas_ = canvas;
         renderingBackend_ = null;
     }
@@ -115,7 +113,7 @@ public class CanvasRenderingContext2D extends HtmlUnitScriptable {
      * @return the {@code fillStyle} property
      */
     @JsxGetter
-    public Object getFillStyle() {
+    public HtmlUnitScriptable getFillStyle() {
         LOG.info("CanvasRenderingContext2D.getFillStyle() not yet implemented");
         return null;
     }
@@ -134,7 +132,7 @@ public class CanvasRenderingContext2D extends HtmlUnitScriptable {
      * @return the {@code strokeStyle} property
      */
     @JsxGetter
-    public Object getStrokeStyle() {
+    public HtmlUnitScriptable getStrokeStyle() {
         LOG.info("CanvasRenderingContext2D.getStrokeStyle() not yet implemented");
         return null;
     }
@@ -431,7 +429,7 @@ public class CanvasRenderingContext2D extends HtmlUnitScriptable {
                             sx, sy, sWidthI, sHeightI, dxI, dyI, dWidthI, dHeightI);
                 }
             }
-            catch (final IOException ioe) {
+            catch (final IOException ex) {
                 LOG.info("There is no ImageReader available for you imgage with src '" + imageElem.getSrc() + "'"
                         + "Please have a look at https://www.htmlunit.org/images-howto.html "
                         + "for a possible solution.");
@@ -452,8 +450,8 @@ public class CanvasRenderingContext2D extends HtmlUnitScriptable {
             }
             return DataURLConnection.DATA_PREFIX + type + ";base64," + getRenderingBackend().encodeToString(type);
         }
-        catch (final IOException ioe) {
-            throw JavaScriptEngine.throwAsScriptRuntimeEx(ioe);
+        catch (final IOException ex) {
+            throw JavaScriptEngine.throwAsScriptRuntimeEx(ex);
         }
     }
 
@@ -468,7 +466,7 @@ public class CanvasRenderingContext2D extends HtmlUnitScriptable {
      * @param endAngle the endAngle
      * @param anticlockwise the anticlockwise
      */
-    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
+    @JsxFunction
     public void ellipse(final double x, final double y,
                     final double radiusX, final double radiusY,
                     final double rotation, final double startAngle, final double endAngle,
@@ -526,16 +524,16 @@ public class CanvasRenderingContext2D extends HtmlUnitScriptable {
     /**
      * Dummy placeholder.
      */
-    @JsxFunction
-    public void getLineDash() {
+    @JsxFunction(functionName = "getLineDash")
+    public void lineDash() {
         LOG.info("CanvasRenderingContext2D.getLineDash() not yet implemented");
     }
 
     /**
      * Dummy placeholder.
      */
-    @JsxFunction
-    public void getLineData() {
+    @JsxFunction(functionName = "getLineData")
+    public void lineData() {
         LOG.info("CanvasRenderingContext2D.getLineData() not yet implemented");
     }
 
@@ -565,8 +563,7 @@ public class CanvasRenderingContext2D extends HtmlUnitScriptable {
     @JsxFunction
     public TextMetrics measureText(final Object text) {
         if (text == null || JavaScriptEngine.isUndefined(text)) {
-            throw JavaScriptEngine.throwAsScriptRuntimeEx(
-                    new RuntimeException("Missing argument for CanvasRenderingContext2D.measureText()."));
+            throw JavaScriptEngine.typeError("Missing argument for CanvasRenderingContext2D.measureText().");
         }
 
         final String textValue = JavaScriptEngine.toString(text);

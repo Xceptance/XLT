@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ import org.htmlunit.xpath.xml.utils.WrappedRuntimeException;
  * @author Ahmed Ashour
  * @author Ronald Brill
  */
-class XPathAdapter {
+public class XPathAdapter {
 
     private enum STATE {
         DEFAULT,
@@ -58,28 +58,22 @@ class XPathAdapter {
      * Constructor.
      * @param exprString the XPath expression
      * @param prefixResolver a prefix resolver to use to resolve prefixes to namespace URIs
-     * @param errorListener the error listener, or {@code null} if default should be used
      * @param caseSensitive whether the attributes should be case-sensitive
      * @throws TransformerException if a syntax or other error occurs
      */
-    XPathAdapter(final String exprString, final PrefixResolver prefixResolver,
-        final ErrorListener errorListener, final boolean caseSensitive)
+    public XPathAdapter(final String exprString, final PrefixResolver prefixResolver, final boolean caseSensitive)
                 throws TransformerException {
 
         initFunctionTable();
 
-        ErrorListener errListener = errorListener;
-        if (errListener == null) {
-            errListener = new DefaultErrorHandler();
-        }
-        final XPathParser parser = new XPathParser(errListener);
-        final Compiler compiler = new Compiler(errorListener, funcTable_);
+        final ErrorListener errorHandler = new DefaultErrorHandler();
+        final XPathParser parser = new XPathParser(errorHandler);
+        final Compiler compiler = new Compiler(errorHandler, funcTable_);
 
         final String expression = preProcessXPath(exprString, caseSensitive);
         parser.initXPath(compiler, expression, prefixResolver);
 
-        final Expression expr = compiler.compile(0);
-        mainExp_ = expr;
+        mainExp_ = compiler.compile(0);
     }
 
     /**
@@ -90,7 +84,6 @@ class XPathAdapter {
      * @param caseSensitive whether or not the XPath expression should be case-sensitive
      * @return the processed XPath expression
      */
-    @SuppressWarnings("PMD.UselessParentheses")
     private static String preProcessXPath(final String xpath, final boolean caseSensitive) {
         if (caseSensitive) {
             return xpath;
@@ -195,6 +188,7 @@ class XPathAdapter {
      * @return the result of the XPath or null if callbacks are used
      * @throws TransformerException if the error condition is severe enough to halt processing
      */
+    @SuppressWarnings("PMD.PreserveStackTrace")
     XObject execute(final XPathContext xpathContext, final int contextNode,
         final PrefixResolver namespaceContext) throws TransformerException {
         xpathContext.pushNamespaceContext(namespaceContext);
@@ -206,14 +200,14 @@ class XPathAdapter {
         try {
             xobj = mainExp_.execute(xpathContext);
         }
-        catch (final TransformerException te) {
-            te.setLocator(mainExp_);
+        catch (final TransformerException ex) {
+            ex.setLocator(mainExp_);
             final ErrorListener el = xpathContext.getErrorListener();
             if (null != el) {
-                el.error(te);
+                el.error(ex);
             }
             else {
-                throw te;
+                throw ex;
             }
         }
         catch (final Exception e) {

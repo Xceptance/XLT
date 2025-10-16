@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -324,7 +324,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
         {
             final String password = props.getProperty("com.xceptance.xlt.auth.password", "");
 
-            ((DefaultCredentialsProvider) getCredentialsProvider()).addCredentials(userName, password);
+            ((DefaultCredentialsProvider) getCredentialsProvider()).addCredentials(userName, password.toCharArray());
 
             if (XltLogger.runTimeLogger.isInfoEnabled())
             {
@@ -355,12 +355,12 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
 
             // proxy authentication
             final String proxyUserName = props.getProperty("com.xceptance.xlt.proxy.userName");
-            final String proxyPassword = props.getProperty("com.xceptance.xlt.proxy.password");
+            final String proxyPassword = props.getProperty("com.xceptance.xlt.proxy.password", "");
 
             if (proxyUserName != null && proxyUserName.length() > 0)
             {
-                ((DefaultCredentialsProvider) getCredentialsProvider()).addCredentials(proxyUserName, proxyPassword, proxyHost, proxyPort,
-                                                                                       null);
+                ((DefaultCredentialsProvider) getCredentialsProvider()).addCredentials(proxyUserName, proxyPassword.toCharArray(),
+                                                                                       proxyHost, proxyPort, null);
 
                 if (XltLogger.runTimeLogger.isInfoEnabled())
                 {
@@ -773,8 +773,8 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
         // JS resources
         if (loadStaticContent || haveJS)
         {
-            // remove comments (don't remove conditional comments if IE)
-            final String commentPattern = getBrowserVersion().isIE() ? "(?sm)<!--[^\\[].*?-->" : "(?sm)<!--.*?-->";
+            // remove comments
+            final String commentPattern = "(?sm)<!--.*?-->";
             page = RegExUtils.replaceAll(page, commentPattern, "");
 
             // remove scripts (in-line scripts might contain resource URLs in the code)
@@ -1017,7 +1017,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
      */
     @Override
     public void download(final WebWindow requestingWindow, final String target, final WebRequest request, final boolean checkHash,
-                         final boolean forceLoad, final boolean forceAttachment, final String description)
+                         final boolean forceLoad, final String forceAttachmentWithFilename, final String description)
     {
         if (requestingWindow.getTopWindow() == requestingWindow)
         {
@@ -1036,7 +1036,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
 
         request.setDocumentRequest();
 
-        super.download(requestingWindow, target, request, checkHash, forceLoad, forceAttachment, description);
+        super.download(requestingWindow, target, request, checkHash, forceLoad, forceAttachmentWithFilename, description);
     }
 
     /**
@@ -1903,11 +1903,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
         final BrowserVersion browserVersion;
         final String browserType = XltProperties.getInstance().getProperty("com.xceptance.xlt.browser", "FF").toUpperCase();
 
-        if (browserType.equals("IE"))
-        {
-            browserVersion = BrowserVersion.INTERNET_EXPLORER;
-        }
-        else if (browserType.equals("CH"))
+        if (browserType.equals("CH"))
         {
             browserVersion = BrowserVersion.CHROME;
         }

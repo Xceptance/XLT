@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,7 +47,7 @@ final class CrcUrlMapping implements UrlMapping
             }
         }
 
-        return com.xceptance.common.lang.StringUtils.crc32(UrlUtils.encodeUrl(url, true, StandardCharsets.UTF_8).toString()) +
+        return com.xceptance.common.lang.StringUtils.crc32(UrlUtils.encodeUrl(url, StandardCharsets.UTF_8).toString()) +
                getFileSuffix(url);
     }
 

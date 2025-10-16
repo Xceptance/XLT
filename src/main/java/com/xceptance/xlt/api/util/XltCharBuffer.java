@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -732,19 +732,18 @@ public class XltCharBuffer implements CharSequence, Comparable<XltCharBuffer>
     public boolean equals(Object obj)
     {
         // this test is null-safe and highly JVM optimized
-        if (!(obj instanceof XltCharBuffer))
+        if (obj instanceof XltCharBuffer)
+        {
+            final XltCharBuffer other = (XltCharBuffer) obj;
+            return Arrays.equals(this.src, 
+                                 from, from + length, 
+                                 other.src, 
+                                 other.from, other.from + other.length);
+        }
+        else
         {
             return false;
         }
-
-        final XltCharBuffer other = (XltCharBuffer) obj;
-        if (this.length != other.length)
-        {
-            return false;
-        }
-
-        // now, we go the expensive route
-        return Arrays.equals(this.src, from, from + length, other.src, other.from, other.from + length);
     }
 
     /*
@@ -762,6 +761,73 @@ public class XltCharBuffer implements CharSequence, Comparable<XltCharBuffer>
         return substring(start, end);
     }
 
+    /**
+     * Creates the shift table needed for the Boyer-Moore-Horspool algorithm.
+     * 
+     * @param needle
+     * @return the shift table
+     */
+    public static int[] createShiftTable(final XltCharBuffer needle) 
+    {
+        int[] shiftTable = new int[256];
+        for (int i = 0; i < 256; i++) 
+        {
+            shiftTable[i] = needle.length;
+        }
+        for (int i = 0; i < needle.length - 1; i++) 
+        {
+            // if we don't support it, skip it, later we will shift by needle length 
+            // and of course not optimize anything
+            if (needle.charAt(i) < shiftTable.length) 
+            {
+                shiftTable[needle.charAt(i)] = needle.length - 1 - i;
+            }
+        }
+        return shiftTable;
+    }
+    
+    /**
+     * Checks if the needle is contained in the haystack using the Boyer-Moore-Horspool algorithm.
+     * 
+     * @param haystack the haystack
+     * @param needle the needle
+     * @param shiftTable the precomputed shift table for the needle
+     * @return true if the needle is contained in the haystack, false otherwise
+     */
+    public static boolean contains(final XltCharBuffer haystack, final XltCharBuffer needle, final int[] shiftTable) 
+    {
+        if (needle.length > haystack.length) 
+        {
+            return false;
+        }
+
+        int i = 0;
+        while (i <= haystack.length - needle.length) 
+        {
+            int j = needle.length - 1;
+            while (j >= 0 && haystack.charAt(i + j) == needle.charAt(j)) 
+            {
+                j--;
+            }
+            if (j < 0)
+            {
+                return true;
+            }
+            var nextCharIndex = i + needle.length - 1;
+            if (shiftTable.length <= haystack.charAt(nextCharIndex)) 
+            {
+                // character not in table, shift by needle length
+                i += needle.length;
+            }
+            else 
+            {
+                // shift according to table
+                i += shiftTable[haystack.charAt(nextCharIndex)];
+            }
+        }
+        return false;
+    }
+    
     /**
      * Compares this object with the specified object for order. Returns a negative integer, zero, or a positive integer
      * as this object is less than, equal to, or greater than the specified object.

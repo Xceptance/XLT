@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,6 @@ import java.util.WeakHashMap;
 
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.javascript.HtmlUnitScriptable;
-import org.htmlunit.javascript.host.ActiveXObject;
-import org.htmlunit.javascript.host.ApplicationCache;
 import org.htmlunit.javascript.host.AudioScheduledSourceNode;
 import org.htmlunit.javascript.host.BarProp;
 import org.htmlunit.javascript.host.BatteryManager;
@@ -43,8 +41,6 @@ import org.htmlunit.javascript.host.MessagePort;
 import org.htmlunit.javascript.host.MimeType;
 import org.htmlunit.javascript.host.MimeTypeArray;
 import org.htmlunit.javascript.host.NamedNodeMap;
-import org.htmlunit.javascript.host.Namespace;
-import org.htmlunit.javascript.host.NamespaceCollection;
 import org.htmlunit.javascript.host.Navigator;
 import org.htmlunit.javascript.host.Notification;
 import org.htmlunit.javascript.host.PerformanceObserver;
@@ -60,7 +56,6 @@ import org.htmlunit.javascript.host.ReadableStream;
 import org.htmlunit.javascript.host.Screen;
 import org.htmlunit.javascript.host.ScreenOrientation;
 import org.htmlunit.javascript.host.SharedWorker;
-import org.htmlunit.javascript.host.SimpleArray;
 import org.htmlunit.javascript.host.Storage;
 import org.htmlunit.javascript.host.StorageManager;
 import org.htmlunit.javascript.host.TextDecoder;
@@ -71,7 +66,8 @@ import org.htmlunit.javascript.host.URL;
 import org.htmlunit.javascript.host.URLSearchParams;
 import org.htmlunit.javascript.host.WebSocket;
 import org.htmlunit.javascript.host.Window;
-import org.htmlunit.javascript.host.XPathExpression;
+import org.htmlunit.javascript.host.abort.AbortController;
+import org.htmlunit.javascript.host.abort.AbortSignal;
 import org.htmlunit.javascript.host.animations.Animation;
 import org.htmlunit.javascript.host.animations.AnimationEvent;
 import org.htmlunit.javascript.host.animations.KeyframeEffect;
@@ -103,14 +99,6 @@ import org.htmlunit.javascript.host.canvas.WebGLTexture;
 import org.htmlunit.javascript.host.canvas.WebGLTransformFeedback;
 import org.htmlunit.javascript.host.canvas.WebGLUniformLocation;
 import org.htmlunit.javascript.host.canvas.WebGLVertexArrayObject;
-import org.htmlunit.javascript.host.canvas.ext.ANGLE_instanced_arrays;
-import org.htmlunit.javascript.host.canvas.ext.EXT_texture_filter_anisotropic;
-import org.htmlunit.javascript.host.canvas.ext.OES_element_index_uint;
-import org.htmlunit.javascript.host.canvas.ext.OES_standard_derivatives;
-import org.htmlunit.javascript.host.canvas.ext.OES_texture_float;
-import org.htmlunit.javascript.host.canvas.ext.OES_texture_float_linear;
-import org.htmlunit.javascript.host.canvas.ext.WEBGL_compressed_texture_s3tc;
-import org.htmlunit.javascript.host.canvas.ext.WEBGL_debug_renderer_info;
 import org.htmlunit.javascript.host.crypto.Crypto;
 import org.htmlunit.javascript.host.crypto.CryptoKey;
 import org.htmlunit.javascript.host.crypto.SubtleCrypto;
@@ -154,8 +142,6 @@ import org.htmlunit.javascript.host.dom.DOMParser;
 import org.htmlunit.javascript.host.dom.DOMPoint;
 import org.htmlunit.javascript.host.dom.DOMPointReadOnly;
 import org.htmlunit.javascript.host.dom.DOMRectReadOnly;
-import org.htmlunit.javascript.host.dom.DOMRequest;
-import org.htmlunit.javascript.host.dom.DOMSettableTokenList;
 import org.htmlunit.javascript.host.dom.DOMStringList;
 import org.htmlunit.javascript.host.dom.DOMStringMap;
 import org.htmlunit.javascript.host.dom.DOMTokenList;
@@ -175,11 +161,14 @@ import org.htmlunit.javascript.host.dom.Range;
 import org.htmlunit.javascript.host.dom.Selection;
 import org.htmlunit.javascript.host.dom.ShadowRoot;
 import org.htmlunit.javascript.host.dom.Text;
-import org.htmlunit.javascript.host.dom.TextRange;
 import org.htmlunit.javascript.host.dom.TreeWalker;
 import org.htmlunit.javascript.host.dom.XPathEvaluator;
+import org.htmlunit.javascript.host.dom.XPathExpression;
 import org.htmlunit.javascript.host.dom.XPathNSResolver;
 import org.htmlunit.javascript.host.dom.XPathResult;
+import org.htmlunit.javascript.host.draganddrop.DataTransfer;
+import org.htmlunit.javascript.host.draganddrop.DataTransferItem;
+import org.htmlunit.javascript.host.draganddrop.DataTransferItemList;
 import org.htmlunit.javascript.host.event.AudioProcessingEvent;
 import org.htmlunit.javascript.host.event.BeforeInstallPromptEvent;
 import org.htmlunit.javascript.host.event.BeforeUnloadEvent;
@@ -203,7 +192,6 @@ import org.htmlunit.javascript.host.event.InputEvent;
 import org.htmlunit.javascript.host.event.KeyboardEvent;
 import org.htmlunit.javascript.host.event.MIDIConnectionEvent;
 import org.htmlunit.javascript.host.event.MIDIMessageEvent;
-import org.htmlunit.javascript.host.event.MSGestureEvent;
 import org.htmlunit.javascript.host.event.MediaEncryptedEvent;
 import org.htmlunit.javascript.host.event.MediaKeyMessageEvent;
 import org.htmlunit.javascript.host.event.MediaQueryListEvent;
@@ -212,7 +200,6 @@ import org.htmlunit.javascript.host.event.MediaStreamTrackEvent;
 import org.htmlunit.javascript.host.event.MessageEvent;
 import org.htmlunit.javascript.host.event.MouseEvent;
 import org.htmlunit.javascript.host.event.MouseScrollEvent;
-import org.htmlunit.javascript.host.event.MouseWheelEvent;
 import org.htmlunit.javascript.host.event.MutationEvent;
 import org.htmlunit.javascript.host.event.OfflineAudioCompletionEvent;
 import org.htmlunit.javascript.host.event.PageTransitionEvent;
@@ -224,7 +211,6 @@ import org.htmlunit.javascript.host.event.ProgressEvent;
 import org.htmlunit.javascript.host.event.PromiseRejectionEvent;
 import org.htmlunit.javascript.host.event.RTCDataChannelEvent;
 import org.htmlunit.javascript.host.event.RTCPeerConnectionIceEvent;
-import org.htmlunit.javascript.host.event.SVGZoomEvent;
 import org.htmlunit.javascript.host.event.SecurityPolicyViolationEvent;
 import org.htmlunit.javascript.host.event.SpeechSynthesisEvent;
 import org.htmlunit.javascript.host.event.StorageEvent;
@@ -243,8 +229,6 @@ import org.htmlunit.javascript.host.fetch.Headers;
 import org.htmlunit.javascript.host.fetch.Request;
 import org.htmlunit.javascript.host.fetch.Response;
 import org.htmlunit.javascript.host.file.Blob;
-import org.htmlunit.javascript.host.file.DataTransferItem;
-import org.htmlunit.javascript.host.file.DataTransferItemList;
 import org.htmlunit.javascript.host.file.File;
 import org.htmlunit.javascript.host.file.FileList;
 import org.htmlunit.javascript.host.file.FileReader;
@@ -253,30 +237,22 @@ import org.htmlunit.javascript.host.file.FileSystemDirectoryEntry;
 import org.htmlunit.javascript.host.file.FileSystemDirectoryReader;
 import org.htmlunit.javascript.host.file.FileSystemEntry;
 import org.htmlunit.javascript.host.file.FileSystemFileEntry;
-import org.htmlunit.javascript.host.geo.Coordinates;
 import org.htmlunit.javascript.host.geo.Geolocation;
-import org.htmlunit.javascript.host.geo.Position;
-import org.htmlunit.javascript.host.geo.PositionError;
+import org.htmlunit.javascript.host.geo.GeolocationCoordinates;
+import org.htmlunit.javascript.host.geo.GeolocationPosition;
+import org.htmlunit.javascript.host.geo.GeolocationPositionError;
 import org.htmlunit.javascript.host.html.Audio;
-import org.htmlunit.javascript.host.html.DataTransfer;
-import org.htmlunit.javascript.host.html.Enumerator;
 import org.htmlunit.javascript.host.html.HTMLAllCollection;
 import org.htmlunit.javascript.host.html.HTMLAnchorElement;
-import org.htmlunit.javascript.host.html.HTMLAppletElement;
 import org.htmlunit.javascript.host.html.HTMLAreaElement;
 import org.htmlunit.javascript.host.html.HTMLAudioElement;
-import org.htmlunit.javascript.host.html.HTMLBGSoundElement;
 import org.htmlunit.javascript.host.html.HTMLBRElement;
 import org.htmlunit.javascript.host.html.HTMLBaseElement;
-import org.htmlunit.javascript.host.html.HTMLBaseFontElement;
-import org.htmlunit.javascript.host.html.HTMLBlockElement;
 import org.htmlunit.javascript.host.html.HTMLBodyElement;
 import org.htmlunit.javascript.host.html.HTMLButtonElement;
 import org.htmlunit.javascript.host.html.HTMLCanvasElement;
 import org.htmlunit.javascript.host.html.HTMLCollection;
-import org.htmlunit.javascript.host.html.HTMLDDElement;
 import org.htmlunit.javascript.host.html.HTMLDListElement;
-import org.htmlunit.javascript.host.html.HTMLDTElement;
 import org.htmlunit.javascript.host.html.HTMLDataElement;
 import org.htmlunit.javascript.host.html.HTMLDataListElement;
 import org.htmlunit.javascript.host.html.HTMLDetailsElement;
@@ -298,9 +274,7 @@ import org.htmlunit.javascript.host.html.HTMLHeadingElement;
 import org.htmlunit.javascript.host.html.HTMLHtmlElement;
 import org.htmlunit.javascript.host.html.HTMLIFrameElement;
 import org.htmlunit.javascript.host.html.HTMLImageElement;
-import org.htmlunit.javascript.host.html.HTMLInlineQuotationElement;
 import org.htmlunit.javascript.host.html.HTMLInputElement;
-import org.htmlunit.javascript.host.html.HTMLIsIndexElement;
 import org.htmlunit.javascript.host.html.HTMLLIElement;
 import org.htmlunit.javascript.host.html.HTMLLabelElement;
 import org.htmlunit.javascript.host.html.HTMLLegendElement;
@@ -313,7 +287,6 @@ import org.htmlunit.javascript.host.html.HTMLMenuElement;
 import org.htmlunit.javascript.host.html.HTMLMetaElement;
 import org.htmlunit.javascript.host.html.HTMLMeterElement;
 import org.htmlunit.javascript.host.html.HTMLModElement;
-import org.htmlunit.javascript.host.html.HTMLNextIdElement;
 import org.htmlunit.javascript.host.html.HTMLOListElement;
 import org.htmlunit.javascript.host.html.HTMLObjectElement;
 import org.htmlunit.javascript.host.html.HTMLOptGroupElement;
@@ -322,7 +295,6 @@ import org.htmlunit.javascript.host.html.HTMLOptionsCollection;
 import org.htmlunit.javascript.host.html.HTMLOutputElement;
 import org.htmlunit.javascript.host.html.HTMLParagraphElement;
 import org.htmlunit.javascript.host.html.HTMLParamElement;
-import org.htmlunit.javascript.host.html.HTMLPhraseElement;
 import org.htmlunit.javascript.host.html.HTMLPictureElement;
 import org.htmlunit.javascript.host.html.HTMLPreElement;
 import org.htmlunit.javascript.host.html.HTMLProgressElement;
@@ -337,9 +309,7 @@ import org.htmlunit.javascript.host.html.HTMLTableCaptionElement;
 import org.htmlunit.javascript.host.html.HTMLTableCellElement;
 import org.htmlunit.javascript.host.html.HTMLTableColElement;
 import org.htmlunit.javascript.host.html.HTMLTableComponent;
-import org.htmlunit.javascript.host.html.HTMLTableDataCellElement;
 import org.htmlunit.javascript.host.html.HTMLTableElement;
-import org.htmlunit.javascript.host.html.HTMLTableHeaderCellElement;
 import org.htmlunit.javascript.host.html.HTMLTableRowElement;
 import org.htmlunit.javascript.host.html.HTMLTableSectionElement;
 import org.htmlunit.javascript.host.html.HTMLTemplateElement;
@@ -453,7 +423,103 @@ import org.htmlunit.javascript.host.speech.SpeechSynthesisVoice;
 import org.htmlunit.javascript.host.speech.WebkitSpeechGrammar;
 import org.htmlunit.javascript.host.speech.WebkitSpeechGrammarList;
 import org.htmlunit.javascript.host.speech.WebkitSpeechRecognition;
-import org.htmlunit.javascript.host.svg.*;
+import org.htmlunit.javascript.host.svg.SVGAElement;
+import org.htmlunit.javascript.host.svg.SVGAngle;
+import org.htmlunit.javascript.host.svg.SVGAnimateElement;
+import org.htmlunit.javascript.host.svg.SVGAnimateMotionElement;
+import org.htmlunit.javascript.host.svg.SVGAnimateTransformElement;
+import org.htmlunit.javascript.host.svg.SVGAnimatedAngle;
+import org.htmlunit.javascript.host.svg.SVGAnimatedBoolean;
+import org.htmlunit.javascript.host.svg.SVGAnimatedEnumeration;
+import org.htmlunit.javascript.host.svg.SVGAnimatedInteger;
+import org.htmlunit.javascript.host.svg.SVGAnimatedLength;
+import org.htmlunit.javascript.host.svg.SVGAnimatedLengthList;
+import org.htmlunit.javascript.host.svg.SVGAnimatedNumber;
+import org.htmlunit.javascript.host.svg.SVGAnimatedNumberList;
+import org.htmlunit.javascript.host.svg.SVGAnimatedPreserveAspectRatio;
+import org.htmlunit.javascript.host.svg.SVGAnimatedRect;
+import org.htmlunit.javascript.host.svg.SVGAnimatedString;
+import org.htmlunit.javascript.host.svg.SVGAnimatedTransformList;
+import org.htmlunit.javascript.host.svg.SVGAnimationElement;
+import org.htmlunit.javascript.host.svg.SVGCircleElement;
+import org.htmlunit.javascript.host.svg.SVGClipPathElement;
+import org.htmlunit.javascript.host.svg.SVGComponentTransferFunctionElement;
+import org.htmlunit.javascript.host.svg.SVGDefsElement;
+import org.htmlunit.javascript.host.svg.SVGDescElement;
+import org.htmlunit.javascript.host.svg.SVGElement;
+import org.htmlunit.javascript.host.svg.SVGEllipseElement;
+import org.htmlunit.javascript.host.svg.SVGFEBlendElement;
+import org.htmlunit.javascript.host.svg.SVGFEColorMatrixElement;
+import org.htmlunit.javascript.host.svg.SVGFEComponentTransferElement;
+import org.htmlunit.javascript.host.svg.SVGFECompositeElement;
+import org.htmlunit.javascript.host.svg.SVGFEConvolveMatrixElement;
+import org.htmlunit.javascript.host.svg.SVGFEDiffuseLightingElement;
+import org.htmlunit.javascript.host.svg.SVGFEDisplacementMapElement;
+import org.htmlunit.javascript.host.svg.SVGFEDistantLightElement;
+import org.htmlunit.javascript.host.svg.SVGFEDropShadowElement;
+import org.htmlunit.javascript.host.svg.SVGFEFloodElement;
+import org.htmlunit.javascript.host.svg.SVGFEFuncAElement;
+import org.htmlunit.javascript.host.svg.SVGFEFuncBElement;
+import org.htmlunit.javascript.host.svg.SVGFEFuncGElement;
+import org.htmlunit.javascript.host.svg.SVGFEFuncRElement;
+import org.htmlunit.javascript.host.svg.SVGFEGaussianBlurElement;
+import org.htmlunit.javascript.host.svg.SVGFEImageElement;
+import org.htmlunit.javascript.host.svg.SVGFEMergeElement;
+import org.htmlunit.javascript.host.svg.SVGFEMergeNodeElement;
+import org.htmlunit.javascript.host.svg.SVGFEMorphologyElement;
+import org.htmlunit.javascript.host.svg.SVGFEOffsetElement;
+import org.htmlunit.javascript.host.svg.SVGFEPointLightElement;
+import org.htmlunit.javascript.host.svg.SVGFESpecularLightingElement;
+import org.htmlunit.javascript.host.svg.SVGFESpotLightElement;
+import org.htmlunit.javascript.host.svg.SVGFETileElement;
+import org.htmlunit.javascript.host.svg.SVGFETurbulenceElement;
+import org.htmlunit.javascript.host.svg.SVGFilterElement;
+import org.htmlunit.javascript.host.svg.SVGForeignObjectElement;
+import org.htmlunit.javascript.host.svg.SVGGElement;
+import org.htmlunit.javascript.host.svg.SVGGeometryElement;
+import org.htmlunit.javascript.host.svg.SVGGradientElement;
+import org.htmlunit.javascript.host.svg.SVGGraphicsElement;
+import org.htmlunit.javascript.host.svg.SVGImageElement;
+import org.htmlunit.javascript.host.svg.SVGLength;
+import org.htmlunit.javascript.host.svg.SVGLengthList;
+import org.htmlunit.javascript.host.svg.SVGLineElement;
+import org.htmlunit.javascript.host.svg.SVGLinearGradientElement;
+import org.htmlunit.javascript.host.svg.SVGMPathElement;
+import org.htmlunit.javascript.host.svg.SVGMarkerElement;
+import org.htmlunit.javascript.host.svg.SVGMaskElement;
+import org.htmlunit.javascript.host.svg.SVGMatrix;
+import org.htmlunit.javascript.host.svg.SVGMetadataElement;
+import org.htmlunit.javascript.host.svg.SVGNumber;
+import org.htmlunit.javascript.host.svg.SVGNumberList;
+import org.htmlunit.javascript.host.svg.SVGPathElement;
+import org.htmlunit.javascript.host.svg.SVGPatternElement;
+import org.htmlunit.javascript.host.svg.SVGPoint;
+import org.htmlunit.javascript.host.svg.SVGPointList;
+import org.htmlunit.javascript.host.svg.SVGPolygonElement;
+import org.htmlunit.javascript.host.svg.SVGPolylineElement;
+import org.htmlunit.javascript.host.svg.SVGPreserveAspectRatio;
+import org.htmlunit.javascript.host.svg.SVGRadialGradientElement;
+import org.htmlunit.javascript.host.svg.SVGRect;
+import org.htmlunit.javascript.host.svg.SVGRectElement;
+import org.htmlunit.javascript.host.svg.SVGSVGElement;
+import org.htmlunit.javascript.host.svg.SVGScriptElement;
+import org.htmlunit.javascript.host.svg.SVGSetElement;
+import org.htmlunit.javascript.host.svg.SVGStopElement;
+import org.htmlunit.javascript.host.svg.SVGStringList;
+import org.htmlunit.javascript.host.svg.SVGStyleElement;
+import org.htmlunit.javascript.host.svg.SVGSwitchElement;
+import org.htmlunit.javascript.host.svg.SVGSymbolElement;
+import org.htmlunit.javascript.host.svg.SVGTSpanElement;
+import org.htmlunit.javascript.host.svg.SVGTextContentElement;
+import org.htmlunit.javascript.host.svg.SVGTextElement;
+import org.htmlunit.javascript.host.svg.SVGTextPathElement;
+import org.htmlunit.javascript.host.svg.SVGTextPositioningElement;
+import org.htmlunit.javascript.host.svg.SVGTitleElement;
+import org.htmlunit.javascript.host.svg.SVGTransform;
+import org.htmlunit.javascript.host.svg.SVGTransformList;
+import org.htmlunit.javascript.host.svg.SVGUnitTypes;
+import org.htmlunit.javascript.host.svg.SVGUseElement;
+import org.htmlunit.javascript.host.svg.SVGViewElement;
 import org.htmlunit.javascript.host.worker.ServiceWorker;
 import org.htmlunit.javascript.host.worker.ServiceWorkerContainer;
 import org.htmlunit.javascript.host.worker.ServiceWorkerRegistration;
@@ -480,11 +546,9 @@ public final class JavaScriptConfiguration extends AbstractJavaScriptConfigurati
 
     @SuppressWarnings("unchecked")
     static final Class<? extends HtmlUnitScriptable>[] CLASSES_ = new Class[] {
-        AbstractList.class, AbstractRange.class,
-        ActiveXObject.class, AnalyserNode.class, ANGLE_instanced_arrays.class,
-        Animation.class, AnimationEvent.class,
-        ApplicationCache.class,
-        Atomics.class,
+        AbortController.class, AbortSignal.class,
+        AbstractList.class, AbstractRange.class, AnalyserNode.class,
+        Animation.class, AnimationEvent.class, Atomics.class,
         Attr.class, Audio.class, AudioBuffer.class,
         AudioBufferSourceNode.class, AudioContext.class, AudioDestinationNode.class, AudioListener.class,
         AudioNode.class, AudioParam.class, AudioProcessingEvent.class, AudioScheduledSourceNode.class,
@@ -497,8 +561,8 @@ public final class JavaScriptConfiguration extends AbstractJavaScriptConfigurati
         CDATASection.class, ChannelMergerNode.class, ChannelSplitterNode.class, CharacterData.class, ClientRect.class,
         ClientRectList.class, ClipboardEvent.class,
         CloseEvent.class, Comment.class, CompositionEvent.class, ComputedCSSStyleDeclaration.class,
-        ConstantSourceNode.class,
-        ConvolverNode.class, Coordinates.class, Credential.class, CredentialsContainer.class, Crypto.class,
+        ConstantSourceNode.class, ConvolverNode.class,
+        Credential.class, CredentialsContainer.class, Crypto.class,
         CryptoKey.class, CSS.class, CSSConditionRule.class,
         CSSCounterStyleRule.class, CSSFontFaceRule.class, CSSGroupingRule.class, CSSImportRule.class,
         CSSKeyframeRule.class, CSSKeyframesRule.class, CSSMediaRule.class, CSSNamespaceRule.class, CSSPageRule.class,
@@ -510,44 +574,44 @@ public final class JavaScriptConfiguration extends AbstractJavaScriptConfigurati
         DeviceMotionEvent.class, DeviceOrientationEvent.class,
         Document.class, DocumentFragment.class, DocumentType.class, DOMError.class, DOMException.class,
         DOMImplementation.class, DOMMatrix.class, DOMMatrixReadOnly.class, DOMParser.class, DOMPoint.class,
-        DOMPointReadOnly.class, DOMRectReadOnly.class, DOMRequest.class,
-        DOMSettableTokenList.class, DOMStringList.class, DOMStringMap.class, DOMTokenList.class,
+        DOMPointReadOnly.class, DOMRectReadOnly.class,
+        DOMStringList.class, DOMStringMap.class, DOMTokenList.class,
         DragEvent.class, DynamicsCompressorNode.class,
-        Element.class, Enumerator.class, ErrorEvent.class, Event.class, EventSource.class,
-        EventTarget.class, EXT_texture_filter_anisotropic.class, External.class, FederatedCredential.class,
+        Element.class, ErrorEvent.class, Event.class, EventSource.class,
+        EventTarget.class, External.class, FederatedCredential.class,
         File.class, FileList.class, FileReader.class,
         FileSystem.class, FileSystemDirectoryEntry.class, FileSystemDirectoryReader.class,
         FileSystemEntry.class, FileSystemFileEntry.class,
         FocusEvent.class, FontFace.class,
         FontFaceSet.class, FormData.class, GainNode.class, Gamepad.class,
-        GamepadButton.class, GamepadEvent.class, Geolocation.class, HashChangeEvent.class, Headers.class, History.class,
-        HTMLAllCollection.class,
-        HTMLAnchorElement.class, HTMLAppletElement.class, HTMLAreaElement.class, HTMLAudioElement.class,
-        HTMLBaseElement.class, HTMLBaseFontElement.class, HTMLBGSoundElement.class, HTMLBlockElement.class,
+        GamepadButton.class, GamepadEvent.class,
+        Geolocation.class, GeolocationCoordinates.class, GeolocationPosition.class, GeolocationPositionError.class,
+        HashChangeEvent.class, Headers.class, History.class,
+        HTMLAllCollection.class, HTMLAnchorElement.class, HTMLAreaElement.class, HTMLAudioElement.class,
+        HTMLBaseElement.class,
         HTMLBodyElement.class, HTMLBRElement.class, HTMLButtonElement.class,
         HTMLCanvasElement.class, HTMLCollection.class,
         HTMLDataElement.class, HTMLDataListElement.class,
-        HTMLDDElement.class, HTMLDetailsElement.class, HTMLDialogElement.class, HTMLDirectoryElement.class,
-        HTMLDivElement.class, HTMLDListElement.class, HTMLDocument.class, HTMLDTElement.class, HTMLElement.class,
+        HTMLDetailsElement.class, HTMLDialogElement.class, HTMLDirectoryElement.class,
+        HTMLDivElement.class, HTMLDListElement.class, HTMLDocument.class, HTMLElement.class,
         HTMLEmbedElement.class, HTMLFieldSetElement.class,
         HTMLFontElement.class, HTMLFormControlsCollection.class, HTMLFormElement.class, HTMLFrameElement.class,
         HTMLFrameSetElement.class,
         HTMLHeadElement.class, HTMLHeadingElement.class, HTMLHRElement.class, HTMLHtmlElement.class,
-        HTMLIFrameElement.class, HTMLImageElement.class, HTMLInlineQuotationElement.class, HTMLInputElement.class,
-        HTMLIsIndexElement.class, HTMLLabelElement.class,
+        HTMLIFrameElement.class, HTMLImageElement.class, HTMLInputElement.class, HTMLLabelElement.class,
         HTMLLegendElement.class, HTMLLIElement.class, HTMLLinkElement.class, HTMLListElement.class,
         HTMLMapElement.class, HTMLMarqueeElement.class,
         HTMLMediaElement.class, HTMLMenuElement.class, HTMLMetaElement.class,
-        HTMLMeterElement.class, HTMLModElement.class, HTMLNextIdElement.class,
+        HTMLMeterElement.class, HTMLModElement.class,
         HTMLObjectElement.class, HTMLOListElement.class, HTMLOptGroupElement.class,
         HTMLOptionElement.class, HTMLOptionsCollection.class, HTMLOutputElement.class,
-        HTMLParagraphElement.class, HTMLParamElement.class, HTMLPhraseElement.class, HTMLPictureElement.class,
+        HTMLParagraphElement.class, HTMLParamElement.class, HTMLPictureElement.class,
         HTMLPreElement.class, HTMLProgressElement.class, HTMLQuoteElement.class, HTMLScriptElement.class,
         HTMLSelectElement.class, HTMLSlotElement.class, HTMLSourceElement.class,
         HTMLSpanElement.class,
         HTMLStyleElement.class, HTMLTableCaptionElement.class, HTMLTableCellElement.class, HTMLTableColElement.class,
-        HTMLTableComponent.class, HTMLTableDataCellElement.class, HTMLTableElement.class,
-        HTMLTableHeaderCellElement.class, HTMLTableRowElement.class, HTMLTableSectionElement.class,
+        HTMLTableComponent.class, HTMLTableElement.class,
+        HTMLTableRowElement.class, HTMLTableSectionElement.class,
         HTMLTemplateElement.class, HTMLTextAreaElement.class, HTMLTimeElement.class,
         HTMLTitleElement.class, HTMLTrackElement.class, HTMLUListElement.class, HTMLUnknownElement.class,
         HTMLVideoElement.class,
@@ -569,12 +633,10 @@ public final class JavaScriptConfiguration extends AbstractJavaScriptConfigurati
         MessageEvent.class, MessagePort.class, MIDIAccess.class, MIDIConnectionEvent.class, MIDIInput.class,
         MIDIInputMap.class, MIDIMessageEvent.class, MIDIOutput.class, MIDIOutputMap.class, MIDIPort.class,
         MimeType.class, MimeTypeArray.class, MouseEvent.class, MouseScrollEvent.class,
-        MouseWheelEvent.class, MSGestureEvent.class,
         MutationEvent.class, MutationObserver.class, MutationRecord.class, NamedNodeMap.class,
-        Namespace.class, NamespaceCollection.class,
         Navigator.class, NetworkInformation.class, Node.class, NodeFilter.class, NodeIterator.class,
-        NodeList.class, Notification.class, OES_element_index_uint.class, OES_standard_derivatives.class,
-        OES_texture_float.class, OES_texture_float_linear.class, OfflineAudioCompletionEvent.class,
+        NodeList.class, Notification.class,
+        OfflineAudioCompletionEvent.class,
         OfflineAudioContext.class, OscillatorNode.class, PageTransitionEvent.class, PannerNode.class,
         PasswordCredential.class,
         Path2D.class,
@@ -584,7 +646,7 @@ public final class JavaScriptConfiguration extends AbstractJavaScriptConfigurati
         PerformanceObserver.class, PerformanceObserverEntryList.class,
         PerformanceResourceTiming.class, PerformanceTiming.class, PeriodicSyncManager.class, PeriodicWave.class,
         Permissions.class, PermissionStatus.class, Plugin.class, PluginArray.class,
-        PointerEvent.class, PopStateEvent.class, Position.class, PositionError.class, Presentation.class,
+        PointerEvent.class, PopStateEvent.class, Presentation.class,
         PresentationAvailability.class, PresentationConnection.class, PresentationConnectionAvailableEvent.class,
         PresentationConnectionCloseEvent.class, PresentationRequest.class,
         ProcessingInstruction.class, ProgressEvent.class, PromiseRejectionEvent.class,
@@ -596,7 +658,7 @@ public final class JavaScriptConfiguration extends AbstractJavaScriptConfigurati
         Screen.class, ScreenOrientation.class, ScriptProcessorNode.class,
         SecurityPolicyViolationEvent.class, Selection.class, ServiceWorker.class, ServiceWorkerContainer.class,
         ServiceWorkerRegistration.class,
-        ShadowRoot.class, SharedWorker.class, SimpleArray.class, SourceBuffer.class, SourceBufferList.class,
+        ShadowRoot.class, SharedWorker.class, SourceBuffer.class, SourceBufferList.class,
         SpeechSynthesis.class, SpeechSynthesisErrorEvent.class, SpeechSynthesisEvent.class,
         SpeechSynthesisUtterance.class, SpeechSynthesisVoice.class,
         StereoPannerNode.class, Storage.class, StorageEvent.class, StorageManager.class,
@@ -623,14 +685,8 @@ public final class JavaScriptConfiguration extends AbstractJavaScriptConfigurati
         SVGImageElement.class, SVGLength.class, SVGLengthList.class, SVGLinearGradientElement.class,
         SVGLineElement.class, SVGMarkerElement.class, SVGMaskElement.class, SVGMatrix.class,
         SVGMetadataElement.class, SVGMPathElement.class, SVGNumber.class, SVGNumberList.class,
-        SVGPathElement.class, SVGPathSeg.class, SVGPathSegArcAbs.class,
-        SVGPathSegArcRel.class, SVGPathSegClosePath.class, SVGPathSegCurvetoCubicAbs.class,
-        SVGPathSegCurvetoCubicRel.class, SVGPathSegCurvetoCubicSmoothAbs.class, SVGPathSegCurvetoCubicSmoothRel.class,
-        SVGPathSegCurvetoQuadraticAbs.class, SVGPathSegCurvetoQuadraticRel.class,
-        SVGPathSegCurvetoQuadraticSmoothAbs.class, SVGPathSegCurvetoQuadraticSmoothRel.class,
-        SVGPathSegLinetoAbs.class, SVGPathSegLinetoHorizontalAbs.class, SVGPathSegLinetoHorizontalRel.class,
-        SVGPathSegLinetoRel.class, SVGPathSegLinetoVerticalAbs.class, SVGPathSegLinetoVerticalRel.class,
-        SVGPathSegList.class, SVGPathSegMovetoAbs.class, SVGPathSegMovetoRel.class, SVGPatternElement.class,
+        SVGPathElement.class,
+        SVGPatternElement.class,
         SVGPoint.class, SVGPointList.class, SVGPolygonElement.class, SVGPolylineElement.class,
         SVGPreserveAspectRatio.class, SVGRadialGradientElement.class, SVGRect.class, SVGRectElement.class,
         SVGScriptElement.class, SVGSetElement.class, SVGStopElement.class,
@@ -638,15 +694,15 @@ public final class JavaScriptConfiguration extends AbstractJavaScriptConfigurati
         SVGSymbolElement.class, SVGTextContentElement.class, SVGTextElement.class,
         SVGTextPathElement.class, SVGTextPositioningElement.class, SVGTitleElement.class, SVGTransform.class,
         SVGTransformList.class, SVGTSpanElement.class, SVGUnitTypes.class, SVGUseElement.class, SVGViewElement.class,
-        SVGZoomEvent.class, SyncManager.class, Text.class, TextDecoder.class,
-        TextEncoder.class, TextEvent.class, TextMetrics.class, TextRange.class, TextTrack.class, TextTrackCue.class,
+        SyncManager.class, Text.class, TextDecoder.class,
+        TextEncoder.class, TextEvent.class, TextMetrics.class, TextTrack.class, TextTrackCue.class,
         TextTrackCueList.class, TextTrackList.class, TimeEvent.class, TimeRanges.class,
         Touch.class, TouchEvent.class, TouchList.class, TrackEvent.class, TransitionEvent.class, TreeWalker.class,
         UIEvent.class,
         URL.class,
         URLSearchParams.class, ValidityState.class, VideoPlaybackQuality.class,
         VTTCue.class, WaveShaperNode.class, WebGL2RenderingContext.class,
-        WEBGL_compressed_texture_s3tc.class, WEBGL_debug_renderer_info.class, WebGLActiveInfo.class, WebGLBuffer.class,
+        WebGLActiveInfo.class, WebGLBuffer.class,
         WebGLContextEvent.class, WebGLFramebuffer.class, WebGLProgram.class,
         WebGLQuery.class,
         WebGLRenderbuffer.class,
@@ -659,7 +715,7 @@ public final class JavaScriptConfiguration extends AbstractJavaScriptConfigurati
         WebkitSpeechRecognitionEvent.class,
         WebSocket.class, WheelEvent.class, Window.class, Worker.class, XMLDocument.class,
         XMLHttpRequest.class, XMLHttpRequestEventTarget.class, XMLHttpRequestUpload.class, XMLSerializer.class,
-        XPathEvaluator.class, XPathExpression.class,
+        XPathEvaluator.class, XPathEvaluator.class, XPathExpression.class,
         XPathNSResolver.class, XPathResult.class, XSLTProcessor.class
     };
 
@@ -680,6 +736,7 @@ public final class JavaScriptConfiguration extends AbstractJavaScriptConfigurati
      * @param browserVersion the {@link BrowserVersion}
      * @return the instance for the specified {@link BrowserVersion}
      */
+    @SuppressWarnings("PMD.SingletonClassReturningNewInstance")
     public static synchronized JavaScriptConfiguration getInstance(final BrowserVersion browserVersion) {
         if (browserVersion == null) {
             throw new IllegalArgumentException("BrowserVersion must be provided");

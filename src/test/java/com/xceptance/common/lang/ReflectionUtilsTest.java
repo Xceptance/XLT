@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package com.xceptance.common.lang;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -317,20 +316,6 @@ public class ReflectionUtilsTest
     }
 
     /**
-     * makeFieldNonFinal(Field field)
-     * 
-     * @throws NoSuchFieldException
-     * @throws SecurityException
-     */
-    @Test
-    public void makeFieldNonFinal() throws SecurityException, NoSuchFieldException
-    {
-        final Field field = ReflectionUtils.getField(ReflectionUtilsTestClass.class, "finalField");
-        ReflectionUtils.makeFieldNonFinal(field);
-        Assert.assertFalse(Modifier.isFinal(field.getModifiers()));
-    }
-
-    /**
      * callStaticMethod(Class<?> clazz, String methodName, Object... args)
      */
     @Test
@@ -350,5 +335,4 @@ public class ReflectionUtilsTest
                                                          "data");
         Assert.assertEquals("data", result);
     }
-
 }

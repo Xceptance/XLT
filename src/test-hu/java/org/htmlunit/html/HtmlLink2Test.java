@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,8 +13,6 @@
  * limitations under the License.
  */
 package org.htmlunit.html;
-
-import static org.htmlunit.junit.BrowserRunner.TestedBrowser.IE;
 
 import java.net.URL;
 import java.text.SimpleDateFormat;
@@ -30,8 +28,7 @@ import org.htmlunit.WebClient;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.WebResponse;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
 import org.junit.Test;
@@ -193,9 +190,7 @@ public class HtmlLink2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"onError", "body onLoad"},
-            IE = {"onLoad", "body onLoad"})
-    @NotYetImplemented(IE)
+    @Alerts({"onError", "body onLoad"})
     public void onError() throws Exception {
         onLoadOnError("rel='stylesheet' href='unknown.css'");
     }
@@ -231,9 +226,7 @@ public class HtmlLink2Test extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"onLoad1", "onLoadJs1", "onLoad2", "body onLoad;"},
-            IE = {"onLoadJs1", "body onLoad", "onLoad1", "onLoad2;"})
-    @NotYetImplemented(IE)
+    @Alerts({"onLoad1", "onLoadJs1", "onLoad2", "body onLoad"})
     public void onLoadOrder() throws Exception {
         getMockWebConnection().setResponse(new URL(URL_FIRST, "simple1.css"), "");
         getMockWebConnection().setResponse(new URL(URL_FIRST, "simple2.css"), "");
@@ -243,9 +236,7 @@ public class HtmlLink2Test extends WebDriverTestCase {
                 = "<html>\n"
                 + "<head>\n"
                 + "  <script>\n"
-                + "    function log(x) {\n"
-                + "      document.title += x + ';';\n"
-                + "    }\n"
+                + LOG_TITLE_FUNCTION
                 + "  </script>\n"
                 + "  <link rel='stylesheet' href='simple1.css' onload='log(\"onLoad1\")'>\n"
                 + "  <script type='text/javascript' src='simple1.js' onload='log(\"onLoadJs1\")'></script>\n"
@@ -255,8 +246,7 @@ public class HtmlLink2Test extends WebDriverTestCase {
                 + "</body>\n"
                 + "</html>";
 
-        final WebDriver driver = loadPage2(html);
-        assertTitle(driver, String.join(";", getExpectedAlerts()));
+        loadPageVerifyTitle2(html);
     }
 
     /**
@@ -270,6 +260,7 @@ public class HtmlLink2Test extends WebDriverTestCase {
                 = "<html>\n"
                 + "<head>\n"
                 + "  <script>\n"
+                + LOG_TEXTAREA_FUNCTION
                 + "    function test() {\n"
                 + "      var dynLink = document.createElement('link');\n"
                 + "      dynLink.rel = 'stylesheet';\n"
@@ -279,36 +270,28 @@ public class HtmlLink2Test extends WebDriverTestCase {
                 + "      dynLink.onerror = function (e) { log(\"onError \" + e) };\n"
                 + "      document.head.appendChild(dynLink);\n"
                 + "    }\n"
-
-                + "    function log(x) {\n"
-                + "      document.getElementById('log').value += x + '\\n';\n"
-                + "    }\n"
                 + "  </script>\n"
                 + "</head>\n"
                 + "<body onload='test()'></body>\n"
-                + "  <textarea id='log' cols='80' rows='40'></textarea>\n"
+                + LOG_TEXTAREA
                 + "</body>\n"
                 + "</html>";
 
-        final WebDriver driver = loadPage2(html);
-        Thread.sleep(200);
-        final String text = driver.findElement(By.id("log")).getAttribute("value").trim().replaceAll("\r", "");
-        assertEquals(String.join("\n", getExpectedAlerts()), text);
+        loadPageVerifyTextArea2(html);
     }
 
     /**
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "onError [object Event]",
-            IE = "onLoad [object Event]")
-    @NotYetImplemented(IE)
+    @Alerts("onError [object Event]")
     public void onLoadDynamicUnknown() throws Exception {
         getMockWebConnection().setResponse(new URL(URL_FIRST, "simple.css"), "");
         final String html
                 = "<html>\n"
                 + "<head>\n"
                 + "  <script>\n"
+                + LOG_TEXTAREA_FUNCTION
                 + "    function test() {\n"
                 + "      var dynLink = document.createElement('link');\n"
                 + "      dynLink.rel = 'stylesheet';\n"
@@ -318,22 +301,15 @@ public class HtmlLink2Test extends WebDriverTestCase {
                 + "      dynLink.onerror = function (e) { log(\"onError \" + e) };\n"
                 + "      document.head.appendChild(dynLink);\n"
                 + "    }\n"
-
-                + "    function log(x) {\n"
-                + "      document.getElementById('log').value += x + '\\n';\n"
-                + "    }\n"
                 + "  </script>\n"
                 + "</head>\n"
                 + "<body onload='test()'></body>\n"
-                + "  <textarea id='log' cols='80' rows='40'></textarea>\n"
+                + LOG_TEXTAREA
                 + "</body>\n"
                 + "</html>";
         getMockWebConnection().setDefaultResponse("Error: not found", 404, "Not Found", MimeType.TEXT_HTML);
 
-        final WebDriver driver = loadPage2(html);
-        Thread.sleep(200);
-        final String text = driver.findElement(By.id("log")).getAttribute("value").trim().replaceAll("\r", "");
-        assertEquals(String.join("\n", getExpectedAlerts()), text);
+        loadPageVerifyTextArea2(html);
     }
 
     /**

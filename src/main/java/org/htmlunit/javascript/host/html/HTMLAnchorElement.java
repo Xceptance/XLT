@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,19 +17,9 @@ package org.htmlunit.javascript.host.html;
 import static org.htmlunit.BrowserVersionFeatures.JS_ANCHOR_HOSTNAME_IGNORE_BLANK;
 import static org.htmlunit.BrowserVersionFeatures.JS_ANCHOR_PATHNAME_DETECT_WIN_DRIVES_URL;
 import static org.htmlunit.BrowserVersionFeatures.JS_ANCHOR_PATHNAME_DETECT_WIN_DRIVES_URL_REPLACE;
-import static org.htmlunit.BrowserVersionFeatures.JS_ANCHOR_PATHNAME_NONE_FOR_BROKEN_URL;
 import static org.htmlunit.BrowserVersionFeatures.JS_ANCHOR_PATHNAME_PREFIX_WIN_DRIVES_URL;
-import static org.htmlunit.BrowserVersionFeatures.JS_ANCHOR_PROTOCOL_COLON_FOR_BROKEN_URL;
 import static org.htmlunit.BrowserVersionFeatures.JS_ANCHOR_PROTOCOL_COLON_UPPER_CASE_DRIVE_LETTERS;
-import static org.htmlunit.BrowserVersionFeatures.JS_ANCHOR_PROTOCOL_HTTP_FOR_BROKEN_URL;
-import static org.htmlunit.BrowserVersionFeatures.JS_ANCHOR_PROTOCOL_INVALID_THROWS;
-import static org.htmlunit.BrowserVersionFeatures.URL_IGNORE_SPECIAL;
 import static org.htmlunit.html.DomElement.ATTRIBUTE_NOT_DEFINED;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -73,16 +63,10 @@ public class HTMLAnchorElement extends HTMLElement {
                                         "no-referrer", HttpHeader.ORIGIN_LC, "unsafe-url");
 
     /**
-     * The constructor.
-     */
-    public HTMLAnchorElement() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @Override
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
         super.jsConstructor();
     }
@@ -226,7 +210,7 @@ public class HTMLAnchorElement extends HTMLElement {
      * Returns the value of the rev property.
      * @return the referrerPolicy property
      */
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxGetter
     public String getReferrerPolicy() {
         String attrib = getDomNodeOrDie().getAttribute("referrerPolicy");
         if (StringUtils.isEmpty(attrib)) {
@@ -243,7 +227,7 @@ public class HTMLAnchorElement extends HTMLElement {
      * Sets the rev property.
      * @param referrerPolicy referrerPolicy attribute value
      */
-    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxSetter
     public void setReferrerPolicy(final String referrerPolicy) {
         getDomNodeOrDie().setAttribute("referrerPolicy", referrerPolicy);
     }
@@ -278,7 +262,9 @@ public class HTMLAnchorElement extends HTMLElement {
     @JsxSetter
     public void setSearch(final String search) throws Exception {
         final String query;
-        if (search == null || "?".equals(search) || "".equals(search)) {
+        if (search == null
+                || org.htmlunit.util.StringUtils.isEmptyString(search)
+                || org.htmlunit.util.StringUtils.equalsChar('?', search)) {
             query = null;
         }
         else if (search.charAt(0) == '?') {
@@ -408,7 +394,6 @@ public class HTMLAnchorElement extends HTMLElement {
     public String getPathname() {
         final BrowserVersion browser = getBrowserVersion();
         try {
-            final URL url = getUrl();
             if (browser.hasFeature(JS_ANCHOR_PATHNAME_DETECT_WIN_DRIVES_URL_REPLACE)) {
                 final HtmlAnchor anchor = (HtmlAnchor) getDomNodeOrDie();
                 String href = anchor.getHrefAttribute();
@@ -429,12 +414,11 @@ public class HTMLAnchorElement extends HTMLElement {
                     return href.substring(2);
                 }
             }
-            return url.getPath();
+            return getUrl().getPath();
         }
         catch (final MalformedURLException e) {
             final HtmlAnchor anchor = (HtmlAnchor) getDomNodeOrDie();
-            if (anchor.getHrefAttribute().startsWith("http")
-                    && browser.hasFeature(JS_ANCHOR_PATHNAME_NONE_FOR_BROKEN_URL)) {
+            if (anchor.getHrefAttribute().startsWith("http")) {
                 return "";
             }
             return "/";
@@ -504,12 +488,7 @@ public class HTMLAnchorElement extends HTMLElement {
         catch (final MalformedURLException e) {
             final HtmlAnchor anchor = (HtmlAnchor) getDomNodeOrDie();
             if (anchor.getHrefAttribute().startsWith("http")) {
-                if (browser.hasFeature(JS_ANCHOR_PROTOCOL_COLON_FOR_BROKEN_URL)) {
-                    return ":";
-                }
-                if (browser.hasFeature(JS_ANCHOR_PROTOCOL_HTTP_FOR_BROKEN_URL)) {
-                    return "http:";
-                }
+                return ":";
             }
             return StringUtils.substringBefore(anchor.getHrefAttribute(), "/");
         }
@@ -524,36 +503,10 @@ public class HTMLAnchorElement extends HTMLElement {
     @JsxSetter
     public void setProtocol(final String protocol) throws Exception {
         if (protocol.isEmpty()) {
-            if (getBrowserVersion().hasFeature(JS_ANCHOR_PROTOCOL_INVALID_THROWS)) {
-                throw JavaScriptEngine.typeError("Invalid protocol '" + protocol + "'.");
-            }
             return;
         }
 
-        String bareProtocol = StringUtils.substringBefore(protocol, ":");
-        if (getBrowserVersion().hasFeature(URL_IGNORE_SPECIAL)) {
-            if (!UrlUtils.isValidScheme(bareProtocol)) {
-                if (getBrowserVersion().hasFeature(JS_ANCHOR_PROTOCOL_INVALID_THROWS)) {
-                    throw JavaScriptEngine.typeError("Invalid protocol '" + protocol + "'.");
-                }
-                return;
-            }
-
-            try {
-                URL url = UrlUtils.getUrlWithNewProtocol(getUrl(), bareProtocol);
-                url = UrlUtils.removeRedundantPort(url);
-                setUrl(url);
-            }
-            catch (final MalformedURLException e) {
-                if (getBrowserVersion().hasFeature(JS_ANCHOR_PROTOCOL_INVALID_THROWS)) {
-                    throw JavaScriptEngine.typeError("Invalid protocol '" + protocol + "'.");
-                }
-            }
-
-            return;
-        }
-
-        bareProtocol = bareProtocol.trim();
+        final String bareProtocol = StringUtils.substringBefore(protocol, ":").trim();
         if (!UrlUtils.isValidScheme(bareProtocol)) {
             return;
         }
@@ -566,7 +519,7 @@ public class HTMLAnchorElement extends HTMLElement {
             url = UrlUtils.removeRedundantPort(url);
             setUrl(url);
         }
-        catch (final MalformedURLException e) {
+        catch (final MalformedURLException ignored) {
             // ignore
         }
     }
@@ -686,7 +639,7 @@ public class HTMLAnchorElement extends HTMLElement {
      * Returns the {@code origin} attribute.
      * @return the {@code origin} attribute
      */
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxGetter
     public String getOrigin() {
         if (!getDomNodeOrDie().hasAttribute("href")) {
             return "";
@@ -704,7 +657,7 @@ public class HTMLAnchorElement extends HTMLElement {
      * Returns the {@code username} attribute.
      * @return the {@code username} attribute
      */
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxGetter
     public String getUsername() {
         try {
             final String userInfo = getUrl().getUserInfo();
@@ -722,7 +675,7 @@ public class HTMLAnchorElement extends HTMLElement {
      * Sets the {@code username} attribute.
      * @param username {@code username} attribute
      */
-    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxSetter
     public void setUsername(final String username) {
         try {
             final HtmlAnchor anchor = (HtmlAnchor) getDomNodeOrDie();
@@ -734,7 +687,7 @@ public class HTMLAnchorElement extends HTMLElement {
             final URL url = ((HtmlPage) anchor.getPage()).getFullyQualifiedUrl(href);
             setUrl(UrlUtils.getUrlWithNewUserName(url, username));
         }
-        catch (final MalformedURLException e) {
+        catch (final MalformedURLException ignored) {
             // ignore
         }
     }
@@ -743,7 +696,7 @@ public class HTMLAnchorElement extends HTMLElement {
      * Returns the {@code password} attribute.
      * @return the {@code password} attribute
      */
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxGetter
     public String getPassword() {
         try {
             final String userName = getUrl().getUserInfo();
@@ -761,7 +714,7 @@ public class HTMLAnchorElement extends HTMLElement {
      * Sets the {@code password} attribute.
      * @param password {@code password} attribute
      */
-    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxSetter
     public void setPassword(final String password) {
         try {
             final HtmlAnchor anchor = (HtmlAnchor) getDomNodeOrDie();
@@ -773,7 +726,7 @@ public class HTMLAnchorElement extends HTMLElement {
             final URL url = ((HtmlPage) anchor.getPage()).getFullyQualifiedUrl(href);
             setUrl(UrlUtils.getUrlWithNewUserPassword(url, password));
         }
-        catch (final MalformedURLException e) {
+        catch (final MalformedURLException ignored) {
             // ignore
         }
     }
@@ -782,7 +735,7 @@ public class HTMLAnchorElement extends HTMLElement {
      * Returns the {@code download} attribute.
      * @return the {@code download} attribute
      */
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxGetter
     public String getDownload() {
         return ((HtmlAnchor) getDomNodeOrDie()).getDownloadAttribute();
     }
@@ -791,7 +744,7 @@ public class HTMLAnchorElement extends HTMLElement {
      * Sets the {@code download} attribute.
      * @param download {@code download} attribute
      */
-    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxSetter
     public void setDownload(final String download) {
         getDomNodeOrDie().setAttribute("download", download);
     }
@@ -800,7 +753,7 @@ public class HTMLAnchorElement extends HTMLElement {
      * Returns the {@code ping} attribute.
      * @return the {@code ping} attribute
      */
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxGetter
     public String getPing() {
         return ((HtmlAnchor) getDomNodeOrDie()).getPingAttribute();
     }
@@ -809,7 +762,7 @@ public class HTMLAnchorElement extends HTMLElement {
      * Sets the {@code ping} attribute.
      * @param ping {@code ping} attribute
      */
-    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxSetter
     public void setPing(final String ping) {
         getDomNodeOrDie().setAttribute("ping", ping);
     }
@@ -854,7 +807,7 @@ public class HTMLAnchorElement extends HTMLElement {
      * Returns the {@code relList} attribute.
      * @return the {@code relList} attribute
      */
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxGetter
     public DOMTokenList getRelList() {
         return new DOMTokenList(this, "rel");
     }
@@ -863,80 +816,8 @@ public class HTMLAnchorElement extends HTMLElement {
      * Sets the relList property.
      * @param rel attribute value
      */
-    @JsxSetter({CHROME, EDGE, FF, FF_ESR})
+    @JsxSetter
     public void setRelList(final Object rel) {
         setRel(JavaScriptEngine.toString(rel));
-    }
-
-    /**
-     * Returns the {@code protocolLong} attribute.
-     * @return the {@code protocolLong} attribute
-     */
-    @JsxGetter(IE)
-    public String getProtocolLong() {
-        throw JavaScriptEngine.throwAsScriptRuntimeEx(new UnsupportedOperationException());
-    }
-
-    /**
-     * Returns the {@code Methods} attribute.
-     * @return the {@code Methods} attribute
-     */
-    @JsxGetter(propertyName = "Methods", value = IE)
-    public String getMethods_js() {
-        throw JavaScriptEngine.throwAsScriptRuntimeEx(new UnsupportedOperationException());
-    }
-
-    /**
-     * Sets the {@code Methods} attribute.
-     * @param methods {@code Methods} attribute
-     */
-    @JsxSetter(propertyName = "Methods", value = IE)
-    public void setMethods_js(final String methods) {
-        throw JavaScriptEngine.throwAsScriptRuntimeEx(new UnsupportedOperationException());
-    }
-
-    /**
-     * Returns the {@code mimeType} attribute.
-     * @return the {@code mimeType} attribute
-     */
-    @JsxGetter(IE)
-    public String getMimeType() {
-        throw JavaScriptEngine.throwAsScriptRuntimeEx(new UnsupportedOperationException());
-    }
-
-    /**
-     * Sets the {@code mimeType} attribute.
-     * @param mimeType {@code mimeType} attribute
-     */
-    @JsxSetter(IE)
-    public void setMimeType(final String mimeType) {
-        throw JavaScriptEngine.throwAsScriptRuntimeEx(new UnsupportedOperationException());
-    }
-
-    /**
-     * Returns the {@code nameProp} attribute.
-     * @return the {@code nameProp} attribute
-     */
-    @JsxGetter(IE)
-    public String getNameProp() {
-        throw JavaScriptEngine.throwAsScriptRuntimeEx(new UnsupportedOperationException());
-    }
-
-    /**
-     * Returns the {@code urn} attribute.
-     * @return the {@code urn} attribute
-     */
-    @JsxGetter(IE)
-    public String getUrn() {
-        throw JavaScriptEngine.throwAsScriptRuntimeEx(new UnsupportedOperationException());
-    }
-
-    /**
-     * Sets the {@code urn} attribute.
-     * @param urn {@code urn} attribute
-     */
-    @JsxSetter(IE)
-    public void setUrn(final String urn) {
-        throw JavaScriptEngine.throwAsScriptRuntimeEx(new UnsupportedOperationException());
     }
 }

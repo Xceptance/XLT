@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import org.apache.commons.io.FileUtils;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
@@ -119,8 +119,35 @@ public class FileReaderTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "data:application/octet-stream;base64,SHRtbFVuaXRpcyBncmVhdA==",
-            IE = "data:;base64,SHRtbFVuaXRpcyBncmVhdA==")
+    @Alerts("data:application/octet-stream;base64,SHRtbFVuaXRpcyBncmVhdA==")
+    public void readAsDataURL_inMemoryFile() throws Exception {
+        final String html
+            = HtmlPageTest.STANDARDS_MODE_PREFIX_
+            + "<html>\n"
+            + "<head>\n"
+            + "<head>\n"
+            + "<body>\n"
+            + "  <script>\n"
+            + LOG_TITLE_FUNCTION
+            + "    let file = new File(['Html', 'Unit', 'is great'], 'htMluniT.txt');\n"
+            + "    var reader = new FileReader();\n"
+            + "    reader.onload = function() {\n"
+            + "      var dataURL = reader.result;\n"
+            + "      log(dataURL);\n"
+            + "    };\n"
+            + "    reader.readAsDataURL(file);\n"
+            + "  </script>\n"
+            + "</body>\n"
+            + "</html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts("data:application/octet-stream;base64,SHRtbFVuaXRpcyBncmVhdA==")
     public void readAsDataURL_blob() throws Exception {
         final String html
             = HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -180,8 +207,7 @@ public class FileReaderTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "data:unknown;base64,SHRtbFVuaXRpcyBncmVhdA==",
-            IE = "data:unKNown;base64,SHRtbFVuaXRpcyBncmVhdA==")
+    @Alerts("data:unknown;base64,SHRtbFVuaXRpcyBncmVhdA==")
     public void readAsDataURL_blobMimeTypeUnknown() throws Exception {
         final String html
             = HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -214,9 +240,8 @@ public class FileReaderTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     // @Test
-    @Alerts(DEFAULT = "data:application/octet-stream;base64,"
-                + "Niii65mOV9yO6adjkXdWd+zTIXFcOWwumIGlIFRqQ05seTG+J2dx0KcD",
-            IE = "data:;base64,Niii65mOV9yO6adjkXdWd+zTIXFcOWwumIGlIFRqQ05seTG+J2dx0KcD")
+    @Alerts("data:application/octet-stream;base64,"
+                + "Niii65mOV9yO6adjkXdWd+zTIXFcOWwumIGlIFRqQ05seTG+J2dx0KcD")
     private void readAsDataURLUnknown() throws Exception {
         final String html
             = HtmlPageTest.STANDARDS_MODE_PREFIX_
@@ -258,8 +283,7 @@ public class FileReaderTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "#data:image/png;base64,",
-            IE = "#null")
+    @Alerts("#data:image/png;base64,")
     public void readAsDataURLEmptyImage() throws Exception {
         final String html
             = HtmlPageTest.STANDARDS_MODE_PREFIX_

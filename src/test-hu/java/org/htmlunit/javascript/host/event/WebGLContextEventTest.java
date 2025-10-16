@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,7 @@ package org.htmlunit.javascript.host.event;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -34,9 +33,7 @@ public class WebGLContextEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"1", "2", "3"},
-            IE = {"undefined", "undefined", "undefined"})
-    @HtmlUnitNYI(IE = {"1", "2", "3"})
+    @Alerts({"1", "2", "3"})
     public void constants() throws Exception {
         final String html = "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
@@ -45,7 +42,7 @@ public class WebGLContextEventTest extends WebDriverTestCase {
             + "      log(WebGLContextEvent.CAPTURING_PHASE);\n"
             + "      log(WebGLContextEvent.AT_TARGET);\n"
             + "      log(WebGLContextEvent.BUBBLING_PHASE);\n"
-            + "    } catch(e) {log('exception')}\n"
+            + "    } catch(e) {logEx(e)}\n"
             + "  }\n"
             + "</script></head><body onload='test()'>\n"
             + "</body></html>";

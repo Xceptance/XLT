@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,9 @@ package org.htmlunit.html.parser;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.BuggyWebDriver;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.NotYetImplemented;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.WebDriver;
@@ -368,7 +367,7 @@ public class HTMLParser4Test extends WebDriverTestCase {
             + "    try {\n"
             + "      div = document.createElementNS('http://www.appcelerator.org', 'app:script');\n"
             + "      debug(div);\n"
-            + "    } catch (e) {log('createElementNS() is not defined')}\n"
+            + "    } catch(e) {log('createElementNS() is not defined')}\n"
             + "    debug(document.getElementById('script1'));\n"
             + "    debug(document.getElementById('script2'));\n"
             + "  }\n"
@@ -501,10 +500,6 @@ public class HTMLParser4Test extends WebDriverTestCase {
     @Alerts({"titles", "HEAD", "Outer Html", "DIV", "Inner Html",
                 "bodyTitles", "DIV", "Inner Html",
                 "innerDiv", "outerDiv"})
-    @BuggyWebDriver(IE = {"titles", "HEAD", "Outer Html", "DIV", "",
-                          "bodyTitles", "DIV", "", "innerDiv", "outerDiv"})
-    // This is pretty mysterious because the second title HAS the text 'Inner Html' inside.
-    // Currently I do not know why it behaves this way so I take the default behavior.
     public void completeHtmlInsideDiv() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head>\n"
@@ -558,10 +553,6 @@ public class HTMLParser4Test extends WebDriverTestCase {
     @Alerts({"titles", "HEAD", "Outer Html", "DIV", "Inner Html",
                 "bodyTitles", "DIV", "Inner Html",
                 "innerDiv", "outerDiv"})
-    @BuggyWebDriver(IE = {"titles", "HEAD", "Outer Html", "DIV", "",
-                          "bodyTitles", "DIV", "", "innerDiv", "outerDiv"})
-    // This is pretty mysterious because the second title HAS the text 'Inner Html' inside.
-    // Currently I do not know why it behaves this way so I take the default behavior.
     public void writeCompleteHtmlInsideDIV() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head>\n"
@@ -752,7 +743,7 @@ public class HTMLParser4Test extends WebDriverTestCase {
             + "      document.getElementsByTagName('html')[0].innerHTML ="
             + "        '<html><head><title>Inner Html</title></head>"
             + "        <body><DIV id=innerDiv>Inner DIV</DIV></body></html>';\n"
-            + "    } catch(e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  </script>\n"
             + "</body>\n"
             + "</html>\n";
@@ -770,8 +761,7 @@ public class HTMLParser4Test extends WebDriverTestCase {
             CHROME = "before1after1\\sbefore2after2\\sbefore3after3\\sbefore4after4\\sbefore5after5\\sbefore6<>after6",
             EDGE = "before1after1\\sbefore2after2\\sbefore3after3\\sbefore4after4\\sbefore5after5\\sbefore6<>after6",
             FF = "before1after1\\sbefore2after2\\sbefore3after3\\sbefore4after4\\sbefore5after5\\sbefore6<>after6",
-            FF_ESR = "before1after1\\sbefore2after2\\sbefore3after3\\sbefore4after4\\sbefore5after5\\sbefore6<>after6",
-            IE = "before1after1\\sbefore2after2\\sbefore3after3\\sbefore4after4\\sbefore5after5\\sbefore6<>after6")
+            FF_ESR = "before1after1\\sbefore2after2\\sbefore3after3\\sbefore4after4\\sbefore5after5\\sbefore6<>after6")
     public void specialComments() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
                 + "<html><head>\n"
@@ -807,14 +797,11 @@ public class HTMLParser4Test extends WebDriverTestCase {
      * @throws Exception failure
      */
     @Test
-    @Alerts(DEFAULT = "before1after1\\nbefore2\\nbefore3\\nbefore4after4\\nbefore5after5\\nbefore6<\\s>after6",
-            IE = "before1after1\\r\\n\\s\\r\\nbefore2\\s\\r\\nbefore3\\s\\r\\nbefore4after4"
-                    + "\\r\\n\\s\\r\\nbefore5after5\\r\\n\\s\\r\\nbefore6<\\s>after6\\r\\n\\s")
+    @Alerts("before1after1\\nbefore2\\nbefore3\\nbefore4after4\\nbefore5after5\\nbefore6<\\s>after6")
     @HtmlUnitNYI(CHROME = "before1after1\\sbefore2\\sbefore3\\sbefore4after4\\sbefore5after5\\sbefore6<\\s>after6",
             EDGE = "before1after1\\sbefore2\\sbefore3\\sbefore4after4\\sbefore5after5\\sbefore6<\\s>after6",
             FF = "before1after1\\sbefore2\\sbefore3\\sbefore4after4\\sbefore5after5\\sbefore6<\\s>after6",
-            FF_ESR = "before1after1\\sbefore2\\sbefore3\\sbefore4after4\\sbefore5after5\\sbefore6<\\s>after6",
-            IE = "before1after1\\sbefore2\\sbefore3\\sbefore4after4\\sbefore5after5\\sbefore6<\\s>after6")
+            FF_ESR = "before1after1\\sbefore2\\sbefore3\\sbefore4after4\\sbefore5after5\\sbefore6<\\s>after6")
     public void specialComments2() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
                 + "<html><head>\n"
@@ -850,9 +837,8 @@ public class HTMLParser4Test extends WebDriverTestCase {
      * @throws Exception failure
      */
     @Test
-    @Alerts(DEFAULT = {"1", "[object HTMLTemplateElement]", "[object DocumentFragment]",
-                       "[object HTMLTableElement]", "[object HTMLTableSectionElement]"},
-            IE = {"1", "[object HTMLUnknownElement]", "undefined"})
+    @Alerts({"1", "[object HTMLTemplateElement]", "[object DocumentFragment]",
+             "[object HTMLTableElement]", "[object HTMLTableSectionElement]"})
     public void tableInsideTemplate_addTBody() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html>\n"
@@ -882,9 +868,8 @@ public class HTMLParser4Test extends WebDriverTestCase {
      * @throws Exception failure
      */
     @Test
-    @Alerts(DEFAULT = {"1", "[object HTMLTemplateElement]", "[object DocumentFragment]",
-                       "[object HTMLUListElement]"},
-            IE = {"1", "[object HTMLUnknownElement]", "undefined"})
+    @Alerts({"1", "[object HTMLTemplateElement]", "[object DocumentFragment]",
+             "[object HTMLUListElement]"})
     public void tableInsideTemplate_addTBodyMoveUlOut() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html>\n"

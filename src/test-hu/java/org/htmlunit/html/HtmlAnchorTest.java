@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,9 +29,9 @@ import org.htmlunit.HttpMethod;
 import org.htmlunit.MockWebConnection;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.BuggyWebDriver;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.BuggyWebDriver;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
 import org.junit.Test;
@@ -152,9 +152,7 @@ public class HtmlAnchorTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "",
-            FF = "page2.html",
-            FF_ESR = "page2.html")
+    @Alerts("")
     public void clickNestedCheckboxElement() throws Exception {
         final String html =
               "<html>\n"
@@ -181,8 +179,7 @@ public class HtmlAnchorTest extends WebDriverTestCase {
         try (InputStream is = getClass().getClassLoader().
                 getResourceAsStream("testfiles/not_supported_type.jpg")) {
             final byte[] directBytes = IOUtils.toByteArray(is);
-            final List<NameValuePair> emptyList = Collections.emptyList();
-            getMockWebConnection().setResponse(urlImage, directBytes, 200, "ok", "image/jpg", emptyList);
+            getMockWebConnection().setResponse(urlImage, directBytes, 200, "ok", "image/jpg", Collections.emptyList());
         }
 
         final String html =
@@ -227,8 +224,7 @@ public class HtmlAnchorTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "page2.html",
-            IE = "")
+    @Alerts("page2.html")
     public void clickNestedInputTextElement() throws Exception {
         final String html =
               "<html>\n"
@@ -250,8 +246,7 @@ public class HtmlAnchorTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "page2.html",
-            IE = "")
+    @Alerts("page2.html")
     public void clickNestedInputPasswordElement() throws Exception {
         final String html =
               "<html>\n"
@@ -301,9 +296,7 @@ public class HtmlAnchorTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "",
-            FF = "page2.html",
-            FF_ESR = "page2.html")
+    @Alerts("")
     public void clickNestedRadioElement() throws Exception {
         final String html =
               "<html>\n"
@@ -437,7 +430,7 @@ public class HtmlAnchorTest extends WebDriverTestCase {
             + "      log(anchor.text + ' ' + anchor.children.length);\n"
             + "      anchor.text = 'Hello';\n"
             + "      log(anchor.text + ' ' + anchor.children.length);\n"
-            + "    } catch (e) { log('exception' + e) }\n"
+            + "    } catch(e) { log('exception' + e) }\n"
             + "  }\n"
             + "</script></head>\n"
             + "<body onload=test()>\n"
@@ -606,21 +599,26 @@ public class HtmlAnchorTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "click href click doubleClick href ",
-            IE = "click href click doubleClick ")
-    @BuggyWebDriver(
-            FF = "click doubleClick click href href ",
-            FF_ESR = "click doubleClick click href href ")
-    @NotYetImplemented
+    @Alerts({"click", "href", "click", "doubleClick", "href"})
+    @BuggyWebDriver(FF_ESR = {"click", "click", "doubleClick", "href", "href"})
+    @HtmlUnitNYI(CHROME = {"click", "href", "click", "href", "doubleClick"},
+            EDGE = {"click", "href", "click", "href", "doubleClick"},
+            FF = {"click", "href", "click", "href", "doubleClick"},
+            FF_ESR = {"click", "href", "click", "href", "doubleClick"})
     public void doubleClick() throws Exception {
         final String html =
               "<html>\n"
+              + "<head>\n"
+              + "<script>\n"
+              + LOG_TEXTAREA_FUNCTION
+              + "</script>\n"
+              + "</head>\n"
             + "<body>\n"
             + "  <a id='myAnchor' "
-            +       "href=\"javascript:document.getElementById('myTextarea').value+='href ';void(0);\" "
-            +       "onClick=\"document.getElementById('myTextarea').value+='click ';\" "
-            +       "onDblClick=\"document.getElementById('myTextarea').value+='doubleClick ';\">foo</a>\n"
-            + "  <textarea id='myTextarea'></textarea>\n"
+            +       "href=\"javascript:log('href');void(0);\" "
+            +       "onClick=\"log('click');\" "
+            +       "onDblClick=\"log('doubleClick');\">foo</a>\n"
+            + LOG_TEXTAREA
             + "</body></html>";
 
         final WebDriver driver = loadPage2(html);
@@ -629,7 +627,7 @@ public class HtmlAnchorTest extends WebDriverTestCase {
         action.doubleClick(driver.findElement(By.id("myAnchor")));
         action.perform();
 
-        assertEquals(getExpectedAlerts()[0], driver.findElement(By.id("myTextarea")).getAttribute("value"));
+        verifyTextArea2(driver, getExpectedAlerts());
     }
 
     /**
@@ -695,7 +693,6 @@ public class HtmlAnchorTest extends WebDriverTestCase {
      */
     @Test
     @Alerts({"1", "First"})
-    @BuggyWebDriver(IE = {"0", "Second"})
     public void shiftClick() throws Exception {
         final String html = "<html><head><title>First</title></head><body>\n"
             + "<a href='" + URL_SECOND + "'>Click Me</a>\n"
@@ -726,7 +723,6 @@ public class HtmlAnchorTest extends WebDriverTestCase {
      */
     @Test
     @Alerts({"1", "First"})
-    @BuggyWebDriver(IE = {"0", "Second"})
     public void ctrlClick() throws Exception {
         final String html = "<html><head><title>First</title></head><body>\n"
             + "<a href='" + URL_SECOND + "'>Click Me</a>\n"

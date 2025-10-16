@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,9 @@
  */
 package org.htmlunit.libraries;
 
-import org.htmlunit.WebClient;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.BuggyWebDriver;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -33,20 +32,9 @@ public class HtmxTest1x9x2 extends HtmxTest {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = "passes:529failures:0",
-            IE = "not testable")
-    @HtmlUnitNYI(
-            IE = "passes:412failures:109")
+    @Alerts("passes:529failures:0")
+    @BuggyWebDriver(CHROME = "passes:529failures:1", EDGE = "passes:529failures:1")
     public void htmx() throws Exception {
         htmx("htmx-1.9.2");
-    }
-
-    @Override
-    protected void setupWebClient(final WebClient webClient) {
-        super.setupWebClient(webClient);
-
-        if (webClient.getBrowserVersion().isIE()) {
-            webClient.getOptions().setThrowExceptionOnScriptError(false);
-        }
     }
 }

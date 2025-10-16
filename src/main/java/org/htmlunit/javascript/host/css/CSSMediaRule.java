@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,6 @@
  */
 package org.htmlunit.javascript.host.css;
 
-import static org.htmlunit.BrowserVersionFeatures.CSS_CSSTEXT_IE_STYLE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-
-import org.apache.commons.lang3.StringUtils;
-import org.htmlunit.BrowserVersion;
 import org.htmlunit.css.CssMediaList;
 import org.htmlunit.cssparser.dom.CSSMediaRuleImpl;
 import org.htmlunit.cssparser.dom.MediaListImpl;
@@ -46,12 +38,13 @@ public class CSSMediaRule extends CSSConditionRule {
      * Creates a new instance.
      */
     public CSSMediaRule() {
+        super();
     }
 
     /**
      * Creates an instance.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     @Override
     public void jsConstructor() {
         super.jsConstructor();
@@ -87,19 +80,5 @@ public class CSSMediaRule extends CSSConditionRule {
      */
     private CSSMediaRuleImpl getMediaRule() {
         return (CSSMediaRuleImpl) getRule();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getCssText() {
-        String cssText = super.getCssText();
-        final BrowserVersion browserVersion = getBrowserVersion();
-        if (browserVersion.hasFeature(CSS_CSSTEXT_IE_STYLE)) {
-            cssText = StringUtils.replace(cssText, "\n  ", "\n\t");
-            cssText = StringUtils.replace(cssText, " { }", " {  }");
-        }
-        return cssText;
     }
 }

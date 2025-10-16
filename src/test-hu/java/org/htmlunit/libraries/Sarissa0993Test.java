@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package org.htmlunit.libraries;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
@@ -42,9 +42,7 @@ public class Sarissa0993Test extends WebDriverTestCase {
     @Alerts(CHROME = {"+++++++++++FF+++++", "+", "+", "+", "F++", "++", "++++F+++"},
             EDGE = {"+++++++++++FF+++++", "+", "+", "+", "F++", "++", "++++F+++"},
             FF = {"+++++++++++F++++++", "+", "+", "+", "F++", "++", "++++F+++"},
-            FF_ESR = {"+++++++++++F++++++", "+", "+", "+", "F++", "++", "++++F+++"},
-            IE = {"+++++++++++F++++++", "+", "+", "+", "FFF", "FF", "FFFFFFFF"})
-    // TODO [IE]XML sarissa 0.9.9.3 is not compatible with IE's new XML stuff
+            FF_ESR = {"+++++++++++F++++++", "+", "+", "+", "F++", "++", "++++F+++"})
     public void sarissa() throws Exception {
         startWebServer("src/test-hu/resources/libraries/sarissa/0.9.9.3", null, null);
         final String url = URL_FIRST + "test/testsarissa.html";

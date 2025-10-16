@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,6 @@
  */
 package org.htmlunit.javascript.host.css;
 
-import static org.htmlunit.BrowserVersionFeatures.STYLESHEET_ADD_RULE_RETURNS_POS;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
-
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -33,17 +26,13 @@ import org.htmlunit.css.CssStyleSheet;
 import org.htmlunit.cssparser.dom.AbstractCSSRuleImpl;
 import org.htmlunit.cssparser.dom.CSSCharsetRuleImpl;
 import org.htmlunit.cssparser.dom.CSSRuleListImpl;
-import org.htmlunit.cssparser.parser.CSSException;
 import org.htmlunit.cssparser.parser.InputSource;
-import org.htmlunit.cssparser.parser.selector.SelectorList;
-import org.htmlunit.html.DomNode;
 import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.host.Window;
-import org.htmlunit.javascript.host.dom.Document;
 import org.htmlunit.javascript.host.html.HTMLElement;
 import org.w3c.dom.DOMException;
 
@@ -83,7 +72,7 @@ public class CSSStyleSheet extends StyleSheet {
      * Creates a new empty stylesheet.
      */
     @Override
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
         super.jsConstructor();
         styleSheet_ = new CssStyleSheet(null, (InputSource) null, null);
@@ -153,25 +142,6 @@ public class CSSStyleSheet extends StyleSheet {
     }
 
     /**
-     * Returns the owner node.
-     * @return the owner node
-     */
-    @JsxGetter(IE)
-    @Override
-    public HTMLElement getOwnerNode() {
-        return super.getOwnerNode();
-    }
-
-    /**
-     * Returns the owner element, same as {@link #getOwnerNode()}.
-     * @return the owner element
-     */
-    @JsxGetter(IE)
-    public HTMLElement getOwningElement() {
-        return getOwnerNode();
-    }
-
-    /**
      * Retrieves the collection of rules defined in this style sheet.
      * @return the collection of rules defined in this style sheet
      */
@@ -188,15 +158,6 @@ public class CSSStyleSheet extends StyleSheet {
     public CSSRuleList getCssRules() {
         initCssRules();
         return cssRules_;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @JsxGetter(IE)
-    @Override
-    public String getHref() {
-        return super.getHref();
     }
 
     /**
@@ -225,10 +186,10 @@ public class CSSStyleSheet extends StyleSheet {
                     return position;
                 }
                 catch (final DOMException ex) {
-                    throw JavaScriptEngine.throwAsScriptRuntimeEx(ex);
+                    throw JavaScriptEngine.asJavaScriptException(getWindow(), ex.getMessage(), ex.code);
                 }
             }
-            throw JavaScriptEngine.throwAsScriptRuntimeEx(e);
+            throw JavaScriptEngine.asJavaScriptException(getWindow(), e.getMessage(), e.code);
         }
     }
 
@@ -286,7 +247,7 @@ public class CSSStyleSheet extends StyleSheet {
             refreshCssRules();
         }
         catch (final DOMException e) {
-            throw JavaScriptEngine.throwAsScriptRuntimeEx(e);
+            throw JavaScriptEngine.asJavaScriptException(getWindow(), e.getMessage(), e.code);
         }
     }
 
@@ -315,11 +276,8 @@ public class CSSStyleSheet extends StyleSheet {
                 refreshCssRules();
             }
             catch (final DOMException ex) {
-                throw JavaScriptEngine.throwAsScriptRuntimeEx(ex);
+                throw JavaScriptEngine.asJavaScriptException(getWindow(), ex.getMessage(), ex.code);
             }
-        }
-        if (getBrowserVersion().hasFeature(STYLESHEET_ADD_RULE_RETURNS_POS)) {
-            return getCssStyleSheet().getWrappedSheet().getCssRules().getLength() - 1;
         }
         return -1;
     }
@@ -349,23 +307,6 @@ public class CSSStyleSheet extends StyleSheet {
     @Override
     public String getUri() {
         return getCssStyleSheet().getUri();
-    }
-
-    /**
-     * Validates the list of selectors.
-     * @param selectorList the selectors
-     * @param documentMode see {@link Document#getDocumentMode()}
-     * @param domNode the dom node the query should work on
-     * @throws CSSException if a selector is invalid
-     *
-     * @deprecated as of version 3.7.0; use
-     *   {@link CssStyleSheet#validateSelectors(org.htmlunit.cssparser.parser.selector.SelectorList, int, DomNode)}
-     *   instead
-     */
-    @Deprecated
-    public static void validateSelectors(final SelectorList selectorList, final int documentMode,
-                final DomNode domNode) throws CSSException {
-        CssStyleSheet.validateSelectors(selectorList, documentMode, domNode);
     }
 
     private void initCssRules() {

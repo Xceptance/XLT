@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ package org.htmlunit.html;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.WebDriver;
@@ -35,8 +35,7 @@ public class HtmlUnknownElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object HTMLUnknownElement]", "[object HTMLUnknownElement]", "[object HTMLElement]"},
-            IE = {"[object HTMLUnknownElement]", "[object HTMLUnknownElement]", "[object HTMLUnknownElement]"})
+    @Alerts({"[object HTMLUnknownElement]", "[object HTMLUnknownElement]", "[object HTMLElement]"})
     public void simpleScriptable() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -66,8 +65,7 @@ public class HtmlUnknownElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object HTMLUnknownElement]", "[object HTMLUnknownElement]", "[object HTMLElement]"},
-            IE = {"[object HTMLUnknownElement]", "[object HTMLUnknownElement]", "[object HTMLUnknownElement]"})
+    @Alerts({"[object HTMLUnknownElement]", "[object HTMLUnknownElement]", "[object HTMLElement]"})
     public void simpleScriptable_strict() throws Exception {
         final String header = "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" "
                 + "\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n";

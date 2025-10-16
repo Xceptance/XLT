@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ package org.htmlunit.protocol.data;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.WebDriver;
@@ -80,11 +80,7 @@ public class DataURLDecoderTest extends WebDriverTestCase {
             FF_ESR = "data:image/png;base64,"
                 + "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAcElEQVQ4T62SSQ4AIAgD7f8frZKIQUTEhSsw0KbItdJD4RYA"
                 + "INHtYwAtUvHjHcCNiBqpegB4dugD5gcrgHzbldCpWmczjOQdA6YFz8TBnDYoHQ9/IAevAQzRxoY88LLwJUhmErXuXSKnIH0B"
-                + "7K5a/QKe8pnRes1vRwAAAABJRU5ErkJggg==",
-            IE = "data:image/png;base64,"
-                + "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAABwSURBVDhP"
-                + "pZPbDsAgCENh///P27qsxhFEGCcxPiht8aLnjTQ43rmMqj5zWQCFGAw+WqBihrnrj8C8YLEG3JtqgcWegSuAgpWjZZvACllc"
-                + "AbpF0Un5Gi1LAbpG7iBMsCsGvx4SoPhIkHHzaB9i8zuLXD7IOwUJXM3pAAAAAElFTkSuQmCC")
+                + "7K5a/QKe8pnRes1vRwAAAABJRU5ErkJggg==")
     public void base64WithPlus() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"

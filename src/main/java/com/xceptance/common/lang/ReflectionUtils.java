@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -225,7 +225,6 @@ public final class ReflectionUtils
         {
             final Field instanceField = classWithFieldToReset.getDeclaredField(fieldName);
             instanceField.setAccessible(true);
-            makeFieldNonFinal(instanceField);
 
             if (instanceField.getType().isPrimitive())
             {
@@ -482,7 +481,6 @@ public final class ReflectionUtils
         try
         {
             final Field field = getFieldAndMakeAccessible(clazz, fieldName);
-            makeFieldNonFinal(field);
             field.set(object, value);
         }
         catch (final Exception e)
@@ -562,39 +560,6 @@ public final class ReflectionUtils
         }
 
         return field;
-    }
-
-    /**
-     * Attempts to remove the final modifier from the argument field to make it writable. May fail silently when
-     * attempting to make the returned writable. That is still to be able to read the field even if it can not made
-     * writable.
-     * 
-     * @param field
-     *            the field to make non final
-     * @throws SecurityException
-     *             if the field may not be accessed due to a security manager
-     * @throws IllegalStateException
-     *             if the field can not be made non final
-     */
-    public static void makeFieldNonFinal(final Field field)
-    {
-        try
-        {
-            if (Modifier.isFinal(field.getModifiers()))
-            {
-                final Field modifiersField = Field.class.getDeclaredField("modifiers");
-                modifiersField.setAccessible(true);
-                modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
-            }
-        }
-        catch (final IllegalAccessException e)
-        {
-            throw new IllegalStateException("Failed to make field \"" + field.getName() + "\" writable!");
-        }
-        catch (final NoSuchFieldException e)
-        {
-            // Can not happen until the field is not renamed in the JDK
-        }
     }
 
     /**

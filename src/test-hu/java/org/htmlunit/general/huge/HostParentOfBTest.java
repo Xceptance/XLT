@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package org.htmlunit.general.huge;
 import java.util.Collection;
 
 import org.htmlunit.junit.BrowserParameterizedRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized.Parameters;
@@ -50,8 +50,7 @@ public class HostParentOfBTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _BarProp_BarProp() throws Exception {
         test("BarProp", "BarProp");
     }
@@ -60,8 +59,7 @@ public class HostParentOfBTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _BaseAudioContext_AudioContext() throws Exception {
         test("BaseAudioContext", "AudioContext");
     }
@@ -70,8 +68,7 @@ public class HostParentOfBTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _BaseAudioContext_BaseAudioContext() throws Exception {
         test("BaseAudioContext", "BaseAudioContext");
     }
@@ -80,8 +77,7 @@ public class HostParentOfBTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _BaseAudioContext_OfflineAudioContext() throws Exception {
         test("BaseAudioContext", "OfflineAudioContext");
     }
@@ -92,8 +88,7 @@ public class HostParentOfBTest extends HostParentOf {
     @Test
     @Alerts(DEFAULT = "true",
             FF = "false",
-            FF_ESR = "false",
-            IE = "false")
+            FF_ESR = "false")
     public void _BatteryManager_BatteryManager() throws Exception {
         test("BatteryManager", "BatteryManager");
     }
@@ -122,8 +117,7 @@ public class HostParentOfBTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _BiquadFilterNode_BiquadFilterNode() throws Exception {
         test("BiquadFilterNode", "BiquadFilterNode");
     }
@@ -150,8 +144,7 @@ public class HostParentOfBTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _BlobEvent_BlobEvent() throws Exception {
         test("BlobEvent", "BlobEvent");
     }
@@ -160,8 +153,7 @@ public class HostParentOfBTest extends HostParentOf {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "true",
-            IE = "false")
+    @Alerts("true")
     public void _BroadcastChannel_BroadcastChannel() throws Exception {
         test("BroadcastChannel", "BroadcastChannel");
     }

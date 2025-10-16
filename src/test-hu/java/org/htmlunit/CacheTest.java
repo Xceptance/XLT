@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,8 +33,9 @@ import java.util.Map;
 
 import org.apache.commons.lang3.time.DateUtils;
 import org.htmlunit.html.HtmlPage;
+import org.htmlunit.http.HttpStatus;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
 import org.htmlunit.util.mocks.WebResponseMock;
@@ -522,7 +523,8 @@ public class CacheTest extends SimpleWebTestCase {
         final List<NameValuePair> headers = new ArrayList<>();
         headers.add(new NameValuePair(LAST_MODIFIED, "Sun, 15 Jul 2007 20:46:27 GMT"));
         final WebRequest request = new WebRequest(cssUrl);
-        final WebResponseData data = new WebResponseData(css.getBytes("UTF-8"), 200, "OK", headers);
+        final WebResponseData data = new WebResponseData(css.getBytes("UTF-8"),
+                HttpStatus.OK_200, HttpStatus.OK_200_MSG, headers);
         final WebResponse response = new WebResponse(data, request, 100);
         client.getCache().cacheIfPossible(new WebRequest(cssUrl), response, headers);
 
@@ -612,7 +614,7 @@ public class CacheTest extends SimpleWebTestCase {
 
         final String date = "Thu, 02 Mar 2023 02:00:00 GMT";
         final String etag = "foo";
-        final String lastModified = "Thu, 01 Mar 2023 01:00:00 GMT";
+        final String lastModified = "Wed, 01 Mar 2023 01:00:00 GMT";
 
         final List<NameValuePair> headers = new ArrayList<>();
         headers.add(new NameValuePair("Date", date));
@@ -647,7 +649,7 @@ public class CacheTest extends SimpleWebTestCase {
         assertEquals(null, cached.getResponseHeaderValue("X-Content-Type-Options"));
 
         final String updatedEtag = "bar";
-        final String updatedLastModified = "Thu, 01 Mar 2023 02:00:00 GMT";
+        final String updatedLastModified = "Wed, 01 Mar 2023 02:00:00 GMT";
 
         final List<NameValuePair> headers3 = new ArrayList<>();
         headers3.add(new NameValuePair(CACHE_CONTROL, "some-other-value, no-cache"));

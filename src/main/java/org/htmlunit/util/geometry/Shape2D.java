@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ package org.htmlunit.util.geometry;
 public interface Shape2D {
 
     /** Constant used for comparing doubles. */
-    double epsilon = 0.0000001;
+    double EPSILON = 0.000_000_1;
 
     /**
      * @param x point x value

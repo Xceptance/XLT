@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package org.htmlunit.javascript.host.event;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -49,8 +49,7 @@ public class ProgressEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object ProgressEvent]", "progress", "false", "false", "false", "false", "0", "0"},
-            IE = "exception")
+    @Alerts({"[object ProgressEvent]", "progress", "false", "false", "false", "false", "0", "0"})
     public void create_ctor() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"
@@ -59,7 +58,7 @@ public class ProgressEventTest extends WebDriverTestCase {
             + "    try {\n"
             + "      var event = new ProgressEvent('progress');\n"
             + "      dump(event);\n"
-            + "    } catch (e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + DUMP_EVENT_FUNCTION
             + "</script></head><body onload='test()'>\n"
@@ -72,8 +71,7 @@ public class ProgressEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object ProgressEvent]", "test", "true", "false", "false", "true", "234", "666"},
-            IE = "exception")
+    @Alerts({"[object ProgressEvent]", "test", "true", "false", "false", "true", "234", "666"})
     public void create_ctorWithDetails() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"
@@ -87,7 +85,7 @@ public class ProgressEventTest extends WebDriverTestCase {
             + "        'total': 666\n"
             + "      });\n"
             + "      dump(event);\n"
-            + "    } catch (e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + DUMP_EVENT_FUNCTION
             + "</script></head><body onload='test()'>\n"
@@ -100,8 +98,7 @@ public class ProgressEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "exception",
-            IE = {"[object ProgressEvent]", "", "false", "false", "undefined", "false", "0", "0"})
+    @Alerts("NotSupportedError/DOMException")
     public void create_createEvent() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"
@@ -110,7 +107,7 @@ public class ProgressEventTest extends WebDriverTestCase {
             + "    try {\n"
             + "      var event = document.createEvent('ProgressEvent');\n"
             + "      dump(event);\n"
-            + "    } catch (e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + DUMP_EVENT_FUNCTION
             + "</script></head><body onload='test()'>\n"

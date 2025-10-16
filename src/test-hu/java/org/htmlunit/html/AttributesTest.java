@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,14 +70,14 @@ public class AttributesTest extends TestCase {
         final TestSuite suite = new TestSuite();
         final String[] classesToTest = {
             "HtmlAbbreviated", "HtmlAcronym",
-            "HtmlAnchor", "HtmlAddress", "HtmlApplet", "HtmlArea",
+            "HtmlAnchor", "HtmlAddress", "HtmlArea",
             "HtmlArticle", "HtmlAside", "HtmlAudio",
             "HtmlBackgroundSound", "HtmlBase", "HtmlBaseFont",
             "HtmlBidirectionalIsolation",
-            "HtmlBidirectionalOverride", "HtmlBig", "HtmlBlink",
+            "HtmlBidirectionalOverride", "HtmlBig",
             "HtmlBlockQuote", "HtmlBody", "HtmlBold",
             "HtmlBreak", "HtmlButton", "HtmlCanvas", "HtmlCaption",
-            "HtmlCenter", "HtmlCitation", "HtmlCode", "HtmlCommand", "DomComment",
+            "HtmlCenter", "HtmlCitation", "HtmlCode", "DomComment",
             "HtmlData", "HtmlDataList",
             "HtmlDefinition", "HtmlDefinitionDescription",
             "HtmlDeletedText", "HtmlDetails", "HtmlDialog", "HtmlDirectory",
@@ -92,13 +92,13 @@ public class AttributesTest extends TestCase {
             "HtmlHeading4", "HtmlHeading5", "HtmlHeading6",
             "HtmlHorizontalRule", "HtmlHtml", "HtmlInlineFrame",
             "HtmlInlineQuotation",
-            "HtmlImage", "HtmlImage", "HtmlInsertedText", "HtmlIsIndex",
+            "HtmlImage", "HtmlImage", "HtmlInsertedText",
             "HtmlItalic", "HtmlKeyboard", "HtmlLabel", "HtmlLayer",
             "HtmlLegend", "HtmlListing", "HtmlListItem",
             "HtmlLink",
             "HtmlMap", "HtmlMain", "HtmlMark", "HtmlMarquee",
-            "HtmlMenu", "HtmlMenuItem", "HtmlMeta", "HtmlMeter", "HtmlMultiColumn",
-            "HtmlNav", "HtmlNextId",
+            "HtmlMenu", "HtmlMeta", "HtmlMeter",
+            "HtmlNav",
             "HtmlNoBreak", "HtmlNoEmbed", "HtmlNoFrames", "HtmlNoLayer",
             "HtmlNoScript", "HtmlObject", "HtmlOrderedList",
             "HtmlOptionGroup", "HtmlOption", "HtmlOutput",
@@ -140,12 +140,11 @@ public class AttributesTest extends TestCase {
                 tag = (String) clazz.getField("TAG_NAME2").get(null);
                 supportedTags.remove(tag);
             }
-            catch (final NoSuchFieldException e) {
+            catch (final NoSuchFieldException ignored) {
                 // ignore
             }
         }
 
-        supportedTags.remove("keygen");
         supportedTags.remove("input");
 
         if (!supportedTags.isEmpty()) {
@@ -237,7 +236,7 @@ public class AttributesTest extends TestCase {
      */
     @Override
     protected void runTest() throws Exception {
-        try (WebClient webClient = new WebClient(BrowserVersion.INTERNET_EXPLORER)) {
+        try (WebClient webClient = new WebClient(BrowserVersion.BEST_SUPPORTED)) {
             final MockWebConnection connection = new MockWebConnection();
             connection.setDefaultResponse("<html><head><title>foo</title></head><body></body></html>");
             webClient.setWebConnection(connection);

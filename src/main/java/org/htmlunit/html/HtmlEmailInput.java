@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,8 +13,6 @@
  * limitations under the License.
  */
 package org.htmlunit.html;
-
-import static org.htmlunit.BrowserVersionFeatures.JS_INPUT_SET_VALUE_EMAIL_TRIMMED;
 
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -63,15 +61,11 @@ public class HtmlEmailInput extends HtmlSelectableTextInput implements Labelable
      */
     @Override
     public String getValue() {
-        if (hasFeature(JS_INPUT_SET_VALUE_EMAIL_TRIMMED)) {
-            final String raw = getRawValue();
-            if (StringUtils.isBlank(raw)) {
-                return "";
-            }
-            return raw.trim();
+        final String raw = getRawValue();
+        if (StringUtils.isBlank(raw)) {
+            return "";
         }
-
-        return super.getValue();
+        return raw.trim();
     }
 
     @Override

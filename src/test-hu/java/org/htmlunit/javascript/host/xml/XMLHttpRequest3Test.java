@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,8 +46,8 @@ import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlSubmitInput;
 import org.htmlunit.javascript.host.xml.XMLHttpRequestTest.StreamingServlet;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.NotYetImplemented;
 import org.htmlunit.util.MimeType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -74,8 +74,7 @@ public class XMLHttpRequest3Test extends WebServerTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"0", "1", "4", MSG_NO_CONTENT, MSG_PROCESSING_ERROR},
-            IE = {"0", "1", "1", "4", MSG_NO_CONTENT, MSG_PROCESSING_ERROR})
+    @Alerts({"0", "1", "4", MSG_NO_CONTENT, MSG_PROCESSING_ERROR})
     public void asyncUseWithNetworkConnectionFailure() throws Exception {
         final String html =
               "<html>\n"
@@ -110,15 +109,13 @@ public class XMLHttpRequest3Test extends WebServerTestCase {
             + "</html>";
 
         final WebClient client = getWebClient();
-        final List<String> collectedAlerts = Collections.synchronizedList(new ArrayList<String>());
-        client.setAlertHandler(new CollectingAlertHandler(collectedAlerts));
         final MockWebConnection conn = new DisconnectedMockWebConnection();
         conn.setResponse(URL_FIRST, html);
         client.setWebConnection(conn);
         client.getPage(URL_FIRST);
 
         assertEquals(0, client.waitForBackgroundJavaScriptStartingBefore(1000));
-        assertEquals(getExpectedAlerts(), collectedAlerts);
+        assertEquals(getExpectedAlerts(), getCollectedAlerts(null));
     }
 
     /**
@@ -370,8 +367,6 @@ public class XMLHttpRequest3Test extends WebServerTestCase {
             + "</html>";
 
         final WebClient client = getWebClient();
-        final List<String> collectedAlerts = Collections.synchronizedList(new ArrayList<String>());
-        client.setAlertHandler(new CollectingAlertHandler(collectedAlerts));
         final MockWebConnection conn = new MockWebConnection();
         conn.setResponse(URL_FIRST, html);
         conn.setDefaultResponse("");
@@ -379,7 +374,7 @@ public class XMLHttpRequest3Test extends WebServerTestCase {
         client.getPage(URL_FIRST);
 
         assertEquals(0, client.waitForBackgroundJavaScriptStartingBefore(1000));
-        assertEquals(getExpectedAlerts(), collectedAlerts);
+        assertEquals(getExpectedAlerts(), getCollectedAlerts(null));
     }
 
     /**
@@ -397,7 +392,7 @@ public class XMLHttpRequest3Test extends WebServerTestCase {
         servlets.put("/form_headers.html", FormHeaderServlet.class);
         startWebServer("./", null, servlets);
 
-        collectedHeaders_.clear();
+        COLLECTED_HEADERS.clear();
         XMLHttpRequest3Test.STATE_ = 0;
         final WebClient client = getWebClient();
 
@@ -412,24 +407,24 @@ public class XMLHttpRequest3Test extends WebServerTestCase {
         ((HtmlSubmitInput) elem).click();
 
         client.waitForBackgroundJavaScript(DEFAULT_WAIT_TIME);
-        assertEquals(collectedHeaders_.toString(), 2, collectedHeaders_.size());
+        assertEquals(COLLECTED_HEADERS.toString(), 2, COLLECTED_HEADERS.size());
 
-        String headers = collectedHeaders_.get(0);
+        String headers = COLLECTED_HEADERS.get(0);
         if (!headers.startsWith("Form: ")) {
-            headers = collectedHeaders_.get(1);
+            headers = COLLECTED_HEADERS.get(1);
         }
         assertTrue(headers, headers.startsWith("Form: "));
         assertFalse(headers, headers.contains("Html-Unit=is great,;"));
 
-        headers = collectedHeaders_.get(0);
+        headers = COLLECTED_HEADERS.get(0);
         if (!headers.startsWith("Ajax: ")) {
-            headers = collectedHeaders_.get(1);
+            headers = COLLECTED_HEADERS.get(1);
         }
         assertTrue(headers, headers.startsWith("Ajax: "));
         assertTrue(headers, headers.contains("Html-Unit=is great,;"));
     }
 
-    static final List<String> collectedHeaders_ = Collections.synchronizedList(new ArrayList<String>());
+    static final List<String> COLLECTED_HEADERS = Collections.synchronizedList(new ArrayList<String>());
     static int STATE_ = 0;
 
     /**
@@ -491,7 +486,7 @@ public class XMLHttpRequest3Test extends WebServerTestCase {
                 e.printStackTrace();
             }
 
-            collectedHeaders_.add("Ajax: " + header);
+            COLLECTED_HEADERS.add("Ajax: " + header);
             response.setContentType(MimeType.TEXT_PLAIN);
             final Writer writer = response.getWriter();
             writer.write(header);
@@ -524,7 +519,7 @@ public class XMLHttpRequest3Test extends WebServerTestCase {
                     + "<p>Form: " + header + "</p<\n"
                     + "</body></html>";
 
-            collectedHeaders_.add("Form: " + header);
+            COLLECTED_HEADERS.add("Form: " + header);
             response.setContentType(MimeType.TEXT_HTML);
             final Writer writer = response.getWriter();
             writer.write(html);

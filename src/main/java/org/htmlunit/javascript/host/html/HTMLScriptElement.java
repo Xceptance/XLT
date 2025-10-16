@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,6 @@
 package org.htmlunit.javascript.host.html;
 
 import static org.htmlunit.html.DomElement.ATTRIBUTE_NOT_DEFINED;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -29,11 +25,13 @@ import org.htmlunit.html.DomText;
 import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlScript;
+import org.htmlunit.html.ScriptElement;
 import org.htmlunit.html.ScriptElementSupport;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.configuration.JsxSetter;
+import org.htmlunit.javascript.host.dom.Node;
 
 /**
  * The JavaScript object that represents an {@code HTMLScriptElement}.
@@ -48,16 +46,10 @@ import org.htmlunit.javascript.configuration.JsxSetter;
 public class HTMLScriptElement extends HTMLElement {
 
     /**
-     * Creates an instance.
-     */
-    public HTMLScriptElement() {
-    }
-
-    /**
      * JavaScript constructor.
      */
     @Override
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
         super.jsConstructor();
     }
@@ -77,7 +69,7 @@ public class HTMLScriptElement extends HTMLElement {
             final URL expandedSrc = ((HtmlPage) tmpScript.getPage()).getFullyQualifiedUrl(src);
             src = expandedSrc.toString();
         }
-        catch (final MalformedURLException e) {
+        catch (final MalformedURLException ignored) {
             // ignore
         }
         return src;
@@ -119,7 +111,7 @@ public class HTMLScriptElement extends HTMLElement {
         final DomNode textChild = new DomText(htmlElement.getPage(), text);
         htmlElement.appendChild(textChild);
 
-        ScriptElementSupport.executeScriptIfNeeded(htmlElement, false, false);
+        ScriptElementSupport.executeScriptIfNeeded((ScriptElement) htmlElement, false, false);
     }
 
     /**
@@ -141,21 +133,21 @@ public class HTMLScriptElement extends HTMLElement {
     }
 
     /**
-     * Overwritten for special IE handling.
+     * Overwritten for special handling.
      *
      * @param childObject the node to add to this node
      * @return the newly added child node
      */
     @Override
-    public Object appendChild(final Object childObject) {
+    public Node appendChild(final Object childObject) {
         final HtmlElement tmpScript = getDomNodeOrDie();
         final boolean wasEmpty = tmpScript.getFirstChild() == null;
-        final Object result = super.appendChild(childObject);
+        final Node node = super.appendChild(childObject);
 
         if (wasEmpty) {
-            ScriptElementSupport.executeScriptIfNeeded(tmpScript, false, false);
+            ScriptElementSupport.executeScriptIfNeeded((ScriptElement) tmpScript, false, false);
         }
-        return result;
+        return node;
     }
 
     /**

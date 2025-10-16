@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package org.htmlunit.javascript.host.html;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -64,8 +64,7 @@ public class HTMLAreaElementTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"", "function HTMLAreaElement() { [native code] }"},
-            IE = {"", "[object HTMLAreaElement]"})
+    @Alerts({"", "function HTMLAreaElement() { [native code] }"})
     public void type() throws Exception {
         final String html = ""
             + "<html><head>\n"
@@ -76,7 +75,7 @@ public class HTMLAreaElementTest extends WebDriverTestCase {
             + "    try {\n"
             + "      log(elem);\n"
             + "      log(HTMLAreaElement);\n"
-            + "    } catch(e) { log('exception'); }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -198,8 +197,7 @@ public class HTMLAreaElementTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"0", "2", "alternate", "help"},
-            IE = "exception")
+    @Alerts({"0", "2", "alternate", "help"})
     public void relList() throws Exception {
         final String html
             = "<html><body><map><area id='a1'/><area id='a2' rel='alternate help'/></map><script>\n"
@@ -213,7 +211,7 @@ public class HTMLAreaElementTest extends WebDriverTestCase {
             + "  for (var i = 0; i < a2.relList.length; i++) {\n"
             + "    log(a2.relList[i]);\n"
             + "  }\n"
-            + "} catch(e) { log('exception'); }\n"
+            + "} catch(e) { logEx(e); }\n"
 
             + "</script></body></html>";
         loadPageVerifyTitle2(html);

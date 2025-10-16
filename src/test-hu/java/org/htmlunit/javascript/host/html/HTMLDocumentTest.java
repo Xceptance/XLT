@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,18 +26,19 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 
 import org.apache.http.client.utils.DateUtils;
+import org.htmlunit.BrowserVersion;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.BuggyWebDriver;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.BuggyWebDriver;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
 import org.htmlunit.util.MimeType;
 import org.htmlunit.util.NameValuePair;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
@@ -133,7 +134,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
 //            + "    log(document.getElementsByClassName().length);\n" // exception in FF3
             + "    log(document.getElementsByClassName(null).length);\n"
             + "  }\n"
-            + "  catch (e) { log('exception') }\n"
+            + "  catch(e) { logEx(e) }\n"
             + "}\n"
             + "</script></head><body onload='doTest()'>\n"
             + "<div class='foo' id='div1'><span class='c2'>hello</span>\n"
@@ -282,8 +283,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "false",
-            IE = "true")
+    @Alerts("false")
     public void uniqueID() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -340,7 +340,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
             + "try {\n"
             + "  var elt = document.createElementNS('http://www.w3.org/2000/svg', 'svg');\n"
             + "  log(elt);\n"
-            + "} catch (e) { log('exception'); }\n"
+            + "} catch(e) { logEx(e); }\n"
             + "</script></body></html>";
 
         loadPageVerifyTitle2(html);
@@ -370,7 +370,11 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts(DEFAULT = "TypeError",
+            FF = "NS_ERROR_NOT_AVAILABLE/Exception",
+            FF_ESR = "NS_ERROR_NOT_AVAILABLE/Exception")
+    @HtmlUnitNYI(FF = "TypeError",
+            FF_ESR = "TypeError")
     public void createDocumentNS_xul() throws Exception {
         final String html = "<html><body>\n"
             + "<script>\n"
@@ -383,7 +387,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
             + "  document.body.appendChild(inner);\n"
             + "  log(document.body.lastChild.value);\n"
             + "}\n"
-            + "catch (e) { log('exception'); }\n"
+            + "catch(e) { logEx(e); }\n"
             + "</script>\n"
             + "</body>\n"
             + "</html>";
@@ -456,7 +460,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
             + "    var theSpan = document.getElementById('s1');\n"
             + "    document.body.replaceChild(importedScript, theSpan);\n"
             + "    log('replaced');\n"
-            + "  } catch (e) { log('exception') }\n"
+            + "  } catch(e) { logEx(e) }\n"
             + "}\n"
             + "</script></head><body onload='test()'>\n"
             + "  <span id='s1'></span>\n"
@@ -491,7 +495,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
             + "    var theSpan = document.getElementById('s1');\n"
             + "    document.body.replaceChild(importedDiv, theSpan);\n"
             + "    log('replaced');\n"
-            + "  } catch (e) { log('exception') }\n"
+            + "  } catch(e) { logEx(e) }\n"
             + "}\n"
             + "</script></head><body onload='test()'>\n"
             + "  <span id='s1'></span>\n"
@@ -531,7 +535,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts({"undefined", "exception"})
+    @Alerts({"undefined", "TypeError"})
     public void namespaces() throws Exception {
         final String html =
               "<body><script>\n"
@@ -550,7 +554,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
             + "  log(ns['f'].urn);\n"
             + "  log(ns == document.namespaces);\n"
             + "}\n"
-            + "catch(e) { log('exception') }\n"
+            + "catch(e) { logEx(e) }\n"
             + "</script></body>";
 
         loadPageVerifyTitle2(html);
@@ -561,16 +565,21 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts({"TypeError", "TypeError"})
     public void documentMethodsWithoutDocument() throws Exception {
         final String html
             = "<div id='d' name='d'>d</div>\n"
             + "<script>\n"
             + LOG_TITLE_FUNCTION
             + "try {\n"
-            + "  var i = document.getElementById; log(i('d').id);\n"
-            + "  var n = document.getElementsByName; log(n('d').length);\n"
-            + "} catch(e) { log('exception') }\n"
+            + "  var i = document.getElementById;\n"
+            + "  log(i('d').id);\n"
+            + "} catch(e) { logEx(e) }\n"
+
+            + "try {\n"
+            + "  var n = document.getElementsByName;\n"
+            + "  log(n('d').length);\n"
+            + "} catch(e) { logEx(e) }\n"
             + "</script>";
         loadPageVerifyTitle2(html);
     }
@@ -579,8 +588,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"", "", "#0000aa", "#0000aa", "x", "x"},
-            IE = {"#ffffff", "", "#0000aa", "#0000aa", "#000000", "#0"})
+    @Alerts({"", "", "#0000aa", "#0000aa", "x", "x"})
     public void bgColor() throws Exception {
         final String html =
             "<html>\n"
@@ -659,152 +667,15 @@ public class HTMLDocumentTest extends WebDriverTestCase {
     }
 
     /**
-     * Property lastModified returns the last modification date of the document.
-     * @throws Exception if the test fails
-     */
-    @Test
-    @Alerts({"string", "Fri, 16 Oct 2009 13:59:47 GMT"})
-    @HtmlUnitNYI(IE = {"string", "Fri, 16 Oct 2009 13:59:47 GMT"})
-    public void lastModified() throws Exception {
-        final List<NameValuePair> responseHeaders = new ArrayList<>();
-        responseHeaders.add(new NameValuePair("Last-Modified", "Fri, 16 Oct 2009 13:59:47 GMT"));
-        testLastModified(responseHeaders);
-
-        // for some strange reasons, the selenium driven browser is in an invalid
-        // state after this test
-        releaseResources();
-        shutDownAll();
-    }
-
-    /**
-     * Property lastModified returns the last modification date of the document.
-     * @throws Exception if the test fails
-     */
-    @Test
-    @Alerts({"string", "Fri, 16 Oct 2009 13:59:47 GMT"})
-    @HtmlUnitNYI(IE = {"string", "Fri, 16 Oct 2009 13:59:47 GMT"})
-    public void lastModifiedAndDate() throws Exception {
-        final List<NameValuePair> responseHeaders = new ArrayList<>();
-        responseHeaders.add(new NameValuePair("Last-Modified", "Fri, 16 Oct 2009 13:59:47 GMT"));
-        testLastModified(responseHeaders);
-
-        // Last-Modified header has priority compared to Date header
-        responseHeaders.add(new NameValuePair("Date", "Fri, 17 Oct 2009 13:59:47 GMT"));
-        testLastModified(responseHeaders);
-
-        // for some strange reasons, the selenium driven browser is in an invalid
-        // state after this test
-        releaseResources();
-        shutDownAll();
-    }
-
-    /**
-     * Property lastModified returns the last modification date of the document.
-     * @throws Exception if the test fails
-     */
-    @Test
-    @Alerts({"string", "§§URL§§"})
-    public void lastModifiedOnlyDate() throws Exception {
-        final List<NameValuePair> responseHeaders = new ArrayList<>();
-        responseHeaders.clear();
-        responseHeaders.add(new NameValuePair("Date", "Fri, 16 Oct 2009 13:59:47 GMT"));
-
-        expandExpectedAlertsVariables(DateUtils.formatDate(new Date()).substring(0, 17));
-        final String html = "<html><head><script>\n"
-                + LOG_TITLE_FUNCTION
-                + "function doTest() {\n"
-                + "  log(typeof document.lastModified);\n"
-                + "  var d = new Date(document.lastModified);\n"
-                + "  log(d.toGMTString().substr(0, 17));\n" // to have results not depending on the user's time zone
-                + "}\n"
-                + "</script></head>\n"
-                + "<body onload='doTest()'>\n"
-                + "</body></html>";
-
-        getMockWebConnection().setResponse(URL_FIRST, html, 200, "OK", MimeType.TEXT_HTML, responseHeaders);
-
-        final WebDriver driver = loadPage2(URL_FIRST, ISO_8859_1);
-        verifyTitle2(driver, getExpectedAlerts());
-
-        // for some strange reasons, the selenium driven browser is in an invalid
-        // state after this test
-        releaseResources();
-        shutDownAll();
-    }
-
-    private void testLastModified(final List<NameValuePair> responseHeaders) throws Exception {
-        final String html = "<html><head><script>\n"
-            + LOG_TITLE_FUNCTION
-            + "function doTest() {\n"
-            + "  log(typeof document.lastModified);\n"
-            + "  var d = new Date(document.lastModified);\n"
-            + "  log(d.toGMTString());\n" // to have results not depending on the user's time zone
-            + "}\n"
-            + "</script></head>\n"
-            + "<body onload='doTest()'>\n"
-            + "</body></html>";
-
-        getMockWebConnection().setResponse(URL_FIRST, html, 200, "OK", MimeType.TEXT_HTML, responseHeaders);
-
-        final WebDriver driver = loadPage2(URL_FIRST, ISO_8859_1);
-        verifyTitle2(driver, getExpectedAlerts());
-    }
-
-    /**
-     * If neither Date header nor Last-Modified header is present, current time is taken.
-     * @throws Exception if the test fails
-     */
-    @Test
-    @Alerts({"true", "true"})
-    public void lastModified_noDateHeader() throws Exception {
-        final String html = "<html><head><script>\n"
-            + LOG_TITLE_FUNCTION
-            + "function doTest() {\n"
-            + "  var justBeforeLoading = " + System.currentTimeMillis() + ";\n"
-            + "  var d = new Date(document.lastModified);\n"
-            + "  log(d.valueOf() >= justBeforeLoading - 1000);\n" // date string format has no ms, take 1s marge
-            + "  log(d.valueOf() <= new Date().valueOf());\n"
-            + "}\n"
-            + "</script></head>\n"
-            + "<body onload='doTest()'>\n"
-            + "</body></html>";
-
-        loadPageVerifyTitle2(html);
-    }
-
-    /**
-     * Regression test for bug 2919853 (format of <tt>document.lastModified</tt> was incorrect).
-     * @throws Exception if an error occurs
-     */
-    @Test
-    public void lastModified_format() throws Exception {
-        final String html
-            = "<html><body onload='document.getElementById(\"i\").value = document.lastModified'>\n"
-            + "<input id='i'></input></body></html>";
-
-        final WebDriver driver = loadPageWithAlerts2(html);
-        final String lastModified = driver.findElement(By.id("i")).getAttribute("value");
-
-        try {
-            new SimpleDateFormat("MM/dd/yyyy HH:mm:ss", Locale.ROOT).parse(lastModified);
-        }
-        catch (final ParseException e) {
-            fail(e.getMessage());
-        }
-    }
-
-    /**
      * Warning: this test works fine in real FF8 when started manually but fails through WebDriver.
      * Warning: opens a modal panel when run through IEDriver which needs to be closed MANUALLY.
      * If not all following test will fail.
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"0", "exception"},
+    @Alerts(DEFAULT = {"0", "IndexSizeError/DOMException"},
             FF = {"1", "[object HTMLBodyElement]"},
-            FF_ESR = {"1", "[object HTMLBodyElement]"},
-            IE = {"0", "[object HTMLBodyElement]"})
-    @HtmlUnitNYI(IE = {"0", "exception"})
+            FF_ESR = {"1", "[object HTMLBodyElement]"})
     public void designMode_selectionRange_empty() throws Exception {
         designMode_selectionRange("");
     }
@@ -815,11 +686,9 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"0", "exception"},
+    @Alerts(DEFAULT = {"0", "IndexSizeError/DOMException"},
             FF = {"1", "[object Text]"},
-            FF_ESR = {"1", "[object Text]"},
-            IE = {"1", "[object Text]"})
-    @HtmlUnitNYI(IE = {"0", "exception"})
+            FF_ESR = {"1", "[object Text]"})
     public void designMode_selectionRange_text() throws Exception {
         designMode_selectionRange("hello");
     }
@@ -835,7 +704,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
             + "    var s = window.getSelection();\n"
             + "    log(s.rangeCount);\n"
             + "    log(s.getRangeAt(0).startContainer);\n"
-            + "  } catch(e) {log('exception'); }\n"
+            + "  } catch(e) {logEx(e); }\n"
             + "}\n"
             + "</script></head>\n"
             + "<body onload='doTest()'>" // no \n here!
@@ -885,8 +754,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "not defined",
-            IE = {"true", "1"})
+    @Alerts("not defined")
     public void frames() throws Exception {
         final String html = "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
@@ -986,40 +854,40 @@ public class HTMLDocumentTest extends WebDriverTestCase {
             + "  function test() {\n"
             + "    try {\n"
             + "      log(document.getElementsByName('form1').length);\n"
-            + "    } catch (e) { log('exception:f1') }\n"
+            + "    } catch(e) { log('exception:f1') }\n"
             + "    try {\n"
             + "      log(document.getElementsByName('form2').length);\n"
-            + "    } catch (e) { log('exception:f2') }\n"
+            + "    } catch(e) { log('exception:f2') }\n"
             + "    try {\n"
             + "      log(document.getElementsByName('frame1').length);\n"
-            + "    } catch (e) { log('exception:f1') }\n"
+            + "    } catch(e) { log('exception:f1') }\n"
             + "    try {\n"
             + "      log(document.getElementsByName('frame2').length);\n"
-            + "    } catch (e) { log('exception:f2') }\n"
+            + "    } catch(e) { log('exception:f2') }\n"
             + "    try {\n"
             + "      log(document.getElementsByName('input1').length);\n"
-            + "    } catch (e) { log('exception:i1') }\n"
+            + "    } catch(e) { log('exception:i1') }\n"
             + "    try {\n"
             + "      log(document.getElementsByName('input2').length);\n"
-            + "    } catch (e) { log('exception:i2') }\n"
+            + "    } catch(e) { log('exception:i2') }\n"
             + "    try {\n"
             + "      log(document.getElementsByName('anchor1').length);\n"
-            + "    } catch (e) { log('exception:a1') }\n"
+            + "    } catch(e) { log('exception:a1') }\n"
             + "    try {\n"
             + "      log(document.getElementsByName('anchor2').length);\n"
-            + "    } catch (e) { log('exception:a2') }\n"
+            + "    } catch(e) { log('exception:a2') }\n"
             + "    try {\n"
             + "      log(document.getElementsByName('image1').length);\n"
-            + "    } catch (e) { log('exception:i1') }\n"
+            + "    } catch(e) { log('exception:i1') }\n"
             + "    try {\n"
             + "      log(document.getElementsByName('image2').length);\n"
-            + "    } catch (e) { log('exception:i2') }\n"
+            + "    } catch(e) { log('exception:i2') }\n"
             + "    try {\n"
             + "      log(document.getElementsByName('element1').length);\n"
-            + "    } catch (e) { log('exception:e1') }\n"
+            + "    } catch(e) { log('exception:e1') }\n"
             + "    try {\n"
             + "      log(document.getElementsByName('element2').length);\n"
-            + "    } catch (e) { log('exception:e2') }\n"
+            + "    } catch(e) { log('exception:e2') }\n"
             + "  }\n"
             + "</script></head><body onload='test()'>\n"
             + "  <form name='form1'></form>\n"
@@ -1058,10 +926,10 @@ public class HTMLDocumentTest extends WebDriverTestCase {
             + "  function test() {\n"
             + "    try {\n"
             + "      log(document.getElementsByName('frame1').length);\n"
-            + "    } catch (e) { log('exception:f1') }\n"
+            + "    } catch(e) { log('exception:f1') }\n"
             + "    try {\n"
             + "      log(document.getElementsByName('frame2').length);\n"
-            + "    } catch (e) { log('exception:f2') }\n"
+            + "    } catch(e) { log('exception:f2') }\n"
             + "  }\n"
             + "</script></head>\n"
             + "<frameset onload='test()'>\n"
@@ -1136,7 +1004,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
             + "    try {\n"
             + "      document.getElementById('image5').setAttributeNS(null, 'name', 'image1');\n"
             + "      log(collection.length);\n"
-            + "    } catch (e) { log('exception:setAttributeNS') }\n"
+            + "    } catch(e) { log('exception:setAttributeNS') }\n"
 
             // 9
             + "    document.getElementById('outer1').removeChild(newImage1);\n"
@@ -1242,7 +1110,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
             + "    try {\n"
             + "      document.getElementById('image5').setAttributeNS(null, 'name', 'image1');\n"
             + "      log(collection.length);\n"
-            + "    } catch (e) { log('exception:setAttributeNS') }\n"
+            + "    } catch(e) { log('exception:setAttributeNS') }\n"
 
             // 9
             + "    document.getElementById('outer1').removeChild(newImage1);\n"
@@ -1315,7 +1183,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("TypeError")
     public void getBoxObjectFor() throws Exception {
         final String html = "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
@@ -1327,7 +1195,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
             + "    log(a === document.getBoxObjectFor(e));\n"
             + "    log(a.screenX > 0);\n"
             + "    log(a.screenY > 0);\n"
-            + "  } catch (e) { log('exception') }\n"
+            + "  } catch(e) { logEx(e) }\n"
             + "}\n"
             + "</script></head><body onload='doTest()'>\n"
             + "<div id='log'></div>\n"
@@ -1370,8 +1238,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
                     + "Open, OverWrite, PlayImage, Refresh, RemoveParaFormat, SaveAs, SizeToControl, "
                     + "SizeToControlHeight, SizeToControlWidth, Stop, StopImage, UnBookmark"},
             FF = "0 commands supported",
-            FF_ESR = "0 commands supported",
-            IE = "46 commands supported")
+            FF_ESR = "0 commands supported")
     public void queryCommandSupported_disctinct() throws Exception {
         final String[] commands = {"2D-Position", "AbsolutePosition",
             "BlockDirLTR", "BlockDirRTL", "BrowseMode",
@@ -1408,7 +1275,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
             + "      else\n"
             + "        cmdsNotSupported[cmdsNotSupported.length] = cmd;\n"
             + "    }\n"
-            + "  } catch (e) { log('exception'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "  log(nbSupported + ' commands supported');\n"
             + "  if (nbSupported != 0 && cmdsNotSupported.length > 0)\n"
             + "    log('not supported: ' + cmdsNotSupported.join(', '));\n"
@@ -1472,7 +1339,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("SyntaxError/DOMException")
     public void querySelectorAll_badSelector() throws Exception {
         for (final String selector : JQUERY_CUSTOM_SELECTORS) {
             doTestQuerySelectorAll_badSelector(selector);
@@ -1485,7 +1352,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
             + "try {\n"
             + "  document.querySelectorAll('" + selector + "');\n"
             + "  log('working');\n"
-            + "} catch(e) { log('exception'); }\n"
+            + "} catch(e) { logEx(e); }\n"
             + "</script></body></html>";
 
         loadPageVerifyTitle2(html);
@@ -1495,7 +1362,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("SyntaxError/DOMException")
     public void querySelector_badSelector() throws Exception {
         for (final String selector : JQUERY_CUSTOM_SELECTORS) {
             doTestQuerySelector_badSelector(selector);
@@ -1508,7 +1375,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
             + "try {\n"
             + "  document.querySelector('" + selector + "');\n"
             + "  log('working: " + selector + "');\n"
-            + "} catch(e) { log('exception'); }\n"
+            + "} catch(e) { logEx(e); }\n"
             + "</script></body></html>";
 
         loadPageVerifyTitle2(html);
@@ -1518,8 +1385,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"3", "div1"},
-            IE = "undefined")
+    @Alerts({"3", "div1"})
     public void querySelectorAll_quirks() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -1677,9 +1543,6 @@ public class HTMLDocumentTest extends WebDriverTestCase {
     @Test
     @Alerts({"true", "", "foo=bar", "foo=hello world"})
     public void cookie_write_cookiesEnabled() throws Exception {
-        // TODO [IE]SINGLE-VS-BULK test runs when executed as single but breaks as bulk
-        shutDownRealIE();
-
         final String html =
                 "<html><head><script>\n"
               + LOG_TITLE_FUNCTION
@@ -1701,9 +1564,8 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"", "a", "", "b", ""},
-            CHROME = {"", "a", "a", "b", "b"},
-            EDGE = {"", "a", "a", "b", "b"})
+    @Alerts(DEFAULT = {"", "a", "a", "b", "b"},
+            FF_ESR = {"", "a", "", "b", ""})
     public void cookie_write2() throws Exception {
         final String html =
               "<html>\n"
@@ -1748,11 +1610,6 @@ public class HTMLDocumentTest extends WebDriverTestCase {
             + "  <body>abc</body>\n"
             + "</html>";
 
-        // [IE] real IE waits for the page to load until infinity
-        if (useRealBrowser() && getBrowserVersion().isIE()) {
-            Assert.fail("Blocks real IE");
-        }
-
         loadPageVerifyTitle2(html);
     }
 
@@ -1782,7 +1639,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("InvalidCharacterError/DOMException")
     public void createElement_notOnlyTagName() throws Exception {
         final String html = "<html><body>\n"
             + "<script>\n"
@@ -1791,7 +1648,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
             + "  var t = document.createElement('<input name=x>');\n"
             + "  log(t.tagName);\n"
             + "} catch(e) {\n"
-            + "  log('exception');\n"
+            + "  logEx(e);\n"
             + "}\n"
             + "</script>\n"
             + "</body></html>";
@@ -1803,8 +1660,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"myattr", ""},
-            IE = {"myAttr", ""})
+    @Alerts({"myattr", ""})
     public void createAttributeNameValue() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -1929,8 +1785,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"", "", "#0000aa", "#0000aa", "x", "x"},
-            IE = {"#0000ff", "", "#0000aa", "#0000aa", "#000000", "#0"})
+    @Alerts({"", "", "#0000aa", "#0000aa", "x", "x"})
     public void alinkColor() throws Exception {
         final String html =
             "<html>\n"
@@ -1960,8 +1815,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"", "", "#0000aa", "#0000aa", "x", "x"},
-            IE = {"#0000ff", "", "#0000aa", "#0000aa", "#000000", "#0"})
+    @Alerts({"", "", "#0000aa", "#0000aa", "x", "x"})
     public void linkColor() throws Exception {
         final String html =
             "<html>\n"
@@ -1991,8 +1845,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"", "", "#0000aa", "#0000aa", "x", "x"},
-            IE = {"#800080", "", "#0000aa", "#0000aa", "#000000", "#0"})
+    @Alerts({"", "", "#0000aa", "#0000aa", "x", "x"})
     public void vlinkColor() throws Exception {
         final String html =
             "<html>\n"
@@ -2022,8 +1875,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"", "", "#0000aa", "#0000aa", "x", "x"},
-            IE = {"#000000", "", "#0000aa", "#0000aa", "#000000", "#0"})
+    @Alerts({"", "", "#0000aa", "#0000aa", "x", "x"})
     public void fgColor() throws Exception {
         final String html =
             "<html>\n"
@@ -2078,8 +1930,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"true", "undefined", "false"},
-            IE = {"true", "[object HTMLFormElement]", "true"})
+    @Alerts({"true", "undefined", "false"})
     public void document_xxx_formAccess() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -2105,8 +1956,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"windows-1252", "windows-1252", "windows-1252", "undefined"},
-            IE = {"ISO-8859-1", "iso-8859-1", "iso-8859-1", "windows-1252"})
+    @Alerts({"windows-1252", "windows-1252", "windows-1252", "undefined"})
     public void encoding() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -2129,8 +1979,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"windows-1252", "windows-1252", "windows-1252", "undefined"},
-            IE = {"ISO-8859-1", "iso-8859-1", "iso-8859-1", "windows-1252"})
+    @Alerts({"windows-1252", "windows-1252", "windows-1252", "undefined"})
     public void encoding2() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -2154,8 +2003,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"windows-1252", "windows-1252", "windows-1252", "undefined"},
-            IE = {"ISO-8859-1", "iso-8859-1", "iso-8859-1", "windows-1252"})
+    @Alerts({"windows-1252", "windows-1252", "windows-1252", "undefined"})
     public void encoding3() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -2181,8 +2029,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"UTF-8", "UTF-8", "UTF-8", "undefined"},
-            IE = {"UTF-8", "utf-8", "utf-8", "windows-1252"})
+    @Alerts({"UTF-8", "UTF-8", "UTF-8", "undefined"})
     public void encoding4() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -2208,8 +2055,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"UTF-8", "UTF-8", "UTF-8", "undefined"},
-            IE = {"UTF-8", "utf-8", "utf-8", "windows-1252"})
+    @Alerts({"UTF-8", "UTF-8", "UTF-8", "undefined"})
     public void encoding5() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -2235,8 +2081,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"UTF-8", "UTF-8", "UTF-8", "undefined"},
-            IE = {"UTF-8", "utf-8", "utf-8", "windows-1252"})
+    @Alerts({"UTF-8", "UTF-8", "UTF-8", "undefined"})
     public void encoding6() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -2263,8 +2108,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "?%C3%A8=%C3%A8",
-            IE = "?\u00E8=\u00E8")
+    @Alerts("?%C3%A8=%C3%A8")
     public void encoding7() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -2285,8 +2129,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "BackCompat", "function", "function"},
-            IE = {"11", "BackCompat", "function", "function"})
+    @Alerts({"undefined", "BackCompat", "function", "function"})
     public void documentMode() throws Exception {
         documentMode("", "");
     }
@@ -2295,8 +2138,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "CSS1Compat", "function", "function"},
-            IE = {"11", "CSS1Compat", "function", "function"})
+    @Alerts({"undefined", "CSS1Compat", "function", "function"})
     public void documentMode_doctypeStrict() throws Exception {
         documentMode(HtmlPageTest.STANDARDS_MODE_PREFIX_, "");
     }
@@ -2305,8 +2147,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "BackCompat", "function", "function"},
-            IE = {"11", "BackCompat", "function", "function"})
+    @Alerts({"undefined", "BackCompat", "function", "function"})
     public void documentMode_doctypeTransitional() throws Exception {
         documentMode("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 Transitional//EN\""
                 + " \"http://www.w3.org/TR/html4/loose.dtd\">\n", "");
@@ -2316,8 +2157,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "CSS1Compat", "function", "function"},
-            IE = {"11", "CSS1Compat", "function", "function"})
+    @Alerts({"undefined", "CSS1Compat", "function", "function"})
     public void documentMode_doctypeHTML5() throws Exception {
         documentMode("<!DOCTYPE html>\n", "");
     }
@@ -2326,8 +2166,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "BackCompat", "function", "function"},
-            IE = {"5", "BackCompat", "undefined", "undefined"})
+    @Alerts({"undefined", "BackCompat", "function", "function"})
     public void documentMode_metaIE5() throws Exception {
         documentMode("", "  <meta http-equiv='X-UA-Compatible' content='IE=5'>\n");
     }
@@ -2336,9 +2175,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "BackCompat", "function", "function"},
-            IE = {"8", "CSS1Compat", "object", "object"})
-    @HtmlUnitNYI(IE = {"8", "CSS1Compat", "function", "function"})
+    @Alerts({"undefined", "BackCompat", "function", "function"})
     public void documentMode_metaIE8() throws Exception {
         documentMode("", "  <meta http-equiv='X-UA-Compatible' content='IE=8'>\n");
     }
@@ -2347,9 +2184,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "CSS1Compat", "function", "function"},
-            IE = {"8", "CSS1Compat", "object", "object"})
-    @HtmlUnitNYI(IE = {"8", "CSS1Compat", "function", "function"})
+    @Alerts({"undefined", "CSS1Compat", "function", "function"})
     public void documentMode_metaIE8_doctypeStrict() throws Exception {
         documentMode(HtmlPageTest.STANDARDS_MODE_PREFIX_, "  <meta http-equiv='X-UA-Compatible' content='IE=8'>\n");
     }
@@ -2358,8 +2193,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "BackCompat", "function", "function"},
-            IE = {"11", "BackCompat", "function", "function"})
+    @Alerts({"undefined", "BackCompat", "function", "function"})
     public void documentMode_metaEmulateIE8() throws Exception {
         documentMode("", "  <meta http-equiv='X-UA-Compatible' content='IE=Emulate8'>\n");
     }
@@ -2368,8 +2202,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "CSS1Compat", "function", "function"},
-            IE = {"11", "CSS1Compat", "function", "function"})
+    @Alerts({"undefined", "CSS1Compat", "function", "function"})
     public void documentMode_metaEmulateIE8_doctypeStrict() throws Exception {
         documentMode(HtmlPageTest.STANDARDS_MODE_PREFIX_,
                 "  <meta http-equiv='X-UA-Compatible' content='IE=Emulate8'>\n");
@@ -2379,8 +2212,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "BackCompat", "function", "function"},
-            IE = {"9", "CSS1Compat", "function", "function"})
+    @Alerts({"undefined", "BackCompat", "function", "function"})
     public void documentMode_metaIE9() throws Exception {
         documentMode("", "  <meta http-equiv='X-UA-Compatible' content='IE=9'>\n");
     }
@@ -2389,8 +2221,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "CSS1Compat", "function", "function"},
-            IE = {"9", "CSS1Compat", "function", "function"})
+    @Alerts({"undefined", "CSS1Compat", "function", "function"})
     public void documentMode_metaIE9_doctypeStrict() throws Exception {
         documentMode(HtmlPageTest.STANDARDS_MODE_PREFIX_,
                 "  <meta http-equiv='X-UA-Compatible' content='IE=9'>\n");
@@ -2400,8 +2231,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "BackCompat", "function", "function"},
-            IE = {"11", "BackCompat", "function", "function"})
+    @Alerts({"undefined", "BackCompat", "function", "function"})
     public void documentMode_metaIEEdge() throws Exception {
         documentMode("", "  <meta http-equiv='X-UA-Compatible' content='IE=edge'>\n");
     }
@@ -2410,8 +2240,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"undefined", "CSS1Compat", "function", "function"},
-            IE = {"11", "CSS1Compat", "function", "function"})
+    @Alerts({"undefined", "CSS1Compat", "function", "function"})
     public void documentMode_metaIEEdge_doctypeStrict() throws Exception {
         documentMode(HtmlPageTest.STANDARDS_MODE_PREFIX_,
                 "  <meta http-equiv='X-UA-Compatible' content='IE=edge'>\n");
@@ -2472,7 +2301,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
             + "  function test() {\n"
             + "    try {\n"
             + "      log(document.setCapture);\n"
-            + "    } catch(e) { log('exception'); }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -2488,8 +2317,8 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      */
     @Test
     @Alerts(DEFAULT = {"undefined", "releaseCapture available"},
-            CHROME = "exception",
-            EDGE = "exception")
+            CHROME = "TypeError",
+            EDGE = "TypeError")
     public void releaseCapture() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head>\n"
@@ -2499,7 +2328,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
             + "    try {\n"
             + "      log(document.releaseCapture());\n"
             + "      log('releaseCapture available');\n"
-            + "    } catch(e) { log('exception'); }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -2514,8 +2343,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(IE = {"[object HTMLDocument]", "[object HTMLDocument]"},
-            CHROME = {"[object HTMLDocument]", "function HTMLDocument() { [native code] }"},
+    @Alerts(CHROME = {"[object HTMLDocument]", "function HTMLDocument() { [native code] }"},
             EDGE = {"[object HTMLDocument]", "function HTMLDocument() { [native code] }"},
             FF = {"[object HTMLDocument]", "function HTMLDocument() { [native code] }"},
             FF_ESR = {"[object HTMLDocument]", "function HTMLDocument() { [native code] }"})
@@ -2528,7 +2356,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
             + "    try {\n"
             + "      log(document);\n"
             + "      log(HTMLDocument);\n"
-            + "    } catch(e) { log('exception'); }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -2543,8 +2371,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "§§URL§§",
-            IE = "undefined")
+    @Alerts("§§URL§§")
     public void baseURI_noBaseTag() throws Exception {
         final String html = "<html>\n"
                 + "<body>\n"
@@ -2566,8 +2393,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "§§URL§§details/abc",
-            IE = "undefined")
+    @Alerts("§§URL§§details/abc")
     public void baseURI_noBaseTag_urlPath() throws Exception {
         final String html = "<html>\n"
                 + "<body>\n"
@@ -2591,8 +2417,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "§§URL§§?x=y&z=zz",
-            IE = "undefined")
+    @Alerts("§§URL§§?x=y&z=zz")
     public void baseURI_noBaseTag_urlParams() throws Exception {
         final String html = "<html>\n"
                 + "<body>\n"
@@ -2616,8 +2441,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "§§URL§§details/abc;jsessionid=42?x=y&z=zz",
-            IE = "undefined")
+    @Alerts("§§URL§§details/abc;jsessionid=42?x=y&z=zz")
     public void baseURI_noBaseTag_urlPathAndParams() throws Exception {
         final String html = "<html>\n"
                 + "<body>\n"
@@ -2641,8 +2465,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "http://myotherwebsite.com/foo",
-            IE = "undefined")
+    @Alerts("http://myotherwebsite.com/foo")
     public void baseURI_withBaseTag() throws Exception {
         final String html = "<html>\n"
                 + "<head>\n"
@@ -2661,8 +2484,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "http://myotherwebsite.com/foo",
-            IE = "undefined")
+    @Alerts("http://myotherwebsite.com/foo")
     public void baseURI_withBaseTagInBody() throws Exception {
         final String html = "<html>\n"
                 + "<body>\n"
@@ -2680,8 +2502,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "§§URL§§img/",
-            IE = "undefined")
+    @Alerts("§§URL§§img/")
     public void baseURI_withBaseTag_absolutePath() throws Exception {
         final String html = "<html>\n"
                 + "<head>\n"
@@ -2703,8 +2524,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "§§URL§§path/to/img",
-            IE = "undefined")
+    @Alerts("§§URL§§path/to/img")
     public void baseURI_withBaseTag_relativePath() throws Exception {
         final String html = "<html>\n"
                 + "<head>\n"
@@ -2726,8 +2546,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "§§URL§§path/to/img/",
-            IE = "undefined")
+    @Alerts("§§URL§§path/to/img/")
     public void baseURI_withBaseTag_relativePath_slash() throws Exception {
         final String html = "<html>\n"
                 + "<head>\n"
@@ -2749,8 +2568,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "§§URL§§path/img",
-            IE = "undefined")
+    @Alerts("§§URL§§path/img")
     public void baseURI_withBaseTag_relativePath_parent() throws Exception {
         final String html = "<html>\n"
                 + "<head>\n"
@@ -2772,8 +2590,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "§§URL§§img",
-            IE = "undefined")
+    @Alerts("§§URL§§img")
     public void baseURI_withBaseTag_relativePath_strange() throws Exception {
         final String html = "<html>\n"
                 + "<head>\n"
@@ -2822,8 +2639,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = "complete,[object HTMLBodyElement]-complete,[object HTMLBodyElement]-",
             FF = "uninitialized,[object HTMLBodyElement]-uninitialized,[object HTMLBodyElement]-",
-            FF_ESR = "uninitialized,[object HTMLBodyElement]-uninitialized,[object HTMLBodyElement]-",
-            IE = "loading,[object HTMLBodyElement]-complete,[object HTMLBodyElement]-")
+            FF_ESR = "uninitialized,[object HTMLBodyElement]-uninitialized,[object HTMLBodyElement]-")
     @HtmlUnitNYI(CHROME = "loading,[object HTMLBodyElement]-complete,[object HTMLBodyElement]-",
             EDGE = "loading,[object HTMLBodyElement]-complete,[object HTMLBodyElement]-",
             FF = "loading,[object HTMLBodyElement]-complete,[object HTMLBodyElement]-",
@@ -2858,7 +2674,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
         Thread.sleep(200);
 
         final List<String> actual = new LinkedList<>();
-        actual.add(driver.findElement(By.id("myTextarea")).getAttribute("value"));
+        actual.add(driver.findElement(By.id("myTextarea")).getDomProperty("value"));
 
         assertEquals(getExpectedAlerts(), actual);
     }
@@ -2867,8 +2683,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "1",
-            IE = "undefined")
+    @Alerts("1")
     public void childElementCount() throws Exception {
         final String html = ""
             + "<html><head>\n"
@@ -2890,8 +2705,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "exception",
-            IE = "[object HTMLEmbedElement]")
+    @Alerts("TypeError")
     public void embeds() throws Exception {
         final String html = ""
             + "<html><head>\n"
@@ -2900,7 +2714,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
             + "  function test() {\n"
             + "    try {\n"
             + "      log(document.embeds(0));\n"
-            + "    } catch(e) {log('exception'); }\n"
+            + "    } catch(e) {logEx(e); }\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -2915,8 +2729,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"1", "exception"},
-            IE = {"1", "[object HTMLEmbedElement]"})
+    @Alerts({"1", "TypeError"})
     public void plugins() throws Exception {
         final String html = ""
             + "<html><head>\n"
@@ -2926,7 +2739,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
             + "    try {\n"
             + "      log(document.plugins.length);\n"
             + "      log(document.plugins(0));\n"
-            + "    } catch(e) {log('exception'); }\n"
+            + "    } catch(e) {logEx(e); }\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -2941,8 +2754,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = "exception",
-            IE = "[object HTMLImageElement]")
+    @Alerts("TypeError")
     public void images() throws Exception {
         final String html = ""
             + "<html><head>\n"
@@ -2951,7 +2763,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
             + "  function test() {\n"
             + "    try {\n"
             + "      log(document.images(0));\n"
-            + "    } catch(e) {log('exception'); }\n"
+            + "    } catch(e) {logEx(e); }\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -3019,7 +2831,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
             + "      newBody.id = 'newBody';\n"
             + "      document.body = newBody;\n"
             + "      log(document.body.id);\n"
-            + "    } catch(e) {log('exception'); }\n"
+            + "    } catch(e) {logEx(e); }\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -3033,7 +2845,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"myBody", "exception"})
+    @Alerts({"myBody", "HierarchyRequestError/DOMException"})
     public void setBodyDiv() throws Exception {
         final String html = ""
             + "<html><head>\n"
@@ -3047,7 +2859,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
             + "      newDiv.id = 'newDiv';\n"
             + "      document.body = newDiv;\n"
             + "      log(document.body.id);\n"
-            + "    } catch(e) {log('exception'); }\n"
+            + "    } catch(e) {logEx(e); }\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -3061,7 +2873,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"myBody", "exception"})
+    @Alerts({"myBody", "TypeError"})
     public void setBodyString() throws Exception {
         final String html = ""
             + "<html><head>\n"
@@ -3074,7 +2886,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
             + "      var newBody = '<body id=\"newBody\" onload=\"test()\"></body>';\n"
             + "      document.body = newBody;\n"
             + "      log(document.body.id);\n"
-            + "    } catch(e) {log('exception'); }\n"
+            + "    } catch(e) {logEx(e); }\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -3102,7 +2914,7 @@ public class HTMLDocumentTest extends WebDriverTestCase {
             + "      newBody.id = 'newFrameset';\n"
             + "      document.body = newBody;\n"
             + "      log(document.body.id);\n"
-            + "    } catch(e) {log('exception'); }\n"
+            + "    } catch(e) {logEx(e); }\n"
             + "  }\n"
             + "</script>\n"
             + "</head>\n"
@@ -3110,5 +2922,262 @@ public class HTMLDocumentTest extends WebDriverTestCase {
             + "</body></html>";
 
         loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * Property lastModified returns the last modification date of the document.
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"string", "10/16/2009 09:59:47", "Fri, 16 Oct 2009 13:59:47 GMT"})
+    @BuggyWebDriver(FF = {"string", "10/16/2009 15:59:47", "Fri, 16 Oct 2009 13:59:47 GMT"},
+            FF_ESR = {"string", "10/16/2009 15:59:47", "Fri, 16 Oct 2009 13:59:47 GMT"})
+    public void lastModified() throws Exception {
+        final List<NameValuePair> responseHeaders = new ArrayList<>();
+        responseHeaders.add(new NameValuePair("Last-Modified", "Fri, 16 Oct 2009 13:59:47 GMT"));
+        testLastModified(responseHeaders, getBrowserVersion().getSystemTimezone().getID());
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"string", "10/16/2009 13:59:47", "Fri, 16 Oct 2009 13:59:47 GMT"})
+    @BuggyWebDriver(FF = {"string", "10/16/2009 15:59:47", "Fri, 16 Oct 2009 13:59:47 GMT"},
+            FF_ESR = {"string", "10/16/2009 15:59:47", "Fri, 16 Oct 2009 13:59:47 GMT"})
+    public void lastModifiedGMT() throws Exception {
+        final List<NameValuePair> responseHeaders = new ArrayList<>();
+        responseHeaders.add(new NameValuePair("Last-Modified", "Fri, 16 Oct 2009 13:59:47 GMT"));
+        testLastModified(responseHeaders, "GMT");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"string", "10/16/2009 13:59:47", "Fri, 16 Oct 2009 13:59:47 GMT"})
+    @BuggyWebDriver(FF = {"string", "10/16/2009 15:59:47", "Fri, 16 Oct 2009 13:59:47 GMT"},
+            FF_ESR = {"string", "10/16/2009 15:59:47", "Fri, 16 Oct 2009 13:59:47 GMT"})
+    public void lastModifiedUTC() throws Exception {
+        final List<NameValuePair> responseHeaders = new ArrayList<>();
+        responseHeaders.add(new NameValuePair("Last-Modified", "Fri, 16 Oct 2009 13:59:47 GMT"));
+        testLastModified(responseHeaders, "UTC");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"string", "10/16/2009 15:59:47", "Fri, 16 Oct 2009 13:59:47 GMT"})
+    @BuggyWebDriver(FF = {"string", "10/16/2009 15:59:47", "Fri, 16 Oct 2009 13:59:47 GMT"},
+            FF_ESR = {"string", "10/16/2009 15:59:47", "Fri, 16 Oct 2009 13:59:47 GMT"})
+    public void lastModifiedBerlin() throws Exception {
+        final List<NameValuePair> responseHeaders = new ArrayList<>();
+        responseHeaders.add(new NameValuePair("Last-Modified", "Fri, 16 Oct 2009 13:59:47 GMT"));
+        testLastModified(responseHeaders, "Europe/Berlin");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"string", "10/16/2009 22:59:47", "Fri, 16 Oct 2009 13:59:47 GMT"})
+    @BuggyWebDriver(FF = {"string", "10/16/2009 15:59:47", "Fri, 16 Oct 2009 13:59:47 GMT"},
+            FF_ESR = {"string", "10/16/2009 15:59:47", "Fri, 16 Oct 2009 13:59:47 GMT"})
+    public void lastModifiedJST() throws Exception {
+        final List<NameValuePair> responseHeaders = new ArrayList<>();
+        responseHeaders.add(new NameValuePair("Last-Modified", "Fri, 16 Oct 2009 13:59:47 GMT"));
+        testLastModified(responseHeaders, "JST");
+    }
+
+    /**
+     * Property lastModified returns the last modification date of the document.
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"string", "10/16/2009 09:59:47", "Fri, 16 Oct 2009 13:59:47 GMT"})
+    @BuggyWebDriver(FF = {"string", "10/16/2009 15:59:47", "Fri, 16 Oct 2009 13:59:47 GMT"},
+            FF_ESR = {"string", "10/16/2009 15:59:47", "Fri, 16 Oct 2009 13:59:47 GMT"})
+    public void lastModifiedAndDate() throws Exception {
+        final List<NameValuePair> responseHeaders = new ArrayList<>();
+        responseHeaders.add(new NameValuePair("Last-Modified", "Fri, 16 Oct 2009 13:59:47 GMT"));
+        testLastModified(responseHeaders, getBrowserVersion().getSystemTimezone().getID());
+
+        // Last-Modified header has priority compared to Date header
+        responseHeaders.add(new NameValuePair("Date", "Fri, 17 Oct 2009 13:59:47 GMT"));
+        testLastModified(responseHeaders, getBrowserVersion().getSystemTimezone().getID());
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"string", "10/16/2009 13:59:47", "Fri, 16 Oct 2009 13:59:47 GMT"})
+    @BuggyWebDriver(FF = {"string", "10/16/2009 15:59:47", "Fri, 16 Oct 2009 13:59:47 GMT"},
+            FF_ESR = {"string", "10/16/2009 15:59:47", "Fri, 16 Oct 2009 13:59:47 GMT"})
+    public void lastModifiedAndDateGMT() throws Exception {
+        final List<NameValuePair> responseHeaders = new ArrayList<>();
+        responseHeaders.add(new NameValuePair("Last-Modified", "Fri, 16 Oct 2009 13:59:47 GMT"));
+        testLastModified(responseHeaders, "GMT");
+
+        // Last-Modified header has priority compared to Date header
+        responseHeaders.add(new NameValuePair("Date", "Fri, 17 Oct 2009 13:59:47 GMT"));
+        testLastModified(responseHeaders, "GMT");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"string", "10/16/2009 13:59:47", "Fri, 16 Oct 2009 13:59:47 GMT"})
+    @BuggyWebDriver(FF = {"string", "10/16/2009 15:59:47", "Fri, 16 Oct 2009 13:59:47 GMT"},
+            FF_ESR = {"string", "10/16/2009 15:59:47", "Fri, 16 Oct 2009 13:59:47 GMT"})
+    public void lastModifiedAndDateUTC() throws Exception {
+        final List<NameValuePair> responseHeaders = new ArrayList<>();
+        responseHeaders.add(new NameValuePair("Last-Modified", "Fri, 16 Oct 2009 13:59:47 GMT"));
+        testLastModified(responseHeaders, "UTC");
+
+        // Last-Modified header has priority compared to Date header
+        responseHeaders.add(new NameValuePair("Date", "Fri, 17 Oct 2009 13:59:47 GMT"));
+        testLastModified(responseHeaders, "UTC");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"string", "10/16/2009 15:59:47", "Fri, 16 Oct 2009 13:59:47 GMT"})
+    public void lastModifiedAndDateBerlin() throws Exception {
+        final List<NameValuePair> responseHeaders = new ArrayList<>();
+        responseHeaders.add(new NameValuePair("Last-Modified", "Fri, 16 Oct 2009 13:59:47 GMT"));
+        testLastModified(responseHeaders, "Europe/Berlin");
+
+        // Last-Modified header has priority compared to Date header
+        responseHeaders.add(new NameValuePair("Date", "Fri, 17 Oct 2009 13:59:47 GMT"));
+        testLastModified(responseHeaders, "Europe/Berlin");
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"string", "10/16/2009 22:59:47", "Fri, 16 Oct 2009 13:59:47 GMT"})
+    @BuggyWebDriver(FF = {"string", "10/16/2009 15:59:47", "Fri, 16 Oct 2009 13:59:47 GMT"},
+            FF_ESR = {"string", "10/16/2009 15:59:47", "Fri, 16 Oct 2009 13:59:47 GMT"})
+    public void lastModifiedAndDateJST() throws Exception {
+        final List<NameValuePair> responseHeaders = new ArrayList<>();
+        responseHeaders.add(new NameValuePair("Last-Modified", "Fri, 16 Oct 2009 13:59:47 GMT"));
+        testLastModified(responseHeaders, "JST");
+
+        // Last-Modified header has priority compared to Date header
+        responseHeaders.add(new NameValuePair("Date", "Fri, 17 Oct 2009 13:59:47 GMT"));
+        testLastModified(responseHeaders, "JST");
+    }
+
+    /**
+     * Property lastModified returns the last modification date of the document.
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"string", "§§URL§§"})
+    public void lastModifiedOnlyDate() throws Exception {
+        final List<NameValuePair> responseHeaders = new ArrayList<>();
+        responseHeaders.clear();
+        responseHeaders.add(new NameValuePair("Date", "Fri, 16 Oct 2009 13:59:47 GMT"));
+
+        expandExpectedAlertsVariables(DateUtils.formatDate(new Date()).substring(0, 17));
+        final String html = "<html><head><script>\n"
+                + LOG_TITLE_FUNCTION
+                + "function doTest() {\n"
+                + "  log(typeof document.lastModified);\n"
+                + "  var d = new Date(document.lastModified);\n"
+                + "  log(d.toGMTString().substr(0, 17));\n" // to have results not depending on the user's time zone
+                + "}\n"
+                + "</script></head>\n"
+                + "<body onload='doTest()'>\n"
+                + "</body></html>";
+
+        getMockWebConnection().setResponse(URL_FIRST, html, 200, "OK", MimeType.TEXT_HTML, responseHeaders);
+
+        final WebDriver driver = loadPage2(URL_FIRST, ISO_8859_1);
+        verifyTitle2(driver, getExpectedAlerts());
+
+        // for some strange reasons, the selenium driven browser is in an invalid
+        // state after this test
+        releaseResources();
+        shutDownAll();
+    }
+
+    private void testLastModified(final List<NameValuePair> responseHeaders, final String tz) throws Exception {
+        final String html = "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "function doTest() {\n"
+            + "  log(typeof document.lastModified);\n"
+            + "  log(document.lastModified);\n"
+            + "  var d = new Date(document.lastModified);\n"
+            + "  log(d.toGMTString());\n" // to have results not depending on the user's time zone
+            + "}\n"
+            + "</script></head>\n"
+            + "<body onload='doTest()'>\n"
+            + "</body></html>";
+
+        shutDownAll();
+        try {
+            getMockWebConnection().setResponse(URL_FIRST, html, 200, "OK", MimeType.TEXT_HTML, responseHeaders);
+
+            final BrowserVersion.BrowserVersionBuilder builder
+                = new BrowserVersion.BrowserVersionBuilder(getBrowserVersion());
+            builder.setSystemTimezone(TimeZone.getTimeZone(tz));
+            setBrowserVersion(builder.build());
+
+            final WebDriver driver = loadPage2(URL_FIRST, ISO_8859_1);
+            verifyTitle2(driver, getExpectedAlerts());
+        }
+        finally {
+            shutDownAll();
+        }
+    }
+
+    /**
+     * If neither Date header nor Last-Modified header is present, current time is taken.
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"true", "true"})
+    public void lastModified_noDateHeader() throws Exception {
+        final String html = "<html><head><script>\n"
+            + LOG_TITLE_FUNCTION
+            + "function doTest() {\n"
+            + "  var justBeforeLoading = " + System.currentTimeMillis() + ";\n"
+            + "  var d = new Date(document.lastModified);\n"
+            + "  log(d.valueOf() >= justBeforeLoading - 1000);\n" // date string format has no ms, take 1s marge
+            + "  log(d.valueOf() <= new Date().valueOf());\n"
+            + "}\n"
+            + "</script></head>\n"
+            + "<body onload='doTest()'>\n"
+            + "</body></html>";
+
+        loadPageVerifyTitle2(html);
+    }
+
+    /**
+     * Regression test for bug 2919853 (format of <tt>document.lastModified</tt> was incorrect).
+     * @throws Exception if an error occurs
+     */
+    @Test
+    public void lastModified_format() throws Exception {
+        final String html
+            = "<html><body onload='document.getElementById(\"i\").value = document.lastModified'>\n"
+            + "<input id='i'></input></body></html>";
+
+        final WebDriver driver = loadPageWithAlerts2(html);
+        final String lastModified = driver.findElement(By.id("i")).getDomProperty("value");
+
+        try {
+            new SimpleDateFormat("MM/dd/yyyy HH:mm:ss", Locale.ROOT).parse(lastModified);
+        }
+        catch (final ParseException e) {
+            fail(e.getMessage());
+        }
     }
 }

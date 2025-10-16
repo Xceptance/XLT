@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import java.util.List;
 import org.htmlunit.SimpleWebTestCase;
 import org.htmlunit.WebClient;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.w3c.dom.NodeList;
@@ -37,6 +37,7 @@ import org.w3c.dom.NodeList;
  * @author Sudhan Moghe
  * @author Frank Danek
  * @author Ronald Brill
+ * @author Lai Quang Duong
  */
 @RunWith(BrowserRunner.class)
 public class HtmlElementTest extends SimpleWebTestCase {
@@ -1218,10 +1219,42 @@ public class HtmlElementTest extends SimpleWebTestCase {
             + "</body></html>";
 
         try (WebClient webClient = new WebClient(getBrowserVersion(), false, null, -1)) {
-            final HtmlPage page = loadPage(html);
+            final HtmlPage page = loadPage(webClient, html, null);
+
+            assertFalse(page.getWebClient().isJavaScriptEngineEnabled());
             assertEquals(Boolean.parseBoolean(getExpectedAlerts()[0]), page.getElementById("d1").isDisplayed());
             assertEquals(Boolean.parseBoolean(getExpectedAlerts()[1]), page.getElementById("d2").isDisplayed());
             assertEquals(Boolean.parseBoolean(getExpectedAlerts()[2]), page.getElementById("d3").isDisplayed());
         }
+    }
+
+    /**
+     * @throws Exception if the test fails
+     */
+    @Test
+    @Alerts({"true", "false", "false"})
+    public void clickJsEngineDisabled() throws Exception {
+        final String html = "<html><head>\n"
+            + "</head>\n"
+            + "</body>\n"
+            + "<div id='d1'>hello</div>\n"
+            + "</body></html>";
+
+        try (WebClient webClient = new WebClient(getBrowserVersion(), false, null, -1)) {
+            final HtmlPage page = loadPage(webClient, html, null);
+
+            assertFalse(page.getWebClient().isJavaScriptEngineEnabled());
+            assertEquals(page, page.getElementById("d1").click());
+        }
+    }
+
+    @Test
+    public void acceptChar() throws Exception {
+        final String html = "<html><body><input></body></html>";
+        final HtmlPage page = loadPage(html);
+        final String value = "abc[ ][\t][　][\u2006]123あいう漢字[!@#$%^&*()-=_+]{}<>?/\\";
+        final HtmlInput input = page.getFirstByXPath("//input");
+        input.type(value);
+        assertEquals(value, input.getValue());
     }
 }

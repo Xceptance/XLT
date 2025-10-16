@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,8 +13,6 @@
  * limitations under the License.
  */
 package org.htmlunit;
-
-import static org.htmlunit.BrowserVersionFeatures.URL_MINIMAL_QUERY_ENCODING;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -104,18 +102,11 @@ public class History implements Serializable {
         void setUrl(final URL url, final Page page) {
             if (url != null) {
                 WebWindow webWindow = null;
-
-                boolean minimalQueryEncoding = false;
                 if (page != null) {
                     webWindow = page.getEnclosingWindow();
-                    if (webWindow != null) {
-                        minimalQueryEncoding = webWindow.getWebClient()
-                                    .getBrowserVersion().hasFeature(URL_MINIMAL_QUERY_ENCODING);
-                    }
                 }
 
-                final URL encoded = UrlUtils.encodeUrl(url, minimalQueryEncoding,
-                        webRequest_.getCharset());
+                final URL encoded = UrlUtils.encodeUrl(url, webRequest_.getCharset());
                 webRequest_.setUrl(encoded);
                 if (page != null) {
                     page.getWebResponse().getWebRequest().setUrl(encoded);

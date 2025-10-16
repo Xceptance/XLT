@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 //
-// Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+// Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
 
 package com.xceptance.xlt.engine.xltdriver;
 
@@ -167,10 +167,7 @@ public class HtmlUnitAlert implements Alert {
             throw new NoAlertPresentException();
         }
         String msg = holder_.message_;
-        msg = msg.replace("\r\n", "\n");
-        if (!driver_.getBrowserVersion().isIE()) {
-            msg = msg.replace('\r', '\n');
-        }
+        msg = msg.replace("\r\n", "\n").replace('\r', '\n');
         return msg;
     }
 

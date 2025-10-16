@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,7 +59,7 @@ public class Polygon2D implements Shape2D {
             return false;
         }
 
-        final double outsideX = boundingBox_.getLeft() - 0.0000001;
+        final double outsideX = boundingBox_.getLeft() - EPSILON;
         final double outsideY = boundingBox_.getBottom();
 
         final Line2D testLine = new Line2D(outsideX, outsideY, x, y);

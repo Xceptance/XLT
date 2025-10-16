@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -104,13 +104,7 @@ public class FocusableElementTest extends SimpleWebTestCase {
         page.setFocusedElement(select2);
         page.setFocusedElement(select1);
         final String expectedString;
-        if (getBrowserVersion().isIE()) {
-            expectedString = "focusin select1,focus select1,focusout select1,focusin select2,blur select1,"
-                + "focus select2,focusout select2,focusin select1,blur select2,focus select1,";
-        }
-        else {
-            expectedString = "focus select1,blur select1,focus select2,blur select2,focus select1,";
-        }
+        expectedString = "focus select1,blur select1,focus select2,blur select2,focus select1,";
         assertEquals(expectedString, textArea.getText());
     }
 }

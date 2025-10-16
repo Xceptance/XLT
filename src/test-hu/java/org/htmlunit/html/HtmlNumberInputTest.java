@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,8 @@ import java.util.Collections;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
 import org.htmlunit.util.MimeType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -103,16 +103,29 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
         final String html = "<html><head></head><body><input type='number' id='inpt'/></body></html>";
         final WebDriver driver = loadPage2(html);
         final WebElement t = driver.findElement(By.id("inpt"));
+
+        assertNull(t.getDomAttribute("value"));
+        assertEquals("", t.getDomProperty("value"));
+
         t.sendKeys("123");
-        assertEquals("123", t.getAttribute("value"));
+        assertNull(t.getDomAttribute("value"));
+        assertEquals("123", t.getDomProperty("value"));
+
         t.sendKeys(Keys.BACK_SPACE);
-        assertEquals("12", t.getAttribute("value"));
+        assertNull(t.getDomAttribute("value"));
+        assertEquals("12", t.getDomProperty("value"));
+
         t.sendKeys(Keys.BACK_SPACE);
-        assertEquals("1", t.getAttribute("value"));
+        assertNull(t.getDomAttribute("value"));
+        assertEquals("1", t.getDomProperty("value"));
+
         t.sendKeys(Keys.BACK_SPACE);
-        assertEquals("", t.getAttribute("value"));
+        assertNull(t.getDomAttribute("value"));
+        assertEquals("", t.getDomProperty("value"));
+
         t.sendKeys(Keys.BACK_SPACE);
-        assertEquals("", t.getAttribute("value"));
+        assertNull(t.getDomAttribute("value"));
+        assertEquals("", t.getDomProperty("value"));
     }
 
     /**
@@ -136,7 +149,9 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
         final WebElement check = driver.findElement(By.id("check"));
 
         input.sendKeys("123");
-        assertEquals(getExpectedAlerts()[0], input.getAttribute("value"));
+        assertNull(input.getDomAttribute("value"));
+        assertEquals(getExpectedAlerts()[0], input.getDomProperty("value"));
+
         check.click();
         assertEquals(getExpectedAlerts()[1], driver.getTitle());
     }
@@ -162,12 +177,14 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
         final WebElement check = driver.findElement(By.id("check"));
 
         input.sendKeys("12");
-        assertEquals(getExpectedAlerts()[0], input.getAttribute("value"));
+        assertNull(input.getDomAttribute("value"));
+        assertEquals(getExpectedAlerts()[0], input.getDomProperty("value"));
         check.click();
         assertEquals(getExpectedAlerts()[1], driver.getTitle());
 
         input.sendKeys("3");
-        assertEquals(getExpectedAlerts()[2], input.getAttribute("value"));
+        assertNull(input.getDomAttribute("value"));
+        assertEquals(getExpectedAlerts()[2], input.getDomProperty("value"));
         check.click();
         assertEquals(getExpectedAlerts()[3], driver.getTitle());
     }
@@ -193,12 +210,15 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
         final WebElement check = driver.findElement(By.id("check"));
 
         input.sendKeys("12");
-        assertEquals(getExpectedAlerts()[0], input.getAttribute("value"));
+        assertNull(input.getDomAttribute("value"));
+        assertEquals(getExpectedAlerts()[0], input.getDomProperty("value"));
         check.click();
         assertEquals(getExpectedAlerts()[1], driver.getTitle());
 
         input.sendKeys("3");
-        assertEquals(getExpectedAlerts()[2], input.getAttribute("value"));
+        assertNull(input.getDomAttribute("value"));
+        assertEquals(getExpectedAlerts()[2], input.getDomProperty("value"));
+
         check.click();
         assertEquals(getExpectedAlerts()[3], driver.getTitle());
     }
@@ -207,12 +227,11 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"1", "1--null-true", "1", "1--null-true", "1.2", "1.2--null-false"},
-            IE = {"1", "1--null-true", "1.", "1.--null-true", "1.2", "1.2--null-false"})
+    @Alerts({"1", "1--null-true", "1", "1--null-true", "1.2", "1.2--null-false"})
     @HtmlUnitNYI(CHROME = {"1", "1--null-true", "1.", "1.--null-true", "1.2", "1.2--null-false"},
             EDGE = {"1", "1--null-true", "1.", "1.--null-true", "1.2", "1.2--null-false"},
-            FF = {"1", "1--null-true", "1.", "--null-false", "1.2", "1.2--null-false"},
-            FF_ESR = {"1", "1--null-true", "1.", "--null-false", "1.2", "1.2--null-false"})
+            FF = {"1", "1--null-true", "", "--null-false", "1.2", "1.2--null-false"},
+            FF_ESR = {"1", "1--null-true", "", "--null-false", "1.2", "1.2--null-false"})
     public void typeIntegerWithDot() throws Exception {
         final String html = "<html>\n"
                 + "<head>\n"
@@ -238,17 +257,20 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
         final WebElement check = driver.findElement(By.id("check"));
 
         input.sendKeys("1");
-        assertEquals(getExpectedAlerts()[0], input.getAttribute("value"));
+        assertNull(input.getDomAttribute("value"));
+        assertEquals(getExpectedAlerts()[0], input.getDomProperty("value"));
         check.click();
         assertEquals(getExpectedAlerts()[1], driver.getTitle());
 
         input.sendKeys(".");
-        assertEquals(getExpectedAlerts()[2], input.getAttribute("value"));
+        assertNull(input.getDomAttribute("value"));
+        assertEquals(getExpectedAlerts()[2], input.getDomProperty("value"));
         check.click();
         assertEquals(getExpectedAlerts()[3], driver.getTitle());
 
         input.sendKeys("2");
-        assertEquals(getExpectedAlerts()[4], input.getAttribute("value"));
+        assertNull(input.getDomAttribute("value"));
+        assertEquals(getExpectedAlerts()[4], input.getDomProperty("value"));
         check.click();
         assertEquals(getExpectedAlerts()[5], driver.getTitle());
     }
@@ -257,13 +279,7 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"", "--null-false", "-12", "-12--null-true", "-123", "-123--null-false"},
-            IE = {"", "--null-true", "12", "12--null-true", "123", "123--null-true"})
-    @HtmlUnitNYI(CHROME = {"-", "--null-false", "-12", "-12--null-true", "-123", "-123--null-false"},
-            EDGE = {"-", "--null-false", "-12", "-12--null-true", "-123", "-123--null-false"},
-            FF = {"-", "--null-false", "-12", "-12--null-true", "-123", "-123--null-false"},
-            FF_ESR = {"-", "--null-false", "-12", "-12--null-true", "-123", "-123--null-false"},
-            IE = {"-", "--null-false", "-12", "-12--null-true", "-123", "-123--null-false"})
+    @Alerts({"", "--null-false", "-12", "-12--null-true", "-123", "-123--null-false"})
     public void typeIntegerNegativeValid() throws Exception {
         final String html = "<html>\n"
                 + "<head>\n"
@@ -289,17 +305,20 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
         final WebElement check = driver.findElement(By.id("check"));
 
         input.sendKeys("-");
-        assertEquals(getExpectedAlerts()[0], input.getAttribute("value"));
+        assertNull(input.getDomAttribute("value"));
+        assertEquals(getExpectedAlerts()[0], input.getDomProperty("value"));
         check.click();
         assertEquals(getExpectedAlerts()[1], driver.getTitle());
 
         input.sendKeys("12");
-        assertEquals(getExpectedAlerts()[2], input.getAttribute("value"));
+        assertNull(input.getDomAttribute("value"));
+        assertEquals(getExpectedAlerts()[2], input.getDomProperty("value"));
         check.click();
         assertEquals(getExpectedAlerts()[3], driver.getTitle());
 
         input.sendKeys("3");
-        assertEquals(getExpectedAlerts()[4], input.getAttribute("value"));
+        assertNull(input.getDomAttribute("value"));
+        assertEquals(getExpectedAlerts()[4], input.getDomProperty("value"));
         check.click();
         assertEquals(getExpectedAlerts()[5], driver.getTitle());
     }
@@ -308,13 +327,7 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"", "--null-false", "-12", "-12--null-false"},
-            IE = {"", "--null-true", "12", "12--null-true"})
-    @HtmlUnitNYI(CHROME = {"-", "--null-false", "-12", "-12--null-false"},
-            EDGE = {"-", "--null-false", "-12", "-12--null-false"},
-            FF = {"-", "--null-false", "-12", "-12--null-false"},
-            FF_ESR = {"-", "--null-false", "-12", "-12--null-false"},
-            IE = {"-", "--null-false", "-12", "-12--null-false"})
+    @Alerts({"", "--null-false", "-12", "-12--null-false"})
     public void typeIntegerNegativeInvalid() throws Exception {
         final String html = "<html>\n"
                 + "<head>\n"
@@ -340,12 +353,14 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
         final WebElement check = driver.findElement(By.id("check"));
 
         input.sendKeys("-");
-        assertEquals(getExpectedAlerts()[0], input.getAttribute("value"));
+        assertNull(input.getDomAttribute("value"));
+        assertEquals(getExpectedAlerts()[0], input.getDomProperty("value"));
         check.click();
         assertEquals(getExpectedAlerts()[1], driver.getTitle());
 
         input.sendKeys("12");
-        assertEquals(getExpectedAlerts()[2], input.getAttribute("value"));
+        assertNull(input.getDomAttribute("value"));
+        assertEquals(getExpectedAlerts()[2], input.getDomProperty("value"));
         check.click();
         assertEquals(getExpectedAlerts()[3], driver.getTitle());
     }
@@ -361,7 +376,8 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
         final WebDriver driver = loadPage2(html);
         final WebElement t = driver.findElement(By.id("t"));
         t.sendKeys("1.23");
-        assertEquals("1.23", t.getAttribute("value"));
+        assertNull(t.getDomAttribute("value"));
+        assertEquals("1.23", t.getDomProperty("value"));
     }
 
     /**
@@ -379,7 +395,9 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
         catch (final InvalidElementStateException e) {
             // as expected
         }
-        assertEquals("", p.getAttribute("value"));
+
+        assertNull(p.getDomAttribute("value"));
+        assertEquals("", p.getDomProperty("value"));
     }
 
     /**
@@ -460,7 +478,8 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
         final WebDriver driver = loadPage2(html);
         final WebElement p = driver.findElement(By.id("p"));
         p.sendKeys("1234");
-        assertEquals("123", p.getAttribute("value"));
+        assertNull(p.getDomAttribute("value"));
+        assertEquals("123", p.getDomProperty("value"));
     }
 
     /**
@@ -487,7 +506,8 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
         final WebDriver driver = loadPage2(html);
         final WebElement p = driver.findElement(By.id("p"));
         p.sendKeys("1234");
-        assertEquals("123", p.getAttribute("value"));
+        assertNull(p.getDomAttribute("value"));
+        assertEquals("123", p.getDomProperty("value"));
     }
 
     /**
@@ -630,13 +650,8 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
     }
 
     @Test
-    @Alerts(DEFAULT = {"8-8-8-true", "-abc-abc-true", "---true",
-                       "99999999999999999999999999999-99999999999999999999999999999"
-                               + "-99999999999999999999999999999-true"},
-            IE = {"8-8-8-true", "---true", "---true",
-                  "99999999999999999999999999999-99999999999999999999999999999-99999999999999999999999999999-true"})
-    @HtmlUnitNYI(IE = {"8-8-8-true", "-abc-abc-true", "---true",
-                       "99999999999999999999999999999-99999999999999999999999999999"
+    @Alerts({"8-8-8-true", "-abc-abc-true", "---true",
+             "99999999999999999999999999999-99999999999999999999999999999"
                                + "-99999999999999999999999999999-true"})
     public void defaultValuesInvalidValue() throws Exception {
         final String html = "<html>\n"
@@ -682,13 +697,9 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
     }
 
     @Test
-    @Alerts(DEFAULT = {"8-8-8-true", "-\\s\\s-\\s\\s-true",
-                       "-\\s\\s\\n\\s\\s\\t\\s-\\s\\s\\n\\s\\s\\t\\s-true",
-                       "-\\s3\\s9\\s-\\s3\\s9\\s-true"},
-            IE = {"8-8-8-true", "---true", "---true", "\\s3\\s9\\s-\\s3\\s9\\s-\\s3\\s9\\s-true"})
-    @HtmlUnitNYI(IE = {"8-8-8-true", "-\\s\\s-\\s\\s-true",
-                       "-\\s\\s\\n\\s\\s\\t\\s-\\s\\s\\n\\s\\s\\t\\s-true",
-                       "-\\s3\\s9\\s-\\s3\\s9\\s-true"})
+    @Alerts({"8-8-8-true", "-\\s\\s-\\s\\s-true",
+             "-\\s\\s\\n\\s\\s\\t\\s-\\s\\s\\n\\s\\s\\t\\s-true",
+             "-\\s3\\s9\\s-\\s3\\s9\\s-true"})
     public void defaultValuesBlankValue() throws Exception {
         final String html = "<html>\n"
             + "<head>\n"
@@ -981,9 +992,7 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"123-123-123-true", "2-2-2-false", "20000-2-2-false", "20000-9-9-false"},
-            IE = {"123-123-123-true", "2-2-2-true", "20000-2-2-false", "20000-9-9-false"})
-    @HtmlUnitNYI(IE = {"123-123-123-true", "2-2-2-false", "20000-2-2-false", "20000-9-9-false"})
+    @Alerts({"123-123-123-true", "2-2-2-false", "20000-2-2-false", "20000-9-9-false"})
     public void valueOutside() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -1027,7 +1036,7 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"12-12-12-true", "12312", "12312-12-12-false"})
+    @Alerts({"12-12-12-true", "12", "12312", "12312-12-12-false"})
     public void typeValueOutside() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -1052,17 +1061,18 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
         final WebElement t = driver.findElement(By.id("testId"));
         t.sendKeys(Keys.HOME);
         t.sendKeys("123");
-        assertEquals(getExpectedAlerts()[1], t.getAttribute("value"));
+        assertEquals(getExpectedAlerts()[1], t.getDomAttribute("value"));
+        assertEquals(getExpectedAlerts()[2], t.getDomProperty("value"));
 
         driver.findElement(By.id("testBtn")).click();
-        assertEquals(getExpectedAlerts()[2], driver.getTitle());
+        assertEquals(getExpectedAlerts()[3], driver.getTitle());
     }
 
     /**
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"2-2-2-false", "42", "42-2-2-false"})
+    @Alerts({"2-2-2-false", "2", "42", "42-2-2-false"})
     public void typeValueNotReachableByStep() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -1087,17 +1097,18 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
         final WebElement t = driver.findElement(By.id("testId"));
         t.sendKeys(Keys.HOME);
         t.sendKeys("4");
-        assertEquals(getExpectedAlerts()[1], t.getAttribute("value"));
+        assertEquals(getExpectedAlerts()[1], t.getDomAttribute("value"));
+        assertEquals(getExpectedAlerts()[2], t.getDomProperty("value"));
 
         driver.findElement(By.id("testBtn")).click();
-        assertEquals(getExpectedAlerts()[2], driver.getTitle());
+        assertEquals(getExpectedAlerts()[3], driver.getTitle());
     }
 
     /**
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"2.1-2.1-2.1-false", "42.1", "42.1-2.1-2.1-false"})
+    @Alerts({"2.1-2.1-2.1-false", "2.1", "42.1", "42.1-2.1-2.1-false"})
     public void typeValueNotReachableByStepDouble() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -1122,10 +1133,11 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
         final WebElement t = driver.findElement(By.id("testId"));
         t.sendKeys(Keys.HOME);
         t.sendKeys("4");
-        assertEquals(getExpectedAlerts()[1], t.getAttribute("value"));
+        assertEquals(getExpectedAlerts()[1], t.getDomAttribute("value"));
+        assertEquals(getExpectedAlerts()[2], t.getDomProperty("value"));
 
         driver.findElement(By.id("testBtn")).click();
-        assertEquals(getExpectedAlerts()[2], driver.getTitle());
+        assertEquals(getExpectedAlerts()[3], driver.getTitle());
     }
 
     /**
@@ -1134,11 +1146,7 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"--null-true", "4", "4--null-true", "4", "4--null-true"},
             FF = {"--null-true", "4", "4--null-true", "", "--null-false"},
-            FF_ESR = {"--null-true", "4", "4--null-true", "", "--null-false"},
-            IE = {"--null-true", "4", "4--null-true", "4a", "4a--null-true"})
-    @HtmlUnitNYI(FF = {"--null-true", "4", "4--null-true", "4a", "--null-false"},
-            FF_ESR = {"--null-true", "4", "4--null-true", "4a", "--null-false"},
-            IE = {"--null-true", "4", "4--null-true", "4a", "--null-false"})
+            FF_ESR = {"--null-true", "4", "4--null-true", "", "--null-false"})
     public void typeInvalidChars() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -1162,13 +1170,15 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
 
         final WebElement t = driver.findElement(By.id("testId"));
         t.sendKeys(Keys.END, "4");
-        assertEquals(getExpectedAlerts()[1], t.getAttribute("value"));
+        assertNull(t.getDomAttribute("value"));
+        assertEquals(getExpectedAlerts()[1], t.getDomProperty("value"));
 
         driver.findElement(By.id("testBtn")).click();
         assertEquals(getExpectedAlerts()[2], driver.getTitle());
 
         t.sendKeys(Keys.END, "a");
-        assertEquals(getExpectedAlerts()[3], t.getAttribute("value"));
+        assertNull(t.getDomAttribute("value"));
+        assertEquals(getExpectedAlerts()[3], t.getDomProperty("value"));
 
         driver.findElement(By.id("testBtn")).click();
         assertEquals(getExpectedAlerts()[4], driver.getTitle());
@@ -1180,11 +1190,7 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
     @Test
     @Alerts(DEFAULT = {"120", "120-0-0-true", "", "-0-0-true", "", "-0-0-true"},
             FF = {"120", "120-0-0-true", "", "-0-0-true", "", "-0-0-false"},
-            FF_ESR = {"120", "120-0-0-true", "", "-0-0-true", "", "-0-0-false"},
-            IE = {"012", "012-0-0-true", "", "-0-0-true", "", "-0-0-true"})
-    @HtmlUnitNYI(FF = {"120", "120-0-0-true", "", "-0-0-true", "abc", "-0-0-false"},
-            FF_ESR = {"120", "120-0-0-true", "", "-0-0-true", "abc", "-0-0-false"},
-            IE = {"120", "120-0-0-true", "", "-0-0-true", "abc", "-0-0-false"})
+            FF_ESR = {"120", "120-0-0-true", "", "-0-0-true", "", "-0-0-false"})
     public void typeCharsAndClear() throws Exception {
         final String html = "<html>\n"
                 + "<head>\n"
@@ -1210,17 +1216,20 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
         final WebElement check = driver.findElement(By.id("check"));
 
         input.sendKeys("12");
-        assertEquals(getExpectedAlerts()[0], input.getAttribute("value"));
+        assertEquals("0", input.getDomAttribute("value"));
+        assertEquals(getExpectedAlerts()[0], input.getDomProperty("value"));
         check.click();
         assertEquals(getExpectedAlerts()[1], driver.getTitle());
 
         input.clear();
-        assertEquals(getExpectedAlerts()[2], input.getAttribute("value"));
+        assertEquals("0", input.getDomAttribute("value"));
+        assertEquals(getExpectedAlerts()[2], input.getDomProperty("value"));
         check.click();
         assertEquals(getExpectedAlerts()[3], driver.getTitle());
 
         input.sendKeys("abc");
-        assertEquals(getExpectedAlerts()[4], input.getAttribute("value"));
+        assertEquals("0", input.getDomAttribute("value"));
+        assertEquals(getExpectedAlerts()[4], input.getDomProperty("value"));
         check.click();
         assertEquals(getExpectedAlerts()[5], driver.getTitle());
     }
@@ -1233,7 +1242,6 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
     @Alerts(DEFAULT = "-0-0-true",
             FF = "-0-0-false",
             FF_ESR = "-0-0-false")
-    @HtmlUnitNYI(IE = "-0-0-false")
     public void issue321() throws Exception {
         final String html = "<html>\n"
                 + "<head>\n"
@@ -1268,9 +1276,7 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"13-13-13-true", "15-15-15-false", "17-15-15-false", "17-19-19-false"},
-            IE = {"13-13-13-true", "15-15-15-true", "17-15-15-false", "17-19-19-false"})
-    @HtmlUnitNYI(IE = {"13-13-13-true", "15-15-15-false", "17-15-15-false", "17-19-19-false"})
+    @Alerts({"13-13-13-true", "15-15-15-false", "17-15-15-false", "17-19-19-false"})
     public void valueNotReachableByStep() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -1314,9 +1320,7 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"1.3-1.3-1.3-true", "1.5-1.5-1.5-false", "1.7-1.5-1.5-false", "1.7-1.9-1.9-false"},
-            IE = {"1.3-1.3-1.3-true", "1.5-1.5-1.5-true", "1.7-1.5-1.5-false", "1.7-1.9-1.9-false"})
-    @HtmlUnitNYI(IE = {"1.3-1.3-1.3-true", "1.5-1.5-1.5-false", "1.7-1.5-1.5-false", "1.7-1.9-1.9-false"})
+    @Alerts({"1.3-1.3-1.3-true", "1.5-1.5-1.5-false", "1.7-1.5-1.5-false", "1.7-1.9-1.9-false"})
     public void valueNotReachableByStepDouble() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
@@ -1404,7 +1408,7 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
             + "  function getSelection(element) {\n"
             + "    try {\n"
             + "      return element.value.substring(element.selectionStart, element.selectionEnd);\n"
-            + "    } catch(e) { log('exception'); }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "  }\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -1418,9 +1422,8 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
      * @throws Exception if test fails
      */
     @Test
-    @Alerts(DEFAULT = {"null,null", "null,null", "exception",
-                       "null,null", "exception", "null,null"},
-            IE = {"0,0", "0,0", "3,3", "3,10"})
+    @Alerts({"null,null", "null,null", "InvalidStateError/DOMException",
+             "null,null", "InvalidStateError/DOMException", "null,null"})
     public void selection2_1() throws Exception {
         selection2(3, 10);
     }
@@ -1429,9 +1432,8 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
      * @throws Exception if test fails
      */
     @Test
-    @Alerts(DEFAULT = {"null,null", "null,null", "exception",
-                       "null,null", "exception", "null,null"},
-            IE = {"0,0", "0,0", "0,0", "0,11"})
+    @Alerts({"null,null", "null,null", "InvalidStateError/DOMException",
+             "null,null", "InvalidStateError/DOMException", "null,null"})
     public void selection2_2() throws Exception {
         selection2(-3, 15);
     }
@@ -1440,9 +1442,8 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
      * @throws Exception if test fails
      */
     @Test
-    @Alerts(DEFAULT = {"null,null", "null,null", "exception",
-                       "null,null", "exception", "null,null"},
-            IE = {"0,0", "0,0", "10,10", "5,5"})
+    @Alerts({"null,null", "null,null", "InvalidStateError/DOMException",
+             "null,null", "InvalidStateError/DOMException", "null,null"})
     public void selection2_3() throws Exception {
         selection2(10, 5);
     }
@@ -1457,26 +1458,26 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
 
             + "  try {\n"
             + "    log(input.selectionStart + ',' + input.selectionEnd);\n"
-            + "  } catch(e) { log('exception'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
 
             + "  input.value = '12345678900';\n"
             + "  try {\n"
             + "    log(input.selectionStart + ',' + input.selectionEnd);\n"
-            + "  } catch(e) { log('exception'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
 
             + "  try {\n"
             + "    input.selectionStart = " + selectionStart + ";\n"
-            + "  } catch(e) { log('exception'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "  try {\n"
             + "    log(input.selectionStart + ',' + input.selectionEnd);\n"
-            + "  } catch(e) { log('exception'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
 
             + "  try {\n"
             + "    input.selectionEnd = " + selectionEnd + ";\n"
-            + "  } catch(e) { log('exception'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "  try {\n"
             + "    log(input.selectionStart + ',' + input.selectionEnd);\n"
-            + "  } catch(e) { log('exception'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "</script>\n"
             + "</body>\n"
             + "</html>";
@@ -1488,8 +1489,7 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
      * @throws Exception if test fails
      */
     @Test
-    @Alerts(DEFAULT = {"null,null", "exception"},
-            IE = {"0,0", "4,5", "0,0", "0,0", "0,0"})
+    @Alerts({"null,null", "InvalidStateError/DOMException"})
     public void selectionOnUpdate() throws Exception {
         final String html = "<html>\n"
             + "<body>\n"
@@ -1515,7 +1515,7 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
 
             + "    input.value = '7';\n"
             + "    log(input.selectionStart + ',' + input.selectionEnd);\n"
-            + "  } catch(e) { log('exception'); }\n"
+            + "  } catch(e) { logEx(e); }\n"
             + "</script>\n"
             + "</body>\n"
             + "</html>";
@@ -1624,10 +1624,12 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
 
         final WebDriver driver = loadPage2(html);
         final WebElement element = driver.findElement(By.id("tester"));
-        assertEquals(getExpectedAlerts()[0], element.getAttribute("value"));
+        assertEquals(getExpectedAlerts()[0], element.getDomAttribute("value"));
+        assertEquals(getExpectedAlerts()[0], element.getDomProperty("value"));
 
         element.clear();
-        assertEquals(getExpectedAlerts()[1], element.getAttribute("value"));
+        assertEquals(getExpectedAlerts()[0], element.getDomAttribute("value"));
+        assertEquals(getExpectedAlerts()[1], element.getDomProperty("value"));
     }
 
     @Test
@@ -1680,17 +1682,13 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"123456789",
-                       "true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true",
-                       "§§URL§§?k=123456789", "2"},
-            IE = {"123456789",
-                  "true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true",
-                  "§§URL§§?k=123456789", "2"})
-    // real ie clicks the wrong button
+    @Alerts({"123456789",
+             "123456789",
+             "true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true",
+             "§§URL§§?k=123456789",
+             "2"})
     public void patternValidationInvalid() throws Exception {
         validation("<input type='number' pattern='[0-7]{10,40}' id='e1' name='k' value='123456789'>\n",
                     "", null);
@@ -1700,17 +1698,13 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"123456701234567012345670",
-                       "true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true",
-                       "§§URL§§?k=123456701234567012345670", "2"},
-            IE = {"123456701234567012345670",
-                  "true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true",
-                  "§§URL§§?k=123456701234567012345670", "2"})
-    // real ie clicks the wrong button
+    @Alerts({"123456701234567012345670",
+             "123456701234567012345670",
+             "true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true",
+             "§§URL§§?k=123456701234567012345670",
+             "2"})
     public void patternValidationValid() throws Exception {
         validation("<input type='number' pattern='[0-7]{10,40}' "
                 + "id='e1' name='k' value='123456701234567012345670'>\n", "", null);
@@ -1720,17 +1714,13 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"",
-                       "true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true",
-                       "§§URL§§?k=", "2"},
-            IE = {"",
-                  "true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true",
-                  "§§URL§§?k=", "2"})
-    // real ie clicks the wrong button
+    @Alerts({"",
+             "",
+             "true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true",
+             "§§URL§§?k=",
+             "2"})
     public void patternValidationEmpty() throws Exception {
         validation("<input type='number' pattern='[0-9]{10,40}' id='e1' name='k' value=''>\n", "", null);
     }
@@ -1739,17 +1729,12 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"",
-                       "true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true",
-                       "§§URL§§?k=", "2"},
-            IE = {"",
-                  "true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true",
-                  "§§URL§§?k=", "2"})
-    // real ie clicks the wrong button
+    @Alerts({" ",
+             "",
+             "true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true",
+             "§§URL§§?k=", "2"})
     public void patternValidationBlank() throws Exception {
         validation("<input type='number' pattern='[0-9]{10,40}' id='e1' name='k' value=' '>\n", "", null);
     }
@@ -1758,17 +1743,13 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"",
-                       "true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true",
-                       "§§URL§§?k=", "2"},
-            IE = {"",
-                  "true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true",
-                  "§§URL§§?k=", "2"})
-    // real ie clicks the wrong button
+    @Alerts({"  \t",
+             "",
+             "true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true",
+             "§§URL§§?k=",
+             "2"})
     public void patternValidationWhitespace() throws Exception {
         validation("<input type='number' pattern='[0-9]{10,40}' id='e1' name='k' value='  \t'>\n", "", null);
     }
@@ -1777,22 +1758,13 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"",
-                       "true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true",
-                       "§§URL§§?k=", "2"},
-            IE = {" 210 ",
-                  "true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true",
-                  "§§URL§§?k=+210+", "1"})
-    @HtmlUnitNYI(IE = {"",
-                       "true",
-                       "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                       "true",
-                       "§§URL§§?k=", "2"})
-    // real ie clicks the wrong button
+    @Alerts({" 210 ",
+             "",
+             "true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true",
+             "§§URL§§?k=",
+             "2"})
     public void patternValidationTrimInitial() throws Exception {
         validation("<input type='number' pattern='[ 012]{3,10}' id='e1' name='k' value=' 210 '>\n", "", null);
     }
@@ -1801,42 +1773,36 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"210",
+    @Alerts(DEFAULT = {"null",
+                       "210",
                        "true",
                        "false-false-false-false-false-false-false-false-false-true-false",
                        "true",
                        "§§URL§§?k=210", "2"},
-            FF = {"",
+            FF = {"null",
+                  "",
                   "false",
                   "true-false-false-false-false-false-false-false-false-false-false",
                   "true",
                   "§§URL§§", "1"},
-            FF_ESR = {"",
+            FF_ESR = {"null",
+                      "",
                       "false",
                       "true-false-false-false-false-false-false-false-false-false-false",
                       "true",
-                      "§§URL§§", "1"},
-            IE = {" 210 ",
-                  "true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true",
-                  "§§URL§§?k=", "1"})
-    @HtmlUnitNYI(FF = {" 210 ",
+                      "§§URL§§", "1"})
+    @HtmlUnitNYI(FF = {"null",
+                       " 210 ",
                        "false",
                        "false-false-false-false-false-false-false-false-false-true-false",
                        "true",
                        "§§URL§§", "1"},
-                 FF_ESR = {" 210 ",
+                 FF_ESR = {"null",
+                           " 210 ",
                            "false",
                            "false-false-false-false-false-false-false-false-false-true-false",
                            "true",
-                           "§§URL§§", "1"},
-                 IE = {" 210 ",
-                       "false",
-                       "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                       "true",
-                       "§§URL§§", "1"})
-    // real ie clicks the wrong button
+                           "§§URL§§", "1"})
     public void patternValidationTrimType() throws Exception {
         validation("<input type='number' pattern='[ 012]{3,10}' id='e1' name='k'>\n", "", " 210 ");
     }
@@ -1845,17 +1811,12 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"1234",
-                       "true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true",
-                       "§§URL§§?k=1234", "2"},
-            IE = {"1234",
-                  "true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true",
-                  "§§URL§§?k=1234", "2"})
-    // real ie clicks the wrong button
+    @Alerts({"null",
+             "1234",
+             "true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true",
+             "§§URL§§?k=1234", "2"})
     public void minLengthValidationInvalid() throws Exception {
         validation("<input type='number' minlength='5' id='e1' name='k'>\n", "", "1234");
     }
@@ -1864,17 +1825,13 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"12",
-                       "true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true",
-                       "§§URL§§?k=12", "2"},
-            IE = {"12",
-                  "true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true",
-                  "§§URL§§?k=12", "2"})
-    // real ie clicks the wrong button
+    @Alerts({"12",
+             "12",
+             "true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true",
+             "§§URL§§?k=12",
+             "2"})
     public void minLengthValidationInvalidInitial() throws Exception {
         validation("<input type='number' minlength='5' id='e1' name='k' value='12'>\n", "", null);
     }
@@ -1883,17 +1840,13 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"",
-                       "true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true",
-                       "§§URL§§?k=", "2"},
-            IE = {"",
-                  "true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true",
-                  "§§URL§§?k=", "2"})
-    // real ie clicks the wrong button
+    @Alerts({"null",
+             "",
+             "true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true",
+             "§§URL§§?k=",
+             "2"})
     public void minLengthValidationInvalidNoInitial() throws Exception {
         validation("<input type='number' minlength='5' id='e1' name='k'>\n", "", null);
     }
@@ -1902,17 +1855,13 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"123456789",
-                       "true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true",
-                       "§§URL§§?k=123456789", "2"},
-            IE = {"123456789",
-                  "true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true",
-                  "§§URL§§?k=123456789", "2"})
-    // real ie clicks the wrong button
+    @Alerts({"null",
+             "123456789",
+             "true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true",
+             "§§URL§§?k=123456789",
+             "2"})
     public void minLengthValidationValid() throws Exception {
         validation("<input type='number' minlength='5' id='e1' name='k'>\n", "", "123456789");
     }
@@ -1921,17 +1870,12 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"1234",
-                       "true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true",
-                       "§§URL§§?k=1234", "2"},
-            IE = {"1234",
-                  "true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true",
-                  "§§URL§§?k=1234", "2"})
-    // real ie clicks the wrong button
+    @Alerts({"null",
+             "1234",
+             "true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true",
+             "§§URL§§?k=1234", "2"})
     public void maxLengthValidationValid() throws Exception {
         validation("<input type='number' maxlength='5' id='e1' name='k'>\n", "", "1234");
     }
@@ -1940,22 +1884,13 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"123456789",
-                       "true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true",
-                       "§§URL§§?k=123456789", "2"},
-            IE = {"12345",
-                  "true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true",
-                  "§§URL§§?k=12345", "2"})
-    @HtmlUnitNYI(IE = {"123456789",
-                       "true",
-                       "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                       "true",
-                       "§§URL§§?k=123456789", "2"})
-    // real ie clicks the wrong button
+    @Alerts({"null",
+             "123456789",
+             "true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true",
+             "§§URL§§?k=123456789",
+             "2"})
     public void maxLengthValidationInvalid() throws Exception {
         validation("<input type='number' maxlength='5' id='e1' name='k'>\n", "", "123456789");
     }
@@ -1964,17 +1899,13 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"123456789",
-                       "true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true",
-                       "§§URL§§?k=123456789", "2"},
-            IE = {"123456789",
-                  "true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true",
-                  "§§URL§§?k=123456789", "2"})
-    // real ie clicks the wrong button
+    @Alerts({"123456789",
+             "123456789",
+             "true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true",
+             "§§URL§§?k=123456789",
+             "2"})
     public void maxLengthValidationInvalidInitial() throws Exception {
         validation("<input type='number' maxlength='5' id='e1' name='k' value='123456789'>\n", "", null);
     }
@@ -2015,17 +1946,12 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"",
-                       "true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true",
-                       "§§URL§§?k=", "2"},
-            IE = {"",
-                  "true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true",
-                  "§§URL§§?k=", "2"})
-    // real ie clicks the wrong button
+    @Alerts({"null",
+             "",
+             "true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true",
+             "§§URL§§?k=", "2"})
     public void validationEmpty() throws Exception {
         validation("<input type='number' id='e1' name='k'>\n", "", null);
     }
@@ -2034,17 +1960,12 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"",
-                       "false",
-                       "false-true-false-false-false-false-false-false-false-false-false",
-                       "true",
-                       "§§URL§§", "1"},
-            IE = {"",
-                  "false",
-                  "undefined-true-false-false-false-false-false-undefined-false-false-false",
-                  "true",
-                  "§§URL§§", "1"})
-    // real ie clicks the wrong button
+    @Alerts({"null",
+             "",
+             "false",
+             "false-true-false-false-false-false-false-false-false-false-false",
+             "true",
+             "§§URL§§", "1"})
     public void validationCustomValidity() throws Exception {
         validation("<input type='number' id='e1' name='k'>\n", "elem.setCustomValidity('Invalid');", null);
     }
@@ -2053,17 +1974,12 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"",
-                       "false",
-                       "false-true-false-false-false-false-false-false-false-false-false",
-                       "true",
-                       "§§URL§§", "1"},
-            IE = {"",
-                  "false",
-                  "undefined-true-false-false-false-false-false-undefined-false-false-false",
-                  "true",
-                  "§§URL§§", "1"})
-    // real ie clicks the wrong button
+    @Alerts({"null",
+             "",
+             "false",
+             "false-true-false-false-false-false-false-false-false-false-false",
+             "true",
+             "§§URL§§", "1"})
     public void validationBlankCustomValidity() throws Exception {
         validation("<input type='number' id='e1' name='k'>\n", "elem.setCustomValidity(' ');\n", null);
     }
@@ -2072,17 +1988,13 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"",
-                       "true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true",
-                       "§§URL§§?k=", "2"},
-            IE = {"",
-                  "true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true",
-                  "§§URL§§?k=", "2"})
-    // real ie clicks the wrong button
+    @Alerts({"null",
+             "",
+             "true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true",
+             "§§URL§§?k=",
+             "2"})
     public void validationResetCustomValidity() throws Exception {
         validation("<input type='number' id='e1' name='k'>\n",
                 "elem.setCustomValidity('Invalid');elem.setCustomValidity('');", null);
@@ -2092,17 +2004,12 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"",
-                       "false",
-                       "false-false-false-false-false-false-false-false-false-false-true",
-                       "true",
-                       "§§URL§§", "1"},
-            IE = {"",
-                  "false",
-                  "undefined-false-false-false-false-false-false-undefined-false-false-true",
-                  "true",
-                  "§§URL§§", "1"})
-    // real ie clicks the wrong button
+    @Alerts({"null",
+             "",
+             "false",
+             "false-false-false-false-false-false-false-false-false-false-true",
+             "true",
+             "§§URL§§", "1"})
     public void validationRequired() throws Exception {
         validation("<input type='number' id='e1' name='k' required>\n", "", null);
     }
@@ -2111,17 +2018,13 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"",
-                       "true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true",
-                       "§§URL§§?k=42", "2"},
-            IE = {"",
-                  "true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true",
-                  "§§URL§§?k=42", "2"})
-    // real ie clicks the wrong button
+    @Alerts({"null",
+             "",
+             "true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true",
+             "§§URL§§?k=42",
+             "2"})
     public void validationRequiredValueSet() throws Exception {
         validation("<input type='number' id='e1' name='k' required>\n", "elem.value='42';", null);
     }
@@ -2130,17 +2033,13 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
      * @throws Exception if an error occurs
      */
     @Test
-    @Alerts(DEFAULT = {"",
-                       "true",
-                       "false-false-false-false-false-false-false-false-false-true-false",
-                       "true",
-                       "§§URL§§?k=567", "2"},
-            IE = {"",
-                  "true",
-                  "undefined-false-false-false-false-false-false-undefined-false-true-false",
-                  "true",
-                  "§§URL§§?k=567", "2"})
-    // real ie clicks the wrong button
+    @Alerts({"null",
+             "",
+             "true",
+             "false-false-false-false-false-false-false-false-false-true-false",
+             "true",
+             "§§URL§§?k=567",
+             "2"})
     public void validationPattern() throws Exception {
         validation("<input type='number' id='e1' name='k' pattern='[012]{3}'>\n", "elem.value='567';", null);
     }
@@ -2194,13 +2093,14 @@ public class HtmlNumberInputTest extends WebDriverTestCase {
         if (sendKeys != null) {
             foo.sendKeys(sendKeys);
         }
-        assertEquals(getExpectedAlerts()[0], foo.getAttribute("value"));
+        assertEquals(getExpectedAlerts()[0], "" + foo.getDomAttribute("value"));
+        assertEquals(getExpectedAlerts()[1], foo.getDomProperty("value"));
 
         driver.findElement(By.id("myTest")).click();
-        verifyTitle2(driver, getExpectedAlerts()[1], getExpectedAlerts()[2], getExpectedAlerts()[3]);
+        verifyTitle2(driver, getExpectedAlerts()[2], getExpectedAlerts()[3], getExpectedAlerts()[4]);
 
         driver.findElement(By.id("myButton")).click();
-        assertEquals(getExpectedAlerts()[4], getMockWebConnection().getLastWebRequest().getUrl());
-        assertEquals(Integer.parseInt(getExpectedAlerts()[5]), getMockWebConnection().getRequestCount());
+        assertEquals(getExpectedAlerts()[5], getMockWebConnection().getLastWebRequest().getUrl());
+        assertEquals(Integer.parseInt(getExpectedAlerts()[6]), getMockWebConnection().getRequestCount());
     }
 }

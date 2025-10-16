@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,15 +13,6 @@
  * limitations under the License.
  */
 package org.htmlunit.javascript.host.xml;
-
-import static org.htmlunit.BrowserVersionFeatures.JS_DOMPARSER_EMPTY_STRING_IS_ERROR;
-import static org.htmlunit.BrowserVersionFeatures.JS_DOMPARSER_EXCEPTION_ON_ERROR;
-import static org.htmlunit.BrowserVersionFeatures.JS_DOMPARSER_PARSERERROR_ON_ERROR;
-import static org.htmlunit.BrowserVersionFeatures.JS_XML_GET_ELEMENTS_BY_TAG_NAME_LOCAL;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -44,7 +35,6 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.host.Element;
 import org.htmlunit.javascript.host.dom.Attr;
-import org.htmlunit.javascript.host.dom.DOMException;
 import org.htmlunit.javascript.host.dom.Document;
 import org.htmlunit.javascript.host.html.HTMLCollection;
 import org.htmlunit.svg.SvgElement;
@@ -59,6 +49,7 @@ import org.htmlunit.xml.XmlPage;
  * @author Ronald Brill
  * @author Chuck Dumont
  * @author Frank Danek
+ * @author Sven Strickroth
  */
 @JsxClass
 public class XMLDocument extends Document {
@@ -76,7 +67,7 @@ public class XMLDocument extends Document {
      * JavaScript constructor.
      */
     @Override
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
         super.jsConstructor();
     }
@@ -86,6 +77,8 @@ public class XMLDocument extends Document {
      * @param enclosingWindow the window
      */
     public XMLDocument(final WebWindow enclosingWindow) {
+        super();
+
         if (enclosingWindow != null) {
             try {
                 final XmlPage page = new XmlPage((WebResponse) null, enclosingWindow);
@@ -107,7 +100,7 @@ public class XMLDocument extends Document {
     public boolean loadXML(final String strXML) {
         final WebWindow webWindow = getWindow().getWebWindow();
         try {
-            if (StringUtils.isEmpty(strXML) && getBrowserVersion().hasFeature(JS_DOMPARSER_EMPTY_STRING_IS_ERROR)) {
+            if (StringUtils.isEmpty(strXML)) {
                 throw new IOException("Error parsing XML '" + strXML + "'");
             }
 
@@ -122,19 +115,12 @@ public class XMLDocument extends Document {
                 LOG.debug("Error parsing XML\n" + strXML, e);
             }
 
-            if (getBrowserVersion().hasFeature(JS_DOMPARSER_EXCEPTION_ON_ERROR)) {
-                throw asJavaScriptException(
-                        new DOMException("Syntax Error",
-                            DOMException.SYNTAX_ERR));
+            try {
+                final XmlPage page = createParserErrorXmlPage("Syntax Error", webWindow);
+                setDomNode(page);
             }
-            if (getBrowserVersion().hasFeature(JS_DOMPARSER_PARSERERROR_ON_ERROR)) {
-                try {
-                    final XmlPage page = createParserErrorXmlPage("Syntax Error", webWindow);
-                    setDomNode(page);
-                }
-                catch (final IOException eI) {
-                    LOG.error("Could not handle ParserError", e);
-                }
+            catch (final IOException ex) {
+                LOG.error("Could not handle ParserError", e);
             }
 
             return false;
@@ -167,7 +153,7 @@ public class XMLDocument extends Document {
                     = ((JavaScriptEngine) getWindow().getWebWindow().getWebClient()
                         .getJavaScriptEngine()).getJavaScriptClass(domNode.getClass());
                 try {
-                    scriptable = javaScriptClass.newInstance();
+                    scriptable = javaScriptClass.getDeclaredConstructor().newInstance();
                 }
                 catch (final Exception e) {
                     throw JavaScriptEngine.throwAsScriptRuntimeEx(e);
@@ -214,14 +200,7 @@ public class XMLDocument extends Document {
         elements.setIsMatchingPredicate(
                 (Predicate<DomNode> & Serializable)
                 node -> {
-                    final String nodeName;
-                    if (getBrowserVersion().hasFeature(JS_XML_GET_ELEMENTS_BY_TAG_NAME_LOCAL)) {
-                        nodeName = node.getLocalName();
-                    }
-                    else {
-                        nodeName = node.getNodeName();
-                    }
-
+                    final String nodeName = node.getNodeName();
                     return nodeName.equals(tagName);
                 });
         return elements;

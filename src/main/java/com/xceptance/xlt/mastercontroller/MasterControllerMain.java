@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -105,9 +105,9 @@ public class MasterControllerMain
         final boolean autoMode = commandLine.hasOption(OPTION_AUTO) || fafMode || sequentialMode;
         final boolean commandsMode = commandLine.hasOption(OPTION_COMMANDS);
 
-        // restrict relaxed connections to 'auto' mode
+        // restrict relaxed connections to 'auto' or commands mode
         final boolean isAgentControllerConnectionRelaxed = config.isAgentControllerConnectionRelaxed() &&
-                                                           commandLine.hasOption(OPTION_AUTO);
+                                                           (autoMode || commandsMode);
 
         // restrict results override to non-sequential 'auto' mode or commands mode
         if ((autoMode && !sequentialMode || commandsMode) && commandLine.hasOption(OPTION_RESULT_OVERRIDE))
@@ -362,14 +362,14 @@ public class MasterControllerMain
         {
             ui = new FireAndForgetUI(masterController, sequentialMode, generateReport, noResults,
                                      config.getAgentControllerInitialResponseTimeout(), resultAmount);
-            masterController.setTestComment(commandLine.getOptionValue(XltConstants.COMMANDLINE_OPTION_COMMENT, null));
+            masterController.setTestComment(commandLine.getOptionValue(XltConstants.COMMANDLINE_OPTION_COMMENT, (String) null));
         }
         else if (commandsMode)
         {
             final String commandList = commandLine.getOptionValue(OPTION_COMMANDS);
 
             ui = new NonInteractiveUI(masterController, commandList, config.getAgentControllerInitialResponseTimeout(), resultAmount);
-            masterController.setTestComment(commandLine.getOptionValue(XltConstants.COMMANDLINE_OPTION_COMMENT, null));
+            masterController.setTestComment(commandLine.getOptionValue(XltConstants.COMMANDLINE_OPTION_COMMENT, (String) null));
         }
         else
         {

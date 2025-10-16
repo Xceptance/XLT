@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,34 +14,11 @@
  */
 package org.htmlunit.javascript.host.html;
 
-import static org.htmlunit.BrowserVersionFeatures.JS_SELECT_OPTIONS_HAS_SELECT_CLASS_NAME;
-import static org.htmlunit.BrowserVersionFeatures.JS_SELECT_OPTIONS_IGNORE_NEGATIVE_LENGTH;
-import static org.htmlunit.BrowserVersionFeatures.JS_SELECT_OPTIONS_IN_ALWAYS_TRUE;
-import static org.htmlunit.BrowserVersionFeatures.JS_SELECT_OPTIONS_NULL_FOR_OUTSIDE;
-import static org.htmlunit.BrowserVersionFeatures.JS_SELECT_OPTIONS_REMOVE_IGNORE_IF_INDEX_NEGATIVE;
-import static org.htmlunit.BrowserVersionFeatures.JS_SELECT_OPTIONS_REMOVE_THROWS_IF_NEGATIV;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.IE;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Supplier;
-
-import org.htmlunit.BrowserVersion;
 import org.htmlunit.SgmlPage;
 import org.htmlunit.WebAssert;
 import org.htmlunit.corejs.javascript.Context;
-import org.htmlunit.corejs.javascript.ES6Iterator;
-import org.htmlunit.corejs.javascript.EvaluatorException;
-import org.htmlunit.corejs.javascript.NativeArrayIterator;
 import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.corejs.javascript.ScriptableObject;
-import org.htmlunit.corejs.javascript.Undefined;
-import org.htmlunit.html.DomNode;
 import org.htmlunit.html.ElementFactory;
 import org.htmlunit.html.HtmlOption;
 import org.htmlunit.html.HtmlSelect;
@@ -53,7 +30,7 @@ import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.configuration.JsxSetter;
 import org.htmlunit.javascript.configuration.JsxSymbol;
-import org.htmlunit.javascript.host.dom.NodeList;
+import org.htmlunit.javascript.host.dom.DOMException;
 
 /**
  * This is the array returned by the "options" property of Select.
@@ -66,8 +43,7 @@ import org.htmlunit.javascript.host.dom.NodeList;
  * @author Ahmed Ashour
  * @author Ronald Brill
  */
-@JsxClass({CHROME, EDGE, FF, FF_ESR})
-@JsxClass(isJSObject = false, value = IE)
+@JsxClass
 public class HTMLOptionsCollection extends HtmlUnitScriptable {
 
     private HtmlSelect htmlSelect_;
@@ -76,13 +52,15 @@ public class HTMLOptionsCollection extends HtmlUnitScriptable {
      * Creates an instance.
      */
     public HTMLOptionsCollection() {
+        super();
     }
 
     /**
      * JavaScript constructor.
      */
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor() {
+        // nothing to do
     }
 
     /**
@@ -90,20 +68,9 @@ public class HTMLOptionsCollection extends HtmlUnitScriptable {
      * @param parentScope parent scope
      */
     public HTMLOptionsCollection(final HtmlUnitScriptable parentScope) {
+        super();
         setParentScope(parentScope);
         setPrototype(getPrototype(getClass()));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getClassName() {
-        if (getWindow().getWebWindow() != null
-                && getBrowserVersion().hasFeature(JS_SELECT_OPTIONS_HAS_SELECT_CLASS_NAME)) {
-            return "HTMLSelectElement";
-        }
-        return super.getClassName();
     }
 
     /**
@@ -125,27 +92,18 @@ public class HTMLOptionsCollection extends HtmlUnitScriptable {
     @Override
     public Object get(final int index, final Scriptable start) {
         if (htmlSelect_ == null || index < 0) {
-            return Undefined.instance;
+            return JavaScriptEngine.UNDEFINED;
         }
 
         if (index >= htmlSelect_.getOptionSize()) {
-            if (getBrowserVersion().hasFeature(JS_SELECT_OPTIONS_NULL_FOR_OUTSIDE)) {
-                return null;
-            }
-            return Undefined.instance;
+            return JavaScriptEngine.UNDEFINED;
         }
 
         return getScriptableFor(htmlSelect_.getOption(index));
     }
 
     /**
-     * <p>If IE is emulated, and this class does not have the specified property, and the owning
-     * select *does* have the specified property, this method delegates the call to the parent
-     * select element.</p>
-     *
-     * @param name {@inheritDoc}
-     * @param start {@inheritDoc}
-     * @param value {@inheritDoc}
+     * {@inheritDoc}
      */
     @Override
     public void put(final String name, final Scriptable start, final Object value) {
@@ -174,7 +132,11 @@ public class HTMLOptionsCollection extends HtmlUnitScriptable {
      */
     @JsxFunction
     public Object item(final int index) {
-        return get(index, null);
+        final Object item = get(index, this);
+        if (JavaScriptEngine.UNDEFINED == item) {
+            return null;
+        }
+        return item;
     }
 
     /**
@@ -223,10 +185,7 @@ public class HTMLOptionsCollection extends HtmlUnitScriptable {
     @JsxSetter
     public void setLength(final int newLength) {
         if (newLength < 0) {
-            if (getBrowserVersion().hasFeature(JS_SELECT_OPTIONS_IGNORE_NEGATIVE_LENGTH)) {
-                return;
-            }
-            throw JavaScriptEngine.reportRuntimeError("Length is negative");
+            return;
         }
 
         final int currentLength = htmlSelect_.getOptionSize();
@@ -298,7 +257,11 @@ public class HTMLOptionsCollection extends HtmlUnitScriptable {
         else if (beforeOptionObject instanceof HTMLOptionElement) {
             beforeOption = (HtmlOption) ((HTMLOptionElement) beforeOptionObject).getDomNodeOrDie();
             if (beforeOption.getParentNode() != htmlSelect_) {
-                throw new EvaluatorException("Unknown option.");
+                throw JavaScriptEngine.asJavaScriptException(
+                        getWindow(),
+                        "Unknown option.",
+                        DOMException.NOT_FOUND_ERR);
+
             }
         }
 
@@ -317,14 +280,8 @@ public class HTMLOptionsCollection extends HtmlUnitScriptable {
     @JsxFunction
     public void remove(final int index) {
         int idx = index;
-        final BrowserVersion browser = getBrowserVersion();
         if (idx < 0) {
-            if (browser.hasFeature(JS_SELECT_OPTIONS_REMOVE_IGNORE_IF_INDEX_NEGATIVE)) {
-                return;
-            }
-            if (index < 0 && getBrowserVersion().hasFeature(JS_SELECT_OPTIONS_REMOVE_THROWS_IF_NEGATIV)) {
-                throw JavaScriptEngine.reportRuntimeError("Invalid index for option collection: " + index);
-            }
+            return;
         }
 
         idx = Math.max(idx, 0);
@@ -333,15 +290,6 @@ public class HTMLOptionsCollection extends HtmlUnitScriptable {
         }
 
         htmlSelect_.removeOption(idx);
-    }
-
-    @Override
-    public boolean has(final int index, final Scriptable start) {
-        if (getBrowserVersion().hasFeature(JS_SELECT_OPTIONS_IN_ALWAYS_TRUE)) {
-            return true;
-        }
-
-        return super.has(index, start);
     }
 
     /**
@@ -362,28 +310,8 @@ public class HTMLOptionsCollection extends HtmlUnitScriptable {
         htmlSelect_.setSelectedIndex(index);
     }
 
-    /**
-     * Returns the child nodes of the current element.
-     * @return the child nodes of the current element
-     */
-    @JsxGetter(IE)
-    public NodeList getChildNodes() {
-        final NodeList childNodes = new NodeList(htmlSelect_, false);
-        childNodes.setElementsSupplier(
-                (Supplier<List<DomNode>> & Serializable)
-                () -> {
-                    final List<DomNode> response = new ArrayList<>();
-                    for (final DomNode child : htmlSelect_.getChildren()) {
-                        response.add(child);
-                    }
-
-                    return response;
-                });
-        return childNodes;
-    }
-
-    @JsxSymbol({CHROME, EDGE, FF, FF_ESR})
-    public ES6Iterator iterator() {
-        return new NativeArrayIterator(getParentScope(), this, NativeArrayIterator.ARRAY_ITERATOR_TYPE.VALUES);
+    @JsxSymbol
+    public Scriptable iterator() {
+        return JavaScriptEngine.newArrayIteratorTypeValues(getParentScope(), this);
     }
 }

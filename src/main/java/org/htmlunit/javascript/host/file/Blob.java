@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,16 +15,11 @@
 package org.htmlunit.javascript.host.file;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.htmlunit.BrowserVersionFeatures.JS_BLOB_CONTENT_TYPE_CASE_SENSITIVE;
-import static org.htmlunit.BrowserVersionFeatures.XHR_SEND_IGNORES_BLOB_MIMETYPE_AS_CONTENTTYPE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
+import java.nio.charset.Charset;
 import java.util.Locale;
 
 import org.apache.commons.lang3.StringUtils;
@@ -32,7 +27,7 @@ import org.htmlunit.BrowserVersion;
 import org.htmlunit.HttpHeader;
 import org.htmlunit.WebRequest;
 import org.htmlunit.corejs.javascript.NativeArray;
-import org.htmlunit.corejs.javascript.ScriptRuntime;
+import org.htmlunit.corejs.javascript.NativePromise;
 import org.htmlunit.corejs.javascript.Scriptable;
 import org.htmlunit.corejs.javascript.ScriptableObject;
 import org.htmlunit.corejs.javascript.typedarrays.NativeArrayBuffer;
@@ -44,6 +39,8 @@ import org.htmlunit.javascript.configuration.JsxConstructor;
 import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
 import org.htmlunit.javascript.host.ReadableStream;
+import org.htmlunit.util.KeyDataPair;
+import org.htmlunit.util.MimeType;
 
 /**
  * A JavaScript object for {@code Blob}.
@@ -61,36 +58,98 @@ public class Blob extends HtmlUnitScriptable {
 
     private Backend backend_;
 
+    /**
+     * The backend used for saving the blob.
+     */
     protected abstract static class Backend implements Serializable {
+        /**
+         * @return the name
+         */
         abstract String getName();
+
+        /**
+         * @return the last modified timestamp as long
+         */
         abstract long getLastModified();
+
+        /**
+         * @return the size
+         */
         abstract long getSize();
+
+        /**
+         * @param browserVersion the {@link BrowserVersion}
+         * @return the type
+         */
         abstract String getType(BrowserVersion browserVersion);
+
+        /**
+         * @return the text
+         * @throws IOException in case of error
+         */
         abstract String getText() throws IOException;
 
+        /**
+         * @param start the start position
+         * @param end the end position
+         * @return the bytes
+         */
         abstract byte[] getBytes(int start, int end);
 
+        /**
+         * Ctor.
+         */
         Backend() {
+            // to make it package protected
         }
 
-        // TODO
-        abstract java.io.File getFile();
+        /**
+         * Returns the KeyDataPare for this Blob/File.
+         *
+         * @param name the name
+         * @param fileName the file name
+         * @param contentType the content type
+         * @return the KeyDataPair to hold the data
+         */
+        abstract KeyDataPair getKeyDataPair(String name, String fileName, String contentType);
     }
 
+    /**
+     * Implementation of the {@link Backend} that stores the bytes in memory.
+     *
+     */
     protected static class InMemoryBackend extends Backend {
         private final String fileName_;
         private final String type_;
         private final long lastModified_;
         private final byte[] bytes_;
 
+        /**
+         * Ctor.
+         *
+         * @param bytes the bytes
+         * @param fileName the name
+         * @param type the type
+         * @param lastModified last modified
+         */
         protected InMemoryBackend(final byte[] bytes, final String fileName,
                 final String type, final long lastModified) {
+            super();
             fileName_ = fileName;
             type_ = type;
             lastModified_ = lastModified;
             bytes_ = bytes;
         }
 
+        /**
+         * Factory method to create an {@link InMemoryBackend} from an {@link NativeArray}.
+         *
+         * @param fileBits the bytes as {@link NativeArray}
+         * @param fileName the name
+         * @param type the type
+         * @param lastModified last modified
+         * @return the new {@link InMemoryBackend}
+         */
         protected static InMemoryBackend create(final NativeArray fileBits, final String fileName,
                 final String type, final long lastModified) {
             if (fileBits == null) {
@@ -123,45 +182,68 @@ public class Blob extends HtmlUnitScriptable {
             return new InMemoryBackend(out.toByteArray(), fileName, type, lastModified);
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public String getName() {
             return fileName_;
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public long getLastModified() {
             return lastModified_;
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public long getSize() {
             return bytes_.length;
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public String getType(final BrowserVersion browserVersion) {
-            if (!browserVersion.hasFeature(JS_BLOB_CONTENT_TYPE_CASE_SENSITIVE)) {
-                return type_.toLowerCase(Locale.ROOT);
-            }
-            return type_;
+            return type_.toLowerCase(Locale.ROOT);
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public String getText() throws IOException {
             return new String(bytes_, UTF_8);
         }
 
-        @Override
-        public java.io.File getFile() {
-            throw new UnsupportedOperationException(
-                    "org.htmlunit.javascript.host.file.File.InMemoryBackend.getFile()");
-        }
-
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public byte[] getBytes(final int start, final int end) {
             final byte[] result = new byte[end - start];
             System.arraycopy(bytes_, start, result, 0, result.length);
             return result;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public KeyDataPair getKeyDataPair(final String name, final String fileName, final String contentType) {
+            String fname = fileName;
+            if (fname == null) {
+                fname = getName();
+            }
+            final KeyDataPair data = new KeyDataPair(name, null, fname, contentType, (Charset) null);
+            data.setData(bytes_);
+            return data;
         }
     }
 
@@ -185,12 +267,12 @@ public class Blob extends HtmlUnitScriptable {
         }
 
         final Object optionsType = properties.get(OPTIONS_LASTMODIFIED, properties);
-        if (optionsType != null && properties != Scriptable.NOT_FOUND
+        if (optionsType != null && optionsType != Scriptable.NOT_FOUND
                 && !JavaScriptEngine.isUndefined(optionsType)) {
             try {
                 return Long.parseLong(JavaScriptEngine.toString(optionsType));
             }
-            catch (final NumberFormatException e) {
+            catch (final NumberFormatException ignored) {
                 // fall back to default
             }
         }
@@ -202,6 +284,7 @@ public class Blob extends HtmlUnitScriptable {
      * Creates an instance.
      */
     public Blob() {
+        super();
     }
 
     /**
@@ -221,8 +304,15 @@ public class Blob extends HtmlUnitScriptable {
                             extractLastModifiedOrDefault(properties)));
     }
 
-    public Blob(final byte[] bits, final String contentType) {
-        setBackend(new InMemoryBackend(bits, null, contentType, -1));
+    /**
+     * Ctor.
+     *
+     * @param bytes the bytes
+     * @param contentType the content type
+     */
+    public Blob(final byte[] bytes, final String contentType) {
+        super();
+        setBackend(new InMemoryBackend(bytes, null, contentType, -1));
     }
 
     /**
@@ -247,13 +337,14 @@ public class Blob extends HtmlUnitScriptable {
      * @return a Promise that resolves with an ArrayBuffer containing the
      * data in binary form.
      */
-    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
-    public Object arrayBuffer() {
+    @JsxFunction
+    public NativePromise arrayBuffer() {
         return setupPromise(() -> {
             final byte[] bytes = getBytes();
             final NativeArrayBuffer buffer = new NativeArrayBuffer(bytes.length);
             System.arraycopy(bytes, 0, buffer.getBuffer(), 0, bytes.length);
-            ScriptRuntime.setObjectProtoAndParent(buffer, getParentScope());
+            buffer.setParentScope(getParentScope());
+            buffer.setPrototype(ScriptableObject.getClassPrototype(getWindow(), buffer.getClassName()));
             return buffer;
         });
     }
@@ -306,8 +397,8 @@ public class Blob extends HtmlUnitScriptable {
      * @return a Promise that resolves with a string containing the
      * contents of the blob, interpreted as UTF-8.
      */
-    @JsxFunction({CHROME, EDGE, FF, FF_ESR})
-    public Object text() {
+    @JsxFunction
+    public NativePromise text() {
         return setupPromise(() -> getBackend().getText());
     }
 
@@ -323,14 +414,22 @@ public class Blob extends HtmlUnitScriptable {
         webRequest.setRequestBody(new String(getBytes(), UTF_8));
 
         final boolean contentTypeDefinedByCaller = webRequest.getAdditionalHeader(HttpHeader.CONTENT_TYPE) != null;
-        if (!contentTypeDefinedByCaller
-                && !getBrowserVersion().hasFeature(XHR_SEND_IGNORES_BLOB_MIMETYPE_AS_CONTENTTYPE)) {
+        if (!contentTypeDefinedByCaller) {
             final String mimeType = getType();
             if (StringUtils.isNotBlank(mimeType)) {
                 webRequest.setAdditionalHeader(HttpHeader.CONTENT_TYPE, mimeType);
             }
             webRequest.setEncodingType(null);
         }
+    }
+
+    public KeyDataPair getKeyDataPair(final String name, final String fileName) {
+        String contentType = getType();
+        if (StringUtils.isEmpty(contentType)) {
+            contentType = MimeType.APPLICATION_OCTET_STREAM;
+        }
+
+        return backend_.getKeyDataPair(name, fileName, contentType);
     }
 
     protected Backend getBackend() {

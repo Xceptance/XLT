@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,10 @@
  */
 package org.htmlunit.javascript.host.event;
 
-import static org.htmlunit.javascript.configuration.SupportedBrowser.CHROME;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.EDGE;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF;
-import static org.htmlunit.javascript.configuration.SupportedBrowser.FF_ESR;
-
 import org.htmlunit.corejs.javascript.ScriptableObject;
 import org.htmlunit.javascript.JavaScriptEngine;
 import org.htmlunit.javascript.configuration.JsxClass;
 import org.htmlunit.javascript.configuration.JsxConstructor;
-import org.htmlunit.javascript.configuration.JsxFunction;
 import org.htmlunit.javascript.configuration.JsxGetter;
 
 /**
@@ -35,7 +29,7 @@ import org.htmlunit.javascript.configuration.JsxGetter;
  * @author Marc Guillemot
  * @author Frank Danek
  */
-@JsxClass({CHROME, EDGE, FF, FF_ESR})
+@JsxClass
 public class HashChangeEvent extends Event {
 
     private String oldURL_ = "";
@@ -45,6 +39,7 @@ public class HashChangeEvent extends Event {
      * Creates a new event instance.
      */
     public HashChangeEvent() {
+        super();
         setEventType("");
     }
 
@@ -70,7 +65,7 @@ public class HashChangeEvent extends Event {
      * {@inheritDoc}
      */
     @Override
-    @JsxConstructor({CHROME, EDGE, FF, FF_ESR})
+    @JsxConstructor
     public void jsConstructor(final String type, final ScriptableObject details) {
         super.jsConstructor(type, details);
 
@@ -85,28 +80,11 @@ public class HashChangeEvent extends Event {
     }
 
     /**
-     * Initializes this event.
-     *
-     * @param type the event type
-     * @param bubbles whether or not the event should bubble
-     * @param cancelable whether or not the event the event should be cancelable
-     * @param oldURL the old URL
-     * @param newURL the new URL
-     */
-    @JsxFunction({FF, FF_ESR})
-    public void initHashChangeEvent(final String type, final boolean bubbles, final boolean cancelable,
-        final String oldURL, final String newURL) {
-        initEvent(type, bubbles, cancelable);
-        oldURL_ = oldURL;
-        newURL_ = newURL;
-    }
-
-    /**
      * Returns the old URL.
      * @return the old URL
      */
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
-    public Object getOldURL() {
+    @JsxGetter
+    public String getOldURL() {
         return oldURL_;
     }
 
@@ -114,8 +92,8 @@ public class HashChangeEvent extends Event {
      * Returns the new URL.
      * @return the new URL
      */
-    @JsxGetter({CHROME, EDGE, FF, FF_ESR})
-    public Object getNewURL() {
+    @JsxGetter
+    public String getNewURL() {
         return newURL_;
     }
 }

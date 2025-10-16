@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,13 @@
  */
 package org.htmlunit.html;
 
-import static org.htmlunit.BrowserVersionFeatures.FRAME_LOCATION_ABOUT_BLANK_FOR_ABOUT_SCHEME;
-import static org.htmlunit.BrowserVersionFeatures.URL_MINIMAL_QUERY_ENCODING;
-
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.Map;
+import java.util.Objects;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.htmlunit.FailingHttpStatusCodeException;
@@ -54,6 +51,7 @@ import org.w3c.dom.Attr;
  * @author Daniel Gredler
  * @author Ronald Brill
  * @author Frank Danek
+ * @author Lai Quang Duong
  */
 public abstract class BaseFrameElement extends HtmlElement {
 
@@ -98,7 +96,7 @@ public abstract class BaseFrameElement extends HtmlElement {
                 temporaryPage.setReadyState(READY_STATE_LOADING);
             }
         }
-        catch (final FailingHttpStatusCodeException | IOException e) {
+        catch (final FailingHttpStatusCodeException | IOException ignored) {
             // should never occur
         }
         enclosedWindow_ = enclosedWindow;
@@ -117,10 +115,6 @@ public abstract class BaseFrameElement extends HtmlElement {
     public void loadInnerPage() throws FailingHttpStatusCodeException {
         String source = getSrcAttribute();
         if (source.isEmpty()) {
-            source = UrlUtils.ABOUT_BLANK;
-        }
-        else if (StringUtils.startsWithIgnoreCase(source, UrlUtils.ABOUT_SCHEME)
-                && hasFeature(FRAME_LOCATION_ABOUT_BLANK_FOR_ABOUT_SCHEME)) {
             source = UrlUtils.ABOUT_BLANK;
         }
 
@@ -190,12 +184,29 @@ public abstract class BaseFrameElement extends HtmlElement {
                 return;
             }
 
-            final WebRequest request = new WebRequest(url, page.getCharset(), page.getUrl());
+            final URL pageUrl = page.getUrl();
+
+            // accessing to local resource is forbidden for security reason
+            if (!"file".equals(pageUrl.getProtocol()) && "file".equals(url.getProtocol())) {
+                notifyIncorrectness("Not allowed to load local resource: " + source);
+                return;
+            }
+
+            final Charset pageCharset = page.getCharset();
+            final WebRequest request = new WebRequest(url, pageCharset, pageUrl);
 
             if (isAlreadyLoadedByAncestor(url, request.getCharset())) {
                 notifyIncorrectness("Recursive src attribute of " + getTagName() + ": url=[" + source + "]. Ignored.");
                 return;
             }
+
+            // Use parent document's charset as container charset if same origin
+            // https://html.spec.whatwg.org/multipage/parsing.html#determining-the-character-encoding
+            if (Objects.equals(pageUrl.getProtocol(), url.getProtocol())
+                    && Objects.equals(pageUrl.getAuthority(), url.getAuthority())) {
+                request.setDefaultResponseContentCharset(pageCharset);
+            }
+
             try {
                 webClient.getPage(enclosedWindow_, request);
             }
@@ -222,9 +233,7 @@ public abstract class BaseFrameElement extends HtmlElement {
                 return true;
             }
 
-            final URL encUrl = UrlUtils.encodeUrl(url,
-                    window.getWebClient().getBrowserVersion().hasFeature(URL_MINIMAL_QUERY_ENCODING),
-                    charset);
+            final URL encUrl = UrlUtils.encodeUrl(url, charset);
             if (UrlUtils.sameFile(encUrl, window.getEnclosedPage().getUrl())) {
                 return true;
             }

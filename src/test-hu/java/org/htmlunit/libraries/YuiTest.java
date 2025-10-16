@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,8 +25,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.NotYetImplemented;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.NotYetImplemented;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -152,8 +152,7 @@ public class YuiTest extends WebDriverTestCase {
                     "test_close_window", "test_regex",
                     "test_createlink", "test_selected_element", "test_dom_path"},
             FF = "test_createlink",
-            FF_ESR = "test_createlink",
-            IE = {"test_bold", "test_createlink"})
+            FF_ESR = "test_createlink")
     @NotYetImplemented
     public void editor() throws Exception {
         doTest("editor.html", Arrays.asList(getExpectedAlerts()));

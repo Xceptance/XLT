@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ package org.htmlunit.javascript.host;
 
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
+import org.htmlunit.junit.annotation.Alerts;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -32,8 +32,7 @@ public class ClientRectListTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object DOMRectList]", "1", "[object DOMRect]", "[object DOMRect]"},
-            IE = {"[object ClientRectList]", "1", "[object ClientRect]", "[object ClientRect]"})
+    @Alerts({"[object DOMRectList]", "1", "[object DOMRect]", "[object DOMRect]"})
     public void getClientRects() throws Exception {
         final String html =
             "<html><head>\n"
@@ -58,8 +57,7 @@ public class ClientRectListTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object DOMRectList]", "1", "null", "null"},
-            IE = {"[object ClientRectList]", "1", "exception", "exception"})
+    @Alerts({"[object DOMRectList]", "1", "null", "null"})
     public void itemOutside() throws Exception {
         final String html =
             "<html><head>\n"
@@ -74,11 +72,11 @@ public class ClientRectListTest extends WebDriverTestCase {
 
             + "    try {\n"
             + "      log(rects.item(1));\n"
-            + "    } catch(e) { log('exception'); }\n"
+            + "    } catch(e) { logEx(e); }\n"
 
             + "    try {\n"
             + "      log(rects.item(-1));\n"
-            + "    } catch(e) { log('exception'); }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "  }\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -91,8 +89,7 @@ public class ClientRectListTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object DOMRectList]", "1", "undefined", "undefined"},
-            IE = {"[object ClientRectList]", "1", "undefined", "undefined"})
+    @Alerts({"[object DOMRectList]", "1", "undefined", "undefined"})
     public void indexOutside() throws Exception {
         final String html =
             "<html><head>\n"
@@ -107,11 +104,11 @@ public class ClientRectListTest extends WebDriverTestCase {
 
             + "    try {\n"
             + "      log(rects[1]);\n"
-            + "    } catch(e) { log('exception'); }\n"
+            + "    } catch(e) { logEx(e); }\n"
 
             + "    try {\n"
             + "      log(rects[-1]);\n"
-            + "    } catch(e) { log('exception'); }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "  }\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"
@@ -124,8 +121,7 @@ public class ClientRectListTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object DOMRectList]", "0", "undefined", "undefined"},
-            IE = {"[object ClientRectList]", "0", "undefined", "undefined"})
+    @Alerts({"[object DOMRectList]", "0", "undefined", "undefined"})
     public void empty() throws Exception {
         final String html =
             "<html><head>\n"
@@ -140,11 +136,11 @@ public class ClientRectListTest extends WebDriverTestCase {
 
             + "    try {\n"
             + "      log(rects[1]);\n"
-            + "    } catch(e) { log('exception'); }\n"
+            + "    } catch(e) { logEx(e); }\n"
 
             + "    try {\n"
             + "      log(rects[-1]);\n"
-            + "    } catch(e) { log('exception'); }\n"
+            + "    } catch(e) { logEx(e); }\n"
             + "  }\n"
             + "</script></head>\n"
             + "<body onload='test()'>\n"

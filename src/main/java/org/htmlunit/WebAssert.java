@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -94,7 +94,7 @@ public final class WebAssert {
         }
         catch (final ElementNotFoundException e) {
             final String msg = "The page does not contain an element with ID '" + id + "'.";
-            throw new AssertionError(msg);
+            throw new AssertionError(msg, e);
         }
     }
 
@@ -178,7 +178,7 @@ public final class WebAssert {
         catch (final ElementNotFoundException e) {
             final String msg = "Unable to verify that the element with ID '" + id + "' contains the text '" + text
                             + "' because the specified element does not exist.";
-            throw new AssertionError(msg);
+            throw new AssertionError(msg, e);
         }
     }
 
@@ -230,7 +230,7 @@ public final class WebAssert {
         }
         catch (final ElementNotFoundException e) {
             final String msg = "The page does not contain a link with ID '" + id + "'.";
-            throw new AssertionError(msg);
+            throw new AssertionError(msg, e);
         }
     }
 
@@ -247,8 +247,7 @@ public final class WebAssert {
             final String msg = "The page contains a link with ID '" + id + "'.";
             throw new AssertionError(msg);
         }
-        catch (final ElementNotFoundException e) {
-            // Expected.
+        catch (final ElementNotFoundException expected) {
         }
     }
 
@@ -306,7 +305,7 @@ public final class WebAssert {
         }
         catch (final ElementNotFoundException e) {
             final String msg = "The page does not contain a form named '" + name + "'.";
-            throw new AssertionError(msg);
+            throw new AssertionError(msg, e);
         }
     }
 
@@ -415,7 +414,7 @@ public final class WebAssert {
             Arrays.asList("a", "area", "button", "input", "object", "select", "textarea");
 
         for (final String tag : tags) {
-            for (final HtmlElement element : page.getDocumentElement().getElementsByTagName(tag)) {
+            for (final HtmlElement element : page.getDocumentElement().getStaticElementsByTagName(tag)) {
                 final Short tabIndex = element.getTabIndex();
                 if (tabIndex == null || HtmlElement.TAB_INDEX_OUT_OF_BOUNDS.equals(tabIndex)) {
                     final String s = element.getAttributeDirect("tabindex");

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -174,7 +174,6 @@ public class XltWebClientTest extends AbstractXLTTestCase
         checkBrowserVersion("EDGE", BrowserVersion.EDGE);
         checkBrowserVersion("FF", BrowserVersion.FIREFOX);
         checkBrowserVersion("FF_ESR", BrowserVersion.FIREFOX_ESR);
-        checkBrowserVersion("IE", BrowserVersion.INTERNET_EXPLORER);
         checkBrowserVersion("", BrowserVersion.FIREFOX);
         checkBrowserVersion("XYZ", BrowserVersion.FIREFOX);
     }

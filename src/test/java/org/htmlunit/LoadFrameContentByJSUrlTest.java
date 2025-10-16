@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005-2024 Xceptance Software Technologies GmbH
+ * Copyright (c) 2005-2025 Xceptance Software Technologies GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,12 +32,6 @@ public class LoadFrameContentByJSUrlTest
     public void test_ff45() throws Exception
     {
         test(BrowserVersion.FIREFOX);
-    }
-
-    @Test
-    public void test_ie() throws Exception
-    {
-        test(BrowserVersion.INTERNET_EXPLORER);
     }
 
     private void test(final BrowserVersion browserVersion) throws Exception

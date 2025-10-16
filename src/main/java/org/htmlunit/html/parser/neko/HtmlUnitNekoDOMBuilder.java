@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,8 @@
  */
 package org.htmlunit.html.parser.neko;
 
-import static org.htmlunit.BrowserVersionFeatures.HTML_ATTRIBUTE_LOWER_CASE;
 import static org.htmlunit.BrowserVersionFeatures.HTML_COMMAND_TAG;
-import static org.htmlunit.BrowserVersionFeatures.HTML_ISINDEX_TAG;
-import static org.htmlunit.BrowserVersionFeatures.HTML_MAIN_TAG;
-import static org.htmlunit.BrowserVersionFeatures.META_X_UA_COMPATIBLE;
+import static org.htmlunit.BrowserVersionFeatures.JS_SCRIPT_IN_TEMPLATE_EXECUTED_ON_ATTACH;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -26,20 +23,16 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayDeque;
 import java.util.Deque;
-import java.util.Locale;
 
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.tuple.Triple;
 import org.htmlunit.BrowserVersion;
 import org.htmlunit.ObjectInstantiationException;
 import org.htmlunit.WebClient;
 import org.htmlunit.WebResponse;
 import org.htmlunit.cyberneko.HTMLConfiguration;
 import org.htmlunit.cyberneko.HTMLElements;
-import org.htmlunit.cyberneko.HTMLEventInfo;
 import org.htmlunit.cyberneko.HTMLScanner;
 import org.htmlunit.cyberneko.HTMLTagBalancingListener;
-import org.htmlunit.cyberneko.util.FastHashMap;
 import org.htmlunit.cyberneko.xerces.parsers.AbstractSAXParser;
 import org.htmlunit.cyberneko.xerces.xni.Augmentations;
 import org.htmlunit.cyberneko.xerces.xni.QName;
@@ -59,9 +52,7 @@ import org.htmlunit.html.HtmlBody;
 import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlHiddenInput;
-import org.htmlunit.html.HtmlHtml;
 import org.htmlunit.html.HtmlImage;
-import org.htmlunit.html.HtmlMeta;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlSvg;
 import org.htmlunit.html.HtmlTable;
@@ -74,7 +65,6 @@ import org.htmlunit.html.parser.HTMLParser;
 import org.htmlunit.html.parser.HTMLParserDOMBuilder;
 import org.htmlunit.html.parser.HTMLParserListener;
 import org.htmlunit.javascript.host.html.HTMLBodyElement;
-import org.htmlunit.javascript.host.html.HTMLDocument;
 import org.htmlunit.util.StringUtils;
 import org.w3c.dom.Node;
 import org.xml.sax.Attributes;
@@ -107,86 +97,21 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
         implements ContentHandler, LexicalHandler, HTMLTagBalancingListener, HTMLParserDOMBuilder {
 
     // cache Neko Elements for performance and memory efficiency
-    private static final FastHashMap<Triple<Boolean, Boolean, Boolean>, HTMLElements>
-                HTMLELEMENTS_CACHE = new FastHashMap<>();
+    private static final HTMLElements HTMLELEMENTS;
+    private static final HTMLElements HTMLELEMENTS_WITH_CMD;
 
     static {
         // continue short code enumeration
-        final short isIndexShortCode = HTMLElements.UNKNOWN + 1;
-
-        final short commandShortCode = isIndexShortCode + 1;
-        final short mainShortCode = commandShortCode + 1;
-
-        // isIndex is special - we have to add it here because all browsers moving this to
-        // the body (even if it is not supported)
-        final HTMLElements.Element isIndex = new HTMLElements.Element(isIndexShortCode, "ISINDEX",
-                HTMLElements.Element.CONTAINER, HTMLElements.BODY, null);
-        final HTMLElements.Element isIndexSupported = new HTMLElements.Element(isIndexShortCode, "ISINDEX",
-                HTMLElements.Element.BLOCK, HTMLElements.BODY, new short[] {isIndexShortCode});
+        final short commandShortCode = HTMLElements.UNKNOWN + 1;
 
         final HTMLElements.Element command = new HTMLElements.Element(commandShortCode, "COMMAND",
                 HTMLElements.Element.EMPTY, new short[] {HTMLElements.BODY, HTMLElements.HEAD}, null);
-        final HTMLElements.Element main = new HTMLElements.Element(mainShortCode, "MAIN",
-                HTMLElements.Element.INLINE, HTMLElements.BODY, null);
 
-        Triple<Boolean, Boolean, Boolean> key;
-        HTMLElements value;
+        HTMLELEMENTS = new HTMLElements();
 
-        // !COMMAND_TAG !ISINDEX_TAG !MAIN_TAG
-        key = Triple.of(Boolean.FALSE, Boolean.FALSE, Boolean.FALSE);
-        value = new HTMLElements();
-        value.setElement(isIndex);
-        HTMLELEMENTS_CACHE.put(key, value);
-
-        // !COMMAND_TAG !ISINDEX_TAG MAIN_TAG
-        key = Triple.of(Boolean.FALSE, Boolean.FALSE, Boolean.TRUE);
-        value = new HTMLElements();
-        value.setElement(main);
-        value.setElement(isIndex);
-        HTMLELEMENTS_CACHE.put(key, value);
-
-        // !COMMAND_TAG ISINDEX_TAG !MAIN_TAG
-        key = Triple.of(Boolean.FALSE, Boolean.TRUE, Boolean.FALSE);
-        value = new HTMLElements();
-        value.setElement(isIndexSupported);
-        HTMLELEMENTS_CACHE.put(key, value);
-
-        // !COMMAND_TAG ISINDEX_TAG MAIN_TAG
-        key = Triple.of(Boolean.FALSE, Boolean.TRUE, Boolean.TRUE);
-        value = new HTMLElements();
-        value.setElement(isIndexSupported);
-        value.setElement(main);
-        HTMLELEMENTS_CACHE.put(key, value);
-
-        // COMMAND_TAG !ISINDEX_TAG !MAIN_TAG
-        key = Triple.of(Boolean.TRUE, Boolean.FALSE, Boolean.FALSE);
-        value = new HTMLElements();
+        final HTMLElements value = new HTMLElements();
         value.setElement(command);
-        value.setElement(isIndex);
-        HTMLELEMENTS_CACHE.put(key, value);
-
-        // COMMAND_TAG !ISINDEX_TAG MAIN_TAG
-        key = Triple.of(Boolean.TRUE, Boolean.FALSE, Boolean.TRUE);
-        value = new HTMLElements();
-        value.setElement(command);
-        value.setElement(isIndex);
-        value.setElement(main);
-        HTMLELEMENTS_CACHE.put(key, value);
-
-        // COMMAND_TAG ISINDEX_TAG !MAIN_TAG
-        key = Triple.of(Boolean.TRUE, Boolean.TRUE, Boolean.FALSE);
-        value = new HTMLElements();
-        value.setElement(command);
-        value.setElement(isIndexSupported);
-        HTMLELEMENTS_CACHE.put(key, value);
-
-        // COMMAND_TAG ISINDEX_TAG MAIN_TAG
-        key = Triple.of(Boolean.TRUE, Boolean.TRUE, Boolean.TRUE);
-        value = new HTMLElements();
-        value.setElement(command);
-        value.setElement(isIndexSupported);
-        value.setElement(main);
-        HTMLELEMENTS_CACHE.put(key, value);
+        HTMLELEMENTS_WITH_CMD = value;
     }
 
     private enum HeadParsed { YES, SYNTHESIZED, NO }
@@ -209,6 +134,7 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
     private HtmlForm consumingForm_;
     private boolean formEndingIsAdjusting_;
     private boolean insideSvg_;
+    private boolean insideTemplate_;
 
     private static final String FEATURE_AUGMENTATIONS = "http://cyberneko.org/html/features/augmentations";
     private static final String FEATURE_PARSE_NOSCRIPT
@@ -263,9 +189,6 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
 
         try {
             setFeature(FEATURE_AUGMENTATIONS, true);
-            if (!webClient.getBrowserVersion().hasFeature(HTML_ATTRIBUTE_LOWER_CASE)) {
-                setProperty("http://cyberneko.org/html/properties/names/attrs", "no-change");
-            }
             setFeature("http://cyberneko.org/html/features/report-errors", reportErrors);
             setFeature(FEATURE_PARSE_NOSCRIPT, !webClient.isJavaScriptEnabled());
             setFeature(HTMLScanner.ALLOW_SELFCLOSING_IFRAME, false);
@@ -284,11 +207,10 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
      * @return the configuration
      */
     private static XMLParserConfiguration createConfiguration(final BrowserVersion browserVersion) {
-        final HTMLElements elements = HTMLELEMENTS_CACHE.get(
-                Triple.of(browserVersion.hasFeature(HTML_COMMAND_TAG),
-                        browserVersion.hasFeature(HTML_ISINDEX_TAG),
-                        browserVersion.hasFeature(HTML_MAIN_TAG)));
-        return new HTMLConfiguration(elements);
+        if (browserVersion.hasFeature(HTML_COMMAND_TAG)) {
+            return new HTMLConfiguration(HTMLELEMENTS_WITH_CMD);
+        }
+        return new HTMLConfiguration(HTMLELEMENTS);
     }
 
     /**
@@ -312,7 +234,7 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
     public void startElement(final QName element, final XMLAttributes attributes, final Augmentations augs)
         throws XNIException {
         // augs might change so we store only the interesting part
-        lastTagWasSynthesized_ = isSynthesized(augs);
+        lastTagWasSynthesized_ = augs.isSynthesized();
         super.startElement(element, attributes, augs);
     }
 
@@ -329,7 +251,7 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
         }
         handleCharacters();
 
-        final String tagLower = org.htmlunit.util.StringUtils.toRootLowerCase(localName);
+        final String tagLower = StringUtils.toRootLowerCase(localName);
         if (page_.isParsingHtmlSnippet() && ("html".equals(tagLower) || "body".equals(tagLower))) {
             // we have to push the current node on the stack to make sure
             // the endElement call is able to remove a node from the stack
@@ -355,8 +277,12 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
         // If we're adding a body element, keep track of any temporary synthetic ones
         // that we may have had to create earlier (for document.write(), for example).
         HtmlBody oldBody = null;
-        if ("body".equals(qName) && page_.getBody() instanceof HtmlBody) {
-            oldBody = (HtmlBody) page_.getBody();
+        final boolean isBodyTag = "body".equals(tagLower);
+        if (isBodyTag) {
+            final HtmlBody body = page_.getBody();
+            if (body != null) {
+                oldBody = body;
+            }
         }
 
         // Add the new node.
@@ -369,7 +295,7 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
         if (factory == HtmlUnitNekoHtmlParser.SVG_FACTORY) {
             namespaceURI = Html.SVG_NAMESPACE;
         }
-        final DomElement newElement = factory.createElementNS(page_, namespaceURI, qName, atts, true);
+        final DomElement newElement = factory.createElementNS(page_, namespaceURI, qName, atts);
         newElement.setStartLocation(locator_.getLineNumber(), locator_.getColumnNumber());
 
         // parse can't replace everything as it does not buffer elements while parsing
@@ -377,6 +303,9 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
 
         if (newElement instanceof HtmlSvg) {
             insideSvg_ = true;
+        }
+        else if (newElement instanceof HtmlTemplate) {
+            insideTemplate_ = true;
         }
 
         // Forms own elements simply by enclosing source-wise rather than DOM parent-child relationship
@@ -401,30 +330,14 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
             oldBody.quietlyRemoveAndMoveChildrenTo(newElement);
         }
 
-        if (!insideSvg_ && "body".equals(tagLower)) {
+        if (!insideSvg_ && isBodyTag) {
             body_ = (HtmlElement) newElement;
         }
-        else if (newElement instanceof HtmlMeta && page_.hasFeature(META_X_UA_COMPATIBLE)) {
-            final HtmlMeta meta = (HtmlMeta) newElement;
-            if ("X-UA-Compatible".equals(meta.getHttpEquivAttribute())) {
-                final String content = meta.getContentAttribute();
-                if (content.startsWith("IE=")) {
-                    final String mode = content.substring(3).trim();
-                    final int version = page_.getWebClient().getBrowserVersion().getBrowserVersionNumeric();
-                    try {
-                        int value = Integer.parseInt(mode);
-                        if (value > version) {
-                            value = version;
-                        }
-                        ((HTMLDocument) page_.getScriptableObject()).forceDocumentMode(value);
-                    }
-                    catch (final Exception e) {
-                        // ignore
-                    }
-                }
-            }
-        }
-        else if (createdByJavascript_ && newElement instanceof ScriptElement) {
+        else if (createdByJavascript_
+                && newElement instanceof ScriptElement
+                && (!insideTemplate_
+                        || !page_.getWebClient().getBrowserVersion()
+                                .hasFeature(JS_SCRIPT_IN_TEMPLATE_EXECUTED_ON_ATTACH))) {
             final ScriptElement script = (ScriptElement) newElement;
             script.markAsCreatedByDomParser();
         }
@@ -520,6 +433,10 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
     }
 
     private static boolean isTableChild(final String nodeName) {
+        if (nodeName == null || nodeName.length() < 5) {
+            return false;
+        }
+
         return "thead".equals(nodeName)
                 || "tbody".equals(nodeName)
                 || "tfoot".equals(nodeName)
@@ -539,7 +456,7 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
     public void endElement(final QName element, final Augmentations augs)
         throws XNIException {
         // augs might change so we store only the interesting part
-        lastTagWasSynthesized_ = isSynthesized(augs);
+        lastTagWasSynthesized_ = augs.isSynthesized();
         super.endElement(element, augs);
     }
 
@@ -550,7 +467,7 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
     public void endElement(final String namespaceURI, final String localName, final String qName)
         throws SAXException {
 
-        final String tagLower = org.htmlunit.util.StringUtils.toRootLowerCase(localName);
+        final String tagLower = StringUtils.toRootLowerCase(localName);
 
         handleCharacters();
 
@@ -561,13 +478,16 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
             if (stack_.size() == initialSize_) {
                 // a <p> inside a <p> is valid for innerHTML processing
                 // see HTMLParser2Test for more cases
-                snippetStartNodeOverwritten_ = !"p".equals(tagLower);
+                snippetStartNodeOverwritten_ = !StringUtils.equalsChar('p', tagLower);
                 return;
             }
         }
 
         if ("svg".equals(tagLower)) {
             insideSvg_ = false;
+        }
+        else if ("template".equals(tagLower)) {
+            insideTemplate_ = false;
         }
 
         // this only avoids a problem when the stack is empty here
@@ -615,19 +535,14 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
             return;
         }
 
-        if (currentNode_ instanceof HtmlHtml) {
-            // In HTML, the <html> node only has two possible children:
-            // the <head> and the <body>; any text is ignored.
-            characters_.clear();
-            return;
-        }
-
         // Use the normal behavior: append a text node for the accumulated text.
         final String textValue = characters_.toString();
-        final DomText textNode = new DomText(page_, textValue);
         characters_.clear();
 
-        if (org.apache.commons.lang3.StringUtils.isNotBlank(textValue)) {
+        if (org.apache.commons.lang3.StringUtils.isBlank(textValue)) {
+            appendChild(currentNode_, new DomText(page_, textValue));
+        }
+        else {
             // malformed HTML: </td>some text</tr> => text comes before the table
             if (currentNode_ instanceof HtmlTableRow) {
                 final HtmlTableRow row = (HtmlTableRow) currentNode_;
@@ -638,7 +553,7 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
                         domText.setTextContent(domText.getWholeText() + textValue);
                     }
                     else {
-                        enclosingTable.insertBefore(textNode);
+                        enclosingTable.insertBefore(new DomText(page_, textValue));
                     }
                 }
             }
@@ -649,18 +564,15 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
                     domText.setTextContent(domText.getWholeText() + textValue);
                 }
                 else {
-                    enclosingTable.insertBefore(textNode);
+                    enclosingTable.insertBefore(new DomText(page_, textValue));
                 }
             }
             else if (currentNode_ instanceof HtmlImage) {
-                currentNode_.getParentNode().appendChild(textNode);
+                currentNode_.getParentNode().appendChild(new DomText(page_, textValue));
             }
             else {
-                appendChild(currentNode_, textNode);
+                appendChild(currentNode_, new DomText(page_, textValue));
             }
-        }
-        else {
-            appendChild(currentNode_, textNode);
         }
     }
 
@@ -668,7 +580,9 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
     @Override
     public void endDocument() throws SAXException {
         handleCharacters();
-        page_.setEndLocation(locator_.getLineNumber(), locator_.getColumnNumber());
+        if (locator_ != null) {
+            page_.setEndLocation(locator_.getLineNumber(), locator_.getColumnNumber());
+        }
     }
 
     /** {@inheritDoc} */
@@ -744,6 +658,7 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
     /** {@inheritDoc} */
     @Override
     public void startEntity(final String name) {
+        // nothing to do
     }
 
     /**
@@ -800,14 +715,16 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
         // when multiple html/body elements are encountered, the attributes of the discarded
         // elements are used when not previously defined
         if (attrs != null && body_ != null) {
-            String lp = elem.getLocalpart();
+            final String lp = elem.getLocalpart();
             if (lp != null && lp.length() == 4) {
-                lp = lp.toLowerCase(Locale.ROOT);
-                if ("body".equals(lp)) {
+                if ("body".equalsIgnoreCase(lp)) {
                     copyAttributes(body_, attrs);
                 }
-                else if ("html".equals(lp)) {
-                    copyAttributes((DomElement) body_.getParentNode(), attrs);
+                else if ("html".equalsIgnoreCase(lp)) {
+                    final DomNode parent = body_.getParentNode();
+                    if (parent instanceof DomElement) {
+                        copyAttributes((DomElement) parent, attrs);
+                    }
                 }
             }
         }
@@ -842,14 +759,6 @@ final class HtmlUnitNekoDOMBuilder extends AbstractSAXParser
         finally {
             page_.setDOMBuilder(oldBuilder);
         }
-    }
-
-    HtmlElement getBody() {
-        return body_;
-    }
-
-    private static boolean isSynthesized(final Augmentations augs) {
-        return augs instanceof HTMLEventInfo && ((HTMLEventInfo) augs).isSynthesized();
     }
 
     private static void appendChild(final DomNode parent, final DomNode child) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,12 @@
  */
 package org.htmlunit.javascript.host.event;
 
-import java.util.Arrays;
-
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.html.HtmlPageTest;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.BuggyWebDriver;
-import org.htmlunit.junit.BrowserRunner.HtmlUnitNYI;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.BuggyWebDriver;
+import org.htmlunit.junit.annotation.HtmlUnitNYI;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
@@ -58,9 +56,8 @@ public class KeyboardEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object KeyboardEvent]", "type", "false", "false", "false",
-                       ",,0,false,false,false,false,false,false,0,0"},
-            IE = "exception")
+    @Alerts({"[object KeyboardEvent]", "type", "false", "false", "false",
+             ",,0,false,false,false,false,false,false,0,0"})
     public void create_ctor() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
                 + "<html><head><script>\n"
@@ -69,7 +66,7 @@ public class KeyboardEventTest extends WebDriverTestCase {
                 + "    try {\n"
                 + "      var event = new KeyboardEvent('type');\n"
                 + "      dump(event);\n"
-                + "    } catch (e) { log('exception') }\n"
+                + "    } catch(e) { logEx(e) }\n"
                 + "  }\n"
                 + DUMP_EVENT_FUNCTION
                 + "</script></head><body onload='test()'>\n"
@@ -82,7 +79,7 @@ public class KeyboardEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("TypeError")
     @HtmlUnitNYI(CHROME = {"[object KeyboardEvent]", "undefined", "false", "false", "false",
                            ",,0,false,false,false,false,false,false,0,0"},
             EDGE = {"[object KeyboardEvent]", "undefined", "false", "false", "false",
@@ -99,7 +96,7 @@ public class KeyboardEventTest extends WebDriverTestCase {
             + "    try {\n"
             + "      var event = new KeyboardEvent();\n"
             + "      dump(event);\n"
-            + "    } catch (e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + DUMP_EVENT_FUNCTION
             + "</script></head><body onload='test()'>\n"
@@ -112,9 +109,8 @@ public class KeyboardEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object KeyboardEvent]", "42", "false", "false", "false",
-                       ",,0,false,false,false,false,false,false,0,0"},
-            IE = "exception")
+    @Alerts({"[object KeyboardEvent]", "42", "false", "false", "false",
+             ",,0,false,false,false,false,false,false,0,0"})
     public void create_ctorNumericType() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"
@@ -123,7 +119,7 @@ public class KeyboardEventTest extends WebDriverTestCase {
             + "    try {\n"
             + "      var event = new KeyboardEvent(42);\n"
             + "      dump(event);\n"
-            + "    } catch (e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + DUMP_EVENT_FUNCTION
             + "</script></head><body onload='test()'>\n"
@@ -136,9 +132,8 @@ public class KeyboardEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT =  {"[object KeyboardEvent]", "null", "false", "false", "false",
-                        ",,0,false,false,false,false,false,false,0,0"},
-            IE = "exception")
+    @Alerts({"[object KeyboardEvent]", "null", "false", "false", "false",
+             ",,0,false,false,false,false,false,false,0,0"})
     public void create_ctorNullType() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"
@@ -147,7 +142,7 @@ public class KeyboardEventTest extends WebDriverTestCase {
             + "    try {\n"
             + "      var event = new KeyboardEvent(null);\n"
             + "      dump(event);\n"
-            + "    } catch (e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + DUMP_EVENT_FUNCTION
             + "</script></head><body onload='test()'>\n"
@@ -160,7 +155,7 @@ public class KeyboardEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("exception")
+    @Alerts("ReferenceError")
     public void create_ctorUnknownType() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"
@@ -169,7 +164,7 @@ public class KeyboardEventTest extends WebDriverTestCase {
             + "    try {\n"
             + "      var event = new KeyboardEvent(unknown);\n"
             + "      dump(event);\n"
-            + "    } catch (e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + DUMP_EVENT_FUNCTION
             + "</script></head><body onload='test()'>\n"
@@ -182,9 +177,8 @@ public class KeyboardEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object KeyboardEvent]", "HtmlUnitEvent", "false", "false", "false",
-                       ",,0,false,false,false,false,false,false,0,0"},
-            IE = "exception")
+    @Alerts({"[object KeyboardEvent]", "HtmlUnitEvent", "false", "false", "false",
+             ",,0,false,false,false,false,false,false,0,0"})
     public void create_ctorArbitraryType() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"
@@ -193,7 +187,7 @@ public class KeyboardEventTest extends WebDriverTestCase {
             + "    try {\n"
             + "      var event = new KeyboardEvent('HtmlUnitEvent');\n"
             + "      dump(event);\n"
-            + "    } catch (e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + DUMP_EVENT_FUNCTION
             + "</script></head><body onload='test()'>\n"
@@ -211,8 +205,7 @@ public class KeyboardEventTest extends WebDriverTestCase {
             CHROME = {"[object KeyboardEvent]", "keyboard", "false", "false", "false",
                       "key,code,123,true,true,true,true,true,true,456,0"},
             EDGE = {"[object KeyboardEvent]", "keyboard", "false", "false", "false",
-                    "key,code,123,true,true,true,true,true,true,456,0"},
-            IE = "exception")
+                    "key,code,123,true,true,true,true,true,true,456,0"})
     public void create_ctorAllDetails() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"
@@ -224,7 +217,7 @@ public class KeyboardEventTest extends WebDriverTestCase {
                              + "ctrlKey: true, shiftKey: true, altKey: true, metaKey: true,"
                              + "repeat: true, isComposing: true, charCode: 456, which: 789 });\n"
             + "      dump(event);\n"
-            + "    } catch (e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + DUMP_EVENT_FUNCTION
             + "</script></head><body onload='test()'>\n"
@@ -237,9 +230,8 @@ public class KeyboardEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object KeyboardEvent]", "keyboard", "false", "false", "false",
-                       "null,,0,true,false,false,false,false,false,456,0"},
-            IE = "exception")
+    @Alerts({"[object KeyboardEvent]", "keyboard", "false", "false", "false",
+             "null,,0,true,false,false,false,false,false,456,0"})
     public void create_ctorSomeDetails() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"
@@ -249,7 +241,7 @@ public class KeyboardEventTest extends WebDriverTestCase {
             + "      var event = new KeyboardEvent('keyboard', "
                              + "{ key: null, code: undefined, ctrlKey: true, charCode: 456 });\n"
             + "      dump(event);\n"
-            + "    } catch (e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + DUMP_EVENT_FUNCTION
             + "</script></head><body onload='test()'>\n"
@@ -262,9 +254,8 @@ public class KeyboardEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object KeyboardEvent]", "keyboard", "false", "false", "false",
-                       ",,0,false,false,false,false,false,false,0,0"},
-            IE = "exception")
+    @Alerts({"[object KeyboardEvent]", "keyboard", "false", "false", "false",
+             ",,0,false,false,false,false,false,false,0,0"})
     public void create_ctorMissingData() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"
@@ -274,7 +265,7 @@ public class KeyboardEventTest extends WebDriverTestCase {
             + "      var event = new KeyboardEvent('keyboard', {\n"
             + "      });\n"
             + "      dump(event);\n"
-            + "    } catch (e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + DUMP_EVENT_FUNCTION
             + "</script></head><body onload='test()'>\n"
@@ -287,9 +278,8 @@ public class KeyboardEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object KeyboardEvent]", "keyboard", "false", "false", "false",
-                       ",,0,false,false,false,false,false,false,0,0"},
-            IE = "exception")
+    @Alerts({"[object KeyboardEvent]", "keyboard", "false", "false", "false",
+             ",,0,false,false,false,false,false,false,0,0"})
     public void create_ctorNullData() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"
@@ -298,7 +288,7 @@ public class KeyboardEventTest extends WebDriverTestCase {
             + "    try {\n"
             + "      var event = new KeyboardEvent('keyboard', null);\n"
             + "      dump(event);\n"
-            + "    } catch (e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + DUMP_EVENT_FUNCTION
             + "</script></head><body onload='test()'>\n"
@@ -311,9 +301,8 @@ public class KeyboardEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object KeyboardEvent]", "keyboard", "false", "false", "false",
-                       ",,0,false,false,false,false,false,false,0,0"},
-            IE = "exception")
+    @Alerts({"[object KeyboardEvent]", "keyboard", "false", "false", "false",
+             ",,0,false,false,false,false,false,false,0,0"})
     public void create_ctorUndefinedData() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"
@@ -322,7 +311,7 @@ public class KeyboardEventTest extends WebDriverTestCase {
             + "    try {\n"
             + "      var event = new KeyboardEvent('keyboard', undefined);\n"
             + "      dump(event);\n"
-            + "    } catch (e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + DUMP_EVENT_FUNCTION
             + "</script></head><body onload='test()'>\n"
@@ -335,9 +324,8 @@ public class KeyboardEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"[object KeyboardEvent]", "keyboard", "false", "false", "false",
-                       ",,0,false,false,false,false,false,false,0,0"},
-            IE = "exception")
+    @Alerts({"[object KeyboardEvent]", "keyboard", "false", "false", "false",
+             ",,0,false,false,false,false,false,false,0,0"})
     public void create_ctorWrongData() throws Exception {
         final String html = HtmlPageTest.STANDARDS_MODE_PREFIX_
             + "<html><head><script>\n"
@@ -348,7 +336,7 @@ public class KeyboardEventTest extends WebDriverTestCase {
             + "        'data': ['Html', 'Unit']\n"
             + "      });\n"
             + "      dump(event);\n"
-            + "    } catch (e) { log('exception') }\n"
+            + "    } catch(e) { logEx(e) }\n"
             + "  }\n"
             + DUMP_EVENT_FUNCTION
             + "</script></head><body onload='test()'>\n"
@@ -382,7 +370,7 @@ public class KeyboardEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"exception", "0-0", "undefined-undefined"})
+    @Alerts({"NotSupportedError/DOMException", "0-0", "undefined-undefined"})
     public void keyCode() throws Exception {
         final String html = "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
@@ -390,15 +378,15 @@ public class KeyboardEventTest extends WebDriverTestCase {
             + "    try {\n"
             + "      var keyEvent = document.createEvent('KeyEvents');\n"
             + "      log(keyEvent.keyCode + '-' + keyEvent.charCode);\n"
-            + "    } catch(e) {log('exception')}\n"
+            + "    } catch(e) {logEx(e)}\n"
             + "    try {\n"
             + "      var keyEvent = document.createEvent('KeyboardEvent');\n"
             + "      log(keyEvent.keyCode + '-' + keyEvent.charCode);\n"
-            + "    } catch(e) {log('exception')}\n"
+            + "    } catch(e) {logEx(e)}\n"
             + "    try {\n"
             + "      var mouseEvent = document.createEvent('MouseEvents');\n"
             + "      log(mouseEvent.keyCode + '-' + mouseEvent.charCode);\n"
-            + "    } catch(e) {log('exception')}\n"
+            + "    } catch(e) {logEx(e)}\n"
             + "  }\n"
             + "</script></head><body onload='test()'>\n"
             + "</body></html>";
@@ -409,7 +397,7 @@ public class KeyboardEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"exception", "exception"})
+    @Alerts({"NotSupportedError/DOMException", "TypeError"})
     public void initKeyEvent() throws Exception {
         final String html = "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
@@ -428,7 +416,7 @@ public class KeyboardEventTest extends WebDriverTestCase {
             + "      keyEvent = document.createEvent('KeyEvents');\n"
             + "      keyEvent.initKeyEvent('keyup', false, false, null, false, false, false, false, 32, 32);\n"
             + "      dumpEvent(keyEvent);\n"
-            + "    } catch(e) {log('exception')}\n"
+            + "    } catch(e) {logEx(e)}\n"
             + "    try {\n"
             + "      var keyEvent = document.createEvent('KeyboardEvent');\n"
             + "      keyEvent.initKeyEvent('keydown', true, true, null, true, true, true, true, 65, 65);\n"
@@ -436,7 +424,7 @@ public class KeyboardEventTest extends WebDriverTestCase {
             + "      keyEvent = document.createEvent('KeyboardEvent');\n"
             + "      keyEvent.initKeyEvent('keyup', false, false, null, false, false, false, false, 32, 32);\n"
             + "      dumpEvent(keyEvent);\n"
-            + "    } catch(e) {log('exception')}\n"
+            + "    } catch(e) {logEx(e)}\n"
             + "  }\n"
             + "</script></head><body onload='test()'>\n"
             + "</body></html>";
@@ -447,27 +435,21 @@ public class KeyboardEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"exception",
+    @Alerts(DEFAULT = {"NotSupportedError/DOMException",
                        "keydown, true, true, , 0, true, true, true, true, 0, 0",
                        "keyup, false, false, , 7, false, false, false, false, 0, 0"},
-            FF = {"exception",
+            FF = {"NotSupportedError/DOMException",
                   "keydown, true, true, Fn, 0, true, true, true, true, 0, 0",
                   "keyup, false, false, , 7, false, false, false, false, 0, 0"},
-            FF_ESR = {"exception",
+            FF_ESR = {"NotSupportedError/DOMException",
                       "keydown, true, true, Fn, 0, true, true, true, true, 0, 0",
-                      "keyup, false, false, , 7, false, false, false, false, 0, 0"},
-            IE = {"exception",
-                  "keydown, true, true, Fn, 0, false, false, false, false, 0, 0",
-                  "keyup, false, false, , 7, false, false, false, false, 0, 0"})
-    @HtmlUnitNYI(CHROME = {"exception",
+                      "keyup, false, false, , 7, false, false, false, false, 0, 0"})
+    @HtmlUnitNYI(CHROME = {"NotSupportedError/DOMException",
                            "keydown, true, true, Fn, 0, true, true, true, true, 0, 0",
                            "keyup, false, false, , 7, false, false, false, false, 0, 0"},
-                 EDGE = {"exception",
+                 EDGE = {"NotSupportedError/DOMException",
                          "keydown, true, true, Fn, 0, true, true, true, true, 0, 0",
-                         "keyup, false, false, , 7, false, false, false, false, 0, 0"},
-                 IE = {"exception",
-                       "keydown, true, true, Fn, 0, true, true, true, true, 0, 0",
-                       "keyup, false, false, , 7, false, false, false, false, 0, 0"})
+                         "keyup, false, false, , 7, false, false, false, false, 0, 0"})
     public void initKeyboardEvent() throws Exception {
         final String html = "<html><head><script>\n"
             + LOG_TITLE_FUNCTION
@@ -486,7 +468,7 @@ public class KeyboardEventTest extends WebDriverTestCase {
             + "      keyEvent = document.createEvent('KeyEvents');\n"
             + "      keyEvent.initKeyboardEvent('keyup', false, false, null, '', 7, false, false, false, false);\n"
             + "      dumpEvent(keyEvent);\n"
-            + "    } catch(e) {log('exception')}\n"
+            + "    } catch(e) {logEx(e)}\n"
             + "    try {\n"
             + "      var keyEvent = document.createEvent('KeyboardEvent');\n"
             + "      keyEvent.initKeyboardEvent('keydown', true, true, null, 'Fn', 0, true, true, true, true);\n"
@@ -494,7 +476,7 @@ public class KeyboardEventTest extends WebDriverTestCase {
             + "      keyEvent = document.createEvent('KeyboardEvent');\n"
             + "      keyEvent.initKeyboardEvent('keyup', false, false, null, '', 7, false, false, false, false);\n"
             + "      dumpEvent(keyEvent);\n"
-            + "    } catch(e) {log('exception')}\n"
+            + "    } catch(e) {logEx(e)}\n"
             + "  }\n"
             + "</script></head><body onload='test()'>\n"
             + "</body></html>";
@@ -505,46 +487,41 @@ public class KeyboardEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("32, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, ")
+    @Alerts({"32", "48", "49", "50", "51", "52", "53", "54", "55", "56", "57"})
     public void keyCodes_keyup() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
-            + "function handleKey(e) {\n"
-            + "  document.getElementById('log').value += e.keyCode + ', ';\n"
-            + "}\n"
+            + LOG_TEXTAREA_FUNCTION
             + "</script>\n"
             + "</head>\n"
             + "<body>\n"
-            + "  <input id='t' onkeyup='handleKey(event)'/>\n"
-            + "  <textarea id='log' rows=40 cols=80></textarea>\n"
+            + "  <input id='t' onkeyup='log(event.keyCode)'/>\n"
+            + LOG_TEXTAREA
             + "</body></html>";
 
         final WebDriver driver = loadPage2(html);
         final WebElement field = driver.findElement(By.id("t"));
 
         field.sendKeys(" 0123456789");
-
-        final String log = driver.findElement(By.id("log")).getAttribute("value");
-        assertEquals(getExpectedAlerts()[0], log);
+        verifyTextArea2(driver, getExpectedAlerts());
     }
 
     /**
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, "
-        + "82, 83, 84, 85, 86, 87, 88, 89, 90, ")
+    @Alerts({"65", "66", "67", "68", "69",
+             "70", "71", "72", "73", "74", "75", "76", "77", "78", "79",
+             "80", "81", "82", "83", "84", "85", "86", "87", "88", "89", "90"})
     public void keyCodes2_keyup() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
-            + "function handleKey(e) {\n"
-            + "  document.getElementById('log').value += e.keyCode + ', ';\n"
-            + "}\n"
+            + LOG_TEXTAREA_FUNCTION
             + "</script>\n"
             + "</head>\n"
             + "<body>\n"
-            + "  <input id='t' onkeyup='handleKey(event)'/>\n"
-            + "  <textarea id='log' rows=40 cols=80></textarea>\n"
+            + "  <input id='t' onkeyup='log(event.keyCode)'/>\n"
+            + LOG_TEXTAREA
             + "</body></html>";
 
         final WebDriver driver = loadPage2(html);
@@ -552,26 +529,23 @@ public class KeyboardEventTest extends WebDriverTestCase {
 
         field.sendKeys("abcdefghijklmnopqrstuvwxyz");
 
-        final String log = driver.findElement(By.id("log")).getAttribute("value");
-        assertEquals(getExpectedAlerts()[0], log);
+        verifyTextArea2(driver, getExpectedAlerts());
     }
 
     /**
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("32, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, ")
+    @Alerts({"32", "48", "49", "50", "51", "52", "53", "54", "55", "56", "57"})
     public void keyCodes_keydown() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
-            + "function handleKey(e) {\n"
-            + "  document.getElementById('log').value += e.keyCode + ', ';\n"
-            + "}\n"
+            + LOG_TEXTAREA_FUNCTION
             + "</script>\n"
             + "</head>\n"
             + "<body>\n"
-            + "  <input id='t' onkeydown='handleKey(event)'/>\n"
-            + "  <textarea id='log' rows=40 cols=80></textarea>\n"
+            + "  <input id='t' onkeydown='log(event.keyCode)'/>\n"
+            + LOG_TEXTAREA
             + "</body></html>";
 
         final WebDriver driver = loadPage2(html);
@@ -579,27 +553,25 @@ public class KeyboardEventTest extends WebDriverTestCase {
 
         field.sendKeys(" 0123456789");
 
-        final String log = driver.findElement(By.id("log")).getAttribute("value");
-        assertEquals(getExpectedAlerts()[0], log);
+        verifyTextArea2(driver, getExpectedAlerts());
     }
 
     /**
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, "
-                + "80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, ")
+    @Alerts({"65", "66", "67", "68", "69",
+             "70", "71", "72", "73", "74", "75", "76", "77", "78", "79",
+             "80", "81", "82", "83", "84", "85", "86", "87", "88", "89", "90"})
     public void keyCodes2_keydown() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
-            + "function handleKey(e) {\n"
-            + "  document.getElementById('log').value += e.keyCode + ', ';\n"
-            + "}\n"
+            + LOG_TEXTAREA_FUNCTION
             + "</script>\n"
             + "</head>\n"
             + "<body>\n"
-            + "  <input id='t' onkeydown='handleKey(event)'/>\n"
-            + "  <textarea id='log' rows=40 cols=80></textarea>\n"
+            + "  <input id='t' onkeydown='log(event.keyCode)'/>\n"
+            + LOG_TEXTAREA
             + "</body></html>";
 
         final WebDriver driver = loadPage2(html);
@@ -607,26 +579,23 @@ public class KeyboardEventTest extends WebDriverTestCase {
 
         field.sendKeys("abcdefghijklmnopqrstuvwxyz");
 
-        final String log = driver.findElement(By.id("log")).getAttribute("value");
-        assertEquals(getExpectedAlerts()[0], log);
+        verifyTextArea2(driver, getExpectedAlerts());
     }
 
     /**
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("32, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, ")
+    @Alerts({"32", "48", "49", "50", "51", "52", "53", "54", "55", "56", "57"})
     public void keyCodes_keypress() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
-            + "function handleKey(e) {\n"
-            + "  document.getElementById('log').value += e.charCode + ', ';\n"
-            + "}\n"
+            + LOG_TEXTAREA_FUNCTION
             + "</script>\n"
             + "</head>\n"
             + "<body>\n"
-            + "  <input id='t' onkeypress='handleKey(event)'/>\n"
-            + "  <textarea id='log' rows=40 cols=80></textarea>\n"
+            + "  <input id='t' onkeypress='log(event.charCode)'/>\n"
+            + LOG_TEXTAREA
             + "</body></html>";
 
         final WebDriver driver = loadPage2(html);
@@ -634,29 +603,26 @@ public class KeyboardEventTest extends WebDriverTestCase {
 
         field.sendKeys(" 0123456789");
 
-        final String log = driver.findElement(By.id("log")).getAttribute("value");
-        assertEquals(getExpectedAlerts()[0], log);
+        verifyTextArea2(driver, getExpectedAlerts());
     }
 
     /**
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts("97, 98, 99, "
-            + "100, 101, 102, 103, 104, 105, 106, 107, 108, 109, "
-            + "110, 111, 112, 113, 114, 115, 116, 117, 118, 119, "
-            + "120, 121, 122, ")
+    @Alerts({"97", "98", "99",
+             "100", "101", "102", "103", "104", "105", "106", "107", "108", "109",
+             "110", "111", "112", "113", "114", "115", "116", "117", "118", "119",
+             "120", "121", "122"})
     public void keyCodes2_keypress() throws Exception {
         final String html = "<html><head>\n"
             + "<script>\n"
-            + "function handleKey(e) {\n"
-            + "  document.getElementById('log').value += e.charCode + ', ';\n"
-            + "}\n"
+            + LOG_TEXTAREA_FUNCTION
             + "</script>\n"
             + "</head>\n"
             + "<body>\n"
-            + "  <input id='t' onkeypress='handleKey(event)'/>\n"
-            + "  <textarea id='log' rows=40 cols=80></textarea>\n"
+            + "  <input id='t' onkeypress='log(event.charCode)'/>\n"
+            + LOG_TEXTAREA
             + "</body></html>";
 
         final WebDriver driver = loadPage2(html);
@@ -664,8 +630,7 @@ public class KeyboardEventTest extends WebDriverTestCase {
 
         field.sendKeys("abcdefghijklmnopqrstuvwxyz");
 
-        final String log = driver.findElement(By.id("log")).getAttribute("value");
-        assertEquals(getExpectedAlerts()[0], log);
+        verifyTextArea2(driver, getExpectedAlerts());
     }
 
     /**
@@ -702,34 +667,20 @@ public class KeyboardEventTest extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"keydown:16,0,16,Shift,undefined,ShiftLeft,true",
-                       "keydown:65,0,65,A,undefined,KeyA,true",
-                       "keypress:65,65,65,A,undefined,KeyA,true",
-                       "keyup:65,0,65,A,undefined,KeyA,true",
-                       "keyup:16,0,16,Shift,undefined,ShiftLeft,false",
-                       "keydown:65,0,65,a,undefined,KeyA,false",
-                       "keypress:97,97,97,a,undefined,KeyA,false",
-                       "keyup:65,0,65,a,undefined,KeyA,false",
-                       "keydown:190,0,190,.,undefined,Period,false",
-                       "keypress:46,46,46,.,undefined,Period,false",
-                       "keyup:190,0,190,.,undefined,Period,false",
-                       "keydown:13,0,13,Enter,undefined,Enter,false",
-                       "keypress:13,13,13,Enter,undefined,Enter,false",
-                       "keyup:13,0,13,Enter,undefined,Enter,false"},
-            IE = {"keydown:16,0,16,Shift,,undefined,true",
-                  "keydown:65,0,65,A,A,undefined,true",
-                  "keypress:65,65,65,A,A,undefined,true",
-                  "keyup:65,0,65,A,A,undefined,true",
-                  "keyup:16,0,16,Shift,,undefined,false",
-                  "keydown:65,0,65,a,a,undefined,false",
-                  "keypress:97,97,97,a,a,undefined,false",
-                  "keyup:65,0,65,a,a,undefined,false",
-                  "keydown:190,0,190,.,.,undefined,false",
-                  "keypress:46,46,46,.,.,undefined,false",
-                  "keyup:190,0,190,.,.,undefined,false",
-                  "keydown:13,0,13,Enter,\\n,undefined,false",
-                  "keypress:13,13,13,Enter,\\n,undefined,false",
-                  "keyup:13,0,13,Enter,\\n,undefined,false"})
+    @Alerts({"keydown:16,0,16,Shift,undefined,ShiftLeft,true",
+             "keydown:65,0,65,A,undefined,KeyA,true",
+             "keypress:65,65,65,A,undefined,KeyA,true",
+             "keyup:65,0,65,A,undefined,KeyA,true",
+             "keyup:16,0,16,Shift,undefined,ShiftLeft,false",
+             "keydown:65,0,65,a,undefined,KeyA,false",
+             "keypress:97,97,97,a,undefined,KeyA,false",
+             "keyup:65,0,65,a,undefined,KeyA,false",
+             "keydown:190,0,190,.,undefined,Period,false",
+             "keypress:46,46,46,.,undefined,Period,false",
+             "keyup:190,0,190,.,undefined,Period,false",
+             "keydown:13,0,13,Enter,undefined,Enter,false",
+             "keypress:13,13,13,Enter,undefined,Enter,false",
+             "keyup:13,0,13,Enter,undefined,Enter,false"})
     // https://github.com/SeleniumHQ/selenium/issues/2531
     @BuggyWebDriver(CHROME = {"keydown:16,0,16,Shift,undefined,ShiftLeft,false",
                               "keydown:65,0,65,A,undefined,KeyA,true",
@@ -782,46 +733,32 @@ public class KeyboardEventTest extends WebDriverTestCase {
                           "keyup:190,0,190,.,undefined,Period,false",
                           "keydown:13,0,13,Enter,undefined,Enter,false",
                           "keypress:13,13,13,Enter,undefined,Enter,false",
-                          "keyup:13,0,13,Enter,undefined,Enter,false"},
-                    IE = {"keydown:16,0,16,Shift,,undefined,false",
-                          "keydown:65,0,65,A,A,undefined,false",
-                          "keypress:65,65,65,A,A,undefined,false",
-                          "keyup:65,0,65,a,a,undefined,false",
-                          "keyup:16,0,16,Shift,,undefined,false",
-                          "keydown:65,0,65,a,a,undefined,false",
-                          "keypress:97,97,97,a,a,undefined,false",
-                          "keyup:65,0,65,a,a,undefined,false",
-                          "keydown:190,0,190,.,.,undefined,false",
-                          "keypress:46,46,46,.,.,undefined,false",
-                          "keyup:190,0,190,.,.,undefined,false",
-                          "keydown:13,0,13,Enter,\\n,undefined,false",
-                          "keypress:13,13,13,\\r,\\r,undefined,false",
-                          "keyup:13,0,13,Enter,\\n,undefined,false"})
+                          "keyup:13,0,13,Enter,undefined,Enter,false"})
     public void which() throws Exception {
         final String html
             = "<html><head></head><body>\n"
             + "<input type='text' id='keyId'>\n"
             + "<script>\n"
+            + LOG_TEXTAREA_FUNCTION
             + "function handler(e) {\n"
             + "  e = e ? e : window.event;\n"
-            + "  var log = e.type + ':' + e.keyCode + ',' + e.charCode + ',' + e.which + ',' "
+            + "  var msg = e.type + ':' + e.keyCode + ',' + e.charCode + ',' + e.which + ',' "
                             + "+ e.key + ',' + e.char + ',' + e.code + ',' + e.shiftKey;\n"
-            + "  log = log.replace(/\\r/g, '\\\\r');\n"
-            + "  log = log.replace(/\\n/g, '\\\\n');\n"
-            + "  document.getElementById('myTextarea').value += log + '\\n';"
+            + "  msg = msg.replace(/\\r/g, '\\\\r');\n"
+            + "  msg = msg.replace(/\\n/g, '\\\\n');\n"
+            + "  log(msg);"
             + "}\n"
             + "document.getElementById('keyId').onkeyup = handler;\n"
             + "document.getElementById('keyId').onkeydown = handler;\n"
             + "document.getElementById('keyId').onkeypress = handler;\n"
             + "</script>\n"
-            + "<textarea id='myTextarea' cols=80 rows=20></textarea>\n"
+            + LOG_TEXTAREA
             + "</body></html>";
 
         final String keysToSend = "Aa." + Keys.RETURN;
         final WebDriver driver = loadPage2(html);
         driver.findElement(By.id("keyId")).sendKeys(keysToSend);
 
-        final String[] actual = driver.findElement(By.id("myTextarea")).getAttribute("value").split("\n");
-        assertEquals(Arrays.asList(getExpectedAlerts()).toString(), Arrays.asList(actual).toString());
+        verifyTextArea2(driver, getExpectedAlerts());
     }
 }

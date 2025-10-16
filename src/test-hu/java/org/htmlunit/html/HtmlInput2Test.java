@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2024 Gargoyle Software Inc.
+ * Copyright (c) 2002-2025 Gargoyle Software Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,8 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.htmlunit.WebDriverTestCase;
 import org.htmlunit.junit.BrowserRunner;
-import org.htmlunit.junit.BrowserRunner.Alerts;
-import org.htmlunit.junit.BrowserRunner.BuggyWebDriver;
+import org.htmlunit.junit.annotation.Alerts;
+import org.htmlunit.junit.annotation.BuggyWebDriver;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
@@ -42,7 +42,7 @@ public final class HtmlInput2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts({"null", "error", "handler", "null", "error"})
+    @Alerts({"null", "TypeError", "handler", "null", "TypeError"})
     public void onchangeDirectCall() throws Exception {
         final String html =
             "<html><head>\n"
@@ -55,7 +55,7 @@ public final class HtmlInput2Test extends WebDriverTestCase {
             + "      log(elem.onchange);\n"
             + "      elem.onchange();\n"
             + "      log('onchange called');\n"
-            + "    } catch (e) {log('error')}\n"
+            + "    } catch(e) {logEx(e)}\n"
 
             + "    elem.onchange = handler;\n"
             + "    elem.onchange();\n"
@@ -65,7 +65,7 @@ public final class HtmlInput2Test extends WebDriverTestCase {
             + "      log(elem.onchange);\n"
             + "      elem.onchange();\n"
             + "      log('onchange called');\n"
-            + "    } catch (e) {log('error')}\n"
+            + "    } catch(e) {logEx(e)}\n"
 
             + "  }\n"
             + "</script>\n"
@@ -130,8 +130,7 @@ public final class HtmlInput2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"mousedown; onfocus; mouseup; onclick; onchange;", ""},
-            IE = {"mousedown; onfocus; mouseup; onchange; onclick;", ""})
+    @Alerts({"mousedown; onfocus; mouseup; onclick; onchange;", ""})
     public void clickCheckboxEventSequence() throws Exception {
         testClickEventSequence("<input type='checkbox' id='" + TEST_ID + "'>Check", false);
     }
@@ -153,8 +152,7 @@ public final class HtmlInput2Test extends WebDriverTestCase {
      * @throws Exception if the test fails
      */
     @Test
-    @Alerts(DEFAULT = {"mousedown; onfocus; mouseup; onclick; onchange;", ""},
-            IE = {"mousedown; onfocus; mouseup; onchange; onclick;", ""})
+    @Alerts({"mousedown; onfocus; mouseup; onclick; onchange;", ""})
     public void clickRadioEventSequence() throws Exception {
         testClickEventSequence("<input type='radio' name='test' id='" + TEST_ID + "'>Check", false);
     }
@@ -191,8 +189,7 @@ public final class HtmlInput2Test extends WebDriverTestCase {
     @BuggyWebDriver(CHROME = {"onfocus; onchange; mouseup; onclick;", ""},
                     EDGE = {"onfocus; onchange; mouseup; onclick;", ""},
                     FF = {"mousedown; onfocus; onchange; mouseup; onclick;", ""},
-                    FF_ESR = {"mousedown; onfocus; onchange; mouseup; onclick;", ""},
-                    IE = {"mousedown; onchange; mouseup; onclick; onfocus;", ""})
+                    FF_ESR = {"mousedown; onfocus; onchange; mouseup; onclick;", ""})
     public void clickOptionEventSequence() throws Exception {
         testClickEventSequence("<select size='2'><option id='" + TEST_ID + "'>1</option></select>", false);
     }
@@ -228,12 +225,12 @@ public final class HtmlInput2Test extends WebDriverTestCase {
         final WebElement log = driver.findElement(By.id("log_"));
 
         driver.findElement(By.id(TEST_ID)).click();
-        alerts.add(log.getAttribute("value").trim());
+        alerts.add(log.getDomProperty("value").trim());
 
         log.clear();
         driver.findElement(By.id("next")).click();
 
-        alerts.add(log.getAttribute("value").trim());
+        alerts.add(log.getDomProperty("value").trim());
         assertEquals(getExpectedAlerts(), alerts);
     }
 
