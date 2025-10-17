@@ -437,7 +437,7 @@
         (function setupBackToTopHandler() {
             $('nav').click( function(event) {
                 $.scrollTo(0, 250, {easing:'swing'});
-                // if there is an anchor remove it from the hash 
+                // if there is an anchor remove it from the hash
                 if(window.location.hash != '')
                 {
                     var newHashObj = splitHash(window.location.hash);
@@ -564,34 +564,29 @@
             });
         })();
 
-        // lazy load the echart images to speed up the site
-        (function setupEChartGroups() {
+        // creates the echarts but defers their full setup
+        (function setupECharts() {
             $('div.charts div.echart').each(function () {
-                var name = this.getAttribute('name');
-                var url = this.getAttribute('src');
+                // Loads the chart data and completes the echart setup.
+                function setUpEChart(echart, name, url) {
+                    $.getJSON({
+                        url: url,
+                        data: null,
+                        beforeSend: function (xhr) {
+                            // avoid errors in browser console (XML Parsing Error: syntax error) when loading from file system
+                            xhr.overrideMimeType("application/json");
+                        },
+                        success: function (data) {
+                            echart.hideLoading();
 
-                var echart = echarts.init(this);
-                echart.showLoading();
+                            // create time series data
+                            var dataMean = data.map(item => [item[0], item[1]]);                    // timestamp and mean value
+                            var dataMinimum = data.map(item => [item[0], item[2]]);                 // timestamp and min value
+                            var dataMaximum = data.map(item => [item[0], item[3]]);                 // timestamp and max value
+                            var dataMaxMinDiff = data.map(item => [item[0], item[3] - item[2]]);    // timestamp and diff value
 
-                $.getJSON({
-                    url: url,
-                    data: null,
-                    beforeSend: function (xhr) {
-                        // avoid errors in browser console (XML Parsing Error: syntax error) when loading from file system
-                        xhr.overrideMimeType("application/json");
-                    },
-                    success: function (data) {
-                        echart.hideLoading();
-
-                        // create time series data
-                        var dataMean = data.map(item => [item[0], item[1]]);                    // timestamp and mean value
-                        var dataMinimum = data.map(item => [item[0], item[2]]);                 // timestamp and min value
-                        var dataMaximum = data.map(item => [item[0], item[3]]);                 // timestamp and max value
-                        var dataMaxMinDiff = data.map(item => [item[0], item[3] - item[2]]);    // timestamp and diff value
-
-                        // set up the chart
-                        echart.setOption(
-                            (option = {
+                            // set up the chart
+                            echart.setOption({
                                 animation: false,
                                 backgroundColor: "#fafafa",
                                 grid: {
@@ -795,17 +790,26 @@
                                         },
                                     },
                                 ]
-                            })
-                        );
+                            });
 
-                        // put the echart in zoom mode right from the start
-                        echart.dispatchAction({
-                            type: "takeGlobalCursor",
-                            key: "dataZoomSelect",
-                            dataZoomSelectActive: true
-                        });
-                    }
-                });
+                            // put the echart in zoom mode right from the start
+                            echart.dispatchAction({
+                                type: "takeGlobalCursor",
+                                key: "dataZoomSelect",
+                                dataZoomSelectActive: true
+                            });
+                        }
+                    });
+                }
+
+                // create an initially empty echart
+                var echart = echarts.init(this);
+                echart.showLoading();
+
+                // start a task to set the echart up asynchronously in the background
+                var name = this.getAttribute('name');
+                var url = this.getAttribute('src');
+                setTimeout(() => setUpEChart(echart, name, url), 10);
             });
         })();
 
