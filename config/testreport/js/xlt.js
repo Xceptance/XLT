@@ -590,7 +590,7 @@
                                 animation: false,
                                 backgroundColor: "#fafafa",
                                 grid: {
-                                    left: 64,
+                                    left: 68,
                                     right: 12,
                                     top: 32,
                                     bottom: 50,
@@ -621,7 +621,6 @@
                                             icon: {
                                                 // https://github.com/apache/echarts/issues/13397#issuecomment-814864873
                                                 zoom: "path://", // hack to remove zoom button
-                                                // back: "path://"  // hack to remove restore button
                                             },
                                             brushStyle: {
                                                 color: '#a00',
@@ -637,15 +636,6 @@
                                         type: 'cross',
                                         animation: false,
                                         snap: true,
-                                        // label: {
-                                        //     backgroundColor: '#ccc',
-                                        //     borderColor: '#aaa',
-                                        //     borderWidth: 1,
-                                        //     shadowBlur: 0,
-                                        //     shadowOffsetX: 0,
-                                        //     shadowOffsetY: 0,
-                                        //     color: '#222'
-                                        // },
                                         lineStyle: {
                                             color: '#888',
                                             type: 'solid',
@@ -661,20 +651,6 @@
                                         fontSize: 11
                                     }
                                 },
-                                // legend: {
-                                //     type: "scroll",
-                                //     top: "bottom",
-                                //     left: 16,
-                                //     right: 16,
-                                //     icon: "rect",
-                                //     itemWidth: 10,
-                                //     itemHeight: 3,
-                                //     itemGap: 12,
-                                //     textStyle: {
-                                //         fontSize: 10
-                                //     },
-                                //     selectedMode: "multiple"
-                                // },
                                 useUTC: true,
                                 xAxis: {
                                     type: "time",
@@ -730,18 +706,6 @@
                                 },
                                 series: [
                                     {
-                                        name: 'Mean',
-                                        type: 'line',
-                                        data: dataMean,
-                                        lineStyle: {
-                                            width: 1
-                                        },
-                                        itemStyle: {
-                                            color: '#00c'
-                                        },
-                                        showSymbol: false
-                                    },
-                                    {
                                         name: 'Maximum',
                                         type: 'line',
                                         data: dataMaximum,
@@ -753,6 +717,18 @@
                                             color: '#a00'
                                         },
                                         symbol: 'none',
+                                    },
+                                    {
+                                        name: 'Mean',
+                                        type: 'line',
+                                        data: dataMean,
+                                        lineStyle: {
+                                            width: 1
+                                        },
+                                        itemStyle: {
+                                            color: '#00c'
+                                        },
+                                        showSymbol: false
                                     },
                                     {
                                         name: 'Minimum',

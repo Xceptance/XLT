@@ -43,14 +43,14 @@
         <link rel="icon" href="images/favicon.svg" type="image/svg+xml" />
         
         <style type="text/css">
-            .chart-group .chart img {
+            .chart-group .chart img, .chart-group .echart {
                 width: <xsl:value-of select="configuration/chartWidth" />px;
                 height: <xsl:value-of select="configuration/chartHeight" />px;
             }
-            #transaction-summary .chart-group .overview .chart img {
+            #transaction-summary .chart-group .overview .chart img, #transaction-summary .chart-group .overview .echart {
                 height: <xsl:value-of select="configuration/chartHeight * 1.5" />px;
             }
-            #agents .chart-group .memory .chart img {
+            #agents .chart-group .memory .chart img, #agents .chart-group .memory .echart {
                 height: <xsl:value-of select="configuration/chartHeight * 2.3" />px;
             }
         </style>

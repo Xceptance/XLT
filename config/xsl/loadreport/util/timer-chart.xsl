@@ -70,11 +70,11 @@
                 </div>
             </div>
 
-            <div id="DynamicOverview-{$gid}" class="c-tab">
-                <div class="c-tab-content echart" style="width:900px;height:300px">
-					<xsl:attribute name="src">charts/<xsl:value-of select="$directory"/>/<xsl:value-of
-							select="$encodedName"/>.json</xsl:attribute>
-					<xsl:attribute name="name"><xsl:value-of select="name"/></xsl:attribute>
+            <div id="DynamicOverview-{$gid}" class="c-tab overview">
+                <div class="c-tab-content echart">
+                    <xsl:attribute name="src">charts/<xsl:value-of select="$directory"/>/<xsl:value-of
+                        select="$encodedName"/>.json</xsl:attribute>
+                    <xsl:attribute name="name"><xsl:value-of select="name"/></xsl:attribute>
                 </div>
             </div>
 
