@@ -498,7 +498,7 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
 
         try
         {
-            Files.writeString(jsonFile.toPath(), sb, StandardCharsets.US_ASCII);
+            Files.writeString(jsonFile.toPath(), sb, StandardCharsets.UTF_8);
         }
         catch (final IOException e)
         {
