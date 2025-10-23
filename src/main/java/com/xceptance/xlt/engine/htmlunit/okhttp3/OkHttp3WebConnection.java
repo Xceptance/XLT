@@ -52,7 +52,6 @@ import com.xceptance.xlt.api.util.XltException;
 import com.xceptance.xlt.engine.dns.XltDnsResolver;
 import com.xceptance.xlt.engine.htmlunit.AbstractWebConnection;
 
-import okhttp3.Authenticator;
 import okhttp3.ConnectionPool;
 import okhttp3.Dispatcher;
 import okhttp3.Headers;
@@ -84,7 +83,7 @@ public class OkHttp3WebConnection extends AbstractWebConnection<OkHttpClient, Re
 
     private static final SSLSocketFactory INSECURE_SSL_SOCKET_FACTORY = createInsecureSslSocketFactory();
 
-    private final AuthenticationCache authenticationCache;
+    private AuthenticatorImpl authenticator;
 
     private final ConnectionPool connectionPool;
 
@@ -113,7 +112,7 @@ public class OkHttp3WebConnection extends AbstractWebConnection<OkHttpClient, Re
 
         this.collectTargetIpAddress = collectTargetIpAddress;
 
-        authenticationCache = new AuthenticationCache();
+        authenticator = new AuthenticatorImpl(webClient.getCredentialsProvider());
         connectionPool = new ConnectionPool(6, 60, TimeUnit.SECONDS);
         dns = new DnsImpl(new XltDnsResolver());
         protocols = http2Enabled ? HTTP_2_AND_1_1 : HTTP_1_1_ONLY;
@@ -126,7 +125,6 @@ public class OkHttp3WebConnection extends AbstractWebConnection<OkHttpClient, Re
     protected OkHttpClient createHttpClient(final WebClient webClient, final WebRequest webRequest) throws Exception
     {
         final WebClientOptions webClientOptions = webClient.getOptions();
-        final Authenticator authenticator = new AuthenticatorImpl(webClient.getCredentialsProvider());
 
         final Builder httpClientBuilder = new OkHttpClient.Builder();
 
@@ -178,7 +176,7 @@ public class OkHttp3WebConnection extends AbstractWebConnection<OkHttpClient, Re
         }
 
         // interceptors
-        httpClientBuilder.addNetworkInterceptor(new AuthorizationHeaderInterceptor(authenticationCache));
+        httpClientBuilder.addNetworkInterceptor(new AuthorizationHeaderInterceptor(authenticator));
         httpClientBuilder.addNetworkInterceptor(new RetrieveFinalRequestHeadersInterceptor(webRequest));
 
         if (collectTargetIpAddress)

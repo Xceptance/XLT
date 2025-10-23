@@ -17,6 +17,8 @@ package com.xceptance.xlt.engine.htmlunit.okhttp3;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.Nullable;
 
@@ -25,6 +27,7 @@ import org.apache.http.auth.Credentials;
 import org.apache.http.client.CredentialsProvider;
 
 import com.xceptance.xlt.engine.httprequest.HttpRequestHeaders;
+import com.xceptance.xlt.engine.httprequest.HttpResponseHeaders;
 
 import okhttp3.Authenticator;
 import okhttp3.Challenge;
@@ -35,11 +38,51 @@ import okhttp3.Route;
 
 /**
  * An OkHttp {@link Authenticator} that is backed by HtmlUnit's credentials provider.
+ *
+ * @see AuthorizationHeaderInterceptor
  */
 class AuthenticatorImpl implements Authenticator
 {
+    /**
+     * The result of an authentication attempt ready to be stored in the authentication cache.
+     */
+    static class AuthResult
+    {
+        /**
+         * The scope for which the authentication was originally performed.
+         */
+        public final AuthScope authScope;
+
+        /**
+         * The authorization request header value.
+         */
+        public final String headerValue;
+
+        public AuthResult(final AuthScope authScope, final String headerValue)
+        {
+            this.authScope = authScope;
+            this.headerValue = headerValue;
+        }
+    }
+
+    /**
+     * A simple cache that stores authorization request header values (such as "Basic MTox") by the target host/port
+     * (such as "localhost:8443"). The cache will be used for preemptive authentication of all following requests in the
+     * current session for both origin servers and HTTP proxies.
+     */
+    private final Map<String, AuthResult> authenticationCache = new ConcurrentHashMap<>();
+
+    /**
+     * HtmlUnit's credentials provider.
+     */
     private final CredentialsProvider credentialsProvider;
 
+    /**
+     * Constructor.
+     * 
+     * @param credentialsProvider
+     *            the underlying credentials provider to use
+     */
     public AuthenticatorImpl(final CredentialsProvider credentialsProvider)
     {
         this.credentialsProvider = credentialsProvider;
@@ -65,27 +108,15 @@ class AuthenticatorImpl implements Authenticator
         // check each provided challenge
         for (final Challenge challenge : response.challenges())
         {
-            // a special scheme that OkHttp uses for preemptive HTTPS proxy authentication
+            // preemptive basic authentication for HTTPS proxies using a special scheme
             if (challenge.scheme().equalsIgnoreCase("OkHttp-Preemptive"))
             {
-                final AuthScope authScope = createAuthScope(challenge, route, true);
-
-                final Credentials credentials = credentialsProvider.getCredentials(authScope);
-                if (credentials != null)
-                {
-                    return createBasicAuthRequest(credentials, response, true);
-                }
+                return createBasicAuthRequest(challenge, route, response.request(), true, false);
             }
-            // basic authentication for origin servers and HTTP proxies
+            // reactive basic authentication for origin servers and HTTP proxies
             else if (challenge.scheme().equalsIgnoreCase("Basic"))
             {
-                final AuthScope authScope = createAuthScope(challenge, route, isProxyAuth);
-
-                final Credentials credentials = credentialsProvider.getCredentials(authScope);
-                if (credentials != null)
-                {
-                    return createBasicAuthRequest(credentials, response, isProxyAuth);
-                }
+                return createBasicAuthRequest(challenge, route, response.request(), isProxyAuth, true);
             }
             else
             {
@@ -97,6 +128,17 @@ class AuthenticatorImpl implements Authenticator
         return null;
     }
 
+    /**
+     * Creates an authentication scope that matches the passed parameters.
+     * 
+     * @param challenge
+     *            the authentication challenge
+     * @param route
+     *            the route
+     * @param isProxyAuth
+     *            whether the challenge is for proxy server authentication (instead of origin server authentication)
+     * @return the authentication scope
+     */
     private AuthScope createAuthScope(final Challenge challenge, @Nullable final Route route, final boolean isProxyAuth)
     {
         final String host;
@@ -123,11 +165,137 @@ class AuthenticatorImpl implements Authenticator
         return new AuthScope(host, port, challenge.realm(), challenge.scheme());
     }
 
-    private Request createBasicAuthRequest(final Credentials credentials, final Response response, final boolean isProxyAuth)
+    /**
+     * Creates a {@link Request} object with the authorization header set that can be used to retry the original
+     * request.
+     * 
+     * @param challenge
+     *            the authentication challenge
+     * @param route
+     *            the route
+     * @param request
+     *            the original request
+     * @param isProxyAuth
+     *            whether the request is for proxy server authentication (instead of origin server authentication)
+     * @param cacheAuthHeaderValue
+     *            whether to cache the authentication result (not wanted for preemptive HTTPS proxy authentication)
+     * @return a copy of the passed request with the authorization header set, or <code>null</code> if no matching
+     *         credentials could be found
+     */
+    private @Nullable Request createBasicAuthRequest(final Challenge challenge, final Route route, final Request request,
+                                                     final boolean isProxyAuth, final boolean cacheAuthHeaderValue)
     {
-        final String basicAuthHeaderName = isProxyAuth ? HttpRequestHeaders.PROXY_AUTHORIZATION : HttpRequestHeaders.AUTHORIZATION;
-        final String basicAuthHeaderValue = okhttp3.Credentials.basic(credentials.getUserPrincipal().getName(), credentials.getPassword());
+        final AuthScope authScope = createAuthScope(challenge, route, isProxyAuth);
 
-        return response.request().newBuilder().header(basicAuthHeaderName, basicAuthHeaderValue).build();
+        final Credentials credentials = credentialsProvider.getCredentials(authScope);
+        if (credentials != null)
+        {
+            final String basicAuthHeaderName = isProxyAuth ? HttpRequestHeaders.PROXY_AUTHORIZATION : HttpRequestHeaders.AUTHORIZATION;
+            final String basicAuthHeaderValue = okhttp3.Credentials.basic(credentials.getUserPrincipal().getName(),
+                                                                          credentials.getPassword());
+
+            // optionally cache the authentication result for later use in subsequent requests
+            if (cacheAuthHeaderValue)
+            {
+                final String cacheKey = isProxyAuth ? getCacheKey(route) : getCacheKey(request);
+                authenticationCache.put(cacheKey, new AuthResult(authScope, basicAuthHeaderValue));
+            }
+
+            // create a new request with the authorization header set
+            return request.newBuilder().header(basicAuthHeaderName, basicAuthHeaderValue).build();
+        }
+
+        return null;
+    }
+
+    /**
+     * Returns the cached authorization header value for the given {@link Request} object.
+     *
+     * @param request
+     *            the request
+     * @return the header value or <code>null</code> if nothing was found in the cache
+     */
+    String getCachedAuthHeaderValue(final Request request)
+    {
+        return getCachedAuthHeaderValue(getCacheKey(request));
+    }
+
+    /**
+     * Returns the cached authorization header value for the given {@link Route} object.
+     *
+     * @param route
+     *            the route
+     * @return the header value or <code>null</code> if nothing was found in the cache
+     */
+    String getCachedAuthHeaderValue(final Route route)
+    {
+        return getCachedAuthHeaderValue(getCacheKey(route));
+    }
+
+    /**
+     * Returns the cached authorization header value for the given host and port cache key.
+     *
+     * @param hostAndPort
+     *            the cache key
+     * @return the header value or <code>null</code> if nothing was found in the cache
+     */
+    private String getCachedAuthHeaderValue(final String hostAndPort)
+    {
+        final AuthResult authResult = authenticationCache.get(hostAndPort);
+        if (authResult == null)
+        {
+            // nothing found in the cache
+            return null;
+        }
+
+        // revalidate that the credentials provider still has credentials for the originally used auth scope
+        final Credentials credentials = credentialsProvider.getCredentials(authResult.authScope);
+        if (credentials == null)
+        {
+            // credentials have been deleted -> remove the auth result
+            authenticationCache.remove(hostAndPort);
+            return null;
+        }
+
+        // return the cached header value
+        return authResult.headerValue;
+    }
+
+    /**
+     * Derives the correct authentication cache key from the passed {@link Request} object.
+     *
+     * @param request
+     *            the request
+     * @return the matching cache key for the authentication cache
+     */
+    private static String getCacheKey(final Request request)
+    {
+        return getCacheKey(request.url().host(), request.url().port());
+    }
+
+    /**
+     * Derives the correct authentication cache key from the passed {@link Route} object.
+     *
+     * @param route
+     *            the route
+     * @return the matching cache key for the authentication cache
+     */
+    private static String getCacheKey(final Route route)
+    {
+        return getCacheKey(route.socketAddress().getHostString(), route.socketAddress().getPort());
+    }
+
+    /**
+     * Builds the authentication cache key from the passed host and port.
+     *
+     * @param host
+     *            the host
+     * @param port
+     *            the port
+     * @return the cache key for the authentication cache
+     */
+    private static String getCacheKey(final String host, final int port)
+    {
+        return host + ":" + port;
     }
 }
