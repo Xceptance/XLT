@@ -13,6 +13,10 @@
 
         <xsl:variable name="gid" select="generate-id(.)"/>
 
+        <xsl:variable name="dynamicChartsEnabled">
+            <xsl:value-of select="/testreport/configuration/reportGeneratorConfiguration/dynamicChartsEnabled"/>
+        </xsl:variable>
+
         <a>
             <xsl:attribute name="id"><xsl:value-of select="name"/></xsl:attribute>
             <xsl:comment>
@@ -26,9 +30,11 @@
                 <li class="c-tabs-nav-link c-is-active">
                     <a href="#Overview-{$gid}">Overview</a>
                 </li>
-                <li class="c-tabs-nav-link">
-                    <a href="#DynamicOverview-{$gid}">Dynamic Overview</a>
-                </li>
+                <xsl:if test="$dynamicChartsEnabled = 'true'">
+                    <li class="c-tabs-nav-link">
+                        <a href="#DynamicOverview-{$gid}">Dynamic Overview</a>
+                    </li>
+                </xsl:if>
                 <li class="c-tabs-nav-link">
                     <a href="#Averages-{$gid}">Averages</a>
                 </li>
@@ -70,13 +76,15 @@
                 </div>
             </div>
 
-            <div id="DynamicOverview-{$gid}" class="c-tab overview">
-                <div class="c-tab-content echart">
-                    <xsl:attribute name="src">charts/<xsl:value-of select="$directory"/>/<xsl:value-of
-                        select="$encodedName"/>.json</xsl:attribute>
-                    <xsl:attribute name="name"><xsl:value-of select="name"/></xsl:attribute>
+            <xsl:if test="$dynamicChartsEnabled = 'true'">
+                <div id="DynamicOverview-{$gid}" class="c-tab overview">
+                    <div class="c-tab-content echart">
+                        <xsl:attribute name="src">charts/<xsl:value-of select="$directory"/>/<xsl:value-of
+                            select="$encodedName"/>.json</xsl:attribute>
+                        <xsl:attribute name="name"><xsl:value-of select="name"/></xsl:attribute>
+                    </div>
                 </div>
-            </div>
+            </xsl:if>
 
             <div id="Averages-{$gid}" class="c-tab">
                 <div class="c-tab-content chart">

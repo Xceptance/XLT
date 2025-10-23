@@ -191,7 +191,10 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
                 }
             });
 
-            taskManager.addTask(() -> saveResponseTimeSeriesAsJson(name, runTimeTimeSeries));
+            if (((ReportGeneratorConfiguration) getConfiguration()).dynamicChartsEnabled())
+            {
+                taskManager.addTask(() -> saveResponseTimeSeriesAsJson(name, runTimeTimeSeries));
+            }
         }
 
         return timerReport;
