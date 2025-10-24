@@ -27,7 +27,6 @@ import org.apache.http.auth.Credentials;
 import org.apache.http.client.CredentialsProvider;
 
 import com.xceptance.xlt.engine.httprequest.HttpRequestHeaders;
-import com.xceptance.xlt.engine.httprequest.HttpResponseHeaders;
 
 import okhttp3.Authenticator;
 import okhttp3.Challenge;
@@ -45,24 +44,14 @@ class AuthenticatorImpl implements Authenticator
 {
     /**
      * The result of an authentication attempt ready to be stored in the authentication cache.
+     * 
+     * @param authScope
+     *            the scope for which the authentication was originally performed
+     * @param headerValue
+     *            the authorization request header value
      */
-    static class AuthResult
+    static record AuthResult(AuthScope authScope, String headerValue)
     {
-        /**
-         * The scope for which the authentication was originally performed.
-         */
-        public final AuthScope authScope;
-
-        /**
-         * The authorization request header value.
-         */
-        public final String headerValue;
-
-        public AuthResult(final AuthScope authScope, final String headerValue)
-        {
-            this.authScope = authScope;
-            this.headerValue = headerValue;
-        }
     }
 
     /**
@@ -96,10 +85,10 @@ class AuthenticatorImpl implements Authenticator
     {
         // whether to authenticate with a proxy or an origin server
         final boolean isProxyAuth = response.code() == 407; // must be 401 otherwise
+        final String authHeaderName = getAuthHeaderName(isProxyAuth);
 
         // check if a previous (proxy) authentication attempt failed
-        if (!isProxyAuth && response.request().header(HttpRequestHeaders.AUTHORIZATION) != null
-            || isProxyAuth && response.request().header(HttpRequestHeaders.PROXY_AUTHORIZATION) != null)
+        if (response.request().header(authHeaderName) != null)
         {
             // give up, we've already failed to authenticate
             return null;
@@ -108,7 +97,7 @@ class AuthenticatorImpl implements Authenticator
         // check each provided challenge
         for (final Challenge challenge : response.challenges())
         {
-            // preemptive basic authentication for HTTPS proxies using a special scheme
+            // preemptive basic authentication for HTTPS proxies using a special scheme used by OkHttp only
             if (challenge.scheme().equalsIgnoreCase("OkHttp-Preemptive"))
             {
                 return createBasicAuthRequest(challenge, route, response.request(), true, false);
@@ -190,7 +179,7 @@ class AuthenticatorImpl implements Authenticator
         final Credentials credentials = credentialsProvider.getCredentials(authScope);
         if (credentials != null)
         {
-            final String basicAuthHeaderName = isProxyAuth ? HttpRequestHeaders.PROXY_AUTHORIZATION : HttpRequestHeaders.AUTHORIZATION;
+            final String basicAuthHeaderName = getAuthHeaderName(isProxyAuth);
             final String basicAuthHeaderValue = okhttp3.Credentials.basic(credentials.getUserPrincipal().getName(),
                                                                           credentials.getPassword());
 
@@ -297,5 +286,17 @@ class AuthenticatorImpl implements Authenticator
     private static String getCacheKey(final String host, final int port)
     {
         return host + ":" + port;
+    }
+
+    /**
+     * Returns the correct authorization header name, "Proxy-Authorization" or "Authorization".
+     * 
+     * @param isProxyAuth
+     *            whether or not it's about proxy server authentication (instead of origin server authentication)
+     * @return the header name
+     */
+    private static String getAuthHeaderName(final boolean isProxyAuth)
+    {
+        return isProxyAuth ? HttpRequestHeaders.PROXY_AUTHORIZATION : HttpRequestHeaders.AUTHORIZATION;
     }
 }

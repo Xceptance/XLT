@@ -83,7 +83,7 @@ public class OkHttp3WebConnection extends AbstractWebConnection<OkHttpClient, Re
 
     private static final SSLSocketFactory INSECURE_SSL_SOCKET_FACTORY = createInsecureSslSocketFactory();
 
-    private AuthenticatorImpl authenticator;
+    private final AuthenticatorImpl authenticator;
 
     private final ConnectionPool connectionPool;
 
