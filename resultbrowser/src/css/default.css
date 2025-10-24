@@ -231,7 +231,8 @@ body {
 
 #navigation #actionlist li.request {
     margin-left: 18px;
-    text-wrap: nowrap;
+    white-space: nowrap;
+    overflow: hidden;
     text-overflow: ellipsis;
 }
 
