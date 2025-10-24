@@ -220,12 +220,10 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     private static final String PROP_SLOWEST_REQUESTS_MIN_RUNTIME = PROP_PREFIX + "slowestRequests.minRuntime";
 
     private static final String PROP_SLOWEST_REQUESTS_MAX_RUNTIME = PROP_PREFIX + "slowestRequests.maxRuntime";
-    
+
     private static final String PROP_CUSTOM_DATA_AGGREGATE_FILE_CONTENTS = PROP_PREFIX + "customDataLogs.aggregateFileContents";
 
-    private static final String PROP_DYNAMIC_CHARTS_PREFIX = PROP_PREFIX + "dynamicCharts.";
-
-    private static final String PROP_DYNAMIC_CHARTS_ENABLED = PROP_DYNAMIC_CHARTS_PREFIX + "enabled";
+    private static final String PROP_DYNAMIC_CHARTS_ENABLED = PROP_PREFIX + "dynamicCharts.enabled";
 
     private final float chartsCompressionFactor;
 
@@ -258,7 +256,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     private final int slowestRequestsMinRuntime;
 
     private final int slowestRequestsMaxRuntime;
-    
+
     private final boolean aggregateCustomData;
 
     private final List<String> styleSheetFileNames;
@@ -496,7 +494,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
         movingAveragePoints = getIntProperty(PROP_CHARTS_MOV_AVG_PERCENTAGE, 5);
 
         dynamicChartsEnabled = getBooleanProperty(PROP_DYNAMIC_CHARTS_ENABLED, true);
-        
+
         readerThreadCount = Math.max(1, getIntProperty(PROP_READER_THREAD_COUNT, Runtime.getRuntime().availableProcessors()));
         parserThreadCount = Math.max(1, getIntProperty(PROP_PARSER_THREAD_COUNT, Runtime.getRuntime().availableProcessors()));
 
@@ -519,7 +517,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
         slowestRequestsTotal = getIntProperty(PROP_SLOWEST_REQUESTS_TOTAL, 500);
         slowestRequestsMinRuntime = getIntProperty(PROP_SLOWEST_REQUESTS_MIN_RUNTIME, 3_000);
         slowestRequestsMaxRuntime = getIntProperty(PROP_SLOWEST_REQUESTS_MAX_RUNTIME, 600_000);
-        
+
         aggregateCustomData = getBooleanProperty(PROP_CUSTOM_DATA_AGGREGATE_FILE_CONTENTS, true);
 
         // load the transformation configuration
@@ -842,7 +840,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     {
         return slowestRequestsMaxRuntime;
     }
-    
+
     public boolean aggregateCustomData()
     {
         return aggregateCustomData;
@@ -1582,15 +1580,21 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
             // performance check pattern
             final var urlText = new UrlText(getStringProperty(basePropertyName + ".urlText", ""));
             final var urlTextExclude = new UrlTextExclude(getStringProperty(basePropertyName + ".urlText.exclude", ""));
-            
+
             // exclude patterns
             final var urlExcludePattern = new UrlExcludePattern(getStringProperty(basePropertyName + ".urlPattern.exclude", ""));
-            final var contentTypeExcludePattern = new ContentTypeExcludePattern(getStringProperty(basePropertyName + ".contentTypePattern.exclude", ""));
-            final var statusCodeExcludePattern = new StatusCodeExcludePattern(getStringProperty(basePropertyName + ".statusCodePattern.exclude", ""));
+            final var contentTypeExcludePattern = new ContentTypeExcludePattern(getStringProperty(basePropertyName +
+                                                                                                  ".contentTypePattern.exclude", ""));
+            final var statusCodeExcludePattern = new StatusCodeExcludePattern(getStringProperty(basePropertyName +
+                                                                                                ".statusCodePattern.exclude", ""));
             final var requestNameExcludePattern = new NameExcludePattern(getStringProperty(basePropertyName + ".namePattern.exclude", ""));
-            final var agentNameExcludePattern = new AgentNameExcludePattern(getStringProperty(basePropertyName + ".agentPattern.exclude", ""));
-            final var transactionNameExcludePattern = new TransactionNameExcludePattern(getStringProperty(basePropertyName + ".transactionPattern.exclude", ""));
-            final var httpMethodExcludePattern = new HttpMethodExcludePattern(getStringProperty(basePropertyName + ".methodPattern.exclude", ""));
+            final var agentNameExcludePattern = new AgentNameExcludePattern(getStringProperty(basePropertyName + ".agentPattern.exclude",
+                                                                                              ""));
+            final var transactionNameExcludePattern = new TransactionNameExcludePattern(getStringProperty(basePropertyName +
+                                                                                                          ".transactionPattern.exclude",
+                                                                                                          ""));
+            final var httpMethodExcludePattern = new HttpMethodExcludePattern(getStringProperty(basePropertyName + ".methodPattern.exclude",
+                                                                                                ""));
             // ensure that either newName or dropOnMatch is set
             if (StringUtils.isNotBlank(newName.value()) == dropOnMatch.value())
             {
@@ -1608,22 +1612,12 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
             // create and validate the rules
             try
             {
-                final MergeRule mergeRule = new MergeRule(i, 
-                                                                                  newName, 
-                                                                                  requestNamePattern, urlPattern,
-                                                                                  contentTypePattern, statusCodePattern, 
-                                                                                  agentNamePattern, transactionNamePattern, 
-                                                                                  httpMethodPattern, runTimeRanges,
-                                                                                  stopOnMatch, 
-                                                                                  requestNameExcludePattern, urlExcludePattern,
-                                                                                  contentTypeExcludePattern, statusCodeExcludePattern,
-                                                                                  agentNameExcludePattern, transactionNameExcludePattern,
-                                                                                  httpMethodExcludePattern, 
-                                                                                  continueOnMatchAtId,
-                                                                                  continueOnNoMatchAtId,
-                                                                                  dropOnMatch,
-                                                                                  urlText,
-                                                                                  urlTextExclude);
+                final MergeRule mergeRule = new MergeRule(i, newName, requestNamePattern, urlPattern, contentTypePattern, statusCodePattern,
+                                                          agentNamePattern, transactionNamePattern, httpMethodPattern, runTimeRanges,
+                                                          stopOnMatch, requestNameExcludePattern, urlExcludePattern,
+                                                          contentTypeExcludePattern, statusCodeExcludePattern, agentNameExcludePattern,
+                                                          transactionNameExcludePattern, httpMethodExcludePattern, continueOnMatchAtId,
+                                                          continueOnNoMatchAtId, dropOnMatch, urlText, urlTextExclude);
                 requestProcessingRules.add(mergeRule);
             }
             catch (final InvalidMergeRuleException imre)

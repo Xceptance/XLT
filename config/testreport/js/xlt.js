@@ -580,10 +580,21 @@
                             echart.hideLoading();
 
                             // create time series data
-                            var dataMean = data.map(item => [item[0], item[1]]);                    // timestamp and mean value
-                            var dataMinimum = data.map(item => [item[0], item[2]]);                 // timestamp and min value
-                            var dataMaximum = data.map(item => [item[0], item[3]]);                 // timestamp and max value
-                            var dataMaxMinDiff = data.map(item => [item[0], item[3] - item[2]]);    // timestamp and diff value
+                            var dataMean = [];
+                            var dataMinimum = [];
+                            var dataMaximum = [];
+                            var dataMaxMinDiff = [];
+
+                            for (var item of data) {
+                                // timestamp and mean value
+                                dataMean.push([item[0], item[1]]);
+                                // timestamp and min value
+                                dataMinimum.push([item[0], item[2]]);
+                                // timestamp and max value
+                                dataMaximum.push([item[0], item[3]]);
+                                // timestamp and diff value
+                                dataMaxMinDiff.push([item[0], item[3] - item[2]]);
+                            }
 
                             // set up the chart
                             echart.setOption({
