@@ -33,8 +33,8 @@ import com.xceptance.xlt.api.engine.TransactionData;
 import com.xceptance.xlt.api.report.PostProcessedDataContainer;
 import com.xceptance.xlt.api.util.SimpleArrayList;
 import com.xceptance.xlt.api.util.XltCharBuffer;
-import com.xceptance.xlt.report.mergerules.RequestProcessing;
-import com.xceptance.xlt.report.mergerules.RequestProcessingRule;
+import com.xceptance.xlt.report.mergerules.MergeRule;
+import com.xceptance.xlt.report.mergerules.MergeRuleProcessor;
 import com.zaxxer.sparsebits.SparseBitSet;
 
 import it.unimi.dsi.util.FastRandom;
@@ -84,7 +84,7 @@ class DataParserThread implements Runnable
      * The request processing rules for this thread. Each parser thread gets its own copy of the rule set. This way,
      * there is no shared state between threads, hence we can more efficiently cache and process stuff.
      */
-    private final List<RequestProcessingRule> requestProcessingRules;
+    private final List<MergeRule> mergeRules;
 
     /**
      * Constructor.
@@ -109,10 +109,10 @@ class DataParserThread implements Runnable
         this.toTime = toTime;
         this.dispatcher = dispatcher;
         this.config = config;
-        
+
         // Get the rules now! 
         // Reason: If a rule is invalid, an exception is thrown from here, which will terminate the report generator correctly.
-        requestProcessingRules = config.getRequestProcessingRules();
+        mergeRules = config.getMergeRules();
     }
 
     /**
@@ -135,7 +135,7 @@ class DataParserThread implements Runnable
         final SimpleArrayList<XltCharBuffer> csvParseResultBuffer = new SimpleArrayList<>(50);
 
         // our request processing, this is move away from here to test it better
-        final RequestProcessing requestProcessing = new RequestProcessing(requestProcessingRules,
+        final MergeRuleProcessor requestProcessing = new MergeRuleProcessor(mergeRules,
                                                                           config.getRemoveIndexesFromRequestNames());
 
         while (true)

@@ -13,14 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.xceptance.xlt.report.mergerules;
+package com.xceptance.xlt.report.mergerules.agent;
 
 import com.xceptance.xlt.api.engine.RequestData;
 
 /**
- * Filters requests based on their content type.
+ * Provide data but otherwise match all agent names.
+ *
+ * @author Rene Schwietzke (Xceptance Software Technologies GmbH)
  */
-public class ContentTypeRequestFilter extends AbstractPatternRequestFilter
+public class AgentNameEmptyCondition extends AgentNameCondition
 {
     /**
      * Constructor.
@@ -28,30 +30,26 @@ public class ContentTypeRequestFilter extends AbstractPatternRequestFilter
      * @param regex
      *            the regular expression to identify matching requests
      */
-    public ContentTypeRequestFilter(final String regex)
+    public AgentNameEmptyCondition()
     {
-        this(regex, false);
-    }
-
-    /**
-     * Constructor.
-     *
-     * @param regex
-     *            the regular expression to identify matching requests
-     * @param exclude
-     *            whether or not this is an exclusion rule
-     */
-    public ContentTypeRequestFilter(final String regex, final boolean exclude)
-    {
-        super("c", regex, exclude, 150);
+        super("");
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    protected CharSequence getText(final RequestData requestData)
+    protected boolean apply(final RequestData requestData)
     {
-        return requestData.getContentType();
+        return true;
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected CharSequence getReplacementText(final RequestData requestData, final int capturingGroupIndex)
+    {
+        return requestData.getAgentName();
     }
 }

@@ -329,6 +329,11 @@ crosshair
   * Homepage: https://eschmann.dev/crosshair.js/
   * More information in folder: doc/3rd-party-licenses/crosshair
 
+echarts
+  * License: Apache License 2.0
+  * Homepage: https://echarts.apache.org/en/index.html
+  * More information in folder: doc/3rd-party-licenses/echarts
+
 harPreview
 
   * License: BSD 3-Clause License

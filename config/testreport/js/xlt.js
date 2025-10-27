@@ -437,7 +437,7 @@
         (function setupBackToTopHandler() {
             $('nav').click( function(event) {
                 $.scrollTo(0, 250, {easing:'swing'});
-                // if there is an anchor remove it from the hash 
+                // if there is an anchor remove it from the hash
                 if(window.location.hash != '')
                 {
                     var newHashObj = splitHash(window.location.hash);
@@ -561,6 +561,242 @@
 
                     $.scrollTo(target, 250, {easing:'swing', offset: {top: -120}});
                 });
+            });
+        })();
+
+        // creates the echarts but defers their full setup
+        (function setupECharts() {
+            $('div.charts div.echart').each(function () {
+                // Loads the chart data and completes the echart setup.
+                function setUpEChart(echart, name, url) {
+                    $.getJSON({
+                        url: url,
+                        data: null,
+                        beforeSend: function (xhr) {
+                            // avoid errors in browser console (XML Parsing Error: syntax error) when loading from file system
+                            xhr.overrideMimeType("application/json");
+                        },
+                        success: function (data) {
+                            echart.hideLoading();
+
+                            // create time series data
+                            var dataMean = [];
+                            var dataMinimum = [];
+                            var dataMaximum = [];
+                            var dataMaxMinDiff = [];
+
+                            for (var item of data) {
+                                // timestamp and mean value
+                                dataMean.push([item[0], item[1]]);
+                                // timestamp and min value
+                                dataMinimum.push([item[0], item[2]]);
+                                // timestamp and max value
+                                dataMaximum.push([item[0], item[3]]);
+                                // timestamp and diff value
+                                dataMaxMinDiff.push([item[0], item[3] - item[2]]);
+                            }
+
+                            // set up the chart
+                            echart.setOption({
+                                animation: false,
+                                backgroundColor: "#fafafa",
+                                grid: {
+                                    left: 68,
+                                    right: 12,
+                                    top: 32,
+                                    bottom: 50,
+                                    show: true,
+                                    backgroundColor: '#fff',
+                                    borderColor: '#888',
+                                    borderWidth: 0.5,
+                                },
+                                textStyle: {
+                                    fontFamily: "Roboto",
+                                },
+                                title: {
+                                    top: 8,
+                                    left: "center",
+                                    text: name,
+                                    textStyle: {
+                                        fontWeight: 500,
+                                        fontSize: 13,
+                                    }
+                                },
+                                toolbox: {
+                                    show: true,
+                                    top: '-8',
+                                    right: '0',
+                                    feature: {
+                                        dataZoom: {
+                                            show: true,
+                                            icon: {
+                                                // https://github.com/apache/echarts/issues/13397#issuecomment-814864873
+                                                zoom: "path://", // hack to remove zoom button
+                                            },
+                                            brushStyle: {
+                                                color: '#a00',
+                                                opacity: 0.25,
+                                            }
+                                        }
+                                    }
+                                },
+                                tooltip: {
+                                    appendToBody: true,
+                                    trigger: "axis",
+                                    axisPointer: {
+                                        type: 'cross',
+                                        animation: false,
+                                        snap: true,
+                                        lineStyle: {
+                                            color: '#888',
+                                            type: 'solid',
+                                            width: 0.5
+                                        },
+                                        crossStyle: {
+                                            color: '#888',
+                                            type: 'solid',
+                                            width: 0.5
+                                        },
+                                    },
+                                    textStyle: {
+                                        fontSize: 11
+                                    }
+                                },
+                                useUTC: true,
+                                xAxis: {
+                                    type: "time",
+                                    name: "Time [UTC]",
+                                    nameLocation: "center",
+                                    nameGap: 24,
+                                    axisLine: {
+                                        show: false
+                                    },
+                                    axisTick: {
+                                        show: true,
+                                        length: 3,
+                                        lineStyle: {
+                                            color: '#ccc'
+                                        }
+                                    },
+                                    axisLabel: {
+                                        fontSize: 10
+                                    },
+                                    splitLine: {
+                                        show: true,
+                                        showMinLine: false,
+                                        showMaxLine: false,
+                                        lineStyle: {
+                                            type: 'dashed',
+                                        }
+                                    },
+                                    splitNumber: 8
+                                },
+                                yAxis: {
+                                    minInterval: 1,
+                                    name: "Runtime [ms]",
+                                    nameLocation: "center",
+                                    axisTick: {
+                                        show: true,
+                                        length: 3,
+                                        lineStyle: {
+                                            color: '#ccc'
+                                        }
+                                    },
+                                    axisLabel: {
+                                        fontSize: 10
+                                    },
+                                    splitLine: {
+                                        show: true,
+                                        showMinLine: false,
+                                        showMaxLine: false,
+                                        lineStyle: {
+                                            type: 'dashed',
+                                        }
+                                    },
+                                    splitNumber: 5
+                                },
+                                series: [
+                                    {
+                                        name: 'Maximum',
+                                        type: 'line',
+                                        data: dataMaximum,
+                                        lineStyle: {
+                                            opacity: 0,
+                                            width: 1,
+                                        },
+                                        itemStyle: {
+                                            color: '#a00'
+                                        },
+                                        symbol: 'none',
+                                    },
+                                    {
+                                        name: 'Mean',
+                                        type: 'line',
+                                        data: dataMean,
+                                        lineStyle: {
+                                            width: 1
+                                        },
+                                        itemStyle: {
+                                            color: '#00c'
+                                        },
+                                        showSymbol: false
+                                    },
+                                    {
+                                        name: 'Minimum',
+                                        type: 'line',
+                                        data: dataMinimum,
+                                        lineStyle: {
+                                            opacity: 0,
+                                            width: 1,
+                                        },
+                                        itemStyle: {
+                                            color: '#0a0'
+                                        },
+                                        stack: 'confidence-band',
+                                        symbol: 'none',
+                                    },
+                                    {
+                                        name: 'Diff',
+                                        type: 'line',
+                                        data: dataMaxMinDiff,
+                                        lineStyle: {
+                                            opacity: 0,
+                                            width: 1,
+                                        },
+                                        itemStyle: {
+                                            color: '#a0a'
+                                        },
+                                        areaStyle: {
+                                            color: '#ccc'
+                                        },
+                                        stack: 'confidence-band',
+                                        stackStrategy: 'all',
+                                        symbol: 'none',
+                                        tooltip: {
+                                            show: false,
+                                        },
+                                    },
+                                ]
+                            });
+
+                            // put the echart in zoom mode right from the start
+                            echart.dispatchAction({
+                                type: "takeGlobalCursor",
+                                key: "dataZoomSelect",
+                                dataZoomSelectActive: true
+                            });
+                        }
+                    });
+                }
+
+                // create an initially empty echart
+                var echart = echarts.init(this);
+                echart.showLoading();
+
+                // start a task to set the echart up asynchronously in the background
+                var name = this.getAttribute('name');
+                var url = this.getAttribute('src');
+                setTimeout(() => setUpEChart(echart, name, url), 10);
             });
         })();
 

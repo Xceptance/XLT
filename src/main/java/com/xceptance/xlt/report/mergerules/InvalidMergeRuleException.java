@@ -16,11 +16,11 @@
 package com.xceptance.xlt.report.mergerules;
 
 /**
- * Exception used to indicate an invalid request processing rule.
+ * Exception used to indicate an invalid merge rule.
  * 
  * @author Hartmut Arlt (Xceptance Software Technologies GmbH)
  */
-public class InvalidRequestProcessingRuleException extends Exception
+public class InvalidMergeRuleException extends Exception
 {
     /**
      * The serialVersionUID.
@@ -28,19 +28,12 @@ public class InvalidRequestProcessingRuleException extends Exception
     private static final long serialVersionUID = 7981238688848743328L;
 
     /**
-     * 
-     */
-    public InvalidRequestProcessingRuleException()
-    {
-        // TODO Auto-generated constructor stub
-    }
+     * Constructor.
 
-    /**
-     * @param message
+     * @param message the message describing the problem
      */
-    public InvalidRequestProcessingRuleException(String message)
+    public InvalidMergeRuleException(final String message)
     {
         super(message);
-        // TODO Auto-generated constructor stub
     }
 }

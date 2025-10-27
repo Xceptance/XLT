@@ -33,11 +33,14 @@ public class ReportGeneratorConfigurationReport
 
     public int slowestRequestsMaxRuntime;
 
+    public boolean dynamicChartsEnabled;
+
     ReportGeneratorConfigurationReport(ReportGeneratorConfiguration config)
     {
         this.slowestRequestsPerBucket = config.getSlowestRequestsPerBucket();
         this.slowestRequestsTotal = config.getSlowestRequestsTotal();
         this.slowestRequestsMinRuntime = config.getSlowestRequestsMinRuntime();
         this.slowestRequestsMaxRuntime = config.getSlowestRequestsMaxRuntime();
+        this.dynamicChartsEnabled = config.dynamicChartsEnabled();
     }
 }

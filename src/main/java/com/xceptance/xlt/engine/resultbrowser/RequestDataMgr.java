@@ -199,7 +199,7 @@ class RequestDataMgr
 
         final RequestInfo requestInfo = new RequestInfo();
 
-        requestInfo.name = getFileName(webRequest.getUrl());
+        requestInfo.name = getRequestName(webRequest.getUrl());
         requestInfo.url = webRequest.getUrl().toString();
         requestInfo.requestMethod = httpMethod.name();
         requestInfo.requestParameters.addAll(webRequest.getRequestParameters());
@@ -247,15 +247,18 @@ class RequestDataMgr
     }
 
     /**
-     * Derives the simple file name from the passed URL. Usually, this will be the last part of the URL's path. For
-     * example, from the URL "http://localhost/foo/bar/baz/bum.jpg" the file name "bum.jpg" would be derived. If the
-     * last part is a directory as in "http://localhost/foo/bar/baz/", the result would be "baz/".
+     * Derives the request name from the passed URL. The name will be the last segment of the URL's path plus the query
+     * string.
+     * <p>
+     * For example, from the URL "http://localhost/foo/bar/baz/bum.jpg" the request name "bum.jpg" would be derived. If
+     * the last part is a directory as in "http://localhost/foo/bar/baz/", the result would be "baz/". If there is a
+     * query string, it will be appended.
      *
      * @param url
      *            the input URL
-     * @return the file name
+     * @return the request name
      */
-    private String getFileName(final URL url)
+    private String getRequestName(final URL url)
     {
         // get the path only, i.e. no host, no query string, no reference
         String path = url.getPath();
@@ -270,6 +273,13 @@ class RequestDataMgr
         if (i >= 0)
         {
             path = path.substring(i + 1);
+        }
+
+        // append query string if any
+        String query = url.getQuery();
+        if (query != null)
+        {
+            path = path + "?" + query;
         }
 
         return path;
