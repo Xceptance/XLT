@@ -15,6 +15,11 @@
  */
 package com.xceptance.xlt.report.providers;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.CombinedDomainXYPlot;
 import org.jfree.chart.plot.CombinedRangeXYPlot;
@@ -23,18 +28,22 @@ import org.jfree.data.Range;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
 import org.jfree.data.xy.XYIntervalSeries;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import com.xceptance.common.io.FileUtils;
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.engine.TimerData;
 import com.xceptance.xlt.api.report.AbstractReportProvider;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration.ChartScale;
 import com.xceptance.xlt.report.util.FixedSizeHistogramValueSet;
-import com.xceptance.xlt.report.util.JFreeChartUtils;
+import com.xceptance.xlt.report.util.IntMinMaxTimeSeriesDataItem;
 import com.xceptance.xlt.report.util.IntMinMaxValueSet;
+import com.xceptance.xlt.report.util.IntSummaryStatistics;
+import com.xceptance.xlt.report.util.JFreeChartUtils;
 import com.xceptance.xlt.report.util.ReportUtils;
 import com.xceptance.xlt.report.util.RuntimeHistogram;
-import com.xceptance.xlt.report.util.IntSummaryStatistics;
 import com.xceptance.xlt.report.util.TaskManager;
 import com.xceptance.xlt.report.util.ValueSet;
 
@@ -48,6 +57,8 @@ import com.xceptance.xlt.report.util.ValueSet;
  */
 public class BasicTimerDataProcessor extends AbstractDataProcessor
 {
+    private static final Logger log = LoggerFactory.getLogger(JFreeChartUtils.class);
+
     private final ValueSet countPerSecondValueSet = new ValueSet();
 
     private final ValueSet errorsPerSecondValueSet = new ValueSet();
@@ -56,7 +67,7 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
 
     private final RuntimeHistogram runTimeHistogram = new RuntimeHistogram(10);
 
-    private double[] percentiles;
+    private final double[] percentiles;
 
     private final IntMinMaxValueSet runTimeValueSet;
 
@@ -112,7 +123,7 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
         timerReport.median = ReportUtils.convertToBigDecimal(runTimeHistogram.getMedianValue());
 
         // set the percentiles
-        for (double percentile : percentiles)
+        for (final double percentile : percentiles)
         {
             timerReport.percentiles.put("p" + ReportUtils.formatValue(percentile),
                                         ReportUtils.convertToBigDecimal(runTimeHistogram.getPercentile(percentile)));
@@ -121,7 +132,7 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
         // set the counts
         final double count = runTimeStatistics.getCount();
         final long duration = Math.max((getEndTime() - getStartTime()) / 1000, 1);
-        
+
         timerReport.errorPercentage = ReportUtils.calculatePercentage(totalErrors, (int) count);
         timerReport.count = (int) count;
         timerReport.countPerSecond = ReportUtils.convertToBigDecimal(count / duration);
@@ -179,6 +190,11 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
                     saveCountPerSecondChart(name, countPerSecondTimeSeries);
                 }
             });
+
+            if (((ReportGeneratorConfiguration) getConfiguration()).dynamicChartsEnabled())
+            {
+                taskManager.addTask(() -> saveResponseTimeSeriesAsJson(name, runTimeTimeSeries));
+            }
         }
 
         return timerReport;
@@ -250,8 +266,8 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
      */
     protected JFreeChart createResponseTimeAndErrorsChart(final String chartTitle, final TimeSeries responseTimeSeries,
                                                           final TimeSeries responseTimeAverageSeries,
-                                                          final XYIntervalSeries responseTimeHistogramSeries,
-                                                          final TimeSeries errorsSeries, final int chartCappingValue)
+                                                          final XYIntervalSeries responseTimeHistogramSeries, final TimeSeries errorsSeries,
+                                                          final int chartCappingValue)
     {
         final ChartScale chartScale = ((ReportGeneratorConfiguration) getConfiguration()).getChartScale();
         Range responseTimeRange = null;
@@ -441,5 +457,55 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
 
         // System.out.printf("OK (%,d values, %,d ms)\n", runTimeTimeSeries.getItemCount(), TimerUtils.getTime() -
         // start);
+    }
+
+    /**
+     * Writes the response time series data to a JSON file in the charts directory. The data in this file is later read
+     * from the load test report and forms the basis for interactive charts.
+     * 
+     * @param timerName
+     *            the name of the timer
+     * @param responseTimeSeries
+     *            the response time series
+     */
+    private void saveResponseTimeSeriesAsJson(final String timerName, final TimeSeries responseTimeSeries)
+    {
+        final int size = responseTimeSeries.getItems().size();
+
+        // build a JSON string with the series data
+        final StringBuilder sb = new StringBuilder();
+        sb.append('[');
+        for (int i = 0; i < size; i++)
+        {
+            final IntMinMaxTimeSeriesDataItem dataItem = (IntMinMaxTimeSeriesDataItem) responseTimeSeries.getDataItem(i);
+
+            sb.append('[');
+            sb.append(dataItem.getPeriod().getFirstMillisecond());
+            sb.append(',');
+            sb.append(dataItem.getMinMaxValue().getAverageValue());
+            sb.append(',');
+            sb.append(dataItem.getMinMaxValue().getMinimumValue());
+            sb.append(',');
+            sb.append(dataItem.getMinMaxValue().getMaximumValue());
+            sb.append(']');
+
+            if (i < size - 1)
+            {
+                sb.append(',');
+            }
+        }
+        sb.append(']');
+
+        // save the JSON string to a file in the charts directory
+        final File jsonFile = new File(getChartDir(), FileUtils.convertIllegalCharsInFileName(timerName) + ".json");
+
+        try
+        {
+            Files.writeString(jsonFile.toPath(), sb, StandardCharsets.UTF_8);
+        }
+        catch (final IOException e)
+        {
+            log.error("Failed to create JSON file '{}'", jsonFile, e);
+        }
     }
 }
