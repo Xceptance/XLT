@@ -13,16 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.xceptance.xlt.report.mergerules;
+package com.xceptance.xlt.report.mergerules.responsetime;
+
+import java.util.regex.PatternSyntaxException;
 
 import org.apache.commons.lang3.StringUtils;
 
 import com.xceptance.xlt.api.engine.RequestData;
+import com.xceptance.xlt.report.mergerules.Condition;
 
 /**
  * Filters requests based on their response time.
+ * 
+ * @author Jörg Werner (Xceptance Software Technologies GmbH)
+ * @author Hartmut Arlt (Xceptance Software Technologies GmbH)
+ * @author Rene Schwietzke (Xceptance Software Technologies GmbH)
  */
-public class ResponseTimeRequestFilter extends AbstractRequestFilter
+public class ResponseTimeCondition extends Condition
 {
     /**
      * The response time boundaries.
@@ -40,21 +47,30 @@ public class ResponseTimeRequestFilter extends AbstractRequestFilter
      * @param responseTimes
      *            the response time range definition string
      */
-    public ResponseTimeRequestFilter(final String responseTimes)
+    public ResponseTimeCondition(final String responseTimes)
     {
-        super("r");
+        // we don't need pattern and cache, but just to satisfy the super constructor
+        super("", 4);
 
-        // pre-calculate the replacement strings
-        final String[] ranges = StringUtils.split(responseTimes, " ;,");
-
-        responseTimeBoundaries = new long[ranges.length];
-        for (int i = 0; i < responseTimeBoundaries.length; i++)
+        try
         {
-            responseTimeBoundaries[i] = Integer.parseInt(ranges[i]);
+            // pre-calculate the replacement strings
+            final String[] ranges = StringUtils.split(responseTimes, " ;,");
+
+            responseTimeBoundaries = new long[ranges.length];
+            for (int i = 0; i < responseTimeBoundaries.length; i++)
+            {
+                responseTimeBoundaries[i] = Integer.parseInt(ranges[i]);
+            }
+        }
+        catch (final NumberFormatException e)
+        {
+            throw new PatternSyntaxException("Invalid response time range definition", responseTimes, 0);
         }
 
         responseTimeRanges = new String[responseTimeBoundaries.length + 1];
         long previousBoundary = 0;
+        
         for (int i = 0; i < responseTimeBoundaries.length; i++)
         {
             final long nextBoundary = responseTimeBoundaries[i];
@@ -69,16 +85,17 @@ public class ResponseTimeRequestFilter extends AbstractRequestFilter
      * {@inheritDoc}
      */
     @Override
-    public Object appliesTo(final RequestData requestData)
+    protected boolean apply(final RequestData requestData)
     {
-        return Boolean.TRUE;
+        // we always match because we don't check, we only provide data
+        return true;
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public String getReplacementText(final RequestData requestData, final int capturingGroupIndex)
+    protected String getReplacementText(final RequestData requestData, final int capturingGroupIndex)
     {
         final long responseTime = requestData.getRunTime();
 
@@ -92,6 +109,15 @@ public class ResponseTimeRequestFilter extends AbstractRequestFilter
         }
 
         return responseTimeRanges[i];
+    }
+
+    /**
+     * This only satisfies the compiler and is not needed at all
+     */
+    @Override
+    protected CharSequence getText(final RequestData requestData)
+    {
+        return Long.toString(requestData.getRunTime());
     }
 
     /**
@@ -114,5 +140,14 @@ public class ResponseTimeRequestFilter extends AbstractRequestFilter
         sb.append("]}");
 
         return sb.toString();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected String getTypeCode()
+    {
+        return "r";
     }
 }

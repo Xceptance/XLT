@@ -218,7 +218,7 @@
                 }
                 setText(requestText, s);
             });
-            
+
         	const actionimgSwitch = getElementById("actionimgSwitch");
         	actionimgSwitch.addEventListener("click", function () {
                 zoomImage(actionimgSwitch);
@@ -267,13 +267,13 @@
         // transaction page
         transaction.addEventListener("click", showTransaction);
     }
-    
+
     function zoomImage(element) {
 
 		if (element.id == "actionimgSwitch")
 		{
 			if (element.classList.contains('fit'))
-			{				
+			{
 				element.classList.remove('fit');
 				element.classList.add('full');
 				element.title = "Click to enlarge to 100%";
@@ -352,7 +352,7 @@
             element.classList.add("current");
         }
     }
-    
+
     function showHideMenu() {
         // show/hide the menu
         document.getElementById("leftSideMenu").classList.toggle("expanded");
@@ -584,7 +584,7 @@
 
                 forEachElement(queryAll("#beautify, #selectResponseContent, #highlightSyntax"), (el) => el.setAttribute('disabled', ''));
 
-                // check if we have no response or it was empty
+                // check if we have no response
                 if (requestData._noContent) {
                     setText(requestText);
                     show(requestText);
@@ -749,23 +749,7 @@
         function checkHasNoContent(rqData) {
             rqData = rqData || {};
 
-            const headers = rqData.responseHeaders || [],
-                respCode = rqData.responseCode || 0;
-
-            // check for redirect (response file is empty and will cause an error when trying to be read in)
-            // and zero content length response header as well
-            if (/30[0-8]|20[45]/.test(respCode) || !rqData.fileName) {
-                return true;
-            }
-
-            for (let i = 0, l = headers.length, h; i < l; i++) {
-                h = headers[i];
-                if (h.name_ === "Content-Length") {
-                    return h.value_ === "0";
-                }
-            }
-
-            return false;
+            return !rqData.fileName;
         }
 
         function decodeQueryParam(param) {
@@ -948,7 +932,7 @@
             hide(menu);
         }
         else {
-			
+
             menu.style.position = "absolute";
             menu.style.zIndex = "200001";
             var mm = window.matchMedia("(max-width: 599px), (max-height: 400px) ")
@@ -964,7 +948,7 @@
 				menu.style.top = `${menuIcon.offsetTop}px`;
             	menu.style.left = `${menuIcon.offsetLeft + 17}px`;
 			}
-				
+
 
             show(menu);
         }
@@ -1076,7 +1060,7 @@
 			            minSize: [300, 600],
 			            gutterSize: 3
 			        });
-				} 
+				}
 				else { //on small screens/mobile: revert changes made by Split
 					document.getElementById("leftSideMenu").removeAttribute("style");
 					document.getElementById("content").removeAttribute("style");
@@ -1084,7 +1068,7 @@
 					while(gutter[0]) {
     					gutter[0].parentNode.removeChild(gutter[0]);
 					}
-					
+
 					if (document.getElementById("mExpander") === null)
 					{
 						const mExpander = document.createElement("span");
@@ -1094,7 +1078,7 @@
 	        			mExpander.title = "Single-click to show/hide menu.";
 	        			mExpander.textContent = "☰";
 	        			document.getElementById("header").insertBefore(mExpander, document.getElementById("header").firstChild);
-	        
+
 				        // setup click to show/hide requests
 				        mExpander.addEventListener(
 				        	"click",
@@ -1102,7 +1086,7 @@
 				                showHideMenu();
 				            }
 				        );
-				        
+
 				        // content click also shows/hides menu
 				        /*content.addEventListener(
 				        	"click",
@@ -1112,7 +1096,7 @@
 						);*/
 			        }
 				}
-			}		
+			}
 			// Create a MediaQueryList object
 			var mm = window.matchMedia("(min-width: 600px)")
 			// Call listener function at run time
@@ -1120,7 +1104,7 @@
 			// Attach listener function on state changes
 			mm.addEventListener("change", function() {
 				splitContent(mm);
-			}); 
+			});
 
             // activate first request-tab
             activateTab(requestContent.querySelector(".tabs-nav li"));

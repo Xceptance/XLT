@@ -1231,4 +1231,182 @@ public class XltCharBufferTest
                List.of("a", "", "cde"),
                "a,,cde", ',');
     }
+
+    // Search contains testing
+    @Test
+    public void testContains_Found()
+    {
+        // 
+        {
+            XltCharBuffer haystack = XltCharBuffer.valueOf("abcdefg");
+            XltCharBuffer needle = XltCharBuffer.valueOf("abc");
+            int[] shiftTable = XltCharBuffer.createShiftTable(needle);
+            assertTrue(XltCharBuffer.contains(haystack, needle, shiftTable));
+        }
+        // at beginning
+        {
+            XltCharBuffer haystack = XltCharBuffer.valueOf("abcdefg");
+            XltCharBuffer needle = XltCharBuffer.valueOf("abc");
+            int[] shiftTable = XltCharBuffer.createShiftTable(needle);
+            assertTrue(XltCharBuffer.contains(haystack, needle, shiftTable));
+        }
+        // at end
+        {
+            XltCharBuffer haystack = XltCharBuffer.valueOf("abcdefg");
+            XltCharBuffer needle = XltCharBuffer.valueOf("efg");
+            int[] shiftTable = XltCharBuffer.createShiftTable(needle);
+            assertTrue(XltCharBuffer.contains(haystack, needle, shiftTable));
+        }
+        // in middle
+        {
+            XltCharBuffer haystack = XltCharBuffer.valueOf("abcdefg");
+            XltCharBuffer needle = XltCharBuffer.valueOf("cde");
+            int[] shiftTable = XltCharBuffer.createShiftTable(needle);
+            assertTrue(XltCharBuffer.contains(haystack, needle, shiftTable));
+        }
+    }
+
+    @Test
+    public void testContains_NotFound()
+    {
+        // longer needle
+        {
+            XltCharBuffer haystack = XltCharBuffer.valueOf("abcdefg");
+            XltCharBuffer needle = XltCharBuffer.valueOf("xyz");
+            int[] shiftTable = XltCharBuffer.createShiftTable(needle);
+
+            assertFalse(XltCharBuffer.contains(haystack, needle, shiftTable));
+        }
+
+        // single needle
+        {
+            XltCharBuffer haystack = XltCharBuffer.valueOf("abcdefg");
+            XltCharBuffer needle = XltCharBuffer.valueOf("x");
+            int[] shiftTable = XltCharBuffer.createShiftTable(needle);
+
+            assertFalse(XltCharBuffer.contains(haystack, needle, shiftTable));
+        }
+    }
+
+    @Test
+    public void testContains_EmptyNeedle()
+    {
+        XltCharBuffer haystack = XltCharBuffer.valueOf("abcdefg");
+        XltCharBuffer needle = XltCharBuffer.valueOf("");
+        int[] shiftTable = XltCharBuffer.createShiftTable(needle);
+
+        assertTrue(XltCharBuffer.contains(haystack, needle, shiftTable));
+    }
+
+    @Test
+    public void testContains_EmptyHaystack()
+    {
+        {
+            XltCharBuffer haystack = XltCharBuffer.valueOf("");
+            XltCharBuffer needle = XltCharBuffer.valueOf("a");
+            int[] shiftTable = XltCharBuffer.createShiftTable(needle);
+
+            assertFalse(XltCharBuffer.contains(haystack, needle, shiftTable));
+        }
+        {
+            XltCharBuffer haystack = XltCharBuffer.valueOf("");
+            XltCharBuffer needle = XltCharBuffer.valueOf("");
+            int[] shiftTable = XltCharBuffer.createShiftTable(needle);
+
+            assertTrue(XltCharBuffer.contains(haystack, needle, shiftTable));
+        }
+    }
+
+    @Test
+    public void testContains_NeedleEqualsHaystack()
+    {
+        {
+            XltCharBuffer haystack = XltCharBuffer.valueOf("abc");
+            XltCharBuffer needle = XltCharBuffer.valueOf("abc");
+            int[] shiftTable = XltCharBuffer.createShiftTable(needle);
+
+            assertTrue(XltCharBuffer.contains(haystack, needle, shiftTable));
+        }
+        {
+            XltCharBuffer haystack = XltCharBuffer.valueOf("a");
+            XltCharBuffer needle = XltCharBuffer.valueOf("a");
+            int[] shiftTable = XltCharBuffer.createShiftTable(needle);
+
+            assertTrue(XltCharBuffer.contains(haystack, needle, shiftTable));
+        }
+    }
+
+    @Test
+    public void testContains_NeedleLongerThanHaystack()
+    {
+        XltCharBuffer haystack = XltCharBuffer.valueOf("ab");
+        XltCharBuffer needle = XltCharBuffer.valueOf("abc");
+        int[] shiftTable = XltCharBuffer.createShiftTable(needle);
+
+        assertFalse(XltCharBuffer.contains(haystack, needle, shiftTable));
+    }
+
+    @Test
+    public void testContains_ContainsUnicode()
+    {
+        XltCharBuffer haystack = XltCharBuffer.valueOf("98asd (◕‿◕)  sa abǾcd");
+
+        // yes
+        {
+            XltCharBuffer needle = XltCharBuffer.valueOf("bǾ");
+            int[] shiftTable = XltCharBuffer.createShiftTable(needle);
+            assertTrue(XltCharBuffer.contains(haystack, needle, shiftTable));
+        }
+
+        // no
+        {
+            XltCharBuffer needle = XltCharBuffer.valueOf("099876(◕‿◕)");
+            int[] shiftTable = XltCharBuffer.createShiftTable(needle);
+            assertFalse(XltCharBuffer.contains(haystack, needle, shiftTable));
+        }
+    }
+
+    @Test
+    public void testContains_SpecialCharacters()
+    {
+        XltCharBuffer haystack = XltCharBuffer.valueOf("abc$%#äöüß");
+        XltCharBuffer needle = XltCharBuffer.valueOf("äöü");
+        int[] shiftTable = XltCharBuffer.createShiftTable(needle);
+
+        assertTrue(XltCharBuffer.contains(haystack, needle, shiftTable));
+    }
+
+    @Test
+    public void testContains_RepeatedPattern()
+    {
+        XltCharBuffer haystack = XltCharBuffer.valueOf("ababababab");
+        XltCharBuffer needle = XltCharBuffer.valueOf("baba");
+        int[] shiftTable = XltCharBuffer.createShiftTable(needle);
+
+        assertTrue(XltCharBuffer.contains(haystack, needle, shiftTable));
+    }
+
+    @Test
+    public void testContains_CharOutsideShiftTable()
+    {
+        // Use a char with value > 255 (e.g., 0x400)
+        char[] haystackArr = new char[] { 'a', (char) 0x400, 'b', 'c' };
+        XltCharBuffer haystack = XltCharBuffer.valueOf(haystackArr);
+        XltCharBuffer needle = XltCharBuffer.valueOf(new char[] { (char) 0x400 });
+        int[] shiftTable = XltCharBuffer.createShiftTable(needle);
+
+        assertTrue(XltCharBuffer.contains(haystack, needle, shiftTable));
+    }
+
+    @Test
+    public void testContains_CharOutsideShiftTable_NotFound()
+    {
+        // Use a char with value > 255 that is not in haystack
+        XltCharBuffer haystack = XltCharBuffer.valueOf("abc");
+        XltCharBuffer needle = XltCharBuffer.valueOf(new char[] { (char) 0x400 });
+        int[] shiftTable = XltCharBuffer.createShiftTable(needle);
+
+        assertFalse(XltCharBuffer.contains(haystack, needle, shiftTable));
+    }
 }
+

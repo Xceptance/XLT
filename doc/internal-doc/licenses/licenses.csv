@@ -12,7 +12,7 @@ commons-text,Apache License 2.0,https://commons.apache.org/proper/commons-text/,
 commons-vfs2,Apache License 2.0,https://commons.apache.org/proper/commons-vfs/,
 dec,MIT License,https://brotli.org/,
 dnsjava,BSD 2-Clause License,https://github.com/dnsjava/dnsjava,
-dsiutils,Apache License 2.0,https://github.com/vigna/dsiutils,,Not the full library has been used and modifications have been applied.
+dsiutils,Apache License 2.0,https://github.com/vigna/dsiutils,Not the full library has been used and modifications have been applied.
 freemarker,Apache License 2.0,https://freemarker.apache.org/,
 google-api-services-compute,Apache License 2.0,https://developers.google.com/api-client-library/java/,
 hessian,Apache License 2.0,http://hessian.caucho.com/,which version exactly?
@@ -50,6 +50,7 @@ xstream,BSD 3-Clause License,https://x-stream.github.io/,
 ,,,
 bootstrap,MIT License,https://getbootstrap.com/,
 crosshair,MIT License,https://eschmann.dev/crosshair.js/,
+echarts,Apache License 2.0,https://echarts.apache.org/en/index.html,
 harPreview,BSD 3-Clause License,https://github.com/janodvarko/harviewer,
 headroomjs,MIT License,http://wicky.nillia.ms/headroom.js/,
 highlightjs,BSD 3-Clause License,https://highlightjs.org/,

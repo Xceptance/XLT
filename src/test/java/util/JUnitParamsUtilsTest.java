@@ -71,4 +71,57 @@ public class JUnitParamsUtilsTest
         Assert.assertEquals(params[1], wrappedParams[1][0]);
     }
 
+    @Test
+    public void parseParamSet_SingleParam()
+    {
+        final Object[] parsedParams = JUnitParamsUtils.parseParamSet(" abc ");
+
+        Assert.assertEquals(1, parsedParams.length);
+        Assert.assertEquals(" abc ", parsedParams[0]);
+    }
+
+    @Test
+    public void parseParamSet_MultipleParams()
+    {
+        final Object[] parsedParams = JUnitParamsUtils.parseParamSet(" abc,123 ");
+
+        Assert.assertEquals(2, parsedParams.length);
+        Assert.assertEquals(" abc", parsedParams[0]);
+        Assert.assertEquals("123 ", parsedParams[1]);
+    }
+
+    @Test
+    public void parseParamSets_NoParamSet()
+    {
+        final Object[][] parsedParamSets = JUnitParamsUtils.parseParamSets();
+
+        Assert.assertEquals(0, parsedParamSets.length);
+    }
+
+    @Test
+    public void parseParamSets_SingleParamSet()
+    {
+        final Object[][] parsedParamSets = JUnitParamsUtils.parseParamSets("foo|bar");
+
+        Assert.assertEquals(1, parsedParamSets.length);
+        Assert.assertEquals(2, parsedParamSets[0].length);
+        Assert.assertEquals("foo", parsedParamSets[0][0]);
+        Assert.assertEquals("bar", parsedParamSets[0][1]);
+    }
+
+    @Test
+    public void parseParamSets_MultipleParamSets()
+    {
+        final Object[][] parsedParamSets = JUnitParamsUtils.parseParamSets("foo|bar,baz", " 111 , 222|333 ");
+
+        Assert.assertEquals(2, parsedParamSets.length);
+        Assert.assertEquals(3, parsedParamSets[0].length);
+        Assert.assertEquals(3, parsedParamSets[1].length);
+        Assert.assertEquals("foo", parsedParamSets[0][0]);
+        Assert.assertEquals("bar", parsedParamSets[0][1]);
+        Assert.assertEquals("baz", parsedParamSets[0][2]);
+        Assert.assertEquals(" 111 ", parsedParamSets[1][0]);
+        Assert.assertEquals(" 222", parsedParamSets[1][1]);
+        Assert.assertEquals("333 ", parsedParamSets[1][2]);
+    }
 }

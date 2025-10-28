@@ -17,6 +17,8 @@ package util;
 
 import java.util.Arrays;
 
+import org.apache.commons.lang3.StringUtils;
+
 /**
  * Util class to assist in running tests with JUnitParams. Contains helper methods and common test parameter providers.
  */
@@ -100,8 +102,40 @@ public class JUnitParamsUtils
      * @return an Object array containing one Object array for each parameter; each of the inner Object arrays contains
      *         a single parameter
      */
-    public static Object[][] wrapEachParam(final Object[] params)
+    public static Object[][] wrapEachParam(final Object... params)
     {
         return Arrays.stream(params).map(JUnitParamsUtils::wrapParams).toArray(Object[][]::new);
+    }
+
+    /**
+     * Parses the given parameter set strings into individual parameter sets and returns them as an array of Object
+     * arrays. In contrast to JUnitParams, this method does NOT trim parameter values. For example:
+     * <p>
+     * <code>convertParamSets("foo|bar", " baz , bum")</code>
+     * <p>
+     * will return:
+     * <p>
+     * <code>new Object[]{new Object[]{ "foo", "bar"}, new Object[]{" baz ", " bum"}}</code>
+     *
+     * @param paramSets
+     *            the parameter sets, with the parameters separated by '|' or ',' in each set
+     * @return an Object array containing one Object array for each parameter set
+     */
+    public static Object[][] parseParamSets(final String... paramSets)
+    {
+        return Arrays.stream(paramSets).map(JUnitParamsUtils::parseParamSet).toArray(Object[][]::new);
+    }
+
+    /**
+     * Parses the given parameter set string into individual parameters and returns them as an Object array. In contrast
+     * to JUnitParams, this method does NOT trim parameter values.
+     *
+     * @param paramSet
+     *            the parameter set, with the parameters separated by '|' or ','
+     * @return an Object array containing the parameters
+     */
+    static Object[] parseParamSet(final String paramSet)
+    {
+        return StringUtils.splitPreserveAllTokens(paramSet, "|,");
     }
 }
