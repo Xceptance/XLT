@@ -27,11 +27,11 @@ import java.util.TimerTask;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.runners.model.MultipleFailureException;
 
 import com.xceptance.common.io.FileUtils;
 import com.xceptance.common.lang.ParseNumbers;
+import com.xceptance.common.util.Holder;
 import com.xceptance.common.util.ParameterCheckUtils;
 import com.xceptance.xlt.api.actions.AbstractAction;
 import com.xceptance.xlt.api.engine.GlobalClock;
@@ -87,32 +87,16 @@ public class SessionImpl extends Session
      * All Session instances keyed by thread.
      */
     private static final Map<Thread, SessionImpl> sessions = new ConcurrentHashMap<>(101);
-    // private static final Map<String, SessionImpl> sessions = new ConcurrentHashMap<>(101);
 
     /**
      * The Session instance of the current thread.
      */
-    private static final InheritableThreadLocal<String> magic = new InheritableThreadLocal<>()
+    private static final InheritableThreadLocal<Holder<SessionImpl>> sessionHolder = new InheritableThreadLocal<>()
     {
-
         @Override
-        protected String initialValue()
+        protected Holder<SessionImpl> initialValue()
         {
-            return RandomStringUtils.random(32);
-        }
-    };
-
-    /**
-     * The Session instance of the current thread.
-     */
-    private static final InheritableThreadLocal<SessionImpl> session = new InheritableThreadLocal<>()
-    {
-
-        @Override
-        protected SessionImpl initialValue()
-        {
-            // Thread.dumpStack();
-            return new SessionImpl(XltPropertiesImpl.getInstance());
+            return new Holder<>();
         }
     };
 
@@ -123,13 +107,16 @@ public class SessionImpl extends Session
      */
     public static SessionImpl getCurrent()
     {
-        SessionImpl sessionImpl = sessions.get(Thread.currentThread());
+        final Holder<SessionImpl> holder = sessionHolder.get();
+        SessionImpl sessionImpl = holder.get();
 
         if (sessionImpl == null)
         {
-            sessionImpl = session.get();
-            sessions.put(Thread.currentThread(), sessionImpl);
+            sessionImpl = new SessionImpl(new XltPropertiesImpl());
+            holder.set(sessionImpl);
         }
+        
+        sessions.put(Thread.currentThread(), sessionImpl);
 
         return sessionImpl;
     }
@@ -142,8 +129,9 @@ public class SessionImpl extends Session
      */
     public static SessionImpl removeCurrent()
     {
-        session.remove();
-        return sessions.remove(Thread.currentThread());
+        sessions.remove(Thread.currentThread());
+        
+        return sessionHolder.get().remove();
     }
 
     /**

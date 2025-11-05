@@ -80,7 +80,6 @@ public class RequestQueue
         this.threadCount = threadCount;
         parallelModeEnabled = true;
 
-        // final ThreadFactory threadFactory = new DaemonThreadFactory(i -> Session.getCurrent().getUserID() + "-pool-" + i);
         final ThreadFactory threadFactory = new XltThreadFactory(true, Session.getCurrent().getUserID() + "-pool-");
 
         executorService = Executors.newFixedThreadPool(threadCount, threadFactory);

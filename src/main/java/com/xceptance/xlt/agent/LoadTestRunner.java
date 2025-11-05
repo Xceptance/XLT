@@ -51,7 +51,7 @@ public class LoadTestRunner
     /**
      * Class logger instance.
      */
-    private static final XltThreadFactory XLT_THREAD_FACTORY = new XltThreadFactory(false, null);
+    private static final XltThreadFactory XLT_THREAD_FACTORY = new XltThreadFactory(false);
 
     /**
      * Configuration.
@@ -79,7 +79,7 @@ public class LoadTestRunner
     private volatile boolean aborted;
 
     /**
-     * The main thread of this user runner.
+     * The main thread of this runner.
      */
     private final Thread thread;
 
