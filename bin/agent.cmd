@@ -40,8 +40,6 @@ if exist "%JVM_CFG_FILE%" (
     for /f "eol=# delims=" %%o in ('type "%JVM_CFG_FILE%"') do set JAVA_OPTIONS=!JAVA_OPTIONS! %%o
 )
 
-set JAVA_OPTIONS=%JAVA_OPTIONS% -XX:InitialRAMPercentage=20 -XX:MaxRAMPercentage=20
-
 :: run Java
 echo java %JAVA_OPTIONS% com.xceptance.xlt.agent.Main %* > results\agentCmdLine
 java %JAVA_OPTIONS% com.xceptance.xlt.agent.AgentMain %*
