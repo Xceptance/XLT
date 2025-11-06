@@ -110,7 +110,7 @@ import util.xlt.properties.AdjustXltProperties.SetProperty;
 })
 @PowerMockIgnore(
     {
-        "javax.*", "org.xml.*", "org.w3c.dom.*"
+        "javax.*", "org.xml.*", "org.w3c.dom.*", "org.apache.commons.vfs2.*"
 })
 public class DataRecordLoggingTest
 {
@@ -637,6 +637,13 @@ public class DataRecordLoggingTest
             @Override
             public DataManagerImpl answer(InvocationOnMock invocation) throws Throwable
             {
+                // This method seems to be called immediately and with null parameters as part of setting up the answer
+                // (Powermock bug?) -> ignore.
+                if (invocation.getArgument(0, Session.class) == null)
+                {
+                    return null;
+                }
+
                 // limit to constructor new DataManagerImpl(Session) and avoid using (Session, Metrics)
                 final DataManagerImpl instance = Whitebox.invokeConstructor(DataManagerImpl.class, new Class<?>[]
                     {
@@ -645,26 +652,28 @@ public class DataRecordLoggingTest
                     {
                         invocation.getArgument(0, Session.class)
                     });
-                mockDataManager = createMockDataManager(instance);
 
-                return mockDataManager;
+                return createMockDataManager(instance);
             }
         });
     }
 
     private DataManagerImpl createMockDataManager(final DataManagerImpl instance)
     {
-        final ArgumentCaptor<Data> dataRecordCaptor = ArgumentCaptor.forClass(Data.class);
-        final DataManagerImpl mock = Mockito.spy(instance);
+        // set up mock only if not done so before
+        if (mockDataManager == null)
+        {
+            final ArgumentCaptor<Data> dataRecordCaptor = ArgumentCaptor.forClass(Data.class);
+            final DataManagerImpl mock = Mockito.spy(instance);
 
-        Mockito.doNothing().when(mock).logDataRecord(dataRecordCaptor.capture());
+            Mockito.doNothing().when(mock).logDataRecord(dataRecordCaptor.capture());
 
-        // We want to see the logging of EventData records, so we'll have to let logEvent do its job
-        Mockito.doCallRealMethod().when(mock).logEvent(Mockito.any(), Mockito.any());
+            dataRecordCaptors.put(mock, dataRecordCaptor);
 
-        dataRecordCaptors.put(mock, dataRecordCaptor);
+            mockDataManager = mock;
+        }
 
-        return mock;
+        return mockDataManager;
     }
 
     public List<Data> getDataRecordsCapturedFor(DataManager mockDataManager)
@@ -882,15 +891,15 @@ public class DataRecordLoggingTest
 
     enum KindOfLoadTestClass
     {
-     /**
-      * Use a load test class that is derived from {@link AbstractTestCase}
-      */
-     XltDerived(GenericLoadTestClasses.XltDerived.class, true),
+        /**
+         * Use a load test class that is derived from {@link AbstractTestCase}
+         */
+        XltDerived(GenericLoadTestClasses.XltDerived.class, true),
 
-     /**
-      * Use a load test class that is not derived from anything except Object
-      */
-     NotDerived(GenericLoadTestClasses.NotDerived.class, false);
+        /**
+         * Use a load test class that is not derived from anything except Object
+         */
+        NotDerived(GenericLoadTestClasses.NotDerived.class, false);
 
         private KindOfLoadTestClass(Class<?> genericTestClassObject, boolean isXltDerived)
         {
@@ -922,34 +931,34 @@ public class DataRecordLoggingTest
 
     enum TestExecutionThreadStrategy
     {
-     /**
-      * Use a {@link LoadTestRunner} thread to execute the load test class
-      */
-     LoadTestRunner(true)
-     {
-         @Override
-         public Thread createThreadFor(Class<?> loadTestClassObject, TestUserConfiguration testUserConfiguration, AgentInfo agentInfo,
-                                       DataRecordLoggingTest thisTestInstance)
-         {
+        /**
+         * Use a {@link LoadTestRunner} thread to execute the load test class
+         */
+        LoadTestRunner(true)
+        {
+            @Override
+            public Thread createThreadFor(Class<?> loadTestClassObject, TestUserConfiguration testUserConfiguration, AgentInfo agentInfo,
+                                          DataRecordLoggingTest thisTestInstance)
+            {
                 return new LoadTestRunner(testUserConfiguration, agentInfo, dummyExecutionTimer()).getThread();
-         }
-     },
+            }
+        },
 
-     /**
-      * Use a simple thread that will just call JUnit's
-      * <code>{@linkplain Request#aClass(Class) Request.aClass(Class)}.getRunner().run(RunNotifier)</code> to execute
-      * the load test class
-      */
-     JUnitClassRequestRunner(false)
-     {
-         @Override
-         public Thread createThreadFor(Class<?> loadTestClassObject, TestUserConfiguration testUserConfiguration, AgentInfo agentInfo,
-                                       DataRecordLoggingTest thisTestInstance)
-         {
-             final Runnable r = () -> Request.aClass(loadTestClassObject).getRunner().run(new RunNotifier());
+        /**
+         * Use a simple thread that will just call JUnit's
+         * <code>{@linkplain Request#aClass(Class) Request.aClass(Class)}.getRunner().run(RunNotifier)</code> to execute
+         * the load test class
+         */
+        JUnitClassRequestRunner(false)
+        {
+            @Override
+            public Thread createThreadFor(Class<?> loadTestClassObject, TestUserConfiguration testUserConfiguration, AgentInfo agentInfo,
+                                          DataRecordLoggingTest thisTestInstance)
+            {
+                final Runnable r = () -> Request.aClass(loadTestClassObject).getRunner().run(new RunNotifier());
                 return new XltThreadFactory(false, null).newThread(r);
-         }
-     };
+            }
+        };
 
         private TestExecutionThreadStrategy(final boolean usesLoadTestRunner)
         {
