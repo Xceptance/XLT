@@ -16,11 +16,13 @@
 package com.xceptance.xlt.report.providers;
 
 import java.io.File;
+import java.util.List;
 
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.report.AbstractReportProvider;
 import com.xceptance.xlt.api.report.ReportProviderConfiguration;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration.ChartCappingInfo;
+import com.xceptance.xlt.report.util.MovingAverageConfiguration;
 
 /**
  * The {@link AbstractDataProcessor} class provides common functionality of a typical data processor. A data processor
@@ -36,7 +38,9 @@ public abstract class AbstractDataProcessor
 
     private File csvDir;
 
-    private int movingAveragePercentage;
+    private MovingAverageConfiguration commonMovingAverageConfig;
+    
+    private List<MovingAverageConfiguration> additionalMovingAverageConfigs;
 
     private ChartCappingInfo chartCappingInfo;
 
@@ -71,7 +75,8 @@ public abstract class AbstractDataProcessor
         setChartWidth(config.getChartWidth());
         setChartHeight(config.getChartHeight());
 
-        setMovingAveragePercentage(config.getMovingAveragePercentage());
+        setCommonMovingAverageConfig(config.getCommonMovingAverageConfig());
+        setAdditionalMovingAverageConfigs(config.getAdditionalMovingAverageConfigs());
     }
 
     /**
@@ -136,13 +141,23 @@ public abstract class AbstractDataProcessor
     }
 
     /**
-     * Returns the value of the 'movingAveragePercentage' attribute.
+     * Returns the common moving average configuration.
      * 
-     * @return the value of movingAveragePercentage
+     * @return the common moving average configuration
      */
-    public int getMovingAveragePercentage()
+    public MovingAverageConfiguration getCommonMovingAverageConfig()
     {
-        return movingAveragePercentage;
+        return commonMovingAverageConfig;
+    }
+    
+    /**
+     * Returns the list of all additional moving average configurations.
+     * 
+     * @return the additional moving average configurations
+     */
+    public List<MovingAverageConfiguration> getAdditionalMovingAverageConfigs()
+    {
+        return additionalMovingAverageConfigs;
     }
 
     /**
@@ -243,14 +258,24 @@ public abstract class AbstractDataProcessor
     }
 
     /**
-     * Sets the new value of the 'movingAveragePercentage' attribute.
+     * Sets the new value of the common moving average configuration.
      * 
-     * @param movingAveragePercentage
-     *            the new movingAveragePercentage value
+     * @param commonMovingAverageConfig
+     *            the new common moving average configuration
      */
-    public void setMovingAveragePercentage(final int movingAveragePercentage)
+    public void setCommonMovingAverageConfig(final MovingAverageConfiguration commonMovingAverageConfig)
     {
-        this.movingAveragePercentage = movingAveragePercentage;
+        this.commonMovingAverageConfig = commonMovingAverageConfig;
+    }
+
+    /**
+     * Sets the additional moving average configurations.
+     * 
+     * @param additionalMovingAverageConfigs the new list of all additional moving average configurations
+     */
+    public void setAdditionalMovingAverageConfigs(final List<MovingAverageConfiguration> additionalMovingAverageConfigs)
+    {
+        this.additionalMovingAverageConfigs = additionalMovingAverageConfigs;
     }
 
     /**

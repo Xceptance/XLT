@@ -334,6 +334,11 @@ public final class XltConstants
     public static final String REPORT_CHART_DIR = "charts";
 
     /**
+     * The maximum amount of additional moving averages that can be configured to appear in the "Averages" tabs.
+     */
+    public static final int REPORT_CHART_MAX_ADDITIONAL_AVERAGES = 5;
+
+    /**
      * Placeholder file name for reports
      */
     public static final String REPORT_CHART_PLACEHOLDER_FILENAME = "placeholder.webp";

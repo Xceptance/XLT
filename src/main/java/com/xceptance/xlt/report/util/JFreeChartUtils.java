@@ -61,7 +61,7 @@ import org.jfree.chart.renderer.xy.XYBarRenderer;
 import org.jfree.chart.renderer.xy.XYItemRenderer;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.Range;
-import org.jfree.data.time.MovingAverage;
+import org.jfree.data.time.RegularTimePeriod;
 import org.jfree.data.time.Second;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
@@ -93,7 +93,9 @@ public final class JFreeChartUtils
         /**
          * blue, ...
          */
-        public static final ColorSet AVERAGES = new ColorSet(COLOR_MOVING_AVERAGE, COLOR_MEDIAN, COLOR_MEAN);
+        public static final ColorSet AVERAGES = new ColorSet(COLOR_MOVING_AVERAGE, COLOR_MEDIAN, COLOR_MEAN, COLOR_MOVING_AVERAGE_ADDITIONAL_1,
+                                                             COLOR_MOVING_AVERAGE_ADDITIONAL_2, COLOR_MOVING_AVERAGE_ADDITIONAL_3, COLOR_MOVING_AVERAGE_ADDITIONAL_4,
+                                                             COLOR_MOVING_AVERAGE_ADDITIONAL_5);
 
         /**
          * blue, gray, magenta, green, red
@@ -222,14 +224,39 @@ public final class JFreeChartUtils
     public static final Color COLOR_MEAN = new Color(0xCD3333);
 
     /**
-     * The color of a median line in the charts (dark turquoise).
+     * The color of a median line in the charts (dark gray).
      */
-    public static final Color COLOR_MEDIAN = new Color(0x62C0E0);
+    public static final Color COLOR_MEDIAN = Color.DARK_GRAY;
 
     /**
      * The color of a moving average line in the charts (dark blue).
      */
     public static final Color COLOR_MOVING_AVERAGE = new Color(0x1C1CBF);
+    
+    /**
+     * The color of an additional moving average line in the charts (dark green).
+     */
+    public static final Color COLOR_MOVING_AVERAGE_ADDITIONAL_1 = new Color(0x169C49);
+    
+    /**
+     * The color of an additional moving average line in the charts (dark orange).
+     */
+    public static final Color COLOR_MOVING_AVERAGE_ADDITIONAL_2 = new Color(0xFF8000);
+    
+    /**
+     * The color of an additional moving average line in the charts (dark purple).
+     */
+    public static final Color COLOR_MOVING_AVERAGE_ADDITIONAL_3 = new Color(0x880B97);
+
+    /**
+     * The color of an additional moving average line in the charts (light blue).
+     */
+    public static final Color COLOR_MOVING_AVERAGE_ADDITIONAL_4 = new Color(0x62C0E0);
+
+    /**
+     * The color of an additional moving average line in the charts (pink).
+     */
+    public static final Color COLOR_MOVING_AVERAGE_ADDITIONAL_5 = new Color(0xEF8EF3);
 
     /**
      * The default chart theme.
@@ -348,7 +375,8 @@ public final class JFreeChartUtils
     }
 
     /**
-     * Creates an average chart with the moving average, the median, and the mean, but not the actual values.
+     * Creates an average chart with the moving average, the median, the mean, and (optional) additional moving
+     * averages, but not the actual values.
      *
      * @param seriesName
      *            the name of the series
@@ -368,10 +396,12 @@ public final class JFreeChartUtils
      *            chart start time
      * @param endTime
      *            chart end time
+     * @param additionalAverageValueSeriesList
+     *            list of additional average value series to add to the chart
      */
     public static JFreeChart createAverageLineChart(final String seriesName, final String chartTitle, final String yAxisTitle,
                                                     final TimeSeries valueSeries, final TimeSeries averageValueSeries, final double median,
-                                                    final double mean, final long startTime, final long endTime)
+                                                    final double mean, final long startTime, final long endTime, final List<TimeSeries> additionalAverageValueSeriesList)
     {
         final TimeSeries medianSeries = new TimeSeries(seriesName + " (Median)");
         final TimeSeries meanSeries = new TimeSeries(seriesName + " (Mean)");
@@ -395,6 +425,17 @@ public final class JFreeChartUtils
             meanSeries.add(lastItem.getPeriod(), mean);
         }
 
+        // add additional averages if there are any
+        if (additionalAverageValueSeriesList != null)
+        {
+            // don't add more than the allowed maximum of additional averages
+            final int maxAdditionalAveragesCount = Math.min(additionalAverageValueSeriesList.size(), XltConstants.REPORT_CHART_MAX_ADDITIONAL_AVERAGES);
+            for (int i = 0; i < maxAdditionalAveragesCount; i++)
+            {
+                seriesCollection.addSeries(additionalAverageValueSeriesList.get(i));
+            }
+        }
+        
         // create and customize the chart
         final JFreeChart chart = createLineChart(chartTitle, yAxisTitle, seriesCollection, startTime, endTime, ColorSet.AVERAGES);
 
@@ -596,7 +637,7 @@ public final class JFreeChartUtils
      * @param endTime
      *            chart end time
      * @return the chart
-     * @see {@link JFreeChartUtils#addLinePlotToCombinedPlotChart(JFreeChart, String, TimeSeriesCollection)}
+     * @see {@link JFreeChartUtils#addLinePlotToCombinedPlotChart(JFreeChart, String, XYDataset)}
      */
     public static JFreeChart createCombinedPlotChart(final String chartTitle, final long startTime, final long endTime)
     {
@@ -666,15 +707,15 @@ public final class JFreeChartUtils
      *            the end time of the x-axis
      * @param includeMovingAverage
      *            whether or not an additional moving average time series should be included
-     * @param percentage
-     *            the percentaged amount of values for building the moving average
+     * @param movingAverageConfig
+     *            the configuration for building the moving average
      * @return the chart
      */
     public static JFreeChart createLineChart(final String chartTitle, final String rangeAxisTitle, final TimeSeries series,
                                              final long startTime, final long endTime, final boolean includeMovingAverage,
-                                             final int percentage)
+                                             final MovingAverageConfiguration movingAverageConfig)
     {
-        return createLineChart(chartTitle, rangeAxisTitle, series, startTime, endTime, includeMovingAverage, percentage, true);
+        return createLineChart(chartTitle, rangeAxisTitle, series, startTime, endTime, includeMovingAverage, movingAverageConfig, true);
     }
 
     /**
@@ -692,17 +733,17 @@ public final class JFreeChartUtils
      *            the end time of the x-axis
      * @param includeMovingAverage
      *            whether or not an additional moving average time series should be included
-     * @param percentage
-     *            the percentaged amount of values for building the moving average
+     * @param movingAverageConfig
+     *            the configuration for building the moving average
      * @param showDots
      *            whether to additionally visualize the values as dots
      * @return the chart
      */
     public static JFreeChart createLineChart(final String chartTitle, final String rangeAxisTitle, final TimeSeries series,
                                              final long startTime, final long endTime, final boolean includeMovingAverage,
-                                             final int percentage, final boolean showDots)
+                                             final MovingAverageConfiguration movingAverageConfig, final boolean showDots)
     {
-        final TimeSeries movingAverageSeries = includeMovingAverage ? createMovingAverageTimeSeries(series, percentage) : null;
+        final TimeSeries movingAverageSeries = includeMovingAverage ? createMovingAverageTimeSeries(series, movingAverageConfig) : null;
 
         return createLineChart(chartTitle, rangeAxisTitle, series, movingAverageSeries, startTime, endTime, showDots, ChartScale.LINEAR,
                                -1);
@@ -716,7 +757,7 @@ public final class JFreeChartUtils
      *            the chart title
      * @param rangeAxisTitle
      *            the name of the y-axis
-     * @param series
+     * @param timeSeries
      *            the time series to show
      * @param movingAverageTimeSeries
      *            the moving average time series
@@ -930,20 +971,115 @@ public final class JFreeChartUtils
      *
      * @param series
      *            the source series
-     * @param percentage
-     *            the percentaged amount of values for building the moving average
-     * @return the time series
+     * @param movingAverageConfig
+     *            the moving average configuration defining how the average should be calculated
+     * @return the "moving average" time series
      */
-    public static TimeSeries createMovingAverageTimeSeries(final TimeSeries series, final int percentage)
+    public static TimeSeries createMovingAverageTimeSeries(final TimeSeries series, final MovingAverageConfiguration movingAverageConfig)
     {
-        // take the last X percent of the values
-        final int samples = Math.max(2, series.getItemCount() * percentage / 100);
+        final String resultSeriesName = series.getKey() + " (Average (" + movingAverageConfig.getName() + "))";
 
-        // derive the name from the source series
-        final String avgSeriesName = series.getKey() + " (Moving Average)";
+        return switch (movingAverageConfig.getType())
+        {
+            case PERCENTAGE -> createMovingAverageTimeSeriesPercentage(series, movingAverageConfig.getValue(), resultSeriesName);
+            case TIME -> createMovingAverageTimeSeriesTime(series, movingAverageConfig.getValue(), resultSeriesName);
+        };
+    }
 
-        // return MovingAverage.createMovingAverage(series, avgSeriesName, samples, samples);
-        return MovingAverage.createPointMovingAverage(series, avgSeriesName, samples);
+    /**
+     *  Creates a "moving average" time series from the given time series by averaging over a given percentage of data points.
+     * 
+     * @param series
+     *            the source series
+     * @param percentage
+     *            the percentage of data points for building the moving average
+     * @param resultSeriesName
+     *            the name of the result series
+     * @return the "moving average" time series
+     */
+    private static TimeSeries createMovingAverageTimeSeriesPercentage(final TimeSeries series, final int percentage, final String resultSeriesName)
+    {
+        final TimeSeries result = new TimeSeries(resultSeriesName);
+
+        if (!series.isEmpty())
+        {
+            // Convert percentage into absolute number of data points. Make sure percentage stays between 1% and 100%,
+            // and the resulting number of samples is at least 1.
+            final int samples = Math.max(1, series.getItemCount() * Math.clamp(percentage, 1, 100) / 100);
+
+            // We use a custom implementation instead of the existing JFree method here, because the JFree version
+            // doesn't insert points in the beginning of the average series when the number of previous points from
+            // the source series is lower than the sample window size.
+            double sum = 0.0;
+            for (int i = 0; i < series.getItemCount(); i++)
+            {
+                sum += series.getValue(i).doubleValue();
+
+                if (i < samples)
+                {
+                    // Add the average over all points so far to the result series
+                    result.add(series.getTimePeriod(i), sum / (i+1));
+                }
+                else
+                {
+                    // Remove the value that is outside the sample window from the sum and calculate the average
+                    sum -= series.getValue(i - samples).doubleValue();
+                    result.add(series.getTimePeriod(i), sum / samples);
+                }
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Creates a "moving average" time series from the given time series by averaging over a given time interval.
+     *
+     * @param series
+     *            the source series
+     * @param seconds
+     *            the time interval in seconds for building the moving average
+     * @param resultSeriesName
+     *            the name of the result series
+     * @return the "moving average" time series
+     */
+    private static TimeSeries createMovingAverageTimeSeriesTime(final TimeSeries series, final int seconds, final String resultSeriesName)
+    {
+        final TimeSeries result = new TimeSeries(resultSeriesName);
+
+        if (!series.isEmpty())
+        {
+            // Get time interval size in milliseconds. Make sure resulting interval is at least 1 second long. Intervals
+            // longer than the total series time don't need to be handled as they don't affect the calculations.
+            final long intervalSizeInMilliseconds = Math.max(1, seconds) * 1000L;
+
+            // Calculate averages using two pointer method. The start pointer will be increased along the way to mark
+            // the first data point still within the current averaging time interval.
+            int startPointer = 0;
+            double sum = 0.0;
+
+            for (int i = 0; i < series.getItemCount(); i++)
+            {
+                // Add current value to the sum
+                sum += series.getValue(i).doubleValue();
+
+                // Determine start time of the averaging time interval for the current point
+                final RegularTimePeriod period = series.getTimePeriod(i);
+                final long intervalStartTime = period.getFirstMillisecond() - intervalSizeInMilliseconds;
+
+                // Remove all values outside the interval from the sum and increase the start pointer accordingly
+                while (series.getTimePeriod(startPointer).getFirstMillisecond() <= intervalStartTime)
+                {
+                    sum -= series.getValue(startPointer).doubleValue();
+                    startPointer++;
+                }
+
+                // Add the average for the current point to the result series
+                result.add(period, sum / (i - startPointer + 1));
+            }
+        }
+
+        return result;
     }
 
     /**
@@ -1252,8 +1388,8 @@ public final class JFreeChartUtils
      *            the chart to modify
      * @param rangeAxisTitle
      *            the name of the y-axis
-     * @param seriesCollection
-     *            the time series collection to show
+     * @param seriesConfigurations
+     *            the time series configurations to show
      */
     public static void setAxisTimeSeriesCollection(final JFreeChart chart, final int axisIndex, final String rangeAxisTitle,
                                                    final List<TimeSeriesConfiguration> seriesConfigurations)
@@ -1333,7 +1469,7 @@ public final class JFreeChartUtils
      * series will be {@link DoubleMinMaxTimeSeriesDataItem} objects, so the minimum/maximum/count/accumulated value
      * properties of a {@link DoubleMinMaxValue} will still be available.
      *
-     * @param minMaxValueSet
+     * @param valueSet
      *            the source min-max value set
      * @param timeSeriesName
      *            the name of the time series

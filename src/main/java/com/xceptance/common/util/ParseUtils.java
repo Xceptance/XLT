@@ -300,6 +300,26 @@ public final class ParseUtils
     }
 
     /**
+     * Parses a given integer percentage into an int value. The input can optionally end with a "%" character. E.g. the inputs "25%" or "25" will both return the value "25".
+     *
+     * @param s string to parse
+     * @return parsed percentage as an int value
+     * @throws ParseException if the input (ignoring the "%" character) can't be parsed as an int value
+     */
+    public static int parseIntPercentage(final String s) throws ParseException
+    {
+        try
+        {
+            final String trimmedInput = s.trim();
+            return parseInt(trimmedInput.endsWith("%") ? trimmedInput.substring(0, trimmedInput.length() - 1) : trimmedInput);
+        }
+        catch (ParseException e)
+        {
+            throw new ParseException(String.format("Failed to parse '%s' as int percentage value.", s), 0);
+        }
+    }
+
+    /**
      * <p>
      * Parses the given String as a relative (e.g. "-10" or "+10") or an absolute value (e.g. "10") and returns it. Use
      * this in cases where both, relative and absolute values, are valid, and it's important to distinguish them (e.g.

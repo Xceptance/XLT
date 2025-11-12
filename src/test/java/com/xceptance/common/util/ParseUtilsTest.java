@@ -467,6 +467,34 @@ public class ParseUtilsTest
     }
 
     @Test
+    public void parseIntPercentage() throws ParseException
+    {
+        Assert.assertEquals(25, ParseUtils.parseIntPercentage("25%"));
+        Assert.assertEquals(25, ParseUtils.parseIntPercentage("25"));
+
+        Assert.assertEquals(25, ParseUtils.parseIntPercentage(" 25% "));
+        Assert.assertEquals(25, ParseUtils.parseIntPercentage(" 25 "));
+
+        Assert.assertEquals(0, ParseUtils.parseIntPercentage("0%"));
+        Assert.assertEquals(-1, ParseUtils.parseIntPercentage("-1%"));
+
+        Assert.assertEquals(Integer.MAX_VALUE, ParseUtils.parseIntPercentage(Integer.MAX_VALUE + "%"));
+        Assert.assertEquals(Integer.MAX_VALUE, ParseUtils.parseIntPercentage(String.valueOf(Integer.MAX_VALUE)));
+
+        Assert.assertEquals(Integer.MIN_VALUE, ParseUtils.parseIntPercentage(Integer.MIN_VALUE + "%"));
+        Assert.assertEquals(Integer.MIN_VALUE, ParseUtils.parseIntPercentage(String.valueOf(Integer.MIN_VALUE)));
+    }
+
+    @Test(expected = ParseException.class)
+    @Parameters(value = {
+        "12.3%", "abc", "%25", "25*"
+    })
+    public void parseIntPercentage_invalidValue(final String invalidValue) throws ParseException
+    {
+        ParseUtils.parseIntPercentage(invalidValue);
+    }
+
+    @Test
     public void parseAbsoluteOrRelative_AbsoluteIntValue() throws ParseException
     {
         AbsoluteOrRelativeNumber<Integer> number = ParseUtils.parseAbsoluteOrRelative(ParseUtils::parseInt, "0");

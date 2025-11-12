@@ -260,7 +260,7 @@ public class AgentDataProcessor extends AbstractDataProcessor
 
         final TimeSeriesCollection cpuTimeSeriesCollection = new TimeSeriesCollection();
         final TimeSeries cpuTimeSeries = JFreeChartUtils.toMinMaxTimeSeries(cpuUsageValueSet, "Agent CPU Usage");
-        final TimeSeries avgCpuTimeSeries = JFreeChartUtils.createMovingAverageTimeSeries(cpuTimeSeries, getMovingAveragePercentage());
+        final TimeSeries avgCpuTimeSeries = JFreeChartUtils.createMovingAverageTimeSeries(cpuTimeSeries, getCommonMovingAverageConfig());
         final TimeSeries gcCpuTimeSeries = JFreeChartUtils.toMinMaxTimeSeries(gcCpuUsageValueSet, "Agent GC CPU Usage");
         final TimeSeries totalCpuUsageTimeSeries = JFreeChartUtils.toMinMaxTimeSeries(totalCpuUsageValueSet, "Total CPU Usage");
 
@@ -296,7 +296,7 @@ public class AgentDataProcessor extends AbstractDataProcessor
         final TimeSeries totalHeapSeries = JFreeChartUtils.toMinMaxTimeSeries(totalHeapValueSet, "Total Heap");
         // final TimeSeries usedMemSeries = JFreeChartUtils.toMinMaxTimeSeries(usedMemValueSet, "Used Physical Memory");
 
-        final TimeSeries usedHeapAvgSeries = JFreeChartUtils.createMovingAverageTimeSeries(usedHeapSeries, getMovingAveragePercentage());
+        final TimeSeries usedHeapAvgSeries = JFreeChartUtils.createMovingAverageTimeSeries(usedHeapSeries, getCommonMovingAverageConfig());
 
         memoryCollection.addSeries(usedHeapAvgSeries);
         memoryCollection.addSeries(usedHeapSeries);

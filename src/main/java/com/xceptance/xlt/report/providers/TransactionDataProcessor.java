@@ -122,7 +122,7 @@ public class TransactionDataProcessor extends BasicTimerDataProcessor
                                                                                         "Current Arrival Rate");
 
                     final TimeSeries averagedArrivalRateTS = JFreeChartUtils.createMovingAverageTimeSeries(arrivalRateTS,
-                                                                                                           getMovingAveragePercentage());
+                                                                                                           getCommonMovingAverageConfig());
                     averagedArrivalRateTS.setKey("Current Arrival Rate");
 
                     createChart(averagedArrivalRateTS, true, getName(), "Arrival Rate [1/h]", getName() + "_ArrivalRate", getChartDir(),
@@ -191,7 +191,7 @@ public class TransactionDataProcessor extends BasicTimerDataProcessor
                                                                                        getCountPerSecondValueSet(), minMaxValueSetSize,
                                                                                        "Error Rate");
         final TimeSeries errorRateAverageTimeSeries = JFreeChartUtils.createMovingAverageTimeSeries(errorRateTimeSeries,
-                                                                                                    getMovingAveragePercentage());
+                                                                                                    getCommonMovingAverageConfig());
 
         // create the error rate plot
         final XYPlot errorRatePlot = JFreeChartUtils.createLinePlot(new TimeSeriesCollection(errorRateAverageTimeSeries), null,
@@ -262,7 +262,7 @@ public class TransactionDataProcessor extends BasicTimerDataProcessor
 
         final JFreeChart chart = JFreeChartUtils.createLineChart(title, yAxisTitle, timeSeries, config.getChartStartTime(),
                                                                  config.getChartEndTime(), showMovingAverage,
-                                                                 config.getMovingAveragePercentage(), showDots);
+                                                                 config.getCommonMovingAverageConfig(), showDots);
 
         JFreeChartUtils.saveChart(chart, fileName, outputDir, config.getChartWidth(), config.getChartHeight());
 

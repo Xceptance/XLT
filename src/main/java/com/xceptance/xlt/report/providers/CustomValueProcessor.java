@@ -182,7 +182,7 @@ public class CustomValueProcessor extends AbstractDataProcessor
         {
             // create the value series now as they will be needed for multiple charts
             final TimeSeries valueSeries = JFreeChartUtils.toMinMaxTimeSeries(vSet, samplerName);
-            final TimeSeries averageValueSeries = JFreeChartUtils.createMovingAverageTimeSeries(valueSeries, getMovingAveragePercentage());
+            final TimeSeries averageValueSeries = JFreeChartUtils.createMovingAverageTimeSeries(valueSeries, getCommonMovingAverageConfig());
             final XYIntervalSeries histogramSeries = histogram.toSeries("Counts");
 
             // create charts asynchronously
@@ -320,7 +320,7 @@ public class CustomValueProcessor extends AbstractDataProcessor
 
         // create and customize the chart
         final JFreeChart chart = JFreeChartUtils.createAverageLineChart(name, chartTitle, yAxisTitle, valueSeries, averageValueSeries,
-                                                                        median, mean, getStartTime(), getEndTime());
+                                                                        median, mean, getStartTime(), getEndTime(), null);
         chart.getXYPlot().getRangeAxis().setStandardTickUnits(NumberAxis.createStandardTickUnits());
 
         // finally save the chart

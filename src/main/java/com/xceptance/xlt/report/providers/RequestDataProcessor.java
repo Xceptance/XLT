@@ -358,7 +358,7 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
         // final long start = TimerUtils.getTime();
 
         final JFreeChart chart = JFreeChartUtils.createLineChart(timerName, "Bytes", timeSeries, getStartTime(), getEndTime(), true,
-                                                                 getMovingAveragePercentage());
+                                                                 getCommonMovingAverageConfig());
         JFreeChartUtils.saveChart(chart, timerName + "_ResponseSize", getChartDir(), getChartWidth(), getChartHeight());
 
         // System.out.printf("OK (%,d values, %,d ms)\n", timeSeries.getItemCount(), TimerUtils.getTime() - start);
