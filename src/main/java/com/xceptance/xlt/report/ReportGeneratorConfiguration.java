@@ -236,7 +236,8 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
     private static final String PROP_DYNAMIC_CHARTS_ENABLED = PROP_PREFIX + "dynamicCharts.enabled";
 
-    static final String ERROR_AVERAGE_INDEX_INVALID = "Invalid index in average configuration starting with '" + PROP_CHARTS_AVERAGES_ADDITIONAL + "'.";
+    static final String ERROR_AVERAGE_INDEX_INVALID = "Invalid index in average configuration starting with '" +
+                                                      PROP_CHARTS_AVERAGES_ADDITIONAL + "'.";
 
     static final String ERROR_AVERAGE_PERCENTAGE_OUT_OF_BOUNDS = "Percentage value configured in property '%s' must be between '1%%' and '100%%', but was '%s'.";
 
@@ -244,7 +245,8 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
     static final String ERROR_AVERAGE_TIME_OUT_OF_BOUNDS = "Time value configured in property '%s' must be greater than '0s', but was '%s'.";
 
-    static final String ERROR_AVERAGE_TYPE_INVALID = "Moving average type '%s' configured in property '%s' is invalid. Valid types are: " + MovingAverageType.getNames() + ".";
+    static final String ERROR_AVERAGE_TYPE_INVALID = "Moving average type '%s' configured in property '%s' is invalid. Valid types are: " +
+                                                     MovingAverageType.getNames() + ".";
 
     static final String ERROR_INVALID_PROPERTY_VALUE_FORMAT = "Failed to read property '%s' because value format is invalid.";
 
@@ -411,15 +413,18 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     public ReportGeneratorConfiguration(Properties xltProperties, final File overridePropertyFile, final Properties commandLineProperties)
         throws IOException
     {
-        this(XltExecutionContext.getCurrent().getXltHomeDir(), XltExecutionContext.getCurrent().getXltConfigDir(), xltProperties, overridePropertyFile, commandLineProperties);
+        this(XltExecutionContext.getCurrent().getXltHomeDir(), XltExecutionContext.getCurrent().getXltConfigDir(), xltProperties,
+             overridePropertyFile, commandLineProperties);
     }
 
     /**
-     * Creates a new ReportGeneratorConfiguration object. Allows setting the XLT home and config directory manually.
-     * Use this only for unit tests or similar scenarios.
+     * Creates a new ReportGeneratorConfiguration object. Allows setting the XLT home and config directory manually. Use
+     * this only for unit tests or similar scenarios.
      *
-     * @param home the XLT home directory
-     * @param config the XLT config directory
+     * @param home
+     *            the XLT home directory
+     * @param config
+     *            the XLT config directory
      * @param overridePropertyFile
      *            Property file that overrides the basic one. This parameter might be <code>null</code> or empty
      * @param commandLineProperties
@@ -427,7 +432,8 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
      * @throws IOException
      *             if an I/O error occurs
      */
-    ReportGeneratorConfiguration(final File home, final File config, Properties xltProperties, final File overridePropertyFile, final Properties commandLineProperties)
+    ReportGeneratorConfiguration(final File home, final File config, Properties xltProperties, final File overridePropertyFile,
+                                 final Properties commandLineProperties)
         throws IOException
     {
         homeDirectory = home;
@@ -1773,7 +1779,8 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
      * Read the configuration for the common average from the properties. If no settings for the common average are
      * provided, return the given default value instead.
      *
-     * @param defaultValue the default configuration to return if the properties contain no settings for the common average
+     * @param defaultValue
+     *            the default configuration to return if the properties contain no settings for the common average
      * @return the common moving average configuration from the properties or the default value
      */
     private MovingAverageConfiguration readCommonMovingAverageConfiguration(final MovingAverageConfiguration defaultValue)
@@ -1782,15 +1789,18 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     }
 
     /**
-     * Read the configurations for the additional moving averages from the properties. If no additional moving averages are configured,
-     * return the given default values instead.
+     * Read the configurations for the additional moving averages from the properties. If no additional moving averages
+     * are configured, return the given default values instead.
      *
-     * @param defaultValues the default configurations to return if the properties contain no settings for additional moving averages
+     * @param defaultValues
+     *            the default configurations to return if the properties contain no settings for additional moving
+     *            averages
      * @return the additional moving average configurations from the properties or the default value
      */
     private List<MovingAverageConfiguration> readAdditionalMovingAverageConfigurations(final List<MovingAverageConfiguration> defaultValues)
     {
-        // Get the numeric indexes of all additional averages in the properties and verify they are within the expected limits
+        // Get the numeric indexes of all additional averages in the properties and verify they are within the expected
+        // limits
         final List<Integer> indexes;
         try
         {
@@ -1819,9 +1829,12 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     /**
      * Read the moving average configuration (type and value) from the properties starting with the given prefix.
      *
-     * @param prefix the prefix of the configuration properties
+     * @param prefix
+     *            the prefix of the configuration properties
      * @return the resulting moving average configuration, or "null" if there is no configuration with the given prefix
-     * @throws XltException if the moving average configuration is incomplete (either type or value are missing), the type is invalid, the value format is invalid, or the value is outside the allowed ranges
+     * @throws XltException
+     *             if the moving average configuration is incomplete (either type or value are missing), the type is
+     *             invalid, the value format is invalid, or the value is outside the allowed ranges
      */
     private MovingAverageConfiguration readMovingAverageConfiguration(final String prefix)
     {

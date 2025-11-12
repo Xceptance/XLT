@@ -36,8 +36,8 @@ import org.junit.runner.RunWith;
 public class JFreeChartUtilsTest
 {
     /**
-     * This tests {@link JFreeChartUtils#toMinMaxTimeSeries(IntMinMaxValueSet, String)} and causes an error due to a large
-     * scale in the MinMaxValueSet and multiplication with 1000 in the method in JFreeChartUtils.
+     * This tests {@link JFreeChartUtils#toMinMaxTimeSeries(IntMinMaxValueSet, String)} and causes an error due to a
+     * large scale in the MinMaxValueSet and multiplication with 1000 in the method in JFreeChartUtils.
      */
     @Ignore
     @Test
@@ -90,7 +90,8 @@ public class JFreeChartUtilsTest
     }
 
     /**
-     * Test that moving average series is calculated correctly for a source series with no time gaps between data points.
+     * Test that moving average series is calculated correctly for a source series with no time gaps between data
+     * points.
      */
     @Test
     @Parameters(method = "provideMovingAverageConfigs")
@@ -169,7 +170,8 @@ public class JFreeChartUtilsTest
 
         // Calculate moving average over the last 33% of values.
         // In this case this means "over the last 3 data points"; time gaps between points are ignored.
-        final TimeSeries result = JFreeChartUtils.createMovingAverageTimeSeries(series, MovingAverageConfiguration.createPercentageConfig(33));
+        final TimeSeries result = JFreeChartUtils.createMovingAverageTimeSeries(series,
+                                                                                MovingAverageConfiguration.createPercentageConfig(33));
 
         // Validate result series name and size
         Assert.assertEquals("Test (Average (33%))", result.getKey());
@@ -256,8 +258,9 @@ public class JFreeChartUtilsTest
      * less). Values lower than the minimum of "1%" should still result in the average over 1% of values.
      */
     @Test
-    @Parameters(value = {
-        "1", "0", "-1"
+    @Parameters(value =
+        {
+            "1", "0", "-1"
     })
     public void createMovingAverageTimeSeries_percentageAverage_minOrLowerValues(final int percentage)
     {
@@ -272,7 +275,8 @@ public class JFreeChartUtilsTest
 
         // The used percentage values result in "the average over the last 1% of values". In this case, this is the
         // average over the last 2 data points.
-        final TimeSeries result = JFreeChartUtils.createMovingAverageTimeSeries(series, MovingAverageConfiguration.createPercentageConfig(percentage));
+        final TimeSeries result = JFreeChartUtils.createMovingAverageTimeSeries(series,
+                                                                                MovingAverageConfiguration.createPercentageConfig(percentage));
 
         // Validate result series name and size
         Assert.assertEquals("Test (Average (" + percentage + "%))", result.getKey());
@@ -295,8 +299,9 @@ public class JFreeChartUtilsTest
      * less). Config values lower than the minimum of "1s" should still result in the average over a 1s interval.
      */
     @Test
-    @Parameters(value = {
-        "1", "0", "-1"
+    @Parameters(value =
+        {
+            "1", "0", "-1"
     })
     public void createMovingAverageTimeSeries_timeAverage_minOrLowerValues(final int seconds)
     {
@@ -310,7 +315,8 @@ public class JFreeChartUtilsTest
 
         // The used second values result in "the average over the last 1 second". Since the resolution of the source
         // series is 1 second, this is the average over 1 data point, i.e. the result is identical to the source series.
-        final TimeSeries result = JFreeChartUtils.createMovingAverageTimeSeries(series, MovingAverageConfiguration.createTimeConfig(seconds));
+        final TimeSeries result = JFreeChartUtils.createMovingAverageTimeSeries(series,
+                                                                                MovingAverageConfiguration.createTimeConfig(seconds));
 
         // Validate result series name and size
         Assert.assertEquals("Test (Average (" + seconds + "s))", result.getKey());
@@ -332,9 +338,9 @@ public class JFreeChartUtilsTest
     }
 
     /**
-     * Test moving average is calculated correctly for configurations that reach or exceed the max value (i.e. percentages
-     * of "100%" or higher, or times that are equal or greater than the source series runtime). In those cases, the
-     * result series should return the averages over all previous points in the series.
+     * Test moving average is calculated correctly for configurations that reach or exceed the max value (i.e.
+     * percentages of "100%" or higher, or times that are equal or greater than the source series runtime). In those
+     * cases, the result series should return the averages over all previous points in the series.
      */
     @Test
     @Parameters(method = "provideMovingAverageConfigsWithMaxOrHigherValues")
@@ -440,8 +446,7 @@ public class JFreeChartUtilsTest
     {
         return new Object[]
             {
-                MovingAverageConfiguration.createPercentageConfig(25),
-                MovingAverageConfiguration.createTimeConfig(3)
+                MovingAverageConfiguration.createPercentageConfig(25), MovingAverageConfiguration.createTimeConfig(3)
             };
     }
 

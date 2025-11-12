@@ -265,12 +265,14 @@ public class RequestDataProcessor extends BasicTimerDataProcessor
         // just int is safe, more than 2 billion urls is unlikely
         timerReport.urls = getUrlList(distinctUrlSet, (int) distinctUrlsHLL.cardinality());
         timerReport.countPerInterval = countPerSegment != null ? countPerSegment.getCountPerSegment() : ArrayUtils.EMPTY_INT_ARRAY;
-        timerReport.percentagePerInterval = countPerSegment != null ? new BigDecimal[countPerSegment.getCountPerSegment().length] : new BigDecimal[]{};
+        timerReport.percentagePerInterval = countPerSegment != null ? new BigDecimal[countPerSegment.getCountPerSegment().length]
+                                                                    : new BigDecimal[] {};
         if (countPerSegment != null)
         {
             for (int n = 0; n < countPerSegment.getCountPerSegment().length; n++)
             {
-                timerReport.percentagePerInterval[n] = ReportUtils.calculatePercentage(countPerSegment.getCountPerSegment()[n], timerReport.count);
+                timerReport.percentagePerInterval[n] = ReportUtils.calculatePercentage(countPerSegment.getCountPerSegment()[n],
+                                                                                       timerReport.count);
             }
         }
 

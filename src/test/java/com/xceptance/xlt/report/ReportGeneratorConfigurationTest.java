@@ -265,7 +265,9 @@ public class ReportGeneratorConfigurationTest
             addCommonAverageValue(blankValueOrNull);
         }
         final XltException exception = Assert.assertThrows(XltException.class, this::readReportGeneratorProperties);
-        Assert.assertEquals(String.format(ReportGeneratorConfiguration.ERROR_AVERAGE_PROPERTY_MISSING, getCommonAverageTypeKey(), getCommonAverageValueKey()), exception.getMessage());
+        Assert.assertEquals(String.format(ReportGeneratorConfiguration.ERROR_AVERAGE_PROPERTY_MISSING, getCommonAverageTypeKey(),
+                                          getCommonAverageValueKey()),
+                            exception.getMessage());
     }
 
     @Test
@@ -279,7 +281,9 @@ public class ReportGeneratorConfigurationTest
             addAdditionalAverageValue("1", blankValueOrNull);
         }
         final XltException exception = Assert.assertThrows(XltException.class, this::readReportGeneratorProperties);
-        Assert.assertEquals(String.format(ReportGeneratorConfiguration.ERROR_AVERAGE_PROPERTY_MISSING, getAdditionalAverageTypeKey("1"), getAdditionalAverageValueKey("1")), exception.getMessage());
+        Assert.assertEquals(String.format(ReportGeneratorConfiguration.ERROR_AVERAGE_PROPERTY_MISSING, getAdditionalAverageTypeKey("1"),
+                                          getAdditionalAverageValueKey("1")),
+                            exception.getMessage());
     }
 
     @Test
@@ -293,7 +297,9 @@ public class ReportGeneratorConfigurationTest
             addCommonAverageType(blankValueOrNull);
         }
         final XltException exception = Assert.assertThrows(XltException.class, this::readReportGeneratorProperties);
-        Assert.assertEquals(String.format(ReportGeneratorConfiguration.ERROR_AVERAGE_PROPERTY_MISSING, getCommonAverageValueKey(), getCommonAverageTypeKey()), exception.getMessage());
+        Assert.assertEquals(String.format(ReportGeneratorConfiguration.ERROR_AVERAGE_PROPERTY_MISSING, getCommonAverageValueKey(),
+                                          getCommonAverageTypeKey()),
+                            exception.getMessage());
     }
 
     @Test
@@ -307,7 +313,9 @@ public class ReportGeneratorConfigurationTest
             addAdditionalAverageType("1", blankValueOrNull);
         }
         final XltException exception = Assert.assertThrows(XltException.class, this::readReportGeneratorProperties);
-        Assert.assertEquals(String.format(ReportGeneratorConfiguration.ERROR_AVERAGE_PROPERTY_MISSING, getAdditionalAverageValueKey("1"), getAdditionalAverageTypeKey("1")), exception.getMessage());
+        Assert.assertEquals(String.format(ReportGeneratorConfiguration.ERROR_AVERAGE_PROPERTY_MISSING, getAdditionalAverageValueKey("1"),
+                                          getAdditionalAverageTypeKey("1")),
+                            exception.getMessage());
     }
 
     @Test
@@ -315,7 +323,9 @@ public class ReportGeneratorConfigurationTest
     {
         addCommonAverageConfig("invalidType", "25");
         final XltException exception = Assert.assertThrows(XltException.class, this::readReportGeneratorProperties);
-        Assert.assertEquals(String.format(ReportGeneratorConfiguration.ERROR_AVERAGE_TYPE_INVALID, "invalidType", getCommonAverageTypeKey()), exception.getMessage());
+        Assert.assertEquals(String.format(ReportGeneratorConfiguration.ERROR_AVERAGE_TYPE_INVALID, "invalidType",
+                                          getCommonAverageTypeKey()),
+                            exception.getMessage());
     }
 
     @Test
@@ -323,7 +333,9 @@ public class ReportGeneratorConfigurationTest
     {
         addAdditionalAverageConfig("1", "invalidType", "25");
         final XltException exception = Assert.assertThrows(XltException.class, this::readReportGeneratorProperties);
-        Assert.assertEquals(String.format(ReportGeneratorConfiguration.ERROR_AVERAGE_TYPE_INVALID, "invalidType", getAdditionalAverageTypeKey("1")), exception.getMessage());
+        Assert.assertEquals(String.format(ReportGeneratorConfiguration.ERROR_AVERAGE_TYPE_INVALID, "invalidType",
+                                          getAdditionalAverageTypeKey("1")),
+                            exception.getMessage());
     }
 
     @Test
@@ -331,7 +343,8 @@ public class ReportGeneratorConfigurationTest
     {
         addCommonAverageConfig("percentage", "invalidValue");
         final XltException exception = Assert.assertThrows(XltException.class, this::readReportGeneratorProperties);
-        Assert.assertEquals(String.format(ReportGeneratorConfiguration.ERROR_INVALID_PROPERTY_VALUE_FORMAT, getCommonAverageValueKey()), exception.getMessage());
+        Assert.assertEquals(String.format(ReportGeneratorConfiguration.ERROR_INVALID_PROPERTY_VALUE_FORMAT, getCommonAverageValueKey()),
+                            exception.getMessage());
     }
 
     @Test
@@ -339,7 +352,9 @@ public class ReportGeneratorConfigurationTest
     {
         addAdditionalAverageConfig("1", "percentage", "invalidValue");
         final XltException exception = Assert.assertThrows(XltException.class, this::readReportGeneratorProperties);
-        Assert.assertEquals(String.format(ReportGeneratorConfiguration.ERROR_INVALID_PROPERTY_VALUE_FORMAT, getAdditionalAverageValueKey("1")), exception.getMessage());
+        Assert.assertEquals(String.format(ReportGeneratorConfiguration.ERROR_INVALID_PROPERTY_VALUE_FORMAT,
+                                          getAdditionalAverageValueKey("1")),
+                            exception.getMessage());
     }
 
     @Test
@@ -347,7 +362,8 @@ public class ReportGeneratorConfigurationTest
     {
         addCommonAverageConfig("time", "invalidValue");
         final XltException exception = Assert.assertThrows(XltException.class, this::readReportGeneratorProperties);
-        Assert.assertEquals(String.format(ReportGeneratorConfiguration.ERROR_INVALID_PROPERTY_VALUE_FORMAT, getCommonAverageValueKey()), exception.getMessage());
+        Assert.assertEquals(String.format(ReportGeneratorConfiguration.ERROR_INVALID_PROPERTY_VALUE_FORMAT, getCommonAverageValueKey()),
+                            exception.getMessage());
     }
 
     @Test
@@ -355,51 +371,64 @@ public class ReportGeneratorConfigurationTest
     {
         addAdditionalAverageConfig("1", "time", "invalidValue");
         final XltException exception = Assert.assertThrows(XltException.class, this::readReportGeneratorProperties);
-        Assert.assertEquals(String.format(ReportGeneratorConfiguration.ERROR_INVALID_PROPERTY_VALUE_FORMAT, getAdditionalAverageValueKey("1")), exception.getMessage());
+        Assert.assertEquals(String.format(ReportGeneratorConfiguration.ERROR_INVALID_PROPERTY_VALUE_FORMAT,
+                                          getAdditionalAverageValueKey("1")),
+                            exception.getMessage());
     }
 
     @Test
-    @Parameters(value = {
-        "-1%", "0%", "101%", "2500%"
+    @Parameters(value =
+        {
+            "-1%", "0%", "101%", "2500%"
     })
     public void commonAverage_percentageOutOfBounds(final String percentage)
     {
         addCommonAverageConfig("percentage", percentage);
         final XltException exception = Assert.assertThrows(XltException.class, this::readReportGeneratorProperties);
-        Assert.assertEquals(String.format(ReportGeneratorConfiguration.ERROR_AVERAGE_PERCENTAGE_OUT_OF_BOUNDS, getCommonAverageValueKey(), percentage), exception.getMessage());
+        Assert.assertEquals(String.format(ReportGeneratorConfiguration.ERROR_AVERAGE_PERCENTAGE_OUT_OF_BOUNDS, getCommonAverageValueKey(),
+                                          percentage),
+                            exception.getMessage());
     }
 
     @Test
-    @Parameters(value = {
-        "-1%", "0%", "101%", "2500%"
+    @Parameters(value =
+        {
+            "-1%", "0%", "101%", "2500%"
     })
     public void additionalAverages_percentageOutOfBounds(final String percentage)
     {
         addAdditionalAverageConfig("1", "percentage", percentage);
         final XltException exception = Assert.assertThrows(XltException.class, this::readReportGeneratorProperties);
-        Assert.assertEquals(String.format(ReportGeneratorConfiguration.ERROR_AVERAGE_PERCENTAGE_OUT_OF_BOUNDS, getAdditionalAverageValueKey("1"), percentage), exception.getMessage());
+        Assert.assertEquals(String.format(ReportGeneratorConfiguration.ERROR_AVERAGE_PERCENTAGE_OUT_OF_BOUNDS,
+                                          getAdditionalAverageValueKey("1"), percentage),
+                            exception.getMessage());
     }
 
     @Test
-    @Parameters(value = {
-        "0", "0s", "0:00:00", "0h0m0s"
+    @Parameters(value =
+        {
+            "0", "0s", "0:00:00", "0h0m0s"
     })
     public void commonAverage_timeOutOfBounds(final String time)
     {
         addCommonAverageConfig("time", time);
         final XltException exception = Assert.assertThrows(XltException.class, this::readReportGeneratorProperties);
-        Assert.assertEquals(String.format(ReportGeneratorConfiguration.ERROR_AVERAGE_TIME_OUT_OF_BOUNDS, getCommonAverageValueKey(), time), exception.getMessage());
+        Assert.assertEquals(String.format(ReportGeneratorConfiguration.ERROR_AVERAGE_TIME_OUT_OF_BOUNDS, getCommonAverageValueKey(), time),
+                            exception.getMessage());
     }
 
     @Test
-    @Parameters(value = {
-        "0", "0s", "0:00:00", "0h0m0s"
+    @Parameters(value =
+        {
+            "0", "0s", "0:00:00", "0h0m0s"
     })
     public void additionalAverages_timeOutOfBounds(final String time)
     {
         addAdditionalAverageConfig("1", "time", time);
         final XltException exception = Assert.assertThrows(XltException.class, this::readReportGeneratorProperties);
-        Assert.assertEquals(String.format(ReportGeneratorConfiguration.ERROR_AVERAGE_TIME_OUT_OF_BOUNDS, getAdditionalAverageValueKey("1"), time), exception.getMessage());
+        Assert.assertEquals(String.format(ReportGeneratorConfiguration.ERROR_AVERAGE_TIME_OUT_OF_BOUNDS, getAdditionalAverageValueKey("1"),
+                                          time),
+                            exception.getMessage());
     }
 
     @Test

@@ -451,7 +451,7 @@ public class CustomReportProvider extends AbstractDataConverter
                     catch (final NumberFormatException e)
                     {
                         XltLogger.reportLogger.warn("Skip moving average for series " + valueName + ". Can not parse average '" +
-                                                     seriesConfig.getAverage() + "' to integer value");
+                                                    seriesConfig.getAverage() + "' to integer value");
                     }
                 }
 

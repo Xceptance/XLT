@@ -168,8 +168,8 @@ public class TransactionDataProcessor extends BasicTimerDataProcessor
     @Override
     protected JFreeChart createResponseTimeAndErrorsChart(final String name, final TimeSeries responseTimeSeries,
                                                           final TimeSeries responseTimeAverageSeries,
-                                                          final XYIntervalSeries responseTimeHistogramSeries,
-                                                          final TimeSeries errorsSeries, final int chartCappingValue)
+                                                          final XYIntervalSeries responseTimeHistogramSeries, final TimeSeries errorsSeries,
+                                                          final int chartCappingValue)
     {
         final JFreeChart chart = super.createResponseTimeAndErrorsChart(name, responseTimeSeries, responseTimeAverageSeries,
                                                                         responseTimeHistogramSeries, errorsSeries, chartCappingValue);
@@ -256,7 +256,7 @@ public class TransactionDataProcessor extends BasicTimerDataProcessor
     {
         final ReportProviderConfiguration config = getConfiguration();
 
-        //System.out.printf("Creating %s chart for timer '%s' ...\n", chartType, title);
+        // System.out.printf("Creating %s chart for timer '%s' ...\n", chartType, title);
 
         // final long start = TimerUtils.getTime();
 

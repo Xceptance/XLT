@@ -93,8 +93,9 @@ public final class JFreeChartUtils
         /**
          * blue, ...
          */
-        public static final ColorSet AVERAGES = new ColorSet(COLOR_MOVING_AVERAGE, COLOR_MEDIAN, COLOR_MEAN, COLOR_MOVING_AVERAGE_ADDITIONAL_1,
-                                                             COLOR_MOVING_AVERAGE_ADDITIONAL_2, COLOR_MOVING_AVERAGE_ADDITIONAL_3, COLOR_MOVING_AVERAGE_ADDITIONAL_4,
+        public static final ColorSet AVERAGES = new ColorSet(COLOR_MOVING_AVERAGE, COLOR_MEDIAN, COLOR_MEAN,
+                                                             COLOR_MOVING_AVERAGE_ADDITIONAL_1, COLOR_MOVING_AVERAGE_ADDITIONAL_2,
+                                                             COLOR_MOVING_AVERAGE_ADDITIONAL_3, COLOR_MOVING_AVERAGE_ADDITIONAL_4,
                                                              COLOR_MOVING_AVERAGE_ADDITIONAL_5);
 
         /**
@@ -166,14 +167,14 @@ public final class JFreeChartUtils
      */
     public enum MoreColors
     {
-     BROWN(0xB97A57),
-     GRAY(0xAAAAAA),
-     GREEN(0x00AA00),
-     LIGHT_GRAY(0x757575),
-     LIGHT_GREEN(0xB5E61D),
-     LILAC(0xC8BFE7),
-     ORANGE(0xFF9900),
-     STEEL_BLUE(0x7092BE);
+        BROWN(0xB97A57),
+        GRAY(0xAAAAAA),
+        GREEN(0x00AA00),
+        LIGHT_GRAY(0x757575),
+        LIGHT_GREEN(0xB5E61D),
+        LILAC(0xC8BFE7),
+        ORANGE(0xFF9900),
+        STEEL_BLUE(0x7092BE);
 
         private final Color color;
 
@@ -232,17 +233,17 @@ public final class JFreeChartUtils
      * The color of a moving average line in the charts (dark blue).
      */
     public static final Color COLOR_MOVING_AVERAGE = new Color(0x1C1CBF);
-    
+
     /**
      * The color of an additional moving average line in the charts (dark green).
      */
     public static final Color COLOR_MOVING_AVERAGE_ADDITIONAL_1 = new Color(0x169C49);
-    
+
     /**
      * The color of an additional moving average line in the charts (dark orange).
      */
     public static final Color COLOR_MOVING_AVERAGE_ADDITIONAL_2 = new Color(0xFF8000);
-    
+
     /**
      * The color of an additional moving average line in the charts (dark purple).
      */
@@ -401,7 +402,8 @@ public final class JFreeChartUtils
      */
     public static JFreeChart createAverageLineChart(final String seriesName, final String chartTitle, final String yAxisTitle,
                                                     final TimeSeries valueSeries, final TimeSeries averageValueSeries, final double median,
-                                                    final double mean, final long startTime, final long endTime, final List<TimeSeries> additionalAverageValueSeriesList)
+                                                    final double mean, final long startTime, final long endTime,
+                                                    final List<TimeSeries> additionalAverageValueSeriesList)
     {
         final TimeSeries medianSeries = new TimeSeries(seriesName + " (Median)");
         final TimeSeries meanSeries = new TimeSeries(seriesName + " (Mean)");
@@ -429,13 +431,14 @@ public final class JFreeChartUtils
         if (additionalAverageValueSeriesList != null)
         {
             // don't add more than the allowed maximum of additional averages
-            final int maxAdditionalAveragesCount = Math.min(additionalAverageValueSeriesList.size(), XltConstants.REPORT_CHART_MAX_ADDITIONAL_AVERAGES);
+            final int maxAdditionalAveragesCount = Math.min(additionalAverageValueSeriesList.size(),
+                                                            XltConstants.REPORT_CHART_MAX_ADDITIONAL_AVERAGES);
             for (int i = 0; i < maxAdditionalAveragesCount; i++)
             {
                 seriesCollection.addSeries(additionalAverageValueSeriesList.get(i));
             }
         }
-        
+
         // create and customize the chart
         final JFreeChart chart = createLineChart(chartTitle, yAxisTitle, seriesCollection, startTime, endTime, ColorSet.AVERAGES);
 
@@ -987,7 +990,8 @@ public final class JFreeChartUtils
     }
 
     /**
-     *  Creates a "moving average" time series from the given time series by averaging over a given percentage of data points.
+     * Creates a "moving average" time series from the given time series by averaging over a given percentage of data
+     * points.
      * 
      * @param series
      *            the source series
@@ -997,7 +1001,8 @@ public final class JFreeChartUtils
      *            the name of the result series
      * @return the "moving average" time series
      */
-    private static TimeSeries createMovingAverageTimeSeriesPercentage(final TimeSeries series, final int percentage, final String resultSeriesName)
+    private static TimeSeries createMovingAverageTimeSeriesPercentage(final TimeSeries series, final int percentage,
+                                                                      final String resultSeriesName)
     {
         final TimeSeries result = new TimeSeries(resultSeriesName);
 
@@ -1018,7 +1023,7 @@ public final class JFreeChartUtils
                 if (i < samples)
                 {
                     // Add the average over all points so far to the result series
-                    result.add(series.getTimePeriod(i), sum / (i+1));
+                    result.add(series.getTimePeriod(i), sum / (i + 1));
                 }
                 else
                 {

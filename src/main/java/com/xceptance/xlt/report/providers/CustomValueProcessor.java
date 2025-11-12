@@ -182,7 +182,8 @@ public class CustomValueProcessor extends AbstractDataProcessor
         {
             // create the value series now as they will be needed for multiple charts
             final TimeSeries valueSeries = JFreeChartUtils.toMinMaxTimeSeries(vSet, samplerName);
-            final TimeSeries averageValueSeries = JFreeChartUtils.createMovingAverageTimeSeries(valueSeries, getCommonMovingAverageConfig());
+            final TimeSeries averageValueSeries = JFreeChartUtils.createMovingAverageTimeSeries(valueSeries,
+                                                                                                getCommonMovingAverageConfig());
             final XYIntervalSeries histogramSeries = histogram.toSeries("Counts");
 
             // create charts asynchronously
@@ -252,8 +253,10 @@ public class CustomValueProcessor extends AbstractDataProcessor
      *            the title of the range axis
      * @param chartFileName
      *            the name of the chart file
-     * @param valueSeries
-     *            the value series
+     * @param timeSeries
+     *            the time series
+     * @param averageTimeSeries
+     *            the average time series
      * @param histogramSeries
      *            the histogram series
      * @param chartCappingValue
@@ -269,8 +272,8 @@ public class CustomValueProcessor extends AbstractDataProcessor
 
         // create the value plot
         final DateAxis timeAxis = JFreeChartUtils.createTimeAxis(getStartTime(), getEndTime());
-        final XYPlot customValuePlot = JFreeChartUtils.createLinePlot(timeSeries, averageTimeSeries, timeAxis, yAxisTitle, true,
-                                                                      chartScale, chartCappingValue);
+        final XYPlot customValuePlot = JFreeChartUtils.createLinePlot(timeSeries, averageTimeSeries, timeAxis, yAxisTitle, true, chartScale,
+                                                                      chartCappingValue);
         NumberAxis rangeAxis = (NumberAxis) customValuePlot.getRangeAxis();
         rangeAxis.setStandardTickUnits(NumberAxis.createStandardTickUnits());
         // rangeAxis.setAutoRangeIncludesZero(false);

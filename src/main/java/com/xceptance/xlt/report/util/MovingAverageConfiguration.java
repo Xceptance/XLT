@@ -29,12 +29,14 @@ public class MovingAverageConfiguration
     public enum MovingAverageType
     {
         /**
-         * Average over a percentage of data points. E.g. if we have 1000 data points, a percentage average of 5% will calculate the average over the last 50 data points.
+         * Average over a percentage of data points. E.g. if we have 1000 data points, a percentage average of 5% will
+         * calculate the average over the last 50 data points.
          */
         PERCENTAGE("percentage"),
-        
+
         /**
-         * Average over a time interval. E.g. a time average of 30s will calculate the average over all data points in the last 30s.
+         * Average over a time interval. E.g. a time average of 30s will calculate the average over all data points in
+         * the last 30s.
          */
         TIME("time");
 
@@ -75,10 +77,11 @@ public class MovingAverageConfiguration
     private final MovingAverageType type;
 
     /**
-     * The value of the moving average configuration. For "percentage" averages this is an integer percentage value (e.g. a value of "25" means "25%"). For "time" averages this is a time interval in seconds.
+     * The value of the moving average configuration. For "percentage" averages this is an integer percentage value
+     * (e.g. a value of "25" means "25%"). For "time" averages this is a time interval in seconds.
      */
     private final int value;
-    
+
     /**
      * The name of the moving average configuration.
      */
@@ -94,8 +97,7 @@ public class MovingAverageConfiguration
     /**
      * Get the type of the moving average configuration.
      *
-     * @return
-     *          the type of the moving average configuration
+     * @return the type of the moving average configuration
      */
     public MovingAverageType getType()
     {
@@ -105,8 +107,8 @@ public class MovingAverageConfiguration
     /**
      * Get the value of the moving average configuration.
      *
-     * @return
-     *          the value of the moving average configuration. For "percentage" averages this is a percentage integer value (e.g. a value of "25" means "25%"). For "time" averages this is a time interval in seconds.
+     * @return the value of the moving average configuration. For "percentage" averages this is a percentage integer
+     *         value (e.g. a value of "25" means "25%"). For "time" averages this is a time interval in seconds.
      */
     public int getValue()
     {
@@ -126,7 +128,8 @@ public class MovingAverageConfiguration
     /**
      * Create a moving average configuration of type "percentage" with the given percentage value.
      *
-     * @param percentage an integer value representing the percentage (e.g. a value of "25" means "25%")
+     * @param percentage
+     *            an integer value representing the percentage (e.g. a value of "25" means "25%")
      * @return the "percentage" moving average configuration
      */
     public static MovingAverageConfiguration createPercentageConfig(final int percentage)
@@ -137,7 +140,9 @@ public class MovingAverageConfiguration
     /**
      * Create a moving average configuration of type "time" with the given time interval in seconds.
      *
-     * @param seconds an integer value representing a time interval in seconds (e.g. a value of "30" means that the average should be calculated over the last 30 seconds)
+     * @param seconds
+     *            an integer value representing a time interval in seconds (e.g. a value of "30" means that the average
+     *            should be calculated over the last 30 seconds)
      * @return the "time" moving average configuration
      */
     public static MovingAverageConfiguration createTimeConfig(final int seconds)
@@ -146,10 +151,15 @@ public class MovingAverageConfiguration
     }
 
     /**
-     * Create a moving average configuration of type "time" with the given time interval in seconds and the given custom name. This can be used to provide a name that is easier to comprehend than a number of seconds (e.g. the name "5m30s" might be more helpful than "330s").
+     * Create a moving average configuration of type "time" with the given time interval in seconds and the given custom
+     * name. This can be used to provide a name that is easier to comprehend than a number of seconds (e.g. the name
+     * "5m30s" might be more helpful than "330s").
      *
-     * @param seconds an integer value representing the time interval in seconds (e.g. a value of "30" means that the average should be calculated over the last 30 seconds)
-     * @param name the custom name for this configuration
+     * @param seconds
+     *            an integer value representing the time interval in seconds (e.g. a value of "30" means that the
+     *            average should be calculated over the last 30 seconds)
+     * @param name
+     *            the custom name for this configuration
      * @return the "time" moving average configuration
      */
     public static MovingAverageConfiguration createTimeConfig(final int seconds, final String name)

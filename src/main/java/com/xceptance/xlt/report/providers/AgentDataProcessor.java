@@ -158,7 +158,7 @@ public class AgentDataProcessor extends AbstractDataProcessor
 
         agentReport.transactions = transactions;
         agentReport.transactionErrors = transactionErrors;
-        
+
         agentReport.transactionErrorPercentage = ReportUtils.calculatePercentage(transactionErrors, transactions);
 
         return agentReport;

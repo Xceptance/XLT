@@ -39,7 +39,7 @@ public abstract class AbstractDataProcessor
     private File csvDir;
 
     private MovingAverageConfiguration commonMovingAverageConfig;
-    
+
     private List<MovingAverageConfiguration> additionalMovingAverageConfigs;
 
     private ChartCappingInfo chartCappingInfo;
@@ -149,7 +149,7 @@ public abstract class AbstractDataProcessor
     {
         return commonMovingAverageConfig;
     }
-    
+
     /**
      * Returns the list of all additional moving average configurations.
      * 
@@ -271,7 +271,8 @@ public abstract class AbstractDataProcessor
     /**
      * Sets the additional moving average configurations.
      * 
-     * @param additionalMovingAverageConfigs the new list of all additional moving average configurations
+     * @param additionalMovingAverageConfigs
+     *            the new list of all additional moving average configurations
      */
     public void setAdditionalMovingAverageConfigs(final List<MovingAverageConfiguration> additionalMovingAverageConfigs)
     {

@@ -486,8 +486,9 @@ public class ParseUtilsTest
     }
 
     @Test(expected = ParseException.class)
-    @Parameters(value = {
-        "12.3%", "abc", "%25", "25*"
+    @Parameters(value =
+        {
+            "12.3%", "abc", "%25", "25*"
     })
     public void parseIntPercentage_invalidValue(final String invalidValue) throws ParseException
     {

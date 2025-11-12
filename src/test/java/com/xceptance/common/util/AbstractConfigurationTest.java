@@ -356,24 +356,30 @@ public class AbstractConfigurationTest
     @Test
     public void testGetPropertyKeyIndexes_nonNumericIndex()
     {
-        final NumberFormatException exception = Assert.assertThrows(NumberFormatException.class, () -> conf.getPropertyKeyIndexes("prop.invalidIndex.", 0, 10));
-        Assert.assertEquals(String.format(AbstractConfiguration.PROPERTY_PARSING_ERROR_INVALID_INDEX_FORMAT, "abc", "prop.invalidIndex."), exception.getMessage());
+        final NumberFormatException exception = Assert.assertThrows(NumberFormatException.class,
+                                                                    () -> conf.getPropertyKeyIndexes("prop.invalidIndex.", 0, 10));
+        Assert.assertEquals(String.format(AbstractConfiguration.PROPERTY_PARSING_ERROR_INVALID_INDEX_FORMAT, "abc", "prop.invalidIndex."),
+                            exception.getMessage());
     }
 
     @Test
     public void testGetPropertyKeyIndexes_indexTooLow()
     {
         // Index 3 is not within the provided boundaries of 4 to 7
-        final IndexOutOfBoundsException exception = Assert.assertThrows(IndexOutOfBoundsException.class, () -> conf.getPropertyKeyIndexes("prop.index.", 4, 7));
-        Assert.assertEquals(String.format(AbstractConfiguration.PROPERTY_PARSING_ERROR_INDEX_OUT_OF_BOUNDS, 3, "prop.index.", 4, 7), exception.getMessage());
+        final IndexOutOfBoundsException exception = Assert.assertThrows(IndexOutOfBoundsException.class,
+                                                                        () -> conf.getPropertyKeyIndexes("prop.index.", 4, 7));
+        Assert.assertEquals(String.format(AbstractConfiguration.PROPERTY_PARSING_ERROR_INDEX_OUT_OF_BOUNDS, 3, "prop.index.", 4, 7),
+                            exception.getMessage());
     }
 
     @Test
     public void testGetPropertyKeyIndexes_indexTooHigh()
     {
         // Index 7 is not within the provided boundaries of 3 to 6
-        final IndexOutOfBoundsException exception = Assert.assertThrows(IndexOutOfBoundsException.class, () -> conf.getPropertyKeyIndexes("prop.index.", 3, 6));
-        Assert.assertEquals(String.format(AbstractConfiguration.PROPERTY_PARSING_ERROR_INDEX_OUT_OF_BOUNDS, 7, "prop.index.", 3, 6), exception.getMessage());
+        final IndexOutOfBoundsException exception = Assert.assertThrows(IndexOutOfBoundsException.class,
+                                                                        () -> conf.getPropertyKeyIndexes("prop.index.", 3, 6));
+        Assert.assertEquals(String.format(AbstractConfiguration.PROPERTY_PARSING_ERROR_INDEX_OUT_OF_BOUNDS, 7, "prop.index.", 3, 6),
+                            exception.getMessage());
     }
 
     /**

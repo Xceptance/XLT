@@ -89,7 +89,7 @@ public interface ReportProviderConfiguration
      * @return the common moving average configuration
      */
     public MovingAverageConfiguration getCommonMovingAverageConfig();
-    
+
     /**
      * Returns a list of configurations for additional moving averages (see {@link MovingAverageConfiguration}).
      * 

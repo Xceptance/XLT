@@ -150,7 +150,10 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
             final TimeSeries runTimeAverageTimeSeries = JFreeChartUtils.createMovingAverageTimeSeries(runTimeTimeSeries,
                                                                                                       getCommonMovingAverageConfig());
             // process additional moving averages, if they are configured
-            final List<TimeSeries> additionalRunTimeAverageTimeSeriesList = getAdditionalMovingAverageConfigs().stream().map(config -> JFreeChartUtils.createMovingAverageTimeSeries(runTimeTimeSeries, config)).toList();
+            final List<TimeSeries> additionalRunTimeAverageTimeSeriesList = getAdditionalMovingAverageConfigs().stream()
+                                                                                                               .map(config -> JFreeChartUtils.createMovingAverageTimeSeries(runTimeTimeSeries,
+                                                                                                                                                                            config))
+                                                                                                               .toList();
 
             // create charts asynchronously
             final TaskManager taskManager = TaskManager.getInstance();
@@ -415,7 +418,8 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
 
         // final long start = TimerUtils.getTime();
 
-        final JFreeChart chart = createResponseTimeAverageChart(timerName, responseTimeSeries, responseTimeAverageSeries, median, mean, additionalResponseTimeAverageSeriesList);
+        final JFreeChart chart = createResponseTimeAverageChart(timerName, responseTimeSeries, responseTimeAverageSeries, median, mean,
+                                                                additionalResponseTimeAverageSeriesList);
 
         JFreeChartUtils.saveChart(chart, timerName + "_Average", getChartDir(), getChartWidth(), getChartHeight());
 

@@ -426,9 +426,13 @@ public class AbstractConfiguration
     }
 
     /**
-     * <p>Get a list of all integer indexes (in order) that are used in properties starting with the given prefix.</p>
-     *
-     * <p>For example, the properties contain:</p>
+     * <p>
+     * Get a list of all integer indexes (in order) that are used in properties starting with the given prefix.
+     * </p>
+     * <p>
+     * For example, the properties contain:
+     * </p>
+     * 
      * <pre>{@code
      * ...
      * test.prop.1.type = typeA
@@ -438,17 +442,25 @@ public class AbstractConfiguration
      * ...
      * }
      * </pre>
+     * <p>
+     * Calling this method with prefix "test.prop." will return a list containing [1,3].
+     * </p>
+     * <p>
+     * This method will validate that all matching indexes are no smaller than "minIndex" and no bigger than "maxIndex",
+     * and throw an exception if any index is outside of this range.
+     * </p>
      *
-     * <p>Calling this method with prefix "test.prop." will return a list containing [1,3].</p>
-     *
-     * <p>This method will validate that all matching indexes are no smaller than "minIndex" and no bigger than "maxIndex", and throw an exception if any index is outside of this range.</p>
-     *
-     * @param prefix the property prefix
-     * @param minIndex the smallest allowed index value
-     * @param maxIndex the biggest allowed index value
+     * @param prefix
+     *            the property prefix
+     * @param minIndex
+     *            the smallest allowed index value
+     * @param maxIndex
+     *            the biggest allowed index value
      * @return a sorted list of all matching indexes
-     * @throws NumberFormatException if any of the indexes isn't a valid integer value
-     * @throws IndexOutOfBoundsException if any of the indexes is below the minIndex or above the maxIndex
+     * @throws NumberFormatException
+     *             if any of the indexes isn't a valid integer value
+     * @throws IndexOutOfBoundsException
+     *             if any of the indexes is below the minIndex or above the maxIndex
      */
     public List<Integer> getPropertyKeyIndexes(final String prefix, final int minIndex, final int maxIndex)
     {
@@ -469,7 +481,8 @@ public class AbstractConfiguration
 
             if (index < minIndex || index > maxIndex)
             {
-                throw new IndexOutOfBoundsException(String.format(PROPERTY_PARSING_ERROR_INDEX_OUT_OF_BOUNDS, indexString, prefix, minIndex, maxIndex));
+                throw new IndexOutOfBoundsException(String.format(PROPERTY_PARSING_ERROR_INDEX_OUT_OF_BOUNDS, indexString, prefix, minIndex,
+                                                                  maxIndex));
             }
 
             sortedIndexes.add(index);
