@@ -28,9 +28,9 @@ import com.xceptance.xlt.report.ReportGeneratorConfiguration;
 import com.xceptance.xlt.report.util.ArithmeticMean;
 import com.xceptance.xlt.report.util.DoubleMinMaxValueSet;
 import com.xceptance.xlt.report.util.DoubleSummaryStatistics;
+import com.xceptance.xlt.report.util.IntMinMaxValueSet;
 import com.xceptance.xlt.report.util.JFreeChartUtils;
 import com.xceptance.xlt.report.util.MinMaxTimeSeriesCollection;
-import com.xceptance.xlt.report.util.IntMinMaxValueSet;
 import com.xceptance.xlt.report.util.ReportUtils;
 import com.xceptance.xlt.report.util.TaskManager;
 

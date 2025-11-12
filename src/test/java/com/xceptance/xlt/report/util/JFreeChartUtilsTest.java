@@ -17,17 +17,18 @@ package com.xceptance.xlt.report.util;
 
 import java.util.Date;
 
-import junitparams.JUnitParamsRunner;
-import junitparams.Parameters;
 import org.jfree.data.time.Minute;
 import org.jfree.data.time.Second;
 import org.jfree.data.time.TimeSeries;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import com.xceptance.xlt.report.ReportGeneratorMain;
-import org.junit.runner.RunWith;
+
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
 
 /**
  * @author Sebastian Oerding

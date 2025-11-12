@@ -20,11 +20,12 @@ import java.net.URI;
 import java.net.URL;
 import java.text.ParseException;
 
-import junitparams.JUnitParamsRunner;
-import junitparams.Parameters;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
 import util.JUnitParamsUtils;
 
 /**

@@ -1,23 +1,25 @@
 package com.xceptance.xlt.report;
 
-import com.xceptance.xlt.api.util.XltException;
-import com.xceptance.xlt.common.XltConstants;
-import com.xceptance.xlt.report.util.MovingAverageConfiguration;
-import junitparams.JUnitParamsRunner;
-import junitparams.Parameters;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
+import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
-import util.JUnitParamsUtils;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.StandardOpenOption;
-import java.util.List;
+import com.xceptance.xlt.api.util.XltException;
+import com.xceptance.xlt.common.XltConstants;
+import com.xceptance.xlt.report.util.MovingAverageConfiguration;
+
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
+import util.JUnitParamsUtils;
 
 @RunWith(JUnitParamsRunner.class)
 public class ReportGeneratorConfigurationTest
