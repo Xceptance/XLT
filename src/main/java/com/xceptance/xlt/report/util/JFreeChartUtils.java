@@ -247,7 +247,7 @@ public final class JFreeChartUtils
     /**
      * The color of an additional moving average line in the charts (dark purple).
      */
-    public static final Color COLOR_MOVING_AVERAGE_ADDITIONAL_3 = new Color(0x880B97);
+    public static final Color COLOR_MOVING_AVERAGE_ADDITIONAL_3 = new Color(0xAA25BA);
 
     /**
      * The color of an additional moving average line in the charts (light blue).
