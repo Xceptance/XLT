@@ -118,7 +118,7 @@ public class JFreeChartUtilsTest
         final TimeSeries result = JFreeChartUtils.createMovingAverageTimeSeries(series, movingAverageConfig);
 
         // Validate result name and size
-        Assert.assertEquals("Test (Average (" + movingAverageConfig.getName() + "))", result.getKey());
+        Assert.assertEquals("Test Average (" + movingAverageConfig.getName() + ")", result.getKey());
         Assert.assertEquals(12, result.getItemCount());
 
         // Time periods of the result series should match time periods of the source series
@@ -175,7 +175,7 @@ public class JFreeChartUtilsTest
                                                                                 MovingAverageConfiguration.createPercentageConfig(33));
 
         // Validate result series name and size
-        Assert.assertEquals("Test (Average (33%))", result.getKey());
+        Assert.assertEquals("Test Average (33%)", result.getKey());
         Assert.assertEquals(10, result.getItemCount());
 
         // Time periods in result series should match time periods of the source series
@@ -226,7 +226,7 @@ public class JFreeChartUtilsTest
         final TimeSeries result = JFreeChartUtils.createMovingAverageTimeSeries(series, MovingAverageConfiguration.createTimeConfig(900));
 
         // Validate result series name and size
-        Assert.assertEquals("Test (Average (900s))", result.getKey());
+        Assert.assertEquals("Test Average (900s)", result.getKey());
         Assert.assertEquals(10, result.getItemCount());
 
         // Time periods in result series should match time periods of the source series
@@ -280,7 +280,7 @@ public class JFreeChartUtilsTest
                                                                                 MovingAverageConfiguration.createPercentageConfig(percentage));
 
         // Validate result series name and size
-        Assert.assertEquals("Test (Average (" + percentage + "%))", result.getKey());
+        Assert.assertEquals("Test Average (" + percentage + "%)", result.getKey());
         Assert.assertEquals(200, result.getItemCount());
 
         // Validate first point of the result series matches source series
@@ -320,7 +320,7 @@ public class JFreeChartUtilsTest
                                                                                 MovingAverageConfiguration.createTimeConfig(seconds));
 
         // Validate result series name and size
-        Assert.assertEquals("Test (Average (" + seconds + "s))", result.getKey());
+        Assert.assertEquals("Test Average (" + seconds + "s)", result.getKey());
         Assert.assertEquals(5, result.getItemCount());
 
         // Time periods of the result series should match time periods of the source series
@@ -360,7 +360,7 @@ public class JFreeChartUtilsTest
         final TimeSeries result = JFreeChartUtils.createMovingAverageTimeSeries(series, config);
 
         // Validate result series name and size
-        Assert.assertEquals("Test (Average (" + config.getName() + "))", result.getKey());
+        Assert.assertEquals("Test Average (" + config.getName() + ")", result.getKey());
         Assert.assertEquals(5, result.getItemCount());
 
         // Time periods of the result series should match time periods of the source series
@@ -419,7 +419,7 @@ public class JFreeChartUtilsTest
     public void createMovingAverageTimeSeries_emptySeries(final MovingAverageConfiguration config)
     {
         final TimeSeries result = JFreeChartUtils.createMovingAverageTimeSeries(new TimeSeries("Test"), config);
-        Assert.assertEquals("Test (Average (" + config.getName() + "))", result.getKey());
+        Assert.assertEquals("Test Average (" + config.getName() + ")", result.getKey());
         Assert.assertEquals(0, result.getItemCount());
     }
 

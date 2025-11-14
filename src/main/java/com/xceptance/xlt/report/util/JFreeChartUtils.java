@@ -235,29 +235,29 @@ public final class JFreeChartUtils
     public static final Color COLOR_MOVING_AVERAGE = new Color(0x1C1CBF);
 
     /**
-     * The color of an additional moving average line in the charts (dark green).
+     * The color of an additional moving average line in the charts (light green).
      */
-    public static final Color COLOR_MOVING_AVERAGE_ADDITIONAL_1 = new Color(0x169C49);
+    public static final Color COLOR_MOVING_AVERAGE_ADDITIONAL_1 = new Color(0xB2DF8B);
 
     /**
-     * The color of an additional moving average line in the charts (dark orange).
+     * The color of an additional moving average line in the charts (light orange).
      */
-    public static final Color COLOR_MOVING_AVERAGE_ADDITIONAL_2 = new Color(0xFF8000);
+    public static final Color COLOR_MOVING_AVERAGE_ADDITIONAL_2 = new Color(0xFDBF6D);
 
     /**
-     * The color of an additional moving average line in the charts (dark purple).
+     * The color of an additional moving average line in the charts (light purple).
      */
-    public static final Color COLOR_MOVING_AVERAGE_ADDITIONAL_3 = new Color(0xAA25BA);
+    public static final Color COLOR_MOVING_AVERAGE_ADDITIONAL_3 = new Color(0xCAB2D7);
 
     /**
      * The color of an additional moving average line in the charts (light blue).
      */
-    public static final Color COLOR_MOVING_AVERAGE_ADDITIONAL_4 = new Color(0x62C0E0);
+    public static final Color COLOR_MOVING_AVERAGE_ADDITIONAL_4 = new Color(0xA6CDE3);
 
     /**
-     * The color of an additional moving average line in the charts (pink).
+     * The color of an additional moving average line in the charts (light pink).
      */
-    public static final Color COLOR_MOVING_AVERAGE_ADDITIONAL_5 = new Color(0xEF8EF3);
+    public static final Color COLOR_MOVING_AVERAGE_ADDITIONAL_5 = new Color(0xF6A9A9);
 
     /**
      * The default chart theme.
@@ -405,8 +405,8 @@ public final class JFreeChartUtils
                                                     final double mean, final long startTime, final long endTime,
                                                     final List<TimeSeries> additionalAverageValueSeriesList)
     {
-        final TimeSeries medianSeries = new TimeSeries(seriesName + " (Median)");
-        final TimeSeries meanSeries = new TimeSeries(seriesName + " (Mean)");
+        final TimeSeries medianSeries = new TimeSeries(seriesName + " Median");
+        final TimeSeries meanSeries = new TimeSeries(seriesName + " Mean");
 
         final TimeSeriesCollection seriesCollection = new TimeSeriesCollection();
         seriesCollection.addSeries(averageValueSeries);
@@ -980,7 +980,7 @@ public final class JFreeChartUtils
      */
     public static TimeSeries createMovingAverageTimeSeries(final TimeSeries series, final MovingAverageConfiguration movingAverageConfig)
     {
-        final String resultSeriesName = series.getKey() + " (Average (" + movingAverageConfig.getName() + "))";
+        final String resultSeriesName = series.getKey() + " Average (" + movingAverageConfig.getName() + ")";
 
         return switch (movingAverageConfig.getType())
         {
