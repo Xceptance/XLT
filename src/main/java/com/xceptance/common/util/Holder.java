@@ -16,48 +16,49 @@
 package com.xceptance.common.util;
 
 /**
+ * Simple Holder class that holds a value. Use this class to imitate a mutable reference.
  */
 public class Holder<T>
 {
     /**
-     * The target stream.
+     * The value.
      */
-    private T object;
+    private T value;
 
     /**
-     * Creates a new StreamPump object and initializes it with the given source and target streams.
+     * Creates a new Holder instance and initializes it with a <code>null</code> value.
      */
     public Holder()
     {
+        this(null);
     }
 
     /**
-     * Creates a new StreamPump object and initializes it with the given source stream. The target stream is created
-     * from the specified file.
+     * Creates a new Holder instance and initializes it with the given value.
      * 
-     * @param in
-     *            the source stream
+     * @param value
+     *            the initial value of the holder
      */
-    public Holder(final T object)
+    public Holder(final T value)
     {
-        this.object = object;
+        this.value = value;
     }
 
     public T get()
     {
-        return object;
+        return value;
     }
 
-    public void set(T object)
+    public void set(T value)
     {
-        this.object = object;
+        this.value = value;
     }
 
     public T remove()
     {
-        final T oldObject = object;
-        object = null;
+        final T oldValue = value;
+        value = null;
 
-        return oldObject;
+        return oldValue;
     }
 }

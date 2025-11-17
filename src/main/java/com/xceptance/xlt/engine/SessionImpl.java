@@ -108,15 +108,22 @@ public class SessionImpl extends Session
     public static SessionImpl getCurrent()
     {
         final Holder<SessionImpl> holder = sessionHolder.get();
-        SessionImpl sessionImpl = holder.get();
 
+        SessionImpl sessionImpl = holder.get();
         if (sessionImpl == null)
         {
-            sessionImpl = new SessionImpl(new XltPropertiesImpl());
-            holder.set(sessionImpl);
+            synchronized (holder)
+            {
+                if (sessionImpl == null)
+                {
+                    sessionImpl = new SessionImpl(XltPropertiesImpl.getInstance());
+                    holder.set(sessionImpl);
+                }
+            }
         }
-        
-        sessions.put(Thread.currentThread(), sessionImpl);
+
+        // TODO
+        sessions.putIfAbsent(Thread.currentThread(), sessionImpl);
 
         return sessionImpl;
     }
@@ -129,8 +136,9 @@ public class SessionImpl extends Session
      */
     public static SessionImpl removeCurrent()
     {
+        // TODO: remove for all threads
         sessions.remove(Thread.currentThread());
-        
+
         return sessionHolder.get().remove();
     }
 
