@@ -31,7 +31,7 @@
                     <a href="#Overview-{$gid}">Overview</a>
                 </li>
                 <xsl:if test="$dynamicChartsEnabled = 'true'">
-                    <li class="c-tabs-nav-link">
+                    <li class="c-tabs-nav-link echart-tab">
                         <a href="#DynamicOverview-{$gid}">Dynamic Overview</a>
                     </li>
                 </xsl:if>
@@ -77,7 +77,7 @@
             </div>
 
             <xsl:if test="$dynamicChartsEnabled = 'true'">
-                <div id="DynamicOverview-{$gid}" class="c-tab overview">
+                <div id="DynamicOverview-{$gid}" class="c-tab echart-tab overview">
                     <div class="c-tab-content echart">
                         <xsl:attribute name="src">charts/<xsl:value-of select="$directory"/>/<xsl:value-of
                             select="$encodedName"/>.json</xsl:attribute>
