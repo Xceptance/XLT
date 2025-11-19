@@ -567,7 +567,7 @@
         // lazy load the dynamic echarts to speed up the site
         (function setupECharts() {
             // Creates the echart, loads the chart data, and completes the echart setup.
-            function setUpEChart(echartDiv) {
+            function initAndLoadEChart(echartDiv) {
                 var name = echartDiv.getAttribute('name');
                 var url = echartDiv.getAttribute('src');
 
@@ -686,7 +686,7 @@
                                     }
                                 },
                                 axisLabel: {
-                                        fontSize: 10
+                                    fontSize: 10
                                 },
                                 splitLine: {
                                     show: true,
@@ -710,7 +710,7 @@
                                     }
                                 },
                                 axisLabel: {
-                                        fontSize: 10
+                                    fontSize: 10
                                 },
                                 splitLine: {
                                     show: true,
@@ -809,7 +809,7 @@
 
                     // add a one-time click handler to the current tab that sets up the echart
                     $(this).one("click", function() {
-                        setUpEChart(echartDiv);
+                        initAndLoadEChart(echartDiv);
                     });
                 });
             });
