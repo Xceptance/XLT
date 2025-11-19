@@ -618,15 +618,16 @@
                                 borderWidth: 0.5,
                             },
                             textStyle: {
-                                fontFamily: "Roboto",
+                                fontFamily: "sans-serif",
+                                fontWeight: "bold",
+                                color: "#555"
                             },
                             title: {
                                 top: 8,
                                 left: "center",
                                 text: name,
                                 textStyle: {
-                                    fontWeight: 500,
-                                    fontSize: 13,
+                                    fontSize: 13
                                 }
                             },
                             toolbox: {
