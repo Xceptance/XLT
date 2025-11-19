@@ -539,10 +539,10 @@
         (function setupChartGroups() {
             $('div.charts div.chart-group').each( function() {
                 var $this = $(this),
-                    $tabLines = $this.find("ul > li"),
-                    $images = $this.find("img");
+                    $imageTabs = $this.find("ul > li.img-tab"),
+                    $images = $this.find("div.img-tab img");
 
-                $tabLines.each( function(index) {
+                $imageTabs.each( function(index) {
                     // get the corresponding image
                     var img = $images.eq(index);
 
