@@ -27,35 +27,35 @@
         <div class="chart-group tabs c-tabs no-print" data-name="{name}">
             <xsl:attribute name="id">chart-<xsl:value-of select="$gid"/></xsl:attribute>
             <ul class="c-tabs-nav">
-                <li class="c-tabs-nav-link c-is-active">
+                <li class="c-tabs-nav-link img-tab c-is-active">
                     <a href="#Overview-{$gid}">Overview</a>
                 </li>
                 <xsl:if test="$dynamicChartsEnabled = 'true'">
-                    <li class="c-tabs-nav-link">
+                    <li class="c-tabs-nav-link echart-tab">
                         <a href="#DynamicOverview-{$gid}">Dynamic Overview</a>
                     </li>
                 </xsl:if>
-                <li class="c-tabs-nav-link">
+                <li class="c-tabs-nav-link img-tab">
                     <a href="#Averages-{$gid}">Averages</a>
                 </li>
-                <li class="c-tabs-nav-link">
+                <li class="c-tabs-nav-link img-tab">
                     <a href="#Count-{$gid}">Count/s</a>
                 </li>
 
                 <xsl:if test="$type = 'transaction'">
-                    <li class="c-tabs-nav-link">
+                    <li class="c-tabs-nav-link img-tab">
                         <a href="#ArrivalRate-{$gid}">Arrival Rate</a>
                     </li>
-                    <li class="c-tabs-nav-link">
+                    <li class="c-tabs-nav-link img-tab">
                         <a href="#ConcurrentUsers-{$gid}">Concurrent Users</a>
                     </li>
                 </xsl:if>
 
                 <xsl:if test="$type = 'request'">
-                    <li class="c-tabs-nav-link">
+                    <li class="c-tabs-nav-link img-tab">
                         <a href="#Distribution-{$gid}">Distribution</a>
                     </li>
-                    <li class="c-tabs-nav-link">
+                    <li class="c-tabs-nav-link img-tab">
                         <a href="#Network-{$gid}">Response Size</a>
                     </li>
                 </xsl:if>
@@ -64,7 +64,7 @@
             <xsl:if test="count(parent::summary)=0">
                 <a href="#tableEntry-{$gid}" class="backlink">Back to Table</a>
             </xsl:if>
-            <div id="Overview-{$gid}" class="c-tab c-is-active overview">
+            <div id="Overview-{$gid}" class="c-tab c-is-active img-tab overview">
                 <div class="c-tab-content chart">
                     <img>
                         <xsl:attribute name="src">charts/<xsl:value-of select="$directory"/>/<xsl:value-of
@@ -77,7 +77,7 @@
             </div>
 
             <xsl:if test="$dynamicChartsEnabled = 'true'">
-                <div id="DynamicOverview-{$gid}" class="c-tab overview">
+                <div id="DynamicOverview-{$gid}" class="c-tab echart-tab overview">
                     <div class="c-tab-content echart">
                         <xsl:attribute name="src">charts/<xsl:value-of select="$directory"/>/<xsl:value-of
                             select="$encodedName"/>.json</xsl:attribute>
@@ -86,7 +86,7 @@
                 </div>
             </xsl:if>
 
-            <div id="Averages-{$gid}" class="c-tab">
+            <div id="Averages-{$gid}" class="c-tab img-tab">
                 <div class="c-tab-content chart">
                     <img>
                         <xsl:attribute name="src">charts/placeholder.webp</xsl:attribute>
@@ -96,7 +96,7 @@
                 </div>
             </div>
 
-            <div id="Count-{$gid}" class="c-tab">
+            <div id="Count-{$gid}" class="c-tab img-tab">
                 <div class="c-tab-content chart">
                     <img>
                         <xsl:attribute name="src">charts/placeholder.webp</xsl:attribute>
@@ -107,7 +107,7 @@
             </div>
 
             <xsl:if test="$type = 'transaction'">
-                <div id="ArrivalRate-{$gid}" class="c-tab">
+                <div id="ArrivalRate-{$gid}" class="c-tab img-tab">
                     <div class="c-tab-content chart">
                         <img>
                             <xsl:attribute name="src">charts/placeholder.webp</xsl:attribute>
@@ -116,7 +116,7 @@
                         </img>
                     </div>
                 </div>
-                <div id="ConcurrentUsers-{$gid}" class="c-tab">
+                <div id="ConcurrentUsers-{$gid}" class="c-tab img-tab">
                     <div class="c-tab-content chart">
                         <img>
                             <xsl:attribute name="src">charts/placeholder.webp</xsl:attribute>
@@ -128,7 +128,7 @@
             </xsl:if>
 
             <xsl:if test="$type = 'request'">
-                <div id="Distribution-{$gid}" class="c-tab">
+                <div id="Distribution-{$gid}" class="c-tab img-tab">
                     <div class="c-tab-content chart">
                         <img>
                             <xsl:attribute name="src">charts/placeholder.webp</xsl:attribute>
@@ -138,7 +138,7 @@
                     </div>
                 </div>
 
-                <div id="Network-{$gid}" class="c-tab">
+                <div id="Network-{$gid}" class="c-tab img-tab">
                     <div class="c-tab-content chart">
                         <img>
                             <xsl:attribute name="src">charts/placeholder.webp</xsl:attribute>

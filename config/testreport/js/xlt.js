@@ -539,10 +539,10 @@
         (function setupChartGroups() {
             $('div.charts div.chart-group').each( function() {
                 var $this = $(this),
-                    $tabLines = $this.find("ul > li"),
-                    $images = $this.find("img");
+                    $imageTabs = $this.find("ul > li.img-tab"),
+                    $images = $this.find("div.img-tab img");
 
-                $tabLines.each( function(index) {
+                $imageTabs.each( function(index) {
                     // get the corresponding image
                     var img = $images.eq(index);
 
@@ -564,239 +564,255 @@
             });
         })();
 
-        // creates the echarts but defers their full setup
+        // lazy load the dynamic echarts to speed up the site
         (function setupECharts() {
-            $('div.charts div.echart').each(function () {
-                // Loads the chart data and completes the echart setup.
-                function setUpEChart(echart, name, url) {
-                    $.getJSON({
-                        url: url,
-                        data: null,
-                        beforeSend: function (xhr) {
-                            // avoid errors in browser console (XML Parsing Error: syntax error) when loading from file system
-                            xhr.overrideMimeType("application/json");
-                        },
-                        success: function (data) {
-                            echart.hideLoading();
-
-                            // create time series data
-                            var dataMean = [];
-                            var dataMinimum = [];
-                            var dataMaximum = [];
-                            var dataMaxMinDiff = [];
-
-                            for (var item of data) {
-                                // timestamp and mean value
-                                dataMean.push([item[0], item[1]]);
-                                // timestamp and min value
-                                dataMinimum.push([item[0], item[2]]);
-                                // timestamp and max value
-                                dataMaximum.push([item[0], item[3]]);
-                                // timestamp and diff value
-                                dataMaxMinDiff.push([item[0], item[3] - item[2]]);
-                            }
-
-                            // set up the chart
-                            echart.setOption({
-                                animation: false,
-                                backgroundColor: "#fafafa",
-                                grid: {
-                                    left: 68,
-                                    right: 12,
-                                    top: 32,
-                                    bottom: 50,
-                                    show: true,
-                                    backgroundColor: '#fff',
-                                    borderColor: '#888',
-                                    borderWidth: 0.5,
-                                },
-                                textStyle: {
-                                    fontFamily: "Roboto",
-                                },
-                                title: {
-                                    top: 8,
-                                    left: "center",
-                                    text: name,
-                                    textStyle: {
-                                        fontWeight: 500,
-                                        fontSize: 13,
-                                    }
-                                },
-                                toolbox: {
-                                    show: true,
-                                    top: '-8',
-                                    right: '0',
-                                    feature: {
-                                        dataZoom: {
-                                            show: true,
-                                            icon: {
-                                                // https://github.com/apache/echarts/issues/13397#issuecomment-814864873
-                                                zoom: "path://", // hack to remove zoom button
-                                            },
-                                            brushStyle: {
-                                                color: '#a00',
-                                                opacity: 0.25,
-                                            }
-                                        }
-                                    }
-                                },
-                                tooltip: {
-                                    appendToBody: true,
-                                    trigger: "axis",
-                                    axisPointer: {
-                                        type: 'cross',
-                                        animation: false,
-                                        snap: true,
-                                        lineStyle: {
-                                            color: '#888',
-                                            type: 'solid',
-                                            width: 0.5
-                                        },
-                                        crossStyle: {
-                                            color: '#888',
-                                            type: 'solid',
-                                            width: 0.5
-                                        },
-                                    },
-                                    textStyle: {
-                                        fontSize: 11
-                                    }
-                                },
-                                useUTC: true,
-                                xAxis: {
-                                    type: "time",
-                                    name: "Time [UTC]",
-                                    nameLocation: "center",
-                                    nameGap: 24,
-                                    axisLine: {
-                                        show: false
-                                    },
-                                    axisTick: {
-                                        show: true,
-                                        length: 3,
-                                        lineStyle: {
-                                            color: '#ccc'
-                                        }
-                                    },
-                                    axisLabel: {
-                                        fontSize: 10
-                                    },
-                                    splitLine: {
-                                        show: true,
-                                        showMinLine: false,
-                                        showMaxLine: false,
-                                        lineStyle: {
-                                            type: 'dashed',
-                                        }
-                                    },
-                                    splitNumber: 8
-                                },
-                                yAxis: {
-                                    minInterval: 1,
-                                    name: "Runtime [ms]",
-                                    nameLocation: "center",
-                                    axisTick: {
-                                        show: true,
-                                        length: 3,
-                                        lineStyle: {
-                                            color: '#ccc'
-                                        }
-                                    },
-                                    axisLabel: {
-                                        fontSize: 10
-                                    },
-                                    splitLine: {
-                                        show: true,
-                                        showMinLine: false,
-                                        showMaxLine: false,
-                                        lineStyle: {
-                                            type: 'dashed',
-                                        }
-                                    },
-                                    splitNumber: 5
-                                },
-                                series: [
-                                    {
-                                        name: 'Maximum',
-                                        type: 'line',
-                                        data: dataMaximum,
-                                        lineStyle: {
-                                            opacity: 0,
-                                            width: 1,
-                                        },
-                                        itemStyle: {
-                                            color: '#a00'
-                                        },
-                                        symbol: 'none',
-                                    },
-                                    {
-                                        name: 'Mean',
-                                        type: 'line',
-                                        data: dataMean,
-                                        lineStyle: {
-                                            width: 1
-                                        },
-                                        itemStyle: {
-                                            color: '#00c'
-                                        },
-                                        showSymbol: false
-                                    },
-                                    {
-                                        name: 'Minimum',
-                                        type: 'line',
-                                        data: dataMinimum,
-                                        lineStyle: {
-                                            opacity: 0,
-                                            width: 1,
-                                        },
-                                        itemStyle: {
-                                            color: '#0a0'
-                                        },
-                                        stack: 'confidence-band',
-                                        symbol: 'none',
-                                    },
-                                    {
-                                        name: 'Diff',
-                                        type: 'line',
-                                        data: dataMaxMinDiff,
-                                        lineStyle: {
-                                            opacity: 0,
-                                            width: 1,
-                                        },
-                                        itemStyle: {
-                                            color: '#a0a'
-                                        },
-                                        areaStyle: {
-                                            color: '#ccc'
-                                        },
-                                        stack: 'confidence-band',
-                                        stackStrategy: 'all',
-                                        symbol: 'none',
-                                        tooltip: {
-                                            show: false,
-                                        },
-                                    },
-                                ]
-                            });
-
-                            // put the echart in zoom mode right from the start
-                            echart.dispatchAction({
-                                type: "takeGlobalCursor",
-                                key: "dataZoomSelect",
-                                dataZoomSelectActive: true
-                            });
-                        }
-                    });
-                }
+            // Creates the echart, loads the chart data, and completes the echart setup.
+            function initAndLoadEChart(echartDiv) {
+                var name = echartDiv.getAttribute('name');
+                var url = echartDiv.getAttribute('src');
 
                 // create an initially empty echart
-                var echart = echarts.init(this);
+                var echart = echarts.init(echartDiv);
                 echart.showLoading();
 
-                // start a task to set the echart up asynchronously in the background
-                var name = this.getAttribute('name');
-                var url = this.getAttribute('src');
-                setTimeout(() => setUpEChart(echart, name, url), 10);
+                // load the data and set up the chart
+                $.getJSON({
+                    url: url,
+                    data: null,
+                    beforeSend: function (xhr) {
+                        // avoid errors in browser console (XML Parsing Error: syntax error) when loading from file system
+                        xhr.overrideMimeType("application/json");
+                    },
+                    success: function (data) {
+                        echart.hideLoading();
+
+                        // create time series data
+                        var dataMean = [];
+                        var dataMinimum = [];
+                        var dataMaximum = [];
+                        var dataMaxMinDiff = [];
+
+                        for (var item of data) {
+                            // timestamp and mean value
+                            dataMean.push([item[0], item[1]]);
+                            // timestamp and min value
+                            dataMinimum.push([item[0], item[2]]);
+                            // timestamp and max value
+                            dataMaximum.push([item[0], item[3]]);
+                            // timestamp and diff value
+                            dataMaxMinDiff.push([item[0], item[3] - item[2]]);
+                        }
+
+                        // set up the chart
+                        echart.setOption({
+                            animation: false,
+                            backgroundColor: "#fafafa",
+                            grid: {
+                                left: 68,
+                                right: 12,
+                                top: 32,
+                                bottom: 50,
+                                show: true,
+                                backgroundColor: '#fff',
+                                borderColor: '#888',
+                                borderWidth: 0.5,
+                            },
+                            textStyle: {
+                                fontFamily: "sans-serif",
+                                fontWeight: "bold",
+                                color: "#555"
+                            },
+                            title: {
+                                top: 8,
+                                left: "center",
+                                text: name,
+                                textStyle: {
+                                    fontSize: 13
+                                }
+                            },
+                            toolbox: {
+                                show: true,
+                                top: '-8',
+                                right: '0',
+                                feature: {
+                                    dataZoom: {
+                                        show: true,
+                                        icon: {
+                                            // https://github.com/apache/echarts/issues/13397#issuecomment-814864873
+                                            zoom: "path://", // hack to remove zoom button
+                                        },
+                                        brushStyle: {
+                                            color: '#a00',
+                                            opacity: 0.25,
+                                        }
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                appendToBody: true,
+                                trigger: "axis",
+                                axisPointer: {
+                                    type: 'cross',
+                                    animation: false,
+                                    snap: true,
+                                    lineStyle: {
+                                        color: '#888',
+                                        type: 'solid',
+                                        width: 0.5
+                                    },
+                                    crossStyle: {
+                                        color: '#888',
+                                        type: 'solid',
+                                        width: 0.5
+                                    },
+                                },
+                                textStyle: {
+                                    fontSize: 11
+                                }
+                            },
+                            useUTC: true,
+                            xAxis: {
+                                type: "time",
+                                name: "Time [UTC]",
+                                nameLocation: "center",
+                                nameGap: 24,
+                                axisLine: {
+                                    show: false
+                                },
+                                axisTick: {
+                                    show: true,
+                                    length: 3,
+                                    lineStyle: {
+                                        color: '#ccc'
+                                    }
+                                },
+                                axisLabel: {
+                                    fontSize: 10
+                                },
+                                splitLine: {
+                                    show: true,
+                                    showMinLine: false,
+                                    showMaxLine: false,
+                                    lineStyle: {
+                                        type: 'dashed',
+                                    }
+                                },
+                                splitNumber: 8
+                            },
+                            yAxis: {
+                                minInterval: 1,
+                                name: "Runtime [ms]",
+                                nameLocation: "center",
+                                axisTick: {
+                                    show: true,
+                                    length: 3,
+                                    lineStyle: {
+                                        color: '#ccc'
+                                    }
+                                },
+                                axisLabel: {
+                                    fontSize: 10
+                                },
+                                splitLine: {
+                                    show: true,
+                                    showMinLine: false,
+                                    showMaxLine: false,
+                                    lineStyle: {
+                                        type: 'dashed',
+                                    }
+                                },
+                                splitNumber: 5
+                            },
+                            series: [
+                                {
+                                    name: 'Maximum',
+                                    type: 'line',
+                                    data: dataMaximum,
+                                    lineStyle: {
+                                        opacity: 0,
+                                        width: 1,
+                                    },
+                                    itemStyle: {
+                                        color: '#a00'
+                                    },
+                                    symbol: 'none',
+                                },
+                                {
+                                    name: 'Mean',
+                                    type: 'line',
+                                    data: dataMean,
+                                    lineStyle: {
+                                        width: 1
+                                    },
+                                    itemStyle: {
+                                        color: '#00c'
+                                    },
+                                    showSymbol: false
+                                },
+                                {
+                                    name: 'Minimum',
+                                    type: 'line',
+                                    data: dataMinimum,
+                                    lineStyle: {
+                                        opacity: 0,
+                                        width: 1,
+                                    },
+                                    itemStyle: {
+                                        color: '#0a0'
+                                    },
+                                    stack: 'confidence-band',
+                                    symbol: 'none',
+                                },
+                                {
+                                    name: 'Diff',
+                                    type: 'line',
+                                    data: dataMaxMinDiff,
+                                    lineStyle: {
+                                        opacity: 0,
+                                        width: 1,
+                                    },
+                                    itemStyle: {
+                                        color: '#a0a'
+                                    },
+                                    areaStyle: {
+                                        color: '#ccc'
+                                    },
+                                    stack: 'confidence-band',
+                                    stackStrategy: 'all',
+                                    symbol: 'none',
+                                    tooltip: {
+                                        show: false,
+                                    },
+                                },
+                            ]
+                        });
+
+                        // put the echart in zoom mode right from the start
+                        echart.dispatchAction({
+                            type: "takeGlobalCursor",
+                            key: "dataZoomSelect",
+                            dataZoomSelectActive: true
+                        });
+                    }
+                });
+            }
+
+            // prepare each chart group
+            $('div.charts div.chart-group').each( function() {
+                var $this = $(this),
+                    $echartTabs = $this.find("ul > li.echart-tab"),
+                    $echartDivs = $this.find("div.echart-tab div.echart");
+
+                // prepare each echart tab in that chart group
+                $echartTabs.each( function(index) {
+                    // get the echart div corresponding to the current tab
+                    var echartDiv = $echartDivs.get(index);
+
+                    // add a one-time click handler to the current tab that sets up the echart
+                    $(this).one("click", function() {
+                        initAndLoadEChart(echartDiv);
+                    });
+                });
             });
         })();
 
