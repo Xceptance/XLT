@@ -147,6 +147,9 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
             final TimeSeries runTimeAverageTimeSeries = JFreeChartUtils.createMovingAverageTimeSeries(runTimeTimeSeries,
                                                                                                       getMovingAveragePercentage());
 
+            final TimeSeries countPerSecondTimeSeries = JFreeChartUtils.toMinMaxTimeSeries(countPerSecondValueSet.toMinMaxValueSet(minMaxValueSetSize),
+                                                                                           "Count/s");
+
             // create charts asynchronously
             final TaskManager taskManager = TaskManager.getInstance();
 
@@ -184,16 +187,14 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
                 @Override
                 public void run()
                 {
-                    final TimeSeries countPerSecondTimeSeries = JFreeChartUtils.toMinMaxTimeSeries(countPerSecondValueSet.toMinMaxValueSet(minMaxValueSetSize),
-                                                                                                   "Count/s");
-
                     saveCountPerSecondChart(name, countPerSecondTimeSeries);
                 }
             });
 
+            // create JSON data file asynchronously
             if (((ReportGeneratorConfiguration) getConfiguration()).dynamicChartsEnabled())
             {
-                taskManager.addTask(() -> saveResponseTimeSeriesAsJson(name, runTimeTimeSeries));
+                taskManager.addTask(() -> saveResponseTimeSeriesAsJson(name, runTimeTimeSeries, countPerSecondTimeSeries));
             }
         }
 
@@ -460,33 +461,45 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
     }
 
     /**
-     * Writes the response time series data to a JSON file in the charts directory. The data in this file is later read
+     * Writes the passed time series data to a JSON file in the charts directory. The data in this file is later read
      * from the load test report and forms the basis for interactive charts.
      * 
      * @param timerName
      *            the name of the timer
      * @param responseTimeSeries
      *            the response time series
+     * @param countPerSecondTimeSeries
+     *            the count/s time series
      */
-    private void saveResponseTimeSeriesAsJson(final String timerName, final TimeSeries responseTimeSeries)
+    private void saveResponseTimeSeriesAsJson(final String timerName, final TimeSeries responseTimeSeries,
+                                              TimeSeries countPerSecondTimeSeries)
     {
         final int size = responseTimeSeries.getItems().size();
+        final int size2 = countPerSecondTimeSeries.getItems().size();
+
+        if (size != size2)
+        {
+            System.err.printf("Mismatch: %s %d %d\n", timerName, size, size2);
+        }
 
         // build a JSON string with the series data
         final StringBuilder sb = new StringBuilder();
         sb.append('[');
         for (int i = 0; i < size; i++)
         {
-            final IntMinMaxTimeSeriesDataItem dataItem = (IntMinMaxTimeSeriesDataItem) responseTimeSeries.getDataItem(i);
+            final IntMinMaxTimeSeriesDataItem responseTimeDataItem = (IntMinMaxTimeSeriesDataItem) responseTimeSeries.getDataItem(i);
+            final IntMinMaxTimeSeriesDataItem countPerSecondDataItem = (IntMinMaxTimeSeriesDataItem) responseTimeSeries.getDataItem(i);
 
             sb.append('[');
-            sb.append(dataItem.getPeriod().getFirstMillisecond());
+            sb.append(responseTimeDataItem.getPeriod().getFirstMillisecond());
             sb.append(',');
-            sb.append(dataItem.getMinMaxValue().getAverageValue());
+            sb.append(responseTimeDataItem.getMinMaxValue().getAverageValue());
             sb.append(',');
-            sb.append(dataItem.getMinMaxValue().getMinimumValue());
+            sb.append(responseTimeDataItem.getMinMaxValue().getMinimumValue());
             sb.append(',');
-            sb.append(dataItem.getMinMaxValue().getMaximumValue());
+            sb.append(responseTimeDataItem.getMinMaxValue().getMaximumValue());
+            sb.append(',');
+            sb.append(countPerSecondDataItem.getMinMaxValue().getValue());
             sb.append(']');
 
             if (i < size - 1)
