@@ -151,17 +151,17 @@
                                     <xsl:attribute name="id">chart-<xsl:value-of select="$gid"/></xsl:attribute>
 
                                     <ul class="c-tabs-nav">
-                                        <li class="c-tabs-nav-link c-is-active">
+                                        <li class="c-tabs-nav-link img-tab c-is-active">
                                             <a href="#Overview-{$gid}">Overview</a>
                                         </li>
-                                        <li class="c-tabs-nav-link">
+                                        <li class="c-tabs-nav-link img-tab">
                                             <a href="#Averages-{$gid}">Averages</a>
                                         </li>
                                     </ul>
 
                                     <a href="#tableEntry-{$gid}" class="backlink">Back to Table</a>
 
-                                    <div id="Overview-{$gid}" class="c-tab c-is-active">
+                                    <div id="Overview-{$gid}" class="c-tab img-tab c-is-active">
                                         <div class="c-tab-content chart">
                                             <img>
                                                 <xsl:attribute name="src">charts/customvalues/<xsl:value-of
@@ -173,7 +173,7 @@
                                         </div>
                                     </div>
 
-                                    <div id="Averages-{$gid}" class="c-tab">
+                                    <div id="Averages-{$gid}" class="c-tab img-tab">
                                         <div class="c-tab-content chart">
                                             <img>
                                                 <xsl:attribute name="src">charts/placeholder.webp</xsl:attribute>
