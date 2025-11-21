@@ -18,13 +18,13 @@
         <div class="chart-group tabs c-tabs no-print" data-name="{name}">
             <xsl:attribute name="id">chart-<xsl:value-of select="$gid"/></xsl:attribute>
             <ul class="c-tabs-nav">
-                <li class="c-tabs-nav-link c-is-active">
+                <li class="c-tabs-nav-link img-tab c-is-active">
                     <a href="#CPU-{$gid}">CPU</a>
                 </li>
-                <li class="c-tabs-nav-link">
+                <li class="c-tabs-nav-link img-tab">
                     <a href="#Memory-{$gid}">Memory</a>
                 </li>
-                <li class="c-tabs-nav-link">
+                <li class="c-tabs-nav-link img-tab">
                     <a href="#Threads-{$gid}">Threads</a>
                 </li>
             </ul>
@@ -35,7 +35,7 @@
                 </xsl:when>
             </xsl:choose>
 
-            <div id="CPU-{$gid}" class="c-tab c-is-active">
+            <div id="CPU-{$gid}" class="c-tab img-tab c-is-active">
                 <div class="c-tab-content chart">
                     <img>
                         <xsl:attribute name="src">charts/agents/<xsl:value-of select="$directory"/>/CpuUsage.webp</xsl:attribute>
@@ -45,7 +45,7 @@
                 </div>
             </div>
 
-            <div id="Memory-{$gid}" class="c-tab memory">
+            <div id="Memory-{$gid}" class="c-tab img-tab memory">
                 <div class="c-tab-content chart">
                     <img>
                         <xsl:attribute name="src">charts/placeholder.webp</xsl:attribute>
@@ -54,7 +54,7 @@
                 </div>
             </div>
 
-            <div id="Threads-{$gid}" class="c-tab">
+            <div id="Threads-{$gid}" class="c-tab img-tab">
                 <div class="c-tab-content chart">
                     <img>
                         <xsl:attribute name="src">charts/placeholder.webp</xsl:attribute>
@@ -68,19 +68,19 @@
             <div class="chart">
                 <h5>Memory</h5>
                 <img>
-                    <xsl:attribute name="alt">charts/agents/<xsl:value-of select="$directory"/>/MemoryUsage.webp</xsl:attribute>
+                    <xsl:attribute name="src">charts/agents/<xsl:value-of select="$directory"/>/MemoryUsage.webp</xsl:attribute>
                 </img>
             </div>
 
             <div class="chart">
                 <h5>CPU</h5>
                 <img>
-                    <xsl:attribute name="alt">charts/agents/<xsl:value-of select="$directory"/>/CpuUsage.webp</xsl:attribute>
+                    <xsl:attribute name="src">charts/agents/<xsl:value-of select="$directory"/>/CpuUsage.webp</xsl:attribute>
                 </img>
 
                 <h5>Threads</h5>
                 <img>
-                    <xsl:attribute name="alt">charts/agents/<xsl:value-of select="$directory"/>/Threads.webp</xsl:attribute>
+                    <xsl:attribute name="src">charts/agents/<xsl:value-of select="$directory"/>/Threads.webp</xsl:attribute>
                 </img>
             </div>
         </div>

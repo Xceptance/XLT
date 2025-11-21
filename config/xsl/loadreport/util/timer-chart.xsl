@@ -158,44 +158,44 @@
                 <xsl:when test="$type = 'transaction'">
                     <div class="chart">
                         <h5>Overview</h5>
-                        <img alt="charts/{$directory}/{$encodedName}.webp"/>
+                        <img src="charts/{$directory}/{$encodedName}.webp"/>
 
                         <h5>Averages</h5>
-                        <img alt="charts/{$directory}/{$encodedName}_Average.webp"/>
+                        <img src="charts/{$directory}/{$encodedName}_Average.webp"/>
                     </div>
 
                     <div class="chart">
                         <h5>Count/s</h5>
-                        <img alt="charts/{$directory}/{$encodedName}_CountPerSecond.webp"/>
+                        <img src="charts/{$directory}/{$encodedName}_CountPerSecond.webp"/>
 
                         <h5>Arrival Rate</h5>
-                        <img alt="charts/{$directory}/{$encodedName}_ArrivalRate.webp"/>
+                        <img src="charts/{$directory}/{$encodedName}_ArrivalRate.webp"/>
 
                         <h5>Concurrent Users</h5>
-                        <img alt="charts/{$directory}/{$encodedName}_ConcurrentUsers.webp"/>
+                        <img src="charts/{$directory}/{$encodedName}_ConcurrentUsers.webp"/>
                     </div>
                 </xsl:when>
                 <xsl:otherwise>
                     <div class="chart">
                         <h5>Overview</h5>
-                        <img alt="charts/{$directory}/{$encodedName}.webp"/>
+                        <img src="charts/{$directory}/{$encodedName}.webp"/>
                     </div>
                     <div class="chart">
                         <h5>Count/s</h5>
-                        <img alt="charts/{$directory}/{$encodedName}_CountPerSecond.webp"/>
+                        <img src="charts/{$directory}/{$encodedName}_CountPerSecond.webp"/>
                     </div>
                     <div class="chart">
                         <h5>Averages</h5>
-                        <img alt="charts/{$directory}/{$encodedName}_Average.webp"/>
+                        <img src="charts/{$directory}/{$encodedName}_Average.webp"/>
                     </div>
                     <xsl:if test="$type = 'request'">
                         <div class="chart">
                             <h5>Response Size</h5>
-                            <img alt="charts/{$directory}/{$encodedName}_ResponseSize.webp"/>
+                            <img src="charts/{$directory}/{$encodedName}_ResponseSize.webp"/>
                         </div>
                         <div class="chart">
                             <h5>Distribution</h5>
-                            <img alt="charts/{$directory}/{$encodedName}_Histogram.webp"/>
+                            <img src="charts/{$directory}/{$encodedName}_Histogram.webp"/>
                         </div>
                     </xsl:if>
                 </xsl:otherwise>
