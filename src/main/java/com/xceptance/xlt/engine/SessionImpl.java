@@ -33,6 +33,7 @@ import com.xceptance.common.io.FileUtils;
 import com.xceptance.common.lang.ParseNumbers;
 import com.xceptance.common.util.Holder;
 import com.xceptance.common.util.ParameterCheckUtils;
+import com.xceptance.xlt.agent.AbstractExecutionTimer;
 import com.xceptance.xlt.api.actions.AbstractAction;
 import com.xceptance.xlt.api.engine.GlobalClock;
 import com.xceptance.xlt.api.engine.NetworkDataManager;
@@ -84,12 +85,13 @@ public class SessionImpl extends Session
     private static final String UNKNOWN_USER_NAME = "UnknownUser";
 
     /**
-     * All Session instances keyed by thread.
+     * All Session instances keyed by thread. Needed by {@link AbstractExecutionTimer} only.
      */
     private static final Map<Thread, SessionImpl> sessions = new ConcurrentHashMap<>(101);
 
     /**
-     * The Session instance of the current thread.
+     * The Session instance of the current thread. We use a Holder in-between so the main thread and sub-threads can
+     * share the same session and also remove the session if needed.
      */
     private static final InheritableThreadLocal<Holder<SessionImpl>> sessionHolder = new InheritableThreadLocal<>()
     {
@@ -122,7 +124,7 @@ public class SessionImpl extends Session
             }
         }
 
-        // TODO
+        // TODO: would be cool to get rid of that
         sessions.putIfAbsent(Thread.currentThread(), sessionImpl);
 
         return sessionImpl;
@@ -136,7 +138,7 @@ public class SessionImpl extends Session
      */
     public static SessionImpl removeCurrent()
     {
-        // TODO: remove for all threads
+        // TODO: remove for all threads sharing the same session
         sessions.remove(Thread.currentThread());
 
         return sessionHolder.get().remove();

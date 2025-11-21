@@ -16,7 +16,7 @@
 package com.xceptance.common.util;
 
 /**
- * Simple Holder class that holds a value. Use this class to imitate a mutable reference.
+ * Simple Holder class that holds a value. Use this class to mimic a mutable reference.
  */
 public class Holder<T>
 {
@@ -44,16 +44,32 @@ public class Holder<T>
         this.value = value;
     }
 
+    /**
+     * Returns the current value.
+     * 
+     * @return the value
+     */
     public T get()
     {
         return value;
     }
 
+    /**
+     * Sets the new value.
+     * 
+     * @param value
+     *            the new value
+     */
     public void set(T value)
     {
         this.value = value;
     }
 
+    /**
+     * Removes the current value.
+     * 
+     * @return the value just removed
+     */
     public T remove()
     {
         final T oldValue = value;

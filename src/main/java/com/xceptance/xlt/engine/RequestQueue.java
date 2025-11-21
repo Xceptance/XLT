@@ -73,14 +73,16 @@ public class RequestQueue
      *            the web client to use
      * @param threadCount
      *            the number of threads
+     * @param useVirtualThreads
+     *            whether to use virtual threads instead of platform threads
      */
-    public RequestQueue(final XltWebClient webClient, final int threadCount)
+    public RequestQueue(final XltWebClient webClient, final int threadCount, final boolean useVirtualThreads)
     {
         this.webClient = webClient;
         this.threadCount = threadCount;
         parallelModeEnabled = true;
 
-        final ThreadFactory threadFactory = new XltThreadFactory(true, Session.getCurrent().getUserID() + "-pool-");
+        final ThreadFactory threadFactory = new XltThreadFactory(useVirtualThreads, true, Session.getCurrent().getUserID() + "-pool-");
 
         executorService = Executors.newFixedThreadPool(threadCount, threadFactory);
         ongoingRequestsCount = new SynchronizingCounter(0);

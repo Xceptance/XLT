@@ -49,11 +49,6 @@ public class LoadTestRunner
     private static final Logger log = LoggerFactory.getLogger(LoadTestRunner.class);
 
     /**
-     * Class logger instance.
-     */
-    private static final XltThreadFactory XLT_THREAD_FACTORY = new XltThreadFactory(false);
-
-    /**
      * Configuration.
      */
     private final TestUserConfiguration config;
@@ -93,8 +88,11 @@ public class LoadTestRunner
      *            load test agent information
      * @param timer
      *            the execution timer that controls this load test runner
+     * @param xltThreadFactory
+     *            the thread factory to create the worker thread
      */
-    public LoadTestRunner(final TestUserConfiguration config, final AgentInfo agentInfo, final AbstractExecutionTimer timer)
+    public LoadTestRunner(final TestUserConfiguration config, final AgentInfo agentInfo, final AbstractExecutionTimer timer,
+                          final XltThreadFactory xltThreadFactory)
     {
         this.config = config;
         this.agentInfo = agentInfo;
@@ -103,20 +101,33 @@ public class LoadTestRunner
         status = new TestUserStatus();
         status.setUserName(config.getUserId());
 
-        thread = XLT_THREAD_FACTORY.newThread(this::run);
+        thread = xltThreadFactory.newThread(this::run);
         thread.setName(config.getUserId());
     }
 
+    /**
+     * Returns the thread this runner is using under the hood.
+     * <p>
+     * Note: For unit-testing only.
+     * 
+     * @return the thread
+     */
     Thread getThread()
     {
         return thread;
     }
 
+    /**
+     * Starts this runner.
+     */
     public void start()
     {
         thread.start();
     }
 
+    /**
+     * Waits until this runner is finished.
+     */
     public void join() throws InterruptedException
     {
         thread.join();

@@ -21,54 +21,61 @@ import java.util.concurrent.ThreadFactory;
 import javax.annotation.Nullable;
 
 /**
- * A {@link ThreadFactory} that creates either virtual or platform daemon threads, depending on what is configured.
+ * A {@link ThreadFactory} that creates either virtual or platform daemon threads.
  */
 public class XltThreadFactory implements ThreadFactory
 {
     private static final String DEFAULT_THREAD_NAME_PREFIX = "XltThread-";
 
     /**
-     * The underlying thread factory.
+     * The underlying thread factory that does the hard work.
      */
     private final ThreadFactory threadFactory;
 
     /**
-     * Creates a thread factory creating daemon threads that have the default name prefix and don't inherit inheritable thread-locals.
+     * Creates a thread factory creating daemon threads that have the default name prefix and don't inherit inheritable
+     * thread-locals.
+     * 
+     * @param createVirtualThreads
+     *            whether to create virtual threads instead of platform threads
      */
-    public XltThreadFactory()
+    public XltThreadFactory(boolean createVirtualThreads)
     {
-        this(false, DEFAULT_THREAD_NAME_PREFIX);
+        this(createVirtualThreads, false);
     }
 
     /**
      * Creates a thread factory creating daemon threads that have the default name prefix.
      * 
+     * @param createVirtualThreads
+     *            whether to create virtual threads instead of platform threads
      * @param inheritInheritableThreadLocals
      *            whether or not the threads will inherit inheritable thread-locals
      */
-    public XltThreadFactory(final boolean inheritInheritableThreadLocals)
+    public XltThreadFactory(boolean createVirtualThreads, final boolean inheritInheritableThreadLocals)
     {
-        this(inheritInheritableThreadLocals, DEFAULT_THREAD_NAME_PREFIX);
+        this(createVirtualThreads, inheritInheritableThreadLocals, DEFAULT_THREAD_NAME_PREFIX);
     }
 
     /**
      * Creates a thread factory creating daemon threads.
      * 
+     * @param createVirtualThreads
+     *            whether to create virtual threads instead of platform threads
      * @param inheritInheritableThreadLocals
      *            whether or not the threads will inherit inheritable thread-locals
      * @param threadNamePrefix
      *            an optional thread name prefix (a counter will be appended to it)
      */
-    public XltThreadFactory(final boolean inheritInheritableThreadLocals, @Nullable final String threadNamePrefix)
+    public XltThreadFactory(boolean createVirtualThreads, final boolean inheritInheritableThreadLocals,
+                            @Nullable final String threadNamePrefix)
     {
-        // TODO
-        final boolean useVirtualThreads = true;
-
-        // set up the thread builder and create a thread-safe thread factory from it
-        final Thread.Builder threadBuilder = useVirtualThreads ? Thread.ofVirtual() : Thread.ofPlatform().daemon();
+        // set up the thread builder
+        final Thread.Builder threadBuilder = createVirtualThreads ? Thread.ofVirtual() : Thread.ofPlatform().daemon();
         threadBuilder.inheritInheritableThreadLocals(inheritInheritableThreadLocals);
         threadBuilder.name(Objects.toString(threadNamePrefix, DEFAULT_THREAD_NAME_PREFIX), 0);
 
+        // create a thread-safe thread factory from the thread builder
         threadFactory = threadBuilder.factory();
     }
 
