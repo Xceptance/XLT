@@ -14,6 +14,9 @@
     <property name="crx.fileName" value="xlt-timerrecorder-chrome.crx" />
     <property name="crx.file" value="${crx.destination}/${crx.fileName}" />
 
+    <property name="pem.file" location="${basedir}/${timerrecorder.chrome.dir}/xlt-timerrecorder-chrome.pem" />
+    <available file="${pem.file}" property="pem.file.present"/>
+
     <!-- *** Target definitions *** -->
 
     <!-- Set target directory availability. -->
@@ -59,16 +62,27 @@
         <available property="timerrecorder.crx.present" file="${crx.file}" type="file" />
     </target>
 
-    <target name="timerrecorder.crx.create" depends="timerrecorder.check.crx" unless="timerrecorder.crx.present">
+    <target name="timerrecorder.crx.create.withkey" if="pem.file.present">
+        <echo message="Packing extension with private key."/>
+        <exec executable="${timerrecorder.chrome.executable}" failonerror="true">
+            <arg value="--pack-extension=${basedir}/${target.dir}" />
+            <arg value="--pack-extension-key=${pem.file}" />
+        </exec>
+    </target>
+
+    <target name="timerrecorder.crx.create.withoutkey" unless="pem.file.present">
+        <echo message="Packing extension without private key (a new key will be generated)."/>
+        <!-- Delete any previously auto-generated key to prevent error -->
+        <delete file="${basedir}/${target.dir}.pem" quiet="true" />
+        <exec executable="${timerrecorder.chrome.executable}" failonerror="true">
+            <arg value="--pack-extension=${basedir}/${target.dir}" />
+        </exec>
+    </target>
+
+    <target name="timerrecorder.crx.create" depends="timerrecorder.check.crx, timerrecorder.crx.create.withkey, timerrecorder.crx.create.withoutkey" unless="timerrecorder.crx.present">
         <echo>Version name   : ${version}</echo>
         <echo>Numeric version: ${version.number}</echo>
         <echo>Path to Chrome : ${timerrecorder.chrome.executable}</echo>
-
-        <!-- assemble crx -->
-        <exec executable="${timerrecorder.chrome.executable}" failonerror="true">
-            <arg value="--pack-extension=${basedir}/${target.dir}" />
-            <arg value="--pack-extension-key=${basedir}/${timerrecorder.chrome.dir}/xlt-timerrecorder-chrome.pem" />
-        </exec>
     </target>
 
     <!-- Create CRX file. -->
