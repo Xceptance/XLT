@@ -68,19 +68,19 @@
             <div class="chart">
                 <h5>Memory</h5>
                 <img>
-                    <xsl:attribute name="src">charts/agents/<xsl:value-of select="$directory"/>/MemoryUsage.webp</xsl:attribute>
+                    <xsl:attribute name="alt">charts/agents/<xsl:value-of select="$directory"/>/MemoryUsage.webp</xsl:attribute>
                 </img>
             </div>
 
             <div class="chart">
                 <h5>CPU</h5>
                 <img>
-                    <xsl:attribute name="src">charts/agents/<xsl:value-of select="$directory"/>/CpuUsage.webp</xsl:attribute>
+                    <xsl:attribute name="alt">charts/agents/<xsl:value-of select="$directory"/>/CpuUsage.webp</xsl:attribute>
                 </img>
 
                 <h5>Threads</h5>
                 <img>
-                    <xsl:attribute name="src">charts/agents/<xsl:value-of select="$directory"/>/Threads.webp</xsl:attribute>
+                    <xsl:attribute name="alt">charts/agents/<xsl:value-of select="$directory"/>/Threads.webp</xsl:attribute>
                 </img>
             </div>
         </div>
