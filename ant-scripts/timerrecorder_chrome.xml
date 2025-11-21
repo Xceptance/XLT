@@ -63,7 +63,7 @@
     </target>
 
     <target name="timerrecorder.crx.create.withkey" if="pem.file.present">
-        <echo message="Packing extension with private key."/>
+        <echo message="Packing extension with existing private key."/>
         <exec executable="${timerrecorder.chrome.executable}" failonerror="true">
             <arg value="--pack-extension=${basedir}/${target.dir}" />
             <arg value="--pack-extension-key=${pem.file}" />
