@@ -190,11 +190,11 @@
                                     </h3>
                                     <div class="chart">
                                         <h5>Overview</h5>
-                                        <img src="charts/customvalues/{$encodedChartFilename}.webp"/>
+                                        <img alt="charts/customvalues/{$encodedChartFilename}.webp"/>
                                     </div>
                                     <div class="chart">
                                         <h5>Averages</h5>
-                                        <img src="charts/customvalues/{$encodedChartFilename}_Average.webp"/>
+                                        <img alt="charts/customvalues/{$encodedChartFilename}_Average.webp"/>
                                     </div>
                                 </div>
                             </xsl:if>
