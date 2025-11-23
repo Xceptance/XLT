@@ -30,7 +30,7 @@ import java.util.Set;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.powermock.api.mockito.PowerMockito;
+import org.mockito.Mockito;
 
 import com.google.common.collect.ImmutableMap;
 import com.xceptance.xlt.agent.RandomExecutionTimer;
@@ -1589,7 +1589,7 @@ public class TestDeployerTest
                     if (isStarted == null)
                     {
                         // get an instance of the random execution timer
-                        final RandomExecutionTimer executionTimer = PowerMockito.mock(RandomExecutionTimer.class);
+        final RandomExecutionTimer executionTimer = Mockito.mock(RandomExecutionTimer.class);
                         // create a timer task
                         final RandomExecutionTimer.UserCountControllerTimerTask timerTask = new RandomExecutionTimer.UserCountControllerTimerTask(testUserConfiguration.getUsers(),
                                                                                                                                                   executionTimer,

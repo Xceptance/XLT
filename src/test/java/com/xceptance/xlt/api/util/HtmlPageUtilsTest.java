@@ -15,10 +15,6 @@
  */
 package com.xceptance.xlt.api.util;
 
-import static org.easymock.EasyMock.expect;
-import static org.powermock.api.easymock.PowerMock.mockStatic;
-import static org.powermock.api.easymock.PowerMock.replayAll;
-
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -47,11 +43,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
-import org.powermock.api.easymock.PowerMock;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 import org.w3c.dom.Node;
 import org.xml.sax.helpers.AttributesImpl;
 
@@ -65,12 +56,6 @@ import com.xceptance.xlt.util.HtmlTestViaFile;
  *
  * @author Hartmut Arlt (Xceptance Software Technologies GmbH)
  */
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(
-    {
-        XltRandom.class, HtmlForm.class
-    })
-@PowerMockIgnore({"javax.xml.*", "org.xml.*", "org.w3c.dom.*"})
 public class HtmlPageUtilsTest
 {
     /**
@@ -597,30 +582,33 @@ public class HtmlPageUtilsTest
     @Test
     public void testFindHtmlElementsAndPickOneFromHtmlPage() throws IOException
     {
-        // always return the first element of the list
-        mockStatic(XltRandom.class);
-        expect(XltRandom.nextInt(3)).andReturn(0).times(3);
-        expect(XltRandom.nextInt(2)).andReturn(0).times(3);
-        expect(XltRandom.nextInt(1)).andReturn(0);
-        PowerMock.replay(XltRandom.class);
+        try (MockedStatic<XltRandom> xltRandomMock = Mockito.mockStatic(XltRandom.class))
+        {
+            // always return the first element of the list
+            xltRandomMock.when(() -> XltRandom.nextInt(3)).thenReturn(0);
+            xltRandomMock.when(() -> XltRandom.nextInt(2)).thenReturn(0);
+            xltRandomMock.when(() -> XltRandom.nextInt(1)).thenReturn(0);
 
-        final HtmlPage page = getHtmlPage("<html><body><div class='first'>test</div><div class='second'>test</div><div class='third'>test</div></body></html>");
-        // get all 'div' elements
-        final String xPath = "//div";
+            final HtmlPage page = getHtmlPage("<html><body><div class='first'>test</div><div class='second'>test</div><div class='third'>test</div></body></html>");
+            // get all 'div' elements
+            final String xPath = "//div";
 
-        Assert.assertEquals("HtmlDivision[<div class=\"first\">]", HtmlPageUtils.findHtmlElementsAndPickOne(page, xPath).toString());
-        Assert.assertEquals("HtmlDivision[<div class=\"first\">]", HtmlPageUtils.findHtmlElementsAndPickOne(page, xPath, false).toString());
-        // exclude the first element, so get the second one
-        Assert.assertEquals("HtmlDivision[<div class=\"second\">]", HtmlPageUtils.findHtmlElementsAndPickOne(page, xPath, true).toString());
-        Assert.assertEquals("HtmlDivision[<div class=\"first\">]",
-                            HtmlPageUtils.findHtmlElementsAndPickOne(page, xPath, false, false).toString());
-        Assert.assertEquals("HtmlDivision[<div class=\"first\">]",
-                            HtmlPageUtils.findHtmlElementsAndPickOne(page, xPath, false, true).toString());
-        // exclude the first element, so get the second one
-        Assert.assertEquals("HtmlDivision[<div class=\"second\">]",
-                            HtmlPageUtils.findHtmlElementsAndPickOne(page, xPath, true, false).toString());
-        Assert.assertEquals("HtmlDivision[<div class=\"second\">]",
-                            HtmlPageUtils.findHtmlElementsAndPickOne(page, xPath, true, true).toString());
+            Assert.assertEquals("HtmlDivision[<div class=\"first\">]", HtmlPageUtils.findHtmlElementsAndPickOne(page, xPath).toString());
+            Assert.assertEquals("HtmlDivision[<div class=\"first\">]",
+                                HtmlPageUtils.findHtmlElementsAndPickOne(page, xPath, false).toString());
+            // exclude the first element, so get the second one
+            Assert.assertEquals("HtmlDivision[<div class=\"second\">]",
+                                HtmlPageUtils.findHtmlElementsAndPickOne(page, xPath, true).toString());
+            Assert.assertEquals("HtmlDivision[<div class=\"first\">]",
+                                HtmlPageUtils.findHtmlElementsAndPickOne(page, xPath, false, false).toString());
+            Assert.assertEquals("HtmlDivision[<div class=\"first\">]",
+                                HtmlPageUtils.findHtmlElementsAndPickOne(page, xPath, false, true).toString());
+            // exclude the first element, so get the second one
+            Assert.assertEquals("HtmlDivision[<div class=\"second\">]",
+                                HtmlPageUtils.findHtmlElementsAndPickOne(page, xPath, true, false).toString());
+            Assert.assertEquals("HtmlDivision[<div class=\"second\">]",
+                                HtmlPageUtils.findHtmlElementsAndPickOne(page, xPath, true, true).toString());
+        }
     }
 
     /**
@@ -916,8 +904,8 @@ public class HtmlPageUtilsTest
     @Test
     public void testGetInputStartingWithNoElementFound()
     {
-        final HtmlForm form = PowerMockito.mock(HtmlForm.class);
-        PowerMockito.when(form.getElementsByTagName("input")).thenReturn(new DomNodeListImpl<>());
+        final HtmlForm form = Mockito.mock(HtmlForm.class);
+        Mockito.when(form.getElementsByTagName("input")).thenReturn(new DomNodeListImpl<>());
 
         Assert.assertNull(HtmlPageUtils.getInputStartingWith(form, "anySuffix"));
     }
@@ -929,12 +917,12 @@ public class HtmlPageUtilsTest
     public void testGetInputStartingWith()
     {
         // the html form with the 'input' tags
-        final HtmlForm form = PowerMockito.mock(HtmlForm.class);
+        final HtmlForm form = Mockito.mock(HtmlForm.class);
 
         // the 'input' tags
-        final HtmlInput firstInput = PowerMockito.mock(HtmlInput.class);
-        final HtmlInput secondInput = PowerMockito.mock(HtmlInput.class);
-        final HtmlInput thirdInput = PowerMockito.mock(HtmlInput.class);
+        final HtmlInput firstInput = Mockito.mock(HtmlInput.class);
+        final HtmlInput secondInput = Mockito.mock(HtmlInput.class);
+        final HtmlInput thirdInput = Mockito.mock(HtmlInput.class);
 
         final DomNodeList<HtmlElement> inputs = new DomNodeListImpl<>();
         // add all 'input' tags to the list
@@ -943,10 +931,10 @@ public class HtmlPageUtilsTest
         inputs.add(thirdInput);
 
         // set some mocks for the 'input' tags
-        PowerMockito.when(form.getElementsByTagName("input")).thenReturn(inputs);
-        PowerMockito.when(firstInput.getNameAttribute()).thenReturn("otherPrefixTest");
-        PowerMockito.when(secondInput.getNameAttribute()).thenReturn(null);
-        PowerMockito.when(thirdInput.getNameAttribute()).thenReturn("thisPrefixTest");
+        Mockito.when(form.getElementsByTagName("input")).thenReturn(inputs);
+        Mockito.when(firstInput.getNameAttribute()).thenReturn("otherPrefixTest");
+        Mockito.when(secondInput.getNameAttribute()).thenReturn(null);
+        Mockito.when(thirdInput.getNameAttribute()).thenReturn("thisPrefixTest");
         // the third 'input' tag should be returned
         Assert.assertEquals(thirdInput, HtmlPageUtils.getInputStartingWith(form, "thisPrefix"));
     }
@@ -967,8 +955,8 @@ public class HtmlPageUtilsTest
     @Test
     public void testGetInputEndingWithNoElementFound()
     {
-        final HtmlForm form = PowerMockito.mock(HtmlForm.class);
-        PowerMockito.when(form.getElementsByTagName("input")).thenReturn(new DomNodeListImpl<>());
+        final HtmlForm form = Mockito.mock(HtmlForm.class);
+        Mockito.when(form.getElementsByTagName("input")).thenReturn(new DomNodeListImpl<>());
 
         Assert.assertNull(HtmlPageUtils.getInputEndingWith(form, "anySuffix"));
     }
@@ -980,12 +968,12 @@ public class HtmlPageUtilsTest
     public void testGetInputEndingWith()
     {
         // the html form with the 'input' tags
-        final HtmlForm form = PowerMockito.mock(HtmlForm.class);
+        final HtmlForm form = Mockito.mock(HtmlForm.class);
 
         // the 'input' tags
-        final HtmlInput firstInput = PowerMockito.mock(HtmlInput.class);
-        final HtmlInput secondInput = PowerMockito.mock(HtmlInput.class);
-        final HtmlInput thirdInput = PowerMockito.mock(HtmlInput.class);
+        final HtmlInput firstInput = Mockito.mock(HtmlInput.class);
+        final HtmlInput secondInput = Mockito.mock(HtmlInput.class);
+        final HtmlInput thirdInput = Mockito.mock(HtmlInput.class);
 
         final DomNodeList<HtmlElement> inputs = new DomNodeListImpl<>();
         // add all 'input' tags to the list
@@ -994,10 +982,10 @@ public class HtmlPageUtilsTest
         inputs.add(thirdInput);
 
         // set some mocks for the 'input' tags
-        PowerMockito.when(form.getElementsByTagName("input")).thenReturn(inputs);
-        PowerMockito.when(firstInput.getNameAttribute()).thenReturn("testOtherSuffix");
-        PowerMockito.when(secondInput.getNameAttribute()).thenReturn(null);
-        PowerMockito.when(thirdInput.getNameAttribute()).thenReturn("testThisSuffix");
+        Mockito.when(form.getElementsByTagName("input")).thenReturn(inputs);
+        Mockito.when(firstInput.getNameAttribute()).thenReturn("testOtherSuffix");
+        Mockito.when(secondInput.getNameAttribute()).thenReturn(null);
+        Mockito.when(thirdInput.getNameAttribute()).thenReturn("testThisSuffix");
         // the third 'input' tag should be returned
         Assert.assertEquals(thirdInput, HtmlPageUtils.getInputEndingWith(form, "ThisSuffix"));
     }
@@ -1018,8 +1006,8 @@ public class HtmlPageUtilsTest
     @Test
     public void testGetSelectStartingWithNoElementFound()
     {
-        final HtmlForm form = PowerMockito.mock(HtmlForm.class);
-        PowerMockito.when(form.getElementsByTagName("select")).thenReturn(new DomNodeListImpl<>());
+        final HtmlForm form = Mockito.mock(HtmlForm.class);
+        Mockito.when(form.getElementsByTagName("select")).thenReturn(new DomNodeListImpl<>());
 
         Assert.assertNull(HtmlPageUtils.getSelectStartingWith(form, "anyPrefix"));
     }
@@ -1031,13 +1019,13 @@ public class HtmlPageUtilsTest
     public void testGetSelectStartingWith()
     {
         // the html form with the 'select' tags
-        final HtmlForm form = PowerMockito.mock(HtmlForm.class);
+        final HtmlForm form = Mockito.mock(HtmlForm.class);
 
         // the 'select' tags
-        final HtmlSelect firstSelect = PowerMockito.mock(HtmlSelect.class);
-        final HtmlSelect secondSelect = PowerMockito.mock(HtmlSelect.class);
-        final HtmlSelect thirdSelect = PowerMockito.mock(HtmlSelect.class);
-        final HtmlSelect fourthSelect = PowerMockito.mock(HtmlSelect.class);
+        final HtmlSelect firstSelect = Mockito.mock(HtmlSelect.class);
+        final HtmlSelect secondSelect = Mockito.mock(HtmlSelect.class);
+        final HtmlSelect thirdSelect = Mockito.mock(HtmlSelect.class);
+        final HtmlSelect fourthSelect = Mockito.mock(HtmlSelect.class);
 
         final DomNodeList<HtmlElement> selects = new DomNodeListImpl<>();
         // add all 'select' tags to the list
@@ -1047,11 +1035,11 @@ public class HtmlPageUtilsTest
         selects.add(fourthSelect);
 
         // set some mocks for the 'select' tags
-        PowerMockito.when(form.getElementsByTagName("select")).thenReturn(selects);
-        PowerMockito.when(firstSelect.getNameAttribute()).thenReturn("prefexio");
-        PowerMockito.when(secondSelect.getNameAttribute()).thenReturn(null);
-        PowerMockito.when(thirdSelect.getNameAttribute()).thenReturn("prefixio");
-        PowerMockito.when(fourthSelect.getNameAttribute()).thenReturn("prefixIO");
+        Mockito.when(form.getElementsByTagName("select")).thenReturn(selects);
+        Mockito.when(firstSelect.getNameAttribute()).thenReturn("prefexio");
+        Mockito.when(secondSelect.getNameAttribute()).thenReturn(null);
+        Mockito.when(thirdSelect.getNameAttribute()).thenReturn("prefixio");
+        Mockito.when(fourthSelect.getNameAttribute()).thenReturn("prefixIO");
         // the third 'select' tag should be returned
         Assert.assertEquals(thirdSelect, HtmlPageUtils.getSelectStartingWith(form, "prefixio"));
         Assert.assertEquals(thirdSelect, HtmlPageUtils.getSelectStartingWith(form, "prefix"));
@@ -1073,8 +1061,8 @@ public class HtmlPageUtilsTest
     @Test
     public void testGetSelectEndingWithNoElementFound()
     {
-        final HtmlForm form = PowerMockito.mock(HtmlForm.class);
-        PowerMockito.when(form.getElementsByTagName("select")).thenReturn(new DomNodeListImpl<>());
+        final HtmlForm form = Mockito.mock(HtmlForm.class);
+        Mockito.when(form.getElementsByTagName("select")).thenReturn(new DomNodeListImpl<>());
 
         Assert.assertNull(HtmlPageUtils.getSelectEndingWith(form, "anySuffix"));
     }
@@ -1086,12 +1074,12 @@ public class HtmlPageUtilsTest
     public void testGetSelectEndingWith()
     {
         // the html form with the 'select' tags
-        final HtmlForm form = PowerMockito.mock(HtmlForm.class);
+        final HtmlForm form = Mockito.mock(HtmlForm.class);
 
         // the 'select' tags
-        final HtmlSelect firstSelect = PowerMockito.mock(HtmlSelect.class);
-        final HtmlSelect secondSelect = PowerMockito.mock(HtmlSelect.class);
-        final HtmlSelect thirdSelect = PowerMockito.mock(HtmlSelect.class);
+        final HtmlSelect firstSelect = Mockito.mock(HtmlSelect.class);
+        final HtmlSelect secondSelect = Mockito.mock(HtmlSelect.class);
+        final HtmlSelect thirdSelect = Mockito.mock(HtmlSelect.class);
 
         final DomNodeList<HtmlElement> selects = new DomNodeListImpl<>();
         // add all 'select' tags to the list
@@ -1100,10 +1088,10 @@ public class HtmlPageUtilsTest
         selects.add(thirdSelect);
 
         // set some mocks for the 'select' tags
-        PowerMockito.when(form.getElementsByTagName("select")).thenReturn(selects);
-        PowerMockito.when(firstSelect.getNameAttribute()).thenReturn("testOtherSuffix");
-        PowerMockito.when(secondSelect.getNameAttribute()).thenReturn(null);
-        PowerMockito.when(thirdSelect.getNameAttribute()).thenReturn("testThisSuffix");
+        Mockito.when(form.getElementsByTagName("select")).thenReturn(selects);
+        Mockito.when(firstSelect.getNameAttribute()).thenReturn("testOtherSuffix");
+        Mockito.when(secondSelect.getNameAttribute()).thenReturn(null);
+        Mockito.when(thirdSelect.getNameAttribute()).thenReturn("testThisSuffix");
         // the third 'select' tag should be returned
         Assert.assertEquals(thirdSelect, HtmlPageUtils.getSelectEndingWith(form, "ThisSuffix"));
     }
@@ -1339,28 +1327,29 @@ public class HtmlPageUtilsTest
         {
             final HtmlPage page = HtmlTestViaFile.getHtmlPageByName(this);
 
-            mockStatic(XltRandom.class);
-            expect(XltRandom.nextInt(6)).andReturn(4); // 6 is size, 4 is position, starting at 0
-            replayAll();
+            try (MockedStatic<XltRandom> xltRandomMock = Mockito.mockStatic(XltRandom.class))
+            {
+                xltRandomMock.when(() -> XltRandom.nextInt(6)).thenReturn(4); // 6 is size, 4 is position, starting at 0
 
-            final HtmlForm form = page.getFormByName("testSelectRandomly_HtmlFormStringBooleanBoolean_size_6");
-            Assert.assertNotNull(form);
+                final HtmlForm form = page.getFormByName("testSelectRandomly_HtmlFormStringBooleanBoolean_size_6");
+                Assert.assertNotNull(form);
 
-            Assert.assertTrue(form.getSelectByName(SELECTNAME).getOptionByValue("value01").isSelected());
-            Assert.assertFalse(form.getSelectByName(SELECTNAME).getOptionByValue("value02").isSelected());
-            Assert.assertFalse(form.getSelectByName(SELECTNAME).getOptionByValue("value03").isSelected());
-            Assert.assertFalse(form.getSelectByName(SELECTNAME).getOptionByValue("value04").isSelected());
-            Assert.assertFalse(form.getSelectByName(SELECTNAME).getOptionByValue("value05").isSelected());
-            Assert.assertFalse(form.getSelectByName(SELECTNAME).getOptionByValue("value06").isSelected());
+                Assert.assertTrue(form.getSelectByName(SELECTNAME).getOptionByValue("value01").isSelected());
+                Assert.assertFalse(form.getSelectByName(SELECTNAME).getOptionByValue("value02").isSelected());
+                Assert.assertFalse(form.getSelectByName(SELECTNAME).getOptionByValue("value03").isSelected());
+                Assert.assertFalse(form.getSelectByName(SELECTNAME).getOptionByValue("value04").isSelected());
+                Assert.assertFalse(form.getSelectByName(SELECTNAME).getOptionByValue("value05").isSelected());
+                Assert.assertFalse(form.getSelectByName(SELECTNAME).getOptionByValue("value06").isSelected());
 
-            HtmlPageUtils.selectRandomly(form, SELECTNAME, false, false);
+                HtmlPageUtils.selectRandomly(form, SELECTNAME, false, false);
 
-            Assert.assertFalse(form.getSelectByName(SELECTNAME).getOptionByValue("value01").isSelected());
-            Assert.assertFalse(form.getSelectByName(SELECTNAME).getOptionByValue("value02").isSelected());
-            Assert.assertFalse(form.getSelectByName(SELECTNAME).getOptionByValue("value03").isSelected());
-            Assert.assertFalse(form.getSelectByName(SELECTNAME).getOptionByValue("value04").isSelected());
-            Assert.assertTrue(form.getSelectByName(SELECTNAME).getOptionByValue("value05").isSelected());
-            Assert.assertFalse(form.getSelectByName(SELECTNAME).getOptionByValue("value06").isSelected());
+                Assert.assertFalse(form.getSelectByName(SELECTNAME).getOptionByValue("value01").isSelected());
+                Assert.assertFalse(form.getSelectByName(SELECTNAME).getOptionByValue("value02").isSelected());
+                Assert.assertFalse(form.getSelectByName(SELECTNAME).getOptionByValue("value03").isSelected());
+                Assert.assertFalse(form.getSelectByName(SELECTNAME).getOptionByValue("value04").isSelected());
+                Assert.assertTrue(form.getSelectByName(SELECTNAME).getOptionByValue("value05").isSelected());
+                Assert.assertFalse(form.getSelectByName(SELECTNAME).getOptionByValue("value06").isSelected());
+            }
         }
     }
 

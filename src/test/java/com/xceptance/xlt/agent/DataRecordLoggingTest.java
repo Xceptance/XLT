@@ -65,12 +65,7 @@ import org.mockito.Mockito;
 import org.mockito.exceptions.verification.junit.ArgumentsAreDifferent;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
-import org.powermock.modules.junit4.PowerMockRunnerDelegate;
-import org.powermock.reflect.Whitebox;
+import org.mockito.MockedConstruction;
 
 import com.xceptance.common.lang.ThrowableUtils;
 import com.xceptance.xlt.agentcontroller.TestUserConfiguration;
@@ -102,16 +97,7 @@ import util.xlt.properties.AdjustXltProperties.SetProperty;
  *
  * @author Deniz Altin
  */
-@RunWith(PowerMockRunner.class)
-@PowerMockRunnerDelegate(Parameterized.class)
-@PrepareForTest(
-    {
-        SessionImpl.class, DataManagerImpl.class, GlobalClock.class, AbstractExecutionTimer.class
-})
-@PowerMockIgnore(
-    {
-        "javax.*", "org.xml.*", "org.w3c.dom.*", "org.apache.commons.vfs2.*"
-})
+@RunWith(Parameterized.class)
 public class DataRecordLoggingTest
 {
     /**
@@ -630,32 +616,26 @@ public class DataRecordLoggingTest
      *
      * @throws Exception
      */
+    @SuppressWarnings("unchecked")
     private void mockDataManagerCreation() throws Exception
     {
-        PowerMockito.whenNew(DataManagerImpl.class).withAnyArguments().thenAnswer(new Answer<DataManagerImpl>()
+        try (MockedConstruction<DataManagerImpl> mocked = Mockito.mockConstruction(DataManagerImpl.class, (mock, context) -> {
+            // limit to constructor new DataManagerImpl(Session) and avoid using (Session, Metrics)
+            final DataManagerImpl instance = (DataManagerImpl) new ObjenesisStd().newInstance(DataManagerImpl.class);
+
+            Whitebox.invokeConstructor(DataManagerImpl.class, new Class<?>[]
+                                                                             {
+                                                                                 Session.class
+                                                                             }, new Object[]
+                                                                                 {
+                                                                                     invocation.getArgument(0, Session.class)
+                                                                                 });
+
+            createMockDataManager(instance);
+        }))
         {
-            @Override
-            public DataManagerImpl answer(InvocationOnMock invocation) throws Throwable
-            {
-                // This method seems to be called immediately and with null parameters as part of setting up the answer
-                // (Powermock bug?) -> ignore.
-                if (invocation.getArgument(0, Session.class) == null)
-                {
-                    return null;
-                }
 
-                // limit to constructor new DataManagerImpl(Session) and avoid using (Session, Metrics)
-                final DataManagerImpl instance = Whitebox.invokeConstructor(DataManagerImpl.class, new Class<?>[]
-                    {
-                        Session.class
-                    }, new Object[]
-                    {
-                        invocation.getArgument(0, Session.class)
-                    });
-
-                return createMockDataManager(instance);
-            }
-        });
+        }
     }
 
     private DataManagerImpl createMockDataManager(final DataManagerImpl instance)
@@ -686,7 +666,7 @@ public class DataRecordLoggingTest
      */
     private static AbstractExecutionTimer dummyExecutionTimer()
     {
-        return PowerMockito.mock(AbstractExecutionTimer.class);
+        return Mockito.mock(AbstractExecutionTimer.class);
     }
 
     private static final String DEFAULT_AGENT_ID = "agentID";

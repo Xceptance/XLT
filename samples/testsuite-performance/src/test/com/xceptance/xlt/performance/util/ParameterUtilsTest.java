@@ -23,10 +23,8 @@ import static org.mockito.Mockito.when;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 
 import com.xceptance.xlt.api.engine.Session;
 import com.xceptance.xlt.performance.util.ParameterUtils;
@@ -37,8 +35,6 @@ import com.xceptance.xlt.performance.util.ParameterUtils;
  * @author  Rene Schwietzke
  * 
  */
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(Session.class)
 public class ParameterUtilsTest
 {
 	/**
@@ -85,17 +81,17 @@ public class ParameterUtilsTest
 		
 		Session session = mock(Session.class);
 		
-		// because Mockito cannot mock statics, we need Powermock to spice it up
-		PowerMockito.mockStatic(Session.class);
-		
-		when(Session.getCurrent()).thenReturn(session);
-		
 		when(session.getUserID()).thenReturn("TTest-01");
 		when(session.getUserNumber()).thenReturn(1);
-		
+
+		try (MockedStatic<Session> sessionMock = Mockito.mockStatic(Session.class))
+		{
+		sessionMock.when(Session::getCurrent).thenReturn(session);
+
 		String s2 = ParameterUtils.replaceDynamicParameters(s1);
-		
+
 		Assert.assertEquals("Aa TTest-01 aaaaaa 1 aaaaa.", s2);
+        }
 	}
 	
 }

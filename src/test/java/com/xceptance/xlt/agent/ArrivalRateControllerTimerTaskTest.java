@@ -22,7 +22,7 @@ import java.util.LinkedList;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.powermock.api.mockito.PowerMockito;
+import org.mockito.Mockito;
 
 import com.xceptance.xlt.agent.unipro.CompositeFunction;
 import com.xceptance.xlt.agent.unipro.Function;
@@ -55,8 +55,8 @@ public class ArrivalRateControllerTimerTaskTest
     {
         actualUserTypeStartTime.clear();
         // create a mock, that executes the arrival rate controller timer task
-        executionTimer = PowerMockito.mock(PeriodicExecutionTimer.class);
-        PowerMockito.when(executionTimer.getThreads()).thenReturn(Collections.<Thread>emptySet());
+        executionTimer = Mockito.mock(PeriodicExecutionTimer.class);
+        Mockito.when(executionTimer.getThreads()).thenReturn(Collections.<Thread>emptySet());
     }
 
     /**

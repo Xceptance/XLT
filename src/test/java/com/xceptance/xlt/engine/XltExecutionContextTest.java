@@ -18,26 +18,18 @@
  */
 package com.xceptance.xlt.engine;
 
-import static org.junit.Assert.*;
-import static org.powermock.api.mockito.PowerMockito.*;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 
 import org.apache.commons.vfs2.FileObject;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(
-    {
-        XltExecutionContext.class, System.class
-    })
-@PowerMockIgnore({"javax.xml.*", "org.xml.*", "org.w3c.dom.*"})
 public class XltExecutionContextTest
 {
     private static class TestObjectCreationException extends Exception
@@ -62,9 +54,11 @@ public class XltExecutionContextTest
     {
         try
         {
-            return constructor(XltExecutionContext.class).newInstance();
+            final Constructor<XltExecutionContext> constructor = XltExecutionContext.class.getDeclaredConstructor();
+            constructor.setAccessible(true);
+            return constructor.newInstance();
         }
-        catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e)
+        catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e)
         {
             throw new TestObjectCreationException(e);
         }
@@ -113,18 +107,20 @@ public class XltExecutionContextTest
         // TEST_PARAMETER:
         final String systemPropertyValue = "/foo";
 
-        // BEFORE: the system property for the test suite home directory is set
-        mockStatic(System.class);
-        when(System.getProperty("com.xceptance.xlt.testSuiteHomeDir")).thenReturn(systemPropertyValue);
+        try (MockedStatic<System> systemMock = Mockito.mockStatic(System.class))
+        {
+            // BEFORE: the system property for the test suite home directory is set
+            systemMock.when(() -> System.getProperty("com.xceptance.xlt.testSuiteHomeDir")).thenReturn(systemPropertyValue);
 
-        // GIVEN: a fresh default XltExecutionContext
-        XltExecutionContext newContext = createNewTestObject();
+            // GIVEN: a fresh default XltExecutionContext
+            XltExecutionContext newContext = createNewTestObject();
 
-        // WHEN: getting the test suite home directory
-        File testSuiteHomeDir = newContext.getTestSuiteHomeDirAsFile();
+            // WHEN: getting the test suite home directory
+            File testSuiteHomeDir = newContext.getTestSuiteHomeDirAsFile();
 
-        // THEN: the returned test suite home directory should be the same as defined by the system property
-        assertSamePath(testSuiteHomeDir, new File(systemPropertyValue));
+            // THEN: the returned test suite home directory should be the same as defined by the system property
+            assertSamePath(testSuiteHomeDir, new File(systemPropertyValue));
+        }
     }
 
     /**
@@ -138,18 +134,20 @@ public class XltExecutionContextTest
         // TEST_PARAMETER:
         final String environmentVariableValue = "/bar";
 
-        // BEFORE: the environment variable for the test suite home directory is set
-        mockStatic(System.class);
-        when(System.getenv("XLT_TEST_SUITE_HOME_DIR")).thenReturn(environmentVariableValue);
+        try (MockedStatic<System> systemMock = Mockito.mockStatic(System.class))
+        {
+            // BEFORE: the environment variable for the test suite home directory is set
+            systemMock.when(() -> System.getenv("XLT_TEST_SUITE_HOME_DIR")).thenReturn(environmentVariableValue);
 
-        // GIVEN: a fresh default XltExecutionContext
-        XltExecutionContext newContext = createNewTestObject();
+            // GIVEN: a fresh default XltExecutionContext
+            XltExecutionContext newContext = createNewTestObject();
 
-        // WHEN: getting the test suite home directory
-        File testSuiteHomeDir = newContext.getTestSuiteHomeDirAsFile();
+            // WHEN: getting the test suite home directory
+            File testSuiteHomeDir = newContext.getTestSuiteHomeDirAsFile();
 
-        // THEN: the returned test suite home directory should be the same as defined by the environment variable
-        assertSamePath(testSuiteHomeDir, new File(environmentVariableValue));
+            // THEN: the returned test suite home directory should be the same as defined by the environment variable
+            assertSamePath(testSuiteHomeDir, new File(environmentVariableValue));
+        }
     }
 
     /**
@@ -164,19 +162,21 @@ public class XltExecutionContextTest
         final String systemPropertyValue = "/foo";
         final String environmentVariableValue = "/bar";
 
-        // BEFORE: the system property and the environment variable for the test suite home directory is set
-        mockStatic(System.class);
-        when(System.getProperty("com.xceptance.xlt.testSuiteHomeDir")).thenReturn(systemPropertyValue);
-        when(System.getenv("XLT_TEST_SUITE_HOME_DIR")).thenReturn(environmentVariableValue);
+        try (MockedStatic<System> systemMock = Mockito.mockStatic(System.class))
+        {
+            // BEFORE: the system property and the environment variable for the test suite home directory is set
+            systemMock.when(() -> System.getProperty("com.xceptance.xlt.testSuiteHomeDir")).thenReturn(systemPropertyValue);
+            systemMock.when(() -> System.getenv("XLT_TEST_SUITE_HOME_DIR")).thenReturn(environmentVariableValue);
 
-        // GIVEN: a fresh default XltExecutionContext
-        XltExecutionContext newContext = createNewTestObject();
+            // GIVEN: a fresh default XltExecutionContext
+            XltExecutionContext newContext = createNewTestObject();
 
-        // WHEN: getting the test suite home directory
-        File testSuiteHomeDir = newContext.getTestSuiteHomeDirAsFile();
+            // WHEN: getting the test suite home directory
+            File testSuiteHomeDir = newContext.getTestSuiteHomeDirAsFile();
 
-        // THEN: the returned test suite home directory should be the same as defined by the system property
-        assertSamePath(testSuiteHomeDir, new File(systemPropertyValue));
+            // THEN: the returned test suite home directory should be the same as defined by the system property
+            assertSamePath(testSuiteHomeDir, new File(systemPropertyValue));
+        }
     }
 
     /**

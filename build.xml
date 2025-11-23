@@ -197,7 +197,7 @@
         </copy>
 
         <antcall target="build.timerrecorder.xpi" inheritrefs="true" />
-        <antcall target="build.timerrecorder.crx" inheritrefs="true" />
+        <!-- <antcall target="build.timerrecorder.crx" inheritrefs="true" /> -->
         <antcall target="build.resultbrowser" inheritrefs="true" />
     </target>
 
