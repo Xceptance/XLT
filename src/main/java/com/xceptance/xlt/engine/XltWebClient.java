@@ -166,7 +166,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
     /**
      * The request queue that manages the parallel download of resources.
      */
-    private transient RequestQueue requestQueue;
+    private transient RequestQueue requestQueue2;
 
     /**
      * The filter used to check whether or not a URL is to be loaded.

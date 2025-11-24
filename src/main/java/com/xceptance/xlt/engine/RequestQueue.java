@@ -82,9 +82,9 @@ public class RequestQueue
         this.threadCount = threadCount;
         parallelModeEnabled = true;
 
-        final ThreadFactory threadFactory = new XltThreadFactory(useVirtualThreads, true, Session.getCurrent().getUserID() + "-pool-");
+        //final ThreadFactory threadFactory = new XltThreadFactory(useVirtualThreads, true, Session.getCurrent().getUserID() + "-pool-");
 
-        executorService = Executors.newFixedThreadPool(threadCount, threadFactory);
+        executorService = null;//Executors.newFixedThreadPool(threadCount, threadFactory);
         ongoingRequestsCount = new SynchronizingCounter(0);
     }
 
