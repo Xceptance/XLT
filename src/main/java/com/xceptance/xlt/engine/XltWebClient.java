@@ -166,7 +166,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
     /**
      * The request queue that manages the parallel download of resources.
      */
-    private transient RequestQueue requestQueue2;
+    private transient RequestQueue requestQueue;
 
     /**
      * The filter used to check whether or not a URL is to be loaded.
@@ -292,7 +292,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
 
         final boolean useVirtualThreads = props.getProperty(XltConstants.PROP_VIRTUAL_THREADS_ENABLED, false);
 
-        requestQueue = new RequestQueue(this, threadCount, useVirtualThreads);
+        //requestQueue = new RequestQueue(this, threadCount, useVirtualThreads);
 
         /*
          * Configure the super class.
@@ -1119,7 +1119,7 @@ public class XltWebClient extends WebClient implements SessionShutdownListener, 
         close();
 
         // shutdown the rest
-        requestQueue.shutdown();
+        //requestQueue.shutdown();
         pageLocalCache.clear();
     }
 
