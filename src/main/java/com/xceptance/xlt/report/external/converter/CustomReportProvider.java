@@ -25,6 +25,7 @@ import java.util.Map.Entry;
 import org.apache.commons.lang3.StringUtils;
 import org.jfree.data.time.TimeSeries;
 
+import com.xceptance.xlt.api.report.MovingAverageConfiguration;
 import com.xceptance.xlt.api.util.XltLogger;
 import com.xceptance.xlt.report.external.config.ChartConfig;
 import com.xceptance.xlt.report.external.config.SeriesConfig;
@@ -36,7 +37,6 @@ import com.xceptance.xlt.report.external.reportObject.Row;
 import com.xceptance.xlt.report.external.reportObject.Table;
 import com.xceptance.xlt.report.external.util.StatsValueSet;
 import com.xceptance.xlt.report.util.JFreeChartUtils;
-import com.xceptance.xlt.report.util.MovingAverageConfiguration;
 import com.xceptance.xlt.report.util.TaskManager;
 import com.xceptance.xlt.report.util.TimeSeriesConfiguration;
 import com.xceptance.xlt.report.util.TimeSeriesConfiguration.Style;

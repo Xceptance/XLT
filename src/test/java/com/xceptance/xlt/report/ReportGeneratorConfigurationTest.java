@@ -13,9 +13,9 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 
+import com.xceptance.xlt.api.report.MovingAverageConfiguration;
 import com.xceptance.xlt.api.util.XltException;
 import com.xceptance.xlt.common.XltConstants;
-import com.xceptance.xlt.report.util.MovingAverageConfiguration;
 
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;

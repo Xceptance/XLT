@@ -25,6 +25,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import com.xceptance.xlt.api.report.MovingAverageConfiguration;
 import com.xceptance.xlt.report.ReportGeneratorMain;
 
 import junitparams.JUnitParamsRunner;

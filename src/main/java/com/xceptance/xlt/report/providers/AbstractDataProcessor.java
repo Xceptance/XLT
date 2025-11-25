@@ -20,9 +20,9 @@ import java.util.List;
 
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.report.AbstractReportProvider;
+import com.xceptance.xlt.api.report.MovingAverageConfiguration;
 import com.xceptance.xlt.api.report.ReportProviderConfiguration;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration.ChartCappingInfo;
-import com.xceptance.xlt.report.util.MovingAverageConfiguration;
 
 /**
  * The {@link AbstractDataProcessor} class provides common functionality of a typical data processor. A data processor

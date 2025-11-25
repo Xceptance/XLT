@@ -1,4 +1,4 @@
-package com.xceptance.xlt.report.util;
+package com.xceptance.xlt.api.report;
 
 import org.junit.Assert;
 import org.junit.Test;

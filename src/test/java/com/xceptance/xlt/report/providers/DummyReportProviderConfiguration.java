@@ -19,9 +19,9 @@ import java.io.File;
 import java.util.List;
 import java.util.Properties;
 
+import com.xceptance.xlt.api.report.MovingAverageConfiguration;
 import com.xceptance.xlt.api.report.ReportProvider;
 import com.xceptance.xlt.api.report.ReportProviderConfiguration;
-import com.xceptance.xlt.report.util.MovingAverageConfiguration;
 
 /**
  * This is a dummy implementation of {@link ReportProviderConfiguration} which is required to instantiate

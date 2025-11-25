@@ -19,8 +19,6 @@ import java.io.File;
 import java.util.List;
 import java.util.Properties;
 
-import com.xceptance.xlt.report.util.MovingAverageConfiguration;
-
 /**
  * The {@link ReportProviderConfiguration} interface provides access to general report generator settings as well as to
  * report provider specific properties, which are both stored in the global configuration file.

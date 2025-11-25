@@ -39,6 +39,8 @@ import com.xceptance.common.util.AbstractConfiguration;
 import com.xceptance.common.util.ParseUtils;
 import com.xceptance.common.util.RegExUtils;
 import com.xceptance.xlt.api.engine.Data;
+import com.xceptance.xlt.api.report.MovingAverageConfiguration;
+import com.xceptance.xlt.api.report.MovingAverageConfiguration.MovingAverageType;
 import com.xceptance.xlt.api.report.ReportProvider;
 import com.xceptance.xlt.api.report.ReportProviderConfiguration;
 import com.xceptance.xlt.api.util.XltException;
@@ -74,8 +76,6 @@ import com.xceptance.xlt.report.mergerules.MergeRule.UrlText;
 import com.xceptance.xlt.report.mergerules.MergeRule.UrlTextExclude;
 import com.xceptance.xlt.report.providers.RequestTableColorization;
 import com.xceptance.xlt.report.providers.RequestTableColorization.ColorizationRule;
-import com.xceptance.xlt.report.util.MovingAverageConfiguration;
-import com.xceptance.xlt.report.util.MovingAverageConfiguration.MovingAverageType;
 
 /**
  * The ReportGeneratorConfiguration is the central place where all configuration information for the report generator

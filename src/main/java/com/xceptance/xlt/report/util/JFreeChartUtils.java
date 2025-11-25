@@ -75,6 +75,7 @@ import org.slf4j.LoggerFactory;
 
 import com.luciad.imageio.webp.WebPWriteParam;
 import com.xceptance.common.io.FileUtils;
+import com.xceptance.xlt.api.report.MovingAverageConfiguration;
 import com.xceptance.xlt.common.XltConstants;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration.ChartCappingInfo;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration.ChartCappingInfo.ChartCappingMode;
