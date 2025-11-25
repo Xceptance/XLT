@@ -475,12 +475,6 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
                                               TimeSeries countPerSecondTimeSeries)
     {
         final int size = responseTimeSeries.getItems().size();
-        final int size2 = countPerSecondTimeSeries.getItems().size();
-
-        if (size != size2)
-        {
-            System.err.printf("Mismatch: %s %d %d\n", timerName, size, size2);
-        }
 
         // build a JSON string with the series data
         final StringBuilder sb = new StringBuilder();
@@ -488,7 +482,10 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
         for (int i = 0; i < size; i++)
         {
             final IntMinMaxTimeSeriesDataItem responseTimeDataItem = (IntMinMaxTimeSeriesDataItem) responseTimeSeries.getDataItem(i);
-            final IntMinMaxTimeSeriesDataItem countPerSecondDataItem = (IntMinMaxTimeSeriesDataItem) responseTimeSeries.getDataItem(i);
+
+            // get the count/s value that corresponds to the runtime value
+            // (we cannot use the index as there are potentially more data items in the count/s series)
+            final IntMinMaxTimeSeriesDataItem countPerSecondDataItem = (IntMinMaxTimeSeriesDataItem) countPerSecondTimeSeries.getDataItem(responseTimeDataItem.getPeriod());
 
             sb.append('[');
             sb.append(responseTimeDataItem.getPeriod().getFirstMillisecond());
@@ -499,7 +496,7 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
             sb.append(',');
             sb.append(responseTimeDataItem.getMinMaxValue().getMaximumValue());
             sb.append(',');
-            sb.append(countPerSecondDataItem.getMinMaxValue().getValue());
+            sb.append(countPerSecondDataItem.getMinMaxValue().getAverageValue());
             sb.append(']');
 
             if (i < size - 1)
