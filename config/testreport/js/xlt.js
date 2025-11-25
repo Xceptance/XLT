@@ -331,7 +331,7 @@
             : determineColumnDescriptions();
         var numberOfColumns = staticFooterCells.length;
         var descDenotesTotalCol = function(desc) {
-              return /(Bytes\s+(Received|Sent)|Count)\s+Total$/.test(desc);
+            return /(Bytes\s+(Received|Sent)|Count)\s+Total$/.test(desc);
         };
 
         // Skip column 0, which contains row descriptions
@@ -591,6 +591,7 @@
                         var dataMinimum = [];
                         var dataMaximum = [];
                         var dataMaxMinDiff = [];
+                        var dataCountPerSec = [];
 
                         for (var item of data) {
                             // timestamp and mean value
@@ -601,6 +602,8 @@
                             dataMaximum.push([item[0], item[3]]);
                             // timestamp and diff value
                             dataMaxMinDiff.push([item[0], item[3] - item[2]]);
+                            // timestamp and count/s value
+                            dataCountPerSec.push([item[0], item[4]]);
                         }
 
                         // set up the chart
@@ -783,6 +786,19 @@
                                     tooltip: {
                                         show: false,
                                     },
+                                },
+                                {
+                                    name: 'Count/s',
+                                    type: 'line',
+                                    data: dataCountPerSec,
+                                    lineStyle: {
+                                        opacity: 0,
+                                        width: 1,
+                                    },
+                                    itemStyle: {
+                                        color: '#ffa500'
+                                    },
+                                    symbol: 'none',
                                 },
                             ]
                         });
