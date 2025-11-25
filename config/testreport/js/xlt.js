@@ -331,7 +331,7 @@
             : determineColumnDescriptions();
         var numberOfColumns = staticFooterCells.length;
         var descDenotesTotalCol = function(desc) {
-            return /(Bytes\s+(Received|Sent)|Count)\s+Total$/.test(desc);
+              return /(Bytes\s+(Received|Sent)|Count)\s+Total$/.test(desc);
         };
 
         // Skip column 0, which contains row descriptions
