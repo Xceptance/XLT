@@ -105,6 +105,14 @@ public class FileManagerServlet extends HttpServlet
 
             final File file = new File(rootDirectory, fileName);
 
+            // check if the file is outside of the root directory
+            if (!file.getCanonicalPath().startsWith(rootDirectory.getCanonicalPath()))
+            {
+                log.error("Access denied: " + fileName);
+                resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                return;
+            }
+
             // check if the file does not exist
             if (!file.isFile())
             {
@@ -222,6 +230,14 @@ public class FileManagerServlet extends HttpServlet
             else
             {
                 final File file = new File(rootDirectory, fileName);
+
+                // check if the file is outside of the root directory
+                if (!file.getCanonicalPath().startsWith(rootDirectory.getCanonicalPath()))
+                {
+                    log.error("Access denied: " + fileName);
+                    resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                    return;
+                }
 
                 out = new FileOutputStream(file);
                 final InputStream in = req.getInputStream();
