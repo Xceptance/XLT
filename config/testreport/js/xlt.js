@@ -644,7 +644,8 @@
                                         brushStyle: {
                                             color: '#a00',
                                             opacity: 0.25,
-                                        }
+                                        },
+                                        filterMode: 'none'
                                     }
                                 }
                             },
