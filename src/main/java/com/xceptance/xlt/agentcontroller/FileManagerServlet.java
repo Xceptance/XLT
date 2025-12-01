@@ -21,6 +21,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Path;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -105,19 +106,20 @@ public class FileManagerServlet extends HttpServlet
 
             final File file = new File(rootDirectory, fileName);
 
-            // check if the file is outside of the root directory
-            if (!file.getCanonicalPath().startsWith(rootDirectory.getCanonicalPath()))
-            {
-                log.error("Access denied: " + fileName);
-                resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                return;
-            }
-
             // check if the file does not exist
             if (!file.isFile())
             {
                 // handle file does not exist
                 resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                return;
+            }
+
+            // prevent path traversal attacks
+            final Path rootPath = rootDirectory.toPath().toRealPath();
+            final Path targetPath = file.toPath().toRealPath();
+            if (!targetPath.startsWith(rootPath))
+            {
+                resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
                 return;
             }
 
@@ -231,10 +233,11 @@ public class FileManagerServlet extends HttpServlet
             {
                 final File file = new File(rootDirectory, fileName);
 
-                // check if the file is outside of the root directory
-                if (!file.getCanonicalPath().startsWith(rootDirectory.getCanonicalPath()))
+                // prevent path traversal attacks
+                final Path rootPath = rootDirectory.toPath().toAbsolutePath().normalize();
+                final Path targetPath = file.toPath().toAbsolutePath().normalize();
+                if (!targetPath.startsWith(rootPath))
                 {
-                    log.error("Access denied: " + fileName);
                     resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
                     return;
                 }
