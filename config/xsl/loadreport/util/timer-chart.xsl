@@ -17,6 +17,14 @@
             <xsl:value-of select="/testreport/configuration/reportGeneratorConfiguration/dynamicChartsEnabled"/>
         </xsl:variable>
 
+        <xsl:variable name="timeZoneLabel">
+            <xsl:value-of select="/testreport/general/timeZoneLabel"/>
+        </xsl:variable>
+
+        <xsl:variable name="timeZoneOffset">
+            <xsl:value-of select="/testreport/general/timeZoneOffset"/>
+        </xsl:variable>
+
         <a>
             <xsl:attribute name="id"><xsl:value-of select="name"/></xsl:attribute>
             <xsl:comment>
@@ -82,6 +90,12 @@
                         <xsl:attribute name="src">charts/<xsl:value-of select="$directory"/>/<xsl:value-of
                             select="$encodedName"/>.json</xsl:attribute>
                         <xsl:attribute name="name"><xsl:value-of select="name"/></xsl:attribute>
+                        <xsl:attribute name="data-timezone-label">
+                            <xsl:value-of select="$timeZoneLabel"/>
+                        </xsl:attribute>
+                        <xsl:attribute name="data-timezone-offset">
+                            <xsl:value-of select="$timeZoneOffset"/>
+                        </xsl:attribute>
                     </div>
                 </div>
             </xsl:if>

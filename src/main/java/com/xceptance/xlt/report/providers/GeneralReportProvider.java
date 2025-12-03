@@ -17,6 +17,8 @@ package com.xceptance.xlt.report.providers;
 
 import java.io.File;
 import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
 
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
@@ -174,6 +176,10 @@ public class GeneralReportProvider extends AbstractReportProvider
         report.hits = totalRequests;
         report.bytesSent = totalBytesSent;
         report.bytesReceived = totalBytesReceived;
+
+        final TimeZone tz = TimeZone.getDefault();
+        report.timeZoneLabel = tz.getDisplayName(tz.inDaylightTime(report.startTime), TimeZone.SHORT, Locale.US);
+        report.timeZoneOffset = tz.getOffset(testStartTime);
 
         return report;
     }
