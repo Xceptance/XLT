@@ -273,6 +273,8 @@ public class FileManagerServlet extends HttpServlet
 
             // Ensure the root path ends with a separator to prevent partial path traversal attacks
             // (e.g. preventing "/var/www" from matching "/var/www-sibling")
+            // Note: getCanonicalPath() resolves symbolic links. This ensures that even if a file is a symlink
+            // inside the root pointing outside, it will be rejected (secure by default).
             final String rootPath = canonicalRootPath.endsWith(File.separator) ? canonicalRootPath : canonicalRootPath + File.separator;
 
             return !file.getCanonicalPath().startsWith(rootPath);

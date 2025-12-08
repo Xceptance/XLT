@@ -98,8 +98,9 @@ public class FileManagerServletTest
             @Override
             public int read() throws IOException
             {
+                // Return -1 to indicate end of stream (empty)
                 return -1;
-            } // empty
+            }
 
             @Override
             public boolean isFinished()
@@ -225,5 +226,52 @@ public class FileManagerServletTest
 
         // Expect 403 Forbidden because it is outside the root directory (even if it shares prefix)
         verify(response).setStatus(HttpServletResponse.SC_FORBIDDEN);
+    }
+
+    @Test
+    public void testDoGet_EdgeCase_AbsolutePath() throws ServletException, IOException
+    {
+        // Test absolute path traversal
+        when(request.getPathInfo()).thenReturn("//etc/passwd");
+
+        servlet.doGet(request, response);
+
+        // Expect 404 Not Found.
+        // On the test environment, the file path constructed from root and "//etc/passwd" is resolved relative to the root
+        // (e.g. "/tmp/root/etc/passwd"). Since this file does not exist, we get a 404.
+        // This confirms that the absolute path injection was effectively contained within the root directory (safe)
+        // rather than accessing the actual system file "/etc/passwd".
+        verify(response).setStatus(HttpServletResponse.SC_NOT_FOUND);
+    }
+
+    @Test
+    public void testDoGet_EdgeCase_CurrentDirectory() throws ServletException, IOException
+    {
+        // Test /./ references (valid)
+        final File validFile = new File(rootDir, "test.txt");
+        FileUtils.writeStringToFile(validFile, "Hello World", "UTF-8");
+
+        when(request.getPathInfo()).thenReturn("/./test.txt");
+
+        servlet.doGet(request, response);
+
+        verify(response).setStatus(HttpServletResponse.SC_OK);
+    }
+
+    @Test
+    public void testDoGet_EdgeCase_UrlEncoded() throws ServletException, IOException
+    {
+        // Test URL-encoded traversal "..%2F"
+        when(request.getPathInfo()).thenReturn("/..%2Fsecret.txt");
+
+        servlet.doGet(request, response);
+
+        // Expect 404 Not Found.
+        // If the container does NOT decode the path, it looks for a file strictly named "..%2Fsecret.txt", which does not
+        // exist.
+        // If it DOES decode it to "../", it would be blocked by our traversal check (403).
+        // A 404 confirms that either the file was not found (safe) or the path was not interpreted as a traversal helper by the
+        // OS.
+        verify(response).setStatus(HttpServletResponse.SC_NOT_FOUND);
     }
 }
