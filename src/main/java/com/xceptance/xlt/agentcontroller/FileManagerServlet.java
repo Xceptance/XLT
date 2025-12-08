@@ -71,7 +71,7 @@ public class FileManagerServlet extends HttpServlet
      * Creates a new FileManagerServlet object.
      *
      * @param rootDirectory
-     *            the local directory that is the web root
+     *                          the local directory that is the web root
      */
     public FileManagerServlet(final File rootDirectory)
     {
@@ -82,9 +82,9 @@ public class FileManagerServlet extends HttpServlet
      * Handles all download requests.
      *
      * @param req
-     *            the servlet request
+     *                 the servlet request
      * @param resp
-     *            the servlet response
+     *                 the servlet response
      */
     @Override
     protected void doGet(final HttpServletRequest req, final HttpServletResponse resp) throws ServletException, IOException
@@ -104,6 +104,14 @@ public class FileManagerServlet extends HttpServlet
             }
 
             final File file = new File(rootDirectory, fileName);
+
+            // check for path traversal
+            if (isOutsideRoot(file))
+            {
+                log.warn("Access to file outside of root directory refused: " + fileName);
+                resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                return;
+            }
 
             // check if the file does not exist
             if (!file.isFile())
@@ -201,9 +209,9 @@ public class FileManagerServlet extends HttpServlet
      * Handles all upload requests.
      *
      * @param req
-     *            the servlet request
+     *                 the servlet request
      * @param resp
-     *            the servlet response
+     *                 the servlet response
      */
     @Override
     protected void doPut(final HttpServletRequest req, final HttpServletResponse resp) throws ServletException, IOException
@@ -222,6 +230,14 @@ public class FileManagerServlet extends HttpServlet
             else
             {
                 final File file = new File(rootDirectory, fileName);
+
+                // check for path traversal
+                if (isOutsideRoot(file))
+                {
+                    log.warn("Access to file outside of root directory refused: " + fileName);
+                    resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                    return;
+                }
 
                 out = new FileOutputStream(file);
                 final InputStream in = req.getInputStream();
@@ -243,10 +259,30 @@ public class FileManagerServlet extends HttpServlet
     }
 
     /**
+     * Checks if the given file, when resolved against the root directory, points to a location outside the root directory.
+     *
+     * @param file
+     *                 the file to check
+     * @return true if the file is outside the root directory, false otherwise
+     */
+    private boolean isOutsideRoot(final File file)
+    {
+        try
+        {
+            return !file.getCanonicalPath().startsWith(rootDirectory.getCanonicalPath());
+        }
+        catch (final Exception e)
+        {
+            log.warn("Failed to resolve canonical path for file: " + file, e);
+            return true;
+        }
+    }
+
+    /**
      * Returns the file name from the URL parameters.
      *
      * @param req
-     *            the servlet request
+     *                the servlet request
      * @return the file name, or null if not found
      */
     private String getFileName(final HttpServletRequest req)
