@@ -18,6 +18,10 @@ package com.xceptance.xlt.report.providers;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration;
 
+import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
+
 /**
  * Represents report generator configuration values that were used during report creation and should be shown in the
  * report.
@@ -25,15 +29,40 @@ import com.xceptance.xlt.report.ReportGeneratorConfiguration;
 @XStreamAlias("reportGeneratorConfiguration")
 public class ReportGeneratorConfigurationReport
 {
+    /**
+     * The number of requests per bucket in the "Slowest Requests" report.
+     */
     public int slowestRequestsPerBucket;
 
+    /**
+     * The total number of requests in the "Slowest Requests" report.
+     */
     public int slowestRequestsTotal;
 
+    /**
+     * The minimum runtime of requests in the "Slowest Requests" report.
+     */
     public int slowestRequestsMinRuntime;
 
+    /**
+     * The maximum runtime of requests in the "Slowest Requests" report.
+     */
     public int slowestRequestsMaxRuntime;
 
+    /**
+     * Indicates if dynamic charts are enabled in the report.
+     */
     public boolean dynamicChartsEnabled;
+
+    /**
+     * The display label of the time zone used for report creation.
+     */
+    public String timeZoneLabel;
+
+    /**
+     * The offset of the time zone used for report creation compared to UTC (in milliseconds).
+     */
+    public int timeZoneOffset;
 
     ReportGeneratorConfigurationReport(ReportGeneratorConfiguration config)
     {
@@ -42,5 +71,9 @@ public class ReportGeneratorConfigurationReport
         this.slowestRequestsMinRuntime = config.getSlowestRequestsMinRuntime();
         this.slowestRequestsMaxRuntime = config.getSlowestRequestsMaxRuntime();
         this.dynamicChartsEnabled = config.dynamicChartsEnabled();
+
+        final TimeZone tz = TimeZone.getDefault();
+        timeZoneLabel = tz.getDisplayName(tz.inDaylightTime(new Date(config.getChartStartTime())), TimeZone.SHORT, Locale.US);
+        timeZoneOffset = tz.getOffset(config.getChartStartTime());
     }
 }

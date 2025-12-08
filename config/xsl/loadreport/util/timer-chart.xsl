@@ -18,11 +18,11 @@
         </xsl:variable>
 
         <xsl:variable name="timeZoneLabel">
-            <xsl:value-of select="/testreport/general/timeZoneLabel"/>
+            <xsl:value-of select="/testreport/configuration/reportGeneratorConfiguration/timeZoneLabel"/>
         </xsl:variable>
 
         <xsl:variable name="timeZoneOffset">
-            <xsl:value-of select="/testreport/general/timeZoneOffset"/>
+            <xsl:value-of select="/testreport/configuration/reportGeneratorConfiguration/timeZoneOffset"/>
         </xsl:variable>
 
         <a>

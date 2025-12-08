@@ -51,14 +51,4 @@ public class GeneralReport
      * The total run time of the test.
      */
     public int duration;
-
-    /**
-     * The display label of the time zone used for report creation.
-     */
-    public String timeZoneLabel;
-
-    /**
-     * The offset of the time zone used for report creation compared to UTC (in milliseconds).
-     */
-    public int timeZoneOffset;
 }
