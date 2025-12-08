@@ -269,7 +269,13 @@ public class FileManagerServlet extends HttpServlet
     {
         try
         {
-            return !file.getCanonicalPath().startsWith(rootDirectory.getCanonicalPath());
+            final String canonicalRootPath = rootDirectory.getCanonicalPath();
+
+            // Ensure the root path ends with a separator to prevent partial path traversal attacks
+            // (e.g. preventing "/var/www" from matching "/var/www-sibling")
+            final String rootPath = canonicalRootPath.endsWith(File.separator) ? canonicalRootPath : canonicalRootPath + File.separator;
+
+            return !file.getCanonicalPath().startsWith(rootPath);
         }
         catch (final Exception e)
         {

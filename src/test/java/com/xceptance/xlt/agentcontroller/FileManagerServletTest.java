@@ -200,4 +200,30 @@ public class FileManagerServletTest
             throw new AssertionError("File should have been created");
         }
     }
+
+    @Test
+    public void testDoGet_PartialPathTraversal() throws ServletException, IOException
+    {
+        // One level up is tempDir. Create a directory that starts with "root" but is not "root" (e.g. "root-sibling")
+        final File siblingDir = new File(tempDir, "root-sibling");
+        siblingDir.mkdirs();
+        final File secretFile = new File(siblingDir, "secret.txt");
+        FileUtils.writeStringToFile(secretFile, "Secret Content", "UTF-8");
+
+        // The path info should be constructed such that it resolves to the sibling file.
+        // If we request /../root-sibling/secret.txt relative to root, it stays outside.
+        // But wait, the servlet constructs new File(rootDirectory, fileName).
+        // ROOT: /tmp/UUID/root
+        // REQUEST: /../root-sibling/secret.txt
+        // FILE: /tmp/UUID/root/../root-sibling/secret.txt
+        // CANONICAL: /tmp/UUID/root-sibling/secret.txt
+        // ROOT CANONICAL: /tmp/UUID/root
+        // /tmp/UUID/root-sibling/secret.txt STARTS WITH /tmp/UUID/root ? YES.
+
+        when(request.getPathInfo()).thenReturn("/../root-sibling/secret.txt");
+        servlet.doGet(request, response);
+
+        // Expect 403 Forbidden because it is outside the root directory (even if it shares prefix)
+        verify(response).setStatus(HttpServletResponse.SC_FORBIDDEN);
+    }
 }
