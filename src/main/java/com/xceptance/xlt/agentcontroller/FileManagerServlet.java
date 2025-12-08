@@ -68,14 +68,24 @@ public class FileManagerServlet extends HttpServlet
     private final File rootDirectory;
 
     /**
+     * The canonical path of the root directory, slash-terminated.
+     */
+    private final String rootCanonicalPath;
+
+    /**
      * Creates a new FileManagerServlet object.
      *
      * @param rootDirectory
      *                          the local directory that is the web root
+     * @throws IOException
+     *                         if the canonical path of the root directory cannot be resolved
      */
-    public FileManagerServlet(final File rootDirectory)
+    public FileManagerServlet(final File rootDirectory) throws IOException
     {
         this.rootDirectory = rootDirectory;
+
+        final String canonicalPath = rootDirectory.getCanonicalPath();
+        this.rootCanonicalPath = canonicalPath.endsWith(File.separator) ? canonicalPath : canonicalPath + File.separator;
     }
 
     /**
@@ -269,17 +279,9 @@ public class FileManagerServlet extends HttpServlet
     {
         try
         {
-            final String canonicalRootPath = rootDirectory.getCanonicalPath();
-
-            // Ensure the root path ends with a separator to prevent partial path traversal attacks
-            // (e.g. preventing "/var/www" from matching "/var/www-sibling")
-            // Note: getCanonicalPath() resolves symbolic links. This ensures that even if a file is a symlink
-            // inside the root pointing outside, it will be rejected (secure by default).
-            final String rootPath = canonicalRootPath.endsWith(File.separator) ? canonicalRootPath : canonicalRootPath + File.separator;
-
-            return !file.getCanonicalPath().startsWith(rootPath);
+            return !file.getCanonicalPath().startsWith(rootCanonicalPath);
         }
-        catch (final Exception e)
+        catch (final IOException e)
         {
             log.warn("Failed to resolve canonical path for file: " + file, e);
             return true;
