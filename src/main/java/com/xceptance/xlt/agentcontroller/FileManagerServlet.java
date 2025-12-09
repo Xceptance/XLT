@@ -118,7 +118,7 @@ public class FileManagerServlet extends HttpServlet
             // check for path traversal
             if (isOutsideRoot(file))
             {
-                log.warn("Access to file outside of root directory refused: " + fileName);
+                log.warn("Access to file outside of root directory refused: {}", fileName);
                 resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
                 return;
             }
@@ -244,7 +244,7 @@ public class FileManagerServlet extends HttpServlet
                 // check for path traversal
                 if (isOutsideRoot(file))
                 {
-                    log.warn("Access to file outside of root directory refused: " + fileName);
+                    log.warn("Access to file outside of root directory refused: {}", fileName);
                     resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
                     return;
                 }
