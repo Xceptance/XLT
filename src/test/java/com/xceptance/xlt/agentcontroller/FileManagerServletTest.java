@@ -109,46 +109,13 @@ public class FileManagerServletTest
         when(request.getPathInfo()).thenReturn("/" + fileName);
         // mock input stream if we want to test content writing, but for path safety check, just triggering doPut logic is
         // enough
-        when(request.getInputStream()).thenReturn(new javax.servlet.ServletInputStream()
-        {
-            @Override
-            public int read() throws IOException
-            {
-                // Return -1 to indicate end of stream (empty)
-                return -1;
-            }
-
-            @Override
-            public boolean isFinished()
-            {
-                return true;
-            }
-
-            @Override
-            public boolean isReady()
-            {
-                return true;
-            }
-
-            @Override
-            public void setReadListener(final javax.servlet.ReadListener readListener)
-            {
-            }
-        });
+        when(request.getInputStream()).thenReturn(createEmptyServletInputStream());
 
         servlet.doPut(request, response);
 
         verify(response).setStatus(HttpServletResponse.SC_OK);
         // Verify file was created (even if empty)
-        if (!targetFile.exists())
-        {
-            // Depending on implementation, it might create it.
-            // The servlet logic:
-            // out = new FileOutputStream(file);
-            // IOUtils.copy(in, out);
-            // This definitely creates the file.
-            Assert.fail("File should have been created");
-        }
+        Assert.assertTrue("File should have been created", targetFile.exists());
     }
 
     @Test
@@ -181,41 +148,13 @@ public class FileManagerServletTest
         final File targetFile = new File(rootDir, fileName);
 
         when(request.getPathInfo()).thenReturn("/" + fileName);
-        when(request.getInputStream()).thenReturn(new javax.servlet.ServletInputStream()
-        {
-            @Override
-            public int read() throws IOException
-            {
-                return -1;
-            }
-
-            @Override
-            public boolean isFinished()
-            {
-                return true;
-            }
-
-            @Override
-            public boolean isReady()
-            {
-                return true;
-            }
-
-            @Override
-            public void setReadListener(final javax.servlet.ReadListener readListener)
-            {
-            }
-        });
+        when(request.getInputStream()).thenReturn(createEmptyServletInputStream());
 
         servlet.doPut(request, response);
 
         verify(response).setStatus(HttpServletResponse.SC_OK);
 
-        // Verify file was created (even if empty)
-        if (!targetFile.exists())
-        {
-            Assert.fail("File should have been created");
-        }
+        Assert.assertTrue("File should have been created", targetFile.exists());
     }
 
     @Test
@@ -234,8 +173,8 @@ public class FileManagerServletTest
         // REQUEST: /../root-sibling/secret.txt
         // FILE: /tmp/UUID/root/../root-sibling/secret.txt
         // CANONICAL: /tmp/UUID/root-sibling/secret.txt
-        // ROOT CANONICAL: /tmp/UUID/root
-        // /tmp/UUID/root-sibling/secret.txt STARTS WITH /tmp/UUID/root ? YES.
+        // ROOT CANONICAL: /tmp/UUID/root/
+        // /tmp/UUID/root-sibling/secret.txt STARTS WITH /tmp/UUID/root/ ? NO.
 
         when(request.getPathInfo()).thenReturn("/../root-sibling/secret.txt");
         servlet.doGet(request, response);
@@ -289,5 +228,34 @@ public class FileManagerServletTest
         // A 404 confirms that either the file was not found (safe) or the path was not interpreted as a traversal helper by the
         // OS.
         verify(response).setStatus(HttpServletResponse.SC_NOT_FOUND);
+    }
+
+    private javax.servlet.ServletInputStream createEmptyServletInputStream()
+    {
+        return new javax.servlet.ServletInputStream()
+        {
+            @Override
+            public int read() throws IOException
+            {
+                return -1; // end of stream
+            }
+
+            @Override
+            public boolean isFinished()
+            {
+                return true;
+            }
+
+            @Override
+            public boolean isReady()
+            {
+                return true;
+            }
+
+            @Override
+            public void setReadListener(final javax.servlet.ReadListener readListener)
+            {
+            }
+        };
     }
 }
