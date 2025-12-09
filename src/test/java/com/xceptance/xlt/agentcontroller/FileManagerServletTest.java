@@ -24,7 +24,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.UUID;
 
+import javax.servlet.ReadListener;
 import javax.servlet.ServletException;
+import javax.servlet.ServletInputStream;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.WriteListener;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -93,6 +97,7 @@ public class FileManagerServletTest
         FileUtils.writeStringToFile(validFile, "Hello World", "UTF-8");
 
         when(request.getPathInfo()).thenReturn("/test.txt");
+        when(response.getOutputStream()).thenReturn(createNoOpServletOutputStream());
         servlet.doGet(request, response);
 
         verify(response).setStatus(HttpServletResponse.SC_OK);
@@ -127,6 +132,7 @@ public class FileManagerServletTest
         FileUtils.writeStringToFile(validFile, "Hello Subdir", "UTF-8");
 
         when(request.getPathInfo()).thenReturn("/subdir/test.txt");
+        when(response.getOutputStream()).thenReturn(createNoOpServletOutputStream());
         servlet.doGet(request, response);
 
         verify(response).setStatus(HttpServletResponse.SC_OK);
@@ -184,6 +190,23 @@ public class FileManagerServletTest
     }
 
     @Test
+    public void testDoPut_PartialPathTraversal() throws ServletException, IOException
+    {
+        // One level up is tempDir. Create a directory that starts with "root" but is not "root" (e.g. "root-sibling")
+        final File siblingDir = new File(tempDir, "root-sibling");
+        siblingDir.mkdirs();
+        // File to upload
+        final String fileName = "../root-sibling/malicious.txt";
+
+        when(request.getPathInfo()).thenReturn("/" + fileName);
+        when(request.getInputStream()).thenReturn(createEmptyServletInputStream());
+
+        servlet.doPut(request, response);
+
+        verify(response).setStatus(HttpServletResponse.SC_FORBIDDEN);
+    }
+
+    @Test
     public void testDoGet_EdgeCase_AbsolutePath() throws ServletException, IOException
     {
         // Test absolute path traversal
@@ -191,12 +214,22 @@ public class FileManagerServletTest
 
         servlet.doGet(request, response);
 
-        // Expect 404 Not Found.
-        // On the test environment, the file path constructed from root and "//etc/passwd" is resolved relative to the root
-        // (e.g. "/tmp/root/etc/passwd"). Since this file does not exist, we get a 404.
-        // This confirms that the absolute path injection was effectively contained within the root directory (safe)
-        // rather than accessing the actual system file "/etc/passwd".
-        verify(response).setStatus(HttpServletResponse.SC_NOT_FOUND);
+        // Expect 403 Forbidden because the filename starts with "/" (absolute path attempt)
+        // The new validation catches this early before checking if the file exists
+        verify(response).setStatus(HttpServletResponse.SC_FORBIDDEN);
+    }
+
+    @Test
+    public void testDoPut_EdgeCase_AbsolutePath() throws ServletException, IOException
+    {
+        // Test absolute path traversal
+        when(request.getPathInfo()).thenReturn("//etc/passwd");
+        when(request.getInputStream()).thenReturn(createEmptyServletInputStream());
+
+        servlet.doPut(request, response);
+
+        // Expect 403 Forbidden because the filename starts with "/" (absolute path attempt)
+        verify(response).setStatus(HttpServletResponse.SC_FORBIDDEN);
     }
 
     @Test
@@ -207,10 +240,27 @@ public class FileManagerServletTest
         FileUtils.writeStringToFile(validFile, "Hello World", "UTF-8");
 
         when(request.getPathInfo()).thenReturn("/./test.txt");
+        when(response.getOutputStream()).thenReturn(createNoOpServletOutputStream());
 
         servlet.doGet(request, response);
 
         verify(response).setStatus(HttpServletResponse.SC_OK);
+    }
+
+    @Test
+    public void testDoPut_EdgeCase_CurrentDirectory() throws ServletException, IOException
+    {
+        // Test /./ references (valid)
+        final String fileName = "./upload_current_dir.txt";
+        final File targetFile = new File(rootDir, "upload_current_dir.txt");
+
+        when(request.getPathInfo()).thenReturn("/" + fileName);
+        when(request.getInputStream()).thenReturn(createEmptyServletInputStream());
+
+        servlet.doPut(request, response);
+
+        verify(response).setStatus(HttpServletResponse.SC_OK);
+        Assert.assertTrue("File should have been created", targetFile.exists());
     }
 
     @Test
@@ -230,9 +280,24 @@ public class FileManagerServletTest
         verify(response).setStatus(HttpServletResponse.SC_NOT_FOUND);
     }
 
-    private javax.servlet.ServletInputStream createEmptyServletInputStream()
+    @Test
+    public void testDoPut_EdgeCase_UrlEncoded() throws ServletException, IOException
     {
-        return new javax.servlet.ServletInputStream()
+        // Test URL-encoded traversal "..%2F"
+        final File targetFile = new File(rootDir, "..%2Fsecret.txt");
+
+        when(request.getPathInfo()).thenReturn("/..%2Fsecret.txt");
+        when(request.getInputStream()).thenReturn(createEmptyServletInputStream());
+
+        servlet.doPut(request, response);
+
+        verify(response).setStatus(HttpServletResponse.SC_OK);
+        Assert.assertTrue("File should have been created", targetFile.exists());
+    }
+
+    private ServletInputStream createEmptyServletInputStream()
+    {
+        return new ServletInputStream()
         {
             @Override
             public int read() throws IOException
@@ -253,7 +318,29 @@ public class FileManagerServletTest
             }
 
             @Override
-            public void setReadListener(final javax.servlet.ReadListener readListener)
+            public void setReadListener(final ReadListener readListener)
+            {
+            }
+        };
+    }
+
+    private ServletOutputStream createNoOpServletOutputStream()
+    {
+        return new ServletOutputStream()
+        {
+            @Override
+            public void write(final int b) throws IOException
+            {
+            }
+
+            @Override
+            public boolean isReady()
+            {
+                return true;
+            }
+
+            @Override
+            public void setWriteListener(final WriteListener writeListener)
             {
             }
         };
