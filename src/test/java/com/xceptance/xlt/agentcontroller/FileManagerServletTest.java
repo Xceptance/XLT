@@ -141,14 +141,7 @@ public class FileManagerServletTest
     @Test
     public void testDoPut_ValidSubdirectory() throws ServletException, IOException
     {
-        final File subDir = new File(rootDir, "subdir_upload");
-        // subdir must probably exist for FileOutputStream if parent dirs are not automatically created by code logic?
-        // FileManagerServlet just does new FileOutputStream(file).
-        // If the parent directory doesn't exist, FileOutputStream throws FileNotFoundException (in standard Java).
-        // The current implementation of FileManagerServlet does NOT create parent directories.
-        // So we must ensure it exists for the test to pass DO_PUT logic (unless we want to test that failure, but here we test
-        // path security first).
-        subDir.mkdirs();
+        // Parent directories will be created automatically by the servlet
 
         final String fileName = "subdir_upload/upload.txt";
         final File targetFile = new File(rootDir, fileName);
@@ -214,9 +207,9 @@ public class FileManagerServletTest
 
         servlet.doGet(request, response);
 
-        // Expect 403 Forbidden because the filename starts with "/" (absolute path attempt)
-        // The new validation catches this early before checking if the file exists
-        verify(response).setStatus(HttpServletResponse.SC_FORBIDDEN);
+        // Expect 404 Not Found because the file doesn't exist yet
+        // The path "/etc/passwd" is treated as relative to root, resulting in "/tmp/root/etc/passwd"
+        verify(response).setStatus(HttpServletResponse.SC_NOT_FOUND);
     }
 
     @Test
@@ -228,8 +221,13 @@ public class FileManagerServletTest
 
         servlet.doPut(request, response);
 
-        // Expect 403 Forbidden because the filename starts with "/" (absolute path attempt)
-        verify(response).setStatus(HttpServletResponse.SC_FORBIDDEN);
+        // Expect 200 OK - parent directories are created automatically
+        // The path "/etc/passwd" is treated as relative to root, resulting in "/tmp/root/etc/passwd"
+        verify(response).setStatus(HttpServletResponse.SC_OK);
+
+        // Verify the file was created in the correct location
+        final File expectedFile = new File(rootDir, "etc/passwd");
+        Assert.assertTrue("File should have been created", expectedFile.exists());
     }
 
     @Test

@@ -113,14 +113,6 @@ public class FileManagerServlet extends HttpServlet
                 return;
             }
 
-            // check for suspicious filename patterns (e.g., absolute paths)
-            if (isSuspiciousFileName(fileName))
-            {
-                log.warn("Suspicious file name rejected: {}", fileName);
-                resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                return;
-            }
-
             final File file = new File(rootDirectory, fileName);
 
             // check for path traversal
@@ -247,14 +239,6 @@ public class FileManagerServlet extends HttpServlet
                 return;
             }
 
-            // check for suspicious filename patterns (e.g., absolute paths)
-            if (isSuspiciousFileName(fileName))
-            {
-                log.warn("Suspicious file name rejected: {}", fileName);
-                resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                return;
-            }
-
             final File file = new File(rootDirectory, fileName);
 
             // check for path traversal
@@ -263,6 +247,13 @@ public class FileManagerServlet extends HttpServlet
                 log.warn("Access to file outside of root directory refused: {}", fileName);
                 resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
                 return;
+            }
+
+            // create parent directories if they don't exist
+            final File parentDir = file.getParentFile();
+            if (parentDir != null && !parentDir.exists())
+            {
+                parentDir.mkdirs();
             }
 
             out = new FileOutputStream(file);
@@ -281,23 +272,6 @@ public class FileManagerServlet extends HttpServlet
         {
             IOUtils.closeQuietly(out);
         }
-    }
-
-    /**
-     * Checks if a filename contains suspicious patterns that could indicate path manipulation attempts.
-     *
-     * @param fileName
-     *                     the file name to check
-     * @return true if the filename is suspicious, false otherwise
-     */
-    private boolean isSuspiciousFileName(final String fileName)
-    {
-        if (fileName == null || fileName.isEmpty())
-        {
-            return false;
-        }
-        // Reject filenames that start with / or File.separator (could indicate absolute path attempts)
-        return fileName.startsWith("/") || fileName.startsWith(File.separator);
     }
 
     /**
