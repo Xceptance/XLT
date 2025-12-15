@@ -31,11 +31,10 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.TimeZone;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -259,7 +258,7 @@ public final class JFreeChartUtils
     /**
      * Maps a long value to its corresponding {@link Second} object.
      */
-    private static final Map<Long, Second> secondsCache = new HashMap<Long, Second>();
+    private static final ConcurrentHashMap<Long, Second> secondsCache = new ConcurrentHashMap<Long, Second>();
 
     /**
      * The watermark color.
@@ -1123,20 +1122,13 @@ public final class JFreeChartUtils
      *            the time in milliseconds
      * @return the corresponding {@link Second} object
      */
-    public static synchronized Second getSecond(long time)
+    public static Second getSecond(final long time)
     {
         // rub out milliseconds -> we have seconds precision only
-        time = time / 1000 * 1000;
+        final long seconds = time / 1000 * 1000;
 
         // lookup/create a Second for this time value
-        Second second = secondsCache.get(time);
-        if (second == null)
-        {
-            second = new Second(new Date(time));
-            secondsCache.put(time, second);
-        }
-
-        return second;
+        return secondsCache.computeIfAbsent(seconds, t -> new Second(new Date(t)));
     }
 
     /**
