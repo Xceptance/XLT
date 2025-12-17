@@ -23,6 +23,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.xceptance.xlt.api.util.XltRandom;
+import com.xceptance.xlt.report.util.misc.TaskManager;
 
 /**
  * Tests the implementation of {@link TaskManager}.

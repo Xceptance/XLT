@@ -35,10 +35,10 @@ import com.xceptance.xlt.api.report.AbstractReportProvider;
 import com.xceptance.xlt.api.report.ReportProviderConfiguration;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration;
 import com.xceptance.xlt.report.util.ConcurrentUsersTable;
-import com.xceptance.xlt.report.util.JFreeChartUtils;
-import com.xceptance.xlt.report.util.JFreeChartUtils.ColorSet;
-import com.xceptance.xlt.report.util.TaskManager;
 import com.xceptance.xlt.report.util.ValueSet;
+import com.xceptance.xlt.report.util.jfreechart.JFreeChartUtils;
+import com.xceptance.xlt.report.util.jfreechart.JFreeChartUtils.ColorSet;
+import com.xceptance.xlt.report.util.misc.TaskManager;
 
 /**
  * The {@link TransactionDataProcessor} class provides common functionality of a typical data processor that deals with
@@ -90,6 +90,29 @@ public class TransactionDataProcessor extends BasicTimerDataProcessor
 
     /**
      * {@inheritDoc}
+     * <p>
+     * Note that this works correctly only if only instances of {@link TransactionData} or {@link EventData} are given
+     * as arguments for this processor class!
+     * </p>
+     */
+    @Override
+    public void processDataRecord(final Data data)
+    {
+        if (data instanceof TransactionData)
+        {
+            super.processDataRecord(data);
+            arrivalsPerHourPerSecond.addOrUpdateValue(data.getTime(), 3600);
+        }
+        else
+        {
+            // must be event data, don't count arrivals in this case
+            eventsPerSecond.addOrUpdateValue(data.getTime(), 1);
+            numberOfEvents++;
+        }
+    }
+
+    /**
+     * {@inheritDoc}
      */
     @Override
     public TimerReport createTimerReport(final boolean generateHistogram)
@@ -105,7 +128,7 @@ public class TransactionDataProcessor extends BasicTimerDataProcessor
                     final ValueSet concurrentUsersVS = ConcurrentUsersTable.getInstance().getConcurrentUsersValueSet(getName());
 
                     final TimeSeries concurrentUsersTS = JFreeChartUtils.toMinMaxTimeSeries(concurrentUsersVS.toMinMaxValueSet(getChartWidth()),
-                                                                                            "Concurrent Users");
+                        "Concurrent Users");
 
                     createChart(concurrentUsersTS, true, getName(), "Users", getName() + "_ConcurrentUsers", getChartDir(),
                                 "concurrent users", true);
@@ -119,7 +142,7 @@ public class TransactionDataProcessor extends BasicTimerDataProcessor
                 public void run()
                 {
                     final TimeSeries arrivalRateTS = JFreeChartUtils.toMinMaxTimeSeries(arrivalsPerHourPerSecond.toMinMaxValueSet(getChartWidth()),
-                                                                                        "Current Arrival Rate");
+                        "Current Arrival Rate");
 
                     final TimeSeries averagedArrivalRateTS = JFreeChartUtils.createMovingAverageTimeSeries(arrivalRateTS,
                                                                                                            getMovingAveragePercentage());
@@ -136,30 +159,6 @@ public class TransactionDataProcessor extends BasicTimerDataProcessor
         transactionReport.events = numberOfEvents;
 
         return transactionReport;
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
-     * Note that this works correctly only if only instances of {@link TransactionData} or {@link EventData} are given
-     * as arguments for this processor class!
-     * </p>
-     */
-    @Override
-    public void processDataRecord(final Data data)
-    {
-        if (data instanceof TransactionData)
-        {
-            super.processDataRecord(data);
-
-            arrivalsPerHourPerSecond.addOrUpdateValue(data.getTime(), 3600);
-        }
-        else
-        {
-            // must be event data, don't count arrivals in this case
-            eventsPerSecond.addOrUpdateValue(data.getTime(), 1);
-            numberOfEvents++;
-        }
     }
 
     /**
@@ -189,7 +188,7 @@ public class TransactionDataProcessor extends BasicTimerDataProcessor
         // generate the error rate time series
         final TimeSeries errorRateTimeSeries = JFreeChartUtils.calculateRateTimeSeries(getErrorsPerSecondValueSet(),
                                                                                        getCountPerSecondValueSet(), minMaxValueSetSize,
-                                                                                       "Error Rate");
+            "Error Rate");
         final TimeSeries errorRateAverageTimeSeries = JFreeChartUtils.createMovingAverageTimeSeries(errorRateTimeSeries,
                                                                                                     getMovingAveragePercentage());
 
@@ -217,7 +216,7 @@ public class TransactionDataProcessor extends BasicTimerDataProcessor
 
         // generate the event time series
         final TimeSeries eventsPerSecondTimeSeries = JFreeChartUtils.toStandardTimeSeries(eventsPerSecond.toMinMaxValueSet(minMaxValueSetSize),
-                                                                                          "Events/s");
+            "Events/s");
         final TimeSeriesCollection eventsPerSecondTimeSeriesCollection = new TimeSeriesCollection(eventsPerSecondTimeSeries);
 
         // create the event plot

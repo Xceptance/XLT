@@ -24,7 +24,7 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
 import com.xceptance.common.xml.XSLTUtils;
-import com.xceptance.xlt.report.util.TaskManager;
+import com.xceptance.xlt.report.util.misc.TaskManager;
 
 /**
  *

@@ -1,4 +1,4 @@
-package com.xceptance.xlt.report.util;
+package com.xceptance.xlt.report.util.misc;
 
 public class BitCompression 
 {

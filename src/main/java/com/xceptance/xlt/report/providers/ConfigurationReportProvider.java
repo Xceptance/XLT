@@ -28,6 +28,8 @@ import java.util.Properties;
 import java.util.TreeMap;
 
 import com.xceptance.xlt.report.ReportGeneratorConfiguration;
+import com.xceptance.xlt.report.util.misc.ReportUtils;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.vfs2.FileSystemException;
 import org.apache.commons.vfs2.FileSystemManager;
@@ -40,7 +42,6 @@ import com.xceptance.xlt.api.report.AbstractReportProvider;
 import com.xceptance.xlt.common.XltConstants;
 import com.xceptance.xlt.mastercontroller.TestCaseLoadProfileConfiguration;
 import com.xceptance.xlt.mastercontroller.TestLoadProfileConfiguration;
-import com.xceptance.xlt.report.util.ReportUtils;
 import com.xceptance.xlt.util.PropertiesConfigurationException;
 import com.xceptance.xlt.util.PropertiesIOException;
 import com.xceptance.xlt.util.PropertyFileNotFoundException;

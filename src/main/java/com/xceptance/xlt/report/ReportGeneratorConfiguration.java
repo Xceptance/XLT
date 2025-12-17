@@ -170,6 +170,8 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
 
     private static final String PROP_CHARTS_WIDTH = PROP_CHARTS_PREFIX + "width";
 
+    private static final String PROP_DATA_STORAGE_WIDTH = PROP_PREFIX + "data.storage.width";
+
     private static final String PROP_DATA_RECORD_CLASSES_PREFIX = PROP_PREFIX + "dataRecords.";
 
     private static final String PROP_REPORT_PROVIDER_CLASSES_PREFIX = PROP_PREFIX + "providers.";
@@ -226,6 +228,8 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
     private final int chartsHeight;
 
     private final int chartsWidth;
+    
+    private final int dataStorageWidth;
 
     private final File configDirectory;
 
@@ -482,6 +486,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
         chartsCompressionFactor = (float) getDoubleProperty(PROP_CHARTS_COMPRESSION_FACTOR, 0.0f);
         chartsWidth = getIntProperty(PROP_CHARTS_WIDTH, 900);
         chartsHeight = getIntProperty(PROP_CHARTS_HEIGHT, 300);
+        dataStorageWidth = getIntProperty(PROP_DATA_STORAGE_WIDTH, 3600);
         movingAveragePoints = getIntProperty(PROP_CHARTS_MOV_AVG_PERCENTAGE, 5);
 
         readerThreadCount = Math.max(1, getIntProperty(PROP_READER_THREAD_COUNT, Runtime.getRuntime().availableProcessors()));
@@ -795,6 +800,7 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
         return runtimeIntervalBoundaries;
     }
 
+    @Override
     public double[] getRuntimePercentiles()
     {
         return runtimePercentiles;
@@ -1693,5 +1699,11 @@ public class ReportGeneratorConfiguration extends AbstractConfiguration implemen
             throw new XltException(String.format("The value '%s' of property '%s' is not a valid regular expression:\n%s", regEx,
                                                  propertyName, ex.getMessage()));
         }
+    }
+
+    @Override
+    public int getDataStorageWidth()
+    {
+        return this.dataStorageWidth;
     }
 }

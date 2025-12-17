@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.xceptance.xlt.report.util;
+package com.xceptance.xlt.report.util.misc;
 
 import java.io.File;
 import java.math.BigDecimal;
@@ -40,6 +40,10 @@ import com.xceptance.common.io.FileUtils;
 import com.xceptance.common.util.ParameterCheckUtils;
 import com.xceptance.xlt.api.util.XltException;
 import com.xceptance.xlt.common.XltConstants;
+import com.xceptance.xlt.report.util.DoubleMinMaxValueSet;
+import com.xceptance.xlt.report.util.DoubleSummaryStatistics;
+import com.xceptance.xlt.report.util.DoubleMinMaxValueSet.DoubleMinMaxValue;
+import com.xceptance.xlt.report.util.xstream.ElementSpecification;
 
 /**
  * A collection of functionality which is used throughout the report generator.
@@ -347,7 +351,7 @@ public final class ReportUtils
      * @param total
      * @return
      */
-    public static BigDecimal calculatePercentage(int count, int total)
+    public static BigDecimal calculatePercentage(long count, long total)
     {
         if (total == 0)
         {

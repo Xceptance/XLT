@@ -21,6 +21,7 @@ import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.report.AbstractReportProvider;
 import com.xceptance.xlt.api.report.ReportProviderConfiguration;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration.ChartCappingInfo;
+import com.xceptance.xlt.report.util.lucene.BitUtil;
 
 /**
  * The {@link AbstractDataProcessor} class provides common functionality of a typical data processor. A data processor
@@ -33,6 +34,9 @@ public abstract class AbstractDataProcessor
     private File chartsDir;
 
     private int chartWidth;
+    
+    // the size if data to store while processing, is a power of two
+    private int dataStorageWidth;
 
     private File csvDir;
 
@@ -65,6 +69,7 @@ public abstract class AbstractDataProcessor
 
         final ReportProviderConfiguration config = reportProvider.getConfiguration();
 
+        setDataStorageWidth(BitUtil.nextHighestPowerOfTwo(config.getDataStorageWidth()));
         setChartDir(config.getChartDirectory());
         setCsvDir(config.getCsvDirectory());
 
@@ -156,6 +161,16 @@ public abstract class AbstractDataProcessor
     }
 
     /**
+     * Returns the width of data storage.
+     * 
+     * @return the data storage width
+     */
+    public int getDataStorageWidth()
+    {
+        return dataStorageWidth;
+    }
+    
+    /**
      * Sets the timer name.
      * 
      * @param name
@@ -229,6 +244,17 @@ public abstract class AbstractDataProcessor
         this.chartWidth = chartWidth;
     }
 
+    /**
+     * Set the new value of the 'dataStorageWidth' attribute.
+     * 
+     * @param dataStorageWidth
+     *            the new width
+     */
+    public void setDataStorageWidth(final int dataStorageWidth)
+    {
+        this.dataStorageWidth = dataStorageWidth;
+    }
+    
     /**
      * Sets the new value of the 'csvDir' attribute.
      * 

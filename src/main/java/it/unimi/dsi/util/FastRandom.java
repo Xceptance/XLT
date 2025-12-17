@@ -67,7 +67,8 @@ public class FastRandom
         this.s3 = s3;
     }
 
-    /** Creates a new generator using a given seed.
+    /** 
+     * Creates a new generator using a given seed.
      *
      * @param seed a seed for the generator.
      */

@@ -21,7 +21,7 @@ import org.jfree.data.time.Second;
 import org.jfree.data.time.TimeSeries;
 
 import com.xceptance.xlt.report.external.util.dataItem.DataItem;
-import com.xceptance.xlt.report.util.JFreeChartUtils;
+import com.xceptance.xlt.report.util.jfreechart.JFreeChartUtils;
 
 /**
  * @author matthias.ullrich

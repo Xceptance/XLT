@@ -21,7 +21,7 @@ import java.util.Map;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamConverter;
-import com.xceptance.xlt.report.util.CustomMapConverter;
+import com.xceptance.xlt.report.util.xstream.CustomMapConverter;
 
 /**
  * Represents the timer statistics in a test report. The statistics is generated from a series of timer events.

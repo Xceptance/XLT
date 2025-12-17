@@ -133,7 +133,7 @@ public class FixedSizeHistogramValueSet
      *
      * @param seriesName
      *            the name of the series
-     * @return the series
+     * @return the series   
      */
     public XYIntervalSeries toSeries(final String seriesName)
     {

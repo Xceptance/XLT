@@ -22,7 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 import com.xceptance.common.lang.ParseNumbers;
 import com.xceptance.common.lang.StringHasher;
 import com.xceptance.xlt.api.util.XltCharBuffer;
-import com.xceptance.xlt.report.util.UrlHostParser;
+import com.xceptance.xlt.report.util.misc.UrlHostParser;
 
 /**
  * <p>

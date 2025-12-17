@@ -41,7 +41,7 @@ import com.xceptance.xlt.api.engine.TimerData;
 import com.xceptance.xlt.api.engine.TransactionData;
 import com.xceptance.xlt.common.XltPropertyNames;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration;
-import com.xceptance.xlt.report.util.TaskManager;
+import com.xceptance.xlt.report.util.misc.TaskManager;
 
 public class ErrorsReportProviderTest extends AbstractXLTTestCase
 {

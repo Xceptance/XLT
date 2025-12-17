@@ -24,6 +24,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.xceptance.xlt.report.ReportGeneratorMain;
+import com.xceptance.xlt.report.util.jfreechart.JFreeChartUtils;
 
 /**
  * @author Sebastian Oerding

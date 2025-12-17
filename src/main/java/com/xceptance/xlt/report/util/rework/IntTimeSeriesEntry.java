@@ -13,23 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.xceptance.xlt.report.util;
+package com.xceptance.xlt.report.util.rework;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import com.xceptance.xlt.report.util.misc.BitCompression;
+
 /**
- * A {@link IntMinMaxValue} stores the minimum/maximum/sum/count of all the sample values added, but can also reproduce a
+ * A {@link IntTimeSeriesEntry} stores the minimum/maximum/sum/count of all the sample values added, but can also reproduce a
  * rough approximation of the distinct values added.
  */
-public class IntMinMaxValue
+public class IntTimeSeriesEntry
 {
     // The sum for later average calculation
     private long totalValue = 0;
 
     // how much data have we seen
-    private long count = 0;
+    private int count = 0;
 
+    // how much concurrent measurements do we truly have
+    private int concurrentCount = 0;
+    
+    // how many error have we seen
+    private int errorCount = 0;
+    
     // the min and max values seen
     private int maximum = Integer.MIN_VALUE;
     private int minimum = Integer.MAX_VALUE;
@@ -47,19 +56,23 @@ public class IntMinMaxValue
      * The value scaling factor. 2 pow scale.
      */
     private int distinctValuesScale = 0;
-    
+
+    /**
+     * Constructor.
+     */
+    public IntTimeSeriesEntry()
+    {
+    }
+
     /**
      * Constructor.
      * 
      * @param value
      *            the first value to add
      */
-    public IntMinMaxValue(final int firstValue)
+    public IntTimeSeriesEntry(final int firstValue, final boolean failed)
     {
-        // we set both here to ensure we can later run with a single
-        // comparison only
-        this.maximum = minimum = firstValue;
-        updateValue(firstValue);
+        updateValue(firstValue, failed);
     }
 
     /**
@@ -68,12 +81,14 @@ public class IntMinMaxValue
      * @param value
      *            the sample to add
      */
-    public void updateValue(final int value)
+    public void updateValue(final int value, final boolean failed)
     {
         var v = value < 0 ? 0 : value;
-        
-        this.totalValue += v;
+
         this.count++;
+        this.errorCount += failed ? 1 : 0;
+        this.totalValue += v;
+        this.concurrentCount++;
 
         // use explicit comparisons to avoid Math.max/Math.min calls
         // and writing the values when not necessary
@@ -81,11 +96,30 @@ public class IntMinMaxValue
         {
             this.maximum = v;
         }
-        else if (value < this.minimum)
+        if (value < this.minimum)
         {
             this.minimum = v;
         }
-        scaleDistinctValues(v);
+        
+        v = scaleIfNeeded(v);
+        
+        // set distinct values
+        if (v < 64)
+        {
+            distinctValuesLow |= (1L << v);
+        }
+        else
+        {
+            distinctValuesHigh |= (1L << (v - 64));
+        }
+    }
+
+    /**
+     * Increase the concurrency count by one for this slot.
+     */
+    public void updateConcurrency()
+    {
+        this.concurrentCount++;
     }
     
     /**
@@ -93,8 +127,9 @@ public class IntMinMaxValue
      * 
      * @param value
      *            the value
+     * @return the scaled value
      */
-    private void scaleDistinctValues(final int value)
+    private int scaleIfNeeded(final int value)
     {
         // adjust the value according to the current scale
         var v  = value >> distinctValuesScale; // div
@@ -114,23 +149,14 @@ public class IntMinMaxValue
             distinctValuesLow = l | (h << 32);
             // clear high part  
             distinctValuesHigh = 0;
-            
+
             // increase scale and try again
             v = value >> (++distinctValuesScale); 
         }
 
-        // set distinct values
-        v = value >> this.distinctValuesScale;
-        if (v < 64)
-        {
-            distinctValuesLow |= (1L << v);
-        }
-        else
-        {
-            distinctValuesHigh |= (1L << (v - 64));
-        }
+        return v;
     }
-    
+
     /**
      * Returns the sum of the values added to this min-max value.
      * 
@@ -148,7 +174,8 @@ public class IntMinMaxValue
      */
     public int getAverageValue()
     {
-        return (int) (this.totalValue / count);
+        return this.count == 0 ? 0 : (int) (this.totalValue / this.count);
+
     }
 
     /**
@@ -172,6 +199,14 @@ public class IntMinMaxValue
     }
 
     /**
+     * Returns the number of errors added to this min-max value.
+     */
+    public int getErrorCount()
+    {
+        return this.errorCount;
+    }
+    
+    /**
      * Returns an approximation of the distinct values added to this min-max value.
      * 
      * @return the values
@@ -179,7 +214,7 @@ public class IntMinMaxValue
     public double[] getValues()
     {
         final List<Double> values = new ArrayList<>(128);
-        
+
         for (int i = 0; i < 128; i++) 
         {
             final boolean set = (i < 64) ? ((distinctValuesLow & (1L << i)) != 0) 
@@ -195,35 +230,79 @@ public class IntMinMaxValue
     }
 
     /**
-     * Returns the number of values added to this min-max value.
+     * Returns the number of values added 
      * 
-     * @return the value count
+     * @return the count
      */
-    public int getValueCount()
+    public int getCount()
     {
-        return (int) this.count;
+        return this.count;
     }
 
     /**
-     * Merges the data of the given min-max value into this min-max value.
+     * Returns the number of concurrent measurements added
+     * 
+     * @return the count
+     */
+    public int getConcurrentCount()
+    {
+        return this.concurrentCount;
+    }
+    
+    /**
+     * Merges the data. Attention: This might modify the given item
+     * because we have to scale it to our scale or vice versa.
      * 
      * @param item
      *            the other value
      */
-    IntMinMaxValue merge(final IntMinMaxValue item)
+    public IntTimeSeriesEntry merge(final IntTimeSeriesEntry item)
     {
-        if (item != null)
+        // we can only merge the same scale
+        if (item.distinctValuesScale > this.distinctValuesScale)
         {
-            maximum = Math.max(maximum, item.maximum);
-            minimum = Math.min(minimum, item.minimum);
-    
-            totalValue += item.totalValue;
-            count += item.count;
-    
-            //valueSet.merge(item.valueSet);
-            throw new UnsupportedOperationException("Merging of distinct values not supported yet.");
+            // we need to scale up our values
+            while (item.distinctValuesScale > this.distinctValuesScale)
+            {
+                distinctValuesLow = BitCompression.combineAdjacentBits(distinctValuesLow);
+                distinctValuesLow = BitCompression.compressAndShiftOddBits(distinctValuesLow);
+
+                distinctValuesHigh = BitCompression.combineAdjacentBits(distinctValuesHigh);
+                distinctValuesHigh = BitCompression.compressAndShiftOddBits(distinctValuesHigh);
+
+                // increase scale
+                distinctValuesScale++;
+            }
         }
-            
+        else if (item.distinctValuesScale < this.distinctValuesScale)
+        {
+            // we need to scale up the other values
+            while (item.distinctValuesScale < this.distinctValuesScale)
+            {
+                item.distinctValuesLow = BitCompression.combineAdjacentBits(item.distinctValuesLow);
+                item.distinctValuesLow = BitCompression.compressAndShiftOddBits(item.distinctValuesLow);
+
+                item.distinctValuesHigh = BitCompression.combineAdjacentBits(item.distinctValuesHigh);
+                item.distinctValuesHigh = BitCompression.compressAndShiftOddBits(item.distinctValuesHigh);
+
+                // increase scale
+                item.distinctValuesScale++;
+            }
+        }
+        
+        maximum = Math.max(maximum, item.maximum);
+        minimum = Math.min(minimum, item.minimum);
+
+        totalValue += item.totalValue;
+        count += item.count;
+        // because we count concurrency per entry, we have to take the maximum here
+        // and cannot sum them up
+        concurrentCount = Math.max(concurrentCount, item.concurrentCount);
+        errorCount += item.errorCount;
+
+        distinctValuesLow |= item.distinctValuesLow;
+        distinctValuesHigh |= item.distinctValuesHigh;
+
         return this;
     }
 
@@ -233,9 +312,18 @@ public class IntMinMaxValue
     @Override
     public String toString()
     {
-        return "" + getAverageValue() + "/" + getTotalValue() + "/" + getMinimumValue() + "/" + getMaximumValue() + "/" + getValueCount();
+        // that is only for debugging
+        return 
+            getCount() + " / " +
+            getConcurrentCount() + " / " +
+            getErrorCount() + " / " +
+            getTotalValue() + " / " +
+            getAverageValue() + " / " +
+            getMinimumValue() + " / " + 
+            getMaximumValue() + " / " + 
+            Arrays.toString(getValues()) + "\n";
     }
-    
+
     @Override
     public boolean equals(final Object obj)
     {
@@ -251,7 +339,7 @@ public class IntMinMaxValue
         {
             return false;
         }
-        final IntMinMaxValue other = (IntMinMaxValue) obj;
+        final IntTimeSeriesEntry other = (IntTimeSeriesEntry) obj;
         if (count != other.count)
         {
             return false;
@@ -268,11 +356,19 @@ public class IntMinMaxValue
         {
             return false;
         }
+        if (errorCount != other.errorCount)
+        {
+            return false;
+        }
         if (distinctValuesLow != other.distinctValuesLow)
         {
             return false;
         }
         if (distinctValuesHigh != other.distinctValuesHigh)
+        {
+            return false;
+        }
+        if (concurrentCount != other.concurrentCount)
         {
             return false;
         }

@@ -28,11 +28,11 @@ import com.xceptance.xlt.report.ReportGeneratorConfiguration;
 import com.xceptance.xlt.report.util.ArithmeticMean;
 import com.xceptance.xlt.report.util.DoubleMinMaxValueSet;
 import com.xceptance.xlt.report.util.DoubleSummaryStatistics;
-import com.xceptance.xlt.report.util.JFreeChartUtils;
-import com.xceptance.xlt.report.util.MinMaxTimeSeriesCollection;
 import com.xceptance.xlt.report.util.IntMinMaxValueSet;
-import com.xceptance.xlt.report.util.ReportUtils;
-import com.xceptance.xlt.report.util.TaskManager;
+import com.xceptance.xlt.report.util.jfreechart.JFreeChartUtils;
+import com.xceptance.xlt.report.util.jfreechart.MinMaxTimeSeriesCollection;
+import com.xceptance.xlt.report.util.misc.ReportUtils;
+import com.xceptance.xlt.report.util.misc.TaskManager;
 
 /**
  * The {@link AgentDataProcessor} is responsible to calculate statistic information for exactly one agent.

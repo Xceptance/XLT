@@ -31,9 +31,9 @@ import com.xceptance.xlt.api.report.AbstractReportProvider;
 import com.xceptance.xlt.api.report.ReportProvider;
 import com.xceptance.xlt.api.report.ReportProviderConfiguration;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration;
-import com.xceptance.xlt.report.util.JFreeChartUtils;
-import com.xceptance.xlt.report.util.TaskManager;
 import com.xceptance.xlt.report.util.ValueSet;
+import com.xceptance.xlt.report.util.jfreechart.JFreeChartUtils;
+import com.xceptance.xlt.report.util.misc.TaskManager;
 
 /**
  * An implementation of {@link ReportProvider} that is responsible to process all the {@link EventData} records and to

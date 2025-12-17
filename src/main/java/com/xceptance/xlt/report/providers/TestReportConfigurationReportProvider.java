@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.report.AbstractReportProvider;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration;
-import com.xceptance.xlt.report.util.ReportUtils;
+import com.xceptance.xlt.report.util.misc.ReportUtils;
 
 /**
  *

@@ -24,8 +24,8 @@ import java.util.Set;
 import com.xceptance.common.util.AbstractConfiguration;
 import com.xceptance.xlt.common.XltConstants;
 import com.xceptance.xlt.engine.XltExecutionContext;
-import com.xceptance.xlt.report.util.ElementSpecification;
-import com.xceptance.xlt.report.util.ReportUtils;
+import com.xceptance.xlt.report.util.misc.ReportUtils;
+import com.xceptance.xlt.report.util.xstream.ElementSpecification;
 
 /**
  *

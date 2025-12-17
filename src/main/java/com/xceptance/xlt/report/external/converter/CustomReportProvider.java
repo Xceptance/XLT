@@ -35,10 +35,10 @@ import com.xceptance.xlt.report.external.reportObject.GenericReport;
 import com.xceptance.xlt.report.external.reportObject.Row;
 import com.xceptance.xlt.report.external.reportObject.Table;
 import com.xceptance.xlt.report.external.util.StatsValueSet;
-import com.xceptance.xlt.report.util.JFreeChartUtils;
-import com.xceptance.xlt.report.util.TaskManager;
-import com.xceptance.xlt.report.util.TimeSeriesConfiguration;
-import com.xceptance.xlt.report.util.TimeSeriesConfiguration.Style;
+import com.xceptance.xlt.report.util.jfreechart.JFreeChartUtils;
+import com.xceptance.xlt.report.util.jfreechart.TimeSeriesConfiguration;
+import com.xceptance.xlt.report.util.jfreechart.TimeSeriesConfiguration.Style;
+import com.xceptance.xlt.report.util.misc.TaskManager;
 
 /**
  * Parse values and convert to report. Meta data are taken from configuration file.

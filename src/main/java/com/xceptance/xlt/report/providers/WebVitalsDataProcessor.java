@@ -24,7 +24,7 @@ import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.engine.WebVitalData;
 import com.xceptance.xlt.api.report.AbstractReportProvider;
 import com.xceptance.xlt.report.providers.WebVitalReport.Rating;
-import com.xceptance.xlt.report.util.ReportUtils;
+import com.xceptance.xlt.report.util.misc.ReportUtils;
 
 /**
  * Processes the {@link WebVitalsData} objects reported for a certain action and returns the result as a

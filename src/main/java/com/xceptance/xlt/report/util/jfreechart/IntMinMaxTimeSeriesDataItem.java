@@ -13,28 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.xceptance.xlt.report.util;
+package com.xceptance.xlt.report.util.jfreechart;
 
 import org.jfree.data.time.RegularTimePeriod;
 import org.jfree.data.time.TimeSeriesDataItem;
 
+import com.xceptance.xlt.report.util.IntMinMaxValueSet.IntMinMaxValue;
+
 /**
- * A time series data item that wraps a {@link DoubleMinMaxValue}.
- * 
- * @see IntMinMaxTimeSeriesDataItem
- * @author Hartmut Arlt (Xceptance Software Technologies GmbH)
+ * A time series data item that wraps a {@link IntMinMaxValue}.
  */
-public class DoubleMinMaxTimeSeriesDataItem extends TimeSeriesDataItem
+public class IntMinMaxTimeSeriesDataItem extends TimeSeriesDataItem
 {
     /**
      * serialVersionUID
      */
-    private static final long serialVersionUID = 5133107791147593518L;
+    private static final long serialVersionUID = 6836336147826544850L;
 
     /**
      * The wrapped min/max value.
      */
-    private final DoubleMinMaxValue minMaxValue;
+    private final IntMinMaxValue minMaxValue;
 
     /**
      * Constructor. Sets the average from the passed min/max value as the super class's value.
@@ -44,7 +43,7 @@ public class DoubleMinMaxTimeSeriesDataItem extends TimeSeriesDataItem
      * @param minMaxValue
      *            the min/max value
      */
-    public DoubleMinMaxTimeSeriesDataItem(final RegularTimePeriod period, final DoubleMinMaxValue minMaxValue)
+    public IntMinMaxTimeSeriesDataItem(final RegularTimePeriod period, final IntMinMaxValue minMaxValue)
     {
         super(period, minMaxValue.getAverageValue());
 
@@ -56,7 +55,7 @@ public class DoubleMinMaxTimeSeriesDataItem extends TimeSeriesDataItem
      * 
      * @return the min/max value
      */
-    public DoubleMinMaxValue getMinMaxValue()
+    public IntMinMaxValue getMinMaxValue()
     {
         return minMaxValue;
     }

@@ -24,7 +24,7 @@ public class IntMinMaxValueTest
     public final void testMinMaxValueInt_0()
     {
         final IntMinMaxValue v = new IntMinMaxValue(0);
-        Assert.assertEquals(0, v.getTotalValue());
+        Assert.assertEquals(0, v.getAccumulatedValue());
         Assert.assertEquals(0, v.getAverageValue());
         Assert.assertEquals(0, v.getMaximumValue());
         Assert.assertEquals(0, v.getMinimumValue());
@@ -36,7 +36,7 @@ public class IntMinMaxValueTest
     public final void testMinMaxValueInt_1()
     {
         final IntMinMaxValue v = new IntMinMaxValue(1);
-        Assert.assertEquals(1, v.getTotalValue());
+        Assert.assertEquals(1, v.getAccumulatedValue());
         Assert.assertEquals(1, v.getAverageValue());
         Assert.assertEquals(1, v.getMaximumValue());
         Assert.assertEquals(1, v.getMinimumValue());
@@ -51,7 +51,7 @@ public class IntMinMaxValueTest
     public final void testMinMaxValueInt_neg2()
     {
         final IntMinMaxValue v = new IntMinMaxValue(-2);
-        Assert.assertEquals(0, v.getTotalValue());
+        Assert.assertEquals(0, v.getAccumulatedValue());
         Assert.assertEquals(0, v.getAverageValue());
         Assert.assertEquals(0, v.getMaximumValue());
         Assert.assertEquals(0, v.getMinimumValue());
@@ -65,7 +65,7 @@ public class IntMinMaxValueTest
         final IntMinMaxValue v = new IntMinMaxValue(2);
         v.updateValue(2);
 
-        Assert.assertEquals(4, v.getTotalValue());
+        Assert.assertEquals(4, v.getAccumulatedValue());
         Assert.assertEquals(2, v.getAverageValue());
         Assert.assertEquals(2, v.getMaximumValue());
         Assert.assertEquals(2, v.getMinimumValue());
@@ -82,7 +82,7 @@ public class IntMinMaxValueTest
         v.updateValue(4);
         v.updateValue(5);
 
-        Assert.assertEquals(15, v.getTotalValue());
+        Assert.assertEquals(15, v.getAccumulatedValue());
         Assert.assertEquals(3.0, v.getAverageValue(), 0.0);
         Assert.assertEquals(5, v.getMaximumValue());
         Assert.assertEquals(1, v.getMinimumValue());
@@ -96,7 +96,7 @@ public class IntMinMaxValueTest
         final IntMinMaxValue v = new IntMinMaxValue(0);
         v.updateValue(127);
 
-        Assert.assertEquals(127, v.getTotalValue());
+        Assert.assertEquals(127, v.getAccumulatedValue());
         Assert.assertEquals(127 / 2, v.getAverageValue(), 0.0);
         Assert.assertEquals(127, v.getMaximumValue());
         Assert.assertEquals(0, v.getMinimumValue());
@@ -110,7 +110,7 @@ public class IntMinMaxValueTest
         final IntMinMaxValue v = new IntMinMaxValue(0);
         v.updateValue(128);
 
-        Assert.assertEquals(128, v.getTotalValue());
+        Assert.assertEquals(128, v.getAccumulatedValue());
         Assert.assertEquals(128 / 2, v.getAverageValue(), 0.0);
         Assert.assertEquals(128, v.getMaximumValue());
         Assert.assertEquals(0, v.getMinimumValue());
@@ -124,7 +124,7 @@ public class IntMinMaxValueTest
         final IntMinMaxValue v = new IntMinMaxValue(0);
         v.updateValue(129);
 
-        Assert.assertEquals(129, v.getTotalValue());
+        Assert.assertEquals(129, v.getAccumulatedValue());
         Assert.assertEquals(129 / 2, v.getAverageValue(), 0.0);
         Assert.assertEquals(129, v.getMaximumValue());
         Assert.assertEquals(0, v.getMinimumValue());
@@ -138,7 +138,7 @@ public class IntMinMaxValueTest
         final IntMinMaxValue v = new IntMinMaxValue(0);
         v.updateValue(142);
 
-        Assert.assertEquals(142, v.getTotalValue());
+        Assert.assertEquals(142, v.getAccumulatedValue());
         Assert.assertEquals(142 / 2, v.getAverageValue(), 0.0);
         Assert.assertEquals(142, v.getMaximumValue());
         Assert.assertEquals(0, v.getMinimumValue());
@@ -162,7 +162,7 @@ public class IntMinMaxValueTest
         v.updateValue(110);
         v.updateValue(120);
 
-        Assert.assertEquals(780, v.getTotalValue());
+        Assert.assertEquals(780, v.getAccumulatedValue());
         Assert.assertEquals(12, v.getValueCount());
         Assert.assertEquals(780 / 12, v.getAverageValue(), 0.0);
         Assert.assertEquals(120, v.getMaximumValue());
@@ -191,7 +191,7 @@ public class IntMinMaxValueTest
         v.updateValue(20);
         v.updateValue(10);
 
-        Assert.assertEquals(780, v.getTotalValue());
+        Assert.assertEquals(780, v.getAccumulatedValue());
         Assert.assertEquals(12, v.getValueCount());
         Assert.assertEquals(780 / 12, v.getAverageValue(), 0.0);
         Assert.assertEquals(120, v.getMaximumValue());
@@ -222,7 +222,7 @@ public class IntMinMaxValueTest
             v.updateValue(in[i]);
         }
 
-        Assert.assertEquals(7146, v.getTotalValue());
+        Assert.assertEquals(7146, v.getAccumulatedValue());
         Assert.assertEquals(15, v.getValueCount());
         Assert.assertEquals(7146 / 15, v.getAverageValue(), 0.0);
         Assert.assertEquals(3000, v.getMaximumValue());
@@ -250,7 +250,7 @@ public class IntMinMaxValueTest
             v.updateValue(in[i]);
         }
 
-        Assert.assertEquals(7146, v.getTotalValue());
+        Assert.assertEquals(7146, v.getAccumulatedValue());
         Assert.assertEquals(15, v.getValueCount());
         Assert.assertEquals(7146 / 15, v.getAverageValue(), 0.0);
         Assert.assertEquals(3000, v.getMaximumValue());
@@ -268,14 +268,14 @@ public class IntMinMaxValueTest
         final IntMinMaxValue v = new IntMinMaxValue(0);
 
         v.merge(v1);
-        Assert.assertEquals(10, v.getTotalValue());
+        Assert.assertEquals(10, v.getAccumulatedValue());
         Assert.assertEquals(5, v.getAverageValue());
         Assert.assertEquals(10, v.getMaximumValue());
         Assert.assertEquals(0, v.getMinimumValue());
         Assert.assertEquals(2, v.getValueCount());
 
         v.merge(v2);
-        Assert.assertEquals(30, v.getTotalValue());
+        Assert.assertEquals(30, v.getAccumulatedValue());
         Assert.assertEquals(10, v.getAverageValue());
         Assert.assertEquals(20, v.getMaximumValue());
         Assert.assertEquals(0, v.getMinimumValue());

@@ -22,8 +22,8 @@ import org.jfree.chart.JFreeChart;
 
 import com.xceptance.xlt.api.report.ReportCreator;
 import com.xceptance.xlt.report.external.config.ChartConfig;
-import com.xceptance.xlt.report.util.JFreeChartUtils;
-import com.xceptance.xlt.report.util.TimeSeriesConfiguration;
+import com.xceptance.xlt.report.util.jfreechart.JFreeChartUtils;
+import com.xceptance.xlt.report.util.jfreechart.TimeSeriesConfiguration;
 
 /**
  * Base class of all external data converters.

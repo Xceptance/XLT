@@ -22,7 +22,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.xceptance.xlt.report.util;
+package com.xceptance.xlt.report.util.jfreechart;
 
 import java.awt.Graphics2D;
 import java.awt.Shape;

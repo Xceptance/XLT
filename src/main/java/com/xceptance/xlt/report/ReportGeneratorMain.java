@@ -91,7 +91,6 @@ public class ReportGeneratorMain
         {
             main.run();
 
-
             System.exit(ProcessExitCodes.SUCCESS);
         }
         catch (final Exception ex)

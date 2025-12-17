@@ -27,7 +27,7 @@ import org.apache.commons.lang3.SystemUtils;
 
 import com.xceptance.common.util.ProcessExitCodes;
 import com.xceptance.xlt.engine.scripting.ScriptException;
-import com.xceptance.xlt.report.util.ReportUtils;
+import com.xceptance.xlt.report.util.misc.ReportUtils;
 
 /**
  * Main class. This is the entry point for the Doc generator.

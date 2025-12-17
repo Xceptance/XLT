@@ -42,9 +42,9 @@ import com.xceptance.xlt.report.ReportGeneratorConfiguration.ChartScale;
 import com.xceptance.xlt.report.util.DoubleMinMaxValueSet;
 import com.xceptance.xlt.report.util.DoubleSummaryStatistics;
 import com.xceptance.xlt.report.util.FixedSizeHistogramDoubleValueSet;
-import com.xceptance.xlt.report.util.JFreeChartUtils;
-import com.xceptance.xlt.report.util.ReportUtils;
-import com.xceptance.xlt.report.util.TaskManager;
+import com.xceptance.xlt.report.util.jfreechart.JFreeChartUtils;
+import com.xceptance.xlt.report.util.misc.ReportUtils;
+import com.xceptance.xlt.report.util.misc.TaskManager;
 import com.xceptance.xlt.util.PropertyHierarchy;
 
 /**

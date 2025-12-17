@@ -63,7 +63,7 @@ import com.xceptance.xlt.engine.scripting.MacroProcessor;
 import com.xceptance.xlt.engine.scripting.ScriptException;
 import com.xceptance.xlt.engine.scripting.TestDataUtils;
 import com.xceptance.xlt.engine.util.ScriptingUtils;
-import com.xceptance.xlt.report.util.TaskManager;
+import com.xceptance.xlt.report.util.misc.TaskManager;
 
 import freemarker.template.Configuration;
 import freemarker.template.Template;

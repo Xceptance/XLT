@@ -17,7 +17,7 @@ package com.xceptance.xlt.report.external.util;
 
 import java.math.BigDecimal;
 
-import com.xceptance.xlt.report.util.ReportUtils;
+import com.xceptance.xlt.report.util.misc.ReportUtils;
 
 /**
  * @author matthias.ullrich

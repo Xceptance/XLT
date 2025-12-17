@@ -16,6 +16,7 @@
 package com.xceptance.xlt.api.report;
 
 import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
 
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.engine.TransactionData;
@@ -31,6 +32,11 @@ public abstract class AbstractReportProvider implements ReportProvider
      * The report provider's configuration.
      */
     private ReportProviderConfiguration configuration;
+
+    /**
+     * locking for proper multi-threading and memory consistency
+     */
+    private final ReentrantLock lock = new ReentrantLock(true);
 
     /**
      * Returns the report provider's configuration. Use the configuration object to get access to general as well as
@@ -50,6 +56,24 @@ public abstract class AbstractReportProvider implements ReportProvider
     public void setConfiguration(final ReportProviderConfiguration config)
     {
         configuration = config;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean lock()
+    {
+        return lock.tryLock();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void unlock()
+    {
+        lock.unlock();
     }
 
     /**

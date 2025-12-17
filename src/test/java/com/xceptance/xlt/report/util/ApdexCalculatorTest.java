@@ -21,6 +21,9 @@ import java.util.Random;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.xceptance.xlt.report.util.misc.Apdex;
+import com.xceptance.xlt.report.util.misc.ApdexCalculator;
+
 public class ApdexCalculatorTest
 {
     @Test

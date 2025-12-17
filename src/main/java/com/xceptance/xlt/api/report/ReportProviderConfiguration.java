@@ -89,6 +89,12 @@ public interface ReportProviderConfiguration
     public int getMovingAveragePercentage();
 
     /**
+     * Returns the preferred storage width for data used in charts (number of data points before we reduce them to the 
+     * output width).
+     */
+    public int getDataStorageWidth();
+    
+    /**
      * Returns all the settings from the file "xlt/config/reportgenerator.properties" as raw properties. Use these
      * properties to get access to the provider-specific configuration if there is one.
      * 
@@ -109,4 +115,12 @@ public interface ReportProviderConfiguration
      * @return <code>true</code> if charts should be generated, <code>false</code> otherwise
      */
     public boolean shouldChartsGenerated();
+    
+    /**
+     * The percentiles to show in runtime data tables. Specified as a 
+     * comma-separated list of double values in the range (0, 100] in the properties.
+     *
+     * @return the runtime percentiles
+     */
+    public double[] getRuntimePercentiles();
 }

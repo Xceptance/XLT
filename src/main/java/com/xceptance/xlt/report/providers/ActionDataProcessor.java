@@ -21,8 +21,8 @@ import com.xceptance.xlt.api.engine.ActionData;
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.report.AbstractReportProvider;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration;
-import com.xceptance.xlt.report.util.Apdex;
-import com.xceptance.xlt.report.util.ApdexCalculator;
+import com.xceptance.xlt.report.util.misc.Apdex;
+import com.xceptance.xlt.report.util.misc.ApdexCalculator;
 
 /**
  * The {@link ActionDataProcessor} class provides common functionality of a typical data processor that deals with

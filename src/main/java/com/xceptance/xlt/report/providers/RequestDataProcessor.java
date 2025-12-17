@@ -43,11 +43,11 @@ import com.xceptance.xlt.api.util.XltCharBuffer;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration;
 import com.xceptance.xlt.report.util.HistogramValueSet;
 import com.xceptance.xlt.report.util.IntMinMaxValueSet;
-import com.xceptance.xlt.report.util.JFreeChartUtils;
-import com.xceptance.xlt.report.util.ReportUtils;
 import com.xceptance.xlt.report.util.SegmentationValueSet;
 import com.xceptance.xlt.report.util.IntSummaryStatistics;
-import com.xceptance.xlt.report.util.TaskManager;
+import com.xceptance.xlt.report.util.jfreechart.JFreeChartUtils;
+import com.xceptance.xlt.report.util.misc.ReportUtils;
+import com.xceptance.xlt.report.util.misc.TaskManager;
 
 import net.agkn.hll.HLL;
 

@@ -49,9 +49,9 @@ import com.xceptance.xlt.api.util.XltProperties;
 import com.xceptance.xlt.engine.resultbrowser.RequestHistory;
 import com.xceptance.xlt.engine.resultbrowser.RequestHistory.DumpMode;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration;
-import com.xceptance.xlt.report.util.JFreeChartUtils;
-import com.xceptance.xlt.report.util.TaskManager;
 import com.xceptance.xlt.report.util.ValueSet;
+import com.xceptance.xlt.report.util.jfreechart.JFreeChartUtils;
+import com.xceptance.xlt.report.util.misc.TaskManager;
 
 import it.unimi.dsi.util.FastRandom;
 

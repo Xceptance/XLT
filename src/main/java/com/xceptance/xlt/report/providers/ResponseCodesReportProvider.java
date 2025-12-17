@@ -37,9 +37,9 @@ import org.jfree.data.time.TimeSeriesCollection;
 import com.xceptance.xlt.api.engine.Data;
 import com.xceptance.xlt.api.engine.RequestData;
 import com.xceptance.xlt.api.report.AbstractReportProvider;
-import com.xceptance.xlt.report.util.JFreeChartUtils;
-import com.xceptance.xlt.report.util.TaskManager;
 import com.xceptance.xlt.report.util.ValueSet;
+import com.xceptance.xlt.report.util.jfreechart.JFreeChartUtils;
+import com.xceptance.xlt.report.util.misc.TaskManager;
 
 /**
  *

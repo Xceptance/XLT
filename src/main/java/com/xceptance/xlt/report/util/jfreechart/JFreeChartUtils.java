@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.xceptance.xlt.report.util;
+package com.xceptance.xlt.report.util.jfreechart;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -78,6 +78,11 @@ import com.xceptance.xlt.common.XltConstants;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration.ChartCappingInfo;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration.ChartCappingInfo.ChartCappingMode;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration.ChartScale;
+import com.xceptance.xlt.report.util.DoubleMinMaxValueSet;
+import com.xceptance.xlt.report.util.DoubleMinMaxValueSet.DoubleMinMaxValue;
+import com.xceptance.xlt.report.util.IntMinMaxValueSet;
+import com.xceptance.xlt.report.util.IntMinMaxValueSet.IntMinMaxValue;
+import com.xceptance.xlt.report.util.ValueSet;
 
 /**
  * The JFreeChartUtils class simplifies generating charts via the JFreeChart library.

@@ -57,7 +57,7 @@ public class Proxy
      */
     public ValueSet getCountPerSecondValueSet()
     {
-        return ReflectionUtils.readField(BasicTimerDataProcessor.class, instance, "countPerSecondValueSet");
+        return ReflectionUtils.readField(BasicTimerDataProcessor1.class, instance, "countPerSecondValueSet");
     }
 
     /**
@@ -65,7 +65,7 @@ public class Proxy
      */
     public ValueSet getErrorsPerSecondValueSet()
     {
-        return ReflectionUtils.readField(BasicTimerDataProcessor.class, instance, "errorsPerSecondValueSet");
+        return ReflectionUtils.readField(BasicTimerDataProcessor1.class, instance, "errorsPerSecondValueSet");
     }
 
     /**
@@ -73,7 +73,7 @@ public class Proxy
      */
     public IntSummaryStatistics getRunTimeStatistics()
     {
-        return ReflectionUtils.readField(BasicTimerDataProcessor.class, instance, "runTimeStatistics");
+        return ReflectionUtils.readField(BasicTimerDataProcessor1.class, instance, "runTimeStatistics");
     }
 
     /**
@@ -81,7 +81,7 @@ public class Proxy
      */
     public RuntimeHistogram getRunTimeHistogram()
     {
-        return ReflectionUtils.readField(BasicTimerDataProcessor.class, instance, "runTimeHistogram");
+        return ReflectionUtils.readField(BasicTimerDataProcessor1.class, instance, "runTimeHistogram");
     }
 
     /**
@@ -89,7 +89,7 @@ public class Proxy
      */
     public IntMinMaxValueSet getRunTimeValueSet()
     {
-        return ReflectionUtils.readField(BasicTimerDataProcessor.class, instance, "runTimeValueSet");
+        return ReflectionUtils.readField(BasicTimerDataProcessor1.class, instance, "runTimeValueSet");
     }
 
     /**
@@ -97,7 +97,7 @@ public class Proxy
      */
     public int getTotalErrors()
     {
-        final Integer returnValue = ReflectionUtils.readField(BasicTimerDataProcessor.class, instance, "totalErrors");
+        final Integer returnValue = ReflectionUtils.readField(BasicTimerDataProcessor1.class, instance, "totalErrors");
         return returnValue.intValue();
     }
 
@@ -106,7 +106,7 @@ public class Proxy
      */
     public int getMinMaxValueSetSize()
     {
-        final Integer returnValue = ReflectionUtils.readField(BasicTimerDataProcessor.class, instance, "minMaxValueSetSize");
+        final Integer returnValue = ReflectionUtils.readField(BasicTimerDataProcessor1.class, instance, "minMaxValueSetSize");
         return returnValue.intValue();
     }
 
@@ -115,7 +115,7 @@ public class Proxy
      */
     public int getChartCapping()
     {
-        final Integer returnValue = ReflectionUtils.readField(BasicTimerDataProcessor.class, instance, "chartCapping");
+        final Integer returnValue = ReflectionUtils.readField(BasicTimerDataProcessor1.class, instance, "chartCapping");
         return returnValue.intValue();
     }
 }

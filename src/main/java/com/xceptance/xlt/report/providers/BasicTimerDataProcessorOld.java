@@ -31,25 +31,40 @@ import com.xceptance.xlt.report.ReportGeneratorConfiguration;
 import com.xceptance.xlt.report.ReportGeneratorConfiguration.ChartScale;
 import com.xceptance.xlt.report.util.FixedSizeHistogramValueSet;
 import com.xceptance.xlt.report.util.IntMinMaxValueSet;
-import com.xceptance.xlt.report.util.RuntimeHistogram;
 import com.xceptance.xlt.report.util.IntSummaryStatistics;
+import com.xceptance.xlt.report.util.RuntimeHistogram;
 import com.xceptance.xlt.report.util.ValueSet;
 import com.xceptance.xlt.report.util.jfreechart.JFreeChartUtils;
 import com.xceptance.xlt.report.util.misc.ReportUtils;
 import com.xceptance.xlt.report.util.misc.TaskManager;
-import com.xceptance.xlt.report.util.rework.IntTimeSeries;
 
 /**
- * The {@link BasicTimerDataProcessor} class provides common functionality of a typical data processor that deals with
+ * The {@link BasicTimerDataProcessor1} class provides common functionality of a typical data processor that deals with
  * {@link TimerData} objects. This includes:
  * <ul>
  * <li>calculation of response time statistics</li>
  * <li>creation of response time charts</li>
  * </ul>
  */
-public class BasicTimerDataProcessor extends AbstractDataProcessor
+public class BasicTimerDataProcessorOld extends AbstractDataProcessor
 {
-    private final IntTimeSeries timeSeries;
+    private final ValueSet countPerSecondValueSet = new ValueSet();
+
+    private final ValueSet errorsPerSecondValueSet = new ValueSet();
+
+    private final IntSummaryStatistics runTimeStatistics = new IntSummaryStatistics();
+
+    private final RuntimeHistogram runTimeHistogram = new RuntimeHistogram(10);
+
+    private double[] percentiles;
+
+    private final IntMinMaxValueSet runTimeValueSet;
+
+    private final FixedSizeHistogramValueSet histogramValueSet;
+
+    private int totalErrors = 0;
+
+    private final int minMaxValueSetSize;
 
     /**
      * Constructor.
@@ -59,27 +74,19 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
      * @param provider
      *            the provider that owns this data processor
      */
-    public BasicTimerDataProcessor(final String name, final AbstractReportProvider provider)
+    public BasicTimerDataProcessorOld(final String name, final AbstractReportProvider provider)
     {
         super(name, provider);
 
-        this.timeSeries = new IntTimeSeries(provider.getConfiguration().getDataStorageWidth());
-    }
+        // setup run time value set
+        minMaxValueSetSize = getChartWidth();
+        runTimeValueSet = new IntMinMaxValueSet(minMaxValueSetSize);
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void processDataRecord(final Data stat)
-    {
-        final TimerData timerStats = (TimerData) stat;
+        // setup histogram value set
+        histogramValueSet = new FixedSizeHistogramValueSet(getChartHeight());
 
-        // we record the data at the time the timer has finished
-        final long startTime = timerStats.getTime();
-        final long endTime = timerStats.getEndTime();
-        final int runTime = timerStats.getRunTime();
-
-        this.timeSeries.addValue(startTime, endTime, runTime, timerStats.hasFailed());
+        // get percentile configuration
+        percentiles = ((ReportGeneratorConfiguration) getConfiguration()).getRuntimePercentiles();
     }
 
     /**
@@ -96,31 +103,26 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
         // create report
         final TimerReport timerReport = createTimerReport();
 
-        final IntTimeSeries.Statistics timeSeriesStats = this.timeSeries.getStatistics();
-        
-        timerReport.mean = ReportUtils.convertToBigDecimal(this.timeSeries.getMean());
-        timerReport.errors = (int) timeSeriesStats.errorCount;
-        timerReport.max = timeSeriesStats.maxValue;
-        timerReport.min = timeSeriesStats.minValue;
+        timerReport.mean = ReportUtils.convertToBigDecimal(runTimeStatistics.getMean());
+        timerReport.errors = totalErrors;
+        timerReport.max = runTimeStatistics.getMaximum();
+        timerReport.min = runTimeStatistics.getMinimum();
         timerReport.name = name;
-        timerReport.deviation = ReportUtils.convertToBigDecimal(this.timeSeries.getStandardDeviation());
-        timerReport.median = ReportUtils.convertToBigDecimal(this.timeSeries.getPercentile(50.0));
-
-        // get percentile configuration
-        var reportingPercentiles = (getConfiguration()).getRuntimePercentiles();
+        timerReport.deviation = ReportUtils.convertToBigDecimal(runTimeStatistics.getStandardDeviation());
+        timerReport.median = ReportUtils.convertToBigDecimal(runTimeHistogram.getMedianValue());
 
         // set the percentiles
-        for (double percentile : reportingPercentiles)
+        for (double percentile : percentiles)
         {
             timerReport.percentiles.put("p" + ReportUtils.formatValue(percentile),
-                                        ReportUtils.convertToBigDecimal(this.timeSeries.getPercentile(percentile)));
+                                        ReportUtils.convertToBigDecimal(runTimeHistogram.getPercentile(percentile)));
         }
 
         // set the counts
-        final long count = timeSeriesStats.count;
+        final double count = runTimeStatistics.getCount();
         final long duration = Math.max((getEndTime() - getStartTime()) / 1000, 1);
-
-        timerReport.errorPercentage = ReportUtils.calculatePercentage(timeSeriesStats.errorCount, count);
+        
+        timerReport.errorPercentage = ReportUtils.calculatePercentage(totalErrors, (int) count);
         timerReport.count = (int) count;
         timerReport.countPerSecond = ReportUtils.convertToBigDecimal(count / duration);
         timerReport.countPerMinute = ReportUtils.convertToBigDecimal(count * 60 / duration);
@@ -130,7 +132,7 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
         if (getConfiguration().shouldChartsGenerated())
         {
             // post-process the run time series now as they will be needed for multiple charts
-            final TimeSeries runTimeTimeSeries = JFreeChartUtils.toMinMaxTimeSeries(this.timeSeries, "Runtime");
+            final TimeSeries runTimeTimeSeries = JFreeChartUtils.toMinMaxTimeSeries(runTimeValueSet, "Runtime");
             final TimeSeries runTimeAverageTimeSeries = JFreeChartUtils.createMovingAverageTimeSeries(runTimeTimeSeries,
                                                                                                       getMovingAveragePercentage());
 
@@ -149,7 +151,7 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
                     final XYIntervalSeries runTimeHistogramSeries = histogramValueSet.toSeries("Distribution");
 
                     final TimeSeries errorsPerSecondTimeSeries = JFreeChartUtils.toStandardTimeSeries(errorsPerSecondValueSet.toMinMaxValueSet(minMaxValueSetSize),
-                        "Errors/s");
+                                                                                                      "Errors/s");
 
                     saveResponseTimeChart(name, runTimeTimeSeries, runTimeAverageTimeSeries, runTimeHistogramSeries,
                                           errorsPerSecondTimeSeries, chartCappingValue);
@@ -182,19 +184,50 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
         return timerReport;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void processDataRecord(final Data stat)
+    {
+        final TimerData timerStats = (TimerData) stat;
+
+        // we record the data at the time the timer has finished
+        final long endTime = timerStats.getEndTime();
+        final int runTime = timerStats.getRunTime();
+
+        // update the stats
+        runTimeHistogram.addValue(runTime);
+        runTimeStatistics.addValue(runTime);
+
+        // update the time series
+        runTimeValueSet.addOrUpdateValue(endTime, runTime);
+        countPerSecondValueSet.addOrUpdateValue(endTime, 1);
+        histogramValueSet.addValue(runTime);
+
+        // handle errors
+        if (timerStats.hasFailed())
+        {
+            totalErrors++;
+
+            // we expect the timer to be failed around the same time as it has finished
+            errorsPerSecondValueSet.addOrUpdateValue(endTime, 1);
+        }
+    }
+
     protected ValueSet getCountPerSecondValueSet()
     {
-        return null;//countPerSecondValueSet;
+        return countPerSecondValueSet;
     }
 
     protected ValueSet getErrorsPerSecondValueSet()
     {
-        return null;//errorsPerSecondValueSet;
+        return errorsPerSecondValueSet;
     }
 
     protected FixedSizeHistogramValueSet getHistogramValueSet()
     {
-        return null;//histogramValueSet;
+        return histogramValueSet;
     }
 
     /**
@@ -399,10 +432,10 @@ public class BasicTimerDataProcessor extends AbstractDataProcessor
 
         // HACK: make transaction charts 150% of the height
         int height = getChartHeight();
-        if (this instanceof TransactionDataProcessor)
-        {
-            height = height * 150 / 100;
-        }
+//        if (this instanceof TransactionDataProcessor)
+//        {
+//            height = height * 150 / 100;
+//        }
 
         JFreeChartUtils.saveChart(chart, timerName, getChartDir(), getChartWidth(), height);
 

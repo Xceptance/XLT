@@ -6,7 +6,7 @@
 
     <groupId>com.xceptance</groupId>
     <artifactId>xlt</artifactId>
-    <version>9.1.2</version>
+    <version>10.0.0</version>
     <packaging>jar</packaging>
 
     <name>XLT</name>
@@ -619,7 +619,17 @@
             <artifactId>reflections</artifactId>
             <version>0.10.2</version>
         </dependency>
-
+		<dependency>
+		  <groupId>org.apache.datasketches</groupId>
+		  <artifactId>datasketches-java</artifactId>
+		  <version>8.0.0</version>
+		</dependency>
+		<dependency>
+		    <groupId>com.datadoghq</groupId>
+		    <artifactId>sketches-java</artifactId>
+		    <version>0.8.3</version>
+		</dependency>
+		
         <!-- ================= -->
         <!-- Test dependencies -->
         <!-- ================= -->
@@ -887,6 +897,11 @@
             <artifactId>trove4j</artifactId>
             <version>3.0.3</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.openjdk.jol</groupId>
+            <artifactId>jol-core</artifactId>
+            <version>0.17</version>
         </dependency>
     </dependencies>
 </project>

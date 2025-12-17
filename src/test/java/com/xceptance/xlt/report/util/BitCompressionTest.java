@@ -3,6 +3,8 @@ package com.xceptance.xlt.report.util;
 import static org.junit.Assert.*;
 import org.junit.Test;
 
+import com.xceptance.xlt.report.util.misc.BitCompression;
+
 /**
  * Unit tests for {@link BitCompression}.
  * All test values use binary number formats for clarity.

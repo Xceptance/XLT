@@ -86,7 +86,7 @@ public class DummyRequestDataProcessor extends RequestDataProcessor
      */
     public ValueSet getBytesReceivedValueSet()
     {
-        return ReflectionUtils.readField(BasicTimerDataProcessor.class, this, "bytesReceivedValueSet");
+        return ReflectionUtils.readField(BasicTimerDataProcessor1.class, this, "bytesReceivedValueSet");
     }
 
     /**
@@ -94,7 +94,7 @@ public class DummyRequestDataProcessor extends RequestDataProcessor
      */
     public Set<Integer> getDistinctUrlHashCodeSet()
     {
-        return ReflectionUtils.readField(BasicTimerDataProcessor.class, this, "distinctUrlHashCodeSet");
+        return ReflectionUtils.readField(BasicTimerDataProcessor1.class, this, "distinctUrlHashCodeSet");
     }
 
     /**
@@ -102,7 +102,7 @@ public class DummyRequestDataProcessor extends RequestDataProcessor
      */
     public Set<String> getDistinctUrlSet()
     {
-        return ReflectionUtils.readField(BasicTimerDataProcessor.class, this, "distinctUrlSet");
+        return ReflectionUtils.readField(BasicTimerDataProcessor1.class, this, "distinctUrlSet");
     }
 
     /**
@@ -110,7 +110,7 @@ public class DummyRequestDataProcessor extends RequestDataProcessor
      */
     public int[] getBoundaries()
     {
-        return ReflectionUtils.readField(BasicTimerDataProcessor.class, this, "boundaries");
+        return ReflectionUtils.readField(BasicTimerDataProcessor1.class, this, "boundaries");
     }
 
     /**
@@ -118,7 +118,7 @@ public class DummyRequestDataProcessor extends RequestDataProcessor
      */
     public SegmentationValueSet getCountPerSegment()
     {
-        return ReflectionUtils.readField(BasicTimerDataProcessor.class, this, "countPerSegment");
+        return ReflectionUtils.readField(BasicTimerDataProcessor1.class, this, "countPerSegment");
     }
 
     /**
@@ -126,7 +126,7 @@ public class DummyRequestDataProcessor extends RequestDataProcessor
      */
     public HistogramValueSet getRunTimeHistogramValueSet()
     {
-        return ReflectionUtils.readField(BasicTimerDataProcessor.class, this, "runTimeHistogramValueSet");
+        return ReflectionUtils.readField(BasicTimerDataProcessor1.class, this, "runTimeHistogramValueSet");
     }
 
     /**
@@ -134,7 +134,7 @@ public class DummyRequestDataProcessor extends RequestDataProcessor
      */
     public IntSummaryStatistics getBytesSentStatistics()
     {
-        return ReflectionUtils.readField(BasicTimerDataProcessor.class, this, "bytesSentStatistics");
+        return ReflectionUtils.readField(BasicTimerDataProcessor1.class, this, "bytesSentStatistics");
     }
 
     /**
@@ -142,7 +142,7 @@ public class DummyRequestDataProcessor extends RequestDataProcessor
      */
     public IntSummaryStatistics getBytesReceivedStatistics()
     {
-        return ReflectionUtils.readField(BasicTimerDataProcessor.class, this, "bytesReceivedStatistics");
+        return ReflectionUtils.readField(BasicTimerDataProcessor1.class, this, "bytesReceivedStatistics");
     }
 
     /**
@@ -150,7 +150,7 @@ public class DummyRequestDataProcessor extends RequestDataProcessor
      */
     public IntSummaryStatistics getConnectTimeStatistics()
     {
-        return ReflectionUtils.readField(BasicTimerDataProcessor.class, this, "connectTimeStatistics");
+        return ReflectionUtils.readField(BasicTimerDataProcessor1.class, this, "connectTimeStatistics");
     }
 
     /**
@@ -158,7 +158,7 @@ public class DummyRequestDataProcessor extends RequestDataProcessor
      */
     public IntSummaryStatistics getSendTimeStatistics()
     {
-        return ReflectionUtils.readField(BasicTimerDataProcessor.class, this, "sendTimeStatistics");
+        return ReflectionUtils.readField(BasicTimerDataProcessor1.class, this, "sendTimeStatistics");
     }
 
     /**
@@ -166,7 +166,7 @@ public class DummyRequestDataProcessor extends RequestDataProcessor
      */
     public IntSummaryStatistics getServerBusyTimeStatistics()
     {
-        return ReflectionUtils.readField(BasicTimerDataProcessor.class, this, "serverBusyTimeStatistics");
+        return ReflectionUtils.readField(BasicTimerDataProcessor1.class, this, "serverBusyTimeStatistics");
     }
 
     /**
@@ -174,7 +174,7 @@ public class DummyRequestDataProcessor extends RequestDataProcessor
      */
     public IntSummaryStatistics getReceiveTimeStatistics()
     {
-        return ReflectionUtils.readField(BasicTimerDataProcessor.class, this, "receiveTimeStatistics");
+        return ReflectionUtils.readField(BasicTimerDataProcessor1.class, this, "receiveTimeStatistics");
     }
 
     /**
@@ -182,7 +182,7 @@ public class DummyRequestDataProcessor extends RequestDataProcessor
      */
     public IntSummaryStatistics getTimeToFirstBytesStatistics()
     {
-        return ReflectionUtils.readField(BasicTimerDataProcessor.class, this, "timeToFirstBytesStatistics");
+        return ReflectionUtils.readField(BasicTimerDataProcessor1.class, this, "timeToFirstBytesStatistics");
     }
 
     /**
@@ -190,7 +190,7 @@ public class DummyRequestDataProcessor extends RequestDataProcessor
      */
     public IntSummaryStatistics getTimeToLastBytesStatistics()
     {
-        return ReflectionUtils.readField(BasicTimerDataProcessor.class, this, "timeToLastBytesStatistics");
+        return ReflectionUtils.readField(BasicTimerDataProcessor1.class, this, "timeToLastBytesStatistics");
     }
 
     /**
