@@ -214,21 +214,21 @@ public class RuntimeHistogram
         }
         else
         {
-            final double count = ((double)valueCount) * (p / 100.0);
+            final double np = ((double)valueCount) * (p / 100.0d);
 
             // even number of values -> mean of two adjacent values
-            if ((valueCount & 1) == 0.0)
+            if ((np % 1.0) == 0.0)
             {
                 // get two adjacent values and calculate the mean of both
-                final int value1 = getValueByCount(count);
-                final int value2 = getValueByCount(count + 1);
+                final int value1 = getValueByCount(np);
+                final int value2 = getValueByCount(np + 1);
 
                 value = (value1 + value2) / 2.0;
             }
             else
             {
                 // just get the corresponding value when odd
-                value = getValueByCount(count);
+                value = getValueByCount(Math.ceil(np));
             }
         }
 
@@ -323,12 +323,13 @@ public class RuntimeHistogram
     }
 
     /**
-     * Returns the precision used.
+     * Returns the precision used. 1 means, we keep all values as is.
+     * 2 means, we reduce the result precision by a factor of 2, 4 means by a factor of 4, etc.
      * 
      * @return the precision
      */
     public int getPrecision()
     {
-        return precision ;
+        return 1 << precision;
     }
 }

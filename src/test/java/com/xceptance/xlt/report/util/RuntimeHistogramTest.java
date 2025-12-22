@@ -16,6 +16,8 @@
 package com.xceptance.xlt.report.util;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,28 +40,37 @@ public class RuntimeHistogramTest
         assertEquals(0.0, histogram.getMedianValue(), 0.0);
         assertEquals(0, histogram.getValueCount());
         assertEquals(0, histogram.getNumberOfBuckets());
+        assertEquals(1, histogram.getPrecision());
+        assertTrue(histogram.isEmpty());
 
         histogram.addValue(5);
+        assertEquals(5.0, histogram.getPercentile(0), 0.0);
+        assertEquals(5.0, histogram.getPercentile(25), 0.0);
         assertEquals(5.0, histogram.getPercentile(50), 0.0);
+        assertEquals(5.0, histogram.getPercentile(100), 0.0);
         assertEquals(5.0, histogram.getMedianValue(), 0.0);
         assertEquals(1, histogram.getValueCount());
         assertEquals(1, histogram.getNumberOfBuckets());
+        assertEquals(1, histogram.getPrecision());
+        assertFalse(histogram.isEmpty());
     }
 
     @Test
     public void testEven()
     {
         final RuntimeHistogram histogram = new RuntimeHistogram();
+        int[] values = new int[] { 2, 3, 4, 5, 6, 7, 8, 9 };
+        
+        for (int v : values)
+        {
+            histogram.addValue(v);
+        }
 
-        histogram.addValue(2);
-        histogram.addValue(3);
-        histogram.addValue(4);
-        histogram.addValue(5);
-        histogram.addValue(6);
-        histogram.addValue(7);
-        histogram.addValue(8);
-        histogram.addValue(9);
-        assertEquals(5.5, histogram.getPercentile(50), 0.0);
+        for (int i = 0; i <= 100; i = i + 1)
+        {
+            assertEquals(getPercentile(i, values), histogram.getPercentile(i), 0.0);
+        }
+
         assertEquals(5.5, histogram.getMedianValue(), 0.0);
         assertEquals(8, histogram.getValueCount());
         assertEquals(8, histogram.getNumberOfBuckets());
@@ -70,24 +81,29 @@ public class RuntimeHistogramTest
     {
         final RuntimeHistogram histogram = new RuntimeHistogram();
 
-        histogram.addValue(2);
-        histogram.addValue(3);
-        histogram.addValue(4);
-        histogram.addValue(5);
-        histogram.addValue(6);
-        histogram.addValue(7);
-        histogram.addValue(8);
+        int[] values = new int[] { 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+        
+        for (int v : values)
+        {
+            histogram.addValue(v);
+        }
 
-        assertEquals(5.0, histogram.getPercentile(50), 0.0);
-        assertEquals(5.0, histogram.getMedianValue(), 0.0);
-        assertEquals(7, histogram.getValueCount());
-        assertEquals(7, histogram.getNumberOfBuckets());
+        for (int i = 0; i <= 100; i = i + 1)
+        {
+            assertEquals(getPercentile(i, values), histogram.getPercentile(i), 0.0);
+        }
+
+        assertEquals(6.0, histogram.getMedianValue(), 0.0);
+        assertEquals(9, histogram.getValueCount());
+        assertEquals(9, histogram.getNumberOfBuckets());
     }
 
     @Test
     public void testPrecision_8()
     {
         final RuntimeHistogram histogram = new RuntimeHistogram(8);
+
+        assertEquals(8, histogram.getPrecision());
 
         histogram.addValue(2); // becomes 0 extends to 0
         histogram.addValue(4); // 0 extends to 0
@@ -198,24 +214,21 @@ public class RuntimeHistogramTest
     public void testRandom()
     {
         final Random rng = new Random();
+        final int LENGTH = 10000;
 
         // random number of values [1..n]
-        final int length = rng.nextInt(1000000) + 1;
-
-        // random precision [1..100]
-        final int precision = rng.nextInt(100) + 1;
+        final int length = rng.nextInt(LENGTH) + 100;
 
         // fill histogram and our test array 
-        final RuntimeHistogram histogram = new RuntimeHistogram(precision);
+        final RuntimeHistogram histogram = new RuntimeHistogram();
         final int[] values = new int[length];
 
         for (int i = 0; i < length; i++)
         {
             // random values [0..999999]
-            final int j = rng.nextInt(1000000);
-
+            final int j = rng.nextInt(30000);
+            values[i] = j;
             histogram.addValue(j);
-            values[i] = j / precision * precision;
         }
 
         // ensure the test array is sorted
@@ -224,7 +237,7 @@ public class RuntimeHistogramTest
         // now check the percentile for each permille
         for (int pm = 1; pm <= 1000; pm++)
         {
-            final double p = pm / 10.0;
+            final double p = pm / 10.0d;
 
             checkPercentile(p, values, histogram);
         }
@@ -235,7 +248,7 @@ public class RuntimeHistogramTest
         final double expectedValue = getPercentile(p, values);
         final double actualValue = histogram.getPercentile(p);
 
-        assertEquals(expectedValue, actualValue, 0.0);
+        assertEquals("P" + Double.toString(p), expectedValue, actualValue, 0.0);
     }
 
     private double getPercentile(final double p, final int[] values)
@@ -246,20 +259,24 @@ public class RuntimeHistogramTest
         {
             percentile = 0;
         }
-        else if (p == 100)
+        else if (p == 0.0d)
+        {
+            percentile = values[0];
+        }
+        else if (p == 100.0d)
         {
             percentile = values[values.length - 1];
         }
         else
         {
-            final double np = values.length * p / 100;
+            final double np = (double)values.length * (p / 100.0d);
 
-            if (np % 1 == 0)
+            if ((np % 1) == 0)
             {
                 final int i1 = (int) np;
                 final int i2 = i1 + 1;
 
-                percentile = (values[i1 - 1] + values[i2 - 1]) / 2.0;
+                percentile = (values[i1 - 1] + values[i2 - 1]) / 2.0d;
             }
             else
             {
