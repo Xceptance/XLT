@@ -22,6 +22,8 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.xceptance.xlt.report.util.IntMinMaxValueSet.IntMinMaxValue;
+
 /**
  * Tests the {@link IntMinMaxValueSet} class.
  */

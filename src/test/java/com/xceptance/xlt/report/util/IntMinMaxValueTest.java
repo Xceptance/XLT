@@ -18,6 +18,8 @@ package com.xceptance.xlt.report.util;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.xceptance.xlt.report.util.IntMinMaxValueSet.IntMinMaxValue;
+
 public class IntMinMaxValueTest
 {
     @Test
