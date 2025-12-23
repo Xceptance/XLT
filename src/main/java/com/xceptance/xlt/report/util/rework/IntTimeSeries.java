@@ -88,7 +88,8 @@ public class IntTimeSeries
 
     /**
      * Creates a {@link IntTimeSeries} instance with the specified size. 
-     * The minimum resolution is 1 second, so a size of 3600 would allow to store min/max values for one hour with one second resolution.
+     * The minimum resolution is 1 second, so a size of 3600 would allow to store min/max values 
+     * for one hour with one second resolution.
      * If the start size is too small, we are losing data when condensing happens,
      * hence we are ensuring our size is a power of two.
      *
@@ -100,7 +101,7 @@ public class IntTimeSeries
         this.size = BitUtil.nextHighestPowerOfTwo(size);
         this.values = new IntTimeSeriesEntry[this.size];
 
-        histogram = new RuntimeHistogram(10);
+        histogram = new RuntimeHistogram(8);
         
         // fill, so we don't have to check later for nulls
         Arrays.setAll(this.values, __ -> new IntTimeSeriesEntry());
@@ -377,7 +378,7 @@ public class IntTimeSeries
      */
     public int getPercentile(final double percentile)
     {
-        return (int) Math.round(this.histogram.getPercentile(percentile));
+        return (int) this.histogram.getPercentile(percentile);
     }
 
     /**
@@ -409,12 +410,18 @@ public class IntTimeSeries
         final Statistics stat = new Statistics();
         Arrays.stream(this.values).forEach(e -> 
         {
+            // don't count without values to 
+            if (e.getCount() == 0)
+            {
+                return;
+            }
             stat.count += e.getCount();
             stat.sum += e.getTotalValue();
             stat.errorCount += e.getErrorCount();
             stat.maxValue = Math.max(stat.maxValue, e.getMaximumValue());
-            stat.minValue = Math.max(stat.minValue, e.getMinimumValue());
+            stat.minValue = Math.min(stat.minValue, e.getMinimumValue());
         });
+        
         return stat;
     }
     
@@ -456,26 +463,31 @@ public class IntTimeSeries
         final double min = stat.minValue;
         final double max = stat.maxValue;
         final double bucketWidth = (max - min) / bucketCount;
-
         
         for (int i = 0; i < bucketCount; i++)
         {
             var start = i == 0 ? 0 : min + i * bucketWidth;
-            var end = min + (i + 1) * bucketWidth;
+            // avoid overlapping buckets by making the end exclusive, except for the last bucket
+            var end = i == bucketCount - 1 ? min + (i + 1) * bucketWidth : (min + (i + 1) * bucketWidth) - 1;
             
-            var count = this.histogram.getCountForValue(start, end);
+            var count = this.histogram.getCountForValue((int)start, (int)end);
             
-            histogram.add(new HistogramBucket(
-                                              (int) Math.round(i == 0 ? 0 : sp[i - 1]), 
-                                              (int) Math.round(sp[i]), 
-                                              (int) Math.round(buckets[i] * this.getCount())));
+            histogramBuckets.add(new HistogramBucket((int)start, (int)end, (int)count));
         }
 
-        return histogram;
+        return histogramBuckets;
     }
 
     public static record HistogramBucket(int startValue, int endValue, int count)
     {
+        /**
+         * This is just for easier debugging purposes
+         */
+        @Override
+        public String toString()
+        {
+            return startValue + ", " + endValue + ", " + count;
+        }
     }
 
     public static class Statistics

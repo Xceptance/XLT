@@ -376,19 +376,36 @@ public class IntTimeSeriesTest
 
     // test the digest function for percentiles
     @Test
-    public void testDigestPercentiles_Simple()
+    public void testDigestPercentiles_Simple_Uncompressed()
+    {
+        // default precision is 8 
+        final IntTimeSeries series = new IntTimeSeries(3600);
+
+        series.addValue(msec(1000), 10, false);
+        series.addValue(msec(2000), 20, false);
+        series.addValue(msec(3000), 30, false);
+
+        assertEquals(10 >> 3 << 3, series.getPercentile(0.0));
+        assertEquals(20 >> 3 << 3, series.getPercentile(50.0));
+        assertEquals(30 >> 3 << 3, series.getPercentile(75.0));
+        assertEquals(30 >> 3 << 3, series.getPercentile(100.0));
+    }
+    
+    // test the digest function for percentiles
+    @Test
+    public void testDigestPercentiles_Simple_Compressed()
     {
         final IntTimeSeries series = new IntTimeSeries(3600);
 
-        series.addValue(msec(0), 10, false);
-        series.addValue(msec(10), 20, false);
-        series.addValue(msec(20), 30, false);
+        series.addValue(msec(0), 10, false); // 10 >> 3 << 3 = 8
+        series.addValue(msec(10), 20, false); // 20 >> 3 << 3 = 16
+        series.addValue(msec(20), 30, false); // 30 >> 3 << 3 = 24
 
-        assertEquals(10, series.getPercentile(0.0));
-        assertEquals(10, series.getPercentile(25.0));
-        assertEquals(20, series.getPercentile(50.0));
-        assertEquals(30, series.getPercentile(75.0));
-        assertEquals(30, series.getPercentile(100.0));
+        assertEquals(8, series.getPercentile(0.0)); // 10 >> 3 << 3 = 8
+        assertEquals(8, series.getPercentile(25.0)); // 10 >> 3 << 3 = 8
+        assertEquals(16, series.getPercentile(50.0)); // 20 >> 3 << 3 = 16
+        assertEquals(24, series.getPercentile(75.0)); // 30 >> 3 << 3 = 24
+        assertEquals(24, series.getPercentile(100.0)); // 30 >> 3 << 3 = 24
     }
 
     // test the digest function for percentiles
@@ -403,10 +420,12 @@ public class IntTimeSeriesTest
         }
 
         assertEquals(0, series.getPercentile(0.0));
-        assertEquals(25, series.getPercentile(25.0));
-        assertEquals(50, series.getPercentile(50.0));
-        assertEquals(75, series.getPercentile(75.0));
-        assertEquals(99, series.getPercentile(100.0));
+        assertEquals(16, series.getPercentile(20.0));
+        assertEquals(24, series.getPercentile(25.0));
+        assertEquals(48, series.getPercentile(50.0));
+        assertEquals(64, series.getPercentile(70.0));
+        assertEquals(72, series.getPercentile(75.0));
+        assertEquals(96, series.getPercentile(100.0));
     }
 
     // test the digest function for percentiles with very equally distributed values
@@ -415,29 +434,59 @@ public class IntTimeSeriesTest
     {
         final IntTimeSeries series = new IntTimeSeries(3600);
 
-        series.addValue(msec(200), 0, false);
-        series.addValue(msec(200), 100, false);
-        series.addValue(msec(300), 200, false);
-        series.addValue(msec(400), 300, false);
-        series.addValue(msec(500), 400, false);
-        series.addValue(msec(600), 500, false);
-        series.addValue(msec(700), 600, false);
-        series.addValue(msec(700), 700, false);
-        series.addValue(msec(700), 800, false);
-        series.addValue(msec(700), 900, false);
-        series.addValue(msec(800), 1000, false);
+        series.addValue(msec(200), 0, false); // 0 >> 3 << 3 = 0
+        series.addValue(msec(200), 100, false); // 100 >> 3 << 3 = 96
+        series.addValue(msec(300), 200, false); // 200 >> 3 << 3 = 192
+        series.addValue(msec(400), 300, false); // 300 >> 3 << 3 = 256
+        series.addValue(msec(500), 400, false); // 400 >> 3 << 3 = 512
+        series.addValue(msec(600), 500, false); // 500 >> 3 << 3 = 496
+        series.addValue(msec(700), 600, false); // 600 >> 3 << 3 = 592
+        series.addValue(msec(700), 700, false); // 700 >> 3 << 3 = 696
+        series.addValue(msec(700), 800, false); // 800 >> 3 << 3 = 768
+        series.addValue(msec(700), 900, false); // 900 >> 3 << 3 = 896
+        series.addValue(msec(800), 1000, false); // 1000 >> 3 << 3 = 992
 
-        assertEquals(0, series.getPercentile(0.0));
-        assertEquals(100, series.getPercentile(10.0));
-        assertEquals(200, series.getPercentile(20.0));
-        assertEquals(300, series.getPercentile(30.0));
-        assertEquals(400, series.getPercentile(40.0));
-        assertEquals(500, series.getPercentile(50.0));
-        assertEquals(600, series.getPercentile(60.0));
-        assertEquals(700, series.getPercentile(70.0));
-        assertEquals(800, series.getPercentile(80.0));
-        assertEquals(900, series.getPercentile(90.0));
-        assertEquals(1000, series.getPercentile(100.0));
+        assertEquals(0 >> 3 << 3, series.getPercentile(0.0));
+        assertEquals(100 >> 3 << 3, series.getPercentile(10.0));
+        assertEquals(200 >> 3 << 3, series.getPercentile(20.0));
+        assertEquals(300 >> 3 << 3, series.getPercentile(30.0));
+        assertEquals(400 >> 3 << 3, series.getPercentile(40.0));
+        assertEquals(500 >> 3 << 3, series.getPercentile(50.0));
+        assertEquals(600 >> 3 << 3, series.getPercentile(60.0));
+        assertEquals(700 >> 3 << 3, series.getPercentile(70.0));
+        assertEquals(800 >> 3 << 3, series.getPercentile(80.0));
+        assertEquals(900 >> 3 << 3, series.getPercentile(90.0));
+        assertEquals(1000 >> 3 << 3, series.getPercentile(100.0));
+    }
+    
+    // test the digest function for percentiles with very equally distributed values
+    @Test
+    public void testDigestPercentiles_NP_AlwaysFull()
+    {
+        final IntTimeSeries series = new IntTimeSeries(3600);
+
+        series.addValue(msec(200), 100, false); // 100 >> 3 << 3 = 96
+        series.addValue(msec(300), 200, false); // 200 >> 3 << 3 = 192
+        series.addValue(msec(400), 300, false); // 300 >> 3 << 3 = 256
+        series.addValue(msec(500), 400, false); // 400 >> 3 << 3 = 512
+        series.addValue(msec(600), 500, false); // 500 >> 3 << 3 = 496
+        series.addValue(msec(700), 600, false); // 600 >> 3 << 3 = 592
+        series.addValue(msec(700), 700, false); // 700 >> 3 << 3 = 696
+        series.addValue(msec(700), 800, false); // 800 >> 3 << 3 = 768
+        series.addValue(msec(700), 900, false); // 900 >> 3 << 3 = 896
+        series.addValue(msec(800), 1000, false); // 1000 >> 3 << 3 = 992
+
+        assertEquals((100 >> 3 << 3), series.getPercentile(0.0));
+        assertEquals(((100 >> 3 << 3) + (200 >> 3 << 3)) / 2, series.getPercentile(10.0));
+        assertEquals(((200 >> 3 << 3) + (300 >> 3 << 3)) / 2, series.getPercentile(20.0));
+        assertEquals(((300 >> 3 << 3) + (400 >> 3 << 3)) / 2, series.getPercentile(30.0));
+        assertEquals(((400 >> 3 << 3) + (500 >> 3 << 3)) / 2, series.getPercentile(40.0));
+        assertEquals(((500 >> 3 << 3) + (600 >> 3 << 3)) / 2, series.getPercentile(50.0));
+        assertEquals(((600 >> 3 << 3) + (700 >> 3 << 3)) / 2, series.getPercentile(60.0));
+        assertEquals(((700 >> 3 << 3) + (800 >> 3 << 3)) / 2, series.getPercentile(70.0));
+        assertEquals(((800 >> 3 << 3) + (900 >> 3 << 3)) / 2, series.getPercentile(80.0));
+        assertEquals(((900 >> 3 << 3) + (1000 >> 3 << 3)) / 2, series.getPercentile(90.0));
+        assertEquals(1000 >> 3 << 3, series.getPercentile(100.0));
     }
     
     // test histogram when empty
@@ -455,61 +504,35 @@ public class IntTimeSeriesTest
     {
         final IntTimeSeries series = new IntTimeSeries(3600);
 
-        series.addValue(msec(200), 0, false);
-        series.addValue(msec(200), 100, false);
-        series.addValue(msec(300), 200, false);
-        series.addValue(msec(400), 300, false);
-        series.addValue(msec(500), 400, false);
-        series.addValue(msec(600), 500, false);
-        series.addValue(msec(700), 600, false);
-        series.addValue(msec(700), 700, false);
-        series.addValue(msec(700), 800, false);
-        series.addValue(msec(700), 900, false);
-        series.addValue(msec(800), 1000, false);
+        series.addValue(msec(0), 0, false);
+        series.addValue(msec(1000), 100, false);
+        series.addValue(msec(2000), 200, false);
+        series.addValue(msec(3000), 300, false);
+        series.addValue(msec(4000), 400, false);
+        series.addValue(msec(5000), 500, false);
+        series.addValue(msec(6000), 600, false);
+        series.addValue(msec(7000), 700, false);
+        series.addValue(msec(8000), 800, false);
+        series.addValue(msec(9000), 900, false);
+        series.addValue(msec(10000), 1000, false);
 
         var h = series.toHistogram(10);
         assertEquals(10, h.size());
-        assertEquals(11, h.stream().mapToInt(b -> b.count()).sum());
+        
+        // ok, because we size the buckets based on values width and not based on the
+        // actual buckets, we might get more data points than expected
+        assertEquals(16, h.stream().mapToInt(b -> b.count()).sum());
 
-        assertEquals(0, h.get(0).startValue());
-        assertEquals(100, h.get(0).endValue());
-        assertEquals(2, h.get(0).count());
-
-        assertEquals(1, h.get(1).count());
-        assertEquals(100, h.get(1).startValue());
-        assertEquals(200, h.get(1).endValue());
-
-        assertEquals(1, h.get(2).count());
-        assertEquals(200, h.get(2).startValue());
-        assertEquals(300, h.get(2).endValue());
-
-        assertEquals(1, h.get(3).count());
-        assertEquals(300, h.get(3).startValue());
-        assertEquals(400, h.get(3).endValue());
-
-        assertEquals(1, h.get(4).count());
-        assertEquals(400, h.get(4).startValue());
-        assertEquals(500, h.get(4).endValue());
-
-        assertEquals(1, h.get(5).count());
-        assertEquals(500, h.get(5).startValue());
-        assertEquals(600, h.get(5).endValue());
-
-        assertEquals(1, h.get(6).count());
-        assertEquals(600, h.get(6).startValue());
-        assertEquals(700, h.get(6).endValue());
-
-        assertEquals(1, h.get(7).count());
-        assertEquals(700, h.get(7).startValue());
-        assertEquals(800, h.get(7).endValue());
-
-        assertEquals(1, h.get(8).count());
-        assertEquals(800, h.get(8).startValue());
-        assertEquals(900, h.get(8).endValue());
-
-        assertEquals(1, h.get(9).count());
-        assertEquals(900, h.get(9).startValue());
-        assertEquals(1000, h.get(9).endValue());
+        assertEquals("0, 99, 2", h.get(0).toString()); // 0 >> 3 = 0, 99 >> 3 = 12
+        assertEquals("100, 199, 1", h.get(1).toString()); // 100 >> 3 = 12, 199 >> 3 = 24
+        assertEquals("200, 299, 2", h.get(2).toString()); // 200 >> 3 = 24, 299 >> 3 = 36
+        assertEquals("300, 399, 1", h.get(3).toString()); // 300 >> 3 = 36, 399 >> 3 = 49
+        assertEquals("400, 499, 2", h.get(4).toString()); // 400 >> 3 = 49, 499 >> 3 = 61
+        assertEquals("500, 599, 1", h.get(5).toString()); // 500 >> 3 = 62, 599 >> 3 = 74
+        assertEquals("600, 699, 2", h.get(6).toString()); // 600 >> 3 = 75, 699 >> 3 = 87
+        assertEquals("700, 799, 1", h.get(7).toString()); // 700 >> 3 = 87, 799 >> 3 = 99
+        assertEquals("800, 899, 2", h.get(8).toString()); // 800 >> 3 = 100, 899 >> 3 = 112
+        assertEquals("900, 1000, 2", h.get(9).toString()); // 900 >> 3 = 112, 1000 >> 3 = 125
     }
 
     /**
