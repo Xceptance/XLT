@@ -66,9 +66,12 @@ public class RuntimeHistogramTest
             histogram.addValue(v);
         }
 
+        assertEquals("P25", 
+                     getPercentile(25, values), 
+                     histogram.getPercentile(25), 0.0);
         for (int i = 0; i <= 100; i = i + 1)
         {
-            assertEquals(getPercentile(i, values), histogram.getPercentile(i), 0.0);
+            assertEquals("P" + i, getPercentile(i, values), histogram.getPercentile(i), 0.0);
         }
 
         assertEquals(5.5, histogram.getMedianValue(), 0.0);
@@ -99,7 +102,130 @@ public class RuntimeHistogramTest
     }
 
     @Test
-    public void testPrecision_8()
+    public void testPrecision_0()
+    {
+        final RuntimeHistogram histogram = new RuntimeHistogram();
+        
+        int[] values = new int[] { 10, 20, 30 };
+        
+        for (int v : values)
+        {
+            histogram.addValue(v);
+        }
+
+        for (int i = 0; i <= 100; i = i + 1)
+        {
+            assertEquals(getPercentile(i, values), histogram.getPercentile(i), 0.0);
+        }
+
+        assertEquals(20.0, histogram.getMedianValue(), 0.0);
+        assertEquals(3, histogram.getValueCount());
+        
+        assertEquals((30 >> 0) - (10 >> 0) + 1, histogram.getNumberOfBuckets());
+    }
+    
+    @Test
+    public void testPrecision_0_2()
+    {
+        final RuntimeHistogram histogram = new RuntimeHistogram();
+        
+        int[] values = new int[] { 10, 20, 30, 40 };
+        
+        for (int v : values)
+        {
+            histogram.addValue(v);
+        }
+
+        for (int i = 0; i <= 100; i = i + 1)
+        {
+            assertEquals(getPercentile(i, values), histogram.getPercentile(i), 0.0);
+        }
+
+        assertEquals(25.0, histogram.getMedianValue(), 0.0);
+        assertEquals(4, histogram.getValueCount());
+        
+        assertEquals((40 >> 0) - (10 >> 0) + 1, histogram.getNumberOfBuckets());
+    }
+    
+    @Test
+    public void testPrecision_2_1()
+    {
+        int precision = 1;
+        final RuntimeHistogram histogram = new RuntimeHistogram(1 << precision);
+        
+        int[] values = new int[] { 1000, 2000, 3000, 4000 };
+        
+        for (int v : values)
+        {
+            histogram.addValue(v);
+        }
+
+        for (int i = 0; i <= 100; i = i + 1)
+        {
+            assertEquals(
+                         getPercentile(i, values, precision), 
+                         histogram.getPercentile(i), 0.0);
+        }
+
+        assertEquals(2500.0, histogram.getMedianValue(), 0.0);
+        assertEquals(4, histogram.getValueCount());
+        assertEquals((4000 >> precision) - (1000 >> precision) + 1, histogram.getNumberOfBuckets());
+    }
+    
+    @Test
+    public void testPrecision_2_2()
+    {
+        int precision = 1;
+        final RuntimeHistogram histogram = new RuntimeHistogram(1 << precision);
+        
+        int[] values = new int[] { 123, 918, 300, 8171 };
+        
+        for (int v : values)
+        {
+            histogram.addValue(v);
+        }
+
+        for (int i = 0; i <= 100; i = i + 1)
+        {
+            assertEquals(
+                         "P" + i,
+                         getPercentile(i, values, precision), 
+                         histogram.getPercentile(i), 0.0);
+        }
+
+        assertEquals(609, histogram.getMedianValue(), 0.0);
+        assertEquals(4, histogram.getValueCount());
+        assertEquals((8171 >> precision) - (123 >> precision) + 1, histogram.getNumberOfBuckets());
+    }
+    
+    @Test
+    public void testPrecision_2_3()
+    {
+        int precision = 1;
+        final RuntimeHistogram histogram = new RuntimeHistogram(1 << precision);
+        
+        int[] values = new int[] { 123, 918, 300, 8171, 86113 };
+        
+        for (int v : values)
+        {
+            histogram.addValue(v);
+        }
+
+        for (int i = 0; i <= 100; i = i + 1)
+        {
+            assertEquals(
+                         "P" + i,
+                         getPercentile(i, values, precision), 
+                         histogram.getPercentile(i), 0.0);
+        }
+
+        assertEquals(918, histogram.getMedianValue(), 0.0);
+        assertEquals(5, histogram.getValueCount());
+        assertEquals((86113 >> precision) - (123 >> precision) + 1, histogram.getNumberOfBuckets());
+    }
+    
+    @Test
+    public void testPrecision_8_1()
     {
         final RuntimeHistogram histogram = new RuntimeHistogram(8);
 
@@ -118,6 +244,30 @@ public class RuntimeHistogramTest
         assertEquals((1111 >> 3) - (2 >> 3) + 1, histogram.getNumberOfBuckets());
     }
 
+    @Test
+    public void testPrecision_8_2()
+    {
+        final RuntimeHistogram histogram = new RuntimeHistogram(8);
+        
+        int[] values = new int[] { 10, 20, 30 };
+        
+        for (int v : values)
+        {
+            histogram.addValue(v);
+        }
+
+        for (int i = 0; i <= 100; i = i + 1)
+        {
+            System.out.format("P%s, %s, %s%n", i, getPercentile(i, values, 3), histogram.getPercentile(i));
+            assertEquals(getPercentile(i, values, 3), histogram.getPercentile(i), 0.0);
+        }
+
+        assertEquals(16, histogram.getMedianValue(), 0.0);
+        assertEquals(3, histogram.getValueCount());
+        
+        assertEquals((30 >> 3) - (10 >> 3) + 1, histogram.getNumberOfBuckets());
+    }
+    
     @Test
     public void testPrecision_10_becomes_16()
     {
@@ -253,11 +403,24 @@ public class RuntimeHistogramTest
 
     private double getPercentile(final double p, final int[] values)
     {
+        return getPercentile(p, values, 0);
+    }
+    
+    private double getPercentile(final double p, final int[] v, int precision)
+    {
+        // adjust the precision 
+        final int[] values = Arrays.copyOf(v, v.length);
+        for (int i = 0; i < values.length; i++)
+        {
+            values[i] = values[i] >> precision;
+        }
+        Arrays.sort(values);
+        
         final double percentile;
 
         if (values.length == 0)
         {
-            percentile = 0;
+            return 0;
         }
         else if (p == 0.0d)
         {
@@ -269,14 +432,15 @@ public class RuntimeHistogramTest
         }
         else
         {
-            final double np = (double)values.length * (p / 100.0d);
+            final double np = ((double)values.length) * (p / 100.0d);
 
             if ((np % 1) == 0)
             {
                 final int i1 = (int) np;
-                final int i2 = i1 + 1;
+                final double v1 = values[i1 - 1];
+                final double v2 = values[i1];
 
-                percentile = (values[i1 - 1] + values[i2 - 1]) / 2.0d;
+                percentile = (v1 + v2) / 2.0d;
             }
             else
             {
@@ -286,7 +450,7 @@ public class RuntimeHistogramTest
             }
         }
 
-        return percentile;
+        return (percentile * (1 << precision));
     }
 
     /**

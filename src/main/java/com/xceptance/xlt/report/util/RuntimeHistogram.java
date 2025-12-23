@@ -223,7 +223,7 @@ public class RuntimeHistogram
                 final int value1 = getValueByCount(np);
                 final int value2 = getValueByCount(np + 1);
 
-                value = (value1 + value2) / 2.0;
+                value = (value1 + value2) / 2.0d;
             }
             else
             {
