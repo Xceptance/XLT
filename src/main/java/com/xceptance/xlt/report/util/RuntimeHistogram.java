@@ -246,10 +246,10 @@ public class RuntimeHistogram
     }
     
     /**
-     * Returns the number of values that fall into the specified value range (inclusive).
+     * Returns the number of values that fall into the specified value range.
      *
      * @param start the start value (inclusive)
-     * @param end the end value (exclusive)
+     * @param end the end value (inclusive)
      * 
      * @return the number of values in the range
      */
@@ -276,7 +276,9 @@ public class RuntimeHistogram
             return 0;
         }
 
-        // Clamp indices to our actual bucket range
+        // Clamp indices to our actual bucket range and move the index
+        // by our minimal index value offset, in case it is not zero, we
+        // safe us the empty ranges at the begin
         final int firstBucket = Math.max(0, startIndex - this.firstIndexValue);
         final int lastBucket = Math.min(this.countPerBucket.length - 1, endIndex - this.firstIndexValue);
 

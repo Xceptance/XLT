@@ -60,7 +60,7 @@ public class RuntimeHistogramTest
     {
         final RuntimeHistogram histogram = new RuntimeHistogram();
         int[] values = new int[] { 2, 3, 4, 5, 6, 7, 8, 9 };
-        
+
         for (int v : values)
         {
             histogram.addValue(v);
@@ -85,7 +85,7 @@ public class RuntimeHistogramTest
         final RuntimeHistogram histogram = new RuntimeHistogram();
 
         int[] values = new int[] { 2, 3, 4, 5, 6, 7, 8, 9, 10 };
-        
+
         for (int v : values)
         {
             histogram.addValue(v);
@@ -105,9 +105,9 @@ public class RuntimeHistogramTest
     public void testPrecision_0()
     {
         final RuntimeHistogram histogram = new RuntimeHistogram();
-        
+
         int[] values = new int[] { 10, 20, 30 };
-        
+
         for (int v : values)
         {
             histogram.addValue(v);
@@ -120,17 +120,17 @@ public class RuntimeHistogramTest
 
         assertEquals(20.0, histogram.getMedianValue(), 0.0);
         assertEquals(3, histogram.getValueCount());
-        
+
         assertEquals((30 >> 0) - (10 >> 0) + 1, histogram.getNumberOfBuckets());
     }
-    
+
     @Test
     public void testPrecision_0_2()
     {
         final RuntimeHistogram histogram = new RuntimeHistogram();
-        
+
         int[] values = new int[] { 10, 20, 30, 40 };
-        
+
         for (int v : values)
         {
             histogram.addValue(v);
@@ -143,18 +143,18 @@ public class RuntimeHistogramTest
 
         assertEquals(25.0, histogram.getMedianValue(), 0.0);
         assertEquals(4, histogram.getValueCount());
-        
+
         assertEquals((40 >> 0) - (10 >> 0) + 1, histogram.getNumberOfBuckets());
     }
-    
+
     @Test
     public void testPrecision_2_1()
     {
         int precision = 1;
         final RuntimeHistogram histogram = new RuntimeHistogram(1 << precision);
-        
+
         int[] values = new int[] { 1000, 2000, 3000, 4000 };
-        
+
         for (int v : values)
         {
             histogram.addValue(v);
@@ -171,15 +171,15 @@ public class RuntimeHistogramTest
         assertEquals(4, histogram.getValueCount());
         assertEquals((4000 >> precision) - (1000 >> precision) + 1, histogram.getNumberOfBuckets());
     }
-    
+
     @Test
     public void testPrecision_2_2()
     {
         int precision = 1;
         final RuntimeHistogram histogram = new RuntimeHistogram(1 << precision);
-        
+
         int[] values = new int[] { 123, 918, 300, 8171 };
-        
+
         for (int v : values)
         {
             histogram.addValue(v);
@@ -197,15 +197,15 @@ public class RuntimeHistogramTest
         assertEquals(4, histogram.getValueCount());
         assertEquals((8171 >> precision) - (123 >> precision) + 1, histogram.getNumberOfBuckets());
     }
-    
+
     @Test
     public void testPrecision_2_3()
     {
         int precision = 1;
         final RuntimeHistogram histogram = new RuntimeHistogram(1 << precision);
-        
+
         int[] values = new int[] { 123, 918, 300, 8171, 86113 };
-        
+
         for (int v : values)
         {
             histogram.addValue(v);
@@ -223,7 +223,7 @@ public class RuntimeHistogramTest
         assertEquals(5, histogram.getValueCount());
         assertEquals((86113 >> precision) - (123 >> precision) + 1, histogram.getNumberOfBuckets());
     }
-    
+
     @Test
     public void testPrecision_8_1()
     {
@@ -248,9 +248,9 @@ public class RuntimeHistogramTest
     public void testPrecision_8_2()
     {
         final RuntimeHistogram histogram = new RuntimeHistogram(8);
-        
+
         int[] values = new int[] { 10, 20, 30 };
-        
+
         for (int v : values)
         {
             histogram.addValue(v);
@@ -264,10 +264,10 @@ public class RuntimeHistogramTest
 
         assertEquals(16, histogram.getMedianValue(), 0.0);
         assertEquals(3, histogram.getValueCount());
-        
+
         assertEquals((30 >> 3) - (10 >> 3) + 1, histogram.getNumberOfBuckets());
     }
-    
+
     @Test
     public void testPrecision_10_becomes_16()
     {
@@ -352,8 +352,8 @@ public class RuntimeHistogramTest
         for (int i = 0; i <= 100; i += 10)
         {
             var p = i / 100.0;
-//            System.out.printf("P%3d: %f vs %f%n", i, 
-//                              getQuantile(runtimeArray, p), histogram.getQuantile(p));
+            //            System.out.printf("P%3d: %f vs %f%n", i, 
+            //                              getQuantile(runtimeArray, p), histogram.getQuantile(p));
             assertEquals(
                          String.format("P%d", i), 
                          getQuantile(runtimeArray, p), histogram.getQuantile(p), 0.0);
@@ -405,7 +405,7 @@ public class RuntimeHistogramTest
     {
         return getPercentile(p, values, 0);
     }
-    
+
     private double getPercentile(final double p, final int[] v, int precision)
     {
         // adjust the precision 
@@ -415,7 +415,7 @@ public class RuntimeHistogramTest
             values[i] = values[i] >> precision;
         }
         Arrays.sort(values);
-        
+
         final double percentile;
 
         if (values.length == 0)
@@ -493,7 +493,7 @@ public class RuntimeHistogramTest
 
         return (lowerValue + (upperValue - lowerValue) * fraction);
     }
-    
+
     // ================================
     // Check for getCountForValues variations
     //
@@ -514,10 +514,11 @@ public class RuntimeHistogramTest
     {
         RuntimeHistogram histogram = new RuntimeHistogram();
         histogram.addValue(50);
-        
+
         assertEquals(1, histogram.getCountForValue(0, 100));
         assertEquals(1, histogram.getCountForValue(50, 50));
         assertEquals(0, histogram.getCountForValue(0, 49));
+        assertEquals(1, histogram.getCountForValue(50, 100));
         assertEquals(0, histogram.getCountForValue(51, 100));
     }
 
@@ -530,7 +531,7 @@ public class RuntimeHistogramTest
         histogram.addValue(30);
         histogram.addValue(40);
         histogram.addValue(50);
-        
+
         assertEquals(5, histogram.getCountForValue(0, 100));
         assertEquals(3, histogram.getCountForValue(20, 40));
         assertEquals(2, histogram.getCountForValue(10, 20));
@@ -542,7 +543,7 @@ public class RuntimeHistogramTest
         RuntimeHistogram histogram = new RuntimeHistogram();
         histogram.addValue(50);
         histogram.addValue(60);
-        
+
         assertEquals(0, histogram.getCountForValue(0, 40));
         assertEquals(0, histogram.getCountForValue(100, 200));
     }
@@ -555,7 +556,7 @@ public class RuntimeHistogramTest
         histogram.addValue(30);
         histogram.addValue(40);
         histogram.addValue(50);
-        
+
         assertEquals(2, histogram.getCountForValue(10, 35));
         assertEquals(2, histogram.getCountForValue(35, 60));
     }
@@ -567,10 +568,100 @@ public class RuntimeHistogramTest
         histogram.addValue(10);
         histogram.addValue(15);
         histogram.addValue(20);
-        
+
         // Values 10 and 15 fall into bucket 8-15, value 20 into bucket 16-23
         assertEquals(2, histogram.getCountForValue(8, 15));
         assertEquals(1, histogram.getCountForValue(16, 23));
+    }
+
+    @Test
+    public void testGetCountForValue_With0Precision_LargerValues()
+    {
+        final var histogram = new RuntimeHistogram(); // precision = 0, resolution = 1
+        int[] values = new int[]{ 145, 981, 81782, 998, 771, 1500, 2048, 4096 };
+        Arrays.stream(values).forEach(histogram::addValue);
+
+        // Test various ranges
+        assertEquals(0, histogram.getCountForValue(0, 144));
+        assertEquals(1, histogram.getCountForValue(0, 145));
+        assertEquals("Range covering 771", 1, histogram.getCountForValue(768, 775));
+        assertEquals("Range covering 981 and 998", 2, histogram.getCountForValue(976, 999));
+        assertEquals("Range covering 2048 and 4096", 2, histogram.getCountForValue(2048, 4103));
+        assertEquals("Full range", 8, histogram.getCountForValue(0, 100000));
+        assertEquals("Range with no values", 0, histogram.getCountForValue(200, 500));
+        assertEquals("Range covering largest value", 1, histogram.getCountForValue(81776, 81783));
+
+        // Test edge cases around bucket boundaries
+        assertEquals("Multiple mid-range values", 3, histogram.getCountForValue(700, 1000));
+    }
+
+    @Test
+    public void testGetCountForValue_WithPrecision_LargerValues()
+    {
+        final var histogram = new RuntimeHistogram(8); // precision = 8, resolution = 8
+
+        int[] values = new int[]{ 
+            // 100, // 100 >> 3 = 12
+            145, // 145 >> 3 = 18  
+            771, // 771 >> 3 = 96
+            // 871, // 871 >> 3 = 108
+            981, // 981 >> 3 = 122
+            998, // 998 >> 3 = 124
+            1500, // 1500 >> 3 = 187
+            // 1601, // 1601 >> 3 = 200
+            2181, // 2181 >> 3 = 272
+            7611, // 7611 >> 3 = 951
+            81781 }; // 81781 >> 3 = 10222
+        Arrays.stream(values).forEach(histogram::addValue);
+
+        // all and the last
+        assertEquals("Last", 1, histogram.getCountForValue(81782, 81782));
+        assertEquals("Full range", 8, histogram.getCountForValue(0, 81782));
+
+        // this is 1, because the 145 >> 3 = 18, so the bucket covers 144-151
+        // 18 << 3 = 144 
+        // 19 << 3 = 152
+        assertEquals(1, histogram.getCountForValue(0, 144));
+        // that is one bucket down
+        assertEquals(0, histogram.getCountForValue(0, 143));
+
+        assertEquals(1, histogram.getCountForValue(0, 145));
+        assertEquals(2, histogram.getCountForValue(0, 771));
+        assertEquals(3, histogram.getCountForValue(0, 981));
+        assertEquals(4, histogram.getCountForValue(0, 998));
+        assertEquals(5, histogram.getCountForValue(0, 1500));
+        assertEquals(6, histogram.getCountForValue(0, 2181));
+        assertEquals(7, histogram.getCountForValue(0, 7611));
+        assertEquals(8, histogram.getCountForValue(0, 81781));
+        
+        histogram.addValue(1601);
+        histogram.addValue(871);
+        histogram.addValue(100);
+        
+        assertEquals(1, histogram.getCountForValue(0, 100));
+        assertEquals(2, histogram.getCountForValue(0, 145));
+        assertEquals(3, histogram.getCountForValue(0, 771));
+        assertEquals(4, histogram.getCountForValue(0, 871));
+        assertEquals(5, histogram.getCountForValue(0, 981));
+        assertEquals(6, histogram.getCountForValue(0, 998));
+        assertEquals(7, histogram.getCountForValue(0, 1500));
+        assertEquals(8, histogram.getCountForValue(0, 1601));
+        assertEquals(9, histogram.getCountForValue(0, 2181));
+        assertEquals(10, histogram.getCountForValue(0, 7611));
+        assertEquals(11, histogram.getCountForValue(0, 81781));
+        
+        assertEquals(6, histogram.getCountForValue(0, 999));
+        assertEquals(2, histogram.getCountForValue(1000, 1999));
+        assertEquals(1, histogram.getCountForValue(2000, 2999));
+        assertEquals(0, histogram.getCountForValue(3000, 3999));
+        assertEquals(0, histogram.getCountForValue(4000, 4999));
+        assertEquals(0, histogram.getCountForValue(5000, 5999));
+        assertEquals(0, histogram.getCountForValue(6000, 6999));
+        assertEquals(1, histogram.getCountForValue(7000, 7999));
+        assertEquals(0, histogram.getCountForValue(8000, 8999));
+        assertEquals(0, histogram.getCountForValue(9000, 9999));
+        assertEquals(0, histogram.getCountForValue(80000, 80999));
+        assertEquals(1, histogram.getCountForValue(81000, 81999));
     }
 
     @Test
@@ -581,7 +672,7 @@ public class RuntimeHistogramTest
         {
             histogram.addValue(50);
         }
-        
+
         assertEquals(10, histogram.getCountForValue(50, 50));
         assertEquals(10, histogram.getCountForValue(0, 100));
     }
@@ -600,7 +691,7 @@ public class RuntimeHistogramTest
         RuntimeHistogram histogram = new RuntimeHistogram();
         histogram.addValue(50);
         histogram.addValue(50);
-        
+
         assertEquals(2, histogram.getCountForValue(50, 50));
     }
 
@@ -611,7 +702,7 @@ public class RuntimeHistogramTest
         histogram.addValue(-50);
         histogram.addValue(-30);
         histogram.addValue(10);
-        
+
         assertEquals(2, histogram.getCountForValue(-60, -20));
         assertEquals(1, histogram.getCountForValue(0, 20));
         assertEquals(3, histogram.getCountForValue(-100, 100));
